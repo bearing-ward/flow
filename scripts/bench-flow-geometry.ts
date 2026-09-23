@@ -6,6 +6,7 @@ import {
   graphNodesIntersecting,
   selectionInRect,
 } from "../packages/core/src/public.ts";
+import { createFlowSpatialPrototype } from "../packages/core/src/domain/flow-spatial-prototype.ts";
 
 const sizes = [250, 1000, 4000] as const;
 const sampleCount = 31;
@@ -55,9 +56,13 @@ for (const size of sizes) {
     { nodeId: node.id as never, width: 60 + (index % 2) * 10, height: 36 + (index % 2) * 6 },
   ]));
   const graph = createFlowGraph(document, measurements);
+  const spatial = createFlowSpatialPrototype(graph);
+  results.push({ fixtureSize: size, operation: "spatialPrototypeMemoryProxy", storedCellEntries: spatial.storedEntries });
   results.push(measure(size, "createFlowGraph", () => createFlowGraph(document, measurements)));
+  results.push(measure(size, "spatialPrototypeBuild", () => createFlowSpatialPrototype(graph)));
   results.push(measure(size, "graphBounds", () => graphBounds(graph)));
   results.push(measure(size, "graphNodesIntersecting", () => graphNodesIntersecting(graph, rect)));
+  results.push(measure(size, "spatialPrototypeQuery", () => spatial.query(rect)));
   results.push(measure(size, "selectionInRect", () => selectionInRect(graph, rect, "partial")));
 }
 

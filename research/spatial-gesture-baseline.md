@@ -27,4 +27,18 @@ Any incremental design must state how it handles document node add/remove/positi
 
 Before adding resize or node-drag auto-pan, model idle, pressed-before-threshold, active drag, active multi-node drag, selection drag, cancelled, and completed states, along with Escape, blur, pointer cancellation, lost capture, node removal, unmount, and multi-touch abort transitions. Keyboard movement is an immediate command path rather than an active pointer gesture. Keep resize and drag auto-pan separate until their ownership and cancellation behavior are specified. Evidence and limits are documented in the gesture trace and existing browser cases.
 
+## Core-only spatial prototype decision
+
+The non-integrated prototype in `packages/core/src/domain/flow-spatial-prototype.ts` indexes each visible node's absolute bounds into 128-flow-unit cells and queries only occupied query cells before exact inclusive intersection checks. It de-duplicates nodes that span cells and sorts matches by the existing graph order. Rebuild it from every fresh `FlowGraphView` after document, measurement, or override changes; viewport translation only changes the query rectangle. Its focused comparison covers node addition/removal, parent movement, child override, measurement change, hidden ancestry, boundary touch, and 100 fixed-seed rectangles. The prototype matched the scan in order in these cases. This is core-only semantic evidence, not a host lifecycle or production integration test.
+
+The benchmark was run three times in the same session with the 250/1,000/4,000-node fixtures and 31 samples per timed operation. It reports baseline scan, prototype build, and prototype query separately; graph decoding remains outside timed loops. Across the three runs, median timings (minimum / median / maximum of run medians, milliseconds) were:
+
+| Fixture | Scan query | Prototype build | Prototype query | Stored cell/id entries |
+| ---: | ---: | ---: | ---: | ---: |
+| 250 | 0.0068 / 0.0077 / 0.0081 | 0.0328 / 0.0337 / 0.0342 | 0.0352 / 0.0365 / 0.0380 | 402 |
+| 1,000 | 0.0083 / 0.0085 / 0.0089 | 0.1222 / 0.1240 / 0.1341 | 0.1072 / 0.1077 / 0.1103 | 1,845 |
+| 4,000 | 0.0282 / 0.0283 / 0.0322 | 0.4023 / 0.4048 / 0.4250 | 0.1947 / 0.1953 / 0.1989 | 6,898 |
+
+The candidate does not meet the adoption heuristic: its 4,000-node query is about 6.9x slower than the scan median, rather than at least 2x faster, and rebuilding costs about 0.405 ms before queries. Twenty queries do not amortize this build cost because each candidate query is also slower. The stored-entry count is a memory proxy, not a byte estimate; large nodes occupy many cells. Full immutable rebuild makes invalidation straightforward for document, measurement, override, ancestor movement, and hidden-state changes, but no viewport-only update benefits this broad-query fixture. Keep the scan as the production default. Do not integrate this candidate; a future attempt needs a materially different query workload or index shape and a separate comparison. These timings are local heuristic evidence from one machine, not a cross-machine CI budget.
+
 The next plan's single first deliverable should be a core-only spatial-query prototype with a reproducible correctness comparison against the existing scan on the same fixed graph fixture; its first gate should be focused Vitest tests covering nested positions, measurement changes, hidden ancestry, override updates, stable order, and boundary-touch semantics. Do not add a gesture machine or resize controls in that first deliverable.
