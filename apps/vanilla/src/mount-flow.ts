@@ -1294,6 +1294,7 @@ export const createFlowHost = (
 
         const visibleNodes = new Set<NodeId>();
         let visibleEdges: Set<(typeof next.edges)[number]["id"]> | null = null;
+        const visibleEdgeEndpointIds = new Set<NodeId>();
         let graph = createFlowGraph(next, measurements, renderedNodePositions);
 
         if (options.renderOnlyVisible === true) {
@@ -1303,13 +1304,15 @@ export const createFlowHost = (
             canvas.clientHeight
           );
 
-          visibleEdges = new Set(
-            next.edges
-              .filter((edge) =>
-                edgeIntersectsViewport(graph, edge, rect)
-              )
-              .map((edge) => edge.id)
-          );
+          visibleEdges = new Set();
+
+          for (const edge of next.edges) {
+            if (edgeIntersectsViewport(graph, edge, rect)) {
+              visibleEdges.add(edge.id);
+              visibleEdgeEndpointIds.add(edge.source);
+              visibleEdgeEndpointIds.add(edge.target);
+            }
+          }
 
           for (const node of next.nodes) {
             const graphNode = graph.nodes.get(node.id);
@@ -1320,11 +1323,7 @@ export const createFlowHost = (
             if (
               !measurements.has(node.id) ||
               nodeIntersectsViewport(graph, node.id, rect) ||
-              next.edges.some(
-                (edge) =>
-                  visibleEdges?.has(edge.id) &&
-                  (edge.source === node.id || edge.target === node.id)
-              )
+              visibleEdgeEndpointIds.has(node.id)
             ) {
               visibleNodes.add(node.id);
             }

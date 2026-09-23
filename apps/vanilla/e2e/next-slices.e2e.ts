@@ -184,8 +184,33 @@ test("culling responds to zoom, drag completion, and viewport return", async ({
         nodes: [
           { id: "near", label: "Near", position: { x: 100, y: 180 } },
           { id: "middle", label: "Middle", position: { x: 700, y: 180 } },
+          {
+            id: "cross-source",
+            label: "Cross source",
+            position: { x: -300, y: 420 },
+            handles: [{ id: "out", kind: "source", side: "right" }],
+          },
+          {
+            id: "cross-target",
+            label: "Cross target",
+            position: { x: 1400, y: 420 },
+            handles: [{ id: "in", kind: "target", side: "left" }],
+          },
+          ...Array.from({ length: 200 }, (_, index) => ({
+            id: `far-${index}`,
+            label: `Far ${index}`,
+            position: { x: 3000 + index * 200, y: 180 },
+          })),
         ],
-        edges: [],
+        edges: [
+          {
+            id: "crossing",
+            source: "cross-source",
+            sourceHandle: "out",
+            target: "cross-target",
+            targetHandle: "in",
+          },
+        ],
       },
       {
         documentMode: "uncontrolled",
@@ -201,15 +226,35 @@ test("culling responds to zoom, drag completion, and viewport return", async ({
 
   const near = page.locator('.flow-node[data-node-id="near"]');
   const middle = page.locator('.flow-node[data-node-id="middle"]');
+  const crossing = page.locator('.flow-edge-group[data-edge-id="crossing"]');
+  const crossSource = page.locator('.flow-node[data-node-id="cross-source"]');
+  const crossTarget = page.locator('.flow-node[data-node-id="cross-target"]');
+  const unrelated = page.locator('.flow-node[data-node-id="far-0"]');
   await expect(middle).toHaveCount(1);
+  await expect(crossing).toHaveCount(1);
+  await expect(crossSource).toHaveAttribute("data-measured-width", "150");
+  await expect(crossTarget).toHaveAttribute("data-measured-width", "150");
+  await expect(page.locator(".flow-node")).toHaveCount(4);
+  await expect(unrelated).toHaveCount(0);
   await page.evaluate(() =>
     globalThis.flowController?.updateViewport({ x: 0, y: 0, zoom: 2 })
   );
   await expect(middle).toHaveCount(0);
+  await expect(crossing).toHaveCount(0);
+  await expect(page.locator(".flow-node")).toHaveCount(1);
+  await page.evaluate(() =>
+    globalThis.flowController?.updateViewport({ x: -3000, y: 0, zoom: 1 })
+  );
+  await expect(crossing).toHaveCount(0);
+  await expect(unrelated).toHaveCount(1);
   await page.evaluate(() =>
     globalThis.flowController?.updateViewport({ x: 0, y: 0, zoom: 1 })
   );
+  await expect(crossing).toHaveCount(1);
+  await expect(unrelated).toHaveCount(0);
   await expect(middle).toHaveCount(1);
+  await expect(crossing).toHaveCount(1);
+  await expect(page.locator(".flow-node")).toHaveCount(4);
 
   const box = await near.boundingBox();
 
