@@ -563,3 +563,249 @@ test("toolbar anchors follow viewport, drag, culling, and graph removal", async 
   await expect.poll(() => page.evaluate(() => (globalThis as typeof globalThis & { toolbarAnchors?: { nodes: { id: string }[]; edges: { id: string }[] } }).toolbarAnchors)).toEqual({ nodes: [], edges: [] });
   await page.evaluate(() => globalThis.flowController?.destroy());
 });
+test("node drag updates only incident custom edge renderers", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const nodes = [
+      {
+        id: "moving",
+        label: "Moving",
+        position: { x: 100, y: 140 },
+        size: { width: 100, height: 60 },
+        handles: [{ id: "out", kind: "source", side: "right" }],
+      },
+      {
+        id: "target",
+        label: "Target",
+        position: { x: 320, y: 140 },
+        size: { width: 100, height: 60 },
+        handles: [{ id: "in", kind: "target", side: "left" }],
+      },
+      ...Array.from({ length: 24 }, (_, index) => ({
+        id: `n${index}`,
+        label: `N${index}`,
+        position: {
+          x: 100 + (index % 6) * 180,
+          y: 400 + Math.floor(index / 6) * 120,
+        },
+        size: { width: 100, height: 60 },
+        handles: [
+          { id: "out", kind: "source", side: "right" },
+          { id: "in", kind: "target", side: "left" },
+        ],
+      })),
+    ];
+    const edges = [
+      {
+        id: "connected",
+        source: "moving",
+        sourceHandle: "out",
+        target: "target",
+        targetHandle: "in",
+        label: "Connected",
+        type: "counted",
+      },
+      ...Array.from({ length: 12 }, (_, index) => ({
+        id: `unrelated${index}`,
+        source: `n${index * 2}`,
+        sourceHandle: "out",
+        target: `n${index * 2 + 1}`,
+        targetHandle: "in",
+        label: `U${index}`,
+        type: "counted",
+      })),
+    ];
+    const state = globalThis as typeof globalThis & {
+      edgeUpdates?: Record<string, number>;
+      flowController?: { destroy(): void; update(graph: unknown): void };
+    };
+    state.edgeUpdates = {};
+    state.flowController = mountFlow(
+      root,
+      { nodes, edges },
+      {
+        documentMode: "uncontrolled",
+        edgeRenderers: {
+          counted: {
+            render: (
+              edge: { id: string },
+              _context: unknown,
+              visual: SVGGElement
+            ) => {
+              const counter = globalThis.document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+              );
+              counter.dataset.edgeVisual = edge.id;
+              counter.setAttribute(
+                "cx",
+                String((_context as { source: { x: number } }).source.x)
+              );
+              visual.append(counter);
+              return {
+                update: (
+                  _next: unknown,
+                  context: { source: { x: number } }
+                ) => {
+                  state.edgeUpdates![edge.id] =
+                    (state.edgeUpdates![edge.id] ?? 0) + 1;
+                  counter.setAttribute("cx", String(context.source.x));
+                },
+                destroy: () => undefined,
+              };
+            },
+          },
+        },
+        viewport: {
+          mode: "uncontrolled",
+          initial: { x: 0, y: 0, zoom: 1 },
+          limits: { minZoom: 0.5, maxZoom: 2 },
+        },
+      }
+    );
+  });
+  await expect(page.locator(".flow-edge-label")).toHaveCount(13);
+  const initialPath = await page
+    .locator('[data-edge-id="connected"] .flow-edge-hit')
+    .getAttribute("d");
+  const initialLabelX = await page
+    .locator('[data-testid="flow-edge-label"][data-edge-id="connected"]')
+    .getAttribute("x");
+  const initialAnchorX = await page
+    .locator(
+      '[data-edge-id="connected"] .flow-edge-reconnect-anchor[data-endpoint="source"]'
+    )
+    .getAttribute("cx");
+  const initialVisualX = await page
+    .locator('[data-edge-visual="connected"]')
+    .getAttribute("cx");
+  await page.evaluate(() => {
+    (
+      globalThis as typeof globalThis & { edgeUpdates?: Record<string, number> }
+    ).edgeUpdates = {};
+  });
+  const moving = page.locator('.flow-node[data-node-id="moving"]');
+  const bounds = await moving.boundingBox();
+  if (bounds === null) throw new Error("Missing moving node bounds");
+  await page.mouse.move(
+    bounds.x + bounds.width / 2,
+    bounds.y + bounds.height / 2
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    bounds.x + bounds.width / 2 + 70,
+    bounds.y + bounds.height / 2 + 35,
+    { steps: 5 }
+  );
+  await expect
+    .poll(() =>
+      page
+        .locator('[data-edge-id="connected"] .flow-edge-hit')
+        .getAttribute("d")
+    )
+    .not.toBe(initialPath);
+  await expect(
+    page.locator('[data-testid="flow-edge-label"][data-edge-id="connected"]')
+  ).not.toHaveAttribute("x", initialLabelX ?? "");
+  await expect(
+    page.locator(
+      '[data-edge-id="connected"] .flow-edge-reconnect-anchor[data-endpoint="source"]'
+    )
+  ).not.toHaveAttribute("cx", initialAnchorX ?? "");
+  await expect(
+    page.locator('[data-edge-visual="connected"]')
+  ).not.toHaveAttribute("cx", initialVisualX ?? "");
+  const dragUpdates = await page.evaluate(
+    () =>
+      (
+        globalThis as typeof globalThis & {
+          edgeUpdates?: Record<string, number>;
+        }
+      ).edgeUpdates
+  );
+  expect(dragUpdates?.connected).toBeGreaterThan(0);
+  expect(
+    Object.keys(dragUpdates ?? {}).filter((id) => id !== "connected")
+  ).toEqual([]);
+  await page.mouse.up();
+  await page.evaluate(() => {
+    const state = globalThis as typeof globalThis & {
+      edgeUpdates?: Record<string, number>;
+      flowController?: { update(graph: unknown): void };
+    };
+    state.edgeUpdates = {};
+    state.flowController?.update({
+      nodes: [
+        {
+          id: "moving",
+          label: "Moving",
+          position: { x: 200, y: 180 },
+          size: { width: 100, height: 60 },
+          handles: [{ id: "out", kind: "source", side: "right" }],
+        },
+        {
+          id: "target",
+          label: "Target",
+          position: { x: 320, y: 140 },
+          size: { width: 100, height: 60 },
+          handles: [{ id: "in", kind: "target", side: "left" }],
+        },
+        ...Array.from({ length: 24 }, (_, index) => ({
+          id: `n${index}`,
+          label: `N${index}`,
+          position: {
+            x: 100 + (index % 6) * 180,
+            y: 400 + Math.floor(index / 6) * 120,
+          },
+          size: { width: 100, height: 60 },
+          handles: [
+            { id: "out", kind: "source", side: "right" },
+            { id: "in", kind: "target", side: "left" },
+          ],
+        })),
+      ],
+      edges: [
+        {
+          id: "connected",
+          source: "moving",
+          sourceHandle: "out",
+          target: "target",
+          targetHandle: "in",
+          label: "Connected",
+          type: "counted",
+        },
+        ...Array.from({ length: 12 }, (_, index) => ({
+          id: `unrelated${index}`,
+          source: `n${index * 2}`,
+          sourceHandle: "out",
+          target: `n${index * 2 + 1}`,
+          targetHandle: "in",
+          label: `U${index}`,
+          type: "counted",
+        })),
+      ],
+    });
+  });
+  expect(
+    await page.evaluate(
+      () =>
+        (
+          globalThis as typeof globalThis & {
+            edgeUpdates?: Record<string, number>;
+          }
+        ).edgeUpdates?.unrelated0
+    )
+  ).toBe(1);
+  await page.evaluate(() =>
+    (
+      globalThis as typeof globalThis & { flowController?: { destroy(): void } }
+    ).flowController?.destroy()
+  );
+});

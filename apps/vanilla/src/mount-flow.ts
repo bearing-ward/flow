@@ -511,13 +511,14 @@ export const createFlowHost = (
         : { x: absolute.x - parent.absolutePosition.x, y: absolute.y - parent.absolutePosition.y };
     };
 
-    const renderGraphPositions = (target: FlowDocument = document): void => {
+    const renderGraphPositions = (target: FlowDocument = document) => {
       const graph = graphFor(target);
       for (const [nodeId, entry] of entries) {
         const resolved = graph.nodes.get(nodeId);
         if (resolved !== undefined) applyNodePosition(entry.element, resolved.absolutePosition);
       }
       updateToolbarAnchors(target);
+      return graph;
     };
 
     const restoreAdoptedPosition = (node: FlowNode): XYPosition => {
@@ -1940,7 +1941,8 @@ export const createFlowHost = (
             for (const { nodeId, position } of change.positions) {
               renderedNodePositions.set(nodeId, position);
             }
-            renderGraphPositions();
+            const graph = renderGraphPositions();
+            edgeRenderer.updatePositions(document, graph, renderedNodePositions, new Set(change.positions.map(({ nodeId }) => nodeId)));
           } else {
             const absolute = moveNodeDrag(
               activeDrag,
@@ -1953,10 +1955,9 @@ export const createFlowHost = (
             );
 
             renderedNodePositions.set(node.id, position);
-            renderGraphPositions();
+            const graph = renderGraphPositions();
+            edgeRenderer.updatePositions(document, graph, renderedNodePositions, new Set([node.id]));
           }
-
-          edgeRenderer.reconcile(document, renderedNodePositions);
         };
 
         const finishDrag = (event: PointerEvent): void => {

@@ -15,6 +15,7 @@ import type {
   FlowDocument,
   FlowEdgeMarker,
   FlowNode,
+  FlowGraphView,
   HandleId,
   MeasuredHandle,
   NodeId,
@@ -69,6 +70,10 @@ export const createEdgeRenderer = (
   const customRenderers = new Map<EdgeId, { readonly type: string; readonly renderer: FlowEdgeRendererInstance }>();
   const markers = new Map<string, SVGMarkerElement>();
   let visibleEdgeIds: ReadonlySet<EdgeId> | null = null;
+  let orderedEdges: readonly FlowDocument["edges"][number][] = [];
+  let edgeById = new Map<EdgeId, FlowDocument["edges"][number]>();
+  let incidentEdges = new Map<NodeId, Set<EdgeId>>();
+  let previousPositions = new Map<NodeId, XYPosition>();
 
   const ensureMarker = (kind: FlowEdgeMarker, color: string): string => {
     const id = `flow-marker-${markerScope}-${kind}-${color.slice(1).toLowerCase()}`;
@@ -149,7 +154,9 @@ export const createEdgeRenderer = (
   // eslint-disable-next-line complexity
   const reconcile = (
     document: FlowDocument,
-    renderedPositions: ReadonlyMap<NodeId, XYPosition>
+    renderedPositions: ReadonlyMap<NodeId, XYPosition>,
+    suppliedGraph?: FlowGraphView,
+    onlyEdges?: ReadonlySet<EdgeId>
   ) => {
     const visible = new Set<EdgeId>();
     const visibleLabels = new Set<EdgeId>();
@@ -159,9 +166,26 @@ export const createEdgeRenderer = (
     let removed = 0;
     let deferred = 0;
     let previousGroup: SVGGElement | null = null;
-    const graph = createFlowGraph(document, new Map(), renderedPositions);
+    const graph = suppliedGraph ?? createFlowGraph(document, new Map(), renderedPositions);
 
-    for (const edge of orderFlowEdges(document.edges)) {
+    if (suppliedGraph === undefined) {
+      previousPositions = new Map([...graph.nodes].map(([nodeId, node]) => [nodeId, node.absolutePosition]));
+      orderedEdges = orderFlowEdges(document.edges);
+      edgeById = new Map(orderedEdges.map((edge) => [edge.id, edge]));
+      incidentEdges = new Map();
+      for (const edge of orderedEdges) {
+        for (const nodeId of new Set([edge.source, edge.target])) {
+          const incident = incidentEdges.get(nodeId) ?? new Set<EdgeId>();
+          incident.add(edge.id);
+          incidentEdges.set(nodeId, incident);
+        }
+      }
+    }
+
+    const edgesToPaint = onlyEdges === undefined
+      ? orderedEdges
+      : orderedEdges.filter((edge) => onlyEdges.has(edge.id) && edgeById.has(edge.id));
+    for (const edge of edgesToPaint) {
       if (
         edge.hidden === true ||
         (visibleEdgeIds !== null && !visibleEdgeIds.has(edge.id))
@@ -412,21 +436,22 @@ export const createEdgeRenderer = (
         path.setAttribute(attribute, `url(#${markerId})`);
       }
 
-      const nextGroup: Element | null =
-        previousGroup === null
-          ? pathLayer.firstElementChild
-          : previousGroup.nextElementSibling;
+      if (onlyEdges === undefined) {
+        const nextGroup: Element | null =
+          previousGroup === null
+            ? pathLayer.firstElementChild
+            : previousGroup.nextElementSibling;
 
-      if (nextGroup !== group) {
-        if (nextGroup === null) {
-          pathLayer.append(group);
-        } else {
-          nextGroup.before(group);
+        if (nextGroup !== group) {
+          if (nextGroup === null) {
+            pathLayer.append(group);
+          } else {
+            nextGroup.before(group);
+          }
         }
+        previousGroup = group;
+        anchorLayer.append(anchorGroup);
       }
-
-      previousGroup = group;
-      anchorLayer.append(anchorGroup);
       visible.add(edge.id);
 
       if (edge.label !== undefined && edge.label.length > 0) {
@@ -445,43 +470,82 @@ export const createEdgeRenderer = (
         label.textContent = edge.label;
         label.setAttribute("x", String(position.x));
         label.setAttribute("y", String(position.y));
-        labelLayer.append(label);
+        if (onlyEdges === undefined || label.parentElement === null) labelLayer.append(label);
         visibleLabels.add(edge.id);
       }
     }
 
-    for (const [edgeId, elements] of edges) {
-      if (visible.has(edgeId)) {
-        continue;
-      }
+    if (onlyEdges === undefined) {
+      for (const [edgeId, elements] of edges) {
+        if (visible.has(edgeId)) {
+          continue;
+        }
 
-      elements.group.remove();
-      elements.anchorGroup.remove();
-      customRenderers.get(edgeId)?.renderer.destroy();
-      customRenderers.delete(edgeId);
-      edges.delete(edgeId);
-      removed += 1;
+        elements.group.remove();
+        elements.anchorGroup.remove();
+        customRenderers.get(edgeId)?.renderer.destroy();
+        customRenderers.delete(edgeId);
+        edges.delete(edgeId);
+        removed += 1;
+      }
     }
 
-    for (const [edgeId, label] of labels) {
-      if (visibleLabels.has(edgeId)) {
-        continue;
-      }
+    if (onlyEdges === undefined) {
+      for (const [edgeId, label] of labels) {
+        if (visibleLabels.has(edgeId)) {
+          continue;
+        }
 
-      label.remove();
-      labels.delete(edgeId);
+        label.remove();
+        labels.delete(edgeId);
+      }
     }
 
-    for (const [markerId, marker] of markers) {
-      if (visibleMarkers.has(markerId)) {
-        continue;
-      }
+    if (onlyEdges === undefined) {
+      for (const [markerId, marker] of markers) {
+        if (visibleMarkers.has(markerId)) {
+          continue;
+        }
 
-      marker.remove();
-      markers.delete(markerId);
+        marker.remove();
+        markers.delete(markerId);
+      }
     }
 
     return { added, updated, removed, deferred };
+  };
+
+  const updatePositions = (
+    document: FlowDocument,
+    graph: FlowGraphView,
+    renderedPositions: ReadonlyMap<NodeId, XYPosition>,
+    movedNodeIds: ReadonlySet<NodeId>
+  ) => {
+    const changed = new Set<NodeId>();
+
+    for (const [nodeId, node] of graph.nodes) {
+      const previous = previousPositions.get(nodeId);
+      const next = node.absolutePosition;
+      if (
+        movedNodeIds.has(nodeId) ||
+        (previous !== undefined &&
+          (previous.x !== next.x || previous.y !== next.y))
+      ) {
+        changed.add(nodeId);
+      }
+      previousPositions.set(nodeId, next);
+    }
+    const affected = new Set<EdgeId>();
+
+    for (const nodeId of changed) {
+      for (const edgeId of incidentEdges.get(nodeId) ?? []) {
+        affected.add(edgeId);
+      }
+    }
+
+    return affected.size === 0
+      ? { added: 0, updated: 0, removed: 0, deferred: 0 }
+      : reconcile(document, renderedPositions, graph, affected);
   };
 
   return {
@@ -493,9 +557,14 @@ export const createEdgeRenderer = (
       measurements.delete(nodeId);
     },
     reconcile,
+    updatePositions,
     destroy: (): void => {
       measurements.clear();
-      for (const { renderer } of customRenderers.values()) renderer.destroy();
+      previousPositions.clear();
+
+      for (const { renderer } of customRenderers.values()) {
+        renderer.destroy();
+      }
       customRenderers.clear();
       edges.clear();
       labels.clear();
