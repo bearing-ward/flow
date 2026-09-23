@@ -50,6 +50,79 @@ test("nested nodes move in absolute space and publish local positions", async ({
   await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
 });
 
+test("overlapping nodes follow graph order and controlled zIndex updates retain elements and focus", async ({ page }) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const graph = {
+      nodes: [
+        { id: "sibling", label: "Sibling", position: { x: 100, y: 100 }, size: { width: 200, height: 100 }, zIndex: -1, type: "focusable" },
+        { id: "child", label: "Child", parentId: "parent", position: { x: 0, y: 0 }, size: { width: 200, height: 100 }, zIndex: 99 },
+        { id: "parent", label: "Parent", position: { x: 100, y: 100 }, size: { width: 200, height: 100 }, zIndex: 0 },
+      ],
+      edges: [],
+    };
+    globalThis.flowController = mountFlow(root, graph, {
+      documentMode: "controlled",
+      nodeRenderers: {
+        focusable: (_node: unknown, content: HTMLElement) => {
+          const button = globalThis.document.createElement("button");
+          button.id = "sibling-focus";
+          button.textContent = "focus";
+          content.append(button);
+          return { update: () => undefined, destroy: () => undefined };
+        },
+      },
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    const testGlobal = globalThis as typeof globalThis & { stackingGraph?: typeof graph };
+    testGlobal.stackingGraph = graph;
+  });
+
+  const parent = page.locator('.flow-node[data-node-id="parent"]');
+  await page.evaluate(() => {
+    const testGlobal = globalThis as typeof globalThis & { originalNodeElements?: Element[] };
+    testGlobal.originalNodeElements = [...globalThis.document.querySelectorAll(".flow-node")];
+  });
+  const overlap = await parent.boundingBox();
+  if (overlap === null) throw new Error("Missing overlap bounds");
+  expect(await page.locator(".flow-node").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-node-id"))))
+    .toEqual(["sibling", "parent", "child"]);
+  expect(await page.evaluate(({ x, y }) => globalThis.document.elementFromPoint(x, y)?.closest(".flow-node")?.getAttribute("data-node-id"), {
+    x: overlap.x + 20,
+    y: overlap.y + 20,
+  })).toBe("child");
+
+  await page.locator("#sibling-focus").focus();
+  await page.evaluate(() => {
+    const testGlobal = globalThis as typeof globalThis & {
+      stackingGraph?: {
+        nodes: Array<{ id: string; label: string; position: { x: number; y: number }; [key: string]: unknown }>;
+        edges: [];
+      };
+    };
+    const graph = testGlobal.stackingGraph;
+    if (graph === undefined) throw new Error("Missing controlled graph");
+    globalThis.flowController?.update({
+      ...graph,
+      nodes: graph.nodes.map((node) => node.id === "sibling" ? { ...node, zIndex: 10 } : node),
+    });
+  });
+
+  await expect.poll(() => page.locator(".flow-node").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-node-id"))))
+    .toEqual(["parent", "child", "sibling"]);
+  expect(await page.evaluate(() => globalThis.document.elementFromPoint(120, 120)?.closest(".flow-node")?.getAttribute("data-node-id"))).toBe("sibling");
+  expect(await page.evaluate(() => {
+    const testGlobal = globalThis as typeof globalThis & { originalNodeElements?: Element[] };
+    return testGlobal.originalNodeElements?.every((node) => node.isConnected && [...globalThis.document.querySelectorAll(".flow-node")].includes(node));
+  })).toBe(true);
+  await expect(page.locator("#sibling-focus")).toBeFocused();
+});
+
 test("controlled parent updates reposition unchanged descendants and edge endpoints", async ({ page }) => {
   await reset(page);
   await page.evaluate(async () => {

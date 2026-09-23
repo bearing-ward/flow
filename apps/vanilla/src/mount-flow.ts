@@ -1416,7 +1416,8 @@ export const createFlowHost = (
           removed += 1;
         }
 
-        for (const node of next.nodes) {
+        for (const graphNode of graph.orderedNodes) {
+          const node = graphNode.node;
           if (!visibleNodes.has(node.id)) {
             continue;
           }
@@ -1452,8 +1453,7 @@ export const createFlowHost = (
             updated += 1;
           }
 
-          const graphNode = graph.nodes.get(node.id);
-          if (graphNode !== undefined) applyNodePosition(entry.element, graphNode.absolutePosition);
+          applyNodePosition(entry.element, graphNode.absolutePosition);
 
           applyNodeInteractionState(entry.element, node);
           viewport.append(entry.element);
