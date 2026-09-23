@@ -20,4 +20,9 @@ export type {
   FlowHostOptions,
   FlowMountOptions,
   JavaScriptFlowController,
+  FlowNodeRenderer,
+  FlowNodeRendererInstance,
+  FlowEdgeRenderer,
+  FlowEdgeRenderContext,
+  FlowEdgeRendererInstance,
 } from "./mount-flow.ts";

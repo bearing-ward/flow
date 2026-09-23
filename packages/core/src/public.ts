@@ -22,6 +22,10 @@ export {
   DuplicateNodeId,
   MissingEdgeEndpoint,
   MissingEdgeHandle,
+  MissingParentNode,
+  ParentCycle,
+  ParentExtentWithoutParent,
+  SelfParentNode,
 } from "./domain/flow.schema.ts";
 
 export type {
@@ -138,6 +142,31 @@ export type {
 } from "./domain/flow-connection-radius.schema.ts";
 
 export { FlowAttribute, FlowSpan } from "./telemetry/flow-telemetry.ts";
+
+export {
+  createFlowGraph,
+  graphAncestors,
+  graphBounds,
+  graphDescendants,
+  graphIncomers,
+  graphNode,
+  graphNodeBounds,
+  graphNodesIntersecting,
+  graphOutgoers,
+} from "./domain/flow-graph.ts";
+
+export type { FlowGraphNode, FlowGraphView } from "./domain/flow-graph.ts";
+
+export { edgeToolbarAnchor, flowToolbarAnchors, nodeToolbarAnchor } from "./domain/flow-toolbar-anchor.ts";
+export type { FlowToolbarAnchor } from "./domain/flow-toolbar-anchor.ts";
+
+export {
+  SavedFlowDocumentSchema,
+  decodeSavedFlowDocument,
+  encodeSavedFlowDocument,
+} from "./domain/flow-persistence.ts";
+
+export type { SavedFlowDocument } from "./domain/flow-persistence.ts";
 
 export type {
   ActiveNodeDrag,

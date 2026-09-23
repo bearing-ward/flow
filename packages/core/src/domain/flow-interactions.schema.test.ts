@@ -10,6 +10,7 @@ import {
   selectionAutoPanDelta,
 } from "./flow-runtime.schema.ts";
 import { selectionInRect } from "./flow-visibility.schema.ts";
+import { createFlowGraph } from "./flow-graph.ts";
 import { decodeFlowDocument, NodeIdSchema } from "./flow.schema.ts";
 
 const document = Effect.runSync(
@@ -62,16 +63,49 @@ describe("rectangle selection modes", () => {
     const rect = { x: 0, y: 0, width: 50, height: 50 };
 
     expect(
-      selectionInRect(document, rect, measurements, new Map(), "full").nodeIds
+      selectionInRect(createFlowGraph(document, measurements), rect, "full").nodeIds
     ).toStrictEqual(["first"]);
     expect(
-      selectionInRect(document, rect, measurements, new Map(), "partial")
+      selectionInRect(createFlowGraph(document, measurements), rect, "partial")
         .nodeIds
     ).toStrictEqual(["first", "second"]);
   });
 });
 
 describe("moving selected nodes", () => {
+  it("moves only the selected ancestor when descendants are also selected", () => {
+    const nested = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          { id: "root", label: "Root", position: { x: 100, y: 100 }, selected: true },
+          { id: "child", label: "Child", parentId: "root", position: { x: 10, y: 20 }, selected: true },
+          { id: "leaf", label: "Leaf", parentId: "child", position: { x: 3, y: 4 }, selected: true },
+        ],
+        edges: [],
+      })
+    );
+
+    expect(moveSelectedNodes(nested, { x: 5, y: 6 }).positions).toStrictEqual([
+      { nodeId: "root", position: { x: 105, y: 106 } },
+    ]);
+  });
+
+  it("keeps a directly selected child's emitted position parent-local", () => {
+    const nested = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          { id: "root", label: "Root", position: { x: 100, y: 100 } },
+          { id: "child", label: "Child", parentId: "root", position: { x: 10, y: 20 }, selected: true },
+        ],
+        edges: [],
+      })
+    );
+
+    expect(moveSelectedNodes(nested, { x: 5, y: 6 }).positions).toStrictEqual([
+      { nodeId: "child", position: { x: 15, y: 26 } },
+    ]);
+  });
+
   it("makes one semantic change for visible selected nodes", () => {
     const change = moveSelectedNodes(document, { x: 3, y: -4 });
 

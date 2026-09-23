@@ -554,11 +554,23 @@ export const moveSelectedNodes = (
   document: FlowDocument,
   delta: XYPosition,
   grid?: SnapGrid
-): NodePositionsChange => ({
-  kind: "node-positions",
-  positions: document.nodes
-    .filter((node) => node.selected === true && node.hidden !== true)
-    .map((node) => ({
+): NodePositionsChange => {
+  const nodesById = new Map(document.nodes.map((node) => [node.id, node]));
+  const hasSelectedAncestor = (nodeId: NodeId): boolean => {
+    let parentId = nodesById.get(nodeId)?.parentId;
+    while (parentId !== undefined) {
+      const parent = nodesById.get(parentId);
+      if (parent?.selected === true) return true;
+      parentId = parent?.parentId;
+    }
+    return false;
+  };
+
+  return {
+    kind: "node-positions",
+    positions: document.nodes
+      .filter((node) => node.selected === true && node.hidden !== true && !hasSelectedAncestor(node.id))
+      .map((node) => ({
       nodeId: node.id,
       position:
         grid === undefined
@@ -567,8 +579,9 @@ export const moveSelectedNodes = (
               { x: node.position.x + delta.x, y: node.position.y + delta.y },
               grid
             ),
-    })),
-});
+      })),
+  };
+};
 
 export const commandToChange = (command: FlowCommand): FlowChange => {
   switch (command.kind) {

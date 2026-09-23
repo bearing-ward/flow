@@ -1,12 +1,13 @@
 import { Schema as S } from "effect";
 
-import type {
-  MeasuredNode,
-  SelectionSetChange,
-  Viewport,
-} from "./flow-runtime.schema.ts";
-import type { EdgeId, NodeId, XYPosition } from "./flow-values.ts";
-import type { FlowDocument, FlowEdge, FlowNode } from "./flow.schema.ts";
+import type { SelectionSetChange, Viewport } from "./flow-runtime.schema.ts";
+import type { EdgeId, NodeId } from "./flow-values.ts";
+import type { FlowEdge } from "./flow.schema.ts";
+import {
+  graphNode,
+  graphNodeBounds,
+  type FlowGraphView,
+} from "./flow-graph.ts";
 
 export const FlowRectSchema = S.Struct({
   x: S.Number,
@@ -42,63 +43,35 @@ export const intersectsFlowRect = (
   first.y <= second.y + second.height &&
   first.y + first.height >= second.y;
 
-const nodeBounds = (
-  node: FlowNode,
-  measurement?: MeasuredNode,
-  renderedPosition?: XYPosition
-): FlowRect => ({
-  x: (renderedPosition ?? node.position).x,
-  y: (renderedPosition ?? node.position).y,
-  width: measurement?.width ?? 150,
-  height: measurement?.height ?? 44,
-});
-
 export const nodeIntersectsViewport = (
-  node: FlowNode,
-  viewportRect: FlowRect,
-  measurement?: MeasuredNode,
-  renderedPosition?: XYPosition
-): boolean =>
-  node.hidden !== true &&
-  intersectsFlowRect(
-    nodeBounds(node, measurement, renderedPosition),
-    viewportRect
-  );
+  graph: FlowGraphView,
+  nodeId: NodeId,
+  viewportRect: FlowRect
+): boolean => {
+  const node = graphNode(graph, nodeId);
+  return node !== undefined && !node.hidden && intersectsFlowRect(graphNodeBounds(node), viewportRect);
+};
 
 export const edgeIntersectsViewport = (
-  document: FlowDocument,
+  graph: FlowGraphView,
   edge: FlowEdge,
-  viewportRect: FlowRect,
-  measurements: ReadonlyMap<NodeId, MeasuredNode>,
-  renderedPositions: ReadonlyMap<NodeId, XYPosition>
+  viewportRect: FlowRect
 ): boolean => {
   if (edge.hidden === true) {
     return false;
   }
 
-  const source = document.nodes.find((node) => node.id === edge.source);
-  const target = document.nodes.find((node) => node.id === edge.target);
+  const source = graphNode(graph, edge.source);
+  const target = graphNode(graph, edge.target);
 
   if (
-    source === undefined ||
-    target === undefined ||
-    source.hidden === true ||
-    target.hidden === true
+    source === undefined || target === undefined || source.hidden || target.hidden
   ) {
     return false;
   }
 
-  const sourceBounds = nodeBounds(
-    source,
-    measurements.get(source.id),
-    renderedPositions.get(source.id)
-  );
-
-  const targetBounds = nodeBounds(
-    target,
-    measurements.get(target.id),
-    renderedPositions.get(target.id)
-  );
+  const sourceBounds = graphNodeBounds(source);
+  const targetBounds = graphNodeBounds(target);
 
   const x = Math.min(sourceBounds.x, targetBounds.x);
   const y = Math.min(sourceBounds.y, targetBounds.y);
@@ -120,24 +93,19 @@ export const edgeIntersectsViewport = (
 };
 
 export const selectionInRect = (
-  document: FlowDocument,
+  graph: FlowGraphView,
   rect: FlowRect,
-  measurements: ReadonlyMap<NodeId, MeasuredNode>,
-  renderedPositions: ReadonlyMap<NodeId, XYPosition>,
   mode: SelectionMode = "full"
 ): SelectionSetChange => {
   const nodeIds: NodeId[] = [];
 
-  for (const node of document.nodes) {
-    if (node.hidden === true || node.selectable === false) {
+  for (const entry of graph.orderedNodes) {
+    const node = entry.node;
+    if (entry.hidden || node.selectable === false) {
       continue;
     }
 
-    const bounds = nodeBounds(
-      node,
-      measurements.get(node.id),
-      renderedPositions.get(node.id)
-    );
+    const bounds = graphNodeBounds(entry);
 
     const matches =
       mode === "partial"
@@ -157,17 +125,13 @@ export const selectionInRect = (
 
   const selectedNodes = new Set(nodeIds);
 
-  const edgeIds: EdgeId[] = document.edges
+  const edgeIds: EdgeId[] = graph.document.edges
     .filter(
       (edge) =>
         edge.hidden !== true &&
         edge.selectable !== false &&
-        document.nodes.some(
-          (node) => node.id === edge.source && node.hidden !== true
-        ) &&
-        document.nodes.some(
-          (node) => node.id === edge.target && node.hidden !== true
-        ) &&
+        graphNode(graph, edge.source)?.hidden === false &&
+        graphNode(graph, edge.target)?.hidden === false &&
         (selectedNodes.has(edge.source) || selectedNodes.has(edge.target))
     )
     .map((edge) => edge.id);

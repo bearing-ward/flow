@@ -31,6 +31,7 @@ const secondNode: FlowNode = {
 };
 
 const nodes = [firstNode, secondNode];
+const document = { nodes, edges: [] };
 
 const measurements = new Map([
   [firstId, { nodeId: firstId, width: 100, height: 100 }],
@@ -41,7 +42,7 @@ describe("fit viewport to nodes", () => {
   it("fits measured bounds with fractional padding and centers the result", () => {
     expect(
       fitViewportToNodes({
-        nodes,
+        document,
         measurements,
         currentViewport,
         paneWidth: 1000,
@@ -54,7 +55,7 @@ describe("fit viewport to nodes", () => {
   it("clamps zoom while keeping the measured bounds centered", () => {
     expect(
       fitViewportToNodes({
-        nodes: [firstNode],
+        document: { nodes: [firstNode], edges: [] },
         measurements,
         currentViewport,
         paneWidth: 1000,
@@ -71,7 +72,8 @@ describe("fit viewport to nodes", () => {
 
     expect(
       fitViewportToNodes({
-        nodes,
+        document,
+        nodeIds: new Set([firstId]),
         measurements: visibleMeasurements,
         currentViewport,
         paneWidth: 1000,
@@ -82,7 +84,7 @@ describe("fit viewport to nodes", () => {
 
     expect(
       fitViewportToNodes({
-        nodes: [{ ...secondNode, hidden: true }, firstNode],
+        document: { nodes: [{ ...secondNode, hidden: true }, firstNode], edges: [] },
         measurements,
         currentViewport,
         paneWidth: 1000,
@@ -99,7 +101,7 @@ describe("fit viewport to nodes", () => {
 
     expect(
       fitViewportToNodes({
-        nodes,
+        document,
         measurements: visibleMeasurements,
         fallbackDimensions: { width: 200, height: 50 },
         currentViewport,
@@ -117,7 +119,7 @@ describe("fit viewport to nodes", () => {
 
     expect(
       fitViewportToNodes({
-        nodes: [firstNode, { ...secondNode, hidden: true }],
+        document: { nodes: [firstNode, { ...secondNode, hidden: true }], edges: [] },
         measurements: zeroMeasurements,
         fallbackDimensions: { width: 200, height: 50 },
         currentViewport,
@@ -130,9 +132,9 @@ describe("fit viewport to nodes", () => {
 
   it("keeps the current viewport when there is nothing measurable or no pane", () => {
     for (const input of [
-      { nodes: [], paneWidth: 1000, paneHeight: 600 },
-      { nodes, paneWidth: 0, paneHeight: 600 },
-      { nodes, paneWidth: 1000, paneHeight: 0 },
+      { document: { nodes: [], edges: [] }, paneWidth: 1000, paneHeight: 600 },
+      { document, paneWidth: 0, paneHeight: 600 },
+      { document, paneWidth: 1000, paneHeight: 0 },
     ]) {
       expect(
         fitViewportToNodes({

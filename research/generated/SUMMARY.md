@@ -4,7 +4,7 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project.
 
-Current milestone: node extents bound initial, controlled, and gesture positions; fit-to-view includes unmeasured and culled nodes with fallback sizes; pointer connections use zoom-aware radius and validity feedback; validators cover new and reconnected edges; and pending keyboard connections announce their state and restore focus. The vanilla development page demonstrates these controls alongside visibility and culling.
+Current milestone: nested graph documents use local child positions and validated parent references; core graph views provide absolute geometry, bounds, visibility, ordering, and directed queries; version-1 saved documents preserve declared graph fields; and the vanilla host supports keyed custom renderers and flow-to-screen toolbar anchors. The vanilla development page demonstrates typed node and edge rendering with anchored controls.
 
 ### Project foundation
 
@@ -43,7 +43,7 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Trace markers, styling, selection, focus, and step paths
 - [x] Trace edge deletion, interaction options, and accessibility
 - [x] Trace node visibility and multi-selection
-- [ ] Trace nested nodes, groups, extents, and stacking
+- [x] Trace nested nodes, groups, extents, and stacking
 - [x] Trace viewport visibility culling
 - [ ] Trace spatial lookups
 - [ ] Trace background, controls, minimap, panels, and toolbars
@@ -62,8 +62,8 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Decode unknown input at the library boundary with Effect
 - [x] Prove valid and invalid document decoding with unit tests
 - [x] Validate duplicate identifiers and missing edge endpoints
-- [ ] Define node data and node-type registration
-- [ ] Define dimensions, handles, parents, extents, visibility, and stacking
+- [x] Define node data and node-type registration
+- [x] Define dimensions, handles, parents, extents, visibility, and stacking
 - [x] Define built-in edge paths, markers, labels, and stroke styling
 - [x] Define configurable interaction width and reconnectability
 - [x] Define document commands and semantic change events
@@ -72,8 +72,8 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Define single and multi-element selection changes and focus behavior
 - [ ] Define measured geometry and spatial-index state
 - [ ] Define pointer and keyboard gesture state machines
-- [ ] Define graph queries such as bounds, intersections, incomers, and outgoers
-- [ ] Define serialization and document migration rules
+- [x] Define graph queries such as bounds, intersections, incomers, and outgoers
+- [x] Define serialization and document migration rules
 
 ### Canvas and viewport
 
@@ -100,7 +100,7 @@ Current milestone: node extents bound initial, controlled, and gesture positions
   - [x] Position it with flow coordinates
   - [x] Capture a focused node screenshot baseline
 - [x] Render and reconcile multiple nodes by identifier
-- [ ] Support custom node renderers
+- [x] Support custom node renderers
 - [x] Measure node dimensions and handle layout changes
 - [x] Drag one node
 - [x] Drag multiple selected nodes together
@@ -111,12 +111,12 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Move selected focused nodes with the keyboard
 - [ ] Auto-pan while dragging or keyboard-moving
 - [x] Hide and remove nodes
-- [ ] Support parent nodes, child nodes, and groups
+- [x] Support parent nodes, child nodes, and groups
 - [x] Constrain pointer and keyboard node movement to a measured extent
 - [x] Constrain initial and externally controlled node positions to extents
 - [x] Snap pointer and keyboard node movement to an optional grid
 - [ ] Resize nodes
-- [ ] Position node toolbars
+- [x] Position node toolbars
 - [x] Provide node focus, labels, and ARIA semantics
 - [ ] Provide custom node descriptions
 
@@ -142,7 +142,7 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Render Bezier paths
 - [x] Render step and smooth-step paths
 - [x] Render simple-Bezier paths
-- [ ] Support custom edges
+- [x] Support custom edges
 - [x] Render markers and labels
 - [x] Select and focus edges by pointer and keyboard
 - [x] Remove selected edges with keyboard input
@@ -150,7 +150,7 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Reconnect edge endpoints
 - [x] Order edges by explicit stacking and selected state
 - [x] Cull edges outside the viewport when enabled
-- [ ] Position edge toolbars
+- [x] Position edge toolbars
 
 ### Built-in UI
 
@@ -183,7 +183,7 @@ Current milestone: node extents bound initial, controlled, and gesture positions
 - [x] Provide a runnable browser host
 - [x] Render the first canvas and node through the core package
 - [x] Publish a reusable mount function
-- [ ] Accept custom node and edge renderers
+- [x] Accept custom node and edge renderers
 - [x] Expose subscribe, dispatch, update, and destroy operations
 - [x] Reconcile DOM elements without rebuilding the whole canvas
 - [x] Remove all listeners and observers on destroy

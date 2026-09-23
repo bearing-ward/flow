@@ -221,7 +221,10 @@ research and build artifacts, which this read-only planning pass cannot run.
 `edge-renderer.ts`, `public.ts`, `style.css`, `main.ts`, a new
 `apps/vanilla/e2e/graph-renderers.e2e.ts`, `docs/architecture.md`,
 `research/PROGRESS.md`, a new
-`research/traces/nested-graph-and-renderers.md`, and `plans/README.md`.
+`research/traces/nested-graph-and-renderers.md`,
+existing files under `research/traces/` (only to refresh citations made stale
+by the in-scope source refactors; do not otherwise rewrite their research),
+and `plans/README.md`.
 Additional schema-backed error files in `packages/core/src/domain/` are allowed
 only for parent-integrity failures. Keep existing tests green; update a test
 fixture only where the added document fields require it.

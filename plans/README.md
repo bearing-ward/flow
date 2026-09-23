@@ -8,7 +8,7 @@ for drift detection. Read the entire plan and its STOP conditions before work.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 | --- | --- | --- | --- | --- | --- |
-| [001](001-stabilize-graph-and-rendering-contracts.md) | Stabilize the graph document and extensible rendering contracts | P1 | L | none | TODO |
+| [001](001-stabilize-graph-and-rendering-contracts.md) | Stabilize the graph document and extensible rendering contracts | P1 | L | none | DONE — `bun run verify` passed in the isolated worktree |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with
 a reason. Complete the graph semantics steps before the renderer steps within

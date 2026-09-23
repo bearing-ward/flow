@@ -26,6 +26,8 @@ import {
   constrainNodePosition,
   constrainNodeGroupDelta,
   fitViewportToNodes,
+  createFlowGraph,
+  flowToolbarAnchors,
   commandToChange,
   completeNodeDrag,
   moveViewportPan,
@@ -67,6 +69,7 @@ import type {
   FlowDocumentSchema,
   FlowEdge,
   FlowNode,
+  FlowToolbarAnchor,
   NodePositionChange,
   NodePositionsChange,
   MeasuredNode,
@@ -125,6 +128,42 @@ export type FlowConnectionValidator = (
   connection: FlowConnectionCandidate
 ) => boolean;
 
+export interface FlowNodeRendererInstance {
+  readonly update: (node: FlowNode) => void;
+  readonly destroy: () => void;
+}
+
+export type FlowNodeRenderer = (
+  node: FlowNode,
+  content: HTMLElement
+) => FlowNodeRendererInstance;
+
+export interface FlowEdgeRenderContext {
+  readonly source: XYPosition;
+  readonly target: XYPosition;
+  readonly sourceSide: FlowHandle["side"];
+  readonly targetSide: FlowHandle["side"];
+  readonly pathData: string;
+  readonly labelAnchor: XYPosition;
+}
+
+export interface FlowEdgeRendererInstance {
+  readonly update: (edge: FlowEdge, context: FlowEdgeRenderContext) => void;
+  readonly destroy: () => void;
+}
+
+export interface FlowEdgeRenderer {
+  readonly geometry?: (
+    edge: FlowEdge,
+    endpoints: Omit<FlowEdgeRenderContext, "pathData" | "labelAnchor">
+  ) => { readonly pathData: string; readonly labelAnchor: XYPosition };
+  readonly render?: (
+    edge: FlowEdge,
+    context: FlowEdgeRenderContext,
+    visual: SVGGElement
+  ) => FlowEdgeRendererInstance;
+}
+
 export interface FlowHostOptions {
   readonly documentMode: FlowControlMode;
   readonly nodeDragThreshold?: number | undefined;
@@ -136,6 +175,9 @@ export interface FlowHostOptions {
   readonly nodeExtent?: NodeExtent | undefined;
   readonly renderOnlyVisible?: boolean | undefined;
   readonly selectionMode?: SelectionMode | undefined;
+  readonly nodeRenderers?: Readonly<Record<string, FlowNodeRenderer>> | undefined;
+  readonly edgeRenderers?: Readonly<Record<string, FlowEdgeRenderer>> | undefined;
+  readonly onToolbarAnchors?: ((anchors: { readonly nodes: readonly FlowToolbarAnchor[]; readonly edges: readonly FlowToolbarAnchor[] }) => void) | undefined;
   readonly viewport: {
     readonly extent?: PanExtent | undefined;
     readonly mode: FlowControlMode;
@@ -162,6 +204,9 @@ export type ViewportInput = typeof ViewportSchema.Encoded;
 
 export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly isValidConnection?: FlowConnectionValidator | undefined;
+  readonly nodeRenderers?: Readonly<Record<string, FlowNodeRenderer>> | undefined;
+  readonly edgeRenderers?: Readonly<Record<string, FlowEdgeRenderer>> | undefined;
+  readonly onToolbarAnchors?: ((anchors: { readonly nodes: readonly FlowToolbarAnchor[]; readonly edges: readonly FlowToolbarAnchor[] }) => void) | undefined;
 };
 
 export interface JavaScriptFlowController {
@@ -175,7 +220,11 @@ export interface JavaScriptFlowController {
 
 interface NodeEntry {
   readonly element: HTMLElement;
+  readonly content: HTMLElement;
+  readonly handles: HTMLElement;
   readonly release: () => void;
+  rendererType: string | undefined;
+  renderer: FlowNodeRendererInstance | undefined;
 }
 
 const dragAnchorId = (drag: ActiveNodeDrag | ActiveNodeGroupDrag): NodeId =>
@@ -223,6 +272,12 @@ const sameNode = (left: FlowNode | undefined, right: FlowNode): boolean =>
   left?.label === right.label &&
   left.position.x === right.position.x &&
   left.position.y === right.position.y &&
+  left.parentId === right.parentId &&
+  left.type === right.type &&
+  left.zIndex === right.zIndex &&
+  JSON.stringify(left.size) === JSON.stringify(right.size) &&
+  JSON.stringify(left.data) === JSON.stringify(right.data) &&
+  left.extent === right.extent &&
   JSON.stringify(left.handles ?? []) === JSON.stringify(right.handles ?? []) &&
   left.selected === right.selected &&
   left.selectable === right.selectable &&
@@ -247,11 +302,14 @@ const applyNodeInteractionState = (
   }
 };
 
-const renderNodeContents = (element: HTMLElement, node: FlowNode): void => {
+const renderDefaultNodeContents = (content: HTMLElement, node: FlowNode): void => {
   const label = globalThis.document.createElement("span");
   label.textContent = node.label;
-  element.replaceChildren(label);
+  content.replaceChildren(label);
+};
 
+const renderNodeHandles = (handles: HTMLElement, node: FlowNode): void => {
+  handles.replaceChildren();
   for (const handle of node.handles ?? []) {
     const button = globalThis.document.createElement("button");
     button.type = "button";
@@ -261,8 +319,22 @@ const renderNodeContents = (element: HTMLElement, node: FlowNode): void => {
     button.dataset.kind = handle.kind;
     button.dataset.testid = "flow-handle";
     button.setAttribute("aria-label", `${handle.kind} handle ${handle.id}`);
-    element.append(button);
+    handles.append(button);
   }
+};
+
+const applyDeclaredNodeSize = (element: HTMLElement, node: FlowNode): void => {
+  if (node.size === undefined) {
+    element.style.removeProperty("width");
+    element.style.removeProperty("height");
+    element.style.removeProperty("box-sizing");
+    element.removeAttribute("data-sized");
+    return;
+  }
+  element.style.width = `${node.size.width}px`;
+  element.style.height = `${node.size.height}px`;
+  element.style.boxSizing = "border-box";
+  element.dataset.sized = "true";
 };
 
 export const createFlowHost = (
@@ -314,7 +386,7 @@ export const createFlowHost = (
     const viewport = globalThis.document.createElement("div");
     viewport.className = "flow-viewport";
     viewport.dataset.testid = "flow-viewport";
-    const edgeRenderer = createEdgeRenderer(viewport);
+    const edgeRenderer = createEdgeRenderer(viewport, options.edgeRenderers);
 
     let authoritativeViewport = clampViewport(
       options.viewport.initial,
@@ -332,15 +404,36 @@ export const createFlowHost = (
       nodeId: NodeId,
       position: XYPosition
     ): XYPosition => {
-      if (options.nodeExtent === undefined) {
-        return position;
+      const node = findNode(nodeId);
+      if (node === undefined) return position;
+      const measured = measurements.get(nodeId);
+      const dimensions = {
+        width: measured?.width && measured.width > 0 ? measured.width : node.size?.width ?? 150,
+        height: measured?.height && measured.height > 0 ? measured.height : node.size?.height ?? 44,
+      };
+
+      if (node.parentId !== undefined) {
+        if (node.extent !== "parent") return position;
+        const parent = findNode(node.parentId);
+        if (parent === undefined) return position;
+        const parentMeasurement = measurements.get(parent.id);
+        const parentDimensions = {
+          width: parentMeasurement?.width && parentMeasurement.width > 0 ? parentMeasurement.width : parent.size?.width ?? 150,
+          height: parentMeasurement?.height && parentMeasurement.height > 0 ? parentMeasurement.height : parent.size?.height ?? 44,
+        };
+        return constrainNodePosition(position, dimensions, {
+          minX: 0,
+          minY: 0,
+          maxX: parentDimensions.width,
+          maxY: parentDimensions.height,
+        });
       }
 
-      const measured = measurements.get(nodeId);
+      if (options.nodeExtent === undefined) return position;
 
       return constrainNodePosition(
         position,
-        { width: measured?.width ?? 0, height: measured?.height ?? 0 },
+        dimensions,
         options.nodeExtent
       );
     };
@@ -349,10 +442,6 @@ export const createFlowHost = (
       drag: ActiveNodeGroupDrag,
       change: NodePositionsChange
     ): NodePositionsChange => {
-      if (options.nodeExtent === undefined) {
-        return change;
-      }
-
       const [first] = drag.positions;
       const [movedFirst] = change.positions;
 
@@ -365,25 +454,26 @@ export const createFlowHost = (
         y: movedFirst.position.y - first.position.y,
       };
 
-      const delta = constrainNodeGroupDelta(
-        drag.positions.map(({ nodeId, position }) => {
+      const rootItems = drag.positions.flatMap(({ nodeId, position }) => {
+          const node = findNode(nodeId);
+          if (node?.parentId !== undefined) return [];
           const measured = measurements.get(nodeId);
 
-          return {
+          return [{
             position,
-            width: measured?.width ?? 0,
-            height: measured?.height ?? 0,
-          };
-        }),
-        proposedDelta,
-        options.nodeExtent
-      );
+            width: measured?.width ?? node?.size?.width ?? 0,
+            height: measured?.height ?? node?.size?.height ?? 0,
+          }];
+        });
+      const delta = options.nodeExtent === undefined || rootItems.length === 0
+        ? proposedDelta
+        : constrainNodeGroupDelta(rootItems, proposedDelta, options.nodeExtent);
 
       return {
         kind: "node-positions",
         positions: drag.positions.map(({ nodeId, position }) => ({
           nodeId,
-          position: { x: position.x + delta.x, y: position.y + delta.y },
+          position: boundedNodePosition(nodeId, { x: position.x + delta.x, y: position.y + delta.y }),
         })),
       };
     };
@@ -394,6 +484,41 @@ export const createFlowHost = (
 
     const adoptedPosition = (node: FlowNode): XYPosition =>
       boundedNodePosition(node.id, node.position);
+
+    const graphFor = (
+      target: FlowDocument = document,
+      overrides: ReadonlyMap<NodeId, XYPosition> = renderedNodePositions
+    ) => createFlowGraph(target, measurements, overrides);
+
+    const absolutePosition = (nodeId: NodeId): XYPosition =>
+      graphFor().nodes.get(nodeId)?.absolutePosition ?? { x: 0, y: 0 };
+
+    const updateToolbarAnchors = (target: FlowDocument = document): void => {
+      const anchors = flowToolbarAnchors(graphFor(target), renderedViewport);
+      const visibleNodes = new Set<string>(entries.keys());
+      const edgeIds = new Set<string>(target.edges.filter((edge) => visibleNodes.has(edge.source) && visibleNodes.has(edge.target)).map((edge) => edge.id));
+      options.onToolbarAnchors?.({
+        nodes: anchors.nodes.filter((anchor) => visibleNodes.has(anchor.id)),
+        edges: anchors.edges.filter((anchor) => edgeIds.has(anchor.id)),
+      });
+    };
+
+    const localPositionFromAbsolute = (nodeId: NodeId, absolute: XYPosition): XYPosition => {
+      const node = findNode(nodeId);
+      const parent = node?.parentId === undefined ? undefined : graphFor().nodes.get(node.parentId);
+      return parent === undefined
+        ? absolute
+        : { x: absolute.x - parent.absolutePosition.x, y: absolute.y - parent.absolutePosition.y };
+    };
+
+    const renderGraphPositions = (target: FlowDocument = document): void => {
+      const graph = graphFor(target);
+      for (const [nodeId, entry] of entries) {
+        const resolved = graph.nodes.get(nodeId);
+        if (resolved !== undefined) applyNodePosition(entry.element, resolved.absolutePosition);
+      }
+      updateToolbarAnchors(target);
+    };
 
     const restoreAdoptedPosition = (node: FlowNode): XYPosition => {
       const position = adoptedPosition(node);
@@ -457,7 +582,8 @@ export const createFlowHost = (
             measurements.set(node.id, { nodeId: node.id, ...measurement });
 
             if (!isDraggingNode(node.id)) {
-              applyNodePosition(element, restoreAdoptedPosition(node));
+              restoreAdoptedPosition(node);
+              renderGraphPositions();
             }
 
             edgeRenderer.measureNode(node, element, renderedViewport.zoom);
@@ -507,6 +633,7 @@ export const createFlowHost = (
     const renderViewport = (next: Viewport): void => {
       renderedViewport = constrainViewport(next);
       applyViewport(viewport, renderedViewport);
+      updateToolbarAnchors();
 
       if (options.renderOnlyVisible === true) {
         reconcileVisible?.();
@@ -515,6 +642,24 @@ export const createFlowHost = (
 
     const findNode = (nodeId: NodeId): FlowNode | undefined =>
       document.nodes.find((node) => node.id === nodeId);
+
+    const hasSelectedAncestor = (node: FlowNode): boolean => {
+      let parentId = node.parentId;
+      while (parentId !== undefined) {
+        const parent = findNode(parentId);
+        if (parent?.selected === true) return true;
+        parentId = parent?.parentId;
+      }
+      return false;
+    };
+
+    const selectedMovableNodes = (): readonly FlowNode[] =>
+      document.nodes.filter(
+        (candidate) =>
+          candidate.selected === true &&
+          candidate.hidden !== true &&
+          !hasSelectedAncestor(candidate)
+      );
 
     const handleCenterInFlow = (element: HTMLElement): XYPosition => {
       const bounds = element.getBoundingClientRect();
@@ -1035,9 +1180,7 @@ export const createFlowHost = (
         entry.element.classList.remove("dragging");
         runEffect(browser.releasePointer(entry.element, drag.pointerId));
 
-        if (node !== undefined) {
-          applyNodePosition(entry.element, adoptedPosition(node));
-        }
+        if (node !== undefined) restoreAdoptedPosition(node);
       }
 
       activeDrag = null;
@@ -1050,18 +1193,12 @@ export const createFlowHost = (
           : [drag.nodeId];
 
       for (const nodeId of movedIds) {
-        const movedEntry = entries.get(nodeId);
-        const authoritative = findNode(nodeId);
+          const authoritative = findNode(nodeId);
 
-        if (authoritative !== undefined) {
-          const position = restoreAdoptedPosition(authoritative);
-
-          if (movedEntry !== undefined) {
-            applyNodePosition(movedEntry.element, position);
-          }
-        }
+        if (authoritative !== undefined) restoreAdoptedPosition(authoritative);
       }
 
+      renderGraphPositions();
       edgeRenderer.reconcile(document, renderedNodePositions);
       runTelemetry(
         Effect.logDebug("Cancelled node gesture").pipe(
@@ -1157,6 +1294,7 @@ export const createFlowHost = (
 
         const visibleNodes = new Set<NodeId>();
         let visibleEdges: Set<(typeof next.edges)[number]["id"]> | null = null;
+        const graph = createFlowGraph(next, measurements, renderedNodePositions);
 
         if (options.renderOnlyVisible === true) {
           const rect = viewportFlowRect(
@@ -1168,30 +1306,20 @@ export const createFlowHost = (
           visibleEdges = new Set(
             next.edges
               .filter((edge) =>
-                edgeIntersectsViewport(
-                  next,
-                  edge,
-                  rect,
-                  measurements,
-                  renderedNodePositions
-                )
+                edgeIntersectsViewport(graph, edge, rect)
               )
               .map((edge) => edge.id)
           );
 
           for (const node of next.nodes) {
-            if (node.hidden === true) {
+            const graphNode = graph.nodes.get(node.id);
+            if (graphNode === undefined || graphNode.hidden) {
               continue;
             }
 
             if (
               !measurements.has(node.id) ||
-              nodeIntersectsViewport(
-                node,
-                rect,
-                measurements.get(node.id),
-                renderedNodePositions.get(node.id)
-              ) ||
+              nodeIntersectsViewport(graph, node.id, rect) ||
               next.edges.some(
                 (edge) =>
                   visibleEdges?.has(edge.id) &&
@@ -1203,7 +1331,7 @@ export const createFlowHost = (
           }
         } else {
           for (const node of next.nodes) {
-            if (node.hidden !== true) {
+            if (graph.nodes.get(node.id)?.hidden === false) {
               visibleNodes.add(node.id);
             }
           }
@@ -1301,16 +1429,28 @@ export const createFlowHost = (
             added += 1;
           } else if (!sameNode(previousNodes.get(node.id), node)) {
             const previousNode = previousNodes.get(node.id);
+            const nextRenderer = options.nodeRenderers?.[node.type ?? "default"];
+            const nextRendererType = nextRenderer === undefined ? undefined : node.type ?? "default";
 
-            if (
-              previousNode?.label !== node.label ||
-              JSON.stringify(previousNode.handles ?? []) !==
-                JSON.stringify(node.handles ?? [])
-            ) {
-              renderNodeContents(entry.element, node);
+            if (entry.rendererType !== nextRendererType) {
+              entry.renderer?.destroy();
+              entry.content.replaceChildren();
+              entry.renderer = nextRenderer?.(node, entry.content);
+              entry.rendererType = nextRendererType;
+              if (nextRenderer === undefined) renderDefaultNodeContents(entry.content, node);
+            } else if (entry.renderer !== undefined) {
+              entry.renderer.update(node);
+            } else if (previousNode?.label !== node.label) {
+              renderDefaultNodeContents(entry.content, node);
             }
 
-            applyNodePosition(entry.element, adoptedPosition(node));
+            if (JSON.stringify(previousNode?.handles ?? []) !== JSON.stringify(node.handles ?? [])) {
+              renderNodeHandles(entry.handles, node);
+            }
+            applyDeclaredNodeSize(entry.element, node);
+
+            const graphNode = graph.nodes.get(node.id);
+            if (graphNode !== undefined) applyNodePosition(entry.element, graphNode.absolutePosition);
             updated += 1;
           }
 
@@ -1379,6 +1519,7 @@ export const createFlowHost = (
             )
           );
         }
+        updateToolbarAnchors(next);
       },
 
       // eslint-disable-next-line complexity -- The change union has one branch per public operation.
@@ -1398,16 +1539,11 @@ export const createFlowHost = (
               document = updated;
               operations.reconcile(document, previous);
             } else {
-              const entry = entries.get(change.nodeId);
               const authoritative = findNode(change.nodeId);
 
-              if (entry !== undefined && authoritative !== undefined) {
-                applyNodePosition(
-                  entry.element,
-                  adoptedPosition(authoritative)
-                );
-              }
+              if (authoritative !== undefined) restoreAdoptedPosition(authoritative);
 
+              renderGraphPositions();
               edgeRenderer.reconcile(document, renderedNodePositions);
             }
 
@@ -1427,17 +1563,12 @@ export const createFlowHost = (
               operations.reconcile(document, previous);
             } else {
               for (const { nodeId } of change.positions) {
-                const entry = entries.get(nodeId);
                 const authoritative = findNode(nodeId);
 
-                if (entry !== undefined && authoritative !== undefined) {
-                  applyNodePosition(
-                    entry.element,
-                    adoptedPosition(authoritative)
-                  );
-                }
+                if (authoritative !== undefined) restoreAdoptedPosition(authoritative);
               }
 
+              renderGraphPositions();
               edgeRenderer.reconcile(document, renderedNodePositions);
             }
 
@@ -1646,11 +1777,21 @@ export const createFlowHost = (
 
       makeNodeEntry(node: FlowNode): NodeEntry {
         const element = globalThis.document.createElement("article");
+        const content = globalThis.document.createElement("div");
+        content.className = "flow-node-content";
+        const handles = globalThis.document.createElement("div");
+        handles.className = "flow-node-handles";
         element.className = "flow-node";
         element.dataset.nodeId = node.id;
         element.dataset.testid = "flow-node";
-        renderNodeContents(element, node);
-        applyNodePosition(element, adoptedPosition(node));
+        element.append(content, handles);
+        const renderer = options.nodeRenderers?.[node.type ?? "default"];
+        const rendererType = renderer === undefined ? undefined : node.type ?? "default";
+        const rendererInstance = renderer?.(node, content);
+        if (renderer === undefined) renderDefaultNodeContents(content, node);
+        renderNodeHandles(handles, node);
+        applyDeclaredNodeSize(element, node);
+        applyNodePosition(element, absolutePosition(node.id));
 
         const activateNodeDrag = (event: PointerEvent): boolean => {
           if (activeDrag === null || dragPointerStart === null) {
@@ -1730,14 +1871,14 @@ export const createFlowHost = (
 
           const selectedNodes =
             current.selected === true
-              ? document.nodes.filter(
-                  (candidate) =>
-                    candidate.selected === true && candidate.hidden !== true
-                )
+              ? selectedMovableNodes()
               : [];
+          const draggingSelectedAncestor = selectedNodes.some(
+            (candidate) => candidate.id !== current.id
+          );
 
           activeDrag =
-            selectedNodes.length > 1
+            selectedNodes.length > 1 || draggingSelectedAncestor
               ? {
                   anchorNodeId: current.id,
                   pointerId: event.pointerId,
@@ -1749,7 +1890,7 @@ export const createFlowHost = (
                 }
               : beginNodeDrag(
                   node.id,
-                  adoptedPosition(current),
+                  absolutePosition(current.id),
                   pointerInFlow(event),
                   event.pointerId
                 );
@@ -1793,20 +1934,21 @@ export const createFlowHost = (
 
             for (const { nodeId, position } of change.positions) {
               renderedNodePositions.set(nodeId, position);
-              const entry = entries.get(nodeId);
-
-              if (entry !== undefined) {
-                applyNodePosition(entry.element, position);
-              }
             }
+            renderGraphPositions();
           } else {
+            const absolute = moveNodeDrag(
+              activeDrag,
+              pointerInFlow(event),
+              options.snapGrid
+            );
             const position = boundedNodePosition(
               node.id,
-              moveNodeDrag(activeDrag, pointerInFlow(event), options.snapGrid)
+              localPositionFromAbsolute(node.id, absolute)
             );
 
             renderedNodePositions.set(node.id, position);
-            applyNodePosition(element, position);
+            renderGraphPositions();
           }
 
           edgeRenderer.reconcile(document, renderedNodePositions);
@@ -1847,7 +1989,7 @@ export const createFlowHost = (
               ...candidate,
               position: boundedNodePosition(
                 candidate.nodeId,
-                candidate.position
+                localPositionFromAbsolute(candidate.nodeId, candidate.position)
               ),
             };
           }
@@ -1963,10 +2105,19 @@ export const createFlowHost = (
         );
         resizeObserver.observe(element);
 
-        return {
+        let nodeEntry: NodeEntry;
+        nodeEntry = {
           element,
-          release: () => runEffect(Scope.close(nodeScope, Exit.void)),
+          content,
+          handles,
+          rendererType,
+          renderer: rendererInstance,
+          release: () => {
+            nodeEntry.renderer?.destroy();
+            runEffect(Scope.close(nodeScope, Exit.void));
+          },
         };
+        return nodeEntry;
       },
     };
 
@@ -2063,16 +2214,15 @@ export const createFlowHost = (
 
       const flowEnd = screenToFlowPosition(end, renderedViewport);
 
+      const graph = createFlowGraph(document, measurements, renderedNodePositions);
       const change = selectionInRect(
-        document,
+        graph,
         {
           x: Math.min(flowStart.x, flowEnd.x),
           y: Math.min(flowStart.y, flowEnd.y),
           width: Math.abs(flowStart.x - flowEnd.x),
           height: Math.abs(flowStart.y - flowEnd.y),
         },
-        measurements,
-        renderedNodePositions,
         options.selectionMode ?? "full"
       );
 
@@ -2921,16 +3071,13 @@ export const createFlowHost = (
           const stepX = (options.snapGrid?.x ?? 5) * (event.shiftKey ? 4 : 1);
           const stepY = (options.snapGrid?.y ?? 5) * (event.shiftKey ? 4 : 1);
 
-          const movementDocument =
-            options.nodeExtent === undefined
-              ? document
-              : {
-                  ...document,
-                  nodes: document.nodes.map((candidate) => ({
-                    ...candidate,
-                    position: adoptedPosition(candidate),
-                  })),
-                };
+          const movementDocument = {
+            ...document,
+            nodes: document.nodes.map((candidate) => ({
+              ...candidate,
+              position: adoptedPosition(candidate),
+            })),
+          };
 
           const change = moveSelectedNodes(
             movementDocument,
@@ -2941,27 +3088,24 @@ export const createFlowHost = (
             options.snapGrid
           );
 
-          const bounded =
-            options.nodeExtent === undefined
-              ? change
-              : boundedGroupChange(
-                  {
-                    anchorNodeId: node.id,
-                    pointerId: 0,
-                    pointerStart: { x: 0, y: 0 },
-                    positions: movementDocument.nodes
-                      .filter(
-                        (candidate) =>
-                          candidate.selected === true &&
-                          candidate.hidden !== true
-                      )
-                      .map((candidate) => ({
-                        nodeId: candidate.id,
-                        position: candidate.position,
-                      })),
-                  },
-                  change
-                );
+          const keyboardDrag: ActiveNodeGroupDrag = {
+            anchorNodeId: node.id,
+            pointerId: 0,
+            pointerStart: { x: 0, y: 0 },
+            positions: selectedMovableNodes().map((candidate) => ({
+              nodeId: candidate.id,
+              position: movementDocument.nodes.find((item) => item.id === candidate.id)?.position ?? candidate.position,
+            })),
+          };
+          const bounded: NodePositionsChange = options.nodeExtent === undefined
+            ? {
+                ...change,
+                positions: change.positions.map(({ nodeId, position }) => ({
+                  nodeId,
+                  position: boundedNodePosition(nodeId, position),
+                })),
+              }
+            : boundedGroupChange(keyboardDrag, change);
 
           operations.publishChange(bounded);
           runTelemetry(
@@ -3202,17 +3346,16 @@ export const createFlowHost = (
           return false;
         }
 
-        const nodes =
-          fitOptions.nodes === "selected"
-            ? document.nodes.filter((node) => node.selected === true)
-            : document.nodes;
+        const nodeIds = fitOptions.nodes === "selected"
+          ? new Set(document.nodes.filter((node) => node.selected === true).map((node) => node.id))
+          : undefined;
+        const fitNodeCount = nodeIds?.size ?? document.nodes.length;
 
         const fitted = fitViewportToNodes({
-          nodes: nodes.map((node) => ({
-            ...node,
-            position: adoptedPosition(node),
-          })),
+          document,
+          nodeIds,
           measurements,
+          positionOverrides: renderedNodePositions,
           currentViewport: authoritativeViewport,
           paneWidth: canvas.clientWidth,
           paneHeight: canvas.clientHeight,
@@ -3242,13 +3385,13 @@ export const createFlowHost = (
           Effect.logDebug("Fitted viewport to measured nodes").pipe(
             Effect.annotateLogs({
               [FlowAttribute.inputKind]: "fit-view",
-              [FlowAttribute.nodeCount]: nodes.length,
+              [FlowAttribute.nodeCount]: fitNodeCount,
               [FlowAttribute.viewportZoom]: candidate.zoom,
             }),
             Effect.withSpan(FlowSpan.viewportUpdate, {
               attributes: {
                 [FlowAttribute.inputKind]: "fit-view",
-                [FlowAttribute.nodeCount]: nodes.length,
+                [FlowAttribute.nodeCount]: fitNodeCount,
                 [FlowAttribute.viewportZoom]: candidate.zoom,
               },
             })
@@ -3380,6 +3523,9 @@ export const mountFlow = (
     createFlowHost(root, document, {
       ...options,
       isValidConnection: inputOptions.isValidConnection,
+      nodeRenderers: inputOptions.nodeRenderers,
+      edgeRenderers: inputOptions.edgeRenderers,
+      onToolbarAnchors: inputOptions.onToolbarAnchors,
       runEffect: Effect.runSync,
     }).pipe(Effect.provide(FlowBrowserLive))
   );

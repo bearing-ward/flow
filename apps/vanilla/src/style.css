@@ -124,6 +124,30 @@ body,
   visibility: hidden;
 }
 
+.flow-node[data-sized="true"] {
+  min-width: 0;
+  min-height: 0;
+}
+
+.flow-node-content {
+  position: relative;
+  z-index: 0;
+}
+
+.flow-node-handles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flow-node-handles > .flow-handle {
+  pointer-events: auto;
+}
+
+.flow-edge-custom-visual {
+  pointer-events: none;
+}
+
 .flow-node.dragging {
   cursor: grabbing;
   box-shadow: 0 4px 12px rgb(15 23 42 / 20%);
@@ -222,6 +246,28 @@ body,
   box-shadow: 0 16px 45px rgb(20 32 57 / 12%);
   color: #243042;
   line-height: 1.45;
+}
+
+.flow-demo-toolbar-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.flow-demo-anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 4px 7px;
+  border: 1px solid #94a3b8;
+  border-radius: 5px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  font-size: 10px;
+  pointer-events: auto;
 }
 
 .flow-demo-kicker {

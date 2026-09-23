@@ -14,6 +14,7 @@ import {
   viewportFlowRect,
 } from "./flow-visibility.schema.ts";
 import { decodeFlowDocument } from "./flow.schema.ts";
+import { createFlowGraph } from "./flow-graph.ts";
 
 const document = Effect.runSync(
   decodeFlowDocument({
@@ -79,10 +80,8 @@ describe("node selection", () => {
 
   it("selects fully enclosed nodes and their connected edges", () => {
     const change = selectionInRect(
-      document,
+      createFlowGraph(document),
       { x: 0, y: 0, width: 200, height: 100 },
-      new Map(),
-      new Map()
     );
 
     expect(change.nodeIds.map(String)).toStrictEqual(["near"]);
@@ -116,10 +115,8 @@ describe("node selection", () => {
     );
 
     const change = selectionInRect(
-      restricted,
+      createFlowGraph(restricted),
       { x: 0, y: 0, width: 400, height: 100 },
-      new Map(),
-      new Map()
     );
 
     expect(change.nodeIds.map(String)).toStrictEqual(["visible"]);
@@ -144,10 +141,11 @@ describe("simple Bezier and viewport visibility", () => {
       throw new Error("Missing fixture node or edge");
     }
 
-    expect(nodeIntersectsViewport(near, rect)).toBeTruthy();
-    expect(nodeIntersectsViewport(far, rect)).toBeFalsy();
+    const graph = createFlowGraph(document);
+    expect(nodeIntersectsViewport(graph, near.id, rect)).toBeTruthy();
+    expect(nodeIntersectsViewport(graph, far.id, rect)).toBeFalsy();
     expect(
-      edgeIntersectsViewport(document, edge, rect, new Map(), new Map())
+      edgeIntersectsViewport(graph, edge, rect)
     ).toBeTruthy();
   });
 

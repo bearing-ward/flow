@@ -1,5 +1,6 @@
 import {
   bezierEdgePath,
+  createFlowGraph,
   edgeAttachmentPosition,
   edgeLabelPosition,
   orderFlowEdges,
@@ -19,6 +20,11 @@ import type {
   NodeId,
   XYPosition,
 } from "@flow/core";
+import type {
+  FlowEdgeRenderContext,
+  FlowEdgeRenderer,
+  FlowEdgeRendererInstance,
+} from "./mount-flow.ts";
 
 const svgNamespace = "http://www.w3.org/2000/svg";
 
@@ -31,11 +37,15 @@ interface EdgeElements {
   readonly group: SVGGElement;
   readonly hit: SVGPathElement;
   readonly path: SVGPathElement;
+  readonly visual: SVGGElement;
   readonly sourceAnchor: SVGCircleElement;
   readonly targetAnchor: SVGCircleElement;
 }
 
-export const createEdgeRenderer = (viewport: HTMLElement) => {
+export const createEdgeRenderer = (
+  viewport: HTMLElement,
+  renderers: Readonly<Record<string, FlowEdgeRenderer>> = {}
+) => {
   nextMarkerScope += 1;
   const markerScope = nextMarkerScope;
   const layer = globalThis.document.createElementNS(svgNamespace, "svg");
@@ -56,6 +66,7 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
   const measurements = new Map<NodeId, Map<HandleId, MeasuredHandle>>();
   const edges = new Map<EdgeId, EdgeElements>();
   const labels = new Map<EdgeId, SVGTextElement>();
+  const customRenderers = new Map<EdgeId, { readonly type: string; readonly renderer: FlowEdgeRendererInstance }>();
   const markers = new Map<string, SVGMarkerElement>();
   let visibleEdgeIds: ReadonlySet<EdgeId> | null = null;
 
@@ -148,6 +159,7 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
     let removed = 0;
     let deferred = 0;
     let previousGroup: SVGGElement | null = null;
+    const graph = createFlowGraph(document, new Map(), renderedPositions);
 
     for (const edge of orderFlowEdges(document.edges)) {
       if (
@@ -159,10 +171,9 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
 
       const resolved = resolveEdgeHandles(document, edge);
 
-      if (
-        resolved?.sourceNode.hidden === true ||
-        resolved?.targetNode.hidden === true
-      ) {
+      const sourceGraphNode = resolved && graph.nodes.get(resolved.sourceNode.id);
+      const targetGraphNode = resolved && graph.nodes.get(resolved.targetNode.id);
+      if (sourceGraphNode?.hidden === true || targetGraphNode?.hidden === true) {
         continue;
       }
 
@@ -189,15 +200,13 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
       }
 
       const source = edgeAttachmentPosition(
-        renderedPositions.get(resolved.sourceNode.id) ??
-          resolved.sourceNode.position,
+        sourceGraphNode!.absolutePosition,
         resolved.sourceHandle,
         sourceMeasured
       );
 
       const target = edgeAttachmentPosition(
-        renderedPositions.get(resolved.targetNode.id) ??
-          resolved.targetNode.position,
+        targetGraphNode!.absolutePosition,
         resolved.targetHandle,
         targetMeasured
       );
@@ -234,6 +243,27 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
         );
       }
 
+      const registeredRenderer = edge.type === undefined ? undefined : renderers[edge.type];
+      const endpoints = {
+        source,
+        target,
+        sourceSide: resolved.sourceHandle.side,
+        targetSide: resolved.targetHandle.side,
+      };
+      const customGeometry = registeredRenderer?.geometry?.(edge, endpoints);
+      if (customGeometry !== undefined) pathData = customGeometry.pathData;
+      const context: FlowEdgeRenderContext = {
+        ...endpoints,
+        pathData,
+        labelAnchor: customGeometry?.labelAnchor ?? edgeLabelPosition(
+          source,
+          target,
+          edge.path ?? "straight",
+          resolved.sourceHandle.side,
+          resolved.targetHandle.side
+        ),
+      };
+
       let elements = edges.get(edge.id);
 
       if (elements === undefined) {
@@ -259,6 +289,11 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
         hit.classList.add("flow-edge-hit");
         hit.dataset.testid = "flow-edge-hit";
 
+        const visual = globalThis.document.createElementNS(svgNamespace, "g");
+        visual.classList.add("flow-edge-custom-visual");
+        visual.setAttribute("aria-hidden", "true");
+        visual.setAttribute("pointer-events", "none");
+
         const sourceAnchor = globalThis.document.createElementNS(
           svgNamespace,
           "circle"
@@ -279,13 +314,14 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
         targetAnchor.dataset.testid = "flow-edge-reconnect-anchor";
         targetAnchor.setAttribute("r", "8");
 
-        group.append(path, hit);
+        group.append(path, hit, visual);
         anchorGroup.append(sourceAnchor, targetAnchor);
         elements = {
           anchorGroup,
           group,
           hit,
           path,
+          visual,
           sourceAnchor,
           targetAnchor,
         };
@@ -295,8 +331,32 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
         updated += 1;
       }
 
-      const { anchorGroup, group, hit, path, sourceAnchor, targetAnchor } =
+      const { anchorGroup, group, hit, path, visual, sourceAnchor, targetAnchor } =
         elements;
+
+      const currentRenderer = customRenderers.get(edge.id);
+      if (currentRenderer !== undefined && currentRenderer.type !== edge.type) {
+        currentRenderer.renderer.destroy();
+        customRenderers.delete(edge.id);
+        visual.replaceChildren();
+      }
+      if (registeredRenderer?.render !== undefined) {
+        path.setAttribute("display", "none");
+        const active = customRenderers.get(edge.id);
+        if (active === undefined) {
+          customRenderers.set(edge.id, {
+            type: edge.type!,
+            renderer: registeredRenderer.render(edge, context, visual),
+          });
+        } else {
+          active.renderer.update(edge, context);
+        }
+      } else {
+        path.removeAttribute("display");
+        currentRenderer?.renderer.destroy();
+        customRenderers.delete(edge.id);
+        visual.replaceChildren();
+      }
 
       path.setAttribute("d", pathData);
       hit.setAttribute("d", pathData);
@@ -370,13 +430,7 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
       visible.add(edge.id);
 
       if (edge.label !== undefined && edge.label.length > 0) {
-        const position = edgeLabelPosition(
-          source,
-          target,
-          edge.path ?? "straight",
-          resolved.sourceHandle.side,
-          resolved.targetHandle.side
-        );
+        const position = context.labelAnchor;
 
         let label = labels.get(edge.id);
 
@@ -403,6 +457,8 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
 
       elements.group.remove();
       elements.anchorGroup.remove();
+      customRenderers.get(edgeId)?.renderer.destroy();
+      customRenderers.delete(edgeId);
       edges.delete(edgeId);
       removed += 1;
     }
@@ -439,6 +495,8 @@ export const createEdgeRenderer = (viewport: HTMLElement) => {
     reconcile,
     destroy: (): void => {
       measurements.clear();
+      for (const { renderer } of customRenderers.values()) renderer.destroy();
+      customRenderers.clear();
       edges.clear();
       labels.clear();
       markers.clear();

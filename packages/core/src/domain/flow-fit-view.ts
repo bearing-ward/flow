@@ -5,10 +5,12 @@ import type {
   Viewport,
   ViewportLimits,
 } from "./flow-runtime.schema.ts";
-import type { FlowNode, NodeId } from "./flow.schema.ts";
+import type { FlowDocument, NodeId } from "./flow.schema.ts";
+import { createFlowGraph, graphBounds } from "./flow-graph.ts";
 
 export interface FitViewInput {
-  readonly nodes: readonly FlowNode[];
+  readonly document: FlowDocument;
+  readonly nodeIds?: ReadonlySet<NodeId> | undefined;
   readonly measurements: ReadonlyMap<NodeId, MeasuredNode>;
   readonly currentViewport: Viewport;
   readonly paneWidth: number;
@@ -18,6 +20,7 @@ export interface FitViewInput {
   readonly padding?: FitViewPadding | undefined;
   /** Dimensions used until a visible node has a positive DOM measurement. */
   readonly fallbackDimensions?: FitViewNodeDimensions | undefined;
+  readonly positionOverrides?: ReadonlyMap<NodeId, import("./flow-values.ts").XYPosition> | undefined;
 }
 
 export const FitViewPaddingSchema = S.Finite.check(
@@ -36,7 +39,8 @@ export type FitViewNodeDimensions = typeof FitViewNodeDimensionsSchema.Type;
 
 /** Center visible nodes with measured or fallback dimensions within the pane. */
 export const fitViewportToNodes = ({
-  nodes,
+  document,
+  nodeIds,
   measurements,
   currentViewport,
   paneWidth,
@@ -44,37 +48,21 @@ export const fitViewportToNodes = ({
   limits,
   padding = 0.1,
   fallbackDimensions,
+  positionOverrides,
 }: FitViewInput): Viewport => {
   if (paneWidth <= 0 || paneHeight <= 0) {
     return currentViewport;
   }
 
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+  const graph = createFlowGraph(
+    document,
+    measurements,
+    positionOverrides,
+    fallbackDimensions ?? { width: 150, height: 44 }
+  );
+  const bounds = graphBounds(graph, nodeIds);
 
-  for (const node of nodes) {
-    const measurement = measurements.get(node.id);
-
-    const dimensions =
-      measurement !== undefined &&
-      measurement.width > 0 &&
-      measurement.height > 0
-        ? measurement
-        : fallbackDimensions;
-
-    if (node.hidden === true || dimensions === undefined) {
-      continue;
-    }
-
-    minX = Math.min(minX, node.position.x);
-    minY = Math.min(minY, node.position.y);
-    maxX = Math.max(maxX, node.position.x + dimensions.width);
-    maxY = Math.max(maxY, node.position.y + dimensions.height);
-  }
-
-  if (minX === Infinity) {
+  if (bounds === undefined) {
     return currentViewport;
   }
 
@@ -82,15 +70,15 @@ export const fitViewportToNodes = ({
   const usableHeight = paneHeight * (1 - padding * 2);
 
   const fitZoom = Math.min(
-    usableWidth / (maxX - minX),
-    usableHeight / (maxY - minY)
+    usableWidth / bounds.width,
+    usableHeight / bounds.height
   );
 
   const zoom = Math.min(limits.maxZoom, Math.max(limits.minZoom, fitZoom));
 
   return {
-    x: paneWidth / 2 - ((minX + maxX) / 2) * zoom,
-    y: paneHeight / 2 - ((minY + maxY) / 2) * zoom,
+    x: paneWidth / 2 - (bounds.x + bounds.width / 2) * zoom,
+    y: paneHeight / 2 - (bounds.y + bounds.height / 2) * zoom,
     zoom,
   };
 };

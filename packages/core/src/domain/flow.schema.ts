@@ -13,6 +13,10 @@ import {
 import type { EdgeId, NodeId } from "./flow-values.ts";
 import { MissingEdgeEndpoint } from "./missing-edge-endpoint.ts";
 import { MissingEdgeHandle } from "./missing-edge-handle.ts";
+import { MissingParentNode } from "./missing-parent-node.ts";
+import { ParentCycle } from "./parent-cycle.ts";
+import { ParentExtentWithoutParent } from "./parent-extent-without-parent.ts";
+import { SelfParentNode } from "./self-parent-node.ts";
 
 export { DuplicateEdgeId } from "./duplicate-edge-id.ts";
 
@@ -23,6 +27,14 @@ export { DuplicateNodeId } from "./duplicate-node-id.ts";
 export { MissingEdgeEndpoint } from "./missing-edge-endpoint.ts";
 
 export { MissingEdgeHandle } from "./missing-edge-handle.ts";
+
+export { MissingParentNode } from "./missing-parent-node.ts";
+
+export { ParentCycle } from "./parent-cycle.ts";
+
+export { ParentExtentWithoutParent } from "./parent-extent-without-parent.ts";
+
+export { SelfParentNode } from "./self-parent-node.ts";
 
 export {
   EdgeIdSchema,
@@ -45,6 +57,15 @@ export const FlowNodeSchema = S.Struct({
   id: NodeIdSchema,
   label: S.String,
   position: XYPositionSchema,
+  parentId: S.optional(NodeIdSchema),
+  type: S.optional(S.NonEmptyString),
+  data: S.optional(S.JsonObject),
+  zIndex: S.optional(S.Finite),
+  size: S.optional(S.Struct({
+    width: S.Finite.check(S.isGreaterThan(0)),
+    height: S.Finite.check(S.isGreaterThan(0)),
+  })),
+  extent: S.optional(S.Literals(["parent"])),
   handles: S.optional(S.Array(FlowHandleSchema)),
   selected: S.optional(S.Boolean),
   selectable: S.optional(S.Boolean),
@@ -84,6 +105,7 @@ export const FlowEdgeSchema = S.Struct({
   id: EdgeIdSchema,
   source: NodeIdSchema,
   target: NodeIdSchema,
+  type: S.optional(S.NonEmptyString),
   sourceHandle: S.optional(HandleIdSchema),
   targetHandle: S.optional(HandleIdSchema),
   path: S.optional(FlowEdgePathSchema),
@@ -118,6 +140,10 @@ export const FlowDocumentIntegrityErrorSchema = S.Union([
   DuplicateHandleId,
   MissingEdgeEndpoint,
   MissingEdgeHandle,
+  MissingParentNode,
+  SelfParentNode,
+  ParentCycle,
+  ParentExtentWithoutParent,
 ]);
 
 export type FlowDocumentIntegrityError =
@@ -136,6 +162,42 @@ const findDocumentIntegrityError = (
     }
 
     nodesById.set(node.id, node);
+  }
+
+  for (const node of document.nodes) {
+    if (node.parentId === undefined) {
+      if (node.extent === "parent") {
+        return new ParentExtentWithoutParent({ nodeId: node.id });
+      }
+      continue;
+    }
+
+    if (node.parentId === node.id) {
+      return new SelfParentNode({ nodeId: node.id });
+    }
+
+    if (!nodesById.has(node.parentId)) {
+      return new MissingParentNode({ nodeId: node.id, parentId: node.parentId });
+    }
+  }
+
+  const visited = new Set<NodeId>();
+  const visiting = new Set<NodeId>();
+  const visitParentChain = (nodeId: NodeId): NodeId | undefined => {
+    if (visiting.has(nodeId)) return nodeId;
+    if (visited.has(nodeId)) return;
+
+    visiting.add(nodeId);
+    const parentId = nodesById.get(nodeId)?.parentId;
+    const cycleNode = parentId === undefined ? undefined : visitParentChain(parentId);
+    visiting.delete(nodeId);
+    visited.add(nodeId);
+    return cycleNode;
+  };
+
+  for (const node of document.nodes) {
+    const cycleNode = visitParentChain(node.id);
+    if (cycleNode !== undefined) return new ParentCycle({ nodeId: cycleNode });
   }
 
   const edgeIds = new Set<EdgeId>();
@@ -232,6 +294,22 @@ const integrityAttributes = (error: FlowDocumentIntegrityError) =>
         [FlowAttribute.edgeEndpoint]: missing.endpoint,
         [FlowAttribute.nodeId]: missing.nodeId,
         [FlowAttribute.handleId]: missing.handleId,
+      }),
+      MissingParentNode: (missing) => ({
+        [FlowAttribute.documentIssue]: `missing-parent-node:${missing.parentId}`,
+        [FlowAttribute.nodeId]: missing.nodeId,
+      }),
+      SelfParentNode: (invalid) => ({
+        [FlowAttribute.documentIssue]: "self-parent-node",
+        [FlowAttribute.nodeId]: invalid.nodeId,
+      }),
+      ParentCycle: (invalid) => ({
+        [FlowAttribute.documentIssue]: "parent-cycle",
+        [FlowAttribute.nodeId]: invalid.nodeId,
+      }),
+      ParentExtentWithoutParent: (invalid) => ({
+        [FlowAttribute.documentIssue]: "parent-extent-without-parent",
+        [FlowAttribute.nodeId]: invalid.nodeId,
       }),
     })
   );

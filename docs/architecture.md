@@ -80,6 +80,16 @@ The structural schema and the cross-record validator stay separate. Schema decod
 
 This design intentionally differs from the reference. Its lookup maps replace earlier entries with the same identifier, and its renderers omit edges with missing endpoints. Flow rejects both cases before adapter state exists because a framework-neutral document must have one meaning. The source comparison is in `research/traces/document-integrity.md`.
 
+## Nested graph and renderer contracts
+
+`FlowNode.position` is parent-local when `parentId` is present and flow-space for a root. The document validator rejects missing parents, self-parenting, cycles, and `extent: "parent"` on roots before the host receives the graph; node array order does not define ancestry. A pure core graph view derives absolute positions, ancestry, bounds, visibility, intersections, directed neighbors, and stable render order. Parents render behind descendants; siblings use `zIndex` followed by document index. Hidden state propagates through ancestors and removes descendant nodes and incident edges from rendered visibility.
+
+Node `size` is an author-declared positive width and height. It sets intended wrapper dimensions and supplies geometry before the host has a measurement. Live DOM measurements remain in host runtime state and take precedence for geometry. Core never stores measured dimensions on `FlowNode` or accepts DOM objects. Child `extent: "parent"` uses the parent's measured size, falling back to declared size until measurement; it does not expand the parent automatically. The existing global node extent continues to constrain roots.
+
+`FlowDocument` remains the bare `{ nodes, edges }` value. Persistence uses a separate version-1 envelope and only encodes declared serializable fields. Decoding a saved envelope validates its version, decodes the graph, and runs document integrity validation. Existing bare JSON continues to be decoded as a `FlowDocument`; callers must explicitly wrap it to use the saved-document API. Selection, measurements, viewport, gestures, DOM, callbacks, and renderer registries are runtime state and are never persisted.
+
+Core owns node/edge models, graph geometry, edge paths, and flow-to-screen toolbar anchor calculations. The vanilla host owns node and edge renderer registries and their `mount`/`update`/`destroy` lifetimes, keyed wrappers, sizing, handles, hit targets, focus, selection, labels, markers, observation, toolbar DOM, and teardown. A custom edge renderer paints only its visual SVG subtree; core supplies its path and label anchor, and the host reuses the path for hit testing. Unknown types remain visible through the built-in fallback renderer. Renderer callbacks and DOM values never enter schemas or saved documents. These contracts are traced in `research/traces/nested-graph-and-renderers.md`; the trace and Flow tests do not claim framework parity.
+
 ## Interactive viewport ownership
 
 The viewport has its own mount-time ownership mode, initial value, and schema-validated zoom limits. Primary-pointer movement on the pane applies a transient screen-pixel translation. Wheel input uses a d3-compatible exponential scale factor, clamps it to the configured limits, and preserves the flow coordinate below the cursor.

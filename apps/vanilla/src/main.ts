@@ -7,6 +7,10 @@ import {
   applyNodeSelectionChange,
   applySelectionSetChange,
   decodeFlowDocument,
+  type FlowEdge,
+  type FlowNode,
+  type FlowToolbarAnchor,
+  simpleBezierEdgePath,
 } from "@flow/core";
 import { Effect, ManagedRuntime } from "effect";
 
@@ -26,6 +30,9 @@ const source = {
       id: "transform",
       label: "Transform",
       position: { x: 390, y: 320 },
+      type: "demo-card",
+      data: { detail: "Typed node renderer" },
+      size: { width: 210, height: 100 },
       handles: [
         { id: "in", kind: "target", side: "left" },
         { id: "out", kind: "source", side: "right" },
@@ -82,6 +89,7 @@ const source = {
       source: "transform",
       target: "output",
       path: "simplebezier",
+      type: "demo-edge",
       label: "simple Bezier",
       markerEnd: "arrowclosed",
       zIndex: 1,
@@ -115,6 +123,27 @@ const source = {
 };
 
 const runtime = ManagedRuntime.make(BrowserApplicationLive);
+
+let demoToolbarLayer: HTMLDivElement | undefined;
+let latestToolbarAnchors: { readonly nodes: readonly FlowToolbarAnchor[]; readonly edges: readonly FlowToolbarAnchor[] } = { nodes: [], edges: [] };
+const updateDemoToolbars = (): void => {
+  if (demoToolbarLayer === undefined) return;
+  demoToolbarLayer.replaceChildren();
+  const anchors = [
+    ...latestToolbarAnchors.nodes.filter((anchor) => anchor.id === "transform").map((anchor) => ({ ...anchor, kind: "node" as const })),
+    ...latestToolbarAnchors.edges.filter((anchor) => anchor.id === "simple").map((anchor) => ({ ...anchor, kind: "edge" as const })),
+  ];
+  for (const anchor of anchors) {
+    const button = globalThis.document.createElement("button");
+    button.type = "button";
+    button.className = "flow-demo-anchor";
+    button.dataset.toolbarKind = anchor.kind;
+    button.setAttribute("aria-label", `${anchor.kind} toolbar for ${anchor.id}`);
+    button.textContent = anchor.kind === "node" ? "Node tools" : "Edge tools";
+    button.style.transform = `translate(${anchor.position.x}px, ${anchor.position.y}px) translate(-50%, -100%)`;
+    demoToolbarLayer.append(button);
+  }
+};
 
 const playgroundCopy = {
   home: {
@@ -203,6 +232,24 @@ const program = Effect.gen(function* program() {
     selectionMode: "partial",
     snapGrid: { x: 10, y: 10 },
     runEffect: runtime.runSync,
+    nodeRenderers: {
+      "demo-card": (node: FlowNode, content: HTMLElement) => {
+        const update = (next: FlowNode): void => {
+          content.textContent = `${next.label} · ${String(next.data?.detail ?? "")}`;
+        };
+        update(node);
+        return { update, destroy: () => content.replaceChildren() };
+      },
+    },
+    edgeRenderers: {
+      "demo-edge": {
+        geometry: (_edge: FlowEdge, endpoints) => ({
+          pathData: simpleBezierEdgePath(endpoints.source, endpoints.target, endpoints.sourceSide, endpoints.targetSide),
+          labelAnchor: { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 },
+        }),
+      },
+    },
+    onToolbarAnchors: (anchors) => { latestToolbarAnchors = anchors; updateDemoToolbars(); },
     viewport: {
       extent: { minX: -100, minY: -100, maxX: 3200, maxY: 1200 },
       initial: { x: 0, y: 0, zoom: 1 },
@@ -210,6 +257,11 @@ const program = Effect.gen(function* program() {
       mode: "uncontrolled",
     },
   });
+
+  demoToolbarLayer = globalThis.document.createElement("div");
+  demoToolbarLayer.className = "flow-demo-toolbar-layer";
+  root.append(demoToolbarLayer);
+  updateDemoToolbars();
 
   const panel = globalThis.document.createElement("aside");
   panel.className = "flow-demo-panel";
@@ -421,6 +473,8 @@ const program = Effect.gen(function* program() {
       "beforeunload",
       () => {
         panel.removeEventListener("click", onPanelClick);
+        demoToolbarLayer?.remove();
+        demoToolbarLayer = undefined;
         unsubscribe();
         host.destroy();
         void runtime.dispose();

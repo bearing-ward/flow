@@ -7,6 +7,10 @@ import {
   DuplicateNodeId,
   MissingEdgeEndpoint,
   MissingEdgeHandle,
+  MissingParentNode,
+  ParentCycle,
+  ParentExtentWithoutParent,
+  SelfParentNode,
   decodeFlowDocument,
   validateFlowDocument,
 } from "./flow.schema.ts";
@@ -33,6 +37,79 @@ describe("FlowDocumentSchema", () => {
           nodes: [
             { id: "", position: { x: 120, y: 80 }, label: "Invalid node" },
           ],
+        })
+      )
+    );
+
+    expect(result._tag).toBe("Failure");
+  });
+
+  it("accepts a reordered nested graph with declared renderer fields", () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        edges: [{ id: "edge", source: "child", target: "root", type: "custom" }],
+        nodes: [
+          {
+            id: "child",
+            label: "Child",
+            position: { x: 5, y: 7 },
+            parentId: "root",
+            extent: "parent",
+            size: { width: 80, height: 40 },
+            type: "card",
+            data: { status: "ready", values: [1, true, null] },
+            zIndex: 2,
+          },
+          { id: "root", label: "Root", position: { x: 10, y: 20 } },
+        ],
+      })
+    );
+
+    expect(document.nodes[0]?.parentId).toBe("root");
+    expect(document.nodes[0]?.position).toEqual({ x: 5, y: 7 });
+    expect(document.edges[0]?.type).toBe("custom");
+  });
+
+  it("rejects missing, self, and cyclic parents and root parent extents", () => {
+    const invalidCases = [
+      {
+        nodes: [{ id: "child", label: "Child", position: { x: 0, y: 0 }, parentId: "absent" }],
+        error: MissingParentNode,
+      },
+      {
+        nodes: [{ id: "self", label: "Self", position: { x: 0, y: 0 }, parentId: "self" }],
+        error: SelfParentNode,
+      },
+      {
+        nodes: [
+          { id: "one", label: "One", position: { x: 0, y: 0 }, parentId: "two" },
+          { id: "two", label: "Two", position: { x: 0, y: 0 }, parentId: "three" },
+          { id: "three", label: "Three", position: { x: 0, y: 0 }, parentId: "one" },
+        ],
+        error: ParentCycle,
+      },
+      {
+        nodes: [{ id: "root", label: "Root", position: { x: 0, y: 0 }, extent: "parent" }],
+        error: ParentExtentWithoutParent,
+      },
+    ];
+
+    for (const invalid of invalidCases) {
+      const error = Effect.runSync(
+        Effect.flip(decodeFlowDocument({ edges: [], nodes: invalid.nodes }))
+      );
+      expect(error).toBeInstanceOf(invalid.error);
+    }
+  });
+
+  it("rejects non-JSON node data", () => {
+    const data: Record<string, unknown> = { valid: true };
+    data.self = data;
+    const result = Effect.runSync(
+      Effect.exit(
+        decodeFlowDocument({
+          edges: [],
+          nodes: [{ id: "node", label: "Node", position: { x: 0, y: 0 }, data }],
         })
       )
     );
