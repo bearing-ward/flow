@@ -45,7 +45,7 @@ Current milestone: nested graph documents use local child positions and validate
 - [x] Trace node visibility and multi-selection
 - [x] Trace nested nodes, groups, extents, and stacking
 - [x] Trace viewport visibility culling
-- [ ] Trace spatial lookups
+- [x] Trace spatial lookups
 - [ ] Trace background, controls, minimap, panels, and toolbars
 - [ ] Trace mouse, touch, keyboard, and accessibility behavior
 - [x] Trace controlled state, uncontrolled state, and persistence

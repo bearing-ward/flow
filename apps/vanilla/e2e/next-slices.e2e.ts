@@ -273,6 +273,55 @@ test("culling responds to zoom, drag completion, and viewport return", async ({
   await expect(near).toHaveCount(1);
 });
 
+test("culling keeps the semantic visible set for a 1,000-node graph", async ({ page }) => {
+  await resetDemo(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+
+    globalThis.flowController = mountFlow(root, {
+      nodes: [
+        { id: "near", label: "Near", position: { x: 100, y: 180 } },
+        { id: "cross-source", label: "Cross source", position: { x: -300, y: 420 }, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "cross-target", label: "Cross target", position: { x: 1400, y: 420 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+        ...Array.from({ length: 1000 }, (_, index) => ({
+          id: `far-${index}`, label: `Far ${index}`, position: { x: 3000 + index * 200, y: 180 },
+        })),
+      ],
+      edges: [{ id: "crossing", source: "cross-source", sourceHandle: "out", target: "cross-target", targetHandle: "in" }],
+    }, {
+      documentMode: "uncontrolled",
+      renderOnlyVisible: true,
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+  });
+
+  const near = page.locator('.flow-node[data-node-id="near"]');
+  const far = page.locator('.flow-node[data-node-id="far-0"]');
+  const source = page.locator('.flow-node[data-node-id="cross-source"]');
+  const target = page.locator('.flow-node[data-node-id="cross-target"]');
+  const crossing = page.locator('.flow-edge-group[data-edge-id="crossing"]');
+  await expect(near).toHaveCount(1);
+  await expect(far).toHaveCount(0);
+  await expect(source).toHaveCount(1);
+  await expect(target).toHaveCount(1);
+  await expect(crossing).toHaveCount(1);
+
+  await page.evaluate(() => globalThis.flowController?.updateViewport({ x: -3000, y: 0, zoom: 1 }));
+  await expect(far).toHaveCount(1);
+  await expect(near).toHaveCount(0);
+  await expect(crossing).toHaveCount(0);
+
+  await page.evaluate(() => globalThis.flowController?.updateViewport({ x: 0, y: 0, zoom: 1 }));
+  await expect(near).toHaveCount(1);
+  await expect(far).toHaveCount(0);
+  await expect(source).toHaveCount(1);
+  await expect(target).toHaveCount(1);
+  await expect(crossing).toHaveCount(1);
+});
+
 test("hidden nodes suppress connected edges and return after update", async ({
   page,
 }) => {
