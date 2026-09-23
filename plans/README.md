@@ -6,8 +6,11 @@ against that commit after a standard audit; the user selected all nine vetted
 findings. Read each plan fully, run its drift check and STOP conditions, and
 update its status row after the complete verification gate passes. Preserve
 unrelated work. Do not commit, push, or open a PR without operator instruction.
-Plan 011 was added on 2026-09-23 against `5274aef` as the next bounded slice
-from `research/PROGRESS.md` and the current handoff.
+Plan 011 was added on 2026-09-23 against `5274aef` and is complete. Plans
+012-021 were written against `6e84008` as the next ten bounded scopes from
+`research/PROGRESS.md`, the Plan 011 baseline, and the current handoff. Later
+plans must re-read the contracts produced by earlier plans before executing;
+their drift checks and STOP conditions make that dependency explicit.
 
 ## Execution order and status
 
@@ -24,6 +27,16 @@ from `research/PROGRESS.md` and the current handoff.
 | [009](009-index-visible-edge-endpoints.md) | Remove repeated edge scans from viewport culling | P2 | S | 003, 004 | DONE — `a58a3a5`, reviewed; verify passed |
 | [010](010-update-only-affected-edges-during-drag.md) | Update only affected edges during a node drag | P2 | M | 002-005, 009 | DONE — `a1e1e3a`, reviewed; verify passed |
 | [011](011-characterize-spatial-and-gesture-contracts.md) | Establish spatial and gesture baselines before changing core state | P1 | M | 001-010 | DONE — `b41072a`, reviewed; verify passed |
+| [012](012-decide-spatial-state-from-core-prototype.md) | Decide spatial state from a core-only prototype | P1 | M | 011 | TODO |
+| [013](013-model-pointer-gesture-lifecycle.md) | Model pointer gesture states and finish cancellation boundaries | P1 | L | 011 | TODO |
+| [014](014-add-first-node-resize-contract.md) | Add a first node resize contract through core and vanilla | P1 | L | 013 | TODO |
+| [015](015-finish-node-movement-and-descriptions.md) | Finish node movement edges and custom descriptions | P1 | L | 013, 014 | TODO |
+| [016](016-establish-shared-adapter-proof.md) | Establish shared adapter proof on vanilla | P1 | L | 013-015 | TODO |
+| [017](017-settle-javascript-api-and-package-consumer.md) | Settle JavaScript facade and prove packed consumer | P1 | L | 014-016 | TODO |
+| [018](018-build-reusable-canvas-ui.md) | Build the first reusable canvas UI layer | P2 | L | 015-017 | TODO |
+| [019](019-build-foldkit-adapter-first-slice.md) | Build a Foldkit adapter against the shared contract | P2 | L | 016-018 | TODO |
+| [020](020-build-vue-adapter-first-slice.md) | Build a Vue adapter against the shared contract | P2 | L | 016-019 | TODO |
+| [021](021-prepare-delivery-gates-and-release-decisions.md) | Establish delivery checks and a release dry run | P2 | L | 016-020 | TODO |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with
 a reason.
@@ -47,10 +60,32 @@ Plans 002-010 were executed and reviewed in the isolated worktree
 - Foldkit and Vue adapter work should wait for the graph/browser contract fixes
   and shared conformance design. The separate direction suggestions from the
   audit were not part of the nine selected defect/maintenance findings.
-- 011 is the next characterization slice: it traces spatial and gesture paths,
-  adds semantic cases, and measures graph-query scaling before specifying a
-  spatial index or gesture-state implementation. It maps completed work back to
-  `research/PROGRESS.md`; the remaining checklist scopes stay open.
+- 011 characterized spatial and gesture paths. Its 4,000-node local timings
+  did not justify an index, so 012 compares a core-only candidate with the
+  current scan before any production index integration.
+- 013 stabilizes gesture state before 014 adds resize and 015 adds node
+  auto-pan. 016 then captures the shared behavioral contract. 017 settles
+  package and JavaScript consumption before 018's optional UI layer.
+- 019 and 020 run the same suite on Foldkit and Vue. 021 adds delivery checks
+  after package and adapter contracts exist. The plans are numbered in
+  recommended order; 012 can run independently of 013-015 in separate
+  isolated checkouts, but their implementation changes must be reconciled
+  before landing.
+
+## Coverage of the remaining progress checklist
+
+`research/PROGRESS.md` is authoritative. These plans name the next work; a
+checklist box closes only when its whole contract and test boundary pass.
+
+| Open checklist area | Planned scope | Completion limit |
+| --- | --- | --- |
+| Spatial and gesture research/state (46 is done; 48, 52-53, 71-72 open) | 012, 013, 016 | 012 is a prototype decision; a winning index needs a separate integration plan. Full input mapping and stable performance budgets may need follow-up. |
+| Canvas and node interactions (82, 88, 105, 110, 116, 119, 133) | 013-015, 018 | 014 is a first lower-right resize contract; broader resize parity remains separate. |
+| Built-in canvas UI (155-160) | 018 | Check individual UI items only after browser proof and license decision. |
+| Effect/public API and vanilla consumer (167, 169, 175, 177, 188) | 013, 015, 017 | Collector processing/storage/query at 167 is separate from browser OTLP transport. |
+| Foldkit and Vue (192-208) | 019, 020 | Both must run Plan 016's shared fixtures; scaffolds alone do not close adapter conformance. |
+| Shared proof (216-225) | 012, 016-020 | 216 and the suite start in 016; visual, touch, accessibility, property, lifecycle, and large-graph budgets remain open until their full matrices pass. Packed consumer proof is 017. |
+| Delivery (22-25, 232-237) | 021 | Ultracite cleanup at 22 and actual publication at 237 require later scoped work; 021 configures checks, docs, and a dry run without claiming hosted CI or a release. |
 
 ## Findings considered and rejected
 
