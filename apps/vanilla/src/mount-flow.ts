@@ -934,7 +934,7 @@ export const createFlowHost = (
         return;
       }
 
-      if (reason !== "host-destroyed") {
+      if (reason !== "host-destroyed" && reason !== "window-blur") {
         announceConnection(
           reason === "source-removed"
             ? "Connection cancelled because its source was removed."
@@ -2536,33 +2536,110 @@ export const createFlowHost = (
       );
     };
 
-    const onCanvasPointerCancel = (event: PointerEvent): void => {
+    const cancelActiveGestures = (
+      reason: string,
+      pointerId?: number
+    ): boolean => {
+      const hasActiveGesture =
+        (activeDrag !== null &&
+          (pointerId === undefined || activeDrag.pointerId === pointerId)) ||
+        (activeConnection !== null &&
+          (pointerId === undefined ||
+            activeConnection.pointerId === pointerId)) ||
+        (activeReconnection !== null &&
+          (pointerId === undefined ||
+            activeReconnection.pointerId === pointerId)) ||
+        (activeViewportPan !== null &&
+          (pointerId === undefined ||
+            activeViewportPan.pointerId === pointerId)) ||
+        (activePinch !== null &&
+          (pointerId === undefined ||
+            activePinch.firstPointerId === pointerId ||
+            activePinch.secondPointerId === pointerId)) ||
+        (activeSelectionRect !== null &&
+          (pointerId === undefined ||
+            activeSelectionRect.pointerId === pointerId)) ||
+        (pointerId === undefined && activeClickConnection !== null);
+
+      if (!hasActiveGesture) {
+        return false;
+      }
+
+      if (
+        activeDrag !== null &&
+        (pointerId === undefined || activeDrag.pointerId === pointerId)
+      ) {
+        cancelActiveDrag(reason);
+      }
+      if (
+        activeConnection !== null &&
+        (pointerId === undefined || activeConnection.pointerId === pointerId)
+      ) {
+        cancelConnection(reason);
+      }
+      if (
+        activeReconnection !== null &&
+        (pointerId === undefined || activeReconnection.pointerId === pointerId)
+      ) {
+        cancelReconnection(reason);
+      }
+      if (
+        activeViewportPan !== null &&
+        (pointerId === undefined || activeViewportPan.pointerId === pointerId)
+      ) {
+        cancelViewportPan(reason);
+      }
       if (
         activePinch !== null &&
-        (event.pointerId === activePinch.firstPointerId ||
-          event.pointerId === activePinch.secondPointerId)
+        (pointerId === undefined ||
+          activePinch.firstPointerId === pointerId ||
+          activePinch.secondPointerId === pointerId)
       ) {
-        cancelPinch("pointer-cancel");
-
-        return;
+        cancelPinch(reason);
       }
-
-      if (activeSelectionRect?.pointerId === event.pointerId) {
+      if (
+        activeSelectionRect !== null &&
+        (pointerId === undefined || activeSelectionRect.pointerId === pointerId)
+      ) {
+        const selection = activeSelectionRect;
         clearSelectionRect();
+        runTelemetry(
+          Effect.logDebug("Cancelled selection rectangle gesture").pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.pointerId]: selection.pointerId,
+              [FlowAttribute.cancellationReason]: reason,
+              [FlowAttribute.inputKind]: "selection-rectangle",
+            }),
+            Effect.withSpan(FlowSpan.gestureCancel, {
+              attributes: {
+                [FlowAttribute.pointerId]: selection.pointerId,
+                [FlowAttribute.cancellationReason]: reason,
+                [FlowAttribute.inputKind]: "selection-rectangle",
+              },
+            })
+          )
+        );
+      }
+      if (pointerId === undefined) {
+        cancelClickConnection(reason);
+        touchPointers.clear();
+      } else {
+        touchPointers.delete(pointerId);
       }
 
-      if (activeConnection?.pointerId === event.pointerId) {
-        cancelConnection("pointer-cancel");
-      }
+      return true;
+    };
 
-      if (activeReconnection?.pointerId === event.pointerId) {
-        cancelReconnection("pointer-cancel");
-      }
+    const onWindowBlur = (): void => {
+      cancelActiveGestures("window-blur");
+    };
 
-      if (activeViewportPan?.pointerId === event.pointerId) {
-        touchPointers.delete(event.pointerId);
-        cancelViewportPan("pointer-cancel");
-      }
+    const onLostPointerCapture = (event: PointerEvent): void => {
+      cancelActiveGestures("lost-pointer-capture", event.pointerId);
+    };
+
+    const onCanvasPointerCancel = (event: PointerEvent): void => {
+      cancelActiveGestures("pointer-cancel", event.pointerId);
     };
 
     const finishPinch = (event: PointerEvent): void => {
@@ -3046,9 +3123,8 @@ export const createFlowHost = (
 
     // eslint-disable-next-line complexity -- Keyboard actions cover nodes, handles, edges, and the pane.
     const onCanvasKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === "Escape" && activeClickConnection !== null) {
+      if (event.key === "Escape" && cancelActiveGestures("escape")) {
         event.preventDefault();
-        cancelClickConnection("escape");
 
         return;
       }
@@ -3299,6 +3375,14 @@ export const createFlowHost = (
     );
     yield* Scope.provide(
       browser.listen(canvas, "pointercancel", onCanvasPointerCancel),
+      hostScope
+    );
+    yield* Scope.provide(
+      browser.listen(canvas, "lostpointercapture", onLostPointerCapture),
+      hostScope
+    );
+    yield* Scope.provide(
+      browser.listenWindow(globalThis.window, "blur", onWindowBlur),
       hostScope
     );
     yield* Scope.provide(

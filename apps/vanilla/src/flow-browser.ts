@@ -23,6 +23,12 @@ export interface FlowBrowserService {
     listener: (event: HTMLElementEventMap[K]) => void,
     options?: AddEventListenerOptions
   ) => Effect.Effect<void, never, Scope.Scope>;
+  readonly listenWindow: <K extends keyof WindowEventMap>(
+    target: Window,
+    type: K,
+    listener: (event: WindowEventMap[K]) => void,
+    options?: AddEventListenerOptions
+  ) => Effect.Effect<void, never, Scope.Scope>;
   readonly observeResize: (
     listener: (entries: readonly ResizeObserverEntry[]) => void
   ) => Effect.Effect<ResizeObservation, BrowserCapabilityError, Scope.Scope>;
@@ -43,6 +49,17 @@ export class FlowBrowser extends Context.Service<
 >()("@flow/vanilla/FlowBrowser") {}
 
 const listen: FlowBrowserService["listen"] = (
+  target,
+  type,
+  listener,
+  options
+) =>
+  Effect.acquireRelease(
+    Effect.sync(() => target.addEventListener(type, listener, options)),
+    () => Effect.sync(() => target.removeEventListener(type, listener, options))
+  );
+
+const listenWindow: FlowBrowserService["listenWindow"] = (
   target,
   type,
   listener,
@@ -107,6 +124,7 @@ export const FlowBrowserLive = Layer.succeed(FlowBrowser, {
   capturePointer: (element, pointerId) =>
     pointerOperation("capture", element, pointerId),
   listen,
+  listenWindow,
   measure: (element) => ({
     width: element.offsetWidth,
     height: element.offsetHeight,

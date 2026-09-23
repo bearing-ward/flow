@@ -127,7 +127,7 @@ const drag = async (
 };
 
 const position = (page: Page, nodeId: string) =>
-  page.locator(`[data-node-id="${nodeId}"]`).evaluate((element) => {
+  page.locator(`.flow-node[data-node-id="${nodeId}"]`).evaluate((element) => {
     const matrix = new DOMMatrixReadOnly(
       globalThis.getComputedStyle(element).transform
     );
@@ -392,4 +392,151 @@ test("keyboard activates focused source and target handles in click mode", async
   await expect
     .poll(() => page.evaluate(() => globalThis.flowChanges?.at(-1)?.kind))
     .toBe("edge-add");
+});
+
+test("window blur cancels a pending click connection", async ({ page }) => {
+  await mountScenario(page, "keyboard");
+  const source = page.locator('[data-node-id="source"] [data-handle-id="out"]');
+
+  await source.click();
+  await expect(page.getByTestId("flow-connection-preview")).toBeVisible();
+  await page.evaluate(() => {
+    const other = globalThis.document.createElement("button");
+    other.id = "focus-target";
+    globalThis.document.body.append(other);
+    other.focus();
+    globalThis.dispatchEvent(new Event("blur"));
+  });
+
+  await expect(page.getByTestId("flow-connection-preview")).toHaveCount(0);
+  await expect(source).not.toHaveClass(/connecting/u);
+  await expect(page.locator(".flow-edge-group")).toHaveCount(0);
+  await expect(page.locator("#focus-target")).toBeFocused();
+  expect(await page.evaluate(() => globalThis.flowChanges?.length)).toBe(0);
+});
+
+test("lost pointer capture cancels a node drag without publishing a change", async ({
+  page,
+}) => {
+  await mountScenario(page, "keyboard");
+  const node = page.locator('.flow-node[data-node-id="source"]');
+  const original = await position(page, "source");
+  const start = await centerOf(
+    page,
+    '[data-node-id="source"] .flow-node-content'
+  );
+
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 80, start.y + 40);
+  await expect(node).toHaveClass(/dragging/u);
+  await page.evaluate(() => {
+    const activeNode = globalThis.document.querySelector<HTMLElement>(
+      '[data-node-id="source"]'
+    );
+
+    activeNode?.dispatchEvent(
+      new PointerEvent("lostpointercapture", { bubbles: true, pointerId: 1 })
+    );
+  });
+
+  await expect(node).not.toHaveClass(/dragging/u);
+  await expect.poll(() => position(page, "source")).toStrictEqual(original);
+  expect(await page.evaluate(() => globalThis.flowChanges?.length)).toBe(0);
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges?.length)).toBe(0);
+});
+
+test("Escape cancels an active node drag without publishing a change", async ({
+  page,
+}) => {
+  await mountScenario(page, "keyboard");
+  const node = page.locator('.flow-node[data-node-id="source"]');
+  const original = await position(page, "source");
+  const start = await centerOf(page, '.flow-node[data-node-id="source"]');
+
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 80, start.y + 40);
+  await expect(node).toHaveClass(/dragging/u);
+  await page
+    .getByTestId("flow-canvas")
+    .evaluate((canvas) =>
+      canvas.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
+      )
+    );
+
+  await expect(node).not.toHaveClass(/dragging/u);
+  await expect.poll(() => position(page, "source")).toStrictEqual(original);
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges?.length)).toBe(0);
+});
+
+test("window blur cancels pane pan and selection rectangle", async ({
+  page,
+}) => {
+  await mountScenario(page, "keyboard");
+  const canvas = page.getByTestId("flow-canvas");
+  const box = await canvas.boundingBox();
+
+  if (box === null) {
+    throw new Error("Missing canvas bounds");
+  }
+
+  const point = { x: box.x + box.width - 30, y: box.y + box.height - 30 };
+  await page.mouse.move(point.x, point.y);
+  await page.mouse.down();
+  await page.mouse.move(point.x - 60, point.y - 40);
+  await expect(canvas).toHaveClass(/panning/u);
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("blur")));
+  await expect(canvas).not.toHaveClass(/panning/u);
+  await page.mouse.up();
+
+  await page.keyboard.down("Shift");
+  await page.mouse.move(point.x, point.y);
+  await page.mouse.down();
+  await page.mouse.move(point.x - 60, point.y - 40);
+  await expect(page.getByTestId("flow-selection-rect")).toBeVisible();
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("blur")));
+  await expect(page.getByTestId("flow-selection-rect")).toHaveCount(0);
+  await page.keyboard.up("Shift");
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges?.length)).toBe(0);
+});
+
+test("destroy releases the scoped window blur listener once", async ({
+  page,
+}) => {
+  await mountScenario(page, "keyboard");
+  await page.evaluate(() => {
+    const target = globalThis.window;
+    const remove = target.removeEventListener.bind(target);
+    let removals = 0;
+
+    Object.defineProperty(target, "removeEventListener", {
+      configurable: true,
+      value: (
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+        options?: boolean | EventListenerOptions
+      ) => {
+        if (type === "blur") {
+          removals += 1;
+          globalThis.document.body.dataset.blurListenerRemovals =
+            String(removals);
+        }
+
+        remove(type, listener, options);
+      },
+    });
+    globalThis.flowController?.destroy();
+    globalThis.flowController?.destroy();
+  });
+
+  await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-blur-listener-removals",
+    "1"
+  );
 });
