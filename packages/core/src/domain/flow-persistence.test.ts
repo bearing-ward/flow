@@ -1,8 +1,8 @@
-import { Effect } from "effect";
+import { Effect, Schema as S } from "effect";
 import { describe, expect, it } from "vitest";
 
 import { decodeFlowDocument } from "./flow.schema.ts";
-import { decodeSavedFlowDocument, encodeSavedFlowDocument } from "./flow-persistence.ts";
+import { decodeSavedFlowDocument, encodeSavedFlowDocument, SavedFlowDocumentSchema } from "./flow-persistence.ts";
 
 describe("saved flow documents", () => {
   it("round trips declared nested graph fields while excluding selection", () => {
@@ -44,6 +44,30 @@ describe("saved flow documents", () => {
       }))
     );
     expect(invalidGraph._tag).toBe("Failure");
+  });
+
+  it("rejects domain-invalid fields through both saved schema and full decode", () => {
+    const invalidDocuments = [
+      {
+        version: 1,
+        document: {
+          nodes: [{ id: "node", label: "Node", position: { x: 0, y: 0 } }],
+          edges: [{ id: "edge", source: "node", target: "node", stroke: "red" }],
+        },
+      },
+      {
+        version: 1,
+        document: {
+          nodes: [{ id: "node", label: "Node", position: { x: 0, y: 0 }, size: { width: 0, height: 20 } }],
+          edges: [],
+        },
+      },
+    ];
+
+    for (const input of invalidDocuments) {
+      expect(() => S.decodeUnknownSync(SavedFlowDocumentSchema)(input)).toThrow();
+      expect(Effect.runSync(Effect.exit(decodeSavedFlowDocument(input)))._tag).toBe("Failure");
+    }
   });
 
   it("encodes only node and edge document fields", () => {
