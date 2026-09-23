@@ -1,0 +1,4 @@
+{
+  "bun.test.enable": false,
+  "vitest.rootConfig": "./vitest.config.ts"
+}

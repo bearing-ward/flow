@@ -1,0 +1,303 @@
+:root {
+  color: #1f2937;
+  background: #f8fafc;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.flow-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #f8fafc;
+  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+  background-size: 20px 20px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.flow-canvas.panning {
+  cursor: grabbing;
+}
+
+.flow-viewport {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+}
+
+.flow-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.flow-edge-anchor-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.flow-edge-path {
+  fill: none;
+}
+
+.flow-edge-hit {
+  fill: none;
+  stroke: transparent;
+  pointer-events: stroke;
+}
+
+.flow-edge-group.selected .flow-edge-path,
+.flow-edge-group:focus-visible .flow-edge-path {
+  filter: drop-shadow(0 0 3px #2563eb);
+}
+
+.flow-edge-reconnect-anchor {
+  fill: #ffffff;
+  stroke: #2563eb;
+  stroke-width: 2;
+  opacity: 0;
+  pointer-events: none;
+  cursor: crosshair;
+}
+
+.flow-edge-anchor-group.selected .flow-edge-reconnect-anchor.available {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.flow-edge-label {
+  fill: #1a192b;
+  stroke: #ffffff;
+  stroke-width: 3;
+  paint-order: stroke;
+  font-size: 12px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.flow-node {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  min-width: 150px;
+  min-height: 44px;
+  padding: 10px 14px;
+  place-items: center;
+  border: 1px solid #1a192b;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 12%);
+  font-size: 12px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  visibility: hidden;
+}
+
+.flow-node.dragging {
+  cursor: grabbing;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 20%);
+}
+
+.flow-node.selected,
+.flow-node:focus-visible {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 20%);
+}
+
+.flow-handle {
+  position: absolute;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid #1a192b;
+  border-radius: 50%;
+  background: #fff;
+  cursor: crosshair;
+}
+
+.flow-handle-top {
+  top: -6px;
+  left: calc(50% - 6px);
+}
+.flow-handle-right {
+  top: calc(50% - 6px);
+  right: -6px;
+}
+.flow-handle-bottom {
+  bottom: -6px;
+  left: calc(50% - 6px);
+}
+.flow-handle-left {
+  top: calc(50% - 6px);
+  left: -6px;
+}
+.flow-handle-source {
+  background: #2563eb;
+}
+
+.flow-handle.connecting {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.flow-handle.connection-valid {
+  outline: 3px solid #22c55e;
+  outline-offset: 3px;
+}
+
+.flow-handle.connection-invalid {
+  outline: 3px solid #ef4444;
+  outline-offset: 3px;
+}
+
+.flow-connection-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.flow-connection-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.flow-connection-preview line {
+  stroke: #2563eb;
+  stroke-width: 2;
+}
+
+.flow-demo-panel {
+  position: absolute;
+  z-index: 10;
+  top: 24px;
+  left: 24px;
+  width: min(340px, calc(100vw - 48px));
+  max-height: min(420px, calc(100vh - 48px));
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid #dbe3ee;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 95%);
+  box-shadow: 0 16px 45px rgb(20 32 57 / 12%);
+  color: #243042;
+  line-height: 1.45;
+}
+
+.flow-demo-kicker {
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.flow-demo-panel h1 {
+  margin: 8px 0 6px;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.flow-demo-panel p {
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+
+.flow-demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.flow-demo-actions button {
+  padding: 7px 10px;
+  border: 1px solid #c7d5e8;
+  border-radius: 8px;
+  background: #f4f8ff;
+  color: #174c9c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.flow-demo-actions button:hover,
+.flow-demo-actions button:focus-visible {
+  background: #e7f0ff;
+  outline: 2px solid #93baff;
+}
+
+.flow-demo-actions button[aria-pressed="true"] {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #123b78;
+}
+
+.flow-demo-actions button[aria-current="true"] {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.flow-demo-description {
+  font-weight: 600;
+}
+
+.flow-demo-note {
+  color: #637083;
+}
+
+.flow-demo-status {
+  display: block;
+  padding-top: 10px;
+  border-top: 1px solid #e5eaf1;
+  color: #526071;
+  font-size: 11px;
+}
+
+.flow-selection-rect {
+  position: absolute;
+  z-index: 5;
+  border: 1px solid #2563eb;
+  background: rgb(37 99 235 / 12%);
+  pointer-events: none;
+}

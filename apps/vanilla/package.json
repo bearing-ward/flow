@@ -1,0 +1,20 @@
+{
+  "name": "@flow/vanilla",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/public.ts"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4173",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@flow/core": "workspace:*",
+    "effect": "4.0.0-rc.117"
+  },
+  "devDependencies": {
+    "vite": "8.0.13"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@flow/workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "research:import": "bun run scripts/import-xyflow.ts",
+    "research:inventory": "bun run scripts/inventory-xyflow.ts",
+    "research:check-traces": "bun run scripts/check-research-traces.ts",
+    "dev": "bun run --cwd apps/vanilla dev",
+    "build": "bun run --cwd apps/vanilla build",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "verify": "bun run scripts/verify.ts",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "4.0.0-rc.117",
+    "effect": "4.0.0-rc.117"
+  },
+  "devDependencies": {
+    "@effect/language-service": "^0.87.2",
+    "@oxlint/plugins": "1.85.0",
+    "@playwright/test": "1.62.1",
+    "@types/bun": "1.3.14",
+    "oxfmt": "0.70.0",
+    "oxlint": "1.85.0",
+    "typescript": "5.9.3",
+    "ultracite": "7.12.0",
+    "vite": "8.0.13",
+    "vitest": "5.0.1"
+  },
+  "hvs": {
+    "baseline": "275c2013b54920055db091be00ca29ef096af3b8",
+    "profiles": {
+      "delivery": "plain-dom-first",
+      "tooling": "bun-supported"
+    }
+  }
+}
