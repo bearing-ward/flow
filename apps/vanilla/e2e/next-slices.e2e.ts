@@ -286,7 +286,7 @@ test("culling keeps the semantic visible set for a 1,000-node graph", async ({ p
         { id: "near", label: "Near", position: { x: 100, y: 180 } },
         { id: "cross-source", label: "Cross source", position: { x: -300, y: 420 }, handles: [{ id: "out", kind: "source", side: "right" }] },
         { id: "cross-target", label: "Cross target", position: { x: 1400, y: 420 }, handles: [{ id: "in", kind: "target", side: "left" }] },
-        ...Array.from({ length: 1000 }, (_, index) => ({
+        ...Array.from({ length: 997 }, (_, index) => ({
           id: `far-${index}`, label: `Far ${index}`, position: { x: 3000 + index * 200, y: 180 },
         })),
       ],
