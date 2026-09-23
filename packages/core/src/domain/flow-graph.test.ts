@@ -112,6 +112,45 @@ describe("flow graph view", () => {
     expect(graphBounds(createFlowGraph(Effect.runSync(decodeFlowDocument({ nodes: [], edges: [] }))))).toBeUndefined();
   });
 
+  it("resolves child-local positions with overrides and size precedence in spatial queries", () => {
+    const document = Effect.runSync(decodeFlowDocument({
+      nodes: [
+        { id: "parent", label: "Parent", position: { x: 100, y: 80 }, size: { width: 10, height: 10 } },
+        { id: "child", label: "Child", parentId: "parent", position: { x: 5, y: 7 }, size: { width: 20, height: 12 } },
+        { id: "measured", label: "Measured", position: { x: 200, y: 0 }, size: { width: 10, height: 10 } },
+        { id: "fallback", label: "Fallback", position: { x: 300, y: 0 } },
+      ], edges: [],
+    }));
+    const graph = createFlowGraph(document, new Map([
+      ["measured" as never, { nodeId: "measured" as never, width: 40, height: 30 }],
+    ]), new Map([["child" as never, { x: 9, y: 11 }]]));
+
+    expect(graphNode(graph, "child" as never)?.absolutePosition).toEqual({ x: 109, y: 91 });
+    expect(graphNode(graph, "child" as never)?.dimensions).toEqual({ width: 20, height: 12 });
+    expect(graphNode(graph, "measured" as never)?.dimensions).toEqual({ width: 40, height: 30 });
+    expect(graphNode(graph, "fallback" as never)?.dimensions).toEqual({ width: 150, height: 44 });
+    expect(graphNodesIntersecting(graph, { x: 108, y: 91, width: 22, height: 12 }).map((node) => node.id)).toEqual(["child"]);
+    expect(graphNodesIntersecting(graph, { x: 239, y: 25, width: 1, height: 1 }).map((node) => node.id)).toEqual(["measured"]);
+    expect(graphNodesIntersecting(graph, { x: 449, y: 43, width: 1, height: 1 }).map((node) => node.id)).toEqual(["fallback"]);
+    expect(graphBounds(graph)).toEqual({ x: 100, y: 0, width: 350, height: 103 });
+  });
+
+  it("excludes hidden descendants from spatial results while directed edges use document topology", () => {
+    const document = Effect.runSync(decodeFlowDocument({
+      nodes: [
+        { id: "hidden", label: "Hidden", position: { x: 0, y: 0 }, hidden: true },
+        { id: "descendant", label: "Descendant", parentId: "hidden", position: { x: 10, y: 10 } },
+        { id: "visible", label: "Visible", position: { x: 30, y: 30 } },
+      ],
+      edges: [{ id: "hidden-to-visible", source: "descendant", target: "visible" }],
+    }));
+    const graph = createFlowGraph(document);
+
+    expect(graphNodesIntersecting(graph, { x: 0, y: 0, width: 200, height: 100 }).map((node) => node.id)).toEqual(["visible"]);
+    expect(graphIncomers(graph, "visible" as never).map((edge) => edge.id)).toEqual(["hidden-to-visible"]);
+    expect(graphOutgoers(graph, "descendant" as never).map((edge) => edge.id)).toEqual(["hidden-to-visible"]);
+  });
+
   it("keeps invalid cyclic ancestry at the decode boundary", () => {
     const result = Effect.runSync(
       Effect.exit(decodeFlowDocument({

@@ -1,0 +1,21 @@
+# Gesture and resize lifecycle
+
+## Reference paths
+
+The React node wrapper is the browser entry for keyboard movement. On arrow keys for a selected draggable node it prevents default scrolling and delegates to `moveSelectedNodes` (`packages/react/src/components/NodeWrapper/index.tsx:128-160`). That helper reads the current store lookup, computes absolute movement and extents, updates internal positions, then calls `updateNodePositions` (`packages/react/src/hooks/useMoveSelectedNodes.ts:16-65`). Focus may call `getNodesInside` and `setCenter` when auto-pan-on-focus is enabled and the node is outside the viewport (`packages/react/src/components/NodeWrapper/index.tsx:163-181`). Pointer drag is wired through `XYDrag`; its movement path computes transformed pointer positions, aborts on multi-touch or node removal, checks the client-space drag threshold, updates node positions, and starts auto-pan (`packages/system/src/xydrag/XYDrag.ts:324-363`). Auto-pan schedules itself with `requestAnimationFrame` and applies `panBy` before updating node positions (`packages/system/src/xydrag/XYDrag.ts:232-256`). Drag end commits final positions and stops the scheduled frame (`packages/system/src/xydrag/XYDrag.ts:364-400`).
+
+Resize begins in React's `NodeResizeControl`, which instantiates `XYResizer` and supplies node lookup, transform, snapping and pane geometry (`packages/react/src/additional-components/NodeResizer/NodeResizeControl.tsx:62-100`). Its callback translates resize and child-position changes into store node changes (`packages/react/src/additional-components/NodeResizer/NodeResizeControl.tsx:85-115`). The resizer captures current measured dimensions and local position, pointer coordinates, parent extent and direct child positions at start (`packages/system/src/xyresizer/XYResizer.ts:141-214`); subsequent drag computes new dimensions and child positions (`packages/system/src/xyresizer/XYResizer.ts:219-310`). The named browser tests cover node drag and keyboard movement (`tests/playwright/e2e/nodes.spec.ts:94-168`); no resize-specific test was found in the imported Playwright suite, so reference resize output is **Unverified** here.
+
+## Flow paths
+
+The vanilla host attaches pointer down/move/up/cancel listeners to each node and observes its DOM size (`apps/vanilla/src/mount-flow.ts:2075-2112`). Pointer movement updates a drag preview; completion publishes a semantic position change after applying constrained movement (`apps/vanilla/src/mount-flow.ts:1919-2073`). Keyboard arrow handling starts at the canvas keydown listener, computes the selected node movement and publishes the corresponding change (`apps/vanilla/src/mount-flow.ts:3124-3205`). Rectangle selection runs its own host path; its animation-frame tick pans the viewport and updates the selection rectangle, and the host starts that tick for an active selection (`apps/vanilla/src/mount-flow.ts:2173-2192`, `apps/vanilla/src/mount-flow.ts:2451-2453`).
+
+Central cancellation handles Escape, blur, lost pointer capture and pointer cancellation (`apps/vanilla/src/mount-flow.ts:2623-2643`, `apps/vanilla/src/mount-flow.ts:3124-3130`). Browser tests exercise lost-capture and Escape during node drag and blur during pane pan and rectangle selection (`apps/vanilla/e2e/advanced-gestures.e2e.ts:418-506`). Existing tests also check keyboard movement and constraints (`apps/vanilla/e2e/advanced-gestures.e2e.ts:156-177`).
+
+Flow has no resize control or resize gesture lifecycle in the current host: **Unverified**. Flow has no node-drag or keyboard-move auto-pan path: **Unverified**. Existing selection auto-pan does not establish either contract.
+
+## Conformity and deviations
+
+- **Conforms:** both systems separate pointer coordinate conversion from node geometry and expose keyboard movement for selected nodes. Flow test boundary: `advanced-gestures.e2e.ts` keyboard and drag tests; no direct parity test against the pinned reference.
+- **Deviates:** reference node drag includes scheduled edge-of-pane auto-pan; Flow node drag and keyboard movement do not. Flow's rectangle selection auto-pan is a separate behavior and test boundary.
+- **Unverified:** Flow resize is absent; reference resize runtime is traced but its imported browser tests do not establish output here. Flow node-drag and keyboard auto-pan are absent and have no tests.
