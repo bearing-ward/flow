@@ -50,6 +50,129 @@ test("nested nodes move in absolute space and publish local positions", async ({
   await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
 });
 
+test("controlled parent updates reposition unchanged descendants and edge endpoints", async ({ page }) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const document = {
+      nodes: [
+        { id: "parent", label: "Parent", position: { x: 100, y: 120 }, size: { width: 220, height: 160 }, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "child", label: "Child", parentId: "parent", position: { x: 20, y: 30 }, type: "child-custom", data: { text: "child" }, size: { width: 80, height: 40 }, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "other", label: "Other", position: { x: 400, y: 120 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+      ],
+      edges: [{ id: "edge", source: "child", sourceHandle: "out", target: "other", targetHandle: "in" }],
+    };
+    const controller = mountFlow(root, document, {
+      documentMode: "controlled",
+      nodeRenderers: {
+        "child-custom": (_node: unknown, content: HTMLElement) => {
+          const testGlobal = globalThis as typeof globalThis & { childRendererUpdates?: number };
+          testGlobal.childRendererUpdates = 0;
+          content.textContent = "child";
+          return { update: () => { testGlobal.childRendererUpdates = (testGlobal.childRendererUpdates ?? 0) + 1; }, destroy: () => undefined };
+        },
+      },
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    globalThis.flowController = controller;
+    const testGlobal = globalThis as typeof globalThis & {
+      controlledDocument?: {
+        nodes: Array<{ id: string; label: string; position: { x: number; y: number }; [key: string]: unknown }>;
+        edges: Array<{ id: string; source: string; target: string; [key: string]: unknown }>;
+      };
+    };
+    testGlobal.controlledDocument = document;
+  });
+
+  const parent = page.locator('.flow-node[data-node-id="parent"]');
+  const child = page.locator('.flow-node[data-node-id="child"]');
+  const edgePath = page.locator('[data-edge-id="edge"] .flow-edge-hit');
+  const beforeParent = await parent.boundingBox();
+  const beforeChild = await child.boundingBox();
+  if (beforeParent === null || beforeChild === null) throw new Error("Missing nested node bounds");
+  const beforePath = await edgePath.getAttribute("d");
+  if (beforePath === null) throw new Error("Missing edge path");
+
+  await page.evaluate(() => {
+    const testGlobal = globalThis as typeof globalThis & {
+      controlledDocument?: {
+        nodes: Array<{ id: string; label: string; position: { x: number; y: number }; [key: string]: unknown }>;
+        edges: Array<{ id: string; source: string; target: string; [key: string]: unknown }>;
+      };
+    };
+    const document = testGlobal.controlledDocument;
+    if (document === undefined) throw new Error("Missing controlled document");
+    globalThis.flowController?.update({
+      ...document,
+      nodes: document.nodes.map((node) => node.id === "parent" ? { ...node, position: { x: 150, y: 160 } } : node),
+    });
+  });
+
+  await expect.poll(async () => (await parent.boundingBox())?.x).toBe(beforeParent.x + 50);
+  await expect.poll(async () => (await child.boundingBox())?.x).toBe(beforeChild.x + 50);
+  await expect.poll(async () => (await parent.boundingBox())?.y).toBe(beforeParent.y + 40);
+  await expect.poll(async () => (await child.boundingBox())?.y).toBe(beforeChild.y + 40);
+  expect(await page.evaluate(() => {
+    const testGlobal = globalThis as typeof globalThis & {
+      controlledDocument?: {
+        nodes: Array<{ id: string; label: string; position: { x: number; y: number }; [key: string]: unknown }>;
+        edges: Array<{ id: string; source: string; target: string; [key: string]: unknown }>;
+      };
+    };
+    return testGlobal.controlledDocument?.nodes.find((node) => node.id === "child")?.position;
+  })).toEqual({ x: 20, y: 30 });
+  await expect.poll(async () => edgePath.getAttribute("d")).not.toBe(beforePath);
+  await expect(edgePath).toHaveAttribute("d", /^M 255,210/u);
+  expect(await page.evaluate(() => (globalThis as typeof globalThis & { childRendererUpdates?: number }).childRendererUpdates)).toBe(0);
+});
+
+test("parent updates place a previously culled child when it becomes visible", async ({ page }) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const graph = {
+      nodes: [
+        { id: "parent", label: "Parent", position: { x: 100, y: 120 }, size: { width: 220, height: 160 } },
+        { id: "child", label: "Child", parentId: "parent", position: { x: 1300, y: 30 }, size: { width: 80, height: 40 } },
+      ],
+      edges: [],
+    };
+    globalThis.flowController = mountFlow(root, graph, {
+      documentMode: "controlled",
+      renderOnlyVisible: true,
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    const testGlobal = globalThis as typeof globalThis & { culledGraph?: typeof graph };
+    testGlobal.culledGraph = graph;
+  });
+
+  await expect(page.locator('.flow-node[data-node-id="child"]')).toHaveCount(0);
+  await page.evaluate(() => {
+    const testGlobal = globalThis as typeof globalThis & {
+      culledGraph?: { nodes: Array<{ id: string; label: string; position: { x: number; y: number }; [key: string]: unknown }>; edges: [] };
+    };
+    const graph = testGlobal.culledGraph;
+    if (graph === undefined) throw new Error("Missing controlled graph");
+    globalThis.flowController?.update({
+      ...graph,
+      nodes: graph.nodes.map((node) => node.id === "parent" ? { ...node, position: { x: -800, y: 120 } } : node),
+    });
+  });
+  const child = page.locator('.flow-node[data-node-id="child"]');
+  await expect(child).toBeVisible();
+  const childBounds = await child.boundingBox();
+  expect(childBounds?.x).toBe(500);
+  expect(childBounds?.y).toBe(150);
+});
+
 test("typed node and edge renderers keep host interactions and clean up by key", async ({ page }) => {
   await reset(page);
   await page.evaluate(async () => {

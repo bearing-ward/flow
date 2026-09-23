@@ -1449,10 +1449,11 @@ export const createFlowHost = (
             }
             applyDeclaredNodeSize(entry.element, node);
 
-            const graphNode = graph.nodes.get(node.id);
-            if (graphNode !== undefined) applyNodePosition(entry.element, graphNode.absolutePosition);
             updated += 1;
           }
+
+          const graphNode = graph.nodes.get(node.id);
+          if (graphNode !== undefined) applyNodePosition(entry.element, graphNode.absolutePosition);
 
           applyNodeInteractionState(entry.element, node);
           viewport.append(entry.element);
