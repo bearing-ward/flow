@@ -7,6 +7,54 @@ const reset = async (page: Page): Promise<void> => {
   await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
 };
 
+test("initial renderer failure cleans up mounted entries and preserves the error", async ({ page }) => {
+  await reset(page);
+  const result = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const events: string[] = [];
+    let caught = "";
+    let caughtOriginalError = false;
+    const failure = new Error("renderer exploded");
+    try {
+      mountFlow(root, {
+        nodes: [
+          { id: "first", label: "First", position: { x: 20, y: 20 }, type: "working" },
+          { id: "second", label: "Second", position: { x: 180, y: 20 }, type: "failing" },
+        ],
+        edges: [],
+      }, {
+        documentMode: "uncontrolled",
+        nodeRenderers: {
+          working: () => ({ update: () => undefined, destroy: () => { events.push("destroy:first"); throw new Error("cleanup exploded"); } }),
+          failing: () => { throw failure; },
+        },
+        viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+      });
+    } catch (error) {
+      caught = error instanceof Error ? error.message : String(error);
+      caughtOriginalError = error === failure;
+    }
+    const failedMount = { caught, caughtOriginalError, events: [...events], childCount: root.childElementCount };
+    const controller = mountFlow(root, { nodes: [], edges: [] }, {
+      documentMode: "uncontrolled",
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    controller.destroy();
+    controller.destroy();
+    return { ...failedMount, recoveredRootCount: root.childElementCount, events };
+  });
+
+  expect(result.caught).toBe("renderer exploded");
+  expect(result.caughtOriginalError).toBe(true);
+  expect(result.events).toEqual(["destroy:first"]);
+  expect(result.childCount).toBe(0);
+  expect(result.recoveredRootCount).toBe(0);
+});
+
 test("controlled update cancels a group drag when a participant is removed", async ({ page }) => {
   await reset(page);
   await page.evaluate(async () => {

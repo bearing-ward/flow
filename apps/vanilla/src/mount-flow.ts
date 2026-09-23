@@ -2111,6 +2111,7 @@ export const createFlowHost = (
         );
         resizeObserver.observe(element);
 
+        let released = false;
         let nodeEntry: NodeEntry;
         nodeEntry = {
           element,
@@ -2119,6 +2120,10 @@ export const createFlowHost = (
           rendererType,
           renderer: rendererInstance,
           release: () => {
+            if (released) {
+              return;
+            }
+            released = true;
             nodeEntry.renderer?.destroy();
             runEffect(Scope.close(nodeScope, Exit.void));
           },
@@ -3310,20 +3315,72 @@ export const createFlowHost = (
     );
 
     canvas.append(viewport, connectionStatus);
-    root.replaceChildren(canvas);
-    authoritativeViewport = constrainViewport(authoritativeViewport);
-    renderViewport(authoritativeViewport);
-    operations.reconcile(document);
+    const cleanupFailures: unknown[] = [];
     yield* Scope.addFinalizer(
       hostScope,
       Effect.sync(() => {
+        for (const entry of entries.values()) {
+          try {
+            entry.release();
+          } catch (error) {
+            cleanupFailures.push(error);
+          }
+        }
         entries.clear();
         renderedNodePositions.clear();
-        edgeRenderer.destroy();
+        try {
+          edgeRenderer.destroy();
+        } catch (error) {
+          cleanupFailures.push(error);
+        }
         listeners.clear();
-        root.replaceChildren();
+        try {
+          root.replaceChildren();
+        } catch (error) {
+          cleanupFailures.push(error);
+        }
+        if (cleanupFailures.length > 0) {
+          try {
+            runTelemetry(
+              Effect.logError("Failed to fully clean up flow host").pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.documentIssue]: cleanupFailures.map((error) => String(error)).join("; "),
+                  [FlowAttribute.nodeCount]: cleanupFailures.length,
+                }),
+                Effect.withSpan(FlowSpan.hostDestroy)
+              )
+            );
+          } catch {
+            // Cleanup reporting must not replace the mount or destroy outcome.
+          }
+        }
       })
     );
+
+    try {
+      root.replaceChildren(canvas);
+      authoritativeViewport = constrainViewport(authoritativeViewport);
+      renderViewport(authoritativeViewport);
+      operations.reconcile(document);
+    } catch (error) {
+      try {
+        runEffect(Scope.close(hostScope, Exit.fail(error)));
+      } catch (cleanupError) {
+        try {
+          runTelemetry(
+            Effect.logError("Failed to close flow host after mount failure").pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.documentIssue]: String(cleanupError),
+              }),
+              Effect.withSpan(FlowSpan.hostMount)
+            )
+          );
+        } catch {
+          // Preserve the renderer error even if cleanup reporting fails.
+        }
+      }
+      throw error;
+    }
 
     return {
       destroy: (): void => {
