@@ -90,7 +90,7 @@ Current milestone: nested graph documents use local child positions and validate
 - [ ] Zoom with controls and double click
 - [x] Enforce pan extents and minimum and maximum zoom
 - [x] Fit measured visible or selected content into view
-- [ ] Fit initially unmeasured content into view
+- [x] Fit initially unmeasured content into view, including nodes omitted by viewport culling
 - [x] Convert between screen and flow coordinates
 - [x] Cull content outside the visible viewport when enabled
 

@@ -4,7 +4,7 @@ Last updated: 2026-09-23
 
 ## Continue from here
 
-Work in `/Volumes/Sync/codex/9-19-26/flow`.
+Work in the Flow checkout selected for this task.
 
 Read these files before changing code:
 
@@ -289,7 +289,6 @@ The workspace pins one Effect release:
 
 - `effect@4.0.0-rc.117`
 - `@effect/platform-bun@4.0.0-rc.117`
-- `@effect/vitest@4.0.0-rc.117`
 
 Other direct development dependencies are TypeScript 5.9.3, Vite 8.0.13, Vitest 5.0.1, Playwright 1.62.1, and Bun types 1.3.14.
 
@@ -297,11 +296,11 @@ The code-quality toolchain pins Ultracite 7.12.0, Oxlint 1.85.0, `@oxlint/plugin
 
 `bunx ultracite doctor` passes all eight setup checks. `bun run check` currently reports 465 lint errors across 18 owned files and formatting changes in 22 files. These are pre-existing source findings exposed by the new policy. The check is not part of `bun run verify` until a separate cleanup makes it green.
 
-`docs/dependencies.md` records the reason for each dependency. Keep the three Effect packages on the same exact release candidate.
+`docs/dependencies.md` records the reason for each dependency. Keep the Effect packages on the same exact release candidate.
 
 ## Git state
 
-The directory is a Git repository on branch `main`, but it has no commits. Every project file is currently untracked. There is no committed baseline and no history to restore.
+This checkout has committed history through Plan 001 (`e393e3e`); the current task checkout may be detached or on a worktree branch. Check `git status` and `git log` before editing. Preserve unrelated user work.
 
 Preserve unrelated user work. Do not commit, push, delete, or rewrite history without explicit authorization.
 
@@ -315,7 +314,7 @@ The `flow.document.integrity` span and its warning log record only the issue kin
 
 ## Next implementation slice
 
-Next address nested node/group semantics and extents, pointer connection behavior on touch input, calibrated fallback fit dimensions for custom renderers, a cross-adapter conformance suite, and an accessibility budget with announcement and focus testing beyond the current click-connection paths.
+Next address spatial lookups, broader reference-test mapping, performance budgets, and remaining canvas and interaction gaps in research/PROGRESS.md.
 
 Do not begin Foldkit or Vue until the graph document and browser lifecycle contracts are stable.
 
@@ -330,7 +329,7 @@ Do not begin Foldkit or Vue until the graph document and browser lifecycle contr
 - No cross-adapter conformance suite exists.
 - No reference screenshot capture system exists.
 - No performance or accessibility budget exists.
-- The project has no CI, release process, package consumer test, or committed Git baseline.
+- The project has no CI, release process, or package consumer test.
 - Attribution and notice requirements for any future copied source still need a documented decision. The imported xyflow source is MIT licensed and includes its license in the artifact directory.
 
 ## Continuation prompt
@@ -338,5 +337,5 @@ Do not begin Foldkit or Vue until the graph document and browser lifecycle contr
 Use this prompt in a new task if you want to resume without rewriting the context:
 
 ```text
-Continue the Flow project in /Volumes/Sync/codex/9-19-26/flow. Read HANDOFF.md, AGENTS.md, CONTEXT.md, docs/standards.md, docs/architecture.md, docs/observability.md, research/PROGRESS.md, and the relevant research/traces before changing code. Preserve Effect 4.0.0-rc.117 alignment and Schema-derived types. Treat research artifacts as immutable. The vanilla host supports five edge paths, labels, markers, validated styling, edge selection/focus/reconnection, node selection and focus, hidden nodes and edges, opt-in culling, controlled ownership, dragging and keyboard movement, pan/zoom, click and pointer connections, and scoped browser lifecycle. Browser tests cover visual extent adoption for initial and controlled nodes, fit of unmeasured and culled nodes, zoom-aware connection radius and validity hover, rejected and throwing connection validators, and pending click announcements and source focus. Next address nested node/group semantics, touch connection input, calibrated fit fallback for custom renderers, cross-adapter conformance, and a wider accessibility budget. Keep document data separate from measured geometry and gestures. Use bounded spans and logs at workflow boundaries. Distinguish Flow tests from direct xyflow parity. Run bun run verify and update research/PROGRESS.md only for verified behavior. The repository has no commits; do not commit or push without explicit authorization.
+Continue the Flow project in the current checkout. Read HANDOFF.md, AGENTS.md, CONTEXT.md, docs/standards.md, docs/architecture.md, docs/observability.md, research/PROGRESS.md, and relevant research traces before changing code. Preserve Effect 4.0.0-rc.117 alignment and Schema-derived types. Treat research artifacts as immutable. The project now supports nested graph documents with local child positions, validated parent references, absolute geometry and bounds, visibility, ordering and directed queries; version-1 saved documents preserve declared graph fields; and the vanilla host supports keyed custom renderers and flow-to-screen toolbar anchors. Browser tests cover visual extent adoption for initial and controlled nodes, fit of unmeasured and culled nodes, zoom-aware connection radius and validity hover, rejected and throwing connection validators, and pending click announcements and source focus. Next address spatial lookups, broader reference-test mapping, performance budgets, and remaining canvas and interaction gaps in research/PROGRESS.md. Keep document data separate from measured geometry and gestures. Use bounded spans and logs at workflow boundaries. Distinguish Flow tests from direct xyflow parity. Run bun run verify and update progress only for verified behavior. Check Git state before editing and preserve unrelated work.
 ```
