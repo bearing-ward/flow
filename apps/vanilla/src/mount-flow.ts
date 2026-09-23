@@ -1294,7 +1294,7 @@ export const createFlowHost = (
 
         const visibleNodes = new Set<NodeId>();
         let visibleEdges: Set<(typeof next.edges)[number]["id"]> | null = null;
-        const graph = createFlowGraph(next, measurements, renderedNodePositions);
+        let graph = createFlowGraph(next, measurements, renderedNodePositions);
 
         if (options.renderOnlyVisible === true) {
           const rect = viewportFlowRect(
@@ -1347,11 +1347,16 @@ export const createFlowHost = (
         let updated = 0;
         let removed = 0;
 
-        if (
-          activeDrag !== null &&
-          !visibleNodes.has(dragAnchorId(activeDrag))
-        ) {
-          cancelActiveDrag("node-removed");
+        if (activeDrag !== null) {
+          const participantIds =
+            "positions" in activeDrag
+              ? activeDrag.positions.map(({ nodeId }) => nodeId)
+              : [activeDrag.nodeId];
+
+          if (participantIds.some((nodeId) => !visibleNodes.has(nodeId))) {
+            cancelActiveDrag("node-removed");
+            graph = createFlowGraph(next, measurements, renderedNodePositions);
+          }
         }
 
         if (activeConnection !== null) {

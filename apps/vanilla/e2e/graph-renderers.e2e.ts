@@ -7,6 +7,91 @@ const reset = async (page: Page): Promise<void> => {
   await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
 };
 
+test("controlled update cancels a group drag when a participant is removed", async ({ page }) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const graph = {
+      nodes: [
+        { id: "a", label: "Alpha", position: { x: 100, y: 150 }, selected: true },
+        { id: "b", label: "Beta", position: { x: 350, y: 150 }, selected: true },
+      ],
+      edges: [],
+    };
+    const controller = mountFlow(root, graph, {
+      documentMode: "controlled",
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    globalThis.flowController = controller;
+    globalThis.flowChanges = [];
+    controller.subscribe((change: FlowChange) => globalThis.flowChanges?.push(change));
+    (globalThis as typeof globalThis & { groupDragGraph?: typeof graph }).groupDragGraph = graph;
+  });
+
+  const alpha = page.locator('.flow-node[data-node-id="a"]');
+  const beta = page.locator('.flow-node[data-node-id="b"]');
+  const box = await alpha.boundingBox();
+  if (box === null) throw new Error("Missing anchor bounds");
+  await page.mouse.move(box.x + 40, box.y + 20);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 100, box.y + 60);
+  await expect(alpha).toHaveCSS("transform", "matrix(1, 0, 0, 1, 160, 190)");
+  await expect(beta).toHaveCSS("transform", "matrix(1, 0, 0, 1, 410, 190)");
+
+  await page.evaluate(() => {
+    const graph = (globalThis as typeof globalThis & { groupDragGraph?: { nodes: Array<{ id: string; label: string; position: { x: number; y: number }; selected?: boolean }>; edges: [] } }).groupDragGraph;
+    if (graph === undefined) throw new Error("Missing controlled graph");
+    globalThis.flowController?.update({ ...graph, nodes: graph.nodes.filter((node) => node.id !== "b") });
+  });
+  await expect(beta).toHaveCount(0);
+  await expect(alpha).toHaveCSS("transform", "matrix(1, 0, 0, 1, 100, 150)");
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+});
+
+test("controlled group drag completes when every participant remains", async ({ page }) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const controller = mountFlow(root, {
+      nodes: [
+        { id: "a", label: "Alpha", position: { x: 100, y: 150 }, selected: true },
+        { id: "b", label: "Beta", position: { x: 350, y: 150 }, selected: true },
+      ],
+      edges: [],
+    }, {
+      documentMode: "controlled",
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    globalThis.flowChanges = [];
+    controller.subscribe((change: FlowChange) => globalThis.flowChanges?.push(change));
+    globalThis.flowController = controller;
+  });
+
+  const alpha = page.locator('.flow-node[data-node-id="a"]');
+  const box = await alpha.boundingBox();
+  if (box === null) throw new Error("Missing anchor bounds");
+  await page.mouse.move(box.x + 40, box.y + 20);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 100, box.y + 60);
+  await page.mouse.up();
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toEqual([{
+    kind: "node-positions",
+    positions: [
+      { nodeId: "a", position: { x: 160, y: 190 } },
+      { nodeId: "b", position: { x: 410, y: 190 } },
+    ],
+  }]);
+});
+
 test("nested nodes move in absolute space and publish local positions", async ({ page }) => {
   await reset(page);
   await page.evaluate(async () => {
