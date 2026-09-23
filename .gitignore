@@ -5,4 +5,3 @@ playwright-report/
 .DS_Store
 .env.local
 .env.*.local
-research
