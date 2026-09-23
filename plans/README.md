@@ -6,6 +6,8 @@ against that commit after a standard audit; the user selected all nine vetted
 findings. Read each plan fully, run its drift check and STOP conditions, and
 update its status row after the complete verification gate passes. Preserve
 unrelated work. Do not commit, push, or open a PR without operator instruction.
+Plan 011 was added on 2026-09-23 against `5274aef` as the next bounded slice
+from `research/PROGRESS.md` and the current handoff.
 
 ## Execution order and status
 
@@ -21,6 +23,7 @@ unrelated work. Do not commit, push, or open a PR without operator instruction.
 | [008](008-refresh-project-status-docs.md) | Refresh the handoff, progress checklist, and dependency record | P2 | S | 001; schedule after 002-007 | DONE — `72db1db`, reviewed; verify passed |
 | [009](009-index-visible-edge-endpoints.md) | Remove repeated edge scans from viewport culling | P2 | S | 003, 004 | DONE — `a58a3a5`, reviewed; verify passed |
 | [010](010-update-only-affected-edges-during-drag.md) | Update only affected edges during a node drag | P2 | M | 002-005, 009 | DONE — `a1e1e3a`, reviewed; verify passed |
+| [011](011-characterize-spatial-and-gesture-contracts.md) | Establish spatial and gesture baselines before changing core state | P1 | M | 001-010 | TODO |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with
 a reason.
@@ -44,6 +47,10 @@ Plans 002-010 were executed and reviewed in the isolated worktree
 - Foldkit and Vue adapter work should wait for the graph/browser contract fixes
   and shared conformance design. The separate direction suggestions from the
   audit were not part of the nine selected defect/maintenance findings.
+- 011 is the next characterization slice: it traces spatial and gesture paths,
+  adds semantic cases, and measures graph-query scaling before specifying a
+  spatial index or gesture-state implementation. It maps completed work back to
+  `research/PROGRESS.md`; the remaining checklist scopes stay open.
 
 ## Findings considered and rejected
 

@@ -109,14 +109,14 @@ unknown graph and mount input
 
 All exported TypeScript types come from the schemas. `packages/core/src/public.ts` is the package boundary.
 
-The current schemas are intentionally small. Runtime measurement is separate from the flow document. Handle declarations, strict connection state, five path choices, labels, markers, stroke styling, edge selection, deletion, interaction width, focusability, and reconnection are modeled; custom node data, parent relationships, spatial indexing, and advanced edge options remain unmodeled.
+Runtime measurement stays separate from the flow document. The schemas model custom node data and types, parent-local child positions, declared dimensions and extents, stacking, handle declarations, strict connection state, five edge paths, labels, markers, stroke styling, edge selection, deletion, interaction width, focusability, and reconnection. `flow-graph.ts` derives absolute geometry, visibility, render order, bounds, and directed queries. A spatial index and explicit pointer and keyboard gesture state machines remain open in `research/PROGRESS.md`.
 
 ### Vanilla host
 
 `apps/vanilla/src/mount-flow.ts` exports the Effect-native `createFlowHost` and unknown-input `mountFlow` facade, which:
 
 - creates a DOM canvas and applies schema-derived, independently owned viewport state;
-- renders and reconciles nodes as keyed, absolutely positioned `article` elements;
+- renders and reconciles nodes as keyed, absolutely positioned `article` elements using derived graph positions and stacking order, including when only a parent changes;
 - measures nodes with one `ResizeObserver`;
 - uses native pointer capture to drag a node or selected group;
 - exposes document and viewport acknowledgement through `update`, `updateViewport`, `dispatch`, and `subscribe`, plus `fitView` with fallback dimensions for unmeasured nodes;
@@ -129,8 +129,10 @@ The current schemas are intentionally small. Runtime measurement is separate fro
 - hides nodes and their connected edges, and restores both after a document update;
 - culls nodes and edges at an optional viewport boundary, retaining measurements for later re-entry;
 - honors per-edge selectability, focusability, deletability, endpoint-specific reconnectability, interaction width, and accessible names;
-- cancels node, viewport, pinch, selection, and connection gestures on `pointercancel`, active-source removal, and destroy;
+- cancels active gestures on Escape, window blur, pointer cancellation or capture loss, relevant graph removal, and destroy; the broader checklist item remains open until all gesture and test cases in `research/PROGRESS.md` are proved;
 - disconnects the observer and removes every listener on `destroy`.
+
+The vanilla host also supports keyed custom node and edge renderers and flow-to-screen toolbar anchors. Plans 002-010 in `plans/README.md` record the reviewed fixes for controlled descendant positions, stacking, group-drag invalidation, failed renderer mounts, persistence schema drift, gesture cancellation, culling scans, and incident-edge updates during drag.
 
 `apps/vanilla/src/main.ts` decodes a six-node demo through `@flow/core`, mounts the host with opt-in culling, partial selection, a 4px node drag threshold, 10px snap grid, bounded pan and node gestures, 20-flow-unit connection radius, connection auto-pan, two-click connection, and a toggleable connection validator. It explains the gestures and provides controls for the main graph, distant graph, fitting the full document with estimated sizes where needed, connection rule, hidden step edge, and hidden node. The description and helper text change with each selected button; `aria-current` identifies that button while `aria-pressed` retains view and toggle state. It records the last semantic change and destroys the host on `beforeunload`. `apps/vanilla/src/flow-browser.ts` owns scoped DOM listeners, resize observation, measurement, and pointer capture. `acquireFlowHost` ties the controller to Effect completion, failure, and interruption. `apps/vanilla/src/telemetry.ts` composes browser capabilities, structured local diagnostics, and optional release-matched Effect OTLP/HTTP JSON export. `apps/vanilla/vite.config.ts` maps only the base endpoint and service resource fields into browser configuration; it never exposes OTLP headers. Playwright disables external export except for its intercepted transport test.
 
@@ -198,7 +200,7 @@ The vanilla host browser tests include:
 - constrain node and selected-group pointer and keyboard movement with measured sizes;
 - fit measured all or selected nodes, snap pointer connection release to a nearby target, reject or accept connections with a caller validator, and activate two-click connections from focused handles.
 
-The latest complete `bun run verify` passed research inventory and citation checks (1,786 citations across 40 traces), TypeScript, 81 unit tests, the vanilla build, and 61 browser tests. `bun run lint` and `bun run format:check` are separate checks.
+The plan index records a passing `bun run verify` for each of Plans 002-010. A fresh `bun run verify` for this handoff edit passed research inventory and citations (1,940 citations across 41 traces), TypeScript, 101 unit tests, the vanilla build, and 84 browser tests. `bun run check` and `bun run format:check` remain separate from the complete gate.
 
 Screenshot baselines are in `apps/vanilla/e2e/canvas.e2e.ts-snapshots/`.
 
@@ -231,41 +233,7 @@ Run `bun run research:inventory` to regenerate:
 
 The current inventory contains 649 files, 665 exported declarations, 6,418 syntactic call expressions, and 50 test or E2E files. `CALLS.tsv` is a search index. It is not a verified call graph.
 
-The reviewed traces are:
-
-- `research/traces/initial-node-render.md`;
-- `research/traces/node-measurement.md`;
-- `research/traces/viewport.md`;
-- `research/traces/node-dragging.md`;
-- `research/traces/controlled-state-and-reconciliation.md`;
-- `research/traces/browser-lifecycle.md`;
-- `research/traces/document-integrity.md`.
-- `research/traces/handles-and-connections.md`.
-- `research/traces/straight-edge-render.md`.
-- `research/traces/bezier-edge-render.md`;
-- `research/traces/edge-label-render.md`;
-- `research/traces/edge-markers-styling.md`;
-- `research/traces/edge-selection-focus.md`;
-- `research/traces/edge-reconnection.md`;
-- `research/traces/step-edge-render.md`;
-- `research/traces/edge-deletion.md`;
-- `research/traces/edge-interaction-options.md`;
-- `research/traces/edge-accessibility.md`.
-- `research/traces/keyboard-node-movement.md`;
-- `research/traces/multi-node-drag.md`;
-- `research/traces/partial-selection.md`;
-- `research/traces/selection-auto-pan.md`;
-- `research/traces/touch-pinch.md`.
-- `research/traces/drag-threshold.md`;
-- `research/traces/snap-grid.md`;
-- `research/traces/pan-extents.md`;
-- `research/traces/connection-auto-pan.md`;
-- `research/traces/click-to-connect.md`.
-- `research/traces/node-extents.md`;
-- `research/traces/fit-view.md`;
-- `research/traces/connection-radius.md`;
-- `research/traces/connection-validators.md`;
-- `research/traces/keyboard-click-connect.md`.
+The reviewed traces live under `research/traces/`, including `nested-graph-and-renderers.md` and the browser lifecycle and interaction traces. `research/traces/README.md` defines their call-path and evidence format; `bun run research:check-traces` checks citations and the required `Conformity and deviations` section. Use `research/PROGRESS.md` to find the remaining research topics rather than treating a fixed trace list here as complete.
 
 `bun run research:check-traces` verifies that cited upstream and Flow files and lines exist. `bun run verify` runs this check after regenerating the inventory.
 
@@ -300,7 +268,7 @@ The code-quality toolchain pins Ultracite 7.12.0, Oxlint 1.85.0, `@oxlint/plugin
 
 ## Git state
 
-This checkout has committed history through Plan 001 (`e393e3e`); the current task checkout may be detached or on a worktree branch. Check `git status` and `git log` before editing. Preserve unrelated user work.
+Plans 001-010 are committed on `main` through `5274aef`; the nine implementation commits through `a1e1e3a` were fast-forwarded from an isolated worktree. Check `git status` and `git log` before editing because a later task may use another branch or worktree. Preserve unrelated user work.
 
 Preserve unrelated user work. Do not commit, push, delete, or rewrite history without explicit authorization.
 
@@ -314,7 +282,18 @@ The `flow.document.integrity` span and its warning log record only the issue kin
 
 ## Next implementation slice
 
-Next address spatial lookups, broader reference-test mapping, performance budgets, and remaining canvas and interaction gaps in research/PROGRESS.md.
+Use `research/PROGRESS.md` as the authoritative whole-project checklist. The scopes below account for every currently unchecked checklist category; they are a sequence for selecting work, not a claim that all items fit one implementation slice.
+
+| Order | Scope | Open work represented in `research/PROGRESS.md` |
+| --- | --- | --- |
+| 1 | Complete core and browser contracts | Model measured geometry and spatial-index state and explicit pointer and keyboard gesture states; finish node locking, drag and keyboard auto-pan, resizing, custom descriptions, and cancellation across Escape, blur, removal, and unmount. Add scoped animation-frame and focus capabilities and structured gesture/input diagnostics. Plan 007 covers part of the composite cancellation item, which remains unchecked. |
+| 2 | Establish shared proof | Trace spatial lookups, reusable canvas UI, and input and accessibility behavior. Map reference tests to Flow behavior, capture deterministic reference fixtures, add shared adapter conformance and visual checks, interaction, property, invalid-state, lifecycle, accessibility, and large-graph tests, then set performance and accessibility budgets. Keep reference conformity, intentional differences, and unverified behavior separate. |
+| 3 | Settle the public API | Finish the ordinary JavaScript Promise/callback facade and test a clean consumer of packed packages. Verify collector processing, storage, and queries separately if claiming delivered telemetry beyond browser transport. |
+| 4 | Build reusable canvas UI | Add custom canvas options, control and double-click zoom, configurable backgrounds, zoom/fit/interaction controls, a minimap, panels and overlay portals, and node and edge toolbars. Decide the attribution and licensing presentation. |
+| 5 | Build adapters against the shared suite | Implement the Foldkit host with schema-derived model/messages, initialization/update/view, commands, subscriptions, and typed child capabilities. Implement Vue components, injection, bindings, typed composables, custom renderers, keyed reactive updates, and unmount disposal. Run the same conformance suite for both. |
+| 6 | Prepare delivery | Clear the Ultracite baseline and add its read-only check to verification; add architecture-boundary checks, CI, release/changelog automation, schema-based API reference, first-canvas tutorial, custom renderer/gesture/adapter guides, browser and accessibility expectations, versioned packages, and migration notes. Prove packed-package installation before release. |
+
+The immediate next slice should characterize spatial lookups and gesture/resize behavior with browser and core tests before choosing their implementation shape. Recheck the checklist after each verified slice; an unchecked item must stay open when only part of its contract is covered.
 
 Do not begin Foldkit or Vue until the graph document and browser lifecycle contracts are stable.
 
@@ -337,5 +316,5 @@ Do not begin Foldkit or Vue until the graph document and browser lifecycle contr
 Use this prompt in a new task if you want to resume without rewriting the context:
 
 ```text
-Continue the Flow project in the current checkout. Read HANDOFF.md, AGENTS.md, CONTEXT.md, docs/standards.md, docs/architecture.md, docs/observability.md, research/PROGRESS.md, and relevant research traces before changing code. Preserve Effect 4.0.0-rc.117 alignment and Schema-derived types. Treat research artifacts as immutable. The project now supports nested graph documents with local child positions, validated parent references, absolute geometry and bounds, visibility, ordering and directed queries; version-1 saved documents preserve declared graph fields; and the vanilla host supports keyed custom renderers and flow-to-screen toolbar anchors. Browser tests cover visual extent adoption for initial and controlled nodes, fit of unmeasured and culled nodes, zoom-aware connection radius and validity hover, rejected and throwing connection validators, and pending click announcements and source focus. Next address spatial lookups, broader reference-test mapping, performance budgets, and remaining canvas and interaction gaps in research/PROGRESS.md. Keep document data separate from measured geometry and gestures. Use bounded spans and logs at workflow boundaries. Distinguish Flow tests from direct xyflow parity. Run bun run verify and update progress only for verified behavior. Check Git state before editing and preserve unrelated work.
+Continue the Flow project in the current checkout. Read HANDOFF.md, AGENTS.md, CONTEXT.md, docs/standards.md, docs/architecture.md, docs/observability.md, research/PROGRESS.md, and relevant research traces before changing code. Preserve Effect 4.0.0-rc.117 alignment and Schema-derived types. Treat research artifacts as immutable. Plans 001-010 are complete; the graph document, custom renderers, persistence envelope, and vanilla browser contracts form the current base. Use the six-scope remaining-work map in HANDOFF.md to choose the next slice, and use PROGRESS.md as the authoritative detailed checklist. Start by characterizing spatial lookups and gesture/resize behavior, then advance shared proof and public API work before building Foldkit and Vue against the conformance suite. Keep document data separate from measured geometry and gestures. Use bounded spans and logs at workflow boundaries. Distinguish Flow tests from direct xyflow parity. Run bun run verify and update progress only for verified behavior. Check Git state before editing and preserve unrelated work.
 ```
