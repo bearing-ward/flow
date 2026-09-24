@@ -8,9 +8,18 @@ update its status row after the complete verification gate passes. Preserve
 unrelated work. Do not commit, push, or open a PR without operator instruction.
 Plan 011 was added on 2026-09-23 against `5274aef` and is complete. Plans
 012-021 were written against `6e84008` as the next ten bounded scopes from
-`research/PROGRESS.md`, the Plan 011 baseline, and the current handoff. Later
+`research/PROGRESS.md` and the Plan 011 baseline. The former handoff is a dated
+snapshot in `docs/archive/`; current status lives in `research/PROGRESS.md`. Later
 plans must re-read the contracts produced by earlier plans before executing;
 their drift checks and STOP conditions make that dependency explicit.
+
+Plans 022-029 were written on 2026-09-24 against `5e5d496` using the open
+items in `research/PROGRESS.md`. They form one interaction and canvas UI chunk:
+reference boundaries, deterministic browser proof, multi-direction resize,
+gesture cancellation, custom drag handles, panel placement, and focused
+verification. They do not promise full xyflow or framework-adapter parity.
+The advisor checkout had uncommitted documentation changes when these plans
+were written; each executor must inspect live status and preserve them.
 
 ## Execution order and status
 
@@ -37,6 +46,14 @@ their drift checks and STOP conditions make that dependency explicit.
 | [019](019-build-foldkit-adapter-first-slice.md) | Build a Foldkit adapter against the shared contract | P2 | L | 016-018 | DONE — reviewed; Effect/platform aligned to rc.116; verify passed; shared and active-disposal tests passed |
 | [020](020-build-vue-adapter-first-slice.md) | Build a Vue adapter against the shared contract | P2 | L | 016-018 | DONE — reviewed; Vue build and 3 browser tests passed; `bun run verify` passed (142 browser passed, 2 skipped) |
 | [021](021-prepare-delivery-gates-and-release-decisions.md) | Establish delivery checks and a release dry run | P2 | L | 016-020 | DONE — architecture/docs/consumer gates and internal dry run pass; Flow license deferred; no publish or hosted CI claim |
+| [022](022-map-interaction-parity-boundaries.md) | Map the next interaction parity boundaries | P1 | M | none | TODO |
+| [023](023-isolate-browser-test-servers.md) | Isolate browser test servers from development servers | P1 | S | none | TODO |
+| [024](024-define-multidirection-resize-geometry.md) | Define multi-direction node resize geometry in core | P1 | L | 022 | TODO |
+| [025](025-wire-multidirection-resize-in-vanilla.md) | Wire multi-direction resize through vanilla | P1 | L | 023, 024 | TODO |
+| [026](026-complete-gesture-cancellation-proof.md) | Complete deterministic gesture cancellation proof | P1 | L | 022, 023, 025 | TODO |
+| [027](027-support-custom-drag-handles.md) | Support custom drag handles in the vanilla renderer | P2 | M | 022, 025, 026 | TODO |
+| [028](028-add-canvas-overlay-placement.md) | Add placed panels and overlay portals to vanilla | P2 | L | 022, 023 | TODO |
+| [029](029-prove-interaction-ui-boundaries.md) | Prove the new interaction and UI boundaries | P2 | L | 023, 025-028 | TODO |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with
 a reason.
@@ -71,11 +88,21 @@ Plans 002-010 were executed and reviewed in the isolated worktree
   recommended order; 012 can run independently of 013-015 in separate
   isolated checkouts, but their implementation changes must be reconciled
   before landing.
+- 022 defines observable boundaries before the resize, gesture, drag-handle,
+  and overlay slices. 023 fixes a reproduced stale-Vite test-server problem;
+  it can run alongside 022 but must land before browser-heavy 025-029.
+- 024 keeps signed resize and extent math in core. 025 wires one atomic
+  position/size result through vanilla; 026 then tests cancellation against
+  the final resize gesture. 027 builds on those node interaction rules.
+- 028 is independent of resize after 022-023 and can execute in a separate
+  worktree. 029 follows the feature slices and records what the three
+  adapters and pinned reference actually prove.
 
-## Coverage of the remaining progress checklist
+## Coverage recorded for Plans 012-021
 
-`research/PROGRESS.md` is authoritative. These plans name the next work; a
-checklist box closes only when its whole contract and test boundary pass.
+`research/PROGRESS.md` is authoritative. This table records the scope and
+limits of the earlier 012-021 rollout; a checklist box closes only when its
+whole contract and test boundary pass.
 
 | Open checklist area | Planned scope | Completion limit |
 | --- | --- | --- |
@@ -87,13 +114,26 @@ checklist box closes only when its whole contract and test boundary pass.
 | Shared proof (216-225) | 012, 016-020 | 216 and the suite start in 016; visual, touch, accessibility, property, lifecycle, and large-graph budgets remain open until their full matrices pass. Packed consumer proof is 017. |
 | Delivery (22-25, 232-237) | 021 | Ultracite cleanup at 22 and actual publication at 237 require later scoped work; 021 configures checks, docs, and a dry run without claiming hosted CI or a release. |
 
+## Coverage of the next interaction and UI chunk
+
+| Open checklist area | Planned scope | Completion limit |
+| --- | --- | --- |
+| Input/UI reference traces and test mapping (47-48, 52) | 022 | Classify every selected cell; leave whole-checklist items open until their full coverage is demonstrated. |
+| Resize nodes (116) | 024-025 | Eight directions, local position, extents, controlled ownership, browser geometry, and cancellation; record any remaining hierarchy semantics before checking 116. |
+| Gesture cancellation and input tests (133, 219, 223) | 026 | Native concurrent pointer and two-contact capture remain unverified until exercised in a suitable device/browser harness. |
+| Panels and overlay portals (158) | 028 | Close only after placement, caller ownership, pointer exclusion, and destroy restoration are browser-tested. |
+| Visual and accessibility checks (218, 221) | 029 | Focused checks for this chunk are not whole-project visual coverage or a complete accessibility audit. |
+| Reference drag-handle deviation | 027 | This is a feature parity gap from the two pinned captures, not a currently unchecked PROGRESS row. |
+| Browser proof isolation | 023 | Fixes a reproduced local test-server contamination path; it does not imply hosted CI is green. |
+
 ## Findings considered and rejected
 
 - Split the 3,556-line vanilla host immediately: structural cost is real, but
   a broad extraction before these contract fixes would add high regression
   risk. Reconsider after interaction characterization and a shared suite.
-- Change Playwright's unconditional `reuseExistingServer: true` now: a stale
-  server could weaken local evidence, but the audit did not reproduce a wrong
-  server being used. Investigate if a gate behaves inconsistently.
+- Broad full-adapter feature parity in this chunk: Foldkit and Vue still have
+  bounded surfaces, and adding vanilla gestures to them before the contracts
+  settle would duplicate unstable behavior. Plan 029 records capability gaps
+  for a later adapter chunk.
 - No security issue met the evidence threshold in the audited host and core
   paths. Imported upstream artifacts and dependency advisories were not audited.

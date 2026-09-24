@@ -4,7 +4,7 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project.
 
-Current milestone: nested graph documents use local child positions and validated parent references; core graph views provide absolute geometry, bounds, visibility, ordering, and directed queries; version-1 saved documents preserve declared graph fields; and the vanilla host supports keyed custom renderers and flow-to-screen toolbar anchors. The vanilla development page demonstrates typed node and edge rendering with anchored controls.
+Current milestone: the core validates nested graph documents, provides graph queries and geometry, and saves declared fields in a version-1 envelope. The vanilla host now includes custom renderers, node and edge interactions, viewport controls, and reusable canvas UI. A JavaScript facade and packed consumer check are in place. Foldkit and Vue first-slice hosts pass the six shared adapter scenarios, but each has a narrower feature surface than vanilla. Local CI configuration and a release dry run exist; packages remain private and unpublished. The shared scenarios and two pinned reference captures do not establish full xyflow parity. Open items below include broader resize and gesture coverage, portals, visual and accessibility checks, performance budgets, and release work.
 
 ### Project foundation
 
