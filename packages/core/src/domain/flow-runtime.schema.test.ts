@@ -4,9 +4,21 @@ import { describe, expect, it } from "vitest";
 import {
   ViewportSchema,
   ViewportLimitsSchema,
+  FlowInteractionSessionSchema,
+  FlowInteractionSessionsSchema,
+  ActiveNodeResizeSchema,
+  NodeSizeChangeSchema,
+  activateFlowInteraction,
+  cancelAllFlowInteractions,
+  cancelFlowInteraction,
+  finishFlowInteraction,
+  replaceFlowInteraction,
+  startFlowInteraction,
   applyEdgeSelectionChange,
   applyEdgeRemoveChange,
   applyNodePositionChange,
+  applyNodePositionsChange,
+  applyNodeSizeChange,
   beginNodeDrag,
   beginViewportPan,
   clampViewport,
@@ -14,6 +26,8 @@ import {
   completeNodeDrag,
   flowToScreenPosition,
   moveNodeDrag,
+  moveSelectedNodes,
+  resizeNode,
   moveViewportPan,
   panViewport,
   screenToFlowPosition,
@@ -21,6 +35,89 @@ import {
 } from "./flow-runtime.schema.ts";
 import { EdgeIdSchema, NodeIdSchema } from "./flow.schema.ts";
 import type { FlowDocument } from "./flow.schema.ts";
+
+describe("pointer interaction sessions", () => {
+  const decode = (input: unknown) => S.decodeUnknownSync(FlowInteractionSessionSchema)(input);
+
+  it("decodes every active mode and enforces exclusive pointer ownership", () => {
+    const sessions = [
+      decode({ kind: "node-drag", phase: "pressed", drag: { nodeId: "n", pointerId: 1, pointerOffset: { x: 0, y: 0 } } }),
+      decode({ kind: "node-drag", phase: "active", drag: { anchorNodeId: "g", pointerId: 2, pointerStart: { x: 0, y: 0 }, positions: [{ nodeId: "g", position: { x: 0, y: 0 } }] } }),
+      decode({ kind: "connection", connection: { pointerId: 3, source: "a", sourceHandle: "out" } }),
+      decode({ kind: "reconnection", reconnection: { edgeId: "e", endpoint: "source", pointerId: 4 } }),
+      decode({ kind: "pane-pan", pan: { pointerId: 5, pointerStart: { x: 0, y: 0 }, viewportStart: { x: 0, y: 0, zoom: 1 } } }),
+      decode({ kind: "pinch", pinch: { firstPointerId: 6, secondPointerId: 7, firstStart: { x: 0, y: 0 }, secondStart: { x: 1, y: 1 }, viewportStart: { x: 0, y: 0, zoom: 1 } } }),
+      decode({ kind: "selection", selection: { pointerId: 8, pointerStart: { x: 0, y: 0 }, flowStart: { x: 0, y: 0 } } }),
+      decode({ kind: "node-resize", resize: { nodeId: "n", pointerId: 9, pointerStart: { x: 10, y: 20 }, sizeStart: { width: 80, height: 40 } } }),
+    ];
+    expect(S.decodeSync(FlowInteractionSessionsSchema)(sessions)).toHaveLength(8);
+    const invalid = Effect.runSync(Effect.exit(S.decodeUnknownEffect(FlowInteractionSessionsSchema)([
+      sessions[0], { kind: "connection", connection: { pointerId: 1, source: "a", sourceHandle: "out" } },
+    ])));
+    expect(invalid._tag).toBe("Failure");
+    const duplicatedPinchPointer = Effect.runSync(
+      Effect.exit(
+        S.decodeUnknownEffect(FlowInteractionSessionsSchema)([
+          { kind: "pinch", pinch: { firstPointerId: 9, secondPointerId: 9, firstStart: { x: 0, y: 0 }, secondStart: { x: 1, y: 1 }, viewportStart: { x: 0, y: 0, zoom: 1 } } },
+        ])
+      )
+    );
+    expect(duplicatedPinchPointer._tag).toBe("Failure");
+    expect(S.decodeUnknownSync(FlowInteractionSessionsSchema)([])).toEqual([]);
+  });
+
+  it("starts, activates, finishes, cancels idempotently, and replaces pane pan with pinch", () => {
+    const pressed = decode({ kind: "node-drag", phase: "pressed", drag: { nodeId: "n", pointerId: 11, pointerOffset: { x: 0, y: 0 } } });
+    const started = startFlowInteraction([], pressed);
+    expect(started.kind).toBe("started");
+    if (started.kind !== "started") return;
+    expect(startFlowInteraction(started.sessions, pressed)).toMatchObject({ kind: "rejected", reason: "pointer-already-owned" });
+    const concurrentConnection = decode({ kind: "connection", connection: { pointerId: 14, source: "a", sourceHandle: "out" } });
+    const concurrent = startFlowInteraction(started.sessions, concurrentConnection);
+    expect(concurrent).toMatchObject({ kind: "started", sessions: [{ kind: "node-drag" }, { kind: "connection" }] });
+    const activated = activateFlowInteraction(started.sessions, 11);
+    expect(activated.kind).toBe("activated");
+    if (activated.kind !== "activated") return;
+    expect(activated.session).toMatchObject({ kind: "node-drag", phase: "active" });
+    expect(finishFlowInteraction(activated.sessions, 11)).toMatchObject({ kind: "finished", pointerIds: [11], preview: "node", semanticEvent: "node-position" });
+    const cancelled = cancelFlowInteraction(activated.sessions, 11);
+    expect(cancelled).toMatchObject({ kind: "cancelled", semanticEvent: undefined });
+    if (cancelled.kind !== "cancelled") return;
+    expect(cancelFlowInteraction(cancelled.sessions, 11)).toMatchObject({ kind: "unchanged" });
+
+    const pan = decode({ kind: "pane-pan", pan: { pointerId: 12, pointerStart: { x: 0, y: 0 }, viewportStart: { x: 0, y: 0, zoom: 1 } } });
+    const pinch = decode({ kind: "pinch", pinch: { firstPointerId: 12, secondPointerId: 13, firstStart: { x: 0, y: 0 }, secondStart: { x: 10, y: 0 }, viewportStart: { x: 0, y: 0, zoom: 1 } } });
+    const panStarted = startFlowInteraction([], pan);
+    if (panStarted.kind !== "started") throw new Error("pane pan should start");
+    expect(replaceFlowInteraction(panStarted.sessions, 12, pinch)).toMatchObject({ kind: "started", sessions: [pinch] });
+    expect(cancelAllFlowInteractions([pinch])).toMatchObject([{ kind: "cancelled", pointerIds: [12, 13], preview: "viewport" }]);
+
+    const resize = decode({ kind: "node-resize", resize: { nodeId: "n", pointerId: 15, pointerStart: { x: 10, y: 20 }, sizeStart: { width: 80, height: 40 } } });
+    const resizeStarted = startFlowInteraction([], resize);
+    if (resizeStarted.kind !== "started") throw new Error("node resize should start");
+    expect(finishFlowInteraction(resizeStarted.sessions, 15)).toMatchObject({
+      kind: "finished", preview: "node-size", semanticEvent: "node-size", pointerIds: [15],
+    });
+    expect(cancelFlowInteraction(resizeStarted.sessions, 15)).toMatchObject({
+      kind: "cancelled", preview: "node-size", semanticEvent: undefined,
+    });
+  });
+});
+
+describe("node resize contract", () => {
+  it("applies finite flow-space deltas with minimum dimensions and unchanged position", () => {
+    const nodeId = S.decodeSync(NodeIdSchema)("n");
+    const document: FlowDocument = { nodes: [{ id: nodeId, label: "Node", position: { x: 4, y: 5 }, size: { width: 80, height: 40 } }], edges: [] };
+    const change = resizeNode(nodeId, { width: 80, height: 40 }, { x: 30, y: -40 });
+    expect(change).toStrictEqual({ kind: "node-size", nodeId: "n", size: { width: 110, height: 24 } });
+    const resized = applyNodeSizeChange(document, change);
+    expect(resized?.nodes[0]).toMatchObject({ position: { x: 4, y: 5 }, size: { width: 110, height: 24 } });
+    expect(resizeNode(nodeId, { width: 80, height: 40 }, { x: -100, y: -100 }).size).toStrictEqual({ width: 40, height: 24 });
+    expect(() => S.decodeUnknownSync(ActiveNodeResizeSchema)({ nodeId: "n", pointerId: 1, pointerStart: { x: 0, y: 0 }, sizeStart: { width: 0, height: 40 } })).toThrow();
+    expect(() => S.decodeUnknownSync(NodeSizeChangeSchema)({ kind: "node-size", nodeId: "n", size: { width: 0, height: 40 } })).toThrow();
+    expect(() => resizeNode(nodeId, { width: 80, height: 40 }, { x: Number.POSITIVE_INFINITY, y: 0 })).toThrow();
+  });
+});
 
 describe("viewport coordinates", () => {
   it("round-trips between flow and screen coordinates", () => {
@@ -203,6 +300,28 @@ describe("edge selection", () => {
 });
 
 describe("node dragging", () => {
+  it("keeps locked nodes selectable but omits them from single and mixed movement", () => {
+    const lockedId = S.decodeSync(NodeIdSchema)("locked");
+    const movableId = S.decodeSync(NodeIdSchema)("movable");
+    const document: FlowDocument = { edges: [], nodes: [
+      { id: lockedId, label: "Locked", position: { x: 0, y: 0 }, selected: true, draggable: false },
+      { id: movableId, label: "Movable", position: { x: 20, y: 0 }, selected: true },
+    ] };
+    expect(moveSelectedNodes({ ...document, nodes: [document.nodes[0]!] }, { x: 5, y: 0 }).positions).toEqual([]);
+    expect(moveSelectedNodes(document, { x: 5, y: 0 }).positions).toEqual([
+      { nodeId: movableId, position: { x: 25, y: 0 } },
+    ]);
+    const nested: FlowDocument = { edges: [], nodes: [
+      { id: lockedId, label: "Locked parent", position: { x: 0, y: 0 }, selected: true, draggable: false },
+      { id: movableId, label: "Selected child", position: { x: 20, y: 0 }, parentId: lockedId, selected: true },
+    ] };
+    expect(moveSelectedNodes(nested, { x: 5, y: 0 }).positions).toEqual([
+      { nodeId: movableId, position: { x: 25, y: 0 } },
+    ]);
+    expect(applyNodePositionChange(document, { kind: "node-position", nodeId: lockedId, position: { x: 5, y: 0 } })).toBeUndefined();
+    expect(applyNodePositionsChange(document, { kind: "node-positions", positions: [{ nodeId: lockedId, position: { x: 5, y: 0 } }, { nodeId: movableId, position: { x: 25, y: 0 } }] })).toBeUndefined();
+  });
+
   it("preserves the pointer offset and emits a semantic final position", () => {
     const nodeId = S.decodeSync(NodeIdSchema)("node-1");
 

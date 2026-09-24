@@ -49,6 +49,27 @@ Document and viewport ownership modes are independent. Both use the same schema-
 
 The DOM lookup is keyed by `NodeId`. Reconciliation creates resources for new identifiers, updates content and position in place, reorders existing elements, and releases listeners and observation for removed identifiers. Removing the active node cancels pointer capture before removal and does not publish a position change.
 
+## Vue adapter boundary
+
+`apps/vue` owns Vue components, the editor injection key, reactive bindings, DOM rendering, pointer listeners, and resize-observer lifetime. Each `FlowCanvas` provides one editor instance to descendants; `useFlow` reads only that instance. Document and viewport ownership modes are explicit and independent. Controlled changes emit typed update events for the caller to acknowledge; uncontrolled changes update adapter-owned state. Node wrappers use schema node IDs as Vue keys. The adapter uses core document, change, command, connection-validation, and viewport contracts and does not mount the vanilla renderer.
+
+The adapter's shared browser fixtures exercise keyed replacement, nested absolute positioning, controlled drag acknowledgement, connection validation, cancellation, culling, and destruction. These fixtures establish the listed boundaries only; the Vue host does not claim full feature parity with vanilla.
+
+## Foldkit adapter boundary
+
+`apps/foldkit` owns Foldkit Model/Message/OutMessage definitions, DOM rendering, pointer-session subscriptions, and runtime lifetime. Its graph child receives typed updates through Foldkit's child boundary and reports semantic changes through an `OutMessage` folded into a scoped output command. The caller document and viewport are schema-derived values in the model; pointer sessions and control modes remain host runtime state. Controlled node and edge changes emit candidates while retaining the authoritative document until a caller update acknowledges them. The adapter uses the same core connection validation and change schemas as the vanilla host.
+
+The Foldkit host is intentionally a bounded canvas: it renders keyed nodes and edges with basic connection handles and node movement. It does not copy vanilla's renderer registry, measured geometry, SVG edge paths, toolbar, complete gesture set, or screen-level parity. Its six shared conformance fixtures cover keyed updates, nested absolute positions, controlled acknowledgement, connection validity, gesture cancellation, and viewport culling. A separate smoke case checks keyed identity and runtime disposal; a focused controlled-connection case checks that the caller acknowledgement owns edge insertion. The exact production and test paths are in `research/traces/foldkit-adapter.md`.
+
+### Foldkit conformity and deviations
+
+| Classification | Behavior | Reason and evidence boundary |
+| --- | --- | --- |
+| Conforms | The model and messages derive from Effect Schemas, child messages are typed, and semantic changes leave through a Foldkit output port. | The shared adapter suite and controlled-change tests verify the observable contract. |
+| Conforms | Keyed document updates preserve node identity; controlled edge creation waits for caller acknowledgement. | The Foldkit smoke and focused controlled-connection browser tests exercise these boundaries. |
+| Intentionally different | The host renders a small DOM canvas and uses one active document-level pointer subscription for movement and connection gestures. | The adapter scope is the six shared fixtures; vanilla's richer renderers and gesture surface remain outside this boundary. |
+| Unverified | Pixel parity, full vanilla feature parity, and preservation of Foldkit Model state across Vite hot reload. | The browser suite verifies mounted behavior and cleanup, not visual parity or HMR state. |
+
 ### Controller conformity and deviations
 
 | Classification | Behavior | Reason and evidence boundary |

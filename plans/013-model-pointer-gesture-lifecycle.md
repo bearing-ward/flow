@@ -8,7 +8,7 @@
 ## Status
 
 - **Priority:** P1; **Effort:** L; **Risk:** HIGH; **Depends on:** 011
-- **Category:** correctness, architecture; **Planned at:** `6e84008`, 2026-09-23
+- **Category:** correctness, architecture; **Planned at:** `e709097`, refreshed 2026-09-23 after execution found concurrent pointer sessions
 
 ## Why and current state
 
@@ -37,6 +37,16 @@ traces the current and reference boundaries. Keyboard arrows at
 `mount-flow.ts:3124-3205` are immediate commands, not a persistent pointer
 gesture. Preserve that separation.
 
+Execution surfaced a valid concurrent state: `startConnection` captures one
+pointer and sets `activeConnection` at `apps/vanilla/src/mount-flow.ts:1099-1105`,
+while a later plain-node pointerdown checks `activeDrag` and
+`activeReconnection` but not `activeConnection` at lines 1864-1886. Therefore a
+connection and node drag can coexist on different pointers. The runtime model
+must represent multiple active interaction sessions and their pointer
+ownership, rather than one global active-mode value. A pinch session owns two
+pointer ids; no pointer id may belong to two sessions. Keep click-to-connect,
+which persists after pointer release, as its own separately named state.
+
 ## Scope, conventions, and commands
 
 Only edit `packages/core/src/domain/flow-runtime.schema.ts`, its `.test.ts`,
@@ -64,10 +74,13 @@ not commit, push, merge, or open a PR without operator instruction.
    new type, covering idle, pressed-before-threshold, active node/group drag,
    connection, reconnection, pane pan, pinch, selection, completed, and
    cancelled. Treat click-to-connect as a separately named session if it must
-   persist after pointer release. Use one discriminated Schema union for active
-   pointer state; do not make impossible combinations optional fields. Keep
-   pointer IDs on the variants that own them. **Verify:** `bun run typecheck`
-   exits 0 after core tests cover each variant.
+   persist after pointer release. Use a discriminated Schema union for each
+   active interaction session plus a collection/transition model that permits
+   disjoint pointer sessions to coexist. A pinch owns both pointer ids as one
+   session; validate that pointer ownership is unique across sessions. Do not
+   encode mutually exclusive fields as optionals. **Verify:** `bun run typecheck`
+   exits 0 after core tests cover each variant and reject duplicate
+   pointer ownership.
 2. Add pure transition functions for start, activate threshold, finish, and
    cancel; return a tagged outcome that tells the host which preview, pointer
    capture, frame, and semantic event to release or publish. Do not store DOM
@@ -102,9 +115,9 @@ not commit, push, merge, or open a PR without operator instruction.
 
 ## STOP and maintenance
 
-STOP if a single active pointer union cannot represent an observed simultaneous
-interaction, if a change requires altering public event meaning, if a scoped
-resource leaks in the new test, or if a gate fails after a focused fix. Report
-the conflicting state sequence and propose a revised model. Future resize and
-auto-pan plans must add explicit variants/transitions and extend the same
-cancellation table; do not restore parallel nullable gesture flags.
+STOP if the session collection cannot represent an observed pointer sequence,
+if two sessions claim one pointer, if a change requires altering public event
+meaning, if a scoped resource leaks in the new test, or if a gate fails after a
+focused fix. Future resize and auto-pan plans must add explicit session
+variants/transitions and extend the same cancellation table; do not restore
+parallel nullable gesture flags.

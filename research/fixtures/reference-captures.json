@@ -1,0 +1,48 @@
+{
+  "fixtureVersion": 1,
+  "reference": {
+    "repository": "https://github.com/xyflow/xyflow",
+    "commit": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "host": "React Flow example host, Chromium"
+  },
+  "normalization": "Retain the node inline style transform and reduce each behavior to whether the specified transform changed. Values are browser-observed inline style strings; no source-derived expectations are substituted.",
+  "captures": [
+    {
+      "id": "xyflow-draggable-false",
+      "input": {
+        "route": "/tests/generic/nodes/general",
+        "node": "notDraggable",
+        "action": "hover node, mouse down, move to (500, 500), mouse up"
+      },
+      "test": "tests/playwright/e2e/nodes.spec.ts :: Nodes > dragging > draggable=false prevents dragging",
+      "command": "FRAMEWORK=react pnpm exec playwright test -c playwright.react.config.ts --project=chromium -g 'draggable=false prevents dragging'",
+      "environment": "Linux container; pnpm 10.33.4; Chromium Playwright project; full checkout detached at the recorded commit; packages built with pnpm build.",
+      "observed": {
+        "before": "z-index: 0; transform: translate(0px, 400px); pointer-events: all; visibility: visible;",
+        "after": "z-index: 0; transform: translate(0px, 400px); pointer-events: all; visibility: visible;",
+        "transformChanged": false
+      }
+    },
+    {
+      "id": "xyflow-custom-drag-handle",
+      "input": {
+        "route": "/tests/generic/nodes/general",
+        "node": "drag-handle",
+        "actions": [
+          "mouse down at node bounds + (10, 10), move to (500, 500), mouse up",
+          "hover .custom-drag-handle, mouse down, move to (500, 500), mouse up"
+        ]
+      },
+      "test": "tests/playwright/e2e/nodes.spec.ts :: Nodes > dragging > custom drag handle works",
+      "command": "FRAMEWORK=react pnpm exec playwright test -c playwright.react.config.ts --project=chromium -g 'custom drag handle works'",
+      "environment": "Linux container; pnpm 10.33.4; Chromium Playwright project; full checkout detached at the recorded commit; packages built with pnpm build.",
+      "observed": {
+        "initial": "z-index: 0; transform: translate(200px, 0px); pointer-events: all; visibility: visible;",
+        "afterOutsideHandle": "z-index: 0; transform: translate(200px, 0px); pointer-events: all; visibility: visible;",
+        "afterHandle": "z-index: 1000; transform: translate(-85.0366px, 429.494px); pointer-events: all; visibility: visible;",
+        "outsideHandleTransformChanged": false,
+        "handleTransformChanged": true
+      }
+    }
+  ]
+}

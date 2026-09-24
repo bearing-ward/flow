@@ -2,11 +2,18 @@
   "name": "@flow/core",
   "version": "0.0.0",
   "private": true,
+  "files": ["dist/public.js", "dist/public.d.ts", "dist/domain", "dist/telemetry"],
   "type": "module",
   "exports": {
-    ".": "./src/public.ts"
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    }
+  },
+  "scripts": {
+    "build": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect && tsc --project tsconfig.build.json"
   },
   "dependencies": {
-    "effect": "4.0.0-rc.117"
+    "effect": "4.0.0-rc.116"
   }
 }

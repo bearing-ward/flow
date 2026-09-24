@@ -29,11 +29,28 @@ body,
   height: 100%;
   overflow: hidden;
   background-color: #f8fafc;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(var(--flow-background-color, #cbd5e1) 1px, transparent 1px);
+  background-size: var(--flow-background-spacing, 20px) var(--flow-background-spacing, 20px);
   cursor: grab;
   touch-action: none;
 }
+
+.flow-canvas[data-background="lines"] {
+  background-image: linear-gradient(to right, var(--flow-background-color, #cbd5e1) 1px, transparent 1px), linear-gradient(to bottom, var(--flow-background-color, #cbd5e1) 1px, transparent 1px);
+}
+
+.flow-canvas[data-background="none"] { background-image: none; }
+
+.flow-canvas-ui { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.flow-controls, .flow-minimap, .flow-panel-slot { position: absolute; pointer-events: auto; }
+.flow-controls { top: 12px; left: 12px; display: grid; gap: 4px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; box-shadow: 0 2px 8px rgb(15 23 42 / 12%); }
+.flow-control-button { min-width: 36px; min-height: 32px; border: 0; border-radius: 4px; background: #fff; color: #1f2937; cursor: pointer; }
+.flow-control-button:hover, .flow-control-button:focus-visible { background: #eff6ff; outline: 2px solid #2563eb; }
+.flow-minimap { right: 12px; bottom: 12px; width: 180px; height: 120px; overflow: hidden; border: 1px solid #94a3b8; border-radius: 5px; background: rgb(255 255 255 / 92%); cursor: crosshair; }
+.flow-minimap-node { fill: #93c5fd; stroke: #1d4ed8; stroke-width: .8px; }
+.flow-minimap-viewport { fill: rgb(37 99 235 / 8%); stroke: #2563eb; stroke-width: 1.2px; }
+.flow-panel-slot { top: 12px; right: 12px; }
+.flow-toolbar-container { position: absolute; left: 0; top: 0; pointer-events: auto; }
 
 .flow-canvas.panning {
   cursor: grabbing;
@@ -153,6 +170,25 @@ body,
   box-shadow: 0 4px 12px rgb(15 23 42 / 20%);
 }
 
+.flow-node-resize-handle {
+  position: absolute;
+  z-index: 2;
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid #1d4ed8;
+  border-radius: 2px;
+  background: #fff;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.flow-node.resizing {
+  user-select: none;
+}
+
 .flow-node.selected,
 .flow-node:focus-visible {
   border-color: #2563eb;
@@ -248,27 +284,6 @@ body,
   line-height: 1.45;
 }
 
-.flow-demo-toolbar-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.flow-demo-anchor {
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 4px 7px;
-  border: 1px solid #94a3b8;
-  border-radius: 5px;
-  background: #fff;
-  color: #334155;
-  font: inherit;
-  font-size: 10px;
-  pointer-events: auto;
-}
 
 .flow-demo-kicker {
   color: #2563eb;

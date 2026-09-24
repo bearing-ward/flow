@@ -3,12 +3,20 @@ import { Effect } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
 const checks = [
+  ["architecture boundaries", ["bun", "run", "check:architecture"]],
+  ["documentation", ["bun", "run", "docs:check"]],
   ["research inventory", ["bun", "run", "research:inventory"]],
   ["research trace citations", ["bun", "run", "research:check-traces"]],
+  ["package builds", ["bun", "run", "build:packages"]],
   ["typecheck", ["bun", "run", "typecheck"]],
   ["tests", ["bun", "run", "test"]],
+  ["packed consumer", ["bun", "run", "test:consumer"]],
   ["build", ["bun", "run", "build"]],
   ["browser", ["bun", "run", "test:browser"]],
+  ["Vue build", ["bun", "run", "--cwd", "apps/vue", "build"]],
+  ["Vue conformance", ["bun", "run", "test:conformance:vue"]],
+  ["Foldkit build", ["bun", "run", "--cwd", "apps/foldkit", "build"]],
+  ["Foldkit conformance", ["bun", "run", "test:conformance:foldkit"]],
 ] as const;
 
 const program = Effect.gen(function* program() {

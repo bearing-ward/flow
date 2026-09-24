@@ -135,6 +135,278 @@ const position = (page: Page, nodeId: string) =>
     return { x: matrix.m41, y: matrix.m42 };
   });
 
+type GestureMode = "node-drag" | "connection" | "reconnection" | "pane-pan" | "selection";
+type Cancellation = "escape" | "blur" | "pointercancel" | "capture-loss" | "node-removal" | "edge-removal" | "destroy";
+
+const mountCancellationScenario = async (page: Page): Promise<void> => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing flow host");
+    const controller = mountFlow(root, {
+      nodes: [
+        { id: "source", label: "Source", position: { x: 80, y: 180 }, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "target", label: "Target", position: { x: 300, y: 180 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+        { id: "drag", label: "Drag", position: { x: 500, y: 180 } },
+        { id: "spare", label: "Spare", position: { x: 700, y: 180 } },
+      ],
+      edges: [{ id: "edge", source: "source", sourceHandle: "out", target: "target", targetHandle: "in", selected: true }],
+    }, { documentMode: "uncontrolled", viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.25, maxZoom: 2 } } });
+    globalThis.flowChanges = [];
+    controller.subscribe((change: CoreModule.FlowChange) => globalThis.flowChanges?.push(change));
+    globalThis.flowController = controller;
+  });
+  await expect(page.getByTestId("flow-canvas")).toBeVisible();
+  await expect(page.locator('[data-testid="flow-edge-reconnect-anchor"]')).toHaveCount(2);
+};
+
+const mountResizeScenario = async (
+  page: Page,
+  documentMode: "controlled" | "uncontrolled" = "uncontrolled",
+  zoom = 1
+): Promise<void> => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
+  await page.evaluate(async ({ mode, initialZoom }) => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing flow host");
+    const document = {
+      nodes: [
+        { id: "source", label: "Source", position: { x: 80, y: 100 }, size: { width: 90, height: 60 }, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+      ],
+      edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }],
+    };
+    const controller = mountFlow(root, document, {
+      documentMode: mode,
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: initialZoom }, limits: { minZoom: 0.25, maxZoom: 3 } },
+    });
+    globalThis.flowChanges = [];
+    controller.subscribe((change: CoreModule.FlowChange) => globalThis.flowChanges?.push(change));
+    globalThis.flowController = controller;
+  }, { mode: documentMode, initialZoom: zoom });
+  const resizeHandle = page.getByTestId("flow-node-resize-handle");
+  await expect(resizeHandle).toBeVisible();
+  await expect(resizeHandle).toHaveAttribute("aria-label", "Resize Source");
+  await resizeHandle.focus();
+  await expect(resizeHandle).toBeFocused();
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveAttribute("data-measured-width", "90");
+};
+
+const beginResize = async (page: Page, dx = 60, dy = 30): Promise<{ x: number; y: number }> => {
+  const bounds = await page.getByTestId("flow-node-resize-handle").boundingBox();
+  if (bounds === null) throw new Error("Missing node resize handle");
+  const start = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + dx, start.y + dy);
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveClass(/resizing/u);
+  return start;
+};
+
+const currentSize = (page: Page) => page.locator('.flow-node[data-node-id="source"]').evaluate((node) => ({
+  width: Number.parseFloat((node as HTMLElement).style.width),
+  height: Number.parseFloat((node as HTMLElement).style.height),
+}));
+
+const beginCancellationGesture = async (page: Page, mode: GestureMode): Promise<void> => {
+  const canvas = page.getByTestId("flow-canvas");
+  if (mode === "node-drag") {
+    const start = await centerOf(page, '[data-node-id="drag"]');
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x + 20, start.y + 5);
+    await expect(page.locator('[data-node-id="drag"]')).toHaveClass(/dragging/u);
+  } else if (mode === "connection") {
+    const start = await centerOf(page, '.flow-node[data-node-id="source"] .flow-handle[data-handle-id="out"]');
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x + 35, start.y + 25);
+    await expect(page.locator(".flow-connection-preview")).toHaveCount(1);
+  } else if (mode === "reconnection") {
+    const anchor = await page.locator('[data-testid="flow-edge-reconnect-anchor"]').first().boundingBox();
+    if (anchor === null) throw new Error("Missing reconnect anchor");
+    await page.mouse.move(anchor.x + anchor.width / 2, anchor.y + anchor.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(anchor.x + anchor.width / 2 + 30, anchor.y + anchor.height / 2 + 20);
+    await expect(page.locator(".flow-connection-preview")).toHaveCount(1);
+  } else {
+    const bounds = await canvas.boundingBox();
+    if (bounds === null) throw new Error("Missing canvas bounds");
+    const start = mode === "selection" ? { x: bounds.x + 20, y: bounds.y + 70 } : { x: bounds.x + 20, y: bounds.y + 20 };
+    if (mode === "selection") await page.keyboard.down("Shift");
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x + 35, start.y + 25);
+    await expect(mode === "selection" ? page.getByTestId("flow-selection-rect") : canvas).toBeVisible();
+    if (mode === "pane-pan") await expect(canvas).toHaveClass(/panning/u);
+  }
+};
+
+const cancelGesture = async (page: Page, mode: GestureMode, cancellation: Cancellation): Promise<void> => {
+  if (cancellation === "escape") {
+    await page.getByTestId("flow-canvas").evaluate((canvas) =>
+      canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  } else if (cancellation === "blur") {
+    await page.evaluate(() => globalThis.dispatchEvent(new Event("blur")));
+  } else if (cancellation === "pointercancel" || cancellation === "capture-loss") {
+    const type = cancellation === "pointercancel" ? "pointercancel" : "lostpointercapture";
+    await page.getByTestId("flow-canvas").evaluate((canvas, eventType) =>
+      canvas.dispatchEvent(new PointerEvent(eventType, { bubbles: true, pointerId: 1 })), type);
+  } else if (cancellation === "node-removal") {
+    await page.evaluate((gestureMode) => {
+      const nodes = gestureMode === "connection"
+        ? [{ id: "target", label: "Target", position: { x: 300, y: 180 }, handles: [{ id: "in", kind: "target", side: "left" }] }, { id: "drag", label: "Drag", position: { x: 500, y: 180 } }, { id: "spare", label: "Spare", position: { x: 700, y: 180 } }]
+        : [{ id: "source", label: "Source", position: { x: 80, y: 180 }, handles: [{ id: "out", kind: "source", side: "right" }] }, { id: "target", label: "Target", position: { x: 300, y: 180 }, handles: [{ id: "in", kind: "target", side: "left" }] }, { id: "spare", label: "Spare", position: { x: 700, y: 180 } }];
+      globalThis.flowController?.update({ nodes, edges: [] } as never);
+    }, mode);
+  } else if (cancellation === "edge-removal") {
+    await page.evaluate(() => globalThis.flowController?.update({
+      nodes: [
+        { id: "source", label: "Source", position: { x: 80, y: 180 }, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "target", label: "Target", position: { x: 300, y: 180 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+        { id: "drag", label: "Drag", position: { x: 500, y: 180 } },
+        { id: "spare", label: "Spare", position: { x: 700, y: 180 } },
+      ], edges: [],
+    }));
+  } else {
+    await page.evaluate(() => globalThis.flowController?.destroy());
+  }
+};
+
+const cancellationCases: readonly { mode: GestureMode; cancellation: Cancellation }[] = [
+  ...(["escape", "blur", "pointercancel", "capture-loss", "destroy"] as const).flatMap((cancellation) =>
+    (["node-drag", "connection", "reconnection", "pane-pan", "selection"] as const).map((mode) => ({ mode, cancellation }))
+  ),
+  { mode: "node-drag", cancellation: "node-removal" },
+  { mode: "connection", cancellation: "node-removal" },
+  { mode: "reconnection", cancellation: "edge-removal" },
+];
+
+for (const { mode, cancellation } of cancellationCases) {
+  test(`${mode} cancellation by ${cancellation} releases its session`, async ({ page }) => {
+    await mountCancellationScenario(page);
+    await beginCancellationGesture(page, mode);
+    await cancelGesture(page, mode, cancellation);
+    if (cancellation !== "destroy") {
+      await page.mouse.up();
+      if (mode === "node-drag" && cancellation === "node-removal") await expect(page.locator('[data-node-id="drag"]')).toHaveCount(0);
+      else if (mode === "node-drag") await expect(page.locator('[data-node-id="drag"]')).not.toHaveClass(/dragging/u);
+      if (mode === "connection" || mode === "reconnection") await expect(page.locator(".flow-connection-preview")).toHaveCount(0);
+      if (mode === "pane-pan") await expect(page.getByTestId("flow-canvas")).not.toHaveClass(/panning/u);
+      if (mode === "selection") await expect(page.getByTestId("flow-selection-rect")).toHaveCount(0);
+      expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+
+      const spare = await centerOf(page, '[data-node-id="spare"]');
+      await page.mouse.move(spare.x, spare.y);
+      await page.mouse.down();
+      await page.mouse.move(spare.x + 20, spare.y + 5);
+      await expect(page.locator('[data-node-id="spare"]')).toHaveClass(/dragging/u);
+      await page.getByTestId("flow-canvas").evaluate((canvas) =>
+        canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+      await page.mouse.up();
+      expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+    }
+  });
+}
+
+test("threshold-only node press cancels without a selection or position change", async ({ page }) => {
+  await mountCancellationScenario(page);
+  const start = await centerOf(page, '[data-node-id="drag"]');
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await expect(page.locator('[data-node-id="drag"]')).not.toHaveClass(/dragging/u);
+  await page.getByTestId("flow-canvas").evaluate((canvas) =>
+    canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+  await expect(page.locator(".flow-connection-preview")).toHaveCount(0);
+});
+
+// Playwright/CDP touch injection does not preserve native pointer capture in this environment.
+test.fixme("concurrent native connection and node drag cancellation requires real pointer capture", async () => {});
+
+test.fixme("native two-contact pinch cancellation requires real touch pointer capture", async () => {});
+
+for (const zoom of [1, 2] as const) {
+  test(`lower-right resize previews edges and commits one flow-space size change at zoom ${zoom}`, async ({ page }) => {
+    await mountResizeScenario(page, "uncontrolled", zoom);
+    const edge = page.locator('[data-edge-id="edge"] .flow-edge-path');
+    const previousPath = await edge.getAttribute("d");
+    const change = { width: 90 + 60 / zoom, height: 60 + 30 / zoom };
+    await beginResize(page);
+    await expect.poll(() => currentSize(page)).toStrictEqual(change);
+    await expect(page.locator('.flow-node[data-node-id="source"]')).not.toHaveClass(/dragging/u);
+    await expect(page.getByTestId("flow-canvas")).not.toHaveClass(/panning/u);
+    await expect.poll(() => edge.getAttribute("d")).not.toBe(previousPath);
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toStrictEqual([
+      { kind: "node-size", nodeId: "source", size: change },
+    ]);
+    expect(await currentSize(page)).toStrictEqual(change);
+    expect(await position(page, "source")).toStrictEqual({ x: 80, y: 100 });
+  });
+
+  test(`controlled lower-right resize waits for acknowledgement at zoom ${zoom}`, async ({ page }) => {
+    await mountResizeScenario(page, "controlled", zoom);
+    const change = { width: 90 + 60 / zoom, height: 60 + 30 / zoom };
+    await beginResize(page);
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toStrictEqual([
+      { kind: "node-size", nodeId: "source", size: change },
+    ]);
+    expect(await currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+    await page.evaluate((size) => globalThis.flowController?.update({
+      nodes: [
+        { id: "source", label: "Source", position: { x: 80, y: 100 }, size, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+      ],
+      edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }],
+    } as never), change);
+    await expect.poll(() => currentSize(page)).toStrictEqual(change);
+  });
+}
+
+for (const cancellation of ["escape", "blur", "pointercancel", "capture-loss", "node-removal", "destroy"] as const) {
+  test(`node resize cancellation by ${cancellation} restores authoritative size`, async ({ page }) => {
+    await mountResizeScenario(page);
+    const source = page.locator('.flow-node[data-node-id="source"]');
+    await beginResize(page);
+    await expect.poll(() => currentSize(page)).toStrictEqual({ width: 150, height: 90 });
+    if (cancellation === "escape") {
+      await page.getByTestId("flow-canvas").evaluate((canvas) => canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+    } else if (cancellation === "blur") {
+      await page.evaluate(() => globalThis.dispatchEvent(new Event("blur")));
+    } else if (cancellation === "pointercancel" || cancellation === "capture-loss") {
+      await page.getByTestId("flow-canvas").evaluate((canvas, name) => canvas.dispatchEvent(new PointerEvent(name, { bubbles: true, pointerId: 1 })), cancellation === "pointercancel" ? "pointercancel" : "lostpointercapture");
+    } else if (cancellation === "node-removal") {
+      await page.evaluate(() => globalThis.flowController?.update({
+        nodes: [{ id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] }],
+        edges: [],
+      } as never));
+    } else {
+      await page.evaluate(() => globalThis.flowController?.destroy());
+    }
+    if (cancellation !== "destroy") await page.mouse.up();
+    expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+    if (cancellation === "node-removal") {
+      await expect(source).toHaveCount(0);
+    } else if (cancellation !== "destroy") {
+      await expect(source).not.toHaveClass(/resizing/u);
+      await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+    } else {
+      await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
+    }
+  });
+}
+
 test("node extent keeps a complete node inside its bounds during drag", async ({
   page,
 }) => {
@@ -267,7 +539,7 @@ test("connection radius accepts a nearby release outside a target handle", async
 
   const source = await centerOf(
     page,
-    '[data-node-id="source"] [data-handle-id="out"]'
+    '.flow-node[data-node-id="source"] [data-handle-id="out"]'
   );
 
   const target = await centerOf(
@@ -301,7 +573,7 @@ test("custom connection validator rejects one target and accepts another", async
 
   const source = await centerOf(
     page,
-    '[data-node-id="source"] [data-handle-id="out"]'
+    '.flow-node[data-node-id="source"] [data-handle-id="out"]'
   );
 
   const rejected = await centerOf(
@@ -329,7 +601,7 @@ test("custom connection validator also applies to two-click connections", async 
   page,
 }) => {
   await mountScenario(page, "validator");
-  const source = page.locator('[data-node-id="source"] [data-handle-id="out"]');
+  const source = page.locator('.flow-node[data-node-id="source"] [data-handle-id="out"]');
 
   const rejected = page.locator(
     '[data-node-id="rejected"] [data-handle-id="in"]'
@@ -357,13 +629,13 @@ test("keyboard activates focused source and target handles in click mode", async
 }) => {
   await mountScenario(page, "keyboard");
   await expect(
-    page.locator('.flow-node[data-node-id="source"]')
+    page.locator('.flow-node.flow-node[data-node-id="source"]')
   ).toHaveAttribute("data-measured-width", "150");
   await expect(
     page.locator('.flow-node[data-node-id="rejected"]')
   ).toHaveAttribute("data-measured-width", "150");
 
-  const source = page.locator('[data-node-id="source"] [data-handle-id="out"]');
+  const source = page.locator('.flow-node[data-node-id="source"] [data-handle-id="out"]');
 
   const target = page.locator(
     '[data-node-id="rejected"] [data-handle-id="in"]'
@@ -396,7 +668,7 @@ test("keyboard activates focused source and target handles in click mode", async
 
 test("window blur cancels a pending click connection", async ({ page }) => {
   await mountScenario(page, "keyboard");
-  const source = page.locator('[data-node-id="source"] [data-handle-id="out"]');
+  const source = page.locator('.flow-node[data-node-id="source"] [data-handle-id="out"]');
 
   await source.click();
   await expect(page.getByTestId("flow-connection-preview")).toBeVisible();
@@ -419,11 +691,11 @@ test("lost pointer capture cancels a node drag without publishing a change", asy
   page,
 }) => {
   await mountScenario(page, "keyboard");
-  const node = page.locator('.flow-node[data-node-id="source"]');
+  const node = page.locator('.flow-node.flow-node[data-node-id="source"]');
   const original = await position(page, "source");
   const start = await centerOf(
     page,
-    '[data-node-id="source"] .flow-node-content'
+    '.flow-node[data-node-id="source"] .flow-node-content'
   );
 
   await page.mouse.move(start.x, start.y);
@@ -432,7 +704,7 @@ test("lost pointer capture cancels a node drag without publishing a change", asy
   await expect(node).toHaveClass(/dragging/u);
   await page.evaluate(() => {
     const activeNode = globalThis.document.querySelector<HTMLElement>(
-      '[data-node-id="source"]'
+      '.flow-node[data-node-id="source"]'
     );
 
     activeNode?.dispatchEvent(
@@ -451,9 +723,9 @@ test("Escape cancels an active node drag without publishing a change", async ({
   page,
 }) => {
   await mountScenario(page, "keyboard");
-  const node = page.locator('.flow-node[data-node-id="source"]');
+  const node = page.locator('.flow-node.flow-node[data-node-id="source"]');
   const original = await position(page, "source");
-  const start = await centerOf(page, '.flow-node[data-node-id="source"]');
+  const start = await centerOf(page, '.flow-node.flow-node[data-node-id="source"]');
 
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();

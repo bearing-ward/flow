@@ -7,9 +7,12 @@ import {
   FlowEdgeSchema,
   EdgeIdSchema,
   NodeIdSchema,
+  NodeSizeSchema,
   XYPositionSchema,
 } from "./flow.schema.ts";
-import type { FlowDocument, NodeId, XYPosition } from "./flow.schema.ts";
+import type { FlowDocument, NodeId, NodeSize, XYPosition } from "./flow.schema.ts";
+import { ActiveConnectionSchema } from "./flow-connection.schema.ts";
+import { ActiveEdgeReconnectSchema } from "./flow-reconnection.schema.ts";
 
 export const FlowControlModeSchema = S.Literals(["controlled", "uncontrolled"]);
 
@@ -89,6 +92,181 @@ export const ActiveSelectionRectSchema = S.Struct({
 
 export type ActiveSelectionRect = typeof ActiveSelectionRectSchema.Type;
 
+export const ActiveNodeResizeSchema = S.Struct({
+  nodeId: NodeIdSchema,
+  pointerId: S.Number,
+  pointerStart: XYPositionSchema,
+  sizeStart: NodeSizeSchema,
+});
+
+export type ActiveNodeResize = typeof ActiveNodeResizeSchema.Type;
+
+/**
+ * Pointer session transitions (pointer ownership is always explicit):
+ * idle -> node-pressed -> node-drag -> completed | cancelled;
+ * idle -> connection | reconnection | pane-pan | selection | node-resize -> completed | cancelled;
+ * pane-pan + a second distinct touch pointer -> one pinch session -> completed | cancelled.
+ * Distinct pointers may own concurrent sessions (for example connection + node drag).
+ * Click-to-connect is a separate persistent session because it outlives pointerup.
+ * Keyboard movement is an immediate command and does not enter this state model.
+ */
+export const FlowInteractionSessionSchema = S.Union([
+  S.Struct({
+    kind: S.Literal("node-drag"),
+    phase: S.Literals(["pressed", "active"]),
+    drag: S.Union([ActiveNodeDragSchema, ActiveNodeGroupDragSchema]),
+  }),
+  S.Struct({ kind: S.Literal("connection"), connection: ActiveConnectionSchema }),
+  S.Struct({ kind: S.Literal("reconnection"), reconnection: ActiveEdgeReconnectSchema }),
+  S.Struct({ kind: S.Literal("pane-pan"), pan: ActiveViewportPanSchema }),
+  S.Struct({ kind: S.Literal("pinch"), pinch: ActivePinchSchema }),
+  S.Struct({ kind: S.Literal("selection"), selection: ActiveSelectionRectSchema }),
+  S.Struct({ kind: S.Literal("node-resize"), resize: ActiveNodeResizeSchema }),
+]);
+
+export type FlowInteractionSession = typeof FlowInteractionSessionSchema.Type;
+
+const pointerIdsForSession = (session: FlowInteractionSession): readonly number[] => {
+  switch (session.kind) {
+    case "node-drag": return [session.drag.pointerId];
+    case "connection": return [session.connection.pointerId];
+    case "reconnection": return [session.reconnection.pointerId];
+    case "pane-pan": return [session.pan.pointerId];
+    case "pinch": return [session.pinch.firstPointerId, session.pinch.secondPointerId];
+    case "selection": return [session.selection.pointerId];
+    case "node-resize": return [session.resize.pointerId];
+  }
+};
+
+export const FlowInteractionSessionsSchema = S.Array(FlowInteractionSessionSchema).check(
+  S.makeFilter((sessions) => {
+    const owned = sessions.flatMap(pointerIdsForSession);
+    return new Set(owned).size === owned.length
+      ? undefined
+      : "A pointer id can belong to only one interaction session";
+  })
+);
+
+export type FlowInteractionSessions = typeof FlowInteractionSessionsSchema.Type;
+export type FlowInteractionSemanticEvent = "node-position" | "node-positions" | "node-size" | "edge-add" | "edge-reconnect" | "viewport" | "selection-set";
+
+export type FlowInteractionOutcome =
+  | { readonly kind: "started"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession }
+  | { readonly kind: "rejected"; readonly sessions: FlowInteractionSessions; readonly reason: "pointer-already-owned" }
+  | { readonly kind: "activated"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession }
+  | { readonly kind: "finished" | "cancelled"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession; readonly pointerIds: readonly number[]; readonly preview: "node" | "node-size" | "connection" | "viewport" | "selection"; readonly frame: "connection-autopan" | "selection-autopan" | undefined; readonly semanticEvent: FlowInteractionSemanticEvent | undefined }
+  | { readonly kind: "unchanged"; readonly sessions: FlowInteractionSessions };
+
+const sessionIndexForPointer = (sessions: FlowInteractionSessions, pointerId: number): number =>
+  sessions.findIndex((session) => pointerIdsForSession(session).includes(pointerId));
+
+/** Start a session only if none of its pointer ids are already owned. */
+export const startFlowInteraction = (
+  sessions: FlowInteractionSessions,
+  session: FlowInteractionSession
+): FlowInteractionOutcome => {
+  const candidateIds = pointerIdsForSession(session);
+  const occupied = new Set(sessions.flatMap(pointerIdsForSession));
+  if (new Set(candidateIds).size !== candidateIds.length || candidateIds.some((pointerId) => occupied.has(pointerId))) {
+    return { kind: "rejected", sessions, reason: "pointer-already-owned" };
+  }
+  return { kind: "started", sessions: [...sessions, session], session };
+};
+
+/** Replace one existing session atomically, used when a second touch turns pan into pinch. */
+export const replaceFlowInteraction = (
+  sessions: FlowInteractionSessions,
+  oldPointerId: number,
+  replacement: FlowInteractionSession
+): FlowInteractionOutcome => {
+  const index = sessionIndexForPointer(sessions, oldPointerId);
+  if (index < 0) return { kind: "unchanged", sessions };
+  const remaining = sessions.filter((_, item) => item !== index);
+  const result = startFlowInteraction(remaining, replacement);
+  return result.kind === "started" ? result : { kind: "rejected", sessions, reason: "pointer-already-owned" };
+};
+
+/** Activate a node drag only after the host confirms its movement threshold. */
+export const activateFlowInteraction = (
+  sessions: FlowInteractionSessions,
+  pointerId: number
+): FlowInteractionOutcome => {
+  const index = sessionIndexForPointer(sessions, pointerId);
+  const session = sessions[index];
+  if (session?.kind !== "node-drag" || session.phase !== "pressed") {
+    return { kind: "unchanged", sessions };
+  }
+  const activated: FlowInteractionSession = { ...session, phase: "active" };
+  return { kind: "activated", sessions: sessions.map((item, at) => at === index ? activated : item), session: activated };
+};
+
+const previewForSession = (session: FlowInteractionSession): "node" | "node-size" | "connection" | "viewport" | "selection" => {
+  switch (session.kind) {
+    case "node-drag": return "node";
+    case "connection":
+    case "reconnection": return "connection";
+    case "pane-pan":
+    case "pinch": return "viewport";
+    case "selection": return "selection";
+    case "node-resize": return "node-size";
+  }
+};
+
+const frameForSession = (session: FlowInteractionSession): "connection-autopan" | "selection-autopan" | undefined =>
+  session.kind === "connection"
+    ? "connection-autopan"
+    : session.kind === "selection" ? "selection-autopan" : undefined;
+
+const semanticEventForSession = (session: FlowInteractionSession): FlowInteractionSemanticEvent | undefined => {
+  switch (session.kind) {
+    case "node-drag": return session.phase === "pressed" ? undefined : "positions" in session.drag ? "node-positions" : "node-position";
+    case "connection": return "edge-add";
+    case "reconnection": return "edge-reconnect";
+    case "pane-pan":
+    case "pinch": return "viewport";
+    case "selection": return "selection-set";
+    case "node-resize": return "node-size";
+  }
+};
+
+const terminateFlowInteraction = (
+  sessions: FlowInteractionSessions,
+  pointerId: number,
+  kind: "finished" | "cancelled"
+): FlowInteractionOutcome => {
+  const index = sessionIndexForPointer(sessions, pointerId);
+  const session = sessions[index];
+  if (session === undefined) return { kind: "unchanged", sessions };
+  return {
+    kind,
+    sessions: sessions.filter((_, at) => at !== index),
+    session,
+    pointerIds: pointerIdsForSession(session),
+    preview: previewForSession(session),
+    frame: frameForSession(session),
+    semanticEvent: kind === "finished" ? semanticEventForSession(session) : undefined,
+  };
+};
+
+/** Finish or cancel a session; repeated terminal events are harmless no-ops. */
+export const finishFlowInteraction = (sessions: FlowInteractionSessions, pointerId: number): FlowInteractionOutcome =>
+  terminateFlowInteraction(sessions, pointerId, "finished");
+
+export const cancelFlowInteraction = (sessions: FlowInteractionSessions, pointerId: number): FlowInteractionOutcome =>
+  terminateFlowInteraction(sessions, pointerId, "cancelled");
+
+/** Cancel every session, returning one cleanup outcome per uniquely owned pointer set. */
+export const cancelAllFlowInteractions = (sessions: FlowInteractionSessions): readonly FlowInteractionOutcome[] => {
+  let remaining = sessions;
+  const outcomes: FlowInteractionOutcome[] = [];
+  for (const session of sessions) {
+    const outcome = cancelFlowInteraction(remaining, pointerIdsForSession(session)[0]!);
+    outcomes.push(outcome);
+    remaining = outcome.sessions;
+  }
+  return outcomes;
+};
+
 export const NodePositionChangeSchema = S.Struct({
   kind: S.Literal("node-position"),
   nodeId: NodeIdSchema,
@@ -105,6 +283,27 @@ export const NodePositionsChangeSchema = S.Struct({
 });
 
 export type NodePositionsChange = typeof NodePositionsChangeSchema.Type;
+
+export const NodeSizeChangeSchema = S.Struct({
+  kind: S.Literal("node-size"),
+  nodeId: NodeIdSchema,
+  size: NodeSizeSchema,
+});
+
+export type NodeSizeChange = typeof NodeSizeChangeSchema.Type;
+
+export const resizeNode = (
+  nodeId: NodeId,
+  initialSize: NodeSize,
+  delta: XYPosition
+): NodeSizeChange => ({
+  kind: "node-size",
+  nodeId,
+  size: S.decodeUnknownSync(NodeSizeSchema)({
+    width: Math.max(40, initialSize.width + delta.x),
+    height: Math.max(24, initialSize.height + delta.y),
+  }),
+});
 
 export const ViewportChangeSchema = S.Struct({
   kind: S.Literal("viewport"),
@@ -161,6 +360,7 @@ export type EdgeRemoveChange = typeof EdgeRemoveChangeSchema.Type;
 export const FlowChangeSchema = S.Union([
   NodePositionChangeSchema,
   NodePositionsChangeSchema,
+  NodeSizeChangeSchema,
   ViewportChangeSchema,
   EdgeAddChangeSchema,
   EdgeSelectionChangeSchema,
@@ -171,6 +371,20 @@ export const FlowChangeSchema = S.Union([
 ]);
 
 export type FlowChange = typeof FlowChangeSchema.Type;
+
+export const applyNodeSizeChange = (
+  document: FlowDocument,
+  change: NodeSizeChange
+): FlowDocument | undefined => {
+  const found = document.nodes.some((node) => node.id === change.nodeId);
+  if (!found) return;
+  return {
+    ...document,
+    nodes: document.nodes.map((node) =>
+      node.id === change.nodeId ? { ...node, size: change.size } : node
+    ),
+  };
+};
 
 export const applyEdgeSelectionChange = (
   document: FlowDocument,
@@ -560,7 +774,7 @@ export const moveSelectedNodes = (
     let parentId = nodesById.get(nodeId)?.parentId;
     while (parentId !== undefined) {
       const parent = nodesById.get(parentId);
-      if (parent?.selected === true) return true;
+      if (parent?.selected === true && parent.draggable !== false) return true;
       parentId = parent?.parentId;
     }
     return false;
@@ -569,7 +783,7 @@ export const moveSelectedNodes = (
   return {
     kind: "node-positions",
     positions: document.nodes
-      .filter((node) => node.selected === true && node.hidden !== true && !hasSelectedAncestor(node.id))
+      .filter((node) => node.selected === true && node.hidden !== true && node.draggable !== false && !hasSelectedAncestor(node.id))
       .map((node) => ({
       nodeId: node.id,
       position:
@@ -616,6 +830,8 @@ export const applyNodePositionChange = (
       return node;
     }
 
+    if (node.draggable === false) return node;
+
     found = true;
 
     return { ...node, position: change.position };
@@ -635,7 +851,7 @@ export const applyNodePositionsChange = (
   if (
     positions.size !== change.positions.length ||
     [...positions.keys()].some(
-      (id) => !document.nodes.some((node) => node.id === id)
+      (id) => !document.nodes.some((node) => node.id === id && node.draggable !== false)
     )
   ) {
     return;

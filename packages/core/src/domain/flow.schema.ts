@@ -53,6 +53,13 @@ export const FlowHandleSchema = S.Struct({
 
 export type FlowHandle = typeof FlowHandleSchema.Type;
 
+export const NodeSizeSchema = S.Struct({
+  width: S.Finite.check(S.isGreaterThan(0)),
+  height: S.Finite.check(S.isGreaterThan(0)),
+});
+
+export type NodeSize = typeof NodeSizeSchema.Type;
+
 export const FlowNodeSchema = S.Struct({
   id: NodeIdSchema,
   label: S.String,
@@ -61,16 +68,15 @@ export const FlowNodeSchema = S.Struct({
   type: S.optional(S.NonEmptyString),
   data: S.optional(S.JsonObject),
   zIndex: S.optional(S.Finite),
-  size: S.optional(S.Struct({
-    width: S.Finite.check(S.isGreaterThan(0)),
-    height: S.Finite.check(S.isGreaterThan(0)),
-  })),
+  size: S.optional(NodeSizeSchema),
   extent: S.optional(S.Literals(["parent"])),
   handles: S.optional(S.Array(FlowHandleSchema)),
   selected: S.optional(S.Boolean),
   selectable: S.optional(S.Boolean),
   focusable: S.optional(S.Boolean),
+  draggable: S.optional(S.Boolean),
   ariaLabel: S.optional(S.NonEmptyString),
+  ariaDescription: S.optional(S.NonEmptyString),
   hidden: S.optional(S.Boolean),
 });
 

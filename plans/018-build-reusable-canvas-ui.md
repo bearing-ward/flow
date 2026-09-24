@@ -7,7 +7,17 @@
 ## Status
 
 - **Priority:** P2; **Effort:** L; **Risk:** MED; **Depends on:** 015-017
-- **Category:** feature, UI; **Planned at:** `6e84008`, 2026-09-23
+- **Category:** feature, UI; **Planned at:** `e709097`, refreshed 2026-09-23 after Plans 012-017
+
+## Resolved interaction-mode behavior
+
+The interaction control switches between `select` and `pan`. `select` preserves
+existing node, edge, resize, selection, and pane interactions. `pan` makes
+primary pointer drags on the canvas, including over nodes and edges, move the
+viewport without selecting, connecting, or resizing graph items. UI controls,
+panels, and caller toolbars retain their own pointer behavior. The mode is
+transient host state and is not serialized into `FlowDocument`; keyboard
+commands remain available in both modes.
 
 ## Why and current state
 
@@ -68,8 +78,10 @@ or dependency without `docs/dependencies.md` justification. Use
 2. Add schema-backed host options for background pattern (`dots`, `lines`,
    `none`), spacing/color, and opt-in controls. Render CSS variables on the
    host root rather than changing global styles. Controls have accessible
-   names for zoom in/out, fit, and interaction mode; double click zooms around
-   the clicked canvas coordinate via existing core viewport math. Honor min/max
+   names for zoom in/out and fit, plus a pressed-state interaction toggle with
+   the behavior defined above. Verify that pan mode does not select, connect,
+   or resize graph items. Double click zooms around the clicked canvas
+   coordinate via existing core viewport math. Honor min/max
    zoom, pan extent, and controlled acknowledgement. **Verify:** browser spec
    asserts exact transform and accessible names for each control and double
    click at zoom bounds.

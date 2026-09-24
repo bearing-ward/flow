@@ -2,12 +2,15 @@
 
 > **Executor:** Use an isolated worktree. Read `docs/standards.md`,
 > `docs/architecture.md`, `research/PROGRESS.md`, the final shared suite from
-> Plan 016, and the packed core exports from Plan 017. **Drift check first:**
-> `git diff --stat 6e84008..HEAD -- packages/core/src/public.ts packages/conformance apps/foldkit apps/vanilla/src/public.ts research/PROGRESS.md`. Re-read the final contracts after earlier plans; STOP if the shared runner is not passing on vanilla and Foldkit.
+> Plan 016, and the packed core exports from Plan 017. Foldkit Plan 019 is
+> independently blocked on its Effect peer version and is not a prerequisite
+> for this Vue slice. **Drift check first:** inspect the current shared suite,
+> built core exports, and vanilla adapter contract; STOP if the shared runner
+> is not passing on vanilla.
 
 ## Status
 
-- **Priority:** P2; **Effort:** L; **Risk:** HIGH; **Depends on:** 016-019
+- **Priority:** P2; **Effort:** L; **Risk:** HIGH; **Depends on:** 016-018
 - **Category:** feature, adapter; **Planned at:** `6e84008`, 2026-09-23
 
 ## Why and current state
@@ -77,18 +80,17 @@ operator instruction.
    reason and test boundary rather than weakening the suite. Give Vue its own
    Playwright server/configuration and wire it into root verification; the
    current root Playwright config searches only vanilla tests. **Verify:**
-   `bun run test:conformance:vue` exits 0 and the vanilla/Foldkit suites still
-   pass.
+   `bun run test:conformance:vue` exits 0 and the vanilla suite still passes.
 4. Check only completed PROGRESS Vue items 201-208 and regenerate summary.
    **Verify:** `bun run verify` and `git diff --check` exit 0.
 
 ## Test plan and done criteria
 
-- [ ] Vue smoke tests cover injection isolation for two canvases, keyed update,
+- [x] Vue smoke tests cover injection isolation for two canvases, keyed update,
   controlled binding, custom component update, and unmount disposal.
-- [ ] Vue executes all shared fixtures with the same expected event and DOM
+- [x] Vue executes all shared fixtures with the same expected event and DOM
   contracts; no hidden vanilla host is used.
-- [ ] Version/dependency rationale is recorded; full gate passes; only scoped
+- [x] Version/dependency rationale is recorded; full gate passes; only scoped
   files changed.
 
 ## STOP and maintenance
@@ -96,5 +98,5 @@ operator instruction.
 STOP if Vue bindings produce an ownership ambiguity not represented by the
 current contract, if unrelated keyed components remount on a one-node update,
 or if a fixture requires changing core meaning. Report the smallest failing
-scenario. Future shared fixtures must run on all three hosts before claiming
-adapter conformance.
+scenario. Foldkit remains a separate pending adapter; do not claim three-host
+conformance until its dependency contract is resolved and its suite passes.

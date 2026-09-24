@@ -1,6 +1,12 @@
-import type { FlowChange } from "@flow/core";
+import type { FlowChange, FlowConnection, FlowDocument } from "@flow/core";
 import { expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import type {
+  ConformanceAction,
+  ConformanceAdapter,
+  ConformanceFixture,
+  ConformanceSnapshot,
+} from "../../../packages/conformance/src/index.ts";
 
 const documentWith = (
   nodes: readonly {
@@ -130,3 +136,124 @@ export const assertTwoNodeControllerConformance = async (
     "first"
   );
 };
+
+export const createVanillaConformanceAdapter = (page: Page): ConformanceAdapter => ({
+  async mount(fixture: ConformanceFixture): Promise<void> {
+    await page.goto("/");
+    await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+    await page.evaluate(async (scenario) => {
+      const modulePath = "/src/public.ts";
+      const { mountFlow } = await import(modulePath);
+      const root = document.querySelector<HTMLElement>("#app");
+      if (root === null) throw new Error("Missing conformance host");
+      const allowedTargets = scenario.allowedConnectionTargets;
+      const controller = mountFlow(root, scenario.document as unknown as FlowDocument, {
+        documentMode: scenario.documentMode,
+        renderOnlyVisible: scenario.renderOnlyVisible,
+        isValidConnection: allowedTargets === undefined
+          ? undefined
+          : (candidate: FlowConnection) => allowedTargets.includes(candidate.target),
+        viewport: {
+          initial: { x: 0, y: 0, zoom: 1 },
+          limits: { maxZoom: 2, minZoom: 0.5 },
+          mode: scenario.viewportMode,
+        },
+      });
+      const state = globalThis as typeof globalThis & {
+        __conformanceChangeCount?: number;
+        __conformanceUnsubscribe?: () => void;
+      };
+      globalThis.flowChanges = [];
+      state.__conformanceChangeCount = 0;
+      state.__conformanceUnsubscribe = controller.subscribe((change: FlowChange) => {
+        globalThis.flowChanges?.push(change);
+        state.__conformanceChangeCount = (state.__conformanceChangeCount ?? 0) + 1;
+      });
+      globalThis.flowController = controller;
+    }, fixture);
+  },
+  async perform(action: ConformanceAction): Promise<void> {
+    if (action.kind === "update-document") {
+      await page.evaluate((document) => {
+        if (globalThis.flowController === undefined) throw new Error("Missing conformance controller");
+        globalThis.flowController.update(document as unknown as FlowDocument);
+      }, action.document);
+      return;
+    }
+    if (action.kind === "update-viewport") {
+      await page.evaluate((viewport) => {
+        if (globalThis.flowController === undefined) throw new Error("Missing conformance controller");
+        globalThis.flowController.updateViewport(viewport);
+      }, action.viewport);
+      return;
+    }
+    if (action.kind === "drag-node") {
+      const node = page.locator(`[data-node-id="${action.nodeId}"]`);
+      const box = await node.boundingBox();
+      if (box === null) throw new Error(`Missing node ${action.nodeId}`);
+      const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      await page.mouse.move(start.x, start.y);
+      await page.mouse.down();
+      await page.mouse.move(start.x + action.dx, start.y + action.dy, { steps: 4 });
+      if (action.cancel === true) {
+        await page.getByTestId("flow-canvas").evaluate((canvas) =>
+          canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+        );
+        await page.mouse.up();
+      } else {
+        await page.mouse.up();
+      }
+      return;
+    }
+    const source = page.locator(`[data-node-id="${action.sourceNodeId}"] [data-handle-id="${action.sourceHandleId}"]`);
+    const target = page.locator(`[data-node-id="${action.targetNodeId}"] [data-handle-id="${action.targetHandleId}"]`);
+    const sourceBox = await source.boundingBox();
+    const targetBox = await target.boundingBox();
+    if (sourceBox === null || targetBox === null) throw new Error("Missing connection handle");
+    await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 5 });
+    await page.mouse.up();
+  },
+  async snapshot(): Promise<ConformanceSnapshot> {
+    return page.evaluate(() => {
+      const nodes = [...document.querySelectorAll<HTMLElement>(".flow-node[data-node-id]")];
+      const edges = [...document.querySelectorAll<HTMLElement>("[data-edge-id]")];
+      return {
+        nodeIds: nodes.map((node) => node.dataset.nodeId ?? ""),
+        edgeIds: [...new Set(edges.map((edge) => edge.dataset.edgeId ?? ""))],
+        positions: nodes.map((node) => {
+          const matrix = new DOMMatrixReadOnly(getComputedStyle(node).transform);
+          return { id: node.dataset.nodeId ?? "", x: matrix.m41, y: matrix.m42 };
+        }),
+        identityMarkers: nodes.filter((node) => node.dataset.identity === "preserved")
+          .map((node) => node.dataset.nodeId ?? ""),
+      };
+    });
+  },
+  async markIdentity(nodeId: string, marker: string): Promise<void> {
+    await page.locator(`[data-node-id="${nodeId}"]`).evaluate((node, value) => {
+      (node as HTMLElement).dataset.identity = value;
+    }, marker);
+  },
+  async changeKinds(): Promise<readonly string[]> {
+    return page.evaluate(() => (globalThis.flowChanges ?? []).map((change) => change.kind));
+  },
+  async destroy(): Promise<{ readonly mountedElements: number; readonly changesAfterDestroy: number }> {
+    return page.evaluate(() => {
+      const state = globalThis as typeof globalThis & { __conformanceChangeCount?: number };
+      const root = document.querySelector<HTMLElement>("#app");
+      const canvas = root?.querySelector<HTMLElement>("[data-testid='flow-canvas']");
+      const before = state.__conformanceChangeCount ?? 0;
+      globalThis.flowController?.destroy();
+      canvas?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 991, clientX: 10, clientY: 10 }));
+      canvas?.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 10, clientY: 10 }));
+      const changesAfterDestroy = (state.__conformanceChangeCount ?? 0) - before;
+      (globalThis as typeof globalThis & { __conformanceUnsubscribe?: () => void }).__conformanceUnsubscribe?.();
+      return {
+        mountedElements: root?.querySelectorAll("[data-testid='flow-canvas']").length ?? 0,
+        changesAfterDestroy,
+      };
+    });
+  },
+});

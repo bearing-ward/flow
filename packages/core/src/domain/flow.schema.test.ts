@@ -70,6 +70,16 @@ describe("FlowDocumentSchema", () => {
     expect(document.edges[0]?.type).toBe("custom");
   });
 
+  it("accepts nonempty custom descriptions and per-node drag locking", () => {
+    const document = Effect.runSync(decodeFlowDocument({
+      edges: [], nodes: [{ id: "locked", label: "Locked", position: { x: 0, y: 0 }, draggable: false, ariaDescription: "Cannot be moved" }],
+    }));
+    expect(document.nodes[0]).toMatchObject({ draggable: false, ariaDescription: "Cannot be moved" });
+    expect(Effect.runSync(Effect.exit(decodeFlowDocument({
+      edges: [], nodes: [{ id: "bad", label: "Bad", position: { x: 0, y: 0 }, ariaDescription: "" }],
+    })))._tag).toBe("Failure");
+  });
+
   it("rejects missing, self, and cyclic parents and root parent extents", () => {
     const invalidCases = [
       {

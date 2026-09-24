@@ -1,6 +1,7 @@
 export {
   FlowMountOptionsSchema,
   acquireFlowHost,
+  createFlow,
   createFlowHost,
   mountFlow,
 } from "./mount-flow.ts";
@@ -17,6 +18,7 @@ export type {
 
 export type {
   FlowController,
+  FlowCreateOptions,
   FlowHostOptions,
   FlowMountOptions,
   JavaScriptFlowController,

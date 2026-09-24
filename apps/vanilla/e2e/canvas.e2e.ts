@@ -2155,3 +2155,124 @@ playwrightTest(
     await expectPage(node).toHaveAttribute("aria-pressed", "false");
   }
 );
+
+playwrightTest("Promise facade validates, reports changes, and cleans up once", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  const result = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { createFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing async facade host");
+    root.replaceChildren();
+    let facadeChanges = 0;
+    let directChanges = 0;
+    const controller = await createFlow(root, {
+      nodes: [{ id: "async-node", label: "Async", position: { x: 20, y: 30 } }],
+      edges: [],
+    }, {
+      documentMode: "controlled",
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+      onChange: () => { facadeChanges += 1; },
+    });
+    const unsubscribe = controller.subscribe(() => { directChanges += 1; });
+    controller.dispatch({ kind: "set-node-position", nodeId: "async-node", position: { x: 40, y: 50 } });
+    const pendingPosition = new DOMMatrixReadOnly(getComputedStyle(root.querySelector<HTMLElement>("[data-node-id='async-node']")!).transform);
+    controller.update({
+      nodes: [{ id: "async-node", label: "Async", position: { x: 40, y: 50 } }],
+      edges: [],
+    });
+    unsubscribe();
+    controller.dispatch({ kind: "set-node-position", nodeId: "async-node", position: { x: 60, y: 70 } });
+    const acknowledgedPosition = new DOMMatrixReadOnly(getComputedStyle(root.querySelector<HTMLElement>("[data-node-id='async-node']")!).transform);
+    let updateFailedSynchronously = false;
+    try {
+      controller.update({
+        nodes: [
+          { id: "invalid", label: "One", position: { x: 0, y: 0 } },
+          { id: "invalid", label: "Two", position: { x: 1, y: 1 } },
+        ],
+        edges: [],
+      });
+    } catch {
+      updateFailedSynchronously = true;
+    }
+    const beforeDestroy = { facadeChanges, directChanges };
+    controller.destroy();
+    controller.destroy();
+    controller.dispatch({ kind: "set-node-position", nodeId: "async-node", position: { x: 80, y: 90 } });
+    return {
+      beforeDestroy,
+      afterDestroy: { facadeChanges, directChanges },
+      controlledPositions: { pendingX: pendingPosition.m41, pendingY: pendingPosition.m42, acknowledgedX: acknowledgedPosition.m41, acknowledgedY: acknowledgedPosition.m42 },
+      updateFailedSynchronously,
+      canvasCount: root.querySelectorAll("[data-testid='flow-canvas']").length,
+    };
+  });
+  expectPage(result.beforeDestroy).toEqual({ facadeChanges: 2, directChanges: 1 });
+  expectPage(result.afterDestroy).toEqual(result.beforeDestroy);
+  expectPage(result.controlledPositions).toEqual({ pendingX: 20, pendingY: 30, acknowledgedX: 40, acknowledgedY: 50 });
+  expectPage(result.updateFailedSynchronously).toBe(true);
+  expectPage(result.canvasCount).toBe(0);
+
+  const uncontrolledPosition = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { createFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing async facade host");
+    const controller = await createFlow(root, {
+      nodes: [{ id: "uncontrolled-node", label: "Uncontrolled", position: { x: 5, y: 6 } }], edges: [],
+    }, {
+      documentMode: "uncontrolled",
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    controller.dispatch({ kind: "set-node-position", nodeId: "uncontrolled-node", position: { x: 15, y: 16 } });
+    const node = root.querySelector<HTMLElement>("[data-node-id='uncontrolled-node']");
+    if (node === null) throw new Error("Missing uncontrolled node");
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(node).transform);
+    controller.destroy();
+    return { x: matrix.m41, y: matrix.m42 };
+  });
+  expectPage(uncontrolledPosition).toEqual({ x: 15, y: 16 });
+});
+
+playwrightTest("Promise facade rejects invalid documents and cleans renderer mount failures", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  const outcomes = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { createFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing async facade host");
+    root.replaceChildren();
+    const options = {
+      documentMode: "uncontrolled" as const,
+      viewport: { mode: "uncontrolled" as const, initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    };
+    const invalidRejected = await createFlow(root, {
+      nodes: [
+        { id: "duplicate", label: "One", position: { x: 0, y: 0 } },
+        { id: "duplicate", label: "Two", position: { x: 10, y: 10 } },
+      ], edges: [],
+    }, options).then(() => false, () => true);
+    const invalidCanvasCount = root.querySelectorAll("[data-testid='flow-canvas']").length;
+    const rendererRejected = await createFlow(root, {
+      nodes: [{ id: "renderer-error", label: "Fail", type: "throws", position: { x: 0, y: 0 } }], edges: [],
+    }, {
+      ...options,
+      nodeRenderers: { throws: () => { throw new Error("renderer mount failed"); } },
+    }).then(() => false, () => true);
+    return {
+      invalidRejected,
+      invalidCanvasCount,
+      rendererRejected,
+      rendererCanvasCount: root.querySelectorAll("[data-testid='flow-canvas']").length,
+    };
+  });
+  expectPage(outcomes).toEqual({
+    invalidRejected: true,
+    invalidCanvasCount: 0,
+    rendererRejected: true,
+    rendererCanvasCount: 0,
+  });
+});

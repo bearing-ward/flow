@@ -1,6 +1,6 @@
 # Node dragging
 
-Status: production paths verified from source at xyflow commit `0a1f9575b25679f2880175de8d3eae21aedde921`. The first Flow slice intentionally implements one-node pointer dragging, not the full reference behavior described here.
+Status: reference production paths verified from source at xyflow commit `0a1f9575b25679f2880175de8d3eae21aedde921`; Flow production and browser paths verified in the current workspace.
 
 All paths below are relative to `research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/`.
 
@@ -45,16 +45,14 @@ The Svelte store immediately maps drag items into a new bound node array at `pac
 
 The shared Playwright suite verifies a visible node moves, `draggable=false` blocks movement, and a custom handle restricts initiation at `tests/playwright/e2e/nodes.spec.ts:94`. The generic test does not assert the exact final flow position, threshold, zoom conversion, semantic change payload, cancellation, auto-pan, or cleanup.
 
-## Flow decision
+## Flow production and test paths
 
-The first slice models an active drag as schema-derived transient state with a node id, pointer id, and flow-space offset. Core functions calculate positions from viewport and pointer inputs. The vanilla host owns pointer capture and listeners, applies transient CSS positions, and emits one schema-derived node-position change on completion. Multi-selection, snapping, extents, auto-pan, touch-specific policy, and keyboard movement remain later behaviors.
+Node pointerdown enters the vanilla node listener, captures the pointer, and starts a schema-derived node-drag session. Once the client-space threshold is crossed, movement converts the pointer through the current viewport and updates transient node positions and incident edges. Selected groups omit nodes with `draggable: false` while preserving each movable node's position. On edge approach, a `FlowBrowserService` frame pans the constrained viewport and recomputes positions from the last canvas pointer; completion emits one final semantic position change, while cancellation restores authoritative positions and cancels the frame (`apps/vanilla/src/mount-flow.ts:1270-1340`, `apps/vanilla/src/mount-flow.ts:2240-2355`, `apps/vanilla/src/flow-browser.ts:19-49`). Core blocks locked IDs in both single and group position application (`packages/core/src/domain/flow-runtime.schema.ts:767-863`).
+
+Browser tests cover ordinary and group dragging, locked mixed groups, auto-pan cleanup for Escape, blur, pointercancel, capture loss, node removal, and destroy; they also cover viewport extent clamping, edge preview and final movement at zoom 2, and controlled acknowledgement (`apps/vanilla/e2e/movement-slices.e2e.ts:111-280`, `apps/vanilla/e2e/movement-slices.e2e.ts:326-359`, `apps/vanilla/e2e/advanced-gestures.e2e.ts:410-450`). Native concurrent pointer capture and native two-contact pinch remain unverified.
 
 ## Conformity and deviations
 
-- **Conforms:** Flow converts pointer coordinates through the viewport and preserves the initial pointer-to-node offset.
-- **Conforms:** Flow applies transient positions during drag and commits a semantic position when the gesture ends.
-- **Deviates:** Flow uses native pointer capture instead of d3-drag. This avoids adding a dependency before the full gesture contract is designed.
-- **Deviates:** Flow emits one final position change. The reference emits changes during dragging and at stop. The controlled-state contract must decide the final policy.
-- **Unverified:** Thresholds, selection interaction, drag handles, snapping, extents, auto-pan, multitouch abort, removal during drag, and keyboard movement are not implemented.
-
-The Flow browser test proves one exact mouse drag and final semantic change. It does not prove the unimplemented reference behaviors.
+- **Conforms:** Flow converts pointer coordinates through the active viewport, preserves pointer offset, previews positions and incident edges, applies group extents, and commits semantic positions on completion. Its frame loop is stopped by finish, cancel, node removal, and destroy.
+- **Intentionally different:** Flow uses native pointer capture and schema-derived interaction sessions instead of d3-drag. It emits one final position change rather than intermediate semantic position changes.
+- **Unverified:** Native concurrent pointer capture and two-contact pinch remain unverified by Playwright. The Flow browser boundary verifies mouse drag, zoom-aware edge auto-pan, cancellation, and controlled/uncontrolled movement; no direct reference parity test is claimed.

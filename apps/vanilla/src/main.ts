@@ -9,7 +9,6 @@ import {
   decodeFlowDocument,
   type FlowEdge,
   type FlowNode,
-  type FlowToolbarAnchor,
   simpleBezierEdgePath,
 } from "@flow/core";
 import { Effect, ManagedRuntime } from "effect";
@@ -124,27 +123,6 @@ const source = {
 
 const runtime = ManagedRuntime.make(BrowserApplicationLive);
 
-let demoToolbarLayer: HTMLDivElement | undefined;
-let latestToolbarAnchors: { readonly nodes: readonly FlowToolbarAnchor[]; readonly edges: readonly FlowToolbarAnchor[] } = { nodes: [], edges: [] };
-const updateDemoToolbars = (): void => {
-  if (demoToolbarLayer === undefined) return;
-  demoToolbarLayer.replaceChildren();
-  const anchors = [
-    ...latestToolbarAnchors.nodes.filter((anchor) => anchor.id === "transform").map((anchor) => ({ ...anchor, kind: "node" as const })),
-    ...latestToolbarAnchors.edges.filter((anchor) => anchor.id === "simple").map((anchor) => ({ ...anchor, kind: "edge" as const })),
-  ];
-  for (const anchor of anchors) {
-    const button = globalThis.document.createElement("button");
-    button.type = "button";
-    button.className = "flow-demo-anchor";
-    button.dataset.toolbarKind = anchor.kind;
-    button.setAttribute("aria-label", `${anchor.kind} toolbar for ${anchor.id}`);
-    button.textContent = anchor.kind === "node" ? "Node tools" : "Edge tools";
-    button.style.transform = `translate(${anchor.position.x}px, ${anchor.position.y}px) translate(-50%, -100%)`;
-    demoToolbarLayer.append(button);
-  }
-};
-
 const playgroundCopy = {
   home: {
     description:
@@ -230,6 +208,7 @@ const program = Effect.gen(function* program() {
     nodeExtent: { minX: 0, minY: 0, maxX: 3200, maxY: 1000 },
     renderOnlyVisible: true,
     selectionMode: "partial",
+    ui: { controls: true, minimap: true },
     snapGrid: { x: 10, y: 10 },
     runEffect: runtime.runSync,
     nodeRenderers: {
@@ -249,7 +228,6 @@ const program = Effect.gen(function* program() {
         }),
       },
     },
-    onToolbarAnchors: (anchors) => { latestToolbarAnchors = anchors; updateDemoToolbars(); },
     viewport: {
       extent: { minX: -100, minY: -100, maxX: 3200, maxY: 1200 },
       initial: { x: 0, y: 0, zoom: 1 },
@@ -257,11 +235,6 @@ const program = Effect.gen(function* program() {
       mode: "uncontrolled",
     },
   });
-
-  demoToolbarLayer = globalThis.document.createElement("div");
-  demoToolbarLayer.className = "flow-demo-toolbar-layer";
-  root.append(demoToolbarLayer);
-  updateDemoToolbars();
 
   const panel = globalThis.document.createElement("aside");
   panel.className = "flow-demo-panel";
@@ -473,8 +446,6 @@ const program = Effect.gen(function* program() {
       "beforeunload",
       () => {
         panel.removeEventListener("click", onPanelClick);
-        demoToolbarLayer?.remove();
-        demoToolbarLayer = undefined;
         unsubscribe();
         host.destroy();
         void runtime.dispose();

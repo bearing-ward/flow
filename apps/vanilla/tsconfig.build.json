@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "noEmitOnError": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "./dist",
+    "rootDir": "./src",
+    "rewriteRelativeImportExtensions": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src/public.ts", "src/mount-flow.ts", "src/flow-browser.ts", "src/browser-capability-error.ts", "src/edge-renderer.ts", "src/node-renderer.ts", "src/telemetry.ts"]
+}

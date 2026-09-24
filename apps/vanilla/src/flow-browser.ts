@@ -33,6 +33,10 @@ export interface FlowBrowserService {
     listener: (entries: readonly ResizeObserverEntry[]) => void
   ) => Effect.Effect<ResizeObservation, BrowserCapabilityError, Scope.Scope>;
   readonly measure: (element: HTMLElement) => ElementSize;
+  readonly focus: (element: HTMLElement) => Effect.Effect<void>;
+  readonly requestAnimationFrame: (
+    callback: FrameRequestCallback
+  ) => Effect.Effect<number, never, Scope.Scope>;
   readonly capturePointer: (
     element: HTMLElement,
     pointerId: number
@@ -129,6 +133,12 @@ export const FlowBrowserLive = Layer.succeed(FlowBrowser, {
     width: element.offsetWidth,
     height: element.offsetHeight,
   }),
+  focus: (element) => Effect.sync(() => element.focus()),
+  requestAnimationFrame: (callback) =>
+    Effect.acquireRelease(
+      Effect.sync(() => globalThis.requestAnimationFrame(callback)),
+      (frame) => Effect.sync(() => globalThis.cancelAnimationFrame(frame))
+    ),
   observeResize: (listener) =>
     Effect.acquireRelease(
       Effect.try({

@@ -22,8 +22,8 @@ Current milestone: nested graph documents use local child positions and validate
   - [x] Run real-browser tests
 - [x] Configure repository-local formatting and lint commands
 - [ ] Clear the initial Ultracite findings and add the read-only check to `bun run verify`
-- [ ] Add architecture-boundary checks
-- [ ] Add continuous integration
+- [x] Add architecture-boundary checks
+- [x] Add continuous integration
 - [ ] Add package-release and changelog automation
 
 ### Research and design
@@ -81,13 +81,13 @@ Current milestone: nested graph documents use local child positions and validate
   - [x] Fill the host viewport
   - [x] Draw a dotted background
   - [x] Capture a browser screenshot baseline
-  - [ ] Support custom canvas options
+  - [x] Support custom canvas options
 - [x] Store and apply viewport translation and zoom
 - [x] Pan with primary mouse or pointer input
 - [x] Pan with touch input
 - [x] Zoom with wheel input around the cursor
 - [x] Zoom with pinch input
-- [ ] Zoom with controls and double click
+- [x] Zoom with controls and double click
 - [x] Enforce pan extents and minimum and maximum zoom
 - [x] Fit measured visible or selected content into view
 - [x] Fit initially unmeasured content into view, including nodes omitted by viewport culling
@@ -104,12 +104,12 @@ Current milestone: nested graph documents use local child positions and validate
 - [x] Measure node dimensions and handle layout changes
 - [x] Drag one node
 - [x] Drag multiple selected nodes together
-- [ ] Lock node position
+- [x] Lock node position
 - [x] Select one node by pointer and keyboard
 - [x] Select nodes by additive input and a full-containment rectangle
 - [x] Support partial-overlap rectangle selection and selection auto-pan
 - [x] Move selected focused nodes with the keyboard
-- [ ] Auto-pan while dragging or keyboard-moving
+- [x] Auto-pan while dragging or keyboard-moving
 - [x] Hide and remove nodes
 - [x] Support parent nodes, child nodes, and groups
 - [x] Constrain pointer and keyboard node movement to a measured extent
@@ -118,7 +118,7 @@ Current milestone: nested graph documents use local child positions and validate
 - [ ] Resize nodes
 - [x] Position node toolbars
 - [x] Provide node focus, labels, and ARIA semantics
-- [ ] Provide custom node descriptions
+- [x] Provide custom node descriptions
 
 ### Handles and connections
 
@@ -154,12 +154,12 @@ Current milestone: nested graph documents use local child positions and validate
 
 ### Built-in UI
 
-- [ ] Support configurable background patterns
-- [ ] Provide zoom, fit-view, and interaction controls
-- [ ] Provide a minimap with viewport navigation
+- [x] Support configurable background patterns
+- [x] Provide zoom, fit-view, and interaction controls
+- [x] Provide a minimap with viewport navigation
 - [ ] Provide panels and overlay portals
-- [ ] Provide node and edge toolbars
-- [ ] Decide and document attribution and licensing presentation
+- [x] Provide node and edge toolbars
+- [x] Decide and document attribution and licensing presentation
 
 ### Effect runtime and public API
 
@@ -168,7 +168,7 @@ Current milestone: nested graph documents use local child positions and validate
 - [x] Verify browser OTLP/HTTP JSON serialization, transport, and log correlation
 - [ ] Verify collector processing, storage, and queries for exported telemetry
 - [x] Define services for element measurement and resize observation
-- [ ] Define services for animation frames and focus
+- [x] Define services for animation frames and focus
 - [x] Define services for pointer capture and browser event boundaries
 - [x] Scope listeners and observers to runtime lifetime
 - [x] Cancel selection animation frames on gesture end and host destroy
@@ -176,7 +176,7 @@ Current milestone: nested graph documents use local child positions and validate
 - [x] Prove interruption and unmount cleanup
 - [ ] Add structured diagnostics for gestures and invalid input
 - [x] Expose native Effect programs and services
-- [ ] Expose a small Promise and callback facade for ordinary JavaScript
+- [x] Expose a small Promise and callback facade for ordinary JavaScript
 
 ### Plain JavaScript adapter
 
@@ -187,27 +187,27 @@ Current milestone: nested graph documents use local child positions and validate
 - [x] Expose subscribe, dispatch, update, and destroy operations
 - [x] Reconcile DOM elements without rebuilding the whole canvas
 - [x] Remove all listeners and observers on destroy
-- [ ] Verify a packed-package consumer
+- [x] Verify a packed-package consumer
 
 ### Foldkit adapter
 
-- [ ] Scaffold the Foldkit host
-- [ ] Derive Model, Message, and OutMessage types from schemas
-- [ ] Implement initialization, update, and view boundaries
-- [ ] Implement commands and subscriptions for browser effects
-- [ ] Keep child updates capability-scoped and typed
-- [ ] Run the shared adapter-conformance suite
+- [x] Scaffold the Foldkit host
+- [x] Derive Model, Message, and OutMessage types from schemas
+- [x] Implement initialization, update, and view boundaries
+- [x] Implement commands and subscriptions for browser effects
+- [x] Keep child updates capability-scoped and typed
+- [x] Run the shared adapter-conformance suite
 
 ### Vue adapter
 
-- [ ] Scaffold the Vue host
-- [ ] Provide components and dependency injection
-- [ ] Support model bindings for nodes, edges, and viewport
-- [ ] Provide typed composables for state and actions
-- [ ] Support custom node and edge components
-- [ ] Keep reactive updates shallow and keyed
-- [ ] Dispose watchers, listeners, and observers on unmount
-- [ ] Run the shared adapter-conformance suite
+- [x] Scaffold the Vue host
+- [x] Provide components and dependency injection
+- [x] Support model bindings for nodes, edges, and viewport
+- [x] Provide typed composables for state and actions
+- [x] Support custom node and edge components
+- [x] Keep reactive updates shallow and keyed
+- [x] Dispose watchers, listeners, and observers on unmount
+- [x] Run the shared adapter-conformance suite
 
 ### Testing and proof
 
@@ -215,8 +215,8 @@ Current milestone: nested graph documents use local child positions and validate
 - [x] Run the first host in a real browser
 - [x] Store canvas and node screenshot baselines
 - [x] Explain how to start the host when its HTML file is opened directly
-- [ ] Capture deterministic behavior fixtures from the research host
-- [ ] Run one shared conformance suite against every adapter
+- [x] Capture deterministic behavior fixtures from the research host
+- [x] Run one shared conformance suite against every adapter
 - [ ] Add visual checks for each completed feature
 - [ ] Add pointer, touch, wheel, and keyboard interaction tests
 - [x] Check edge roles, names, focus, keyboard actions, and hit targets in a browser
@@ -224,18 +224,18 @@ Current milestone: nested graph documents use local child positions and validate
 - [ ] Add property tests for graph operations and coordinate conversion
 - [ ] Add invalid-state and lifecycle-cleanup tests
 - [ ] Add large-graph performance tests and budgets
-- [ ] Verify installation from packed packages in a clean consumer
+- [x] Verify installation from packed packages in a clean consumer
 
 ### Documentation and delivery
 
 - [x] Document engineering standards and dependency decisions
 - [x] Document the initial render call stack, types, seams, files, and tests
 - [x] Keep this plain-English progress report in every generated summary
-- [ ] Generate API reference material from the schemas
-- [ ] Write a first-canvas tutorial
-- [ ] Write guides for custom nodes, edges, gestures, and adapters
+- [x] Generate API reference material from the schemas
+- [x] Write a first-canvas tutorial
+- [x] Write guides for custom nodes, edges, gestures, and adapters
 - [x] Record architecture decisions and rejected alternatives
-- [ ] Document browser support and accessibility expectations
+- [x] Document browser support and accessibility expectations
 - [ ] Publish versioned packages and migration notes
 
 ---

@@ -2,17 +2,23 @@
   "name": "@flow/vanilla",
   "version": "0.0.0",
   "private": true,
+  "files": ["dist/public.js", "dist/public.d.ts", "dist/mount-flow.d.ts", "dist/flow-browser.d.ts", "dist/browser-capability-error.d.ts", "dist/style.css"],
   "type": "module",
   "exports": {
-    ".": "./src/public.ts"
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    },
+    "./style.css": "./dist/style.css"
   },
   "scripts": {
+    "build:package": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json",
     "dev": "vite --host 127.0.0.1 --port 4173",
     "build": "vite build"
   },
   "dependencies": {
     "@flow/core": "workspace:*",
-    "effect": "4.0.0-rc.117"
+    "effect": "4.0.0-rc.116"
   },
   "devDependencies": {
     "vite": "8.0.13"

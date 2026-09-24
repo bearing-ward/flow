@@ -9,7 +9,7 @@ describe("saved flow documents", () => {
     const document = Effect.runSync(
       decodeFlowDocument({
         nodes: [
-          { id: "root", label: "Root", position: { x: 20, y: 30 }, type: "group", data: { title: "Root" }, size: { width: 300, height: 200 }, zIndex: 4, selected: true },
+          { id: "root", label: "Root", position: { x: 20, y: 30 }, type: "group", data: { title: "Root" }, size: { width: 300, height: 200 }, zIndex: 4, selected: true, draggable: false, ariaDescription: "Fixed group" },
           { id: "child", label: "Child", parentId: "root", position: { x: 12, y: 18 }, extent: "parent", type: "card", data: { values: [1, true, null] }, size: { width: 80, height: 40 }, zIndex: 2, selected: true },
         ],
         edges: [{ id: "edge", source: "child", target: "root", type: "custom", path: "bezier", selected: true }],
@@ -20,10 +20,12 @@ describe("saved flow documents", () => {
     expect(saved.version).toBe(1);
     expect(saved.document.nodes[1]).toMatchObject({ parentId: "root", position: { x: 12, y: 18 }, type: "card", size: { width: 80, height: 40 }, zIndex: 2 });
     expect(saved.document.nodes[1]).not.toHaveProperty("selected");
+    expect(saved.document.nodes[0]).toMatchObject({ draggable: false, ariaDescription: "Fixed group" });
     expect(saved.document.edges[0]).not.toHaveProperty("selected");
 
     const loaded = Effect.runSync(decodeSavedFlowDocument(saved));
-    expect(loaded.nodes[1]).toMatchObject({ parentId: "root", position: { x: 12, y: 18 }, data: { values: [1, true, null] } });
+    expect(loaded.nodes[1]).toMatchObject({ parentId: "root", position: { x: 12, y: 18 }, size: { width: 80, height: 40 }, data: { values: [1, true, null] } });
+    expect(loaded.nodes[0]).toMatchObject({ draggable: false, ariaDescription: "Fixed group" });
     expect(loaded.nodes.every((node) => node.selected !== true)).toBe(true);
     expect(loaded.edges.every((edge) => edge.selected !== true)).toBe(true);
   });
