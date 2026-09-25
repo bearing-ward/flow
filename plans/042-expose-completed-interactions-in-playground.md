@@ -8,7 +8,7 @@
 
 - **Priority:** P2; **Effort:** M; **Risk:** LOW; **Category:** direction, docs
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `c1ff849`; focused scene coverage and `bun run verify` passed in the isolated worktree.
 
 ## Why this matters
 

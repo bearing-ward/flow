@@ -8,7 +8,7 @@
 
 - **Priority:** P1; **Effort:** S; **Risk:** LOW; **Category:** dx, architecture
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `92eb859`; architecture check and `bun run verify` passed.
 
 ## Why this matters
 

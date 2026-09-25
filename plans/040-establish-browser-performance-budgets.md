@@ -8,7 +8,7 @@
 
 - **Priority:** P2; **Effort:** M; **Risk:** LOW; **Category:** perf, tests
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `e2ac3cd`, `15e467a`; benchmark and full verification passed. The measured variance and limited 4,000-node sample do not justify a stable latency budget, so checklist 224 remains open.
 
 ## Why this matters
 

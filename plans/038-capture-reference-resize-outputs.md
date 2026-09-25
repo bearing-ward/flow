@@ -8,7 +8,7 @@
 
 - **Priority:** P2; **Effort:** M; **Risk:** LOW; **Category:** tests, direction
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `12be1b5`; repeated reference captures, Flow comparison, trace check, and full verification passed.
 
 ## Why this matters
 

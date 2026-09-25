@@ -8,7 +8,7 @@
 
 - **Priority:** P1; **Effort:** L; **Risk:** MED; **Category:** tests
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** BLOCKED — this environment is macOS 27.2 ARM64 with Playwright 1.62.1 and no configured native-capable device harness. The existing browser route uses CDP and cannot prove native concurrent pointer capture or two-contact touch.
 
 ## Why this matters
 

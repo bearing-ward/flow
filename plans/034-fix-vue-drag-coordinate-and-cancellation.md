@@ -8,7 +8,7 @@
 
 - **Priority:** P1; **Effort:** M; **Risk:** MED; **Category:** bug
 - **Depends on:** 033; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `8549283`; cumulative `bun run verify` passed in the isolated worktree.
 
 ## Why this matters
 

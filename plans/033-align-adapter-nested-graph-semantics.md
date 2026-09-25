@@ -8,7 +8,7 @@
 
 - **Priority:** P1; **Effort:** M; **Risk:** MED; **Category:** bug, architecture
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `7bb52bb`; verified by `bun run verify` in the isolated worktree.
 
 ## Why this matters
 

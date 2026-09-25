@@ -8,7 +8,7 @@
 
 - **Priority:** P2; **Effort:** L; **Risk:** LOW; **Category:** tests, accessibility
 - **Depends on:** 033, 034; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `045e158`, `e99f624`; snapshots passed twice, the rejected-connection path asserts no rendered edge, and full verification passed. Manual keyboard-only and screen-reader evidence remain unverified.
 
 ## Why this matters
 

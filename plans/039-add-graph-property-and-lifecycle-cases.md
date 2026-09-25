@@ -8,7 +8,7 @@
 
 - **Priority:** P2; **Effort:** M; **Risk:** LOW; **Category:** tests
 - **Depends on:** none; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** DONE — `f457b8d`, `032db7d`; core properties and lifecycle cases passed, then `bun run verify` passed in the isolated worktree.
 
 ## Why this matters
 

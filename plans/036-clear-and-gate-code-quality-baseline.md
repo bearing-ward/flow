@@ -8,7 +8,7 @@
 
 - **Priority:** P1; **Effort:** L; **Risk:** MED; **Category:** dx
 - **Depends on:** 033, 034, 035 for low-conflict sequencing; **Planned at:** `f9b2b13`, 2026-09-25
-- **Execution:** TODO
+- **Execution:** BLOCKED — formatting slice `04e8368` is available in its isolated worktree. The initial check found 1,999 diagnostics across 55 files; after formatting the core and conformance slice, 204 diagnostics remained there and required code or test changes beyond this plan's safe cleanup boundary. The overall diagnostic count was not rerun after formatting; `bun run check` and the full gate remain incomplete.
 
 ## Why this matters
 
