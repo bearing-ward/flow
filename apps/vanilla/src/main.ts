@@ -3,6 +3,7 @@ import {
   applyEdgeRemoveChange,
   applyEdgeSelectionChange,
   applyNodePositionChange,
+  applyNodeBoundsChange,
   applyNodePositionsChange,
   applyNodeSelectionChange,
   applySelectionSetChange,
@@ -379,6 +380,11 @@ const program = Effect.gen(function* program() {
   const unsubscribe = host.subscribe((change) => {
     // eslint-disable-next-line default-case -- The schema-derived change union is exhaustive.
     switch (change.kind) {
+      case "node-bounds": {
+        currentDocument = applyNodeBoundsChange(currentDocument, change) ?? currentDocument;
+        break;
+      }
+
       case "node-position": {
         currentDocument =
           applyNodePositionChange(currentDocument, change) ?? currentDocument;
