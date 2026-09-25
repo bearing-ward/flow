@@ -16,6 +16,36 @@ import {
 } from "./flow.schema.ts";
 
 describe("FlowDocumentSchema", () => {
+  it("rejects missing parents, cycles, and duplicate IDs through the typed document boundary", () => {
+    const invalidDocuments = [
+      {
+        nodes: [{ id: "child", label: "Child", position: { x: 0, y: 0 }, parentId: "missing" }],
+        error: MissingParentNode,
+      },
+      {
+        nodes: [
+          { id: "one", label: "One", position: { x: 0, y: 0 }, parentId: "two" },
+          { id: "two", label: "Two", position: { x: 0, y: 0 }, parentId: "one" },
+        ],
+        error: ParentCycle,
+      },
+      {
+        nodes: [
+          { id: "same", label: "First", position: { x: 0, y: 0 } },
+          { id: "same", label: "Second", position: { x: 1, y: 1 } },
+        ],
+        error: DuplicateNodeId,
+      },
+    ];
+
+    for (const invalid of invalidDocuments) {
+      const error = Effect.runSync(
+        Effect.flip(decodeFlowDocument({ edges: [], nodes: invalid.nodes }))
+      );
+      expect(error).toBeInstanceOf(invalid.error);
+    }
+  });
+
   it("decodes a document with one node", () => {
     const document = Effect.runSync(
       decodeFlowDocument({

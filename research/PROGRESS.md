@@ -219,7 +219,7 @@ Current milestone: the core validates nested graph documents, provides graph que
 - [ ] Add pointer, touch, wheel, and keyboard interaction tests
 - [x] Check edge roles, names, focus, keyboard actions, and hit targets in a browser
 - [ ] Run a broader accessibility audit
-- [ ] Add property tests for graph operations and coordinate conversion
+- [x] Add property tests for graph operations and coordinate conversion
 - [ ] Add invalid-state and lifecycle-cleanup tests
 - [ ] Add large-graph performance tests and budgets
 - [x] Verify installation from packed packages in a clean consumer

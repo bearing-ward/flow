@@ -14,6 +14,46 @@ import {
 } from "./flow-graph.ts";
 
 describe("flow graph view", () => {
+  it("resolves deterministic generated trees independent of document order", () => {
+    const seeds = [0x13579bdf, 0x2468ace0, 0xdeadbeef, 0x10203040];
+    for (const seed of seeds) {
+      let state = seed >>> 0;
+      const random = (): number => {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        return state / 0x1_0000_0000;
+      };
+      const nodes: { id: string; label: string; position: { x: number; y: number }; parentId?: string; hidden?: boolean }[] = [];
+      const expected = new Map<string, { x: number; y: number; hidden: boolean }>();
+      const depth = 1 + Math.floor(random() * 5);
+      for (let index = 0; index < depth; index += 1) {
+        const id = `seed-${seed}-node-${index}`;
+        const position = { x: Math.floor(random() * 201) - 100, y: Math.floor(random() * 201) - 100 };
+        const ownHidden = random() < 0.25;
+        const parentIndex = index === 0 ? undefined : Math.floor(random() * index);
+        const parentId = parentIndex === undefined ? undefined : `seed-${seed}-node-${parentIndex}`;
+        const parent = parentId === undefined ? undefined : expected.get(parentId);
+        nodes.push({ id, label: id, position, ...(parentId === undefined ? {} : { parentId }), ...(ownHidden ? { hidden: true } : {}) });
+        expected.set(id, {
+          x: (parent?.x ?? 0) + position.x,
+          y: (parent?.y ?? 0) + position.y,
+          hidden: ownHidden || (parent?.hidden ?? false),
+        });
+      }
+      nodes.reverse();
+      try {
+        const document = Effect.runSync(decodeFlowDocument({ nodes, edges: [] }));
+        const graph = createFlowGraph(document);
+        for (const [id, position] of expected) {
+          expect(graphNode(graph, id as never), `seed ${seed}, node ${id}`).toMatchObject({ absolutePosition: { x: position.x, y: position.y }, hidden: position.hidden });
+        }
+        expect(new Set(graph.orderedNodes.map((node) => node.id)), `seed ${seed}: stable IDs`)
+          .toEqual(new Set(expected.keys()));
+      } catch (error) {
+        throw new Error(`Generated graph property failed for seed ${seed}`, { cause: error });
+      }
+    }
+  });
+
   it("derives three-level absolute positions independently of array order", () => {
     const document = Effect.runSync(
       decodeFlowDocument({
