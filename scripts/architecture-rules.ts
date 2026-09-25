@@ -116,8 +116,8 @@ export const findArchitectureViolations = (
 
     if (specifier !== undefined) {
       const normalized = specifier.replaceAll("\\", "/");
-      const coreDomain = source.path.replaceAll("\\", "/").startsWith("packages/core/src/domain/");
-      const forbiddenAppImport = coreDomain && (
+      const coreSource = source.path.replaceAll("\\", "/").startsWith("packages/core/src/");
+      const forbiddenAppImport = coreSource && (
         normalized.startsWith("apps/") ||
         normalized.startsWith("@flow/vanilla") ||
         normalized.startsWith("@flow/vue") ||
