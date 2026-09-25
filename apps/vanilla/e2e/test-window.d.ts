@@ -8,5 +8,14 @@ declare global {
   var flowChanges: FlowChange[] | undefined;
   var flowController: JavaScriptFlowController | undefined;
   var flowTestPendingFrames: Set<number> | undefined;
-  var flowAuthoritativeNodes: Array<{ id: string; position: { x: number; y: number }; size?: { width: number; height: number } }> | undefined;
+  var flowPointerMoveDurations: number[] | undefined;
+  var flowDragMutationCounts: { added: number; removed: number } | undefined;
+  var flowDragMutationObserver: MutationObserver | undefined;
+  var flowAuthoritativeNodes:
+    | Array<{
+        id: string;
+        position: { x: number; y: number };
+        size?: { width: number; height: number };
+      }>
+    | undefined;
 }
