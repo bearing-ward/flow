@@ -51,8 +51,8 @@ Follow `docs/standards.md:7-11`: graph math and Schema-derived types live in `pa
 
 ## Steps
 
-1. Define a Schema-derived direction union for the four sides and four corners, plus a pure resize calculation input containing starting local position, starting measured-or-declared size, flow-space pointer delta, minimum size, and optional resolved bounds. Return a candidate local position and size together. Preserve the lower-right helper as a compatibility case in this step; do not change public `FlowChange` yet. **Verify:** typecheck and focused tests exit 0.
-2. Implement signed deltas: left/top move the origin and shrink/grow the opposite dimension; right/bottom retain origin. Clamp by 40x24 minimum so the opposite edge stays fixed after the clamp. Constrain the resulting rectangle to an optional parent/global extent without putting DOM measurements in core. Parent children retain local positions; the parent does not auto-expand. **Verify:** exact unit cases for all eight directions, zoom-normalized deltas, min-size crossing, parent-local position, bounds, and no-op pass.
+1. Define a Schema-derived direction union for the four sides and four corners, plus a pure resize calculation input containing starting local position, starting measured-or-declared size, flow-space pointer delta, minimum size, and optional resolved bounds. Return the candidate local position and size together with the local-position delta. Preserve the lower-right helper as a compatibility case in this step; do not change public `FlowChange` yet. **Verify:** typecheck and focused tests exit 0.
+2. Implement signed deltas: left/top move the origin and shrink/grow the opposite dimension; right/bottom retain origin. Clamp by 40x24 minimum so the opposite edge stays fixed after the clamp. Constrain the resulting rectangle to an optional parent/global extent without putting DOM measurements in core. When the target origin moves, return the inverse local-position delta that Plan 025 must apply to its direct children so their world positions stay fixed; deeper descendants then remain fixed through their unchanged parent positions. The parent does not auto-expand. **Verify:** exact unit cases for all eight directions, zoom-normalized deltas, min-size crossing, parent-local position, bounds, child-position compensation, and no-op pass.
 3. Cover invalid/non-finite input at the decode boundary and invariants: positive finite size, finite local position, unchanged document input. Export only the necessary pure contract from `packages/core/src/public.ts`. **Verify:** focused tests, `bun run typecheck`, and `bun run verify` exit 0.
 4. Leave `PROGRESS.md:116` open until Plan 025 proves browser behavior. Update the index row and generated summary only if another entire item actually closes. **Verify:** `git diff --check` exits 0; no imported artifact changes.
 
@@ -65,7 +65,7 @@ Follow `docs/standards.md:7-11`: graph math and Schema-derived types live in `pa
 
 ## STOP conditions
 
-STOP if the accepted matrix requires child-coordinate mutation or parent expansion, if an extent cannot be resolved without DOM state in core, or if a public change migration is needed before a pure calculation can be added. Report the contract decision needed; do not improvise hierarchy semantics.
+STOP if an extent cannot be resolved without DOM state in core, if preserving direct children's world positions requires changing descendant geometry beyond the inverse local-position delta, or if a public change migration is required to add the pure candidate. Parent auto-expansion remains out of scope. Report the concrete mismatch and proposed contract; do not silently change hierarchy semantics.
 
 ## Maintenance notes
 
