@@ -59,6 +59,16 @@ were written; each executor must inspect live status and preserve them.
 | [030](030-render-canvas-panel-placements.md) | Complete canvas panel placement wiring | P1 | M | 028 | DONE — reviewed; typed host API, six visible placements, teardown restoration and full verify passed |
 | [031](031-enable-keyboard-node-resizing.md) | Enable keyboard resizing for directional controls | P1 | M | 024-026, 030 | DONE — reviewed; arrow mapping, atomic controlled/uncontrolled resize, focus/cancellation and ancestor-hidden lifecycle pass full verify |
 | [032](032-preserve-native-keyboard-activation-in-custom-nodes.md) | Preserve native keyboard activation in custom nodes | P1 | S | 027, 031 | DONE — reviewed; native keyboard ownership, focus, editing, no-drag, controlled state, node movement, and resize regressions pass full verify |
+| [033](033-align-adapter-nested-graph-semantics.md) | Align framework adapters with core nested-graph semantics | P1 | M | none | TODO |
+| [034](034-fix-vue-drag-coordinate-and-cancellation.md) | Fix Vue child dragging and preview cleanup | P1 | M | 033 | TODO |
+| [035](035-cover-all-core-source-in-architecture-check.md) | Enforce the package-to-app boundary across core source | P1 | S | none | TODO |
+| [036](036-clear-and-gate-code-quality-baseline.md) | Clear the quality baseline and add it to verification | P1 | L | 033-035 | TODO |
+| [037](037-prove-native-multi-pointer-lifecycle.md) | Prove native multi-pointer cancellation | P1 | L | none | TODO — requires a native-capable device/browser harness |
+| [038](038-capture-reference-resize-outputs.md) | Capture comparable reference resize output | P2 | M | none | TODO |
+| [039](039-add-graph-property-and-lifecycle-cases.md) | Add property and lifecycle proof for graph contracts | P2 | M | none | TODO |
+| [040](040-establish-browser-performance-budgets.md) | Measure browser hot paths and set performance budgets | P2 | M | none | TODO |
+| [041](041-audit-visual-and-accessibility-output.md) | Broaden visual and accessibility evidence | P2 | L | 033, 034 | TODO |
+| [042](042-expose-completed-interactions-in-playground.md) | Expose completed vanilla interactions in the playground | P2 | M | none | TODO |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with
 a reason.
@@ -145,3 +155,56 @@ whole contract and test boundary pass.
   for a later adapter chunk.
 - No security issue met the evidence threshold in the audited host and core
   paths. Imported upstream artifacts and dependency advisories were not audited.
+
+## September 25 advisory: next ten scopes
+
+Plans 033-042 were written against `f9b2b13` using `research/PROGRESS.md`, the
+completed interaction plans, current adapter source, and the browser evidence
+matrix. This is a reliability and proof chunk before broad framework-feature
+parity or public release. The P1 sequence is 033 then 034, with 035 independent;
+run 036 after those source edits to avoid a wide formatter/lint conflict. Plan
+037 can proceed separately if a native-capable device is available. Plans
+038-042 are independent except for 041's adapter prerequisite and may use separate
+worktrees; their browser gates should run serially on strict test ports.
+
+| Plan | Checklist or contract addressed | Completion boundary |
+| --- | --- | --- |
+| 033-034 | Shared adapter graph and Vue gesture correctness; 217, 223 | Three-level/hidden shared output and actual Vue preview/semantic state, without claiming vanilla feature parity |
+| 035-036 | Architecture and quality gates; 22-23 | Non-domain core imports rejected; `bun run check` clean and included in `verify` |
+| 037 | Gesture cancellation and input; 133, 219, 223 | Real native pointer capture; synthetic CDP events do not close these cells |
+| 038 | Resize/reference research; 48, 52, 116 | One equivalent observed reference/Flow output comparison, not blanket parity |
+| 039 | Graph property and lifecycle proof; 222-223 | Deterministic generated invariants and rendered cleanup assertions |
+| 040 | Performance research and budgets; 53, 224 | Browser reconcile and gesture measurements plus a stable gate budget |
+| 041 | Visual, input, and accessibility; 218-221 | Matrix names browser/device/screen-reader evidence; unavailable cells stay open |
+| 042 | Inspectable vanilla demonstration | Completed host capabilities shown in the main playground without new core contracts |
+
+### Vetted findings behind the selection
+
+| Finding | Category | Impact | Effort | Fix risk | Confidence | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| Vue child drag emits absolute coordinates as local | correctness | Child jumps after drag | S | LOW | HIGH | `apps/vue/src/FlowCanvas.ts:135-168`; `packages/core/src/domain/flow-graph.ts:52-65` |
+| Vue cancellation leaves a DOM transform; selector lookup trusts an arbitrary ID | correctness | Stale visual position or failed drag | M | MED | HIGH | `apps/vue/src/FlowCanvas.ts:164,184,225-234`; `packages/core/src/domain/flow-values.ts:3` |
+| Vue/Foldkit duplicate one-level graph resolution | architecture | Grandchildren/culling and hidden descendants diverge from core | M | MED | HIGH | `apps/vue/src/FlowCanvas.ts:135-145,186-187`; `apps/foldkit/src/graph.ts:72-75,159-165`; `packages/core/src/domain/flow-graph.ts:46-68` |
+| Core-to-app rule covers only the domain subdirectory | architecture | A future dependency inversion can pass verification | S | LOW | HIGH | `scripts/architecture-rules.ts:117-129`; `scripts/check-architecture.ts:65-80` |
+| Configured Ultracite check is absent from verify | DX | CI can pass while lint/format fails | L | MED | HIGH | `scripts/verify.ts:5-20`; `docs/tooling.md:37-41`; `research/PROGRESS.md:22` |
+| Native multi-pointer cases remain skipped | tests | Capture/cancellation paths unverified | L | MED | HIGH | `apps/vanilla/e2e/advanced-gestures.e2e.ts:356-359`; `docs/browser-and-accessibility.md:5` |
+| Browser reconcile and minimap hot paths lack budgets | performance | Scaling risk is unmeasured | M | LOW for measurement | HIGH for code pattern, MED for user impact | `apps/vanilla/src/edge-renderer.ts:185-196`; `apps/vanilla/src/canvas-ui.ts:171-188`; `scripts/bench-flow-geometry.ts:61-66` |
+
+Direction choices are separate from defects: Plan 038 narrows a reference
+comparison; Plan 042 makes completed vanilla interactions inspectable. Broad
+Vue/Foldkit feature parity and package release remain later decisions. The
+first-slice adapters have only six shared scenarios (`research/fixtures/README.md:18-45`),
+and packages remain private at `0.0.0` with licensing deferred
+(`docs/release-process.md:1-11`).
+
+### Considered and deferred in this audit
+
+- An immediate split of the roughly 4,200-line `apps/vanilla/src/mount-flow.ts`
+  would touch tightly coupled gesture and cleanup state. Revisit after Plans
+  037, 039, and 040 characterize the relevant behavior; a broad extraction now
+  has higher regression risk than the selected correctness work.
+- A spatial index is not justified by the earlier 4,000-node core prototype.
+  Plan 040 measures browser hot paths before selecting an optimization.
+- Full framework-feature parity and public package release are not included in
+  these ten scopes. The shared contract and delivery decisions need the
+  selected correctness/proof results first.

@@ -273,9 +273,9 @@ body,
   position: absolute;
   z-index: 10;
   top: 24px;
-  left: 24px;
-  width: min(340px, calc(100vw - 48px));
-  max-height: min(420px, calc(100vh - 48px));
+  right: 16px;
+  width: min(340px, calc(100vw - 96px));
+  max-height: min(340px, calc(100vh - 168px));
   overflow-y: auto;
   box-sizing: border-box;
   padding: 20px;
