@@ -353,6 +353,47 @@ test("threshold-only node press cancels without a selection or position change",
   await expect(page.locator(".flow-connection-preview")).toHaveCount(0);
 });
 
+test("invalid controlled update during a drag is rejected without corrupting the preview", async ({ page }) => {
+  await mountCancellationScenario(page);
+  const start = await centerOf(page, '[data-node-id="drag"]');
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 24, start.y + 8);
+  await expect(page.locator('[data-node-id="drag"]')).toHaveClass(/dragging/u);
+
+  const rejected = await page.evaluate(() => {
+    try {
+      globalThis.flowController?.update({
+        nodes: [
+          { id: "duplicate", label: "First", position: { x: 0, y: 0 } },
+          { id: "duplicate", label: "Second", position: { x: 1, y: 1 } },
+        ],
+        edges: [],
+      } as never);
+      return false;
+    } catch {
+      return true;
+    }
+  });
+  expect(rejected).toBe(true);
+  await expect(page.locator('[data-node-id="drag"]')).toHaveClass(/dragging/u);
+  await page.getByTestId("flow-canvas").evaluate((canvas) =>
+    canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  await page.mouse.up();
+  await expect(page.locator('[data-node-id="drag"]')).not.toHaveClass(/dragging/u);
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+
+  const spare = await centerOf(page, '[data-node-id="spare"]');
+  await page.mouse.move(spare.x, spare.y);
+  await page.mouse.down();
+  await page.mouse.move(spare.x + 20, spare.y + 5);
+  await expect(page.locator('[data-node-id="spare"]')).toHaveClass(/dragging/u);
+  await page.getByTestId("flow-canvas").evaluate((canvas) =>
+    canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+});
+
 // Playwright/CDP touch injection does not preserve native pointer capture in this environment.
 test.fixme("concurrent native connection and node drag cancellation requires real pointer capture", async () => {});
 

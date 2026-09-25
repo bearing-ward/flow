@@ -358,6 +358,48 @@ describe("node resize contract", () => {
 });
 
 describe("viewport coordinates", () => {
+  it("rejects malformed resize extent bounds at the schema boundary", () => {
+    const base = {
+      direction: "right", positionStart: { x: 0, y: 0 }, sizeStart: { width: 20, height: 20 },
+      delta: { x: 1, y: 0 }, minimumSize: { width: 10, height: 10 },
+    };
+    for (const bounds of [
+      { minX: 10, minY: 0, maxX: 0, maxY: 20 },
+      { minX: 0, minY: 0, maxX: Number.NaN, maxY: 20 },
+    ]) {
+      const result = Effect.runSync(Effect.exit(S.decodeUnknownEffect(NodeResizeCalculationInputSchema)({ ...base, bounds })));
+      expect(result._tag).toBe("Failure");
+    }
+  });
+
+  it("round-trips generated coordinates across translation and zoom extremes", () => {
+    const seeds = [0x31415926, 0x27182818, 0xc001d00d];
+    const tolerance = 1e-9;
+    for (const seed of seeds) {
+      let state = seed >>> 0;
+      const random = (): number => {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        return state / 0x1_0000_0000;
+      };
+      for (let index = 0; index < 40; index += 1) {
+        const sign = random() < 0.5 ? -1 : 1;
+        const viewport = {
+          x: sign * (random() * 1e6),
+          y: -sign * (random() * 1e6),
+          zoom: 0.05 + random() * 20,
+        };
+        const position = { x: (random() - 0.5) * 1e6, y: (random() - 0.5) * 1e6 };
+        try {
+          const actual = screenToFlowPosition(flowToScreenPosition(position, viewport), viewport);
+          expect(Math.abs(actual.x - position.x), `seed ${seed}, case ${index}, x`).toBeLessThanOrEqual(tolerance);
+          expect(Math.abs(actual.y - position.y), `seed ${seed}, case ${index}, y`).toBeLessThanOrEqual(tolerance);
+        } catch (error) {
+          throw new Error(`Generated coordinate property failed for seed ${seed}, case ${index}`, { cause: error });
+        }
+      }
+    }
+  });
+
   it("round-trips between flow and screen coordinates", () => {
     const viewport = { x: 40, y: -20, zoom: 2 };
     const flowPosition = { x: 120, y: 80 };
