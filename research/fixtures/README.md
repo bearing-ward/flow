@@ -15,12 +15,14 @@ The commands run the named pinned tests. A temporary Playwright probe read the s
 
 ## Shared Flow fixtures
 
-The shared suite remains six scenarios. The same fixture definitions run through the vanilla, Vue, and Foldkit drivers (`apps/vanilla/e2e/shared-conformance.e2e.ts`, `apps/vue/e2e/shared-conformance.e2e.ts`, and `apps/foldkit/e2e/shared-conformance.e2e.ts`). These rows mean that the scenario is covered within Flow; they do not establish xyflow parity because no equivalent reference run was made.
+The shared suite has eight scenarios. The same fixture definitions run through the vanilla, Vue, and Foldkit drivers (`apps/vanilla/e2e/shared-conformance.e2e.ts`, `apps/vue/e2e/shared-conformance.e2e.ts`, and `apps/foldkit/e2e/shared-conformance.e2e.ts`). These rows mean that the scenario is covered within Flow; they do not establish xyflow parity because no equivalent reference run was made.
 
 | Scenario | Observable contract | Reference comparison |
 | --- | --- | --- |
 | `keyed-update` | Retained node identity, order, label, and position after controlled update | Unverified |
 | `nested-absolute-position` | Child renders at parent plus local position | Unverified |
+| `nested-grandchild-parent-update` | Three-level absolute positions resolve in non-ancestral input order after an authoritative root update | Unverified |
+| `hidden-ancestor` | Hidden ancestry removes descendants and edges incident to those descendants | Unverified |
 | `controlled-acknowledgement` | Drag emits a candidate and waits for document acknowledgement | Unverified |
 | `connection-validity` | Rejected target adds no edge; approved target emits one `edge-add` | Unverified |
 | `gesture-cancellation` | Escape restores drag geometry without a semantic change | Unverified |
@@ -34,7 +36,7 @@ Labels describe checked-in automated evidence, not a statement that an unlisted 
 
 | Capability | Vanilla evidence | Vue evidence | Foldkit evidence | Reference status |
 | --- | --- | --- | --- | --- |
-| Six shared Flow scenarios above | Shared conformance browser test | Shared conformance browser test | Shared conformance browser test | Unverified for these six exact fixtures |
+| Eight shared Flow scenarios above | Shared conformance browser test | Shared conformance browser test | Shared conformance browser test | Unverified for these eight exact fixtures |
 | Eight-direction pointer resize, child compensation, cancellation, and derived UI | Vanilla-only: `advanced-gestures.e2e.ts:361-579` | Unverified | Unverified | Unverified; source geometry exists, but no matching reference output capture |
 | Keyboard resize, key ownership, native descendant editing, focus, and Escape | Vanilla-only: `advanced-gestures.e2e.ts:590-775`, `graph-renderers.e2e.ts:246-412` | Unverified | Unverified | Unverified |
 | Custom drag handle and nested no-drag control | Vanilla-only: `graph-renderers.e2e.ts:143-267` | Unverified | Unverified | Conforms only for normalized outside/inside transform-change booleans in the pinned capture and Flow E2E; nested no-drag remains Flow-only |
@@ -48,4 +50,4 @@ The `draggable: false` capture also remains unverified for direct parity: Flow's
 
 ## Evidence limits
 
-The six shared fixtures establish only the listed Flow contracts across three adapters. Feature-specific vanilla tests do not imply Vue or Foldkit support. The custom drag-handle comparison is deliberately narrow: both runs reduce the node transform to unchanged outside the handle and changed inside it. Resize geometry, nested extent behavior, panel positions, portals, native multi-pointer cancellation, broader accessibility, cross-browser behavior, property coverage, and performance budgets remain unverified against xyflow or outside the tested scope.
+The eight shared fixtures establish only the listed Flow contracts across three adapters. Feature-specific vanilla tests do not imply Vue or Foldkit support. The custom drag-handle comparison is deliberately narrow: both runs reduce the node transform to unchanged outside the handle and changed inside it. Resize geometry, nested extent behavior, panel positions, portals, native multi-pointer cancellation, broader accessibility, cross-browser behavior, property coverage, and performance budgets remain unverified against xyflow or outside the tested scope.

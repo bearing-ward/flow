@@ -5,6 +5,7 @@ import {
   FlowDocumentSchema,
   ViewportSchema,
   applyNodePositionChange,
+  createFlowGraph,
   nextConnectionEdge,
   validateFlowConnection,
   type FlowChange,
@@ -69,11 +70,6 @@ const report = (model: Model, change: FlowChange): Update.ReturnWithOutMessage<M
   outMessage: OutMessage.SemanticChange({ change }),
 });
 
-const nodePosition = (document: FlowDocument, node: FlowNode): { readonly x: number; readonly y: number } => {
-  const parent = node.parentId === undefined ? undefined : document.nodes.find((candidate) => candidate.id === node.parentId);
-  return { x: node.position.x + (parent?.position.x ?? 0), y: node.position.y + (parent?.position.y ?? 0) };
-};
-
 const setNodePosition = (model: Model, nodeId: string, position: { readonly x: number; readonly y: number }) => {
   const node = model.document.nodes.find((candidate) => candidate.id === nodeId);
   if (node === undefined) return noChange(model);
@@ -125,11 +121,12 @@ const finishPointer = (model: Model, message: Extract<Message, { readonly _tag: 
   const dx = (message.clientX - session.startX) / model.viewport.zoom;
   const dy = (message.clientY - session.startY) / model.viewport.zoom;
   if (Math.hypot(dx, dy) < 8) return { model: cleared };
-  const absoluteOrigin = nodePosition(model.document, node);
-  const parent = node.parentId === undefined ? undefined : model.document.nodes.find((candidate) => candidate.id === node.parentId);
+  const graph = createFlowGraph(model.document);
+  const absoluteOrigin = graph.nodes.get(node.id)?.absolutePosition ?? node.position;
+  const parent = node.parentId === undefined ? undefined : graph.nodes.get(node.parentId);
   return setNodePosition(cleared, node.id, {
-    x: absoluteOrigin.x + dx - (parent?.position.x ?? 0),
-    y: absoluteOrigin.y + dy - (parent?.position.y ?? 0),
+    x: absoluteOrigin.x + dx - (parent?.absolutePosition.x ?? 0),
+    y: absoluteOrigin.y + dy - (parent?.absolutePosition.y ?? 0),
   });
 };
 
@@ -156,15 +153,17 @@ const readTarget = (target: EventTarget | null): { readonly nodeId: string | nul
 };
 
 const graphView = Submodel.defineView<Model, Message>((model, h) => {
+  const graph = createFlowGraph(model.document);
   const visibleNode = (node: FlowNode): boolean => {
-    if (node.hidden === true) return false;
-    const position = nodePosition(model.document, node);
+    const graphNode = graph.nodes.get(node.id);
+    if (graphNode === undefined || graphNode.hidden) return false;
+    const position = graphNode.absolutePosition;
     const left = position.x * model.viewport.zoom + model.viewport.x;
     const top = position.y * model.viewport.zoom + model.viewport.y;
     return left < 960 && top < 640 && left + 150 * model.viewport.zoom > 0 && top + 44 * model.viewport.zoom > 0;
   };
-  const nodes = model.document.nodes.filter(visibleNode).map((node) => {
-    const position = nodePosition(model.document, node);
+  const nodes = graph.orderedNodes.map(({ node }) => node).filter(visibleNode).map((node) => {
+    const position = graph.nodes.get(node.id)?.absolutePosition ?? node.position;
     const handles = (node.handles ?? []).map((handle) => h.button([
       h.Class(`flow-foldkit-handle flow-foldkit-handle-${handle.side}`),
       h.DataAttribute("handle-id", handle.id),
@@ -175,7 +174,9 @@ const graphView = Submodel.defineView<Model, Message>((model, h) => {
       h.DataAttribute("node-id", node.id), h.Style({ left: `${position.x}px`, top: `${position.y}px` }),
     ], [node.label, ...handles]);
   });
-  const edges = model.document.edges.filter((edge) => edge.hidden !== true).map((edge) => h.keyed("div")(
+  const edges = model.document.edges.filter((edge) =>
+    edge.hidden !== true && graph.nodes.get(edge.source)?.hidden !== true && graph.nodes.get(edge.target)?.hidden !== true
+  ).map((edge) => h.keyed("div")(
     edge.id,
     [h.Class("flow-foldkit-edge"), h.DataAttribute("edge-id", edge.id), h.DataAttribute("testid", "flow-edge")],
     [edge.label ?? ""]

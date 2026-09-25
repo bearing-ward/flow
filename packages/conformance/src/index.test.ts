@@ -9,10 +9,12 @@ import {
 } from "./index.ts";
 
 describe("shared conformance fixtures", () => {
-  it("uses unique versioned fixture identifiers for the six shared scenarios", () => {
+  it("uses unique versioned fixture identifiers for the eight shared scenarios", () => {
     expect(conformanceFixtures.map(({ id }) => id)).toEqual([
       "keyed-update",
       "nested-absolute-position",
+      "nested-grandchild-parent-update",
+      "hidden-ancestor",
       "controlled-acknowledgement",
       "connection-validity",
       "gesture-cancellation",

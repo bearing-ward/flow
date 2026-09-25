@@ -90,3 +90,26 @@ test("Foldkit controlled connection emits a candidate and waits for caller ackno
   expect(await adapter.changeKinds()).toEqual(["edge-add"]);
   expect((await adapter.destroy()).mountedElements).toBe(0);
 });
+
+test("Foldkit nested drag emits a parent-local position candidate", async ({ page }) => {
+  const adapter = createFoldkitConformanceAdapter(page);
+  const fixture = conformanceFixtures.find((entry) => entry.id === "nested-grandchild-parent-update");
+  if (fixture === undefined) throw new Error("Missing nested graph fixture");
+  await adapter.mount({ ...fixture, documentMode: "controlled", actions: [] });
+
+  const grandchild = page.locator("[data-node-id='grandchild']");
+  const box = await grandchild.boundingBox();
+  if (box === null) throw new Error("Missing nested grandchild");
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX + 20, startY + 15, { steps: 4 });
+  await page.mouse.up();
+
+  await expect.poll(async () => adapter.changeKinds()).toEqual(["node-position"]);
+  const changes = await page.evaluate(() => window.__flowFoldkitTest?.changes() ?? []);
+  expect(changes).toEqual([{ kind: "node-position", nodeId: "grandchild", position: { x: 27, y: 24 } }]);
+  expect((await adapter.snapshot()).positions).toContainEqual({ id: "grandchild", x: 132, y: 154 });
+  expect((await adapter.destroy()).mountedElements).toBe(0);
+});

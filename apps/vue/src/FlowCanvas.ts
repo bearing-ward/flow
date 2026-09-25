@@ -1,5 +1,6 @@
 import {
   applyNodePositionChange,
+  createFlowGraph,
   decodeFlowDocument,
   nextConnectionEdge,
   validateFlowConnection,
@@ -73,6 +74,7 @@ export const FlowCanvas = defineComponent({
       ? { ...ownedDocument.value, nodes: props.nodes ?? [], edges: props.edges ?? [] }
       : props.documentMode === "controlled" ? (props.document ?? ownedDocument.value) : ownedDocument.value);
     const activeViewport = computed(() => props.viewportMode === "controlled" ? (props.viewport ?? ownedViewport.value) : ownedViewport.value);
+    const graph = computed(() => createFlowGraph(activeDocument.value));
     const session = shallowRef<Session>();
     const canvas = shallowRef<HTMLElement>();
     const canvasWidth = shallowRef(960);
@@ -132,11 +134,10 @@ export const FlowCanvas = defineComponent({
     provide(FlowEditorKey, editor);
     expose({ editor });
 
-    const nodePosition = (node: FlowNode): { x: number; y: number } => {
-      const parent = node.parentId === undefined ? undefined : activeDocument.value.nodes.find((entry) => entry.id === node.parentId);
-      return { x: node.position.x + (parent?.position.x ?? 0), y: node.position.y + (parent?.position.y ?? 0) };
-    };
+    const nodePosition = (node: FlowNode): { x: number; y: number } =>
+      graph.value.nodes.get(node.id)?.absolutePosition ?? node.position;
     const visible = (node: FlowNode): boolean => {
+      if (graph.value.nodes.get(node.id)?.hidden === true) return false;
       if (!props.renderOnlyVisible) return true;
       const position = nodePosition(node);
       const viewport = activeViewport.value;
@@ -184,7 +185,7 @@ export const FlowCanvas = defineComponent({
     const onKeyDown = (event: KeyboardEvent): void => { if (event.key === "Escape") session.value = undefined; };
 
     const renderNode = (node: FlowNode): VNode | null => {
-      if (node.hidden === true || !visible(node)) return null;
+      if (graph.value.nodes.get(node.id)?.hidden === true || !visible(node)) return null;
       const position = nodePosition(node);
       const Node: NodeVisual = props.nodeComponent ?? DefaultNode;
       const nodeSlots = slots.node === undefined ? undefined : { default: () => slots.node?.({ node }) };
@@ -199,7 +200,9 @@ export const FlowCanvas = defineComponent({
       }, [h(Node, { node, key: `visual-${node.id}` }, nodeSlots), ...handleChildren]);
     };
     const renderEdge = (edge: FlowEdge): VNode | null => {
-      if (edge.hidden === true) return null;
+      const source = graph.value.nodes.get(edge.source);
+      const target = graph.value.nodes.get(edge.target);
+      if (edge.hidden === true || source?.hidden === true || target?.hidden === true) return null;
       const Edge = props.edgeComponent;
       const edgeSlots = slots.edge === undefined ? undefined : { default: () => slots.edge?.({ edge }) };
       return h("g", { key: edge.id, "data-testid": "flow-edge", "data-edge-id": edge.id }, Edge === undefined ? [] : [h(Edge, { edge }, edgeSlots)]);
@@ -234,7 +237,7 @@ export const FlowCanvas = defineComponent({
       onPointercancel: () => { session.value = undefined; },
     }, [
       h("svg", { class: "flow-vue-edges", "aria-hidden": "true" }, activeDocument.value.edges.map(renderEdge)),
-      h("div", { class: "flow-vue-viewport", style: { transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})` } }, activeDocument.value.nodes.map(renderNode)),
+      h("div", { class: "flow-vue-viewport", style: { transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})` } }, graph.value.orderedNodes.map(({ node }) => renderNode(node))),
       slots.default?.({}),
     ]);
   },

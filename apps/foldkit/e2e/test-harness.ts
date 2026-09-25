@@ -10,6 +10,7 @@ type FoldkitHarness = {
   replaceDocument(document: unknown): void;
   replaceViewport(viewport: Viewport): void;
   changeKinds(): readonly string[];
+  changes(): readonly EncodedFlowChange[];
   dispose(): void;
   finishDestroy(): Promise<{ readonly mountedElements: number; readonly changesAfterDestroy: number }>;
   destroy(): Promise<{ readonly mountedElements: number; readonly changesAfterDestroy: number }>;
@@ -79,4 +80,4 @@ const destroy = async () => {
   return finishDestroy();
 };
 
-window.__flowFoldkitTest = { mount, replaceDocument, replaceViewport, changeKinds: () => changes.map((change) => change.kind), dispose, finishDestroy, destroy };
+window.__flowFoldkitTest = { mount, replaceDocument, replaceViewport, changeKinds: () => changes.map((change) => change.kind), changes: () => changes, dispose, finishDestroy, destroy };

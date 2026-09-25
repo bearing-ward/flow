@@ -75,6 +75,36 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
     expected: { nodeIds: ["parent", "child"], edgeIds: [], positions: [{ id: "parent", x: 100, y: 110 }, { id: "child", x: 125, y: 145 }], changeKinds: [] },
   },
   {
+    version: 1, id: "nested-grandchild-parent-update", description: "Resolve three levels of ancestry in non-ancestral document order after the caller updates the root.",
+    documentMode: "controlled", viewportMode: "controlled",
+    document: { edges: [], nodes: [
+      { id: "grandchild", label: "Grandchild", parentId: "child", position: { x: 7, y: 9 } },
+      { id: "root", label: "Root", position: { x: 100, y: 110 } },
+      { id: "child", label: "Child", parentId: "root", position: { x: 25, y: 35 } },
+    ] },
+    actions: [{ kind: "update-document", document: { edges: [], nodes: [
+      { id: "grandchild", label: "Grandchild", parentId: "child", position: { x: 7, y: 9 } },
+      { id: "root", label: "Root", position: { x: 200, y: 220 } },
+      { id: "child", label: "Child", parentId: "root", position: { x: 25, y: 35 } },
+    ] } }],
+    expected: { nodeIds: ["root", "child", "grandchild"], edgeIds: [], positions: [{ id: "root", x: 200, y: 220 }, { id: "child", x: 225, y: 255 }, { id: "grandchild", x: 232, y: 264 }], changeKinds: [] },
+  },
+  {
+    version: 1, id: "hidden-ancestor", description: "Hide descendants and edges incident to descendants of a hidden ancestor.",
+    documentMode: "uncontrolled", viewportMode: "uncontrolled",
+    document: { nodes: [
+      { id: "grandchild", label: "Grandchild", parentId: "child", position: { x: 7, y: 9 } },
+      { id: "visible", label: "Visible", position: { x: 500, y: 20 } },
+      { id: "root", label: "Root", hidden: true, position: { x: 100, y: 110 } },
+      { id: "child", label: "Child", parentId: "root", position: { x: 25, y: 35 } },
+    ], edges: [
+      { id: "root-child", source: "root", target: "child" },
+      { id: "grandchild-visible", source: "grandchild", target: "visible" },
+    ] },
+    actions: [],
+    expected: { nodeIds: ["visible"], edgeIds: [], positions: [{ id: "visible", x: 500, y: 20 }], changeKinds: [] },
+  },
+  {
     version: 1, id: "controlled-acknowledgement", description: "Emit a drag candidate, wait for authoritative acknowledgement, then render it.",
     documentMode: "controlled", viewportMode: "controlled",
     document: { edges: [], nodes: [{ id: "move", label: "Move", position: { x: 80, y: 100 } }] },
