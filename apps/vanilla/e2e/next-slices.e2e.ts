@@ -92,6 +92,10 @@ test("controlled node selection waits for acknowledgement and keeps focus", asyn
   await expect(node).toHaveAttribute("aria-pressed", "true");
   await expect(edge).not.toHaveClass(/selected/u);
   await expect(node).toBeFocused();
+  await expect(page.locator(".flow-canvas")).toHaveScreenshot(
+    "selected-node-state.png",
+    { animations: "disabled" }
+  );
 });
 
 test("selected edge rises in keyed order and retains focus", async ({
@@ -370,6 +374,10 @@ test("hidden nodes suppress connected edges and return after update", async ({
   const edge = page.locator('.flow-edge-group[data-edge-id="ab"]');
   await expect(beta).toHaveCount(0);
   await expect(edge).toHaveCount(0);
+  await expect(page.locator(".flow-canvas")).toHaveScreenshot(
+    "hidden-node-and-incident-edge.png",
+    { animations: "disabled" }
+  );
 
   const updateVisibility = async (hidden: boolean): Promise<void> => {
     await page.evaluate(

@@ -464,6 +464,10 @@ test("nested nodes move in absolute space and publish local positions", async ({
   const beforeParent = await parent.boundingBox();
   const beforeChild = await child.boundingBox();
   if (beforeParent === null || beforeChild === null) throw new Error("Missing nested node bounds");
+  await expect(page.locator(".flow-canvas")).toHaveScreenshot(
+    "nested-graph-before-drag.png",
+    { animations: "disabled" }
+  );
   await page.mouse.move(beforeParent.x + 80, beforeParent.y + 50);
   await page.mouse.down();
   await page.mouse.move(beforeParent.x + 105, beforeParent.y + 70);
