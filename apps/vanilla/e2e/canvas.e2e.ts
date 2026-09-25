@@ -1282,6 +1282,7 @@ playwrightTest(
     await expectPage
       .poll(() => page.evaluate(() => globalThis.flowChanges?.length))
       .toBe(0);
+    await expectPage(page.getByTestId("flow-edge-path")).toHaveCount(0);
     await expectPage(page.locator(".flow-canvas")).toHaveScreenshot(
       "rejected-connection-output.png",
       { animations: "disabled" }
