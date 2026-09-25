@@ -394,6 +394,88 @@ test("invalid controlled update during a drag is rejected without corrupting the
   expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
 });
 
+test("removing a dragged node clears its preview and releases gesture resources", async ({ page }) => {
+  await mountCancellationScenario(page);
+  const start = await centerOf(page, '[data-node-id="drag"]');
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 24, start.y + 8);
+  const drag = page.locator('[data-node-id="drag"]');
+  await expect(drag).toHaveClass(/dragging/u);
+  const element = await drag.elementHandle();
+  if (element === null) throw new Error("Missing active drag node");
+
+  const captured = await page.evaluate(() => {
+    const elements = [
+      globalThis.document.querySelector<HTMLElement>("[data-testid='flow-canvas']"),
+      globalThis.document.querySelector<HTMLElement>("[data-node-id='drag']"),
+    ];
+    return elements.some((candidate) => candidate?.hasPointerCapture(1) === true);
+  });
+  expect(captured).toBe(true);
+
+  await page.evaluate(() => globalThis.flowController?.update({
+    nodes: [
+      { id: "source", label: "Source", position: { x: 80, y: 180 }, handles: [{ id: "out", kind: "source", side: "right" }] },
+      { id: "target", label: "Target", position: { x: 300, y: 180 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+      { id: "spare", label: "Spare", position: { x: 700, y: 180 } },
+    ],
+    edges: [],
+  } as never));
+  await expect(drag).toHaveCount(0);
+  expect(await element.evaluate((node) => node instanceof HTMLElement && node.hasPointerCapture(1))).toBe(false);
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+  await element.evaluate((node) => {
+    if (!(node instanceof HTMLElement)) throw new Error("Detached node is not an HTMLElement");
+    node.dataset.measuredWidth = "released";
+    node.style.width = "321px";
+  });
+  await page.waitForTimeout(50);
+  expect(await element.getAttribute("data-measured-width")).toBe("released");
+
+  const spare = await centerOf(page, '[data-node-id="spare"]');
+  await page.mouse.move(spare.x, spare.y);
+  await page.mouse.down();
+  await page.mouse.move(spare.x + 20, spare.y + 5);
+  await expect(page.locator('[data-node-id="spare"]')).toHaveClass(/dragging/u);
+  await page.getByTestId("flow-canvas").evaluate((canvas) =>
+    canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+});
+
+test("unmounting during a drag releases capture and resize observation", async ({ page }) => {
+  await mountCancellationScenario(page);
+  const start = await centerOf(page, '[data-node-id="drag"]');
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 24, start.y + 8);
+  const drag = page.locator('[data-node-id="drag"]');
+  await expect(drag).toHaveClass(/dragging/u);
+  const element = await drag.elementHandle();
+  if (element === null) throw new Error("Missing active drag node");
+
+  const captured = await page.evaluate(() => {
+    const elements = [
+      globalThis.document.querySelector<HTMLElement>("[data-testid='flow-canvas']"),
+      globalThis.document.querySelector<HTMLElement>("[data-node-id='drag']"),
+    ];
+    return elements.some((candidate) => candidate?.hasPointerCapture(1) === true);
+  });
+  expect(captured).toBe(true);
+  await page.evaluate(() => globalThis.flowController?.destroy());
+  await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
+  expect(await element.evaluate((node) => node instanceof HTMLElement && node.hasPointerCapture(1))).toBe(false);
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+  await element.evaluate((node) => {
+    if (!(node instanceof HTMLElement)) throw new Error("Detached node is not an HTMLElement");
+    node.dataset.measuredWidth = "released";
+    node.style.width = "321px";
+  });
+  await page.waitForTimeout(50);
+  expect(await element.getAttribute("data-measured-width")).toBe("released");
+});
+
 // Playwright/CDP touch injection does not preserve native pointer capture in this environment.
 test.fixme("concurrent native connection and node drag cancellation requires real pointer capture", async () => {});
 
