@@ -24,6 +24,21 @@ const fixtureChecks = (): readonly string[] => {
     },
     {
       expected: "fail",
+      path: "packages/core/src/public.ts",
+      text: 'import "../../../../apps/vanilla/src/public.ts";',
+    },
+    {
+      expected: "fail",
+      path: "packages/core/src/geometry/forbidden-app.ts",
+      text: 'import "../../../../apps/vue/src/public.ts";',
+    },
+    {
+      expected: "pass",
+      path: "packages/core/src/public-core-import.ts",
+      text: 'import { FlowNodeSchema } from "@flow/core";\nexport { FlowNodeSchema };',
+    },
+    {
+      expected: "fail",
       path: "packages/core/src/domain/forbidden-browser.ts",
       text: "export const title = window.document.title;",
     },
@@ -83,7 +98,7 @@ const program = Effect.gen(function* checkArchitecture() {
     return yield* Effect.die(new Error(`Architecture boundaries failed:\n${violations.join("\n")}`));
   }
 
-  yield* Effect.log(`Verified architecture boundaries across ${files.length} production source files; all six rule fixtures passed`);
+  yield* Effect.log(`Verified architecture boundaries across ${files.length} production source files; all rule fixtures passed`);
 });
 
 BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)));
