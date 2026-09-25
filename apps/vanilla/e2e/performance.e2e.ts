@@ -50,21 +50,21 @@ const mountFixture = async (
   );
   await page.evaluate(
     async ({ documentInput, showMinimap, cullToViewport }) => {
-      await import("/src/public.ts").then(({ mountFlow }) => {
-        const root = document.querySelector<HTMLElement>("#app");
-        if (root === null) throw new Error("Missing benchmark host");
-        const controller = mountFlow(root, documentInput, {
-          documentMode: "uncontrolled",
-          renderOnlyVisible: cullToViewport,
-          viewport: {
-            initial: { x: 0, y: 0, zoom: 1 },
-            limits: { minZoom: 0.5, maxZoom: 2 },
-            mode: "uncontrolled",
-          },
-          ui: { controls: false, minimap: showMinimap },
-        });
-        globalThis.flowController = controller;
+      const modulePath = "/src/public.ts";
+      const { mountFlow } = await import(modulePath);
+      const root = document.querySelector<HTMLElement>("#app");
+      if (root === null) throw new Error("Missing benchmark host");
+      const controller = mountFlow(root, documentInput, {
+        documentMode: "uncontrolled",
+        renderOnlyVisible: cullToViewport,
+        viewport: {
+          initial: { x: 0, y: 0, zoom: 1 },
+          limits: { minZoom: 0.5, maxZoom: 2 },
+          mode: "uncontrolled",
+        },
+        ui: { controls: false, minimap: showMinimap },
       });
+      globalThis.flowController = controller;
     },
     {
       documentInput: fixture(size, edgeCount),
