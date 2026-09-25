@@ -122,6 +122,60 @@ const source = {
   ],
 };
 
+const interactionScenes = {
+  resize: {
+    nodes: [
+      {
+        id: "container",
+        label: "Resize me",
+        position: { x: 280, y: 220 },
+        size: { width: 300, height: 190 },
+        selected: true,
+        type: "demo-card",
+        data: { scene: "resize" },
+      },
+      {
+        id: "child",
+        label: "Child node",
+        parentId: "container",
+        position: { x: 32, y: 58 },
+        size: { width: 120, height: 56 },
+      },
+    ],
+    edges: [],
+  },
+  drag: {
+    nodes: [
+      {
+        id: "drag-card",
+        label: "Custom drag region",
+        position: { x: 280, y: 250 },
+        size: { width: 300, height: 150 },
+        type: "demo-card",
+        data: { scene: "drag" },
+      },
+      {
+        id: "drag-target",
+        label: "Drop target",
+        position: { x: 690, y: 280 },
+        size: { width: 160, height: 90 },
+      },
+    ],
+    edges: [],
+  },
+  panels: {
+    nodes: [
+      {
+        id: "panel-node",
+        label: "Panel anchor",
+        position: { x: 360, y: 300 },
+        size: { width: 210, height: 90 },
+      },
+    ],
+    edges: [],
+  },
+} as const;
+
 const runtime = ManagedRuntime.make(BrowserApplicationLive);
 
 const playgroundCopy = {
@@ -136,6 +190,24 @@ const playgroundCopy = {
       "Distant graph: inspect the remote node pair. Viewport culling removes the main graph from the DOM until you return to it.",
     helper:
       "Only nodes near the viewport are rendered. Connect Remote input to Remote output, then choose Main graph to return. Drag near a pane edge during a connection to pan.",
+  },
+  resize: {
+    description:
+      "Nested resize: the selected parent exposes eight resize controls. Drag a corner or edge and watch its child keep the same world position.",
+    helper:
+      "Resize the parent with a pointer or focus a resize control and use the arrow keys. The child is compensated as the parent bounds change.",
+  },
+  drag: {
+    description:
+      "Custom drag handle: only the marked header moves the node. The action button inside the card remains interactive without starting a drag.",
+    helper:
+      "Drag the blue header to move the card. Click its button, or drag the card body, to see those regions excluded from node dragging.",
+  },
+  panels: {
+    description:
+      "Placed panel: the caller-owned panel is mounted in the canvas at the top left and keeps its own focusable action.",
+    helper:
+      "Use the panel action or drag the graph behind it. Panel placement belongs to the vanilla host; the graph document contains no DOM elements.",
   },
   fit: {
     description:
@@ -195,8 +267,26 @@ const program = Effect.gen(function* program() {
   }
 
   const document = yield* decodeFlowDocument(source);
+  const sceneDocuments = {
+    resize: yield* decodeFlowDocument(interactionScenes.resize),
+    drag: yield* decodeFlowDocument(interactionScenes.drag),
+    panels: yield* decodeFlowDocument(interactionScenes.panels),
+  };
   let currentDocument = document;
+  let mainDocument = document;
+  let interactionSceneActive = false;
   let blockOutputConnections = false;
+
+  const placedPanel = globalThis.document.createElement("aside");
+  placedPanel.className = "flow-scene-panel";
+  placedPanel.hidden = true;
+  placedPanel.innerHTML =
+    '<strong>Caller panel</strong><p>Placed at top left</p><button type="button">Panel action</button>';
+  placedPanel.querySelector("button")?.addEventListener("click", () => {
+    placedPanel.dataset.actionCount = String(
+      Number(placedPanel.dataset.actionCount ?? "0") + 1
+    );
+  });
 
   const host = yield* createFlowHost(root, document, {
     documentMode: "uncontrolled",
@@ -210,12 +300,33 @@ const program = Effect.gen(function* program() {
     renderOnlyVisible: true,
     selectionMode: "partial",
     ui: { controls: true, minimap: true },
+    panels: [
+      { id: "playground-panel", element: placedPanel, placement: "top-left" },
+    ],
     snapGrid: { x: 10, y: 10 },
     runEffect: runtime.runSync,
     nodeRenderers: {
       "demo-card": (node: FlowNode, content: HTMLElement) => {
+        const render = (next: FlowNode): void => {
+          if (next.data?.scene === "drag") {
+            const header = globalThis.document.createElement("div");
+            header.className = "flow-demo-drag-handle";
+            header.dataset.flowDragHandle = "";
+            header.textContent = "Drag this header";
+            const action = globalThis.document.createElement("button");
+            action.type = "button";
+            action.dataset.flowNoDrag = "";
+            action.textContent = "Card action";
+            action.addEventListener("click", () => {
+              action.dataset.clicked = "true";
+            });
+            content.replaceChildren(header, action);
+            return;
+          }
+          content.textContent = `${next.label} · ${String(next.data?.detail ?? "Nested parent")}`;
+        };
         const update = (next: FlowNode): void => {
-          content.textContent = `${next.label} · ${String(next.data?.detail ?? "")}`;
+          render(next);
         };
         update(node);
         return { update, destroy: () => content.replaceChildren() };
@@ -224,8 +335,16 @@ const program = Effect.gen(function* program() {
     edgeRenderers: {
       "demo-edge": {
         geometry: (_edge: FlowEdge, endpoints) => ({
-          pathData: simpleBezierEdgePath(endpoints.source, endpoints.target, endpoints.sourceSide, endpoints.targetSide),
-          labelAnchor: { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 },
+          pathData: simpleBezierEdgePath(
+            endpoints.source,
+            endpoints.target,
+            endpoints.sourceSide,
+            endpoints.targetSide
+          ),
+          labelAnchor: {
+            x: (endpoints.source.x + endpoints.target.x) / 2,
+            y: (endpoints.source.y + endpoints.target.y) / 2,
+          },
         }),
       },
     },
@@ -245,6 +364,9 @@ const program = Effect.gen(function* program() {
     <div class="flow-demo-actions">
       <button type="button" data-action="home" aria-pressed="true" aria-current="true">Main graph</button>
       <button type="button" data-action="remote" aria-pressed="false">Distant graph</button>
+      <button type="button" data-action="resize" aria-pressed="false">Nested resize</button>
+      <button type="button" data-action="drag" aria-pressed="false">Custom drag handle</button>
+      <button type="button" data-action="panels" aria-pressed="false">Placed panel</button>
       <button type="button" data-action="fit">Fit graph</button>
       <button type="button" data-action="validator" aria-pressed="false">Block Output connections</button>
       <button type="button" data-action="hidden">Show hidden edge</button>
@@ -289,6 +411,10 @@ const program = Effect.gen(function* program() {
   let validateHidden = false;
 
   const showExample = (example: "home" | "remote"): void => {
+    placedPanel.hidden = true;
+    interactionSceneActive = false;
+    currentDocument = mainDocument;
+    host.update(currentDocument);
     host.updateViewport(
       example === "home" ? { x: 0, y: 0, zoom: 1 } : { x: -1730, y: 0, zoom: 1 }
     );
@@ -296,11 +422,28 @@ const program = Effect.gen(function* program() {
     selectAction(example, playgroundCopy[example]);
 
     for (const button of panel.querySelectorAll<HTMLButtonElement>(
-      'button[data-action="home"], button[data-action="remote"]'
+      "button[data-action]"
     )) {
       button.setAttribute(
         "aria-pressed",
         String(button.dataset.action === example)
+      );
+    }
+  };
+
+  const showScene = (scene: "resize" | "drag" | "panels"): void => {
+    interactionSceneActive = true;
+    currentDocument = sceneDocuments[scene];
+    host.update(currentDocument);
+    host.updateViewport({ x: 0, y: 0, zoom: 1 });
+    placedPanel.hidden = scene !== "panels";
+    selectAction(scene, playgroundCopy[scene]);
+    for (const button of panel.querySelectorAll<HTMLButtonElement>(
+      "button[data-action]"
+    )) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.action === scene)
       );
     }
   };
@@ -322,6 +465,12 @@ const program = Effect.gen(function* program() {
       showExample("home");
     } else if (button?.dataset.action === "remote") {
       showExample("remote");
+    } else if (
+      button?.dataset.action === "resize" ||
+      button?.dataset.action === "drag" ||
+      button?.dataset.action === "panels"
+    ) {
+      showScene(button.dataset.action);
     } else if (button?.dataset.action === "fit") {
       showFit();
     } else if (button?.dataset.action === "validator") {
@@ -347,6 +496,7 @@ const program = Effect.gen(function* program() {
           edge.id === "hidden" ? { ...edge, hidden: !hiddenShown } : edge
         ),
       };
+      mainDocument = currentDocument;
       host.update(currentDocument);
       button.textContent = hiddenShown ? "Hide step edge" : "Show hidden edge";
 
@@ -363,6 +513,7 @@ const program = Effect.gen(function* program() {
           node.id === "validate" ? { ...node, hidden: validateHidden } : node
         ),
       };
+      mainDocument = currentDocument;
       host.update(currentDocument);
       button.textContent = validateHidden
         ? "Show Validate node"
@@ -381,7 +532,8 @@ const program = Effect.gen(function* program() {
     // eslint-disable-next-line default-case -- The schema-derived change union is exhaustive.
     switch (change.kind) {
       case "node-bounds": {
-        currentDocument = applyNodeBoundsChange(currentDocument, change) ?? currentDocument;
+        currentDocument =
+          applyNodeBoundsChange(currentDocument, change) ?? currentDocument;
         break;
       }
 
@@ -442,12 +594,17 @@ const program = Effect.gen(function* program() {
 
     root.dataset.lastChange = JSON.stringify(change);
 
+    if (!interactionSceneActive) {
+      mainDocument = currentDocument;
+    }
+
     if (status !== null) {
       status.textContent = `${change.kind.replaceAll("-", " ")} · ${new Date().toLocaleTimeString()}`;
     }
   });
 
   yield* Effect.sync(() => {
+    placedPanel.hidden = true;
     globalThis.addEventListener(
       "beforeunload",
       () => {
