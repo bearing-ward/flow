@@ -15,8 +15,8 @@ import { computed, defineComponent, h, onBeforeUnmount, provide, shallowRef, wat
 import { Effect, Exit } from "effect";
 import { FlowEditorKey, type FlowEditor } from "./use-flow.ts";
 
-type DragSession = { readonly kind: "node"; readonly pointerId: number; readonly node: FlowNode; readonly startX: number; readonly startY: number; readonly originX: number; readonly originY: number };
-type ConnectionSession = { readonly kind: "connection"; readonly pointerId: number; readonly sourceNode: FlowNode; readonly sourceHandle: string };
+type DragSession = { readonly kind: "node"; readonly pointerId: number; readonly node: FlowNode; readonly element: HTMLElement; readonly captureTarget: HTMLElement; readonly startX: number; readonly startY: number; readonly originX: number; readonly originY: number };
+type ConnectionSession = { readonly kind: "connection"; readonly pointerId: number; readonly captureTarget: HTMLElement; readonly sourceNode: FlowNode; readonly sourceHandle: string };
 type Session = DragSession | ConnectionSession;
 type NodeVisual = Component<{ readonly node: FlowNode }>;
 type EdgeVisual = Component<{ readonly edge: FlowEdge }>;
@@ -123,6 +123,17 @@ export const FlowCanvas = defineComponent({
       if (props.viewportMode === "controlled") emit("update:viewport", next);
       else ownedViewport.value = next;
     };
+    const cleanupPreview = (active: Session | undefined = session.value): void => {
+      if (active?.kind === "node") {
+        active.element.style.removeProperty("transform");
+      }
+      if (active?.captureTarget.hasPointerCapture?.(active.pointerId)) active.captureTarget.releasePointerCapture?.(active.pointerId);
+      if (session.value === active) session.value = undefined;
+    };
+    watch(() => activeDocument.value.nodes.map(({ id }) => id), (ids) => {
+      const active = session.value;
+      if (active?.kind === "node" && !ids.includes(active.node.id)) cleanupPreview(active);
+    });
     const dispatch = (command: FlowCommand): void => {
       if (command.kind === "set-viewport") updateViewport(command.viewport);
       if (command.kind === "set-node-position") {
@@ -150,9 +161,13 @@ export const FlowCanvas = defineComponent({
       if (!(target instanceof HTMLElement)) return;
       const handleId = target.closest<HTMLElement>("[data-handle-id]")?.dataset.handleId;
       if (handleId !== undefined) {
-        session.value = { kind: "connection", pointerId: event.pointerId, sourceNode: node, sourceHandle: handleId };
+        const currentTarget = event.currentTarget;
+        if (!(currentTarget instanceof HTMLElement)) return;
+        session.value = { kind: "connection", pointerId: event.pointerId, captureTarget: currentTarget, sourceNode: node, sourceHandle: handleId };
       } else {
-        session.value = { kind: "node", pointerId: event.pointerId, node, startX: event.clientX, startY: event.clientY, originX: nodePosition(node).x, originY: nodePosition(node).y };
+        const currentTarget = event.currentTarget;
+        if (!(currentTarget instanceof HTMLElement)) return;
+        session.value = { kind: "node", pointerId: event.pointerId, node, element: currentTarget, captureTarget: currentTarget, startX: event.clientX, startY: event.clientY, originX: node.position.x, originY: node.position.y };
       }
       const currentTarget = event.currentTarget;
       if (currentTarget instanceof HTMLElement) currentTarget.setPointerCapture?.(event.pointerId);
@@ -160,15 +175,15 @@ export const FlowCanvas = defineComponent({
     const onPointerUp = (event: PointerEvent): void => {
       const active = session.value;
       if (active === undefined || active.pointerId !== event.pointerId) return;
-      session.value = undefined;
       if (active.kind === "node") {
-        canvas.value?.querySelector<HTMLElement>(`[data-node-id="${active.node.id}"]`)?.style.removeProperty("transform");
+        cleanupPreview(active);
         const dx = (event.clientX - active.startX) / activeViewport.value.zoom;
         const dy = (event.clientY - active.startY) / activeViewport.value.zoom;
         if (Math.hypot(dx, dy) < 8) return;
         publish({ kind: "node-position", nodeId: active.node.id, position: { x: active.originX + dx, y: active.originY + dy } });
         return;
       }
+      cleanupPreview(active);
       const targetElement = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-handle-id]");
       const targetNodeElement = targetElement?.closest<HTMLElement>("[data-node-id]");
       const targetNodeId = targetNodeElement?.dataset.nodeId;
@@ -182,7 +197,7 @@ export const FlowCanvas = defineComponent({
       if (Exit.isFailure(Effect.runSyncExit(validateFlowConnection(activeDocument.value, connection)))) return;
       publish({ kind: "edge-add", edge: nextConnectionEdge(activeDocument.value, connection) });
     };
-    const onKeyDown = (event: KeyboardEvent): void => { if (event.key === "Escape") session.value = undefined; };
+    const onKeyDown = (event: KeyboardEvent): void => { if (event.key === "Escape") cleanupPreview(); };
 
     const renderNode = (node: FlowNode): VNode | null => {
       if (graph.value.nodes.get(node.id)?.hidden === true || !visible(node)) return null;
@@ -212,7 +227,7 @@ export const FlowCanvas = defineComponent({
       if (canvas.value !== undefined) resizeObserver.unobserve(canvas.value);
       resizeObserver.disconnect();
       globalThis.removeEventListener("keydown", onKeyDown, true);
-      session.value = undefined;
+      cleanupPreview();
     });
 
     return () => h("div", {
@@ -230,11 +245,10 @@ export const FlowCanvas = defineComponent({
         if (active?.kind !== "node" || active.pointerId !== event.pointerId) return;
         const dx = (event.clientX - active.startX) / activeViewport.value.zoom;
         const dy = (event.clientY - active.startY) / activeViewport.value.zoom;
-        const current = canvas.value?.querySelector<HTMLElement>(`[data-node-id="${active.node.id}"]`);
-        if (current !== null && current !== undefined) current.style.transform = `translate(${Math.max(0, dx)}px, ${Math.max(0, dy)}px)`;
+        active.element.style.transform = `translate(${dx}px, ${dy}px)`;
       },
       onPointerup: onPointerUp,
-      onPointercancel: () => { session.value = undefined; },
+      onPointercancel: (event: PointerEvent) => { if (session.value?.pointerId === event.pointerId) cleanupPreview(); },
     }, [
       h("svg", { class: "flow-vue-edges", "aria-hidden": "true" }, activeDocument.value.edges.map(renderEdge)),
       h("div", { class: "flow-vue-viewport", style: { transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})` } }, graph.value.orderedNodes.map(({ node }) => renderNode(node))),

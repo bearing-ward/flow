@@ -82,3 +82,77 @@ test("Vue nodes and edges bindings render caller state and acknowledge emitted u
   const result = await page.evaluate(() => window.__flowVueTest?.splitModelSnapshot());
   expect(result).toEqual({ initialRendered: true, nodeUpdateAcknowledged: true, edgeUpdateAcknowledged: true, documentUpdateAcknowledged: true, identityPreserved: true });
 });
+
+test("Vue nested child dragging publishes local coordinates and renders world coordinates", async ({ page }) => {
+  for (const mode of ["controlled", "uncontrolled"] as const) {
+    await page.goto("/test.html");
+    await page.evaluate(async (documentMode) => {
+      await import("../src/test-harness.ts");
+      window.__flowVueTest?.startNestedDragCase(documentMode);
+    }, mode);
+    const child = page.locator("[data-node-id='child:[]']");
+    await expect(child).toHaveCSS("left", "120px");
+    await expect(child).toHaveCSS("top", "150px");
+    const before = await child.boundingBox();
+    if (before === null) throw new Error("Missing nested child");
+    await page.mouse.move(before.x + 30, before.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(before.x + 18, before.y + 5, { steps: 3 });
+    await page.mouse.up();
+    await expect(child).toHaveCSS("left", "108px");
+    await expect(child).toHaveCSS("top", "135px");
+    expect(await page.evaluate(() => window.__flowVueTest?.positionChanges)).toEqual([
+      { nodeId: "child:[]", position: { x: 8, y: 15 } },
+    ]);
+    const after = await child.boundingBox();
+    expect(after?.x).toBe(before.x - 12);
+    expect(after?.y).toBe(before.y - 15);
+  }
+});
+
+test("Vue cancelled drag previews restore pixels and allow a fresh gesture", async ({ page }) => {
+  for (const cancellation of ["escape", "pointercancel", "removal", "unmount"] as const) {
+    await page.goto("/test.html");
+    await page.evaluate(async () => {
+      await import("../src/test-harness.ts");
+      window.__flowVueTest?.startNestedDragCase("controlled");
+    });
+    const child = page.locator("[data-node-id='child:[]']");
+    const before = await child.boundingBox();
+    if (before === null) throw new Error("Missing nested child");
+    await page.evaluate(() => { (window as typeof window & { __dragNode?: HTMLElement | null }).__dragNode = document.querySelector("[data-node-id='child:[]']"); });
+    await page.mouse.move(before.x + 30, before.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(before.x + 45, before.y + 35, { steps: 2 });
+    if (cancellation === "escape") {
+      await page.keyboard.press("Escape");
+    } else if (cancellation === "pointercancel") {
+      await page.locator("[data-testid='flow-canvas']").evaluate((canvas) => canvas.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerId: 1 })));
+    } else if (cancellation === "removal") {
+      await page.evaluate(() => window.__flowVueTest?.updateNestedDragDocument({ edges: [], nodes: [{ id: "parent", label: "Parent", position: { x: 100, y: 120 } }] }));
+      await expect(child).toHaveCount(0);
+    } else {
+      await page.evaluate(() => window.__flowVueTest?.destroy());
+    }
+    const cancelled = await page.evaluate(() => {
+      const node = (window as typeof window & { __dragNode?: HTMLElement | null }).__dragNode;
+      return { transform: node?.style.transform ?? null, rect: node?.getBoundingClientRect().toJSON() ?? null, changes: window.__flowVueTest?.positionChanges ?? [] };
+    });
+    expect(cancelled.transform).toBe("");
+    expect(cancelled.changes).toEqual([]);
+    if (cancellation !== "unmount" && cancellation !== "removal") {
+      expect(cancelled.rect?.x).toBe(before.x);
+      expect(cancelled.rect?.y).toBe(before.y);
+    }
+    if (cancellation === "escape" || cancellation === "pointercancel") {
+      await page.mouse.up();
+      const fresh = await child.boundingBox();
+      if (fresh === null) throw new Error("Cancelled gesture removed child");
+      await page.mouse.move(fresh.x + 30, fresh.y + 20);
+      await page.mouse.down();
+      await page.mouse.move(fresh.x + 40, fresh.y + 30, { steps: 2 });
+      await page.mouse.up();
+      expect(await page.evaluate(() => window.__flowVueTest?.positionChanges)).toHaveLength(1);
+    }
+  }
+});

@@ -1,20 +1,5 @@
 import type { Page } from "@playwright/test";
-import type { ConformanceAction, ConformanceAdapter, ConformanceFixture, ConformanceSnapshot } from "../../../packages/conformance/src/index.ts";
-
-declare global {
-  interface Window { __flowVueTest?: {
-    mount(fixture: ConformanceFixture): void;
-    updateDocument(document: unknown): void;
-    updateViewport(viewport: { readonly x: number; readonly y: number; readonly zoom: number }): void;
-    changeKinds(): readonly string[];
-    destroy(): { readonly mountedElements: number; readonly changesAfterDestroy: number };
-    smoke(): Promise<{ readonly leftCount: string | null; readonly rightCount: string | null; readonly labelUpdated: boolean; readonly edgeUpdated: boolean; readonly identityPreserved: boolean; readonly mounted: number; readonly unmounted: number; readonly edgeMounted: number; readonly edgeUnmounted: number; readonly remaining: number }>;
-    startSplitModel(): void;
-    updateSplitDocument(document: unknown): void;
-    splitModelSnapshot(): { readonly initialRendered: boolean; readonly nodeUpdateAcknowledged: boolean; readonly edgeUpdateAcknowledged: boolean; readonly documentUpdateAcknowledged: boolean; readonly identityPreserved: boolean };
-    readonly changes: string[];
-  }; }
-}
+import type { ConformanceAction, ConformanceAdapter, ConformanceSnapshot } from "../../../packages/conformance/src/index.ts";
 
 export const createVueConformanceAdapter = (page: Page): ConformanceAdapter => ({
   async mount(fixture) {

@@ -17,6 +17,9 @@ type TestApi = {
   updateSplitDocument(document: unknown): void;
   splitModelSnapshot(): { readonly initialRendered: boolean; readonly nodeUpdateAcknowledged: boolean; readonly edgeUpdateAcknowledged: boolean; readonly documentUpdateAcknowledged: boolean; readonly identityPreserved: boolean };
   readonly changes: string[];
+  readonly positionChanges: { readonly nodeId: string; readonly position: { readonly x: number; readonly y: number } }[];
+  startNestedDragCase(mode: "controlled" | "uncontrolled"): void;
+  updateNestedDragDocument(document: unknown): void;
 };
 
 declare global {
@@ -31,6 +34,7 @@ let cullOffscreen = ref(false);
 let documentMode = ref<"controlled" | "uncontrolled">("controlled");
 let viewportMode = ref<"controlled" | "uncontrolled">("controlled");
 let changes: string[] = [];
+let positionChanges: { readonly nodeId: string; readonly position: { readonly x: number; readonly y: number } }[] = [];
 let splitNodeUpdates = 0;
 let splitEdgeUpdates = 0;
 let splitDocumentUpdater: ((document: FlowDocument) => void) | undefined;
@@ -60,6 +64,7 @@ const api: TestApi = {
     viewportMode.value = fixture.viewportMode;
     viewportState.value = { x: 0, y: 0, zoom: 1 };
     changes = [];
+    positionChanges = [];
     app = createApp(Component);
     app.mount("#app");
   },
@@ -163,6 +168,38 @@ const api: TestApi = {
     if (update === undefined) throw new Error("Split FlowCanvas updateDocument action is unavailable");
     update(Effect.runSync(decodeFlowDocument(document)));
   },
+  startNestedDragCase(mode) {
+    app?.unmount();
+    documentMode.value = mode;
+    viewportMode.value = "uncontrolled";
+    viewportState.value = { x: 0, y: 0, zoom: 1 };
+    documentState.value = Effect.runSync(decodeFlowDocument({ edges: [], nodes: [
+      { id: "child:[]", label: "Nested Child", parentId: "parent", position: { x: 20, y: 30 } },
+      { id: "parent", label: "Parent", position: { x: 100, y: 120 } },
+    ] }));
+    changes = [];
+    positionChanges = [];
+    const DragRoot = defineComponent({
+      setup() {
+        return () => h(FlowCanvas, {
+          ...(mode === "controlled" ? { document: documentState.value } : { defaultDocument: documentState.value }),
+          documentMode: mode,
+          defaultViewport: { x: 0, y: 0, zoom: 1 },
+          viewportMode: "uncontrolled",
+          onChange: (change: { kind: string; nodeId?: string; position?: { x: number; y: number } }) => {
+            changes.push(change.kind);
+            if (change.kind === "node-position" && change.nodeId !== undefined && change.position !== undefined) {
+              positionChanges.push({ nodeId: change.nodeId, position: change.position });
+            }
+          },
+          "onUpdate:document": (next: FlowDocument) => { documentState.value = next; },
+        });
+      },
+    });
+    app = createApp(DragRoot);
+    app.mount("#app");
+  },
+  updateNestedDragDocument(document) { documentState.value = Effect.runSync(decodeFlowDocument(document)); },
   splitModelSnapshot() {
     const node = document.querySelector("[data-node-id='split-a']");
     return {
@@ -177,6 +214,7 @@ const api: TestApi = {
     };
   },
   get changes() { return changes; },
+  get positionChanges() { return [...positionChanges]; },
 };
 
 window.__flowVueTest = api;
