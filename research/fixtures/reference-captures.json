@@ -43,6 +43,45 @@
         "outsideHandleTransformChanged": false,
         "handleTransformChanged": true
       }
+    },
+    {
+      "id": "xyflow-left-resize-direct-child",
+      "input": {
+        "route": "/examples/resize-probe",
+        "viewport": { "width": 960, "height": 640 },
+        "graphViewport": { "x": 0, "y": 0, "zoom": 1 },
+        "parent": { "position": { "x": 80, "y": 100 }, "size": { "width": 90, "height": 60 } },
+        "child": { "parentId": "source", "localPosition": { "x": 15, "y": 15 }, "size": { "width": 20, "height": 20 } },
+        "action": "left resize from screen point (80, 170) to (100, 170); pointer delta (+20, 0)"
+      },
+      "test": "temporary ReactFlow probe route with NodeResizer; capture parent and child DOM transforms before and after the gesture",
+      "command": "FRAMEWORK=react pnpm exec playwright test -c playwright.react.config.ts --project=chromium e2e/resize-probe.spec.ts",
+      "environment": "macOS; pnpm 10.33.4; Playwright 1.60.0; Chromium 148.0.7778.96; full checkout detached at the recorded commit; packages built with pnpm build.",
+      "normalization": "Use node inline transform translations as world positions and the parent's inline width/height as size. Derive the child's parent-local position by subtracting parent world position from child world position. Browser layout offsets appear only in rendered bounds and are not used in the normalized comparison.",
+      "observed": {
+        "captures": [
+          {
+            "parentBefore": { "worldPosition": { "x": 80, "y": 100 }, "renderedBounds": { "x": 80, "y": 140, "width": 90, "height": 60 } },
+            "childBefore": { "worldPosition": { "x": 95, "y": 115 }, "renderedBounds": { "x": 95, "y": 155, "width": 22, "height": 22 } },
+            "parentAfter": { "worldPosition": { "x": 100, "y": 100 }, "size": { "width": 70, "height": 60 }, "renderedBounds": { "x": 100, "y": 140, "width": 70, "height": 60 } },
+            "childAfter": { "worldPosition": { "x": 95, "y": 115 }, "renderedBounds": { "x": 95, "y": 155, "width": 22, "height": 22 } },
+            "normalized": {
+              "parent": { "position": { "x": 100, "y": 100 }, "size": { "width": 70, "height": 60 } },
+              "child": { "worldPosition": { "x": 95, "y": 115 }, "localPosition": { "x": -5, "y": 15 } }
+            }
+          },
+          {
+            "parentBefore": { "worldPosition": { "x": 80, "y": 100 }, "renderedBounds": { "x": 80, "y": 140, "width": 90, "height": 60 } },
+            "childBefore": { "worldPosition": { "x": 95, "y": 115 }, "renderedBounds": { "x": 95, "y": 155, "width": 22, "height": 22 } },
+            "parentAfter": { "worldPosition": { "x": 100, "y": 100 }, "size": { "width": 70, "height": 60 }, "renderedBounds": { "x": 100, "y": 140, "width": 70, "height": 60 } },
+            "childAfter": { "worldPosition": { "x": 95, "y": 115 }, "renderedBounds": { "x": 95, "y": 155, "width": 22, "height": 22 } },
+            "normalized": {
+              "parent": { "position": { "x": 100, "y": 100 }, "size": { "width": 70, "height": 60 } },
+              "child": { "worldPosition": { "x": 95, "y": 115 }, "localPosition": { "x": -5, "y": 15 } }
+            }
+          }
+        ]
+      }
     }
   ]
 }
