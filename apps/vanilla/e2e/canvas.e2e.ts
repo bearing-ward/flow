@@ -1141,6 +1141,10 @@ playwrightTest(
   async ({ page }) => {
     await mountConnectionScenario(page, "uncontrolled", true);
     await expectPage(page.getByTestId("flow-edge-path")).toHaveCount(1);
+    await expectPage(page.locator(".flow-canvas")).toHaveScreenshot(
+      "rendered-edge.png",
+      { animations: "disabled" }
+    );
 
     await page.evaluate(() => {
       globalThis.flowController?.update({
@@ -1257,6 +1261,10 @@ playwrightTest(
         },
       ]);
     await expectPage(page.getByTestId("flow-edge-path")).toHaveCount(1);
+    await expectPage(page.locator(".flow-canvas")).toHaveScreenshot(
+      "connected-edge-output.png",
+      { animations: "disabled" }
+    );
 
     await dragBetweenHandles(page, "first", "out", "second", "in");
     await expectPage
@@ -1274,6 +1282,10 @@ playwrightTest(
     await expectPage
       .poll(() => page.evaluate(() => globalThis.flowChanges?.length))
       .toBe(0);
+    await expectPage(page.locator(".flow-canvas")).toHaveScreenshot(
+      "rejected-connection-output.png",
+      { animations: "disabled" }
+    );
   }
 );
 
