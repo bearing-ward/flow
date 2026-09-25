@@ -34,6 +34,18 @@ bun run format
 bun run fix
 ```
 
+## Browser performance benchmark
+
+Run the focused benchmark with:
+
+```sh
+bunx playwright test apps/vanilla/e2e/performance.e2e.ts --workers=1
+```
+
+The test reports median and p95 durations, sample counts, browser user agent, and minimap SVG child counts. It measures public `controller.update` reconciliation for 250 nodes / 6 edges and 1,000 nodes / 25 edges with the minimap off and on. It also compares 1,000-node fixtures with 125 and 500 edges. The 4,000-node fixture uses 100 edges and viewport culling to keep the browser gate tractable; its single sample is informational. A separate 1,000-node drag fixture records seven pointer-move frame samples and minimap subtree mutations with the minimap enabled and disabled.
+
+No absolute latency threshold is enforced. On the initial Darwin / HeadlessChrome 151.0.7922.34 runs, the 1,000-node / 125-edge p95 varied from 430.3 to 499 ms, and the 500-edge p95 varied from 431.9 to 602.1 ms. The four-sample timings and single un-warmed 4,000-node timings do not establish a stable large-graph latency budget. Stable assertions cover finite timings, repeatable per-sample mutation counts, no minimap DOM writes for unchanged-document updates, and no minimap subtree mutations when minimap UI is disabled during drag. Keep the large-graph latency budget open until target-hardware runs provide enough repeat samples to justify a threshold.
+
 ## Initial baseline
 
 Ultracite Doctor reports eight passing setup checks with no warnings or failures. The first repository check found 465 lint errors across 18 owned files and formatting changes in 22 files after the generated configuration was normalized. The largest groups are readable-spacing, sorted-key, curly-brace, array-type, type-assertion-comment, generator-name, and Vitest findings.

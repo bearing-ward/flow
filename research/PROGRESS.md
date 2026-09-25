@@ -224,6 +224,8 @@ Current milestone: the core validates nested graph documents, provides graph que
 - [ ] Add large-graph performance tests and budgets
 - [x] Verify installation from packed packages in a clean consumer
 
+The focused browser performance benchmark runs in Chromium and reports 250-, 1,000-, and 4,000-node controller updates plus single-node drag frames. Two runs show 1,000-node / 125-edge p95 values of 430.3–499 ms and 500-edge p95 values of 431.9–602.1 ms; the 4,000-node case uses viewport culling and one un-warmed sample because 4,000-node browser reconciliation without viewport culling exceeded three minutes locally. The benchmark asserts deterministic minimap subtree mutation behavior, but does not set a latency threshold. Keep this item open until repeated target-hardware samples establish a stable large-graph budget.
+
 The current feature evidence includes focused Chromium screenshots for resize and custom drag handles, measured panel-placement tests, and keyboard/focus checks for resize, renderer controls, and panels. The broader visual, input, and accessibility checklist items remain open because they cover the whole project, additional browser/device environments, or manual screen-reader review. Native concurrent-pointer and two-contact pinch cases are still skipped in the available Playwright environment.
 
 ### Documentation and delivery
