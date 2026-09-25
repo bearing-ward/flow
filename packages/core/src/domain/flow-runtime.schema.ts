@@ -3,6 +3,7 @@ import { Schema as S } from "effect";
 import { canReconnectEdge } from "./flow-reconnection.schema.ts";
 import { snapGroupDelta, snapPosition } from "./flow-snap-grid.schema.ts";
 import type { SnapGrid } from "./flow-snap-grid.schema.ts";
+import { NodeExtentSchema } from "./flow-node-extent.schema.ts";
 import {
   FlowEdgeSchema,
   EdgeIdSchema,
@@ -92,8 +93,23 @@ export const ActiveSelectionRectSchema = S.Struct({
 
 export type ActiveSelectionRect = typeof ActiveSelectionRectSchema.Type;
 
+export const NodeResizeDirectionSchema = S.Literals([
+  "top",
+  "right",
+  "bottom",
+  "left",
+  "top-left",
+  "top-right",
+  "bottom-right",
+  "bottom-left",
+]);
+
+export type NodeResizeDirection = typeof NodeResizeDirectionSchema.Type;
+
 export const ActiveNodeResizeSchema = S.Struct({
+  direction: NodeResizeDirectionSchema,
   nodeId: NodeIdSchema,
+  positionStart: XYPositionSchema,
   pointerId: S.Number,
   pointerStart: XYPositionSchema,
   sizeStart: NodeSizeSchema,
@@ -148,13 +164,13 @@ export const FlowInteractionSessionsSchema = S.Array(FlowInteractionSessionSchem
 );
 
 export type FlowInteractionSessions = typeof FlowInteractionSessionsSchema.Type;
-export type FlowInteractionSemanticEvent = "node-position" | "node-positions" | "node-size" | "edge-add" | "edge-reconnect" | "viewport" | "selection-set";
+export type FlowInteractionSemanticEvent = "node-position" | "node-positions" | "node-size" | "node-bounds" | "edge-add" | "edge-reconnect" | "viewport" | "selection-set";
 
 export type FlowInteractionOutcome =
   | { readonly kind: "started"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession }
   | { readonly kind: "rejected"; readonly sessions: FlowInteractionSessions; readonly reason: "pointer-already-owned" }
   | { readonly kind: "activated"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession }
-  | { readonly kind: "finished" | "cancelled"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession; readonly pointerIds: readonly number[]; readonly preview: "node" | "node-size" | "connection" | "viewport" | "selection"; readonly frame: "connection-autopan" | "selection-autopan" | undefined; readonly semanticEvent: FlowInteractionSemanticEvent | undefined }
+  | { readonly kind: "finished" | "cancelled"; readonly sessions: FlowInteractionSessions; readonly session: FlowInteractionSession; readonly pointerIds: readonly number[]; readonly preview: "node" | "node-size" | "node-bounds" | "connection" | "viewport" | "selection"; readonly frame: "connection-autopan" | "selection-autopan" | undefined; readonly semanticEvent: FlowInteractionSemanticEvent | undefined }
   | { readonly kind: "unchanged"; readonly sessions: FlowInteractionSessions };
 
 const sessionIndexForPointer = (sessions: FlowInteractionSessions, pointerId: number): number =>
@@ -200,7 +216,7 @@ export const activateFlowInteraction = (
   return { kind: "activated", sessions: sessions.map((item, at) => at === index ? activated : item), session: activated };
 };
 
-const previewForSession = (session: FlowInteractionSession): "node" | "node-size" | "connection" | "viewport" | "selection" => {
+const previewForSession = (session: FlowInteractionSession): "node" | "node-size" | "node-bounds" | "connection" | "viewport" | "selection" => {
   switch (session.kind) {
     case "node-drag": return "node";
     case "connection":
@@ -208,7 +224,7 @@ const previewForSession = (session: FlowInteractionSession): "node" | "node-size
     case "pane-pan":
     case "pinch": return "viewport";
     case "selection": return "selection";
-    case "node-resize": return "node-size";
+    case "node-resize": return "node-bounds";
   }
 };
 
@@ -225,7 +241,7 @@ const semanticEventForSession = (session: FlowInteractionSession): FlowInteracti
     case "pane-pan":
     case "pinch": return "viewport";
     case "selection": return "selection-set";
-    case "node-resize": return "node-size";
+    case "node-resize": return "node-bounds";
   }
 };
 
@@ -291,6 +307,161 @@ export const NodeSizeChangeSchema = S.Struct({
 });
 
 export type NodeSizeChange = typeof NodeSizeChangeSchema.Type;
+
+export const NodeBoundsChangeSchema = S.Struct({
+  kind: S.Literal("node-bounds"),
+  nodeId: NodeIdSchema,
+  position: XYPositionSchema,
+  size: NodeSizeSchema,
+  childPositions: S.Array(S.Struct({ nodeId: NodeIdSchema, position: XYPositionSchema })),
+}).check(S.makeFilter((change) =>
+  new Set(change.childPositions.map((item) => item.nodeId)).size === change.childPositions.length
+    ? undefined
+    : "childPositions must not contain duplicate node ids"
+));
+export type NodeBoundsChange = typeof NodeBoundsChangeSchema.Type;
+
+const FinitePositionSchema = S.Struct({ x: S.Finite, y: S.Finite });
+
+export const NodeResizeCalculationInputSchema = S.Struct({
+  direction: NodeResizeDirectionSchema,
+  positionStart: FinitePositionSchema,
+  sizeStart: NodeSizeSchema,
+  delta: FinitePositionSchema,
+  minimumSize: NodeSizeSchema,
+  bounds: S.optional(NodeExtentSchema),
+});
+
+export type NodeResizeCalculationInput = typeof NodeResizeCalculationInputSchema.Type;
+
+export const NodeResizeBoundsIssueSchema = S.Literals([
+  "minimum-exceeds-bounds",
+  "stationary-edge-outside-bounds",
+  "unresized-axis-outside-bounds",
+]);
+
+export type NodeResizeBoundsIssue = typeof NodeResizeBoundsIssueSchema.Type;
+
+export const NodeResizeCalculationSchema = S.Struct({
+  position: FinitePositionSchema,
+  size: NodeSizeSchema,
+  /** Actual local movement after optional bounds are applied. */
+  positionDelta: FinitePositionSchema,
+  /** Apply to each direct child's local position to preserve its world position. */
+  childrenPositionDelta: FinitePositionSchema,
+  /**
+   * Empty when bounds were omitted or the resulting rectangle fits them. A
+   * non-empty value means no fully bounded candidate exists without violating
+   * a resize invariant; hosts should not silently commit it as in-bounds.
+   */
+  boundsIssues: S.Array(NodeResizeBoundsIssueSchema),
+});
+
+export type NodeResizeCalculation = typeof NodeResizeCalculationSchema.Type;
+
+/** Calculate a bounded resize candidate in the node parent's local coordinate space. */
+export const calculateNodeResize = (input: NodeResizeCalculationInput): NodeResizeCalculation => {
+  const decoded = S.decodeUnknownSync(NodeResizeCalculationInputSchema)(input);
+  const horizontal = decoded.direction.includes("left") || decoded.direction.includes("right");
+  const vertical = decoded.direction.startsWith("top") || decoded.direction.startsWith("bottom");
+  const fromLeft = decoded.direction === "left" || decoded.direction.endsWith("-left");
+  const fromTop = decoded.direction === "top" || decoded.direction.startsWith("top-");
+  const boundsIssues = new Set<NodeResizeBoundsIssue>();
+
+  let width = decoded.sizeStart.width;
+  let height = decoded.sizeStart.height;
+  if (horizontal) {
+    width = Math.max(decoded.minimumSize.width, width + decoded.delta.x * (fromLeft ? -1 : 1));
+  }
+  if (vertical) {
+    height = Math.max(decoded.minimumSize.height, height + decoded.delta.y * (fromTop ? -1 : 1));
+  }
+
+  let x = fromLeft ? decoded.positionStart.x + decoded.sizeStart.width - width : decoded.positionStart.x;
+  let y = fromTop ? decoded.positionStart.y + decoded.sizeStart.height - height : decoded.positionStart.y;
+
+  if (decoded.bounds !== undefined) {
+    const { minX, minY, maxX, maxY } = decoded.bounds;
+    if (horizontal) {
+      if (fromLeft) {
+        const fixedRight = decoded.positionStart.x + decoded.sizeStart.width;
+        if (fixedRight < minX || fixedRight > maxX) {
+          boundsIssues.add("stationary-edge-outside-bounds");
+        }
+        const availableWidth = fixedRight - minX;
+        if (availableWidth < decoded.minimumSize.width) {
+          boundsIssues.add("minimum-exceeds-bounds");
+          width = decoded.minimumSize.width;
+        } else {
+          width = Math.min(width, availableWidth);
+        }
+        x = fixedRight - width;
+      } else {
+        if (decoded.positionStart.x < minX || decoded.positionStart.x > maxX) {
+          boundsIssues.add("stationary-edge-outside-bounds");
+        }
+        const availableWidth = maxX - decoded.positionStart.x;
+        if (availableWidth < decoded.minimumSize.width) {
+          boundsIssues.add("minimum-exceeds-bounds");
+          width = decoded.minimumSize.width;
+        } else {
+          width = Math.min(width, availableWidth);
+        }
+        x = decoded.positionStart.x;
+      }
+    } else if (decoded.positionStart.x < minX || decoded.positionStart.x + width > maxX) {
+      boundsIssues.add("unresized-axis-outside-bounds");
+    }
+
+    if (vertical) {
+      if (fromTop) {
+        const fixedBottom = decoded.positionStart.y + decoded.sizeStart.height;
+        if (fixedBottom < minY || fixedBottom > maxY) {
+          boundsIssues.add("stationary-edge-outside-bounds");
+        }
+        const availableHeight = fixedBottom - minY;
+        if (availableHeight < decoded.minimumSize.height) {
+          boundsIssues.add("minimum-exceeds-bounds");
+          height = decoded.minimumSize.height;
+        } else {
+          height = Math.min(height, availableHeight);
+        }
+        y = fixedBottom - height;
+      } else {
+        if (decoded.positionStart.y < minY || decoded.positionStart.y > maxY) {
+          boundsIssues.add("stationary-edge-outside-bounds");
+        }
+        const availableHeight = maxY - decoded.positionStart.y;
+        if (availableHeight < decoded.minimumSize.height) {
+          boundsIssues.add("minimum-exceeds-bounds");
+          height = decoded.minimumSize.height;
+        } else {
+          height = Math.min(height, availableHeight);
+        }
+        y = decoded.positionStart.y;
+      }
+    } else if (decoded.positionStart.y < minY || decoded.positionStart.y + height > maxY) {
+      boundsIssues.add("unresized-axis-outside-bounds");
+    }
+  }
+
+  const position = { x, y };
+  const positionDelta = {
+    x: position.x - decoded.positionStart.x,
+    y: position.y - decoded.positionStart.y,
+  };
+
+  return S.decodeUnknownSync(NodeResizeCalculationSchema)({
+    position,
+    size: { width, height },
+    positionDelta,
+    boundsIssues: [...boundsIssues],
+    childrenPositionDelta: {
+      x: positionDelta.x === 0 ? 0 : -positionDelta.x,
+      y: positionDelta.y === 0 ? 0 : -positionDelta.y,
+    },
+  });
+};
 
 export const resizeNode = (
   nodeId: NodeId,
@@ -361,6 +532,7 @@ export const FlowChangeSchema = S.Union([
   NodePositionChangeSchema,
   NodePositionsChangeSchema,
   NodeSizeChangeSchema,
+  NodeBoundsChangeSchema,
   ViewportChangeSchema,
   EdgeAddChangeSchema,
   EdgeSelectionChangeSchema,
@@ -371,6 +543,16 @@ export const FlowChangeSchema = S.Union([
 ]);
 
 export type FlowChange = typeof FlowChangeSchema.Type;
+
+export const applyNodeBoundsChange = (document: FlowDocument, change: NodeBoundsChange): FlowDocument | undefined => {
+  const decoded = S.decodeUnknownSync(NodeBoundsChangeSchema)(change);
+  const resized = document.nodes.find((node) => node.id === decoded.nodeId);
+  if (resized === undefined || decoded.childPositions.some(({ nodeId }) => !document.nodes.some((node) => node.id === nodeId))) return;
+  const positions = new Map(decoded.childPositions.map(({ nodeId, position }) => [nodeId, position]));
+  return { ...document, nodes: document.nodes.map((node) => node.id === decoded.nodeId
+    ? { ...node, position: decoded.position, size: decoded.size }
+    : positions.has(node.id) ? { ...node, position: positions.get(node.id)! } : node) };
+};
 
 export const applyNodeSizeChange = (
   document: FlowDocument,

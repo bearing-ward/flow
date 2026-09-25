@@ -204,6 +204,25 @@ export type FlowChange = {
   };
 }
 | {
+  readonly kind: "node-bounds";
+  readonly nodeId: string;
+  readonly position: {
+    readonly x: number;
+    readonly y: number;
+  };
+  readonly size: {
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly childPositions: ReadonlyArray<{
+    readonly nodeId: string;
+    readonly position: {
+      readonly x: number;
+      readonly y: number;
+    };
+  }>;
+}
+| {
   readonly kind: "viewport";
   readonly viewport: {
     readonly x: number;

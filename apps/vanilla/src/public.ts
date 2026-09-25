@@ -9,6 +9,7 @@ export {
 export { FlowBrowser, FlowBrowserLive } from "./flow-browser.ts";
 
 export { BrowserCapabilityError } from "./browser-capability-error.ts";
+export { CanvasUIOptionsError } from "./mount-flow.ts";
 
 export type {
   ElementSize,
@@ -18,6 +19,8 @@ export type {
 
 export type {
   FlowController,
+  CanvasPanelPlacement,
+  FlowPanelOption,
   FlowCreateOptions,
   FlowHostOptions,
   FlowMountOptions,

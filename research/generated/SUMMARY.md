@@ -4,7 +4,7 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project.
 
-Current milestone: the core validates nested graph documents, provides graph queries and geometry, and saves declared fields in a version-1 envelope. The vanilla host now includes custom renderers, node and edge interactions, viewport controls, and reusable canvas UI. A JavaScript facade and packed consumer check are in place. Foldkit and Vue first-slice hosts pass the six shared adapter scenarios, but each has a narrower feature surface than vanilla. Local CI configuration and a release dry run exist; packages remain private and unpublished. The shared scenarios and two pinned reference captures do not establish full xyflow parity. Open items below include broader resize and gesture coverage, portals, visual and accessibility checks, performance budgets, and release work.
+Current milestone: the core validates nested graph documents, provides graph queries and geometry, and saves declared fields in a version-1 envelope. The vanilla host includes custom renderers, node and edge interactions, eight-direction pointer and keyboard resizing, custom drag handles, six-position caller panels, overlay portals, viewport controls, and reusable canvas UI. A JavaScript facade and packed consumer check are in place. Foldkit and Vue first-slice hosts pass the six shared adapter scenarios, but feature-specific vanilla checks do not establish matching capabilities in those adapters. Local CI configuration and a release dry run exist; packages remain private and unpublished. The six shared scenarios and two pinned interaction captures do not establish full xyflow parity. Open items below include complete resize and native multi-pointer coverage, broader visual and accessibility checks, property tests, performance budgets, and release work.
 
 ### Project foundation
 
@@ -157,7 +157,7 @@ Current milestone: the core validates nested graph documents, provides graph que
 - [x] Support configurable background patterns
 - [x] Provide zoom, fit-view, and interaction controls
 - [x] Provide a minimap with viewport navigation
-- [ ] Provide panels and overlay portals
+- [x] Provide panels and overlay portals
 - [x] Provide node and edge toolbars
 - [x] Decide and document attribution and licensing presentation
 
@@ -225,6 +225,8 @@ Current milestone: the core validates nested graph documents, provides graph que
 - [ ] Add invalid-state and lifecycle-cleanup tests
 - [ ] Add large-graph performance tests and budgets
 - [x] Verify installation from packed packages in a clean consumer
+
+The current feature evidence includes focused Chromium screenshots for resize and custom drag handles, measured panel-placement tests, and keyboard/focus checks for resize, renderer controls, and panels. The broader visual, input, and accessibility checklist items remain open because they cover the whole project, additional browser/device environments, or manual screen-reader review. Native concurrent-pointer and two-contact pinch cases are still skipped in the available Playwright environment.
 
 ### Documentation and delivery
 

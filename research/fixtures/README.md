@@ -11,21 +11,41 @@ cd tests/playwright
 FRAMEWORK=react pnpm exec playwright test -c playwright.react.config.ts --project=chromium -g 'draggable=false prevents dragging|custom drag handle works'
 ```
 
-The commands run the named pinned tests and assert the normalized outcomes. The inline style values in the JSON were additionally read from the same nodes before and after the actions in a temporary Playwright probe. The normalization retains each observed inline transform and records whether it changed. The stored fixture test reloads the JSON and checks its shape and boolean comparisons.
+The commands run the named pinned tests. A temporary Playwright probe read the same nodes' inline transforms before and after each action. The JSON retains those observed values and reduces them to `transformChanged` booleans; `packages/conformance/src/index.test.ts` checks the pinned commit and normalized results. Flow's custom-handle E2E independently asserts the same outside/inside booleans in `apps/vanilla/e2e/graph-renderers.e2e.ts`. This is a normalized comparison of those two outcomes, not a claim about matching coordinates, timing, or the rest of either adapter.
 
-Flow now supports declared `draggable: false` (defaulting to draggable in the host). Its mixed-group browser test verifies that a locked selected node stays selectable while movable selected members retain their spacing (`apps/vanilla/e2e/movement-slices.e2e.ts:113`). The xyflow capture and Flow test were not run through one equivalent shared fixture, so direct parity remains unverified. Flow still does not implement a custom drag handle; the corresponding capture is reference-only and Flow intentionally differs.
+## Shared Flow fixtures
 
-## Coverage mapping
+The shared suite remains six scenarios. The same fixture definitions run through the vanilla, Vue, and Foldkit drivers (`apps/vanilla/e2e/shared-conformance.e2e.ts`, `apps/vue/e2e/shared-conformance.e2e.ts`, and `apps/foldkit/e2e/shared-conformance.e2e.ts`). These rows mean that the scenario is covered within Flow; they do not establish xyflow parity because no equivalent reference run was made.
 
-| Researched behavior | Shared Flow scenario/test | Classification | Evidence boundary |
-| --- | --- | --- | --- |
-| Keyed update retains the existing node element | `keyed-update`, `shared-conformance.e2e.ts` | Conforms within Flow | Same Flow node receives an identity marker before reorder/update; browser asserts marker, order, text, and transform. No cross-framework comparison. |
-| Nested child uses parent plus local position | `nested-absolute-position`, `shared-conformance.e2e.ts` | Conforms within Flow | Browser reads rendered transforms. Reference output was not captured for this scenario. |
-| Controlled movement waits for authoritative acknowledgement | `controlled-acknowledgement`, `shared-conformance.e2e.ts` | Conforms within Flow | Browser asserts candidate event and final acknowledged position. Reference output was not captured. |
-| Validator rejects one connection and accepts another | `connection-validity`, `shared-conformance.e2e.ts` | Conforms within Flow | Browser observes one `edge-add` and the accepted edge. Reference output was not captured. |
-| Escape cancels a node drag | `gesture-cancellation`, `shared-conformance.e2e.ts` | Conforms within Flow | Browser asserts restored geometry and no semantic change. Reference parity unverified. |
-| Viewport culling follows viewport update | `viewport-culling`, `shared-conformance.e2e.ts` | Conforms within Flow | Browser asserts visible rendered ids and flow coordinates. Reference parity unverified. |
-| Non-draggable selected node remains stationary in a mixed group | `movement-slices.e2e.ts:113` | Flow behavior is covered; direct parity unverified | Plan 015 browser test proves the locked node remains stationary/selectable while other selected nodes move. The reference capture uses a separate test and was not exercised through an equivalent shared fixture. |
-| Custom drag handle gates dragging | `reference-captures.json`, xyflow pinned `nodes.spec.ts` test | Reference-only; Flow intentionally differs | Reference test passes; Flow does not currently expose a custom drag-handle contract. |
+| Scenario | Observable contract | Reference comparison |
+| --- | --- | --- |
+| `keyed-update` | Retained node identity, order, label, and position after controlled update | Unverified |
+| `nested-absolute-position` | Child renders at parent plus local position | Unverified |
+| `controlled-acknowledgement` | Drag emits a candidate and waits for document acknowledgement | Unverified |
+| `connection-validity` | Rejected target adds no edge; approved target emits one `edge-add` | Unverified |
+| `gesture-cancellation` | Escape restores drag geometry without a semantic change | Unverified |
+| `viewport-culling` | Viewport change culls one node and reveals the other | Unverified |
 
-The six shared scenarios now run against the vanilla, Foldkit, and Vue browser drivers. They prove only the listed observable contracts within Flow; the reference was not run through this suite. Touch-specific behavior, broader accessibility, visual comparison, property coverage, lifecycle stress, and large-graph performance budgets remain outside this suite.
+The unit tests keep the fixture ids unique and versioned, reject invalid duplicate-node documents, and validate the two pinned captures. Do not extend this shared set with an interaction that only one adapter currently tests.
+
+## Capability and evidence matrix
+
+Labels describe checked-in automated evidence, not a statement that an unlisted adapter cannot implement a behavior. `Unverified` means this repository has no equivalent test for that adapter or no supported test environment for the behavior.
+
+| Capability | Vanilla evidence | Vue evidence | Foldkit evidence | Reference status |
+| --- | --- | --- | --- | --- |
+| Six shared Flow scenarios above | Shared conformance browser test | Shared conformance browser test | Shared conformance browser test | Unverified for these six exact fixtures |
+| Eight-direction pointer resize, child compensation, cancellation, and derived UI | Vanilla-only: `advanced-gestures.e2e.ts:361-579` | Unverified | Unverified | Unverified; source geometry exists, but no matching reference output capture |
+| Keyboard resize, key ownership, native descendant editing, focus, and Escape | Vanilla-only: `advanced-gestures.e2e.ts:590-775`, `graph-renderers.e2e.ts:246-412` | Unverified | Unverified | Unverified |
+| Custom drag handle and nested no-drag control | Vanilla-only: `graph-renderers.e2e.ts:143-267` | Unverified | Unverified | Conforms only for normalized outside/inside transform-change booleans in the pinned capture and Flow E2E; nested no-drag remains Flow-only |
+| Six canvas-relative panel positions, caller element restoration, and host-local portals | Vanilla-only: `canvas-ui.e2e.ts:166-434` | Unverified | Unverified | Unverified; no placement or ownership output capture |
+| Vue-scoped injection and keyed custom components | Unverified | Vue-only evidence: `apps/vue/e2e/shared-conformance.e2e.ts:32-39` | Unverified | Unverified |
+| Foldkit disposal and controlled connection acknowledgement | Unverified | Unverified | Foldkit-only evidence: `apps/foldkit/e2e/shared-conformance.e2e.ts:26-90` | Unverified |
+| Native concurrent pointer capture and two-contact pinch cancellation | Unverified: two native-only cases remain `test.fixme` in `advanced-gestures.e2e.ts:356-359` | Unverified | Unverified | Unverified; the cited xyflow touch cancellation is not an equivalent pinch lifecycle test |
+| Screen-reader review, Safari/Firefox, mobile touch device, property coverage, and large-graph budgets | Unverified | Unverified | Unverified | Outside this evidence set |
+
+The `draggable: false` capture also remains unverified for direct parity: Flow's mixed-group test shows a locked selected node stays still while other members move (`apps/vanilla/e2e/movement-slices.e2e.ts:138-165`), whereas the reference capture exercises a standalone node. Inputs and surrounding group behavior differ.
+
+## Evidence limits
+
+The six shared fixtures establish only the listed Flow contracts across three adapters. Feature-specific vanilla tests do not imply Vue or Foldkit support. The custom drag-handle comparison is deliberately narrow: both runs reduce the node transform to unchanged outside the handle and changed inside it. Resize geometry, nested extent behavior, panel positions, portals, native multi-pointer cancellation, broader accessibility, cross-browser behavior, property coverage, and performance budgets remain unverified against xyflow or outside the tested scope.

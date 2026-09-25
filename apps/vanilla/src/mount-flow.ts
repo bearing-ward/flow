@@ -20,6 +20,8 @@ import {
   applyNodePositionChange,
   applyNodePositionsChange,
   applyNodeSizeChange,
+  applyNodeBoundsChange,
+  calculateNodeResize,
   beginNodeDrag,
   beginViewportPan,
   clampViewport,
@@ -37,7 +39,6 @@ import {
   moveNodeDrag,
   moveNodeGroupDrag,
   moveSelectedNodes,
-  resizeNode,
   nextConnectionEdge,
   findConnectionIssue,
   nearestConnectionTarget,
@@ -81,7 +82,8 @@ import type {
   FlowToolbarAnchor,
   NodePositionChange,
   NodePositionsChange,
-  NodeSizeChange,
+  NodeBoundsChange,
+  NodeResizeDirection,
   MeasuredNode,
   FlowHandle,
   ReconnectEndpoint,
@@ -104,6 +106,19 @@ import { Effect, Exit, Result, Schema as S, Scope } from "effect";
 import { createEdgeRenderer } from "./edge-renderer.ts";
 import { createCanvasUI } from "./canvas-ui.ts";
 import { FlowBrowser, FlowBrowserLive } from "./flow-browser.ts";
+
+type KeyboardResizeKey = "ArrowUp" | "ArrowRight" | "ArrowDown" | "ArrowLeft";
+type ActiveKeyboardResize = {
+  readonly nodeId: NodeId;
+  readonly direction: NodeResizeDirection;
+  readonly key: KeyboardResizeKey;
+  readonly step: number;
+  readonly button: HTMLButtonElement;
+  readonly positionStart: XYPosition;
+  readonly sizeStart: { readonly width: number; readonly height: number };
+  readonly delta: XYPosition;
+  readonly change: NodeBoundsChange;
+};
 
 export const CanvasBackgroundSchema = S.Struct({
   pattern: S.Literals(["dots", "lines", "none"]),
@@ -135,6 +150,81 @@ export const FlowMountOptionsSchema = S.Struct({
     mode: FlowControlModeSchema,
   }),
 });
+
+export type CanvasPanelPlacement =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+export interface FlowPanelOption {
+  readonly id: string;
+  readonly element: HTMLElement;
+  readonly placement: CanvasPanelPlacement;
+}
+
+export class CanvasUIOptionsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CanvasUIOptionsError";
+  }
+}
+
+const canvasPanelPlacements = [
+  "top-left", "top-center", "top-right",
+  "bottom-left", "bottom-center", "bottom-right",
+] as const satisfies readonly CanvasPanelPlacement[];
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isCanvasPanelPlacement = (value: unknown): value is CanvasPanelPlacement =>
+  typeof value === "string" && canvasPanelPlacements.some((placement) => placement === value);
+
+const validateCanvasPanelOptions = (
+  panel: unknown,
+  panels: unknown
+): readonly FlowPanelOption[] | undefined => {
+  if (panel !== undefined && !(panel instanceof globalThis.HTMLElement)) {
+    throw new CanvasUIOptionsError("panel must be an HTMLElement");
+  }
+  if (panel !== undefined && panels !== undefined) {
+    throw new CanvasUIOptionsError("Use either panel or panels, not both");
+  }
+  if (panels === undefined) return undefined;
+  if (!Array.isArray(panels)) {
+    throw new CanvasUIOptionsError("panels must be an array");
+  }
+
+  const ids = new Set<string>();
+  const elements = new Set<HTMLElement>();
+  return panels.map((candidate, index): FlowPanelOption => {
+    if (!isRecord(candidate)) {
+      throw new CanvasUIOptionsError(`panels[${index}] must be an object`);
+    }
+    const { id, element, placement } = candidate;
+    if (typeof id !== "string" || id.trim().length === 0) {
+      throw new CanvasUIOptionsError(`panels[${index}].id must be a non-empty string`);
+    }
+    if (!(element instanceof globalThis.HTMLElement)) {
+      throw new CanvasUIOptionsError(`panels[${index}].element must be an HTMLElement`);
+    }
+    if (!isCanvasPanelPlacement(placement)) {
+      throw new CanvasUIOptionsError(`panels[${index}].placement is not supported`);
+    }
+    if (ids.has(id)) {
+      throw new CanvasUIOptionsError(`Duplicate panel id: ${id}`);
+    }
+    if (elements.has(element)) {
+      throw new CanvasUIOptionsError("A panel element can only be used once");
+    }
+    ids.add(id);
+    elements.add(element);
+    return { id, element, placement };
+  });
+};
 
 export const FitViewOptionsSchema = S.Struct({
   nodes: S.optional(S.Literals(["all", "selected"])),
@@ -205,6 +295,7 @@ export interface FlowHostOptions {
   readonly background?: typeof CanvasBackgroundSchema.Type | undefined;
   readonly ui?: typeof CanvasUISchema.Type | undefined;
   readonly panel?: HTMLElement | undefined;
+  readonly panels?: readonly FlowPanelOption[] | undefined;
   readonly toolbarContainers?: {
     readonly nodes?: Readonly<Record<string, HTMLElement>> | undefined;
     readonly edges?: Readonly<Record<string, HTMLElement>> | undefined;
@@ -222,6 +313,7 @@ export interface FlowHostOptions {
 }
 
 export interface FlowController {
+  readonly overlayPortal: HTMLElement;
   readonly fitView: (options?: FitViewOptions) => boolean;
   readonly update: (document: FlowDocument) => void;
   readonly updateViewport: (viewport: Viewport) => void;
@@ -242,6 +334,7 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly edgeRenderers?: Readonly<Record<string, FlowEdgeRenderer>> | undefined;
   readonly onToolbarAnchors?: ((anchors: { readonly nodes: readonly FlowToolbarAnchor[]; readonly edges: readonly FlowToolbarAnchor[] }) => void) | undefined;
   readonly panel?: HTMLElement | undefined;
+  readonly panels?: readonly FlowPanelOption[] | undefined;
   readonly toolbarContainers?: {
     readonly nodes?: Readonly<Record<string, HTMLElement>> | undefined;
     readonly edges?: Readonly<Record<string, HTMLElement>> | undefined;
@@ -249,6 +342,7 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
 };
 
 export interface JavaScriptFlowController {
+  readonly overlayPortal: HTMLElement;
   readonly fitView: (options?: typeof FitViewOptionsSchema.Encoded) => boolean;
   readonly update: (document: FlowDocumentInput) => void;
   readonly updateViewport: (viewport: ViewportInput) => void;
@@ -373,19 +467,27 @@ const renderNodeHandles = (handles: HTMLElement, node: FlowNode): void => {
   }
 };
 
+const resizeDirections: readonly NodeResizeDirection[] = ["top", "right", "bottom", "left", "top-left", "top-right", "bottom-right", "bottom-left"];
 const renderNodeResizeHandle = (element: HTMLElement, node: FlowNode): void => {
-  const existing = element.querySelector<HTMLButtonElement>(".flow-node-resize-handle");
+  const existing = new Map(
+    Array.from(element.querySelectorAll<HTMLButtonElement>(".flow-node-resize-handle"))
+      .map((handle) => [handle.dataset.direction, handle])
+  );
   if (node.selected !== true) {
-    existing?.remove();
+    existing.forEach((handle) => handle.remove());
     return;
   }
-  const handle = existing ?? globalThis.document.createElement("button");
-  handle.type = "button";
-  handle.className = "flow-node-resize-handle";
-  handle.dataset.testid = "flow-node-resize-handle";
-  handle.setAttribute("aria-label", `Resize ${node.label}`);
-  handle.setAttribute("title", `Resize ${node.label}`);
-  if (existing === null) element.append(handle);
+  for (const direction of resizeDirections) {
+    const handle = existing.get(direction) ?? globalThis.document.createElement("button");
+    handle.type = "button";
+    handle.className = `flow-node-resize-handle flow-node-resize-${direction}`;
+    handle.dataset.testid = "flow-node-resize-handle";
+    handle.dataset.direction = direction;
+    const label = `Resize ${node.label} from ${direction.replaceAll("-", " ")}`;
+    handle.setAttribute("aria-label", label);
+    handle.setAttribute("title", label);
+    if (!handle.isConnected) element.append(handle);
+  }
 };
 
 const applyDeclaredNodeSize = (element: HTMLElement, node: FlowNode): void => {
@@ -406,8 +508,9 @@ export const createFlowHost = (
   root: HTMLElement,
   initialDocument: FlowDocument,
   options: FlowHostOptions
-) =>
-  Effect.gen(function* buildFlowHost() {
+) => {
+  validateCanvasPanelOptions(options.panel, options.panels);
+  return Effect.gen(function* buildFlowHost() {
     const browser = yield* FlowBrowser;
     const hostScope = yield* Scope.make("sequential");
     const { documentMode, runEffect } = options;
@@ -615,6 +718,7 @@ export const createFlowHost = (
       get activeNodeResize() { const session = sessionFor("node-resize"); return session?.kind === "node-resize" ? session.resize : null; },
       set activeNodeResize(value) { assignSession("node-resize", value === null ? undefined : { kind: "node-resize", resize: value }); },
     };
+    let activeKeyboardResize: ActiveKeyboardResize | null = null;
 
     const adoptedPosition = (node: FlowNode): XYPosition =>
       boundedNodePosition(node.id, node.position);
@@ -689,10 +793,16 @@ export const createFlowHost = (
     };
 
     const isDraggingNode = (nodeId: NodeId): boolean =>
-      interactionSlots.activeDrag !== null &&
-      ("positions" in interactionSlots.activeDrag
-        ? interactionSlots.activeDrag.positions.some((item) => item.nodeId === nodeId)
-        : interactionSlots.activeDrag.nodeId === nodeId);
+      (interactionSlots.activeDrag !== null &&
+        ("positions" in interactionSlots.activeDrag
+          ? interactionSlots.activeDrag.positions.some((item) => item.nodeId === nodeId)
+          : interactionSlots.activeDrag.nodeId === nodeId)) ||
+      (interactionSlots.activeNodeResize !== null &&
+        (interactionSlots.activeNodeResize.nodeId === nodeId ||
+          document.nodes.some((node) => node.id === nodeId && node.parentId === interactionSlots.activeNodeResize?.nodeId))) ||
+      (activeKeyboardResize !== null &&
+        (activeKeyboardResize.nodeId === nodeId ||
+          document.nodes.some((node) => node.id === nodeId && node.parentId === activeKeyboardResize?.nodeId)));
 
     let dragPointerStart: XYPosition | null = null;
     let dragPointer: XYPosition | null = null;
@@ -1463,6 +1573,8 @@ export const createFlowHost = (
           entry.element.style.boxSizing = "border-box";
         }
         measurements.set(resize.nodeId, { nodeId: resize.nodeId, ...resize.sizeStart });
+        renderedNodePositions.delete(resize.nodeId);
+        for (const child of document.nodes.filter((item) => item.parentId === resize.nodeId)) renderedNodePositions.delete(child.id);
         if (node !== undefined) edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom);
         for (const pointerId of pointerIdsFromOutcome(outcome, [resize.pointerId])) {
           runEffect(browser.releasePointer(entry.element, pointerId));
@@ -1488,6 +1600,146 @@ export const createFlowHost = (
           })
         )
       );
+    };
+
+    const keyboardResizeCandidate = (
+      resize: Pick<ActiveKeyboardResize, "nodeId" | "direction" | "positionStart" | "sizeStart">,
+      delta: XYPosition
+    ): NodeBoundsChange | undefined => {
+      const current = findNode(resize.nodeId);
+      if (current === undefined) return undefined;
+      const parent = current.parentId === undefined ? undefined : graphFor().nodes.get(current.parentId);
+      const bounds = current.parentId === undefined
+        ? options.nodeExtent
+        : current.extent === "parent" && parent !== undefined
+          ? { minX: 0, minY: 0, maxX: parent.dimensions.width, maxY: parent.dimensions.height }
+          : undefined;
+      const result = calculateNodeResize({
+        direction: resize.direction,
+        positionStart: resize.positionStart,
+        sizeStart: resize.sizeStart,
+        delta,
+        minimumSize: { width: 40, height: 24 },
+        bounds,
+      });
+      if (result.boundsIssues.length > 0) return undefined;
+      const childPositions = document.nodes
+        .filter((candidate) => candidate.parentId === current.id)
+        .map((child) => ({
+          nodeId: child.id,
+          position: {
+            x: child.position.x + result.childrenPositionDelta.x,
+            y: child.position.y + result.childrenPositionDelta.y,
+          },
+        }));
+      return { kind: "node-bounds", nodeId: current.id, position: result.position, size: result.size, childPositions };
+    };
+
+    const restoreKeyboardResizePreview = (resize: ActiveKeyboardResize, focusFallback: boolean): void => {
+      renderedNodePositions.delete(resize.nodeId);
+      for (const child of document.nodes.filter((node) => node.parentId === resize.nodeId)) {
+        renderedNodePositions.delete(child.id);
+      }
+      const node = findNode(resize.nodeId);
+      const entry = entries.get(resize.nodeId);
+      if (node !== undefined && entry !== undefined) {
+        entry.element.classList.remove("resizing");
+        delete entry.element.dataset.resizing;
+        applyDeclaredNodeSize(entry.element, node);
+        const measured = browser.measure(entry.element);
+        measurements.set(node.id, { nodeId: node.id, ...measured });
+        edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom);
+      }
+      const graph = renderGraphPositions();
+      edgeRenderer.reconcile(document, renderedNodePositions, graph);
+      if (options.renderOnlyVisible === true) reconcileVisible?.();
+      if (focusFallback && canvas.isConnected) canvas.focus();
+    };
+
+    const previewKeyboardResize = (resize: ActiveKeyboardResize): void => {
+      const entry = entries.get(resize.nodeId);
+      if (entry === undefined) return;
+      renderedNodePositions.set(resize.nodeId, resize.change.position);
+      for (const child of resize.change.childPositions) renderedNodePositions.set(child.nodeId, child.position);
+      entry.element.classList.add("resizing");
+      entry.element.dataset.resizing = "true";
+      entry.element.style.width = `${resize.change.size.width}px`;
+      entry.element.style.height = `${resize.change.size.height}px`;
+      entry.element.style.boxSizing = "border-box";
+      measurements.set(resize.nodeId, { nodeId: resize.nodeId, ...resize.change.size });
+      const node = findNode(resize.nodeId);
+      if (node !== undefined) edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom);
+      const graph = renderGraphPositions();
+      edgeRenderer.reconcile(document, renderedNodePositions, graph);
+      if (options.renderOnlyVisible === true) reconcileVisible?.();
+    };
+
+    const cancelKeyboardResize = (reason: string, focusFallback = false): boolean => {
+      const resize = activeKeyboardResize;
+      if (resize === null) return false;
+      activeKeyboardResize = null;
+      const controlWillDisappear = focusFallback && ["node-removed", "node-hidden", "node-deselected", "host-destroyed"].includes(reason);
+      restoreKeyboardResizePreview(resize, focusFallback && (controlWillDisappear || !resize.button.isConnected));
+      if (!controlWillDisappear && resize.button.isConnected && resize.button.ownerDocument.activeElement !== resize.button) {
+        resize.button.focus();
+      }
+      runTelemetry(
+        Effect.logDebug("Cancelled keyboard node resize").pipe(
+          Effect.annotateLogs({
+            [FlowAttribute.nodeId]: resize.nodeId,
+            [FlowAttribute.inputKind]: "keyboard-node-resize",
+            [FlowAttribute.cancellationReason]: reason,
+          }),
+          Effect.withSpan(FlowSpan.gestureCancel, {
+            attributes: {
+              [FlowAttribute.nodeId]: resize.nodeId,
+              [FlowAttribute.inputKind]: "keyboard-node-resize",
+              [FlowAttribute.cancellationReason]: reason,
+            },
+          })
+        )
+      );
+      return true;
+    };
+
+    const finishKeyboardResize = (): boolean => {
+      const resize = activeKeyboardResize;
+      if (resize === null) return false;
+      activeKeyboardResize = null;
+      const changed = resize.change.position.x !== resize.positionStart.x ||
+        resize.change.position.y !== resize.positionStart.y ||
+        resize.change.size.width !== resize.sizeStart.width ||
+        resize.change.size.height !== resize.sizeStart.height;
+      if (!changed) {
+        restoreKeyboardResizePreview(resize, false);
+        return true;
+      }
+      const entry = entries.get(resize.nodeId);
+      entry?.element.classList.remove("resizing");
+      if (entry !== undefined) delete entry.element.dataset.resizing;
+      operations.publishChange(resize.change);
+      runTelemetry(
+        Effect.logDebug("Completed keyboard node resize").pipe(
+          Effect.annotateLogs({
+            [FlowAttribute.nodeId]: resize.nodeId,
+            [FlowAttribute.inputKind]: "keyboard-node-resize",
+            [FlowAttribute.changeKind]: resize.change.kind,
+          }),
+          Effect.withSpan(FlowSpan.nodeDragComplete, {
+            attributes: {
+              [FlowAttribute.nodeId]: resize.nodeId,
+              [FlowAttribute.inputKind]: "keyboard-node-resize",
+              [FlowAttribute.changeKind]: resize.change.kind,
+            },
+          })
+        )
+      );
+      const ownerElement = entries.get(resize.nodeId)?.element;
+      const currentButton = ownerElement?.querySelector<HTMLButtonElement>(
+        `.flow-node-resize-handle[data-direction="${resize.direction}"]`
+      );
+      if (currentButton?.isConnected) currentButton.focus();
+      return true;
     };
 
     const cancelViewportPan = (reason: string): void => {
@@ -1562,6 +1814,29 @@ export const createFlowHost = (
       ): void {
         const nextIds = new Set(next.nodes.map((node) => node.id));
 
+        const activeResize = interactionSlots.activeNodeResize;
+        const activeResizeOwner = activeResize === null
+          ? undefined
+          : next.nodes.find((node) => node.id === activeResize.nodeId);
+        if (activeResize !== null && (activeResizeOwner === undefined || activeResizeOwner.hidden === true)) {
+          cancelNodeResize(activeResizeOwner === undefined ? "node-removed" : "node-hidden");
+        }
+        const activeKeyboard = activeKeyboardResize;
+        const activeKeyboardOwner = activeKeyboard === null
+          ? undefined
+          : next.nodes.find((node) => node.id === activeKeyboard.nodeId);
+        const activeKeyboardOwnerHidden = activeKeyboard === null || activeKeyboardOwner === undefined
+          ? false
+          : createFlowGraph(next, measurements, renderedNodePositions).nodes.get(activeKeyboard.nodeId)?.hidden === true;
+        if (activeKeyboard !== null && (
+          activeKeyboardOwner === undefined || activeKeyboardOwnerHidden || activeKeyboardOwner.selected !== true
+        )) {
+          cancelKeyboardResize(
+            activeKeyboardOwner === undefined ? "node-removed" : activeKeyboardOwnerHidden ? "node-hidden" : "node-deselected",
+            true
+          );
+        }
+
         for (const node of next.nodes) {
           if (!isDraggingNode(node.id)) {
             restoreAdoptedPosition(node);
@@ -1609,6 +1884,27 @@ export const createFlowHost = (
             if (graph.nodes.get(node.id)?.hidden === false) {
               visibleNodes.add(node.id);
             }
+          }
+        }
+
+        const resizingNodeId = interactionSlots.activeNodeResize?.nodeId;
+        const resizingOwner = resizingNodeId === undefined
+          ? undefined
+          : next.nodes.find((node) => node.id === resizingNodeId);
+        if (resizingNodeId !== undefined && resizingOwner !== undefined && resizingOwner.hidden !== true) {
+          visibleNodes.add(resizingNodeId);
+          for (const node of next.nodes) {
+            if (node.parentId === resizingNodeId && node.hidden !== true) visibleNodes.add(node.id);
+          }
+        }
+        const keyboardResizingNodeId = activeKeyboardResize?.nodeId;
+        const keyboardResizingOwner = keyboardResizingNodeId === undefined
+          ? undefined
+          : next.nodes.find((node) => node.id === keyboardResizingNodeId);
+        if (keyboardResizingNodeId !== undefined && keyboardResizingOwner !== undefined && keyboardResizingOwner.hidden !== true) {
+          visibleNodes.add(keyboardResizingNodeId);
+          for (const node of next.nodes) {
+            if (node.parentId === keyboardResizingNodeId && node.hidden !== true) visibleNodes.add(node.id);
           }
         }
 
@@ -1752,7 +2048,9 @@ export const createFlowHost = (
 
           applyNodeInteractionState(entry.element, node);
           renderNodeResizeHandle(entry.element, node);
-          viewport.append(entry.element);
+          if (!(isDraggingNode(node.id) && entry.element.parentElement === viewport)) {
+            viewport.append(entry.element);
+          }
 
           if (entry.element.dataset.measuredWidth !== undefined) {
             edgeRenderer.measureNode(
@@ -1869,6 +2167,22 @@ export const createFlowHost = (
               edgeRenderer.reconcile(document, renderedNodePositions);
             }
 
+            break;
+          }
+
+          case "node-bounds": {
+            const updated = applyNodeBoundsChange(document, change);
+            if (updated === undefined) return;
+            if (documentMode === "uncontrolled") {
+              const previous = document; document = updated; operations.reconcile(document, previous);
+            } else {
+              for (const id of [change.nodeId, ...change.childPositions.map((item) => item.nodeId)]) {
+                const authoritative = findNode(id); if (authoritative !== undefined) restoreAdoptedPosition(authoritative);
+              }
+              const node = findNode(change.nodeId); const entry = entries.get(change.nodeId);
+              if (node !== undefined && entry !== undefined) { applyDeclaredNodeSize(entry.element, node); const m = browser.measure(entry.element); measurements.set(node.id, { nodeId: node.id, ...m }); edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom); }
+              renderGraphPositions(); edgeRenderer.reconcile(document, renderedNodePositions);
+            }
             break;
           }
 
@@ -2160,72 +2474,55 @@ export const createFlowHost = (
           return true;
         };
 
+        const resizeCandidate = (resize: ActiveNodeResize, event: PointerEvent): NodeBoundsChange | undefined => {
+          const current = findNode(resize.nodeId)!;
+          const parent = current.parentId === undefined ? undefined : graphFor().nodes.get(current.parentId);
+          const bounds = current.parentId === undefined
+            ? options.nodeExtent
+            : current.extent === "parent" && parent !== undefined
+              ? { minX: 0, minY: 0, maxX: parent.dimensions.width, maxY: parent.dimensions.height }
+              : undefined;
+          const result = calculateNodeResize({ direction: resize.direction, positionStart: resize.positionStart, sizeStart: resize.sizeStart, delta: { x: pointerInFlow(event).x - resize.pointerStart.x, y: pointerInFlow(event).y - resize.pointerStart.y }, minimumSize: { width: 40, height: 24 }, bounds });
+          if (result.boundsIssues.length > 0) return undefined;
+          const childPositions = document.nodes.filter((candidate) => candidate.parentId === current.id).map((child) => ({ nodeId: child.id, position: { x: child.position.x + result.childrenPositionDelta.x, y: child.position.y + result.childrenPositionDelta.y } }));
+          return { kind: "node-bounds", nodeId: resize.nodeId, position: result.position, size: result.size, childPositions };
+        };
         const previewResize = (event: PointerEvent): boolean => {
           const resize = interactionSlots.activeNodeResize;
           if (resize === null || resize.pointerId !== event.pointerId || resize.nodeId !== node.id) return false;
-          const change = resizeNode(resize.nodeId, resize.sizeStart, {
-            x: pointerInFlow(event).x - resize.pointerStart.x,
-            y: pointerInFlow(event).y - resize.pointerStart.y,
-          });
-          element.style.width = `${change.size.width}px`;
-          element.style.height = `${change.size.height}px`;
-          element.style.boxSizing = "border-box";
-          element.dataset.resizing = "true";
+          const change = resizeCandidate(resize, event);
+          if (change === undefined) return true;
+          renderedNodePositions.set(node.id, change.position);
+          for (const child of change.childPositions) renderedNodePositions.set(child.nodeId, child.position);
+          element.style.width = `${change.size.width}px`; element.style.height = `${change.size.height}px`; element.style.boxSizing = "border-box"; element.dataset.resizing = "true";
           measurements.set(node.id, { nodeId: node.id, ...change.size });
           edgeRenderer.measureNode(findNode(node.id) ?? node, element, renderedViewport.zoom);
-          const graph = renderGraphPositions();
-          edgeRenderer.reconcile(document, renderedNodePositions, graph);
+          const graph = renderGraphPositions(); edgeRenderer.reconcile(document, renderedNodePositions, graph);
+          if (options.renderOnlyVisible === true) reconcileVisible?.();
           return true;
         };
-
         const finishNodeResize = (event: PointerEvent): boolean => {
           const resize = interactionSlots.activeNodeResize;
           if (resize === null || resize.pointerId !== event.pointerId || resize.nodeId !== node.id) return false;
-          const pointerEnd = pointerInFlow(event);
-          const change: NodeSizeChange = resizeNode(resize.nodeId, resize.sizeStart, {
-            x: pointerEnd.x - resize.pointerStart.x,
-            y: pointerEnd.y - resize.pointerStart.y,
-          });
-          const outcome = endSession("node-resize", event.pointerId, "finished");
-          interactionSlots.activeNodeResize = null;
-          element.classList.remove("resizing");
-          delete element.dataset.resizing;
-          for (const pointerId of pointerIdsFromOutcome(outcome, [event.pointerId])) {
-            runEffect(browser.releasePointer(element, pointerId));
-          }
-          suppressCanvasClick = true;
-          globalThis.setTimeout(() => { suppressCanvasClick = false; }, 0);
-          if (
-            outcome.kind === "finished" &&
-            outcome.semanticEvent === change.kind &&
-            (change.size.width !== resize.sizeStart.width || change.size.height !== resize.sizeStart.height)
-          ) {
-            operations.publishChange(change);
-          }
-          runTelemetry(
-            Effect.logDebug("Completed node resize").pipe(
-              Effect.annotateLogs({
-                [FlowAttribute.nodeId]: node.id,
-                [FlowAttribute.pointerId]: event.pointerId,
-                [FlowAttribute.inputKind]: "node-resize",
-                [FlowAttribute.changeKind]: change.kind,
-              }),
-              Effect.withSpan(FlowSpan.nodeDragComplete, {
-                attributes: {
-                  [FlowAttribute.nodeId]: node.id,
-                  [FlowAttribute.pointerId]: event.pointerId,
-                  [FlowAttribute.inputKind]: "node-resize",
-                  [FlowAttribute.changeKind]: change.kind,
-                },
-              })
-            )
-          );
+          const change = resizeCandidate(resize, event);
+          if (change === undefined) { cancelNodeResize("resize-bounds-conflict"); return true; }
+          const outcome = endSession("node-resize", event.pointerId, "finished"); interactionSlots.activeNodeResize = null;
+          element.classList.remove("resizing"); delete element.dataset.resizing;
+          for (const pointerId of pointerIdsFromOutcome(outcome, [event.pointerId])) runEffect(browser.releasePointer(element, pointerId));
+          suppressCanvasClick = true; globalThis.setTimeout(() => { suppressCanvasClick = false; }, 0);
+          if (outcome.kind === "finished" && outcome.semanticEvent === change.kind && (change.position.x !== resize.positionStart.x || change.position.y !== resize.positionStart.y || change.size.width !== resize.sizeStart.width || change.size.height !== resize.sizeStart.height)) operations.publishChange(change);
+          runTelemetry(Effect.logDebug("Completed node resize").pipe(Effect.annotateLogs({ [FlowAttribute.nodeId]: node.id, [FlowAttribute.pointerId]: event.pointerId, [FlowAttribute.inputKind]: "node-resize", [FlowAttribute.changeKind]: change.kind }), Effect.withSpan(FlowSpan.nodeDragComplete, { attributes: { [FlowAttribute.nodeId]: node.id, [FlowAttribute.pointerId]: event.pointerId, [FlowAttribute.inputKind]: "node-resize", [FlowAttribute.changeKind]: change.kind } })));
           return true;
         };
 
         const onPointerDown = (event: PointerEvent): void => {
+          if (activeKeyboardResize?.nodeId === node.id) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
           const resizeHandle = event.target instanceof HTMLElement
-            ? event.target.closest<HTMLElement>(".flow-node-resize-handle")
+            ? event.target.closest<HTMLButtonElement>(".flow-node-resize-handle")
             : null;
           if (resizeHandle !== null) {
             event.preventDefault();
@@ -2234,6 +2531,7 @@ export const createFlowHost = (
             if (
               current === undefined || current.selected !== true ||
               interactionSlots.activeNodeResize !== null ||
+              activeKeyboardResize !== null ||
               interactionSlots.activeDrag !== null ||
               interactionSlots.activeViewportPan !== null ||
               interactionSlots.activePinch !== null
@@ -2243,10 +2541,8 @@ export const createFlowHost = (
               width: measured.width > 0 ? measured.width : current.size?.width ?? 150,
               height: measured.height > 0 ? measured.height : current.size?.height ?? 44,
             };
-            const session = {
-              kind: "node-resize" as const,
-              resize: { nodeId: node.id, pointerId: event.pointerId, pointerStart: pointerInFlow(event), sizeStart },
-            };
+            const direction = resizeHandle.dataset.direction as NodeResizeDirection;
+            const session = { kind: "node-resize" as const, resize: { direction, nodeId: node.id, positionStart: current.position, pointerId: event.pointerId, pointerStart: pointerInFlow(event), sizeStart } };
             const started = startFlowInteraction(interactionSessions, session);
             if (started.kind !== "started") return;
             interactionSessions = started.sessions;
@@ -2290,6 +2586,29 @@ export const createFlowHost = (
             }
 
             return;
+          }
+
+          const contentTarget =
+            event.target instanceof Element && content.contains(event.target)
+              ? event.target
+              : null;
+          const noDragTarget = contentTarget?.closest("[data-flow-no-drag]");
+          if (
+            noDragTarget !== null &&
+            noDragTarget !== undefined &&
+            content.contains(noDragTarget)
+          ) {
+            return;
+          }
+          if (content.querySelector("[data-flow-drag-handle]") !== null) {
+            const dragHandle = contentTarget?.closest("[data-flow-drag-handle]");
+            if (
+              dragHandle === null ||
+              dragHandle === undefined ||
+              !content.contains(dragHandle)
+            ) {
+              return;
+            }
           }
 
           if (
@@ -3053,6 +3372,7 @@ export const createFlowHost = (
             interactionSlots.activeSelectionRect.pointerId === pointerId)) ||
         (interactionSlots.activeNodeResize !== null &&
           (pointerId === undefined || interactionSlots.activeNodeResize.pointerId === pointerId)) ||
+        (pointerId === undefined && activeKeyboardResize !== null) ||
         (pointerId === undefined && activeClickConnection !== null);
 
       if (!hasActiveGesture) {
@@ -3071,6 +3391,7 @@ export const createFlowHost = (
       ) {
         cancelNodeResize(reason);
       }
+      if (pointerId === undefined) cancelKeyboardResize(reason);
       if (
         interactionSlots.activeConnection !== null &&
         (pointerId === undefined || interactionSlots.activeConnection.pointerId === pointerId)
@@ -3519,6 +3840,14 @@ export const createFlowHost = (
 
       const { target } = event;
 
+      if (target instanceof Element) {
+        const content = target.closest<HTMLElement>(".flow-node-content");
+        const noDragTarget = target.closest("[data-flow-no-drag]");
+        if (content !== null && noDragTarget !== null && content.contains(noDragTarget)) {
+          return;
+        }
+      }
+
       if (onHandleClick(target)) {
         return;
       }
@@ -3635,6 +3964,97 @@ export const createFlowHost = (
       }
 
       const { target } = event;
+      const resizeButton = target instanceof Element
+        ? target.closest<HTMLButtonElement>(".flow-node-resize-handle")
+        : null;
+      if (resizeButton !== null) {
+        const key = event.key;
+        const isResizeArrow = key === "ArrowUp" || key === "ArrowRight" || key === "ArrowDown" || key === "ArrowLeft";
+        if (isResizeArrow) {
+          event.preventDefault();
+          event.stopPropagation();
+          if (event.metaKey || event.ctrlKey || event.altKey) return;
+          const active = activeKeyboardResize;
+          if (active !== null) {
+            if (active.key !== key || !event.repeat) return;
+            const delta = {
+              x: active.delta.x + (key === "ArrowLeft" ? -active.step : key === "ArrowRight" ? active.step : 0),
+              y: active.delta.y + (key === "ArrowUp" ? -active.step : key === "ArrowDown" ? active.step : 0),
+            };
+            const change = keyboardResizeCandidate(active, delta);
+            if (change !== undefined) {
+              activeKeyboardResize = { ...active, delta, change };
+              previewKeyboardResize(activeKeyboardResize);
+            }
+            return;
+          }
+          if (event.repeat) return;
+          const direction = resizeDirections.find((candidate) => candidate === resizeButton.dataset.direction);
+          const nodeElement = resizeButton.closest<HTMLElement>(".flow-node");
+          if (nodeElement === null) return;
+          const nodeId = nodeElement.dataset.nodeId;
+          const current = document.nodes.find((candidate) => candidate.id === nodeId);
+          if (
+            direction === undefined || current === undefined || current.selected !== true ||
+            interactionSlots.activeNodeResize !== null || interactionSlots.activeDrag !== null ||
+            interactionSlots.activeViewportPan !== null || interactionSlots.activePinch !== null ||
+            interactionSlots.activeConnection !== null || interactionSlots.activeReconnection !== null ||
+            interactionSlots.activeSelectionRect !== null
+          ) return;
+          const supportsArrow =
+            ((direction.includes("top") || direction.includes("bottom")) && (key === "ArrowUp" || key === "ArrowDown")) ||
+            ((direction.includes("left") || direction.includes("right")) && (key === "ArrowLeft" || key === "ArrowRight"));
+          if (!supportsArrow) return;
+          const measured = measurements.get(current.id) ?? browser.measure(nodeElement);
+          const origin = {
+            nodeId: current.id,
+            direction,
+            positionStart: current.position,
+            sizeStart: {
+              width: measured.width > 0 ? measured.width : current.size?.width ?? 150,
+              height: measured.height > 0 ? measured.height : current.size?.height ?? 44,
+            },
+          };
+          const step = event.shiftKey ? 20 : 5;
+          const delta = {
+            x: key === "ArrowLeft" ? -step : key === "ArrowRight" ? step : 0,
+            y: key === "ArrowUp" ? -step : key === "ArrowDown" ? step : 0,
+          };
+          const change = keyboardResizeCandidate(origin, delta);
+          if (change === undefined) return;
+          activeKeyboardResize = { ...origin, key, step, button: resizeButton, delta, change };
+          previewKeyboardResize(activeKeyboardResize);
+          runTelemetry(
+            Effect.logDebug("Started keyboard node resize").pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.nodeId]: current.id,
+                [FlowAttribute.inputKind]: "keyboard-node-resize",
+              }),
+              Effect.withSpan(FlowSpan.nodeDragStart, {
+                attributes: {
+                  [FlowAttribute.nodeId]: current.id,
+                  [FlowAttribute.inputKind]: "keyboard-node-resize",
+                },
+              })
+            )
+          );
+          return;
+        }
+        return;
+      }
+
+      if (target instanceof Element) {
+        const content = target.closest<HTMLElement>(".flow-node-content");
+        const nativeControl = target.closest("button, a[href], input, select, textarea");
+        const isEditingTarget = target instanceof HTMLElement && target.isContentEditable;
+        if (
+          content !== null &&
+          ((nativeControl !== null && content.contains(nativeControl)) ||
+            (isEditingTarget && content.contains(target)))
+        ) {
+          return;
+        }
+      }
 
       const nodeElement =
         target instanceof Element && target.closest(".flow-handle") === null
@@ -3818,6 +4238,10 @@ export const createFlowHost = (
       }
     };
 
+    const onWindowKeyUp = (event: KeyboardEvent): void => {
+      if (activeKeyboardResize?.key === event.key) finishKeyboardResize();
+    };
+
     const onCanvasWheel = (event: WheelEvent): void => {
       if (interactionSlots.activeViewportPan !== null) {
         return;
@@ -3924,6 +4348,10 @@ export const createFlowHost = (
       hostScope
     );
     yield* Scope.provide(
+      browser.listenWindow(globalThis.window, "keyup", onWindowKeyUp),
+      hostScope
+    );
+    yield* Scope.provide(
       browser.listen(canvas, "click", onCanvasClick),
       hostScope
     );
@@ -3945,7 +4373,7 @@ export const createFlowHost = (
       }, viewportLimits);
       operations.publishChange({ kind: "viewport", viewport: constrainViewport(next) });
     }), hostScope);
-    canvasUI = createCanvasUI({ controls: options.ui?.controls === true, minimap: options.ui?.minimap === true, toolbarContainers: options.toolbarContainers }, {
+    canvasUI = createCanvasUI({ controls: options.ui?.controls === true, minimap: options.ui?.minimap === true, toolbarContainers: options.toolbarContainers, panels: options.panels }, {
       zoomIn: () => {
         const point = { x: canvas.clientWidth / 2, y: canvas.clientHeight / 2 };
         operations.publishChange({ kind: "viewport", viewport: constrainViewport(zoomViewportAt(renderedViewport, renderedViewport.zoom * 1.2, point, viewportLimits)) });
@@ -3990,12 +4418,17 @@ export const createFlowHost = (
           cleanupFailures.push(error);
         }
         listeners.clear();
+        const restorePanelFocus = canvasUI?.captureActiveFocus();
         try {
           root.replaceChildren();
         } catch (error) {
           cleanupFailures.push(error);
         }
-        canvasUI?.destroy();
+        try {
+          canvasUI?.destroy(restorePanelFocus);
+        } catch (error) {
+          cleanupFailures.push(error);
+        }
         if (cleanupFailures.length > 0) {
           try {
             runTelemetry(
@@ -4016,6 +4449,7 @@ export const createFlowHost = (
 
     try {
       root.replaceChildren(canvas);
+      canvasUI?.restoreFocus();
       authoritativeViewport = constrainViewport(authoritativeViewport);
       renderViewport(authoritativeViewport);
       operations.reconcile(document);
@@ -4039,7 +4473,12 @@ export const createFlowHost = (
       throw error;
     }
 
+    const overlayPortal = canvasUI?.portal;
+    if (overlayPortal === undefined) {
+      throw new Error("Canvas UI was not initialized before the controller");
+    }
     const controller: FlowController = {
+      overlayPortal,
       destroy: (): void => {
         if (destroyed) {
           return;
@@ -4047,6 +4486,7 @@ export const createFlowHost = (
 
         cancelActiveDrag("host-destroyed");
         cancelNodeResize("host-destroyed");
+        cancelKeyboardResize("host-destroyed", true);
         cancelConnection("host-destroyed");
         cancelClickConnection("host-destroyed");
         cancelReconnection("host-destroyed");
@@ -4220,6 +4660,7 @@ export const createFlowHost = (
       },
     })
   );
+};
 
 export const acquireFlowHost = (
   root: HTMLElement,
@@ -4250,12 +4691,14 @@ export const mountFlow = (
       edgeRenderers: inputOptions.edgeRenderers,
       onToolbarAnchors: inputOptions.onToolbarAnchors,
       panel: inputOptions.panel,
+      panels: inputOptions.panels,
       toolbarContainers: inputOptions.toolbarContainers,
       runEffect: Effect.runSync,
     }).pipe(Effect.provide(FlowBrowserLive))
   );
 
   return {
+    overlayPortal: host.overlayPortal,
     destroy: host.destroy,
     fitView: (fitOptions): boolean =>
       host.fitView(

@@ -1,4 +1,5 @@
 import type { FlowToolbarAnchor } from "@flow/core";
+import type { CanvasPanelPlacement } from "./mount-flow.ts";
 
 export interface CanvasUINode {
   readonly id: string;
@@ -23,6 +24,13 @@ export interface CanvasUISettings {
     readonly nodes?: Readonly<Record<string, HTMLElement>> | undefined;
     readonly edges?: Readonly<Record<string, HTMLElement>> | undefined;
   } | undefined;
+  readonly panels?: readonly CanvasUIPanel[] | undefined;
+}
+
+export interface CanvasUIPanel {
+  readonly id: string;
+  readonly element: HTMLElement;
+  readonly placement: CanvasPanelPlacement;
 }
 
 export const createCanvasUI = (
@@ -93,14 +101,39 @@ export const createCanvasUI = (
     root.append(minimap);
   }
 
-  const restoreParent = panelParent ?? panel?.parentNode ?? undefined;
-  const restoreNext = panelNextSibling ?? panel?.nextSibling ?? null;
-  if (panel !== undefined) {
+  const panels: readonly CanvasUIPanel[] = settings.panels ?? (panel === undefined ? [] : [{ id: "legacy-panel", element: panel, placement: "top-right" }]);
+  const panelRestores = panels.map(({ element }) => ({
+    element,
+    parent: element === panel ? panelParent ?? element.parentNode ?? undefined : element.parentNode ?? undefined,
+    next: element === panel ? panelNextSibling ?? element.nextSibling : element.nextSibling,
+    classAttribute: element.getAttribute("class"),
+    styleAttribute: element.getAttribute("style"),
+    hiddenAttribute: element.getAttribute("hidden"),
+  }));
+  const focusedPanelElement = panels.map(({ element }) => element.contains(document.activeElement) ? document.activeElement : null).find((element) => element instanceof HTMLElement) as HTMLElement | undefined;
+  const readSelection = (element: HTMLElement | undefined) =>
+    element instanceof HTMLTextAreaElement ||
+    (element instanceof HTMLInputElement && ["text", "search", "url", "tel", "password"].includes(element.type))
+      ? { start: element.selectionStart, end: element.selectionEnd, direction: element.selectionDirection }
+      : undefined;
+  const restoreSelection = (element: HTMLElement | undefined, selection: ReturnType<typeof readSelection>): void => {
+    if (selection !== undefined && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
+      element.setSelectionRange(selection.start, selection.end, selection.direction ?? undefined);
+    }
+  };
+  const focusedInput = readSelection(focusedPanelElement);
+  for (const entry of panels) {
     const slot = document.createElement("div");
     slot.className = "flow-panel-slot";
-    slot.append(panel);
+    slot.dataset.placement = entry.placement;
+    slot.dataset.panelId = entry.id;
+    slot.append(entry.element);
     root.append(slot);
   }
+  const portal = document.createElement("div");
+  portal.className = "flow-overlay-portal";
+  portal.dataset.flowOverlayPortal = "";
+  root.append(portal);
 
   const toolbarRestores: Array<{
     element: HTMLElement;
@@ -186,11 +219,30 @@ export const createCanvasUI = (
       button.setAttribute("aria-label", mode === "pan" ? "Switch to select mode" : "Switch to pan mode");
       button.textContent = mode === "pan" ? "Pan" : "Select";
     },
-    destroy: (): void => {
+    restoreFocus: (): void => {
+      focusedPanelElement?.focus({ preventScroll: true });
+      restoreSelection(focusedPanelElement, focusedInput);
+    },
+    captureActiveFocus: (): (() => void) | undefined => {
+      const focusedElement = document.activeElement instanceof HTMLElement && panelRestores.some(({ element }) => element.contains(document.activeElement))
+        ? document.activeElement
+        : undefined;
+      if (focusedElement === undefined) return undefined;
+      const focusedSelection = readSelection(focusedElement);
+      return () => {
+        focusedElement.focus({ preventScroll: true });
+        restoreSelection(focusedElement, focusedSelection);
+      };
+    },
+    destroy: (restoreCapturedFocus?: (() => void) | undefined): void => {
       for (const button of buttons) button.remove();
+      const focusedElement = document.activeElement instanceof HTMLElement && panelRestores.some(({ element }) => element.contains(document.activeElement))
+        ? document.activeElement
+        : undefined;
+      const focusedSelection = readSelection(focusedElement);
       const owned = [
         ...toolbarRestores.map((restore) => ({ element: restore.element, parent: restore.parent, next: restore.next })),
-        ...(panel === undefined ? [] : [{ element: panel, parent: restoreParent, next: restoreNext }]),
+        ...panelRestores.map((restore) => ({ element: restore.element, parent: restore.parent, next: restore.next })),
       ];
       for (const restore of owned) restore.element.remove();
       const restoreGroups = new Map<Node, typeof owned>();
@@ -229,7 +281,22 @@ export const createCanvasUI = (
         if (restore.toolbarId === null) restore.element.removeAttribute("data-toolbar-id");
         else restore.element.setAttribute("data-toolbar-id", restore.toolbarId);
       }
+      for (const restore of panelRestores) {
+        if (restore.classAttribute === null) restore.element.removeAttribute("class");
+        else restore.element.setAttribute("class", restore.classAttribute);
+        if (restore.styleAttribute === null) restore.element.removeAttribute("style");
+        else restore.element.setAttribute("style", restore.styleAttribute);
+        if (restore.hiddenAttribute === null) restore.element.removeAttribute("hidden");
+        else restore.element.setAttribute("hidden", restore.hiddenAttribute);
+      }
       root.remove();
+      if (restoreCapturedFocus === undefined) {
+        focusedElement?.focus({ preventScroll: true });
+        restoreSelection(focusedElement, focusedSelection);
+      } else {
+        restoreCapturedFocus();
+      }
     },
+    portal,
   };
 };

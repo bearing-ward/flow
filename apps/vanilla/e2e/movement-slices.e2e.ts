@@ -74,6 +74,31 @@ const mountGraph = async (
 
 const touch = (x: number, y: number) => ({ x, y });
 
+const instrumentAnimationFrames = async (page: Page): Promise<void> => {
+  await page.evaluate(() => {
+    const pending = new Set<number>();
+    const request = globalThis.requestAnimationFrame.bind(globalThis);
+    const cancel = globalThis.cancelAnimationFrame.bind(globalThis);
+    globalThis.flowTestPendingFrames = pending;
+    globalThis.requestAnimationFrame = (callback) => {
+      let frame = 0;
+      frame = request((timestamp) => {
+        pending.delete(frame);
+        callback(timestamp);
+      });
+      pending.add(frame);
+      return frame;
+    };
+    globalThis.cancelAnimationFrame = (frame) => {
+      pending.delete(frame);
+      cancel(frame);
+    };
+  });
+};
+
+const pendingAnimationFrames = async (page: Page): Promise<number> =>
+  page.evaluate(() => globalThis.flowTestPendingFrames?.size ?? 0);
+
 test("arrow keys move the selected group by 5 or 20 flow units", async ({
   page,
 }) => {
@@ -148,6 +173,7 @@ test("custom node descriptions follow keyed document updates and removal", async
 
 test("node dragging auto-pans at the canvas edge and escape stops the frame", async ({ page }) => {
   await mountGraph(page);
+  await instrumentAnimationFrames(page);
   const alpha = page.locator('.flow-node[data-node-id="a"]');
   const box = await alpha.boundingBox();
   if (box === null) throw new Error("Missing node bounds");
@@ -157,6 +183,7 @@ test("node dragging auto-pans at the canvas edge and escape stops the frame", as
   await page.mouse.down();
   await page.mouse.move(canvas.x + canvas.width - 5, canvas.y + canvas.height / 2);
   await expect.poll(() => page.locator(".flow-viewport").getAttribute("data-x")).not.toBe("0");
+  await expect.poll(() => pendingAnimationFrames(page)).toBeGreaterThan(0);
   await page.getByTestId("flow-canvas").evaluate((canvas) =>
     canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
   );
@@ -164,12 +191,14 @@ test("node dragging auto-pans at the canvas edge and escape stops the frame", as
   await page.waitForTimeout(80);
   await expect(page.locator(".flow-viewport")).toHaveAttribute("data-x", stoppedAt ?? "0");
   await expect(alpha).toHaveCSS("transform", "matrix(1, 0, 0, 1, 100, 180)");
+  await expect.poll(() => pendingAnimationFrames(page)).toBe(0);
   await page.mouse.up();
 });
 
 for (const cancellation of ["blur", "pointercancel", "capture-loss", "node-removal", "destroy"] as const) {
   test(`node auto-pan frame stops after ${cancellation}`, async ({ page }) => {
     await mountGraph(page);
+    await instrumentAnimationFrames(page);
     const alpha = page.locator('.flow-node[data-node-id="a"]');
     const viewport = page.locator(".flow-viewport");
     const box = await alpha.boundingBox();
@@ -179,6 +208,7 @@ for (const cancellation of ["blur", "pointercancel", "capture-loss", "node-remov
     await page.mouse.down();
     await page.mouse.move(canvas.x + canvas.width - 5, canvas.y + canvas.height / 2);
     await expect.poll(() => page.locator(".flow-viewport").getAttribute("data-x")).not.toBe("0");
+    await expect.poll(() => pendingAnimationFrames(page)).toBeGreaterThan(0);
     if (cancellation === "blur") {
       await page.evaluate(() => globalThis.dispatchEvent(new Event("blur")));
     } else if (cancellation === "pointercancel") {
@@ -195,12 +225,14 @@ for (const cancellation of ["blur", "pointercancel", "capture-loss", "node-remov
     if (cancellation === "destroy") {
       await page.waitForTimeout(80);
       await expect(viewport).toHaveCount(0);
+      await expect.poll(() => pendingAnimationFrames(page)).toBe(0);
       await page.mouse.up();
       return;
     }
     const stoppedAt = await viewport.getAttribute("data-x");
     await page.waitForTimeout(80);
     await expect(viewport).toHaveAttribute("data-x", stoppedAt ?? "0");
+    await expect.poll(() => pendingAnimationFrames(page)).toBe(0);
     if (cancellation === "node-removal") await expect(alpha).toHaveCount(0);
     if (cancellation !== "node-removal") {
       await expect(alpha).toHaveCSS("transform", "matrix(1, 0, 0, 1, 100, 180)");

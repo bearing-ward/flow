@@ -167,41 +167,56 @@ const mountCancellationScenario = async (page: Page): Promise<void> => {
 const mountResizeScenario = async (
   page: Page,
   documentMode: "controlled" | "uncontrolled" = "uncontrolled",
-  zoom = 1
+  zoom = 1,
+  extent?: { minX: number; minY: number; maxX: number; maxY: number },
+  sourceSize = { width: 90, height: 60 },
+  options: { nestedParent?: boolean; derivedUI?: boolean; renderOnlyVisible?: boolean } = {}
 ): Promise<void> => {
   await page.goto("/");
   await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
   await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
-  await page.evaluate(async ({ mode, initialZoom }) => {
+  await page.evaluate(async ({ mode, initialZoom, extent, sourceSize, options }) => {
     const modulePath = "/src/public.ts";
     const { mountFlow } = await import(modulePath);
     const root = globalThis.document.querySelector<HTMLElement>("#app");
     if (root === null) throw new Error("Missing flow host");
-    const document = {
-      nodes: [
-        { id: "source", label: "Source", position: { x: 80, y: 100 }, size: { width: 90, height: 60 }, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+    const nodes = [
+        ...(options.nestedParent ? [{ id: "container", label: "Container", position: { x: 50, y: 50 }, size: { width: 100, height: 80 } }] : []),
+        { id: "source", label: "Source", ...(options.nestedParent ? { parentId: "container", extent: "parent" } : {}), position: options.nestedParent ? { x: 10, y: 10 } : { x: 80, y: 100 }, size: options.nestedParent ? { width: 60, height: 40 } : sourceSize, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
         { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
-      ],
+        ...(options.renderOnlyVisible ? [{ id: "remote", label: "Remote", position: { x: 2200, y: 700 }, size: { width: 90, height: 60 } }] : []),
+      ];
+    const document = {
+      nodes,
       edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }],
     };
+    globalThis.flowAuthoritativeNodes = structuredClone(nodes);
+    const toolbar = options.derivedUI ? globalThis.document.body.appendChild(globalThis.document.createElement("div")) : undefined;
+    if (toolbar !== undefined) { toolbar.id = "resize-node-toolbar"; toolbar.textContent = "Node toolbar"; }
     const controller = mountFlow(root, document, {
       documentMode: mode,
+      nodeExtent: extent,
+      renderOnlyVisible: options.renderOnlyVisible,
+      ui: options.derivedUI ? { minimap: true } : undefined,
+      toolbarContainers: toolbar === undefined ? undefined : { nodes: { source: toolbar } },
       viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: initialZoom }, limits: { minZoom: 0.25, maxZoom: 3 } },
     });
     globalThis.flowChanges = [];
     controller.subscribe((change: CoreModule.FlowChange) => globalThis.flowChanges?.push(change));
     globalThis.flowController = controller;
-  }, { mode: documentMode, initialZoom: zoom });
-  const resizeHandle = page.getByTestId("flow-node-resize-handle");
-  await expect(resizeHandle).toBeVisible();
-  await expect(resizeHandle).toHaveAttribute("aria-label", "Resize Source");
-  await resizeHandle.focus();
-  await expect(resizeHandle).toBeFocused();
-  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveAttribute("data-measured-width", "90");
+  }, { mode: documentMode, initialZoom: zoom, extent, sourceSize, options });
+  const resizeHandles = page.getByTestId("flow-node-resize-handle");
+  await expect(resizeHandles).toHaveCount(8);
+  expect(await resizeHandles.evaluateAll((buttons) => buttons.map((button) => (button as HTMLButtonElement).getAttribute("aria-label")))).toEqual([
+    "Resize Source from top", "Resize Source from right", "Resize Source from bottom", "Resize Source from left",
+    "Resize Source from top left", "Resize Source from top right", "Resize Source from bottom right", "Resize Source from bottom left",
+  ]);
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveAttribute("data-measured-width", String(options.nestedParent ? 60 : Math.max(sourceSize.width, 30)));
 };
 
-const beginResize = async (page: Page, dx = 60, dy = 30): Promise<{ x: number; y: number }> => {
-  const bounds = await page.getByTestId("flow-node-resize-handle").boundingBox();
+const beginResize = async (page: Page, dx = 60, dy = 30, direction = "bottom-right"): Promise<{ x: number; y: number }> => {
+  const bounds = await page.locator(`.flow-node-resize-handle[data-direction="${direction}"]`).boundingBox();
   if (bounds === null) throw new Error("Missing node resize handle");
   const start = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
   await page.mouse.move(start.x, start.y);
@@ -215,6 +230,14 @@ const currentSize = (page: Page) => page.locator('.flow-node[data-node-id="sourc
   width: Number.parseFloat((node as HTMLElement).style.width),
   height: Number.parseFloat((node as HTMLElement).style.height),
 }));
+
+const keyboardResize = async (page: Page, direction: string, key: string): Promise<void> => {
+  const button = page.locator(`.flow-node-resize-handle[data-direction="${direction}"]`);
+  await expect(button).toBeVisible();
+  await button.focus();
+  await expect(button).toBeFocused();
+  await page.keyboard.press(key);
+};
 
 const beginCancellationGesture = async (page: Page, mode: GestureMode): Promise<void> => {
   const canvas = page.getByTestId("flow-canvas");
@@ -335,8 +358,124 @@ test.fixme("concurrent native connection and node drag cancellation requires rea
 
 test.fixme("native two-contact pinch cancellation requires real touch pointer capture", async () => {});
 
+test("bounds conflict cancels resize without publishing an invalid rectangle", async ({ page }) => {
+  await mountResizeScenario(page, "uncontrolled", 1, { minX: 0, minY: 0, maxX: 100, maxY: 400 }, { width: 20, height: 60 });
+  await beginResize(page, 20, 0, "bottom-right");
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+  expect(await currentSize(page)).toStrictEqual({ width: 20, height: 60 });
+  expect(await position(page, "source")).toStrictEqual({ x: 80, y: 100 });
+});
+
+test("controlled left resize restores parent and child positions until the atomic bounds change is acknowledged", async ({ page }) => {
+  await mountResizeScenario(page, "controlled");
+  await beginResize(page, 20, 0, "left");
+  await page.mouse.up();
+  expect(await page.evaluate(() => globalThis.flowChanges?.[0])).toEqual({
+    kind: "node-bounds", nodeId: "source", position: { x: 100, y: 100 }, size: { width: 70, height: 60 },
+    childPositions: [{ nodeId: "child", position: { x: -5, y: 15 } }],
+  });
+  expect(await position(page, "source")).toEqual({ x: 80, y: 100 });
+  expect(await currentSize(page)).toEqual({ width: 90, height: 60 });
+  expect(await position(page, "child")).toEqual({ x: 95, y: 115 });
+  expect(await page.evaluate(() => globalThis.flowAuthoritativeNodes?.map(({ id, position, size }) => ({ id, position, size }))))
+    .toEqual([
+      { id: "source", position: { x: 80, y: 100 }, size: { width: 90, height: 60 } },
+      { id: "child", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
+      { id: "target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 } },
+    ]);
+  await page.evaluate(() => {
+    const nodes = globalThis.flowAuthoritativeNodes!.map((node) => node.id === "source"
+      ? { ...node, position: { x: 100, y: 100 }, size: { width: 70, height: 60 } }
+      : node.id === "child" ? { ...node, position: { x: -5, y: 15 } } : node);
+    globalThis.flowAuthoritativeNodes = nodes;
+    globalThis.flowController?.update({ nodes: nodes.map((node) => ({ ...node, label: node.id, ...(node.id === "source" ? { selected: true, handles: [{ id: "out", kind: "source", side: "right" }] } : node.id === "target" ? { handles: [{ id: "in", kind: "target", side: "left" }] } : {}) })), edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }] });
+  });
+  await expect.poll(() => position(page, "source")).toEqual({ x: 100, y: 100 });
+  await expect.poll(() => position(page, "child")).toEqual({ x: 95, y: 115 });
+  expect(await currentSize(page)).toEqual({ width: 70, height: 60 });
+});
+
+test("resize refreshes toolbar and minimap while visible-node reconciliation preserves the active node", async ({ page }) => {
+  await mountResizeScenario(page, "uncontrolled", 1, undefined, undefined, { derivedUI: true, renderOnlyVisible: true });
+  await expect(page.locator('.flow-minimap-node[data-node-id="source"]')).toHaveCount(1);
+  const before = await page.locator("#resize-node-toolbar").getAttribute("style");
+  const miniBefore = await page.locator('.flow-minimap-node[data-node-id="source"]').getAttribute("width");
+  await beginResize(page, 60, 30, "bottom-right");
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveAttribute("data-resizing", "true");
+  await expect(page.locator("#resize-node-toolbar")).toBeVisible();
+  await expect.poll(() => page.locator("#resize-node-toolbar").getAttribute("style")).not.toBe(before);
+  await expect.poll(() => page.locator('.flow-minimap-node[data-node-id="source"]').getAttribute("width")).not.toBe(miniBefore);
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveCount(1);
+  await expect(page.locator('.flow-node[data-node-id="remote"]')).toHaveCount(0);
+  await page.getByTestId("flow-canvas").evaluate((canvas) => canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveCount(1);
+  expect(await currentSize(page)).toEqual({ width: 90, height: 60 });
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+});
+
+test("nested parent extent clamps resize and cancellation restores local and world positions", async ({ page }) => {
+  await mountResizeScenario(page, "uncontrolled", 1, undefined, undefined, { nestedParent: true });
+  expect(await position(page, "source")).toEqual({ x: 60, y: 60 });
+  expect(await position(page, "child")).toEqual({ x: 75, y: 75 });
+  await beginResize(page, -100, 0, "left");
+  await expect.poll(() => currentSize(page)).toEqual({ width: 70, height: 40 });
+  await expect.poll(() => position(page, "source")).toEqual({ x: 50, y: 60 });
+  await expect.poll(() => position(page, "child")).toEqual({ x: 75, y: 75 });
+  await page.getByTestId("flow-canvas").evaluate((canvas) => canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  await expect.poll(() => currentSize(page)).toEqual({ width: 60, height: 40 });
+  await expect.poll(() => position(page, "source")).toEqual({ x: 60, y: 60 });
+  await expect.poll(() => position(page, "child")).toEqual({ x: 75, y: 75 });
+  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+});
+
 for (const zoom of [1, 2] as const) {
-  test(`lower-right resize previews edges and commits one flow-space size change at zoom ${zoom}`, async ({ page }) => {
+  test(`directional resize controls and active preview screenshot at zoom ${zoom}`, async ({ page }) => {
+    await mountResizeScenario(page, "uncontrolled", zoom);
+    const source = page.locator('.flow-node[data-node-id="source"]');
+    await source.evaluate((node) => (node as HTMLElement).blur());
+    await expect(source).toHaveScreenshot(`resize-idle-zoom-${zoom}.png`, { animations: "disabled" });
+    await beginResize(page, 24, 12, "left");
+    await expect(source).toHaveScreenshot(`resize-active-zoom-${zoom}.png`, { animations: "disabled" });
+    await page.getByTestId("flow-canvas").evaluate((canvas) => canvas.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+    await page.mouse.up();
+    await expect(source).not.toHaveClass(/resizing/u);
+    await expect(page.locator('.flow-node-resize-handle[data-direction="left"]')).toHaveAccessibleName("Resize Source from left");
+  });
+
+  test(`top and top-left resize preserve fixed opposite edges and child world position at zoom ${zoom}`, async ({ page }) => {
+    await mountResizeScenario(page, "uncontrolled", zoom);
+    await beginResize(page, 0, 15, "top");
+    await page.mouse.up();
+    await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 - 15 / zoom });
+    await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80, y: 100 + 15 / zoom });
+    await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+    const topChange = await page.evaluate(() => globalThis.flowChanges?.[0]);
+    expect(topChange).toMatchObject({ kind: "node-bounds", position: { x: 80, y: 100 + 15 / zoom } });
+    await mountResizeScenario(page, "uncontrolled", zoom);
+    await beginResize(page, 20, 15, "top-left");
+    await page.mouse.up();
+    await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90 - 20 / zoom, height: 60 - 15 / zoom });
+    await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80 + 20 / zoom, y: 100 + 15 / zoom });
+    await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+    expect(await page.evaluate(() => globalThis.flowChanges?.length)).toBe(1);
+  });
+}
+
+for (const zoom of [1, 2] as const) {
+  test(`left resize keeps the opposite edge and nested child fixed at zoom ${zoom}`, async ({ page }) => {
+    await mountResizeScenario(page, "uncontrolled", zoom);
+    await beginResize(page, 20, 0, "left");
+    await page.mouse.up();
+    await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90 - 20 / zoom, height: 60 });
+    await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80 + 20 / zoom, y: 100 });
+    await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+    expect(await page.evaluate(() => globalThis.flowChanges?.[0])).toMatchObject({ kind: "node-bounds", position: { x: 80 + 20 / zoom, y: 100 } });
+  });
+}
+
+for (const zoom of [1, 2] as const) {
+  test(`bottom-right resize previews edges and commits one atomic bounds change at zoom ${zoom}`, async ({ page }) => {
     await mountResizeScenario(page, "uncontrolled", zoom);
     const edge = page.locator('[data-edge-id="edge"] .flow-edge-path');
     const previousPath = await edge.getAttribute("d");
@@ -348,24 +487,25 @@ for (const zoom of [1, 2] as const) {
     await expect.poll(() => edge.getAttribute("d")).not.toBe(previousPath);
     await page.mouse.up();
     await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toStrictEqual([
-      { kind: "node-size", nodeId: "source", size: change },
+      { kind: "node-bounds", nodeId: "source", position: { x: 80, y: 100 }, size: change, childPositions: [{ nodeId: "child", position: { x: 15, y: 15 } }] },
     ]);
     expect(await currentSize(page)).toStrictEqual(change);
     expect(await position(page, "source")).toStrictEqual({ x: 80, y: 100 });
   });
 
-  test(`controlled lower-right resize waits for acknowledgement at zoom ${zoom}`, async ({ page }) => {
+  test(`controlled bottom-right resize waits for acknowledgement at zoom ${zoom}`, async ({ page }) => {
     await mountResizeScenario(page, "controlled", zoom);
     const change = { width: 90 + 60 / zoom, height: 60 + 30 / zoom };
     await beginResize(page);
     await page.mouse.up();
     await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toStrictEqual([
-      { kind: "node-size", nodeId: "source", size: change },
+      { kind: "node-bounds", nodeId: "source", position: { x: 80, y: 100 }, size: change, childPositions: [{ nodeId: "child", position: { x: 15, y: 15 } }] },
     ]);
     expect(await currentSize(page)).toStrictEqual({ width: 90, height: 60 });
     await page.evaluate((size) => globalThis.flowController?.update({
       nodes: [
         { id: "source", label: "Source", position: { x: 80, y: 100 }, size, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
         { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
       ],
       edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }],
@@ -378,6 +518,8 @@ for (const cancellation of ["escape", "blur", "pointercancel", "capture-loss", "
   test(`node resize cancellation by ${cancellation} restores authoritative size`, async ({ page }) => {
     await mountResizeScenario(page);
     const source = page.locator('.flow-node[data-node-id="source"]');
+    const sourceElement = await source.elementHandle();
+    if (sourceElement === null) throw new Error("Missing resize owner");
     await beginResize(page);
     await expect.poll(() => currentSize(page)).toStrictEqual({ width: 150, height: 90 });
     if (cancellation === "escape") {
@@ -394,18 +536,258 @@ for (const cancellation of ["escape", "blur", "pointercancel", "capture-loss", "
     } else {
       await page.evaluate(() => globalThis.flowController?.destroy());
     }
+    if (cancellation === "node-removal") {
+      await expect(source).toHaveCount(0);
+      expect(await sourceElement.evaluate((element) => element instanceof HTMLElement && element.hasPointerCapture(1))).toBe(false);
+    } else {
+      expect(await sourceElement.evaluate((element) => element instanceof HTMLElement && element.hasPointerCapture(1))).toBe(false);
+    }
+    if (cancellation !== "destroy" && cancellation !== "node-removal") {
+      await expect(source).not.toHaveClass(/resizing/u);
+      await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+      await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80, y: 100 });
+      await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+      expect(await source.evaluate((element) => element instanceof HTMLElement && element.hasPointerCapture(1))).toBe(false);
+    }
     if (cancellation !== "destroy") await page.mouse.up();
     expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
     if (cancellation === "node-removal") {
-      await expect(source).toHaveCount(0);
+      await page.evaluate(() => globalThis.flowController?.update({
+        nodes: [
+          { id: "source", label: "Source", position: { x: 80, y: 100 }, size: { width: 90, height: 60 }, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+          { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
+          { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+        ],
+        edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }],
+      }));
+      await expect(source).toHaveCount(1);
     } else if (cancellation !== "destroy") {
-      await expect(source).not.toHaveClass(/resizing/u);
+      await page.waitForTimeout(80);
       await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
     } else {
       await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
     }
+    if (cancellation !== "destroy") {
+      await beginResize(page);
+      await page.mouse.up();
+      await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
+      await expect.poll(() => currentSize(page)).toStrictEqual({ width: 150, height: 90 });
+    }
   });
 }
+
+const keyboardResizeCases = [
+  { direction: "top", keys: ["ArrowUp"], position: { x: 80, y: 95 }, size: { width: 90, height: 65 }, child: { x: 15, y: 20 } },
+  { direction: "right", keys: ["ArrowRight"], position: { x: 80, y: 100 }, size: { width: 95, height: 60 }, child: { x: 15, y: 15 } },
+  { direction: "bottom", keys: ["ArrowDown"], position: { x: 80, y: 100 }, size: { width: 90, height: 65 }, child: { x: 15, y: 15 } },
+  { direction: "left", keys: ["ArrowLeft"], position: { x: 75, y: 100 }, size: { width: 95, height: 60 }, child: { x: 20, y: 15 } },
+  { direction: "top-left", keys: ["ArrowUp", "ArrowLeft"], position: { x: 75, y: 95 }, size: { width: 95, height: 65 }, child: { x: 20, y: 20 } },
+  { direction: "top-right", keys: ["ArrowUp", "ArrowRight"], position: { x: 80, y: 95 }, size: { width: 95, height: 65 }, child: { x: 15, y: 20 } },
+  { direction: "bottom-right", keys: ["ArrowRight", "ArrowDown"], position: { x: 80, y: 100 }, size: { width: 95, height: 65 }, child: { x: 15, y: 15 } },
+  { direction: "bottom-left", keys: ["ArrowLeft", "ArrowDown"], position: { x: 75, y: 100 }, size: { width: 95, height: 65 }, child: { x: 20, y: 15 } },
+] as const;
+
+for (const resizeCase of keyboardResizeCases) {
+  test(`keyboard resize ${resizeCase.direction} follows edge signs and keeps the child world position fixed`, async ({ page }) => {
+    await mountResizeScenario(page);
+    const button = page.locator(`.flow-node-resize-handle[data-direction="${resizeCase.direction}"]`);
+    await button.focus();
+    await expect(button).toHaveAccessibleName(`Resize Source from ${resizeCase.direction.replaceAll("-", " ")}`);
+    const beforeActivation = { position: await position(page, "source"), size: await currentSize(page) };
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Space");
+    await expect.poll(() => position(page, "source")).toStrictEqual(beforeActivation.position);
+    await expect.poll(() => currentSize(page)).toStrictEqual(beforeActivation.size);
+    await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveAttribute("aria-pressed", "true");
+    expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+    await button.focus();
+    for (const key of resizeCase.keys) await page.keyboard.press(key);
+    await expect.poll(() => position(page, "source")).toStrictEqual(resizeCase.position);
+    await expect.poll(() => currentSize(page)).toStrictEqual(resizeCase.size);
+    await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+    const changes = await page.evaluate(() => globalThis.flowChanges);
+    expect(changes).toHaveLength(resizeCase.keys.length);
+    expect(changes?.every((change) => change.kind === "node-bounds")).toBe(true);
+    await expect(button).toBeFocused();
+  });
+}
+
+test("keyboard resize owns one arrow and its initial Shift step until matching keyup", async ({ page }) => {
+  await mountResizeScenario(page);
+  const button = page.locator('.flow-node-resize-handle[data-direction="right"]');
+  await button.focus();
+  await page.keyboard.down("ArrowRight");
+  await button.evaluate((element) => element.dispatchEvent(new KeyboardEvent("keydown", {
+    key: "ArrowRight", bubbles: true, shiftKey: true, repeat: true,
+  })));
+  await button.evaluate((element) => element.dispatchEvent(new KeyboardEvent("keydown", {
+    key: "ArrowDown", bubbles: true, repeat: true,
+  })));
+  await page.keyboard.down("Shift");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 100, height: 60 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80, y: 100 });
+  await page.keyboard.up("ArrowRight");
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
+  await expect(button).toBeFocused();
+  await page.keyboard.up("Shift");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 100, height: 60 });
+});
+
+test("keyboard resize uses the larger Shift step captured at gesture start and accepts a fresh gesture after Escape", async ({ page }) => {
+  await mountResizeScenario(page);
+  const button = page.locator('.flow-node-resize-handle[data-direction="right"]');
+  await button.focus();
+  await page.keyboard.down("Shift");
+  await page.keyboard.down("ArrowRight");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 110, height: 60 });
+  await page.keyboard.press("Escape");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+  await expect(button).toBeFocused();
+  await page.keyboard.up("ArrowRight");
+  await page.keyboard.up("Shift");
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 95, height: 60 });
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
+});
+
+test("controlled keyboard left resize restores authoritative geometry until delayed atomic acknowledgement", async ({ page }) => {
+  await mountResizeScenario(page, "controlled");
+  const button = page.locator('.flow-node-resize-handle[data-direction="left"]');
+  await button.focus();
+  await page.keyboard.down("ArrowLeft");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 95, height: 60 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 75, y: 100 });
+  await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+  await page.keyboard.up("ArrowLeft");
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toStrictEqual([
+    { kind: "node-bounds", nodeId: "source", position: { x: 75, y: 100 }, size: { width: 95, height: 60 }, childPositions: [{ nodeId: "child", position: { x: 20, y: 15 } }] },
+  ]);
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80, y: 100 });
+  await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+  await page.waitForTimeout(80);
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+  await page.evaluate(() => {
+    const nodes = structuredClone(globalThis.flowAuthoritativeNodes ?? []);
+    const source = nodes.find((node) => node.id === "source");
+    const child = nodes.find((node) => node.id === "child");
+    if (source === undefined || child === undefined) throw new Error("Missing resize fixture nodes");
+    source.position = { x: 75, y: 100 };
+    source.size = { width: 95, height: 60 };
+    child.position = { x: 20, y: 15 };
+    globalThis.flowController?.update({ nodes, edges: [{ id: "edge", source: "source", target: "target", sourceHandle: "out", targetHandle: "in" }] } as never);
+  });
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 95, height: 60 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 75, y: 100 });
+  await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+});
+
+test("controlled keyboard resize does not adopt a candidate without acknowledgement", async ({ page }) => {
+  await mountResizeScenario(page, "controlled");
+  await keyboardResize(page, "top", "ArrowUp");
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
+  await page.waitForTimeout(80);
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 80, y: 100 });
+  await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+});
+
+for (const cancellation of ["escape", "blur", "node-removal", "node-hidden", "deselection", "destroy"] as const) {
+  test(`keyboard resize cancellation by ${cancellation} restores geometry without publishing`, async ({ page }) => {
+    await mountResizeScenario(page);
+    const button = page.locator('.flow-node-resize-handle[data-direction="left"]');
+    await button.focus();
+    await page.keyboard.down("ArrowLeft");
+    await expect.poll(() => currentSize(page)).toStrictEqual({ width: 95, height: 60 });
+    if (cancellation === "escape") {
+      await page.keyboard.press("Escape");
+    } else if (cancellation === "blur") {
+      await page.evaluate(() => globalThis.dispatchEvent(new Event("blur")));
+    } else if (cancellation === "node-removal") {
+      await page.evaluate(() => globalThis.flowController?.update({ nodes: [], edges: [] } as never));
+    } else if (cancellation === "node-hidden") {
+      await page.evaluate(() => globalThis.flowController?.update({ nodes: [
+        { id: "source", label: "Source", position: { x: 80, y: 100 }, size: { width: 90, height: 60 }, selected: true, hidden: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
+        { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+      ], edges: [] } as never));
+    } else if (cancellation === "deselection") {
+      await page.evaluate(() => globalThis.flowController?.update({ nodes: [
+        { id: "source", label: "Source", position: { x: 80, y: 100 }, size: { width: 90, height: 60 }, selected: false, handles: [{ id: "out", kind: "source", side: "right" }] },
+        { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
+        { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+      ], edges: [] } as never));
+    } else {
+      await page.evaluate(() => globalThis.flowController?.destroy());
+    }
+    if (cancellation !== "destroy") {
+      if (cancellation === "node-removal") await expect(page.locator('.flow-node[data-node-id="source"]')).toHaveCount(0);
+      else if (cancellation === "node-hidden" || cancellation === "deselection") await expect(button).toHaveCount(0);
+      else await expect(button).toBeFocused();
+      await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+      if (cancellation !== "node-removal" && cancellation !== "node-hidden") {
+        await expect.poll(() => currentSize(page)).toStrictEqual({ width: 90, height: 60 });
+      }
+      if (cancellation === "escape" || cancellation === "blur" || cancellation === "deselection") {
+        await expect.poll(() => position(page, "child")).toStrictEqual({ x: 95, y: 115 });
+      }
+      if (cancellation === "node-removal" || cancellation === "node-hidden" || cancellation === "deselection") {
+        await expect(page.getByTestId("flow-canvas")).toBeFocused();
+      }
+    } else {
+      await expect(page.getByTestId("flow-canvas")).toHaveCount(0);
+      await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+    }
+  });
+}
+
+test("keyboard resize cancels when an ancestor becomes hidden and preserves nested local geometry", async ({ page }) => {
+  await mountResizeScenario(page, "uncontrolled", 1, undefined, { width: 60, height: 40 }, { nestedParent: true });
+  const button = page.locator('.flow-node-resize-handle[data-direction="left"]');
+  await button.focus();
+  await page.keyboard.down("ArrowLeft");
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 65, height: 40 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 55, y: 60 });
+  await expect.poll(() => position(page, "child")).toStrictEqual({ x: 75, y: 75 });
+  await page.evaluate(() => globalThis.flowController?.update({ nodes: [
+    { id: "container", label: "Container", position: { x: 50, y: 50 }, size: { width: 100, height: 80 }, hidden: true },
+    { id: "source", label: "Source", parentId: "container", extent: "parent", position: { x: 10, y: 10 }, size: { width: 60, height: 40 }, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+    { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
+    { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+  ], edges: [] } as never));
+  await expect(button).toHaveCount(0);
+  await expect(page.getByTestId("flow-canvas")).toBeFocused();
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+  await page.keyboard.up("ArrowLeft");
+  await page.evaluate(() => globalThis.flowController?.update({ nodes: [
+    { id: "container", label: "Container", position: { x: 50, y: 50 }, size: { width: 100, height: 80 } },
+    { id: "source", label: "Source", parentId: "container", extent: "parent", position: { x: 10, y: 10 }, size: { width: 60, height: 40 }, selected: true, handles: [{ id: "out", kind: "source", side: "right" }] },
+    { id: "child", label: "Child", parentId: "source", position: { x: 15, y: 15 }, size: { width: 20, height: 20 } },
+    { id: "target", label: "Target", position: { x: 300, y: 100 }, size: { width: 90, height: 60 }, handles: [{ id: "in", kind: "target", side: "left" }] },
+  ], edges: [] } as never));
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 60, height: 40 });
+  await expect.poll(() => position(page, "source")).toStrictEqual({ x: 60, y: 60 });
+  await expect.poll(() => position(page, "child")).toStrictEqual({ x: 75, y: 75 });
+  await keyboardResize(page, "left", "ArrowLeft");
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 65, height: 40 });
+});
+
+test("keyboard resize remains active through viewport culling and pointer resize still works afterward", async ({ page }) => {
+  await mountResizeScenario(page, "uncontrolled", 1, undefined, { width: 90, height: 60 }, { renderOnlyVisible: true });
+  await page.locator('.flow-node-resize-handle[data-direction="right"]').focus();
+  await page.keyboard.down("ArrowRight");
+  await page.evaluate(() => globalThis.flowController?.updateViewport({ x: -5000, y: -5000, zoom: 1 }));
+  await page.keyboard.up("ArrowRight");
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(1);
+  await page.evaluate(() => globalThis.flowController?.updateViewport({ x: 0, y: 0, zoom: 1 }));
+  await expect(page.locator('.flow-node[data-node-id="source"]')).toBeVisible();
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 95, height: 60 });
+  await beginResize(page, 5, 0, "right");
+  await page.mouse.up();
+  await expect.poll(() => page.evaluate(() => globalThis.flowChanges)).toHaveLength(2);
+  await expect.poll(() => currentSize(page)).toStrictEqual({ width: 100, height: 60 });
+});
 
 test("node extent keeps a complete node inside its bounds during drag", async ({
   page,

@@ -140,6 +140,300 @@ test("controlled group drag completes when every participant remains", async ({ 
   }]);
 });
 
+test("custom drag handle gates pointer movement and keeps its visual state stable", async ({ page }) => {
+  await reset(page);
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = globalThis.document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing host");
+    root.replaceChildren();
+    const controller = mountFlow(root, {
+      nodes: [
+        { id: "a", label: "Alpha", position: { x: 100, y: 120 }, selected: true, type: "custom", data: { text: "Handle v1" } },
+        { id: "b", label: "Beta", position: { x: 350, y: 120 }, selected: true },
+        { id: "outside", label: "Outside", position: { x: 600, y: 120 } },
+      ], edges: [],
+    }, {
+      documentMode: "uncontrolled",
+      nodeRenderers: {
+        custom: (node: { data?: { text?: string } }, content: HTMLElement) => {
+          const body = globalThis.document.createElement("span");
+          body.className = "custom-body";
+          body.textContent = "Body";
+          const dragRegion = globalThis.document.createElement("div");
+          dragRegion.dataset.flowDragHandle = "";
+          const handle = globalThis.document.createElement("button");
+          handle.setAttribute("aria-label", "Drag selected group");
+          handle.textContent = node.data?.text ?? "Handle";
+          const nestedNoDrag = globalThis.document.createElement("button");
+          nestedNoDrag.dataset.flowNoDrag = "";
+          nestedNoDrag.setAttribute("aria-label", "Nested no-drag control");
+          nestedNoDrag.textContent = "No drag";
+          dragRegion.append(handle, nestedNoDrag);
+          const action = globalThis.document.createElement("button");
+          action.dataset.flowNoDrag = "";
+          action.textContent = "Renderer action";
+          action.onclick = () => { action.dataset.clickCount = String(Number(action.dataset.clickCount ?? "0") + 1); };
+          content.append(body, dragRegion, action);
+          return { update: (next: typeof node) => { handle.textContent = next.data?.text ?? "Handle"; }, destroy: () => undefined };
+        },
+      },
+      viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+    });
+    globalThis.flowController = controller;
+    globalThis.flowChanges = [];
+    controller.subscribe((change: FlowChange) => globalThis.flowChanges?.push(change));
+  });
+
+  const alpha = page.locator('.flow-node[data-node-id="a"]');
+  const beta = page.locator('.flow-node[data-node-id="b"]');
+  const handle = page.getByRole("button", { name: "Drag selected group" });
+  await expect(handle).toBeVisible();
+  await expect(alpha).toHaveScreenshot("custom-drag-handle-idle.png", { animations: "disabled" });
+  const alphaBefore = await alpha.getAttribute("style");
+  const alphaTransformBefore = await alpha.evaluate((element) => (element as HTMLElement).style.transform);
+  const betaBefore = await beta.getAttribute("style");
+  const body = await alpha.locator(".custom-body").boundingBox();
+  if (body === null) throw new Error("Missing custom renderer body");
+  await page.mouse.move(body.x + body.width / 2, body.y + body.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(body.x + body.width / 2 + 32, body.y + body.height / 2 + 16);
+  await page.mouse.up();
+  const outsideHandleTransformChanged = await alpha.evaluate((element) => (element as HTMLElement).style.transform) !== alphaTransformBefore;
+  expect(outsideHandleTransformChanged).toBe(false);
+  expect(await alpha.getAttribute("style")).toBe(alphaBefore);
+  expect(await beta.getAttribute("style")).toBe(betaBefore);
+
+  const nestedNoDrag = page.getByRole("button", { name: "Nested no-drag control" });
+  const nestedBounds = await nestedNoDrag.boundingBox();
+  if (nestedBounds === null) throw new Error("Missing nested no-drag control bounds");
+  const changesBeforeNestedNoDrag = await page.evaluate(() => globalThis.flowChanges?.length ?? -1);
+  await page.mouse.move(nestedBounds.x + nestedBounds.width / 2, nestedBounds.y + nestedBounds.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(nestedBounds.x + nestedBounds.width / 2 + 32, nestedBounds.y + nestedBounds.height / 2 + 16);
+  await page.mouse.up();
+  expect(await alpha.evaluate((element) => (element as HTMLElement).style.transform)).toBe(alphaTransformBefore);
+  expect(await beta.getAttribute("style")).toBe(betaBefore);
+  await expect(alpha).not.toHaveClass(/dragging/u);
+  expect(await page.evaluate(() => globalThis.flowChanges?.length ?? -1)).toBe(changesBeforeNestedNoDrag);
+
+  const handleBounds = await handle.boundingBox();
+  if (handleBounds === null) throw new Error("Missing custom drag handle bounds");
+  await page.mouse.move(handleBounds.x + handleBounds.width / 2, handleBounds.y + handleBounds.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handleBounds.x + handleBounds.width / 2 + 30, handleBounds.y + handleBounds.height / 2 + 10);
+  await expect(alpha).toHaveClass(/dragging/u);
+  await expect(alpha).toHaveScreenshot("custom-drag-handle-active.png", { animations: "disabled" });
+  await page.mouse.up();
+  const handleTransformChanged = await alpha.evaluate((element) => (element as HTMLElement).style.transform) !== alphaTransformBefore;
+  expect(handleTransformChanged).toBe(true);
+  await expect(alpha).toHaveCSS("transform", "matrix(1, 0, 0, 1, 130, 130)");
+  await expect(beta).toHaveCSS("transform", "matrix(1, 0, 0, 1, 380, 130)");
+
+  const action = page.getByRole("button", { name: "Renderer action" });
+  const actionState = {
+    alphaStyle: await alpha.getAttribute("style"),
+    betaStyle: await beta.getAttribute("style"),
+    changeCount: await page.evaluate(() => globalThis.flowChanges?.length ?? -1),
+  };
+  await action.focus();
+  await expect(action).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(action).toHaveAttribute("data-click-count", "1");
+  await expect(action).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(action).toHaveAttribute("data-click-count", "2");
+  await expect(action).toBeFocused();
+  expect(await alpha.getAttribute("style")).toBe(actionState.alphaStyle);
+  expect(await beta.getAttribute("style")).toBe(actionState.betaStyle);
+  expect(await page.evaluate(() => globalThis.flowChanges?.length ?? -1)).toBe(actionState.changeCount);
+  await expect(alpha).toHaveAttribute("aria-pressed", "true");
+  await expect(alpha).not.toHaveClass(/dragging/u);
+  await page.evaluate(() => globalThis.flowController?.update({
+    nodes: [
+      { id: "a", label: "Alpha", position: { x: 130, y: 130 }, selected: true, type: "custom", data: { text: "Handle v2" } },
+      { id: "b", label: "Beta", position: { x: 380, y: 130 }, selected: true },
+      { id: "outside", label: "Outside", position: { x: 600, y: 120 } },
+    ], edges: [],
+  }));
+  await expect(handle).toHaveText("Handle v2");
+  await expect(alpha).toHaveAttribute("aria-pressed", "true");
+  await alpha.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(alpha).toHaveCSS("transform", "matrix(1, 0, 0, 1, 135, 130)");
+  await expect(beta).toHaveCSS("transform", "matrix(1, 0, 0, 1, 385, 130)");
+  expect(await page.evaluate(() => globalThis.flowChanges?.filter((change) => change.kind === "node-positions"))).toHaveLength(2);
+});
+
+for (const documentMode of ["uncontrolled", "controlled"] as const) {
+  test(`native renderer controls own keyboard input in ${documentMode} mode`, async ({ page }) => {
+    await reset(page);
+    await page.evaluate(async (mode) => {
+      const modulePath = "/src/public.ts";
+      const { mountFlow } = await import(modulePath);
+      const root = globalThis.document.querySelector<HTMLElement>("#app");
+      if (root === null) throw new Error("Missing host");
+      root.replaceChildren();
+      const controller = mountFlow(root, {
+        nodes: [{ id: "custom", label: "Custom", position: { x: 120, y: 120 }, selected: true, type: "interactive" }],
+        edges: [],
+      }, {
+        documentMode: mode,
+        nodeRenderers: {
+          interactive: (_node: unknown, content: HTMLElement) => {
+            const counts = { button: 0, link: 0 };
+            Reflect.set(globalThis, "nativeActivationCounts", counts);
+
+            const dragHandle = globalThis.document.createElement("div");
+            dragHandle.dataset.flowDragHandle = "";
+            const button = globalThis.document.createElement("button");
+            button.type = "button";
+            button.dataset.flowNoDrag = "";
+            button.setAttribute("aria-label", "Nested renderer action");
+            button.addEventListener("click", () => { counts.button += 1; });
+            dragHandle.append(button);
+
+            const link = globalThis.document.createElement("a");
+            link.href = "#native-renderer-action";
+            link.id = "native-renderer-action";
+            link.textContent = "Renderer link";
+            link.addEventListener("click", () => { counts.link += 1; });
+
+            const input = globalThis.document.createElement("input");
+            input.type = "text";
+            input.value = "abc";
+            input.setAttribute("aria-label", "Renderer input");
+            input.dataset.flowNoDrag = "";
+
+            const select = globalThis.document.createElement("select");
+            select.setAttribute("aria-label", "Renderer select");
+            select.dataset.flowNoDrag = "";
+            for (const value of ["first", "second"]) {
+              const option = globalThis.document.createElement("option");
+              option.value = value;
+              option.textContent = value;
+              select.append(option);
+            }
+
+            const textarea = globalThis.document.createElement("textarea");
+            textarea.value = "abc\ndef";
+            textarea.setAttribute("aria-label", "Renderer textarea");
+            textarea.dataset.flowNoDrag = "";
+
+            const editingHost = globalThis.document.createElement("div");
+            editingHost.contentEditable = "true";
+            editingHost.dataset.flowNoDrag = "";
+            const inheritedEditor = globalThis.document.createElement("span");
+            inheritedEditor.tabIndex = 0;
+            inheritedEditor.textContent = "editable";
+            inheritedEditor.setAttribute("aria-label", "Inherited editor");
+            editingHost.append(inheritedEditor);
+
+            content.append(dragHandle, link, input, select, textarea, editingHost);
+            return { update: () => undefined, destroy: () => undefined };
+          },
+        },
+        viewport: { mode: "uncontrolled", initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 } },
+      });
+      globalThis.flowController = controller;
+      globalThis.flowChanges = [];
+      Reflect.set(globalThis, "nativeKeyboardPrevented", [] as string[]);
+      globalThis.document.body.addEventListener("keydown", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement) || !event.defaultPrevented) return;
+        const control = target.closest<HTMLElement>(".flow-node-content [aria-label]");
+        if (control !== null) {
+          const prevented = Reflect.get(globalThis, "nativeKeyboardPrevented");
+          if (Array.isArray(prevented)) prevented.push(`${control.getAttribute("aria-label")}:${event.key}`);
+        }
+      });
+      controller.subscribe((change: FlowChange) => globalThis.flowChanges?.push(change));
+    }, documentMode);
+
+    const node = page.locator('.flow-node[data-node-id="custom"]');
+    const initialTransform = await node.evaluate((element) => (element as HTMLElement).style.transform);
+    const button = page.getByRole("button", { name: "Nested renderer action" });
+    await button.focus();
+    await expect(button).toBeFocused();
+    await page.keyboard.press("Enter");
+    expect(await page.evaluate(() => Reflect.get(globalThis, "nativeActivationCounts"))).toEqual({ button: 1, link: 0 });
+    await expect(button).toBeFocused();
+    await page.keyboard.press("Space");
+    expect(await page.evaluate(() => Reflect.get(globalThis, "nativeActivationCounts"))).toEqual({ button: 2, link: 0 });
+    await expect(button).toBeFocused();
+
+    const link = page.getByRole("link", { name: "Renderer link" });
+    await link.focus();
+    await page.keyboard.press("Enter");
+    expect(await page.evaluate(() => Reflect.get(globalThis, "nativeActivationCounts"))).toEqual({ button: 2, link: 1 });
+    await expect(link).toBeFocused();
+
+    const input = page.getByRole("textbox", { name: "Renderer input" });
+    await input.focus();
+    await page.keyboard.press("Home");
+    await page.keyboard.type("z");
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Escape");
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue("zabc");
+
+    const select = page.getByRole("combobox", { name: "Renderer select" });
+    await select.focus();
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Escape");
+    await expect(select).toBeFocused();
+    await expect(select).toHaveValue("first");
+
+    const textarea = page.getByRole("textbox", { name: "Renderer textarea" });
+    await textarea.focus();
+    await textarea.evaluate((element) => (element as HTMLTextAreaElement).setSelectionRange(7, 7));
+    await page.keyboard.press("ArrowUp");
+    await expect(textarea).toHaveJSProperty("selectionStart", 3);
+    await page.keyboard.type("z");
+    await expect(textarea).toHaveValue("abcz\ndef");
+    await page.keyboard.press("Escape");
+    await expect(textarea).toBeFocused();
+
+    const inheritedEditor = page.locator('[aria-label="Inherited editor"]');
+    await inheritedEditor.evaluate((element) => {
+      element.focus();
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      range.collapse(false);
+      const selection = document.getSelection();
+      if (selection === null) throw new Error("Missing text selection");
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+    expect(await inheritedEditor.evaluate((element) => (element as HTMLElement).isContentEditable)).toBe(true);
+    await page.keyboard.press("End");
+    await page.keyboard.type("!");
+    await page.keyboard.press("ArrowLeft");
+    const editingHost = page.locator('[contenteditable="true"]');
+    expect(await editingHost.evaluate((host) => host.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(inheritedEditor).toContainText("!");
+    expect(await page.evaluate(() => Reflect.get(globalThis, "nativeKeyboardPrevented"))).toEqual([]);
+
+    const initialWidth = await node.evaluate((element) => getComputedStyle(element).width);
+    const resizeButton = node.locator('.flow-node-resize-handle[data-direction="right"]');
+    await resizeButton.focus();
+    await page.keyboard.down("ArrowRight");
+    await expect(node).toHaveClass(/resizing/u);
+    await input.focus();
+    await page.keyboard.press("Escape");
+    await page.keyboard.up("ArrowRight");
+    await expect(node).not.toHaveClass(/resizing/u);
+    await expect.poll(() => node.evaluate((element) => getComputedStyle(element).width)).toBe(initialWidth);
+    expect(await page.evaluate(() => Reflect.get(globalThis, "nativeKeyboardPrevented"))).toEqual(["Renderer input:Escape"]);
+
+    await expect(node).toHaveAttribute("aria-pressed", "true");
+    expect(await node.evaluate((element) => (element as HTMLElement).style.transform)).toBe(initialTransform);
+    expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([]);
+  });
+}
+
 test("nested nodes move in absolute space and publish local positions", async ({ page }) => {
   await reset(page);
   await page.evaluate(async () => {

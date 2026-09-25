@@ -20,6 +20,12 @@ bun run check
 bunx ultracite doctor
 ```
 
+## Browser test servers
+
+Playwright starts a fresh Vite server for each suite and binds it to a test-only loopback port: vanilla uses `4176`, Vue uses `4177`, and Foldkit uses `4178`. Development servers keep their existing ports (`4173`, `4174`, and `4175`); for example, `bun run dev` still serves vanilla at `http://127.0.0.1:4173/`.
+
+Each test server uses strict port binding. If a test reports that its port is already in use, identify the process and stop only a process you own, or rerun after its owner releases that port. Do not change the test URL to reuse an existing server; the browser gate must exercise the checkout under test.
+
 `bun run check` runs both Ultracite checks. Use the write commands only when formatting or lint cleanup is the current task:
 
 ```sh

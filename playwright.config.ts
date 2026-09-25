@@ -5,12 +5,13 @@ export default defineConfig({
   testDir: "./apps/vanilla/e2e",
   testMatch: "**/*.e2e.ts",
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: "http://127.0.0.1:4176",
     viewport: { height: 640, width: 960 },
   },
   webServer: {
-    command: "OTEL_SDK_DISABLED=true bun run dev",
-    reuseExistingServer: true,
-    url: "http://127.0.0.1:4173",
+    command:
+      "OTEL_SDK_DISABLED=true bun run build:packages && OTEL_SDK_DISABLED=true bun run --cwd apps/vanilla dev -- --port 4176 --strictPort",
+    reuseExistingServer: false,
+    url: "http://127.0.0.1:4176",
   },
 });

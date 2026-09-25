@@ -6,6 +6,8 @@
 
 ## Status
 
+- **Execution:** IN PROGRESS — Plan 032 is accepted. Focused visual, keyboard, adapter-capability, and parity evidence is updated and all requested gates pass; independent review remains before completion.
+
 - **Priority:** P2; **Effort:** L; **Risk:** LOW; **Depends on:** 023, 025-028
 - **Category:** tests, docs; **Planned at:** `5e5d496`, 2026-09-24
 
@@ -15,10 +17,10 @@ The new interaction slices will add behavior faster than the six original adapte
 
 ## Current state
 
-- `packages/conformance/src/index.ts:12-54` defines action, fixture, snapshot, and adapter interfaces; `:54-116` contains six shared Flow scenarios. The vanilla, Vue, and Foldkit browser drivers each run them.
-- `research/fixtures/README.md:20-31` lists the Flow-only scenarios and two reference captures. It explicitly says no equivalent reference run for the six scenarios.
-- `apps/vanilla/e2e/canvas-ui.e2e.ts:26-38` has one canvas UI screenshot and role/name assertions. `apps/vanilla/e2e/advanced-gestures.e2e.ts:333-336` retains two native pointer `test.fixme` cases.
-- `docs/browser-and-accessibility.md:3-7` limits existing automation to Chromium roles/names/focus and says no Safari/Firefox matrix, screen-reader audit, or mobile touch suite. `research/PROGRESS.md:218-224` remains open for full visual, input, accessibility, property, lifecycle, and performance budgets.
+- `packages/conformance/src/index.ts:12-54` defines the shared adapter protocol and `:54-116` contains six scenarios; vanilla, Vue, and Foldkit run those same fixtures. Feature-specific vanilla cases remain outside that shared fixture contract.
+- `research/fixtures/README.md` now records per-adapter evidence and the two pinned transform captures. The custom drag-handle comparison is limited to unchanged/changed transform booleans; resize, panel, native capture, and the other shared scenarios remain unverified against reference output.
+- `apps/vanilla/e2e/advanced-gestures.e2e.ts` covers eight-direction pointer and keyboard resize with controlled acknowledgement, cancellation, nested geometry, culling, and derived UI. `graph-renderers.e2e.ts` covers custom drag-handle visuals and native renderer keyboard ownership. `canvas-ui.e2e.ts` covers six measured placements, two focused panel snapshots, focus/actions, identity restoration, and portals. Two native pointer cases remain `test.fixme`.
+- `docs/browser-and-accessibility.md` reports the Chromium role/name/focus/keyboard boundary and preserves the missing Safari/Firefox, screen-reader, and mobile-device coverage. The project-wide visual, input, accessibility, property, lifecycle, and performance checklist items remain open.
 
 ```ts
 // apps/vanilla/e2e/canvas-ui.e2e.ts:31-38
@@ -48,10 +50,10 @@ Parity means tested equivalence to the pinned reference (`CONTEXT.md:14-15`). Fl
 
 ## Test plan and done criteria
 
-- [ ] Stable focused visual and keyboard/a11y checks cover each new vanilla surface.
-- [ ] Shared scenarios remain equally strict on all three adapters; unsupported features are explicit in the capability matrix.
-- [ ] Every parity label has a direct comparison or remains intentionally different/unverified.
-- [ ] Full local gate passes; no unrelated snapshots or production files change.
+- [x] Stable focused visual and keyboard/a11y checks cover resize at two zooms, drag-handle idle/active state, two panel placements, all named resize controls, renderer key ownership, and panel/portal focus and actions.
+- [x] Shared scenarios remain equally strict on all three adapters; feature-specific evidence and unverified adapter boundaries are explicit in the capability matrix.
+- [x] Each parity label has a normalized comparison or remains unverified; the custom drag-handle claim is restricted to transform-change booleans.
+- [x] Focused/full gates and `git diff --check` pass; no unrelated snapshots or production changes are included in this plan's delta.
 
 ## STOP conditions
 

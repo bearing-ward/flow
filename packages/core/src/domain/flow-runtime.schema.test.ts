@@ -8,9 +8,14 @@ import {
   FlowInteractionSessionsSchema,
   ActiveNodeResizeSchema,
   NodeSizeChangeSchema,
+  NodeBoundsChangeSchema,
+  applyNodeBoundsChange,
+  NodeResizeCalculationInputSchema,
+  NodeResizeDirectionSchema,
   activateFlowInteraction,
   cancelAllFlowInteractions,
   cancelFlowInteraction,
+  calculateNodeResize,
   finishFlowInteraction,
   replaceFlowInteraction,
   startFlowInteraction,
@@ -48,7 +53,7 @@ describe("pointer interaction sessions", () => {
       decode({ kind: "pane-pan", pan: { pointerId: 5, pointerStart: { x: 0, y: 0 }, viewportStart: { x: 0, y: 0, zoom: 1 } } }),
       decode({ kind: "pinch", pinch: { firstPointerId: 6, secondPointerId: 7, firstStart: { x: 0, y: 0 }, secondStart: { x: 1, y: 1 }, viewportStart: { x: 0, y: 0, zoom: 1 } } }),
       decode({ kind: "selection", selection: { pointerId: 8, pointerStart: { x: 0, y: 0 }, flowStart: { x: 0, y: 0 } } }),
-      decode({ kind: "node-resize", resize: { nodeId: "n", pointerId: 9, pointerStart: { x: 10, y: 20 }, sizeStart: { width: 80, height: 40 } } }),
+      decode({ kind: "node-resize", resize: { direction: "bottom-right", nodeId: "n", positionStart: { x: 0, y: 0 }, pointerId: 9, pointerStart: { x: 10, y: 20 }, sizeStart: { width: 80, height: 40 } } }),
     ];
     expect(S.decodeSync(FlowInteractionSessionsSchema)(sessions)).toHaveLength(8);
     const invalid = Effect.runSync(Effect.exit(S.decodeUnknownEffect(FlowInteractionSessionsSchema)([
@@ -71,7 +76,9 @@ describe("pointer interaction sessions", () => {
     const started = startFlowInteraction([], pressed);
     expect(started.kind).toBe("started");
     if (started.kind !== "started") return;
-    expect(startFlowInteraction(started.sessions, pressed)).toMatchObject({ kind: "rejected", reason: "pointer-already-owned" });
+    expect(startFlowInteraction(started.sessions, pressed)).toEqual({
+      kind: "rejected", sessions: started.sessions, reason: "pointer-already-owned",
+    });
     const concurrentConnection = decode({ kind: "connection", connection: { pointerId: 14, source: "a", sourceHandle: "out" } });
     const concurrent = startFlowInteraction(started.sessions, concurrentConnection);
     expect(concurrent).toMatchObject({ kind: "started", sessions: [{ kind: "node-drag" }, { kind: "connection" }] });
@@ -89,18 +96,66 @@ describe("pointer interaction sessions", () => {
     const pinch = decode({ kind: "pinch", pinch: { firstPointerId: 12, secondPointerId: 13, firstStart: { x: 0, y: 0 }, secondStart: { x: 10, y: 0 }, viewportStart: { x: 0, y: 0, zoom: 1 } } });
     const panStarted = startFlowInteraction([], pan);
     if (panStarted.kind !== "started") throw new Error("pane pan should start");
-    expect(replaceFlowInteraction(panStarted.sessions, 12, pinch)).toMatchObject({ kind: "started", sessions: [pinch] });
-    expect(cancelAllFlowInteractions([pinch])).toMatchObject([{ kind: "cancelled", pointerIds: [12, 13], preview: "viewport" }]);
+    expect(replaceFlowInteraction(panStarted.sessions, 12, pinch)).toEqual({ kind: "started", sessions: [pinch], session: pinch });
+    expect(cancelAllFlowInteractions([pinch])).toEqual([
+      { kind: "cancelled", sessions: [], session: pinch, pointerIds: [12, 13], preview: "viewport", frame: undefined, semanticEvent: undefined },
+    ]);
 
-    const resize = decode({ kind: "node-resize", resize: { nodeId: "n", pointerId: 15, pointerStart: { x: 10, y: 20 }, sizeStart: { width: 80, height: 40 } } });
+    const resize = decode({ kind: "node-resize", resize: { direction: "bottom-right", nodeId: "n", positionStart: { x: 0, y: 0 }, pointerId: 15, pointerStart: { x: 10, y: 20 }, sizeStart: { width: 80, height: 40 } } });
     const resizeStarted = startFlowInteraction([], resize);
     if (resizeStarted.kind !== "started") throw new Error("node resize should start");
     expect(finishFlowInteraction(resizeStarted.sessions, 15)).toMatchObject({
-      kind: "finished", preview: "node-size", semanticEvent: "node-size", pointerIds: [15],
+      kind: "finished", preview: "node-bounds", semanticEvent: "node-bounds", pointerIds: [15],
     });
     expect(cancelFlowInteraction(resizeStarted.sessions, 15)).toMatchObject({
-      kind: "cancelled", preview: "node-size", semanticEvent: undefined,
+      kind: "cancelled", preview: "node-bounds", semanticEvent: undefined,
     });
+  });
+
+  it("cancels disjoint sessions and pinch pointer ownership with exact terminal outcomes", () => {
+    const drag = decode({ kind: "node-drag", phase: "active", drag: { nodeId: "n", pointerId: 21, pointerOffset: { x: 2, y: 3 } } });
+    const connection = decode({ kind: "connection", connection: { pointerId: 22, source: "a", sourceHandle: "out" } });
+    const dragStart = startFlowInteraction([], drag);
+    if (dragStart.kind !== "started") throw new Error("node drag should start");
+    const concurrent = startFlowInteraction(dragStart.sessions, connection);
+    if (concurrent.kind !== "started") throw new Error("disjoint connection should start");
+    expect(concurrent.sessions).toEqual([drag, connection]);
+
+    expect(cancelAllFlowInteractions(concurrent.sessions)).toEqual([
+      { kind: "cancelled", sessions: [connection], session: drag, pointerIds: [21], preview: "node", frame: undefined, semanticEvent: undefined },
+      { kind: "cancelled", sessions: [], session: connection, pointerIds: [22], preview: "connection", frame: "connection-autopan", semanticEvent: undefined },
+    ]);
+    expect(cancelAllFlowInteractions([])).toEqual([]);
+    expect(finishFlowInteraction([], 21)).toEqual({ kind: "unchanged", sessions: [] });
+    expect(cancelFlowInteraction([], 22)).toEqual({ kind: "unchanged", sessions: [] });
+
+    const pinch = decode({ kind: "pinch", pinch: { firstPointerId: 31, secondPointerId: 32, firstStart: { x: 0, y: 0 }, secondStart: { x: 20, y: 0 }, viewportStart: { x: 5, y: 6, zoom: 1 } } });
+    const pinchStart = startFlowInteraction([], pinch);
+    if (pinchStart.kind !== "started") throw new Error("pinch should start");
+    const onePointerCancelled = cancelFlowInteraction(pinchStart.sessions, 32);
+    expect(onePointerCancelled).toEqual({
+      kind: "cancelled", sessions: [], session: pinch, pointerIds: [31, 32], preview: "viewport", frame: undefined, semanticEvent: undefined,
+    });
+    expect(cancelFlowInteraction(onePointerCancelled.sessions, 31)).toEqual({ kind: "unchanged", sessions: [] });
+    expect(finishFlowInteraction(onePointerCancelled.sessions, 32)).toEqual({ kind: "unchanged", sessions: [] });
+  });
+});
+
+describe("atomic node bounds changes", () => {
+  const parentId = S.decodeSync(NodeIdSchema)("p");
+  const childId = S.decodeSync(NodeIdSchema)("c");
+  const unaffectedId = S.decodeSync(NodeIdSchema)("u");
+  const missingId = S.decodeSync(NodeIdSchema)("missing");
+  const doc: FlowDocument = { nodes: [{ id: parentId, label: "P", position: { x: 0, y: 0 }, size: { width: 100, height: 100 } }, { id: childId, label: "C", parentId, position: { x: 10, y: 20 } }, { id: unaffectedId, label: "U", position: { x: 9, y: 8 } }], edges: [] };
+  const change = { kind: "node-bounds" as const, nodeId: parentId, position: { x: 5, y: 6 }, size: { width: 80, height: 70 }, childPositions: [{ nodeId: childId, position: { x: 5, y: 14 } }] };
+  it("decodes and applies resized and compensated child positions atomically", () => {
+    expect(S.decodeUnknownSync(NodeBoundsChangeSchema)(change)).toEqual(change);
+    const result = applyNodeBoundsChange(doc, change)!;
+    expect(result.nodes).toEqual([{ ...doc.nodes[0], position: change.position, size: change.size }, { ...doc.nodes[1], position: { x: 5, y: 14 } }, doc.nodes[2]]);
+    expect(applyNodeBoundsChange(doc, { ...change, nodeId: missingId })).toBeUndefined();
+    expect(applyNodeBoundsChange(doc, { ...change, childPositions: [{ nodeId: missingId, position: { x: 0, y: 0 } }] })).toBeUndefined();
+    expect(() => S.decodeUnknownSync(NodeBoundsChangeSchema)({ ...change, childPositions: [...change.childPositions, ...change.childPositions] })).toThrow();
+    expect(S.decodeUnknownSync(NodeBoundsChangeSchema)(JSON.parse(JSON.stringify(change)))).toEqual(change);
   });
 });
 
@@ -116,6 +171,189 @@ describe("node resize contract", () => {
     expect(() => S.decodeUnknownSync(ActiveNodeResizeSchema)({ nodeId: "n", pointerId: 1, pointerStart: { x: 0, y: 0 }, sizeStart: { width: 0, height: 40 } })).toThrow();
     expect(() => S.decodeUnknownSync(NodeSizeChangeSchema)({ kind: "node-size", nodeId: "n", size: { width: 0, height: 40 } })).toThrow();
     expect(() => resizeNode(nodeId, { width: 80, height: 40 }, { x: Number.POSITIVE_INFINITY, y: 0 })).toThrow();
+  });
+
+  it("decodes the eight resize directions and calculates one atomic candidate", () => {
+    const directions = [
+      ["top", { x: 20, y: 45 }, { width: 100, height: 65 }],
+      ["right", { x: 20, y: 30 }, { width: 110, height: 80 }],
+      ["bottom", { x: 20, y: 30 }, { width: 100, height: 95 }],
+      ["left", { x: 30, y: 30 }, { width: 90, height: 80 }],
+      ["top-left", { x: 30, y: 45 }, { width: 90, height: 65 }],
+      ["top-right", { x: 20, y: 45 }, { width: 110, height: 65 }],
+      ["bottom-right", { x: 20, y: 30 }, { width: 110, height: 95 }],
+      ["bottom-left", { x: 30, y: 30 }, { width: 90, height: 95 }],
+    ] as const;
+
+    expect(directions.map(([direction]) => S.decodeUnknownSync(NodeResizeDirectionSchema)(direction))).toHaveLength(8);
+    for (const [direction, position, size] of directions) {
+      const result = calculateNodeResize({
+        direction,
+        positionStart: { x: 20, y: 30 },
+        sizeStart: { width: 100, height: 80 },
+        delta: { x: 10, y: 15 },
+        minimumSize: { width: 40, height: 24 },
+      });
+      expect(result).toMatchObject({ position, size });
+      expect(result.positionDelta).toStrictEqual({ x: position.x - 20, y: position.y - 30 });
+      expect(result.childrenPositionDelta).toStrictEqual({ x: 20 - position.x, y: 30 - position.y });
+    }
+  });
+
+  it("keeps the far edge fixed after crossing minimum size and returns inverse child movement", () => {
+    const result = calculateNodeResize({
+      direction: "top-left",
+      positionStart: { x: 20, y: 30 },
+      sizeStart: { width: 100, height: 80 },
+      delta: { x: 500, y: 500 },
+      minimumSize: { width: 40, height: 24 },
+    });
+    expect(result).toStrictEqual({
+      position: { x: 80, y: 86 },
+      size: { width: 40, height: 24 },
+      positionDelta: { x: 60, y: 56 },
+      childrenPositionDelta: { x: -60, y: -56 },
+      boundsIssues: [],
+    });
+    expect(result.position.x + result.size.width).toBe(120);
+    expect(result.position.y + result.size.height).toBe(110);
+  });
+
+  it("uses flow-space deltas, parent-local positions, bounds, and leaves input unchanged", () => {
+    const zoom = 2;
+    const screenDelta = { x: 40, y: 0 };
+    const flowDelta = { x: screenDelta.x / zoom, y: screenDelta.y / zoom };
+    const input = {
+      direction: "left" as const,
+      positionStart: { x: 20, y: 10 },
+      sizeStart: { width: 100, height: 50 },
+      delta: flowDelta,
+      minimumSize: { width: 40, height: 24 },
+      bounds: { minX: 0, minY: 0, maxX: 200, maxY: 100 },
+    };
+    const before = structuredClone(input);
+    expect(calculateNodeResize(input)).toStrictEqual({
+      position: { x: 40, y: 10 },
+      size: { width: 80, height: 50 },
+      positionDelta: { x: 20, y: 0 },
+      childrenPositionDelta: { x: -20, y: 0 },
+      boundsIssues: [],
+    });
+    expect(input).toStrictEqual(before);
+
+    const constrained = calculateNodeResize({
+      ...input,
+      positionStart: { x: 5, y: 10 },
+      delta: { x: -20, y: 0 },
+    });
+    expect(constrained.position).toStrictEqual({ x: 0, y: 10 });
+    expect(constrained.positionDelta).toStrictEqual({ x: -5, y: 0 });
+    expect(constrained.childrenPositionDelta).toStrictEqual({ x: 5, y: 0 });
+  });
+
+  it("rejects non-finite geometry and invalid sizes at the calculation boundary", () => {
+    const valid = {
+      direction: "bottom-right" as const,
+      positionStart: { x: 0, y: 0 },
+      sizeStart: { width: 80, height: 40 },
+      delta: { x: 0, y: 0 },
+      minimumSize: { width: 40, height: 24 },
+    };
+    expect(() => S.decodeUnknownSync(NodeResizeCalculationInputSchema)({ ...valid, delta: { x: Infinity, y: 0 } })).toThrow();
+    expect(() => calculateNodeResize({ ...valid, positionStart: { x: NaN, y: 0 } })).toThrow();
+    expect(() => calculateNodeResize({ ...valid, sizeStart: { width: Infinity, height: 40 } })).toThrow();
+    expect(() => calculateNodeResize({ ...valid, minimumSize: { width: 0, height: 24 } })).toThrow();
+    expect(() => calculateNodeResize({ ...valid, bounds: { minX: 0, minY: 0, maxX: -1, maxY: 10 } })).toThrow();
+    expect(calculateNodeResize(valid)).toMatchObject({
+      position: { x: 0, y: 0 },
+      size: { width: 80, height: 40 },
+      positionDelta: { x: 0, y: 0 },
+      childrenPositionDelta: { x: 0, y: 0 },
+      boundsIssues: [],
+    });
+  });
+
+  it("keeps right and bottom origins fixed while capping size at extent bounds", () => {
+    const common = {
+      positionStart: { x: 20, y: 10 },
+      sizeStart: { width: 100, height: 60 },
+      minimumSize: { width: 40, height: 24 },
+      bounds: { minX: 0, minY: 0, maxX: 150, maxY: 100 },
+    };
+    expect(calculateNodeResize({
+      ...common,
+      direction: "right",
+      delta: { x: 70, y: 0 },
+    })).toStrictEqual({
+      position: { x: 20, y: 10 },
+      size: { width: 130, height: 60 },
+      positionDelta: { x: 0, y: 0 },
+      childrenPositionDelta: { x: 0, y: 0 },
+      boundsIssues: [],
+    });
+    expect(calculateNodeResize({
+      ...common,
+      direction: "bottom",
+      delta: { x: 0, y: 70 },
+    })).toStrictEqual({
+      position: { x: 20, y: 10 },
+      size: { width: 100, height: 90 },
+      positionDelta: { x: 0, y: 0 },
+      childrenPositionDelta: { x: 0, y: 0 },
+      boundsIssues: [],
+    });
+  });
+
+  it("reports when a minimum size cannot fit without moving the stationary edge", () => {
+    const result = calculateNodeResize({
+      direction: "right",
+      positionStart: { x: 10, y: 10 },
+      sizeStart: { width: 40, height: 30 },
+      delta: { x: 50, y: 0 },
+      minimumSize: { width: 40, height: 24 },
+      bounds: { minX: 0, minY: 0, maxX: 45, maxY: 60 },
+    });
+    expect(result).toStrictEqual({
+      position: { x: 10, y: 10 },
+      size: { width: 40, height: 30 },
+      positionDelta: { x: 0, y: 0 },
+      childrenPositionDelta: { x: 0, y: 0 },
+      boundsIssues: ["minimum-exceeds-bounds"],
+    });
+  });
+
+  it("reports an out-of-bounds stationary edge without shifting it", () => {
+    expect(calculateNodeResize({
+      direction: "left",
+      positionStart: { x: 80, y: 10 },
+      sizeStart: { width: 40, height: 30 },
+      delta: { x: -10, y: 0 },
+      minimumSize: { width: 24, height: 24 },
+      bounds: { minX: 0, minY: 0, maxX: 100, maxY: 60 },
+    })).toStrictEqual({
+      position: { x: 70, y: 10 },
+      size: { width: 50, height: 30 },
+      positionDelta: { x: -10, y: 0 },
+      childrenPositionDelta: { x: 10, y: 0 },
+      boundsIssues: ["stationary-edge-outside-bounds"],
+    });
+  });
+
+  it("reports an overflowing unresized axis without moving it", () => {
+    expect(calculateNodeResize({
+      direction: "right",
+      positionStart: { x: 10, y: 70 },
+      sizeStart: { width: 40, height: 40 },
+      delta: { x: 10, y: 0 },
+      minimumSize: { width: 24, height: 24 },
+      bounds: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    })).toStrictEqual({
+      position: { x: 10, y: 70 },
+      size: { width: 50, height: 40 },
+      positionDelta: { x: 0, y: 0 },
+      childrenPositionDelta: { x: 0, y: 0 },
+      boundsIssues: ["unresized-axis-outside-bounds"],
+    });
   });
 });
 

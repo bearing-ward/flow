@@ -162,3 +162,292 @@ test("canvas UI stays optional and caller panel survives keyed document updates"
     hidden: "", transform: "rotate(3deg)", transformPriority: "", kind: "caller-node-kind", id: "caller-node-id",
   }));
 });
+
+test("placed panels preserve identity, focus, actions, and exact restoration", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app")!;
+    const placements = ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as const;
+    const panels = placements.map((placement, index) => {
+      const element = document.createElement("aside");
+      element.id = `panel-${index}`;
+      element.className = `caller-panel-${index}`;
+      element.style.color = "rgb(1, 2, 3)";
+      element.hidden = index === 5;
+      if (index === 0) {
+        const input = document.createElement("input");
+        input.value = "panel focus";
+        element.append(input);
+      } else {
+        const button = document.createElement("button");
+        button.textContent = `Action ${index}`;
+        button.onclick = () => { element.dataset.clicked = "true"; };
+        element.append(button);
+      }
+      document.body.append(element);
+      return { id: `panel-${index}`, element, placement };
+    });
+    const input = panels[0]!.element.querySelector("input")!;
+    input.focus();
+    input.setSelectionRange(1, 5);
+    const controller = mountFlow(root, { nodes: [
+      { id: "n", label: "Node", position: { x: 20, y: 30 } },
+      { id: "far", label: "Far", position: { x: 2200, y: 700 } },
+    ], edges: [] }, {
+      documentMode: "uncontrolled", panels, ui: { controls: true }, renderOnlyVisible: true,
+      viewport: { initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 }, mode: "uncontrolled" },
+    });
+    globalThis.flowController = controller;
+    Reflect.set(globalThis, "panelRefs", panels);
+    globalThis.flowChanges = [];
+    controller.subscribe((change: import("@flow/core").FlowChange) => globalThis.flowChanges?.push(change));
+  });
+  await expect(page.locator(".flow-panel-slot")).toHaveCount(6);
+  await expect(page.locator(".flow-panel-slot[data-placement='top-left'] #panel-0")).toBeVisible();
+  await expect(page.locator(".flow-panel-slot[data-placement='top-center'] #panel-1")).toBeVisible();
+  await expect(page.locator(".flow-panel-slot[data-placement='top-right'] #panel-2")).toBeVisible();
+  await expect(page.locator(".flow-panel-slot[data-placement='bottom-left'] #panel-3")).toBeVisible();
+  await expect(page.locator(".flow-panel-slot[data-placement='bottom-center'] #panel-4")).toBeVisible();
+  await expect(page.locator(".flow-panel-slot[data-placement='bottom-right'] #panel-5")).toBeHidden();
+  await expect(page.locator("#panel-0 input")).toBeFocused();
+  expect(await page.locator("#panel-0 input").evaluate((element) => ({ start: (element as HTMLInputElement).selectionStart, end: (element as HTMLInputElement).selectionEnd }))).toEqual({ start: 1, end: 5 });
+  await expect(page.locator(".flow-canvas-ui")).toHaveScreenshot("panels-six-positions.png", { animations: "disabled" });
+  const originalPanel = await page.locator("#panel-0").elementHandle();
+  if (originalPanel === null) throw new Error("Expected the caller panel to mount");
+  await page.evaluate(() => {
+    globalThis.flowController?.update({ nodes: [
+      { id: "n", label: "Renamed", position: { x: 20, y: 30 } },
+      { id: "far", label: "Far", position: { x: 2200, y: 700 } },
+    ], edges: [] });
+    globalThis.flowController?.updateViewport({ x: -2200, y: -700, zoom: 1 });
+  });
+  await expect(page.getByRole("button", { name: "Renamed" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Far" })).toBeVisible();
+  await expect(page.locator("#panel-0 input")).toBeFocused();
+  expect(await page.locator("#panel-0 input").evaluate((element) => ({ start: (element as HTMLInputElement).selectionStart, end: (element as HTMLInputElement).selectionEnd }))).toEqual({ start: 1, end: 5 });
+  await expect(page.locator("#panel-0")).toBeVisible();
+  const placementAndIdentity = await page.evaluate((original) => ({
+    sameElement: document.querySelector("#panel-0") === original,
+    placement: document.querySelector("#panel-0")?.parentElement?.getAttribute("data-placement"),
+  }), originalPanel);
+  expect(placementAndIdentity).toEqual({ sameElement: true, placement: "top-left" });
+  const beforeNode = await page.locator('[data-node-id="far"]').evaluate((element) => (element as HTMLElement).style.transform);
+  const beforeViewport = await page.getByTestId("flow-viewport").getAttribute("data-x");
+  const panelAction = page.getByRole("button", { name: "Action 2" });
+  await panelAction.focus();
+  await expect(panelAction).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#panel-2")).toHaveAttribute("data-clicked", "true");
+  await expect(page.getByTestId("flow-viewport")).toHaveAttribute("data-x", beforeViewport ?? "0");
+  expect(await page.locator('[data-node-id="far"]').evaluate((element) => (element as HTMLElement).style.transform)).toBe(beforeNode);
+  expect(await page.evaluate(() => globalThis.flowChanges?.length ?? -1)).toBe(0);
+  await page.locator("#panel-0 input").evaluate((element) => {
+    (element as HTMLInputElement).focus();
+    (element as HTMLInputElement).setSelectionRange(2, 6);
+  });
+  await page.evaluate(() => globalThis.flowController?.destroy());
+  await expect(page.locator("#panel-0 input")).toBeFocused();
+  expect(await page.locator("#panel-0 input").evaluate((element) => ({ start: (element as HTMLInputElement).selectionStart, end: (element as HTMLInputElement).selectionEnd }))).toEqual({ start: 2, end: 6 });
+  const restored = await page.evaluate(() => (Reflect.get(globalThis, "panelRefs") as Array<{ element: HTMLElement }> | undefined)?.map(({ element }) => ({
+    parent: element.parentElement?.tagName,
+    className: element.getAttribute("class"),
+    style: element.getAttribute("style"),
+    hidden: element.getAttribute("hidden"),
+  })));
+  const restoredOrder = await page.evaluate(() => (Reflect.get(globalThis, "panelRefs") as Array<{ element: HTMLElement }> | undefined)?.map(({ element }) => Array.from(document.body.children).indexOf(element)));
+  expect(restoredOrder?.every((index, offset) => index === restoredOrder[0]! + offset)).toBe(true);
+  expect(restored).toEqual(Array.from({ length: 6 }, (_, index) => ({
+    parent: "BODY", className: `caller-panel-${index}`, style: "color: rgb(1, 2, 3);", hidden: index === 5 ? "" : null,
+  })));
+  await expect(page.locator(".flow-canvas-ui")).toHaveCount(0);
+});
+
+test("overlay option validation rejects duplicate ids, elements, and legacy panel conflict", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  const messages = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app")!;
+    const base = { documentMode: "uncontrolled" as const, viewport: { initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 }, mode: "uncontrolled" as const } };
+    const element = document.createElement("aside");
+    const attempt = (options: Record<string, unknown>): string => {
+      try { mountFlow(root, { nodes: [], edges: [] }, { ...base, ...options } as never); return "mounted"; }
+      catch (error) { return error instanceof Error ? `${error.name}:${error.message}` : String(error); }
+    };
+    return [
+      attempt({ panels: [{ id: "dup", element, placement: "top-left" }, { id: "dup", element: document.createElement("aside"), placement: "top-right" }] }),
+      attempt({ panels: [{ id: "one", element, placement: "top-left" }, { id: "two", element, placement: "bottom-right" }] }),
+      attempt({ panel: element, panels: [{ id: "one", element: document.createElement("aside"), placement: "top-left" }] }),
+    ];
+  });
+  expect(messages.every((message) => message.startsWith("CanvasUIOptionsError:"))).toBe(true);
+  await expect(page.locator(".flow-canvas")).toHaveCount(0);
+});
+
+test("overlay portals are host-local and disappear from the canvas on destroy", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const firstRoot = document.createElement("div");
+    firstRoot.id = "portal-test-first-root";
+    const secondRoot = document.createElement("div");
+    secondRoot.id = "portal-test-second-root";
+    document.body.append(firstRoot, secondRoot);
+    const options = { documentMode: "uncontrolled" as const, viewport: { initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 }, mode: "uncontrolled" as const } };
+    const first = mountFlow(firstRoot, { nodes: [], edges: [] }, options);
+    const second = mountFlow(secondRoot, { nodes: [], edges: [] }, options);
+    const firstContent = document.createElement("button");
+    firstContent.textContent = "Portal action";
+    firstContent.setAttribute("aria-label", "Portal action");
+    firstContent.onclick = () => { firstContent.dataset.activated = "true"; };
+    first.overlayPortal.append(firstContent);
+    const separate = first.overlayPortal !== second.overlayPortal && first.overlayPortal.parentElement !== second.overlayPortal.parentElement;
+    const attachedBefore = first.overlayPortal.isConnected;
+    globalThis.flowController = first;
+    Reflect.set(globalThis, "secondPortalController", second);
+    return { separate, attachedBefore, retainedCallerNode: firstContent.parentElement === first.overlayPortal };
+  });
+  expect(result).toEqual({ separate: true, attachedBefore: true, retainedCallerNode: true });
+  const portalAction = page.getByRole("button", { name: "Portal action" });
+  await portalAction.focus();
+  await expect(portalAction).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(portalAction).toHaveAttribute("data-activated", "true");
+  const teardown = await page.evaluate(() => {
+    const controller = globalThis.flowController;
+    controller?.destroy();
+    const second = Reflect.get(globalThis, "secondPortalController");
+    if (typeof second === "object" && second !== null && "destroy" in second && typeof second.destroy === "function") second.destroy();
+    const removedFromFirstRoot = document.querySelector("#portal-test-first-root .flow-canvas-ui") === null;
+    const portalDetached = controller === undefined || !controller.overlayPortal.isConnected;
+    document.querySelector("#portal-test-first-root")?.remove();
+    document.querySelector("#portal-test-second-root")?.remove();
+    return { removedFromFirstRoot, portalDetached };
+  });
+  expect(teardown).toEqual({ removedFromFirstRoot: true, portalDetached: true });
+});
+
+test("placed panels render at all six canvas-relative positions without overlap", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing app root");
+    const placements = ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as const;
+    const panels = placements.map((placement) => {
+      const element = document.createElement("aside");
+      element.textContent = placement;
+      element.style.width = "100px";
+      element.style.height = "40px";
+      element.style.boxSizing = "border-box";
+      element.style.background = "#e2e8f0";
+      document.body.append(element);
+      return { id: placement, element, placement };
+    });
+    globalThis.flowController = mountFlow(root, { nodes: [], edges: [] }, {
+      documentMode: "uncontrolled",
+      panels,
+      viewport: { initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 }, mode: "uncontrolled" },
+    });
+  });
+
+  const canvas = await page.getByTestId("flow-canvas").boundingBox();
+  if (canvas === null) throw new Error("Missing canvas bounds");
+  const panelBounds = await page.locator(".flow-panel-slot").evaluateAll((slots) => slots.map((slot) => {
+    const rect = slot.getBoundingClientRect();
+    return {
+      placement: slot.getAttribute("data-placement"),
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      centerX: rect.left + rect.width / 2,
+    };
+  }));
+  expect(panelBounds).toHaveLength(6);
+  const inset = 12;
+  const tolerance = 1;
+  const expectNear = (actual: number, expected: number): void => {
+    expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance);
+  };
+  const byPlacement = new Map(panelBounds.map((bounds) => [bounds.placement, bounds]));
+  for (const placement of ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as const) {
+    const bounds = byPlacement.get(placement);
+    if (bounds === undefined) throw new Error(`Missing panel placement ${placement}`);
+    if (placement.startsWith("top-")) expectNear(bounds.top, canvas.y + inset);
+    else expectNear(bounds.bottom, canvas.y + canvas.height - inset);
+    if (placement.endsWith("left")) expectNear(bounds.left, canvas.x + inset);
+    else if (placement.endsWith("right")) expectNear(bounds.right, canvas.x + canvas.width - inset);
+    else expectNear(bounds.centerX, canvas.x + canvas.width / 2);
+  }
+  for (let first = 0; first < panelBounds.length; first += 1) {
+    for (let second = first + 1; second < panelBounds.length; second += 1) {
+      const a = panelBounds[first];
+      const b = panelBounds[second];
+      if (a === undefined || b === undefined) throw new Error("Missing measured panel bounds");
+      const overlaps = a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      expect(overlaps, `${a.placement} and ${b.placement} should not overlap`).toBe(false);
+    }
+  }
+  await expect(page.locator(".flow-panel-slot[data-placement='top-left']")).toHaveScreenshot("placed-panel-top-left.png", { animations: "disabled" });
+  await expect(page.locator(".flow-panel-slot[data-placement='bottom-right']")).toHaveScreenshot("placed-panel-bottom-right.png", { animations: "disabled" });
+});
+
+test("panels originally inside the mount root restore their element order after destroy", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => globalThis.dispatchEvent(new Event("beforeunload")));
+  const result = await page.evaluate(async () => {
+    const modulePath = "/src/public.ts";
+    const { mountFlow } = await import(modulePath);
+    const root = document.querySelector<HTMLElement>("#app");
+    if (root === null) throw new Error("Missing app root");
+    const before = document.createElement("aside");
+    before.id = "root-panel-before";
+    const input = document.createElement("input");
+    input.value = "root panel";
+    before.append(input);
+    const after = document.createElement("aside");
+    after.id = "root-panel-after";
+    after.textContent = "After";
+    root.append(before, after);
+    input.focus();
+    input.setSelectionRange(2, 7);
+    const controller = mountFlow(root, { nodes: [], edges: [] }, {
+      documentMode: "uncontrolled",
+      panels: [
+        { id: "before", element: before, placement: "top-left" },
+        { id: "after", element: after, placement: "bottom-right" },
+      ],
+      viewport: { initial: { x: 0, y: 0, zoom: 1 }, limits: { minZoom: 0.5, maxZoom: 2 }, mode: "uncontrolled" },
+    });
+    const mountedOrder = [...root.children].map((element) => element.className);
+    controller.destroy();
+    return {
+      mountedOrder,
+      restoredOrder: [...root.children].map((element) => element.id),
+      sameFirst: root.children[0] === before,
+      sameSecond: root.children[1] === after,
+      firstParentIsRoot: before.parentElement === root,
+      secondParentIsRoot: after.parentElement === root,
+      focused: document.activeElement === input,
+      selection: { start: input.selectionStart, end: input.selectionEnd },
+    };
+  });
+  expect(result).toEqual({
+    mountedOrder: ["flow-canvas"],
+    restoredOrder: ["root-panel-before", "root-panel-after"],
+    sameFirst: true,
+    sameSecond: true,
+    firstParentIsRoot: true,
+    secondParentIsRoot: true,
+    focused: true,
+    selection: { start: 2, end: 7 },
+  });
+});
