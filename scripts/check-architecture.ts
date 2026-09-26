@@ -39,6 +39,21 @@ const fixtureChecks = (): readonly string[] => {
     },
     {
       expected: 'fail',
+      path: 'apps/vue/src/direct-adapter-source.ts',
+      text: 'import "../../../packages/vue/src/flow-canvas.ts";',
+    },
+    {
+      expected: 'fail',
+      path: 'packages/vue/src/forbidden-app-import.ts',
+      text: 'import "../../../apps/vue/src/main.ts";',
+    },
+    {
+      expected: 'pass',
+      path: 'apps/vue/src/public-adapter-import.ts',
+      text: 'import { FlowCanvas } from "@flow/vue";\nexport { FlowCanvas };',
+    },
+    {
+      expected: 'fail',
       path: 'packages/core/src/domain/forbidden-browser.ts',
       text: 'export const title = window.document.title;',
     },

@@ -6,6 +6,7 @@ import {
   FitViewNodeDimensionsSchema,
   PanExtentSchema,
   NodeExtentSchema,
+  NodeResizeDirectionSchema,
   SnapGridSchema,
   ConnectionRadiusSchema,
   SelectionModeSchema,
@@ -185,7 +186,7 @@ const canvasPanelPlacements = [
 const isCanvasPanelPlacement = (
   value: unknown
 ): value is CanvasPanelPlacement =>
-  S.is(S.Literal(...canvasPanelPlacements))(value)
+  S.is(S.Literals(canvasPanelPlacements))(value)
 
 const validateCanvasPanelOptions = (
   panel: FlowMountOptionsInput['panel'],

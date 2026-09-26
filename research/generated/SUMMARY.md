@@ -4,7 +4,7 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project.
 
-Current milestone: the core validates nested graph documents, provides graph queries and geometry, and saves declared fields in a version-1 envelope. The vanilla host includes custom renderers, node and edge interactions, eight-direction pointer and keyboard resizing, custom drag handles, six-position caller panels, overlay portals, viewport controls, and reusable canvas UI. A JavaScript facade and packed consumer check are in place. Foldkit and Vue first-slice hosts pass the six shared adapter scenarios, but feature-specific vanilla checks do not establish matching capabilities in those adapters. Local CI configuration and a release dry run exist; packages remain private and unpublished. The six shared scenarios and two pinned interaction captures do not establish full xyflow parity. Open items below include complete resize and native multi-pointer coverage, broader visual and accessibility checks, property tests, performance budgets, and release work.
+Current milestone: the core validates nested graph documents, provides graph queries and geometry, and saves declared fields in a version-1 envelope. The vanilla host includes custom renderers, node and edge interactions, eight-direction pointer and keyboard resizing, custom drag handles, six-position caller panels, overlay portals, viewport controls, and reusable canvas UI. A JavaScript facade and packed consumer check are in place. Vue and Foldkit pass eight shared Flow adapter scenarios, including three-level parent-relative positions after a controlled parent update and inherited hidden state for descendants and incident edges. Feature-specific vanilla checks do not establish matching capabilities in those adapters. Local CI configuration and a release dry run exist; packages remain private and unpublished. The eight shared scenarios and three pinned interaction captures do not establish full xyflow parity; one left-edge resize case with a direct child now has matching normalized parent bounds and child positions. Open items include broader resize directions and cancellation, native multi-pointer coverage, broader visual and accessibility checks, property tests, performance budgets, and release work.
 
 ### Project foundation
 
@@ -221,10 +221,12 @@ Current milestone: the core validates nested graph documents, provides graph que
 - [ ] Add pointer, touch, wheel, and keyboard interaction tests
 - [x] Check edge roles, names, focus, keyboard actions, and hit targets in a browser
 - [ ] Run a broader accessibility audit
-- [ ] Add property tests for graph operations and coordinate conversion
+- [x] Add property tests for graph operations and coordinate conversion
 - [ ] Add invalid-state and lifecycle-cleanup tests
 - [ ] Add large-graph performance tests and budgets
 - [x] Verify installation from packed packages in a clean consumer
+
+The focused browser performance benchmark runs in Chromium and reports 250-, 1,000-, and 4,000-node controller updates plus single-node drag frames. Two runs show 1,000-node / 125-edge p95 values of 430.3–499 ms and 500-edge p95 values of 431.9–602.1 ms; the 4,000-node case uses viewport culling and one un-warmed sample because 4,000-node browser reconciliation without viewport culling exceeded three minutes locally. The benchmark asserts deterministic minimap subtree mutation behavior, but does not set a latency threshold. Keep this item open until repeated target-hardware samples establish a stable large-graph budget.
 
 The current feature evidence includes focused Chromium screenshots for resize and custom drag handles, measured panel-placement tests, and keyboard/focus checks for resize, renderer controls, and panels. The broader visual, input, and accessibility checklist items remain open because they cover the whole project, additional browser/device environments, or manual screen-reader review. Native concurrent-pointer and two-contact pinch cases are still skipped in the available Playwright environment.
 

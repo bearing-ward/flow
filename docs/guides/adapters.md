@@ -8,7 +8,7 @@ Use `mountFlow` for synchronous acquisition or `createFlow` for Promise-based ac
 
 ## Vue
 
-`FlowCanvas` owns Vue watchers and DOM lifetime. It accepts controlled document, node, edge, and viewport bindings, and exposes typed node and edge component slots. The [Vue demo](../../apps/vue/src/main.ts) and [shared conformance test](../../apps/vue/e2e/shared-conformance.e2e.ts) exercise mount, update, event acknowledgement, and unmount behavior.
+`@flow/vue` provides `FlowCanvas`, `useFlow`, the editor injection key, and the adapter stylesheet. It accepts controlled document, node, edge, and viewport bindings and exposes typed node and edge component slots. The [Vue demo](../../apps/vue/src/main.ts) imports that package; the [shared conformance test](../../apps/vue/e2e/shared-conformance.e2e.ts) exercises mount, update, event acknowledgement, and unmount behavior.
 
 ## Foldkit
 

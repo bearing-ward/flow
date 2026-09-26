@@ -67,8 +67,8 @@ test('optional canvas controls, minimap, background, and zoom affordances', asyn
   const initial = await page
     .getByTestId('flow-viewport')
     .evaluate((element) => ({
-      x: Number(element.dataset.x),
-      y: Number(element.dataset.y),
+      x: Number(element.getAttribute('data-x')),
+      y: Number(element.getAttribute('data-y')),
       zoom: Number(element.dataset.zoom),
     }))
 
@@ -142,8 +142,8 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
   const beforeViewport = await page
     .getByTestId('flow-viewport')
     .evaluate((element) => ({
-      x: Number(element.dataset.x),
-      y: Number(element.dataset.y),
+      x: Number(element.getAttribute('data-x')),
+      y: Number(element.getAttribute('data-y')),
     }))
 
   const box = await node.boundingBox()
@@ -162,10 +162,10 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
   await page.mouse.up()
 
   await expect
-    .poll(() => page.getByTestId('flow-viewport').dataset.x)
+    .poll(() => page.getByTestId('flow-viewport').getAttribute('data-x'))
     .not.toBe(String(beforeViewport.x))
   await expect
-    .poll(() => page.getByTestId('flow-viewport').dataset.y)
+    .poll(() => page.getByTestId('flow-viewport').getAttribute('data-y'))
     .not.toBe(String(beforeViewport.y))
   await expect(node).toHaveAttribute('aria-pressed', beforeSelection ?? 'false')
   await expect

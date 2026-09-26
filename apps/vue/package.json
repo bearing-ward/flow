@@ -1,14 +1,17 @@
 {
-  "name": "@flow/vue",
+  "name": "@flow/vue-demo",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 4174",
-    "build": "vite build"
+    "dev": "bun run --cwd ../.. build:vue:packages && vite --host 127.0.0.1 --port 4174",
+    "dev:conformance": "bun run --cwd ../.. build:vue:packages && vite --host 127.0.0.1 --port 4177 --strictPort",
+    "build": "bun run --cwd ../.. build:vue:packages && vite build"
   },
   "dependencies": {
     "@flow/core": "workspace:*",
+    "@flow/vue": "workspace:*",
+    "effect": "4.0.0-rc.116",
     "vue": "3.5.43"
   },
   "devDependencies": {

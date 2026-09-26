@@ -1,0 +1,27 @@
+{
+  "name": "@flow/vue",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "types": "./dist/public.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "scripts": {
+    "build": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external vue --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json"
+  },
+  "dependencies": {
+    "@flow/core": "workspace:*",
+    "effect": "4.0.0-rc.116"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.43"
+  }
+}

@@ -10,4 +10,4 @@ For custom node content, add `data-flow-drag-handle` to a descendant when only a
 
 Custom edge renderers provide path geometry from measured endpoints. The renderer should not reimplement connection validation or mutate the graph directly. Dispatch a Flow command or publish a semantic change through the adapter contract instead.
 
-For Vue, use the typed component slots shown in [`apps/vue/src/FlowCanvas.ts`](../../apps/vue/src/FlowCanvas.ts); the [Vue conformance suite](../../apps/vue/e2e/shared-conformance.e2e.ts) checks the browser-facing contract.
+For Vue, use the typed component slots on [`FlowCanvas`](../../packages/vue/src/flow-canvas.ts); the [Vue conformance suite](../../apps/vue/e2e/shared-conformance.e2e.ts) checks the browser-facing contract through `@flow/vue`.

@@ -9,8 +9,7 @@ export default defineConfig({
     viewport: { width: 960, height: 640 },
   },
   webServer: {
-    command:
-      'bun run --cwd ../.. build:packages && bun run dev -- --port 4177 --strictPort',
+    command: 'bun run dev:conformance',
     reuseExistingServer: false,
     url: 'http://127.0.0.1:4177',
   },

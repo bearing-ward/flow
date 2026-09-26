@@ -51,9 +51,11 @@ The DOM lookup is keyed by `NodeId`. Reconciliation creates resources for new id
 
 ## Vue adapter boundary
 
-`apps/vue` owns Vue components, the editor injection key, reactive bindings, DOM rendering, pointer listeners, and resize-observer lifetime. Each `FlowCanvas` provides one editor instance to descendants; `useFlow` reads only that instance. Document and viewport ownership modes are explicit and independent. Controlled changes emit typed update events for the caller to acknowledge; uncontrolled changes update adapter-owned state. Node wrappers use schema node IDs as Vue keys. The adapter uses core document, change, command, connection-validation, and viewport contracts and does not mount the vanilla renderer.
+`packages/vue` owns the reusable Vue component, editor injection key, composable, reactive bindings, DOM rendering, pointer listeners, resize-observer lifetime, and adapter stylesheet. It depends on `@flow/core` and declares Vue as a peer. `FlowCanvas` provides one editor instance to descendants; `useFlow` reads only that instance. Document and viewport ownership modes are explicit and independent. Controlled changes emit typed update events for the caller to acknowledge; uncontrolled changes update adapter-owned state. Node wrappers use schema node IDs as Vue keys. The adapter uses core document, change, command, connection-validation, and viewport contracts and does not mount the vanilla renderer.
 
-The adapter's shared browser fixtures exercise keyed replacement, nested absolute positioning, controlled drag acknowledgement, connection validation, cancellation, culling, and destruction. These fixtures establish the listed boundaries only; the Vue host does not claim full feature parity with vanilla.
+`apps/vue` is an example consumer. Its demo imports `FlowCanvas` from `@flow/vue`; its browser harness exercises the built workspace package through that public entry point. Application data and demo controls stay in the app.
+
+The adapter's shared browser fixtures exercise keyed replacement, nested absolute positioning, controlled drag acknowledgement, connection validation, cancellation, culling, and destruction. These fixtures establish the listed boundaries only; the Vue adapter does not claim full feature parity with vanilla.
 
 ## Foldkit adapter boundary
 

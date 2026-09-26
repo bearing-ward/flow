@@ -6,6 +6,7 @@ import type {
   Viewport,
   FlowDocumentSchema,
 } from '@flow/core'
+import { FlowCanvas, useFlow } from '@flow/vue'
 import { Effect } from 'effect'
 import {
   createApp,
@@ -19,9 +20,8 @@ import {
 import type { App, PropType } from 'vue'
 
 import type { ConformanceFixture } from '../../../packages/conformance/src/index.ts'
-import { FlowCanvas } from './flow-canvas.ts'
-import { useFlow } from './use-flow.ts'
 
+import '@flow/vue/style.css'
 import './style.css'
 
 interface TestApi {
@@ -291,10 +291,10 @@ const api: TestApi = {
 
     const results = {
       leftCount:
-        document.querySelector("[data-node-id='left-a'] [data-flow-count]")
+        document.querySelector<HTMLElement>("[data-node-id='left-a'] [data-flow-count]")
           ?.dataset.flowCount ?? null,
       rightCount:
-        document.querySelector("[data-node-id='right-a'] [data-flow-count]")
+        document.querySelector<HTMLElement>("[data-node-id='right-a'] [data-flow-count]")
           ?.dataset.flowCount ?? null,
       labelUpdated:
         document
@@ -304,7 +304,7 @@ const api: TestApi = {
         document.querySelector("[data-edge-id='left-edge'] [data-edge-label]")
           ?.textContent === 'Edge updated',
       identityPreserved:
-        document.querySelector("[data-node-id='left-a']")?.dataset.identity ===
+        document.querySelector<HTMLElement>("[data-node-id='left-a']")?.dataset.identity ===
         'left',
       mounted,
     }
@@ -457,7 +457,7 @@ const api: TestApi = {
     documentState.value = Effect.runSync(decodeFlowDocument(document))
   },
   splitModelSnapshot() {
-    const node = document.querySelector("[data-node-id='split-a']")
+    const node = document.querySelector<HTMLElement>("[data-node-id='split-a']")
 
     return {
       initialRendered: document.querySelectorAll('[data-node-id]').length === 2,

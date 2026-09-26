@@ -36,6 +36,38 @@ const getModuleSpecifier = (node: ts.Node): string | undefined => {
   return undefined
 }
 
+const importsApplicationSource = (specifier: string): boolean => {
+  const normalized = specifier.replaceAll('\\', '/')
+
+  return (
+    normalized.startsWith('apps/') ||
+    normalized.startsWith('@flow/vanilla') ||
+    normalized.startsWith('@flow/vue') ||
+    normalized.startsWith('@flow/foldkit') ||
+    /(?:^|\/)apps\//u.test(normalized)
+  )
+}
+
+const importsFrameworkAdapterSource = (specifier: string): boolean => {
+  const parts = specifier.replaceAll('\\', '/').split('/')
+  const flowIndex = parts.indexOf('@flow')
+  const packagesIndex = parts.indexOf('packages')
+
+  const aliasAdapter =
+    flowIndex !== -1 &&
+    parts[flowIndex + 2] === 'src' &&
+    parts[flowIndex + 1] !== 'core' &&
+    parts[flowIndex + 1] !== 'conformance'
+
+  const relativeAdapter =
+    packagesIndex !== -1 &&
+    parts[packagesIndex + 2] === 'src' &&
+    parts[packagesIndex + 1] !== 'core' &&
+    parts[packagesIndex + 1] !== 'conformance'
+
+  return aliasAdapter || relativeAdapter
+}
+
 const declaredNames = (source: ts.SourceFile): ReadonlySet<string> => {
   const names = new Set<string>()
 
@@ -127,26 +159,31 @@ export const findArchitectureViolations = (
     const line =
       parsed.getLineAndCharacterOfPosition(node.getStart(parsed)).line + 1
 
+    const normalizedSourcePath = source.path.replaceAll('\\', '/')
+
     const specifier = getModuleSpecifier(node)
 
     if (specifier !== undefined) {
       const normalized = specifier.replaceAll('\\', '/')
 
-      const coreSource = source.path
-        .replaceAll('\\', '/')
-        .startsWith('packages/core/src/')
+      const packageSource = normalizedSourcePath.startsWith('packages/')
+      const appSource = normalizedSourcePath.startsWith('apps/')
 
       const forbiddenAppImport =
-        coreSource &&
-        (normalized.startsWith('apps/') ||
-          normalized.startsWith('@flow/vanilla') ||
-          normalized.startsWith('@flow/vue') ||
-          normalized.startsWith('@flow/foldkit') ||
-          /(?:^|\/)apps\//u.test(normalized))
+        packageSource && importsApplicationSource(normalized)
 
       if (forbiddenAppImport) {
         violations.push(
           `${source.path}:${line} imports application code: ${specifier}`
+        )
+      }
+
+      const importsAdapterSource =
+        appSource && importsFrameworkAdapterSource(normalized)
+
+      if (importsAdapterSource) {
+        violations.push(
+          `${source.path}:${line} imports framework adapter source directly: ${specifier}`
         )
       }
 
@@ -164,7 +201,7 @@ export const findArchitectureViolations = (
     }
 
     if (
-      source.path.startsWith('packages/core/src/') &&
+      normalizedSourcePath.startsWith('packages/core/src/') &&
       ts.isIdentifier(node) &&
       browserGlobals.has(node.text) &&
       (isGlobalThisReference(node) || !bindings.has(node.text)) &&

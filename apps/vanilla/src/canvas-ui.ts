@@ -36,10 +36,24 @@ export interface CanvasUIPanel {
   readonly placement: CanvasPanelPlacement
 }
 
+type ParentContainer = Node & ParentNode
+
+type SiblingNode = Node & ChildNode
+
+const getParentContainer = (node: Node | null): ParentContainer | undefined =>
+  node instanceof Element ||
+  node instanceof Document ||
+  node instanceof DocumentFragment
+    ? node
+    : undefined
+
+const getSiblingNode = (node: Node | null): SiblingNode | null =>
+  node instanceof Element || node instanceof CharacterData ? node : null
+
 interface OwnedElementRestore {
   readonly element: HTMLElement
-  readonly parent: Node | undefined
-  readonly next: Node | null
+  readonly parent: ParentContainer | undefined
+  readonly next: SiblingNode | null
 }
 
 type PanelRestore = OwnedElementRestore & {
@@ -78,7 +92,7 @@ const restoreOwnedElements = (owned: readonly OwnedElementRestore[]): void => {
     restore.element.remove()
   }
 
-  const restoreGroups = new Map<Node, OwnedElementRestore[]>()
+  const restoreGroups = new Map<ParentContainer, OwnedElementRestore[]>()
 
   for (const restore of owned) {
     if (restore.parent === undefined) {
@@ -327,12 +341,12 @@ export const createCanvasUI = (
     element,
     parent:
       element === panel
-        ? (panelParent ?? element.parentNode ?? undefined)
-        : (element.parentNode ?? undefined),
+        ? (getParentContainer(panelParent ?? element.parentNode))
+        : (getParentContainer(element.parentNode)),
     next:
       element === panel
-        ? (panelNextSibling ?? element.nextSibling)
-        : element.nextSibling,
+        ? (getSiblingNode(panelNextSibling ?? element.nextSibling))
+        : getSiblingNode(element.nextSibling),
     classAttribute: element.getAttribute('class'),
     styleAttribute: element.getAttribute('style'),
     hiddenAttribute: element.getAttribute('hidden'),
@@ -386,14 +400,14 @@ export const createCanvasUI = (
     for (const [id, element] of Object.entries(items ?? {})) {
       toolbarRestores.push({
         element,
-        parent: element.parentNode ?? undefined,
-        next: element.nextSibling,
+        parent: getParentContainer(element.parentNode),
+        next: getSiblingNode(element.nextSibling),
         classAttribute: element.getAttribute('class'),
         hiddenAttribute: element.getAttribute('hidden'),
         transform: element.style.getPropertyValue('transform'),
         transformPriority: element.style.getPropertyPriority('transform'),
-        toolbarKind: element.dataset.toolbarKind,
-        toolbarId: element.dataset.toolbarId,
+        toolbarKind: element.dataset.toolbarKind ?? null,
+        toolbarId: element.dataset.toolbarId ?? null,
       })
       element.classList.add('flow-toolbar-container')
       element.dataset.toolbarKind = kind

@@ -23,7 +23,13 @@ import {
   shallowRef,
   watch,
 } from 'vue'
-import type { Component, PropType, SlotsType, VNode } from 'vue'
+import type {
+  Component,
+  ComponentPublicInstance,
+  PropType,
+  SlotsType,
+  VNode,
+} from 'vue'
 
 import { FlowEditorKey } from './use-flow.ts'
 import type { FlowEditor } from './use-flow.ts'
@@ -581,7 +587,7 @@ export const FlowCanvas = defineComponent({
       h(
         'div',
         {
-          ref: (element: HTMLElement | null) => {
+          ref: (element: Element | ComponentPublicInstance | null) => {
             if (element instanceof HTMLElement && canvas.value !== element) {
               if (canvas.value !== undefined) {
                 resizeObserver.unobserve(canvas.value)

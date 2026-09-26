@@ -1,10 +1,10 @@
 import { decodeFlowDocument } from '@flow/core'
 import type { FlowDocument } from '@flow/core'
+import { FlowCanvas } from '@flow/vue'
 import { Effect } from 'effect'
 import { createApp, defineComponent, h, ref } from 'vue'
 
-import { FlowCanvas } from './flow-canvas.ts'
-
+import '@flow/vue/style.css'
 import './style.css'
 
 const initial = Effect.runSync(
