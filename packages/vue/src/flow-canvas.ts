@@ -1,8 +1,15 @@
 import {
   applyNodePositionChange,
+  bezierEdgePath,
   createFlowGraph,
   decodeFlowDocument,
+  edgeAttachmentPosition,
   nextConnectionEdge,
+  resolveEdgeHandles,
+  simpleBezierEdgePath,
+  smoothStepEdgePath,
+  straightEdgePath,
+  stepEdgePath,
   validateFlowConnection,
 } from '@flow/core'
 import type {
@@ -10,7 +17,10 @@ import type {
   FlowCommand,
   FlowDocument,
   FlowEdge,
+  FlowEdgePath,
+  FlowHandle,
   FlowNode,
+  MeasuredHandle,
   Viewport,
 } from '@flow/core'
 import { Effect, Exit } from 'effect'
@@ -59,6 +69,68 @@ type Session = DragSession | ConnectionSession
 type NodeVisual = Component<{ readonly node: FlowNode }>
 
 type EdgeVisual = Component<{ readonly edge: FlowEdge }>
+
+const edgePath = (
+  path: FlowEdgePath | undefined,
+  source: { readonly x: number; readonly y: number },
+  target: { readonly x: number; readonly y: number },
+  sourceSide: FlowHandle['side'],
+  targetSide: FlowHandle['side']
+): string => {
+  const selectedPath = path ?? 'straight'
+
+  switch (selectedPath) {
+    case 'bezier': {
+      return bezierEdgePath(source, target, sourceSide, targetSide)
+    }
+
+    case 'simplebezier': {
+      return simpleBezierEdgePath(source, target, sourceSide, targetSide)
+    }
+
+    case 'smoothstep': {
+      return smoothStepEdgePath(source, target, sourceSide, targetSide)
+    }
+
+    case 'step': {
+      return stepEdgePath(source, target, sourceSide, targetSide)
+    }
+
+    case 'straight': {
+      return straightEdgePath(source, target)
+    }
+
+    default: {
+      const exhaustive: never = selectedPath
+
+      return exhaustive
+    }
+  }
+}
+
+const renderDefaultEdgePath = (
+  edge: FlowEdge,
+  sourcePosition: { readonly x: number; readonly y: number },
+  targetPosition: { readonly x: number; readonly y: number },
+  sourceHandle: FlowHandle,
+  targetHandle: FlowHandle,
+  sourceMeasured: MeasuredHandle,
+  targetMeasured: MeasuredHandle
+): VNode =>
+  h('path', {
+    class: 'flow-vue-edge-path',
+    'data-testid': 'flow-edge-path',
+    d: edgePath(
+      edge.path,
+      edgeAttachmentPosition(sourcePosition, sourceHandle, sourceMeasured),
+      edgeAttachmentPosition(targetPosition, targetHandle, targetMeasured),
+      sourceHandle.side,
+      targetHandle.side
+    ),
+    fill: 'none',
+    stroke: edge.stroke ?? '#64748b',
+    'stroke-width': edge.strokeWidth ?? 1.5,
+  })
 
 // SAFETY: DefaultNode receives FlowNode values created from the decoded graph.
 const DefaultNode = defineComponent({
@@ -198,14 +270,158 @@ export const FlowCanvas = defineComponent({
     const canvasWidth = shallowRef(960)
     const canvasHeight = shallowRef(640)
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const [entry] = entries
+    const measuredHandles = shallowRef<
+      ReadonlyMap<string, ReadonlyMap<string, MeasuredHandle>>
+    >(new Map())
 
-      if (entry !== undefined) {
-        canvasWidth.value = entry.contentRect.width
-        canvasHeight.value = entry.contentRect.height
+    const nodeElements = new Map<string, HTMLElement>()
+
+    const measureNodeHandles = (node: FlowNode, element: HTMLElement): void => {
+      const nodeBounds = element.getBoundingClientRect()
+      const { zoom } = activeViewport.value
+      const measurements: [string, MeasuredHandle][] = []
+
+      for (const handleElement of element.querySelectorAll<HTMLElement>(
+        '[data-handle-id]'
+      )) {
+        const handle = node.handles?.find(
+          (candidate) => candidate.id === handleElement.dataset.handleId
+        )
+
+        if (handle === undefined) {
+          continue
+        }
+
+        const bounds = handleElement.getBoundingClientRect()
+        measurements.push([
+          handle.id,
+          {
+            nodeId: node.id,
+            handleId: handle.id,
+            offset: {
+              x: (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom,
+              y: (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom,
+            },
+            width: bounds.width / zoom,
+            height: bounds.height / zoom,
+          },
+        ])
+      }
+
+      const handles = new Map(measurements)
+
+      const previous = measuredHandles.value.get(node.id)
+
+      const unchanged =
+        previous?.size === handles.size &&
+        [...handles].every(([id, next]) => {
+          const old = previous.get(id)
+
+          return (
+            old !== undefined &&
+            old.offset.x === next.offset.x &&
+            old.offset.y === next.offset.y &&
+            old.width === next.width &&
+            old.height === next.height
+          )
+        })
+
+      if (!unchanged) {
+        const next = new Map([
+          ...measuredHandles.value,
+          [node.id, handles] as const,
+        ])
+
+        measuredHandles.value = next
+      }
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === canvas.value) {
+          canvasWidth.value = entry.contentRect.width
+          canvasHeight.value = entry.contentRect.height
+          continue
+        }
+
+        if (!(entry.target instanceof HTMLElement)) {
+          continue
+        }
+
+        const { nodeId } = entry.target.dataset
+
+        const node = activeDocument.value.nodes.find(
+          (candidate) => candidate.id === nodeId
+        )
+
+        if (node !== undefined) {
+          measureNodeHandles(node, entry.target)
+        }
       }
     })
+
+    watch(
+      () => activeDocument.value.nodes,
+      (nodes) => {
+        for (const [nodeId, element] of nodeElements) {
+          const node = nodes.find((candidate) => candidate.id === nodeId)
+
+          if (node !== undefined) {
+            measureNodeHandles(node, element)
+          }
+        }
+      },
+      { flush: 'post' }
+    )
+
+    const nodeRefCallbacks = new Map<
+      string,
+      (element: Element | ComponentPublicInstance | null) => void
+    >()
+
+    const nodeRef = (
+      node: FlowNode
+    ): ((element: Element | ComponentPublicInstance | null) => void) => {
+      const existing = nodeRefCallbacks.get(node.id)
+
+      if (existing !== undefined) {
+        return existing
+      }
+
+      const callback = (element: Element | ComponentPublicInstance | null) => {
+        if (element instanceof HTMLElement) {
+          nodeElements.set(node.id, element)
+          resizeObserver.observe(element)
+
+          const currentNode = activeDocument.value.nodes.find(
+            (candidate) => candidate.id === node.id
+          )
+
+          if (currentNode !== undefined) {
+            measureNodeHandles(currentNode, element)
+          }
+
+          return
+        }
+
+        const previous = nodeElements.get(node.id)
+
+        if (previous !== undefined) {
+          resizeObserver.unobserve(previous)
+          nodeElements.delete(node.id)
+        }
+
+        if (measuredHandles.value.has(node.id)) {
+          const next = new Map(measuredHandles.value)
+          next.delete(node.id)
+          measuredHandles.value = next
+        }
+      }
+
+      nodeRefCallbacks.set(node.id, callback)
+
+      return callback
+    }
 
     watch(
       () => props.document,
@@ -537,6 +753,7 @@ export const FlowCanvas = defineComponent({
           class: 'flow-vue-node',
           'data-testid': 'flow-node',
           'data-node-id': node.id,
+          ref: nodeRef(node),
           style: { left: `${position.x}px`, top: `${position.y}px` },
           onPointerdown: (event: PointerEvent) => onPointerDown(event, node),
         },
@@ -566,10 +783,60 @@ export const FlowCanvas = defineComponent({
           ? undefined
           : { default: () => slots.edge?.({ edge }) }
 
+      const resolved = resolveEdgeHandles(activeDocument.value, edge)
+
+      const sourceNode =
+        resolved === undefined
+          ? undefined
+          : graph.value.nodes.get(resolved.sourceNode.id)
+
+      const targetNode =
+        resolved === undefined
+          ? undefined
+          : graph.value.nodes.get(resolved.targetNode.id)
+
+      const sourceMeasured =
+        resolved === undefined
+          ? undefined
+          : measuredHandles.value
+              .get(resolved.sourceNode.id)
+              ?.get(resolved.sourceHandle.id)
+
+      const targetMeasured =
+        resolved === undefined
+          ? undefined
+          : measuredHandles.value
+              .get(resolved.targetNode.id)
+              ?.get(resolved.targetHandle.id)
+
+      let edgeChildren: VNode[] = []
+
+      if (Edge !== undefined) {
+        edgeChildren = [h(Edge, { edge }, edgeSlots)]
+      } else if (
+        resolved !== undefined &&
+        sourceNode !== undefined &&
+        targetNode !== undefined &&
+        sourceMeasured !== undefined &&
+        targetMeasured !== undefined
+      ) {
+        edgeChildren = [
+          renderDefaultEdgePath(
+            edge,
+            sourceNode.absolutePosition,
+            targetNode.absolutePosition,
+            resolved.sourceHandle,
+            resolved.targetHandle,
+            sourceMeasured,
+            targetMeasured
+          ),
+        ]
+      }
+
       return h(
         'g',
         { key: edge.id, 'data-testid': 'flow-edge', 'data-edge-id': edge.id },
-        Edge === undefined ? [] : [h(Edge, { edge }, edgeSlots)]
+        edgeChildren
       )
     }
 
@@ -628,7 +895,14 @@ export const FlowCanvas = defineComponent({
         [
           h(
             'svg',
-            { class: 'flow-vue-edges', 'aria-hidden': 'true' },
+            {
+              class: 'flow-vue-edges',
+              'aria-hidden': 'true',
+              style: {
+                transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
+                transformOrigin: '0 0',
+              },
+            },
             activeDocument.value.edges.map(renderEdge)
           ),
           h(
