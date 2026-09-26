@@ -134,9 +134,9 @@ export const FlowBrowserLive = Layer.succeed(FlowBrowser, {
     height: element.offsetHeight,
   }),
   focus: (element) => Effect.sync(() => element.focus()),
-  requestAnimationFrame: (callback) =>
+  requestAnimationFrame: (f) =>
     Effect.acquireRelease(
-      Effect.sync(() => globalThis.requestAnimationFrame(callback)),
+      Effect.sync(() => globalThis.requestAnimationFrame(f)),
       (frame) => Effect.sync(() => globalThis.cancelAnimationFrame(frame))
     ),
   observeResize: (listener) =>

@@ -2,6 +2,15 @@ import type { FlowChange } from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+const viewportData = (page: Page, key: 'x' | 'y' | 'zoom') =>
+  page.getByTestId('flow-viewport').evaluate((element) => {
+    if (!(element instanceof HTMLElement)) {
+      throw new Error('Expected the viewport to be an HTML element')
+    }
+
+    return element.dataset[key]
+  })
+
 const mount = async (page: Page): Promise<void> => {
   await page.goto('/')
   await page.evaluate(() => globalThis.dispatchEvent(new Event('beforeunload')))
@@ -66,11 +75,17 @@ test('optional canvas controls, minimap, background, and zoom affordances', asyn
 
   const initial = await page
     .getByTestId('flow-viewport')
-    .evaluate((element) => ({
-      x: Number(element.getAttribute('data-x')),
-      y: Number(element.getAttribute('data-y')),
-      zoom: Number(element.dataset.zoom),
-    }))
+    .evaluate((element) => {
+      if (!(element instanceof HTMLElement)) {
+        throw new Error('Expected the viewport to be an HTML element')
+      }
+
+      return {
+        x: Number(element.dataset.x),
+        y: Number(element.dataset.y),
+        zoom: Number(element.dataset.zoom),
+      }
+    })
 
   const box = await canvas.boundingBox()
 
@@ -141,10 +156,13 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
 
   const beforeViewport = await page
     .getByTestId('flow-viewport')
-    .evaluate((element) => ({
-      x: Number(element.getAttribute('data-x')),
-      y: Number(element.getAttribute('data-y')),
-    }))
+    .evaluate((element) => {
+      if (!(element instanceof HTMLElement)) {
+        throw new Error('Expected the viewport to be an HTML element')
+      }
+
+      return { x: Number(element.dataset.x), y: Number(element.dataset.y) }
+    })
 
   const box = await node.boundingBox()
 
@@ -162,10 +180,10 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
   await page.mouse.up()
 
   await expect
-    .poll(() => page.getByTestId('flow-viewport').getAttribute('data-x'))
+    .poll(() => viewportData(page, 'x'))
     .not.toBe(String(beforeViewport.x))
   await expect
-    .poll(() => page.getByTestId('flow-viewport').getAttribute('data-y'))
+    .poll(() => viewportData(page, 'y'))
     .not.toBe(String(beforeViewport.y))
   await expect(node).toHaveAttribute('aria-pressed', beforeSelection ?? 'false')
   await expect

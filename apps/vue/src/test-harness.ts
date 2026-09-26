@@ -291,11 +291,13 @@ const api: TestApi = {
 
     const results = {
       leftCount:
-        document.querySelector<HTMLElement>("[data-node-id='left-a'] [data-flow-count]")
-          ?.dataset.flowCount ?? null,
+        document.querySelector<HTMLElement>(
+          "[data-node-id='left-a'] [data-flow-count]"
+        )?.dataset.flowCount ?? null,
       rightCount:
-        document.querySelector<HTMLElement>("[data-node-id='right-a'] [data-flow-count]")
-          ?.dataset.flowCount ?? null,
+        document.querySelector<HTMLElement>(
+          "[data-node-id='right-a'] [data-flow-count]"
+        )?.dataset.flowCount ?? null,
       labelUpdated:
         document
           .querySelector("[data-node-id='left-a']")
@@ -304,8 +306,8 @@ const api: TestApi = {
         document.querySelector("[data-edge-id='left-edge'] [data-edge-label]")
           ?.textContent === 'Edge updated',
       identityPreserved:
-        document.querySelector<HTMLElement>("[data-node-id='left-a']")?.dataset.identity ===
-        'left',
+        document.querySelector<HTMLElement>("[data-node-id='left-a']")?.dataset
+          .identity === 'left',
       mounted,
     }
 

@@ -2,6 +2,15 @@ import type * as CoreModule from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+const readViewportX = (page: Page) =>
+  page.locator('.flow-viewport').evaluate((element) => {
+    if (!(element instanceof HTMLElement)) {
+      throw new Error('Expected the viewport to be an HTML element')
+    }
+
+    return element.dataset.x
+  })
+
 interface MovementNodeInput {
   id: string
   label: string
@@ -57,7 +66,7 @@ const mountGraph = async (
         id: 'a',
         label: 'Alpha',
         position: { x: 100, y: 180 },
-        selected,
+        selected: selected ?? false,
       }
 
       if (lockAlpha) {
@@ -76,7 +85,7 @@ const mountGraph = async (
         id: 'b',
         label: 'Beta',
         position: { x: 350, y: 180 },
-        selected,
+        selected: selected ?? false,
       }
 
       if (withEdge) {
@@ -143,11 +152,11 @@ const instrumentAnimationFrames = async (page: Page): Promise<void> => {
     const request = globalThis.requestAnimationFrame.bind(globalThis)
     const cancel = globalThis.cancelAnimationFrame.bind(globalThis)
     globalThis.flowTestPendingFrames = pending
-    globalThis.requestAnimationFrame = (callback) => {
+    globalThis.requestAnimationFrame = (f) => {
       let frame = 0
       frame = request((timestamp) => {
         pending.delete(frame)
-        callback(timestamp)
+        f(timestamp)
       })
       pending.add(frame)
 
@@ -288,7 +297,7 @@ test('node dragging auto-pans at the canvas edge and escape stops the frame', as
     canvas.y + canvas.height / 2
   )
   await expect
-    .poll(() => page.locator('.flow-viewport').dataset.x)
+    .poll(() => readViewportX(page))
     .not.toBe('0')
   await expect.poll(() => pendingAnimationFrames(page)).toBeGreaterThan(0)
   await page
@@ -335,7 +344,7 @@ for (const cancellation of [
       canvas.y + canvas.height / 2
     )
     await expect
-      .poll(() => page.locator('.flow-viewport').dataset.x)
+      .poll(() => readViewportX(page))
       .not.toBe('0')
     await expect.poll(() => pendingAnimationFrames(page)).toBeGreaterThan(0)
 
@@ -407,7 +416,7 @@ test('controlled node auto-pan cancellation restores preview and publishes no po
   await page.mouse.down()
   await page.mouse.move(canvas.x + 5, canvas.y + canvas.height / 2)
   await expect
-    .poll(() => page.locator('.flow-viewport').dataset.x)
+    .poll(() => readViewportX(page))
     .not.toBe('0')
   await page
     .getByTestId('flow-canvas')
@@ -450,7 +459,7 @@ test('node auto-pan at zoom 2 updates drag and incident-edge previews', async ({
     canvas.y + canvas.height / 2
   )
   await expect
-    .poll(() => page.locator('.flow-viewport').dataset.x)
+    .poll(() => readViewportX(page))
     .not.toBe('0')
   await expect.poll(() => path.getAttribute('d')).not.toBe(beforePath)
   const viewportX = await page.locator('.flow-viewport').getAttribute('data-x')
@@ -503,7 +512,7 @@ test('keyboard movement reveals the focused node without a frame loop', async ({
   await page.keyboard.press('ArrowRight')
   await expect(alpha).toBeFocused()
   await expect
-    .poll(() => page.locator('.flow-viewport').dataset.x)
+    .poll(() => readViewportX(page))
     .not.toBe('-250')
   const afterMove = await page.locator('.flow-viewport').getAttribute('data-x')
   await page.waitForTimeout(80)

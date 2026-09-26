@@ -341,11 +341,11 @@ export const createCanvasUI = (
     element,
     parent:
       element === panel
-        ? (getParentContainer(panelParent ?? element.parentNode))
-        : (getParentContainer(element.parentNode)),
+        ? getParentContainer(panelParent ?? element.parentNode)
+        : getParentContainer(element.parentNode),
     next:
       element === panel
-        ? (getSiblingNode(panelNextSibling ?? element.nextSibling))
+        ? getSiblingNode(panelNextSibling ?? element.nextSibling)
         : getSiblingNode(element.nextSibling),
     classAttribute: element.getAttribute('class'),
     styleAttribute: element.getAttribute('style'),
