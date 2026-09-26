@@ -1,0 +1,1481 @@
+{
+  "capturedOn": "2026-09-26",
+  "flowCommit": "9a583d7",
+  "scope": "Desktop sidebar links under the three catalog roots, with Pro membership from the public Pro examples listing. Navigation pages are retained separately from capabilities.",
+  "sources": [
+    {
+      "url": "https://reactflow.dev/api-reference",
+      "sha256": "d561ca869caf10fc2c81d131cfc2c5617870213b7f31b25ab46f46f2e787e66d"
+    },
+    {
+      "url": "https://reactflow.dev/examples",
+      "sha256": "a3f29ac6119544fa4ff9fe8f3c2095b584c0f207100a07e41ceed007394724ec"
+    },
+    {
+      "url": "https://reactflow.dev/ui",
+      "sha256": "ac9f4e9c6d0748de95663f2bdc68f43ca2fb94a37b30a63394a69c91ebdde123"
+    },
+    {
+      "url": "https://reactflow.dev/examples/pro-examples",
+      "sha256": "88d53a0e02a0fbfaa821731232a9df449e868b6d1b8f15ae369c071c5f86e51b"
+    }
+  ],
+  "entries": [
+    {
+      "section": "api-reference",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/api-reference",
+      "title": "API Reference",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/react-flow",
+      "title": "<ReactFlow />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/react-flow-provider",
+      "title": "<ReactFlowProvider />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/api-reference/components",
+      "title": "Components",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/background",
+      "title": "<Background />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/base-edge",
+      "title": "<BaseEdge />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/control-button",
+      "title": "<ControlButton />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/controls",
+      "title": "<Controls />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/edge-label-renderer",
+      "title": "<EdgeLabelRenderer />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/edge-text",
+      "title": "<EdgeText />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/edge-toolbar",
+      "title": "<EdgeToolbar />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/handle",
+      "title": "<Handle />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/minimap",
+      "title": "<MiniMap />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/node-resize-control",
+      "title": "<NodeResizeControl />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/node-resizer",
+      "title": "<NodeResizer />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/node-toolbar",
+      "title": "<NodeToolbar />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/panel",
+      "title": "<Panel />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/components/viewport-portal",
+      "title": "<ViewportPortal />",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/api-reference/hooks",
+      "title": "Hooks",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-connection",
+      "title": "useConnection()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-edges",
+      "title": "useEdges()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-edges-state",
+      "title": "useEdgesState()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-handle-connections",
+      "title": "useHandleConnections()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-internal-node",
+      "title": "useInternalNode()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-key-press",
+      "title": "useKeyPress()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-node-connections",
+      "title": "useNodeConnections()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-node-id",
+      "title": "useNodeId()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes",
+      "title": "useNodes()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes-data",
+      "title": "useNodesData()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes-initialized",
+      "title": "useNodesInitialized()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes-state",
+      "title": "useNodesState()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-on-selection-change",
+      "title": "useOnSelectionChange()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-on-viewport-change",
+      "title": "useOnViewportChange()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-react-flow",
+      "title": "useReactFlow()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-store",
+      "title": "useStore()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-store-api",
+      "title": "useStoreApi()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-update-node-internals",
+      "title": "useUpdateNodeInternals()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/hooks/use-viewport",
+      "title": "useViewport()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/api-reference/types",
+      "title": "Types",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/align",
+      "title": "Align",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/aria-label-config",
+      "title": "AriaLabelConfig",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/background-variant",
+      "title": "BackgroundVariant",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/color-mode",
+      "title": "ColorMode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/connection",
+      "title": "Connection",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/connection-line-component",
+      "title": "ConnectionLineComponent",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/connection-line-component-props",
+      "title": "ConnectionLineComponentProps",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/connection-line-type",
+      "title": "ConnectionLineType",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/connection-mode",
+      "title": "ConnectionMode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/connection-state",
+      "title": "ConnectionState",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/coordinate-extent",
+      "title": "CoordinateExtent",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/default-edge-options",
+      "title": "DefaultEdgeOptions",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/delete-elements",
+      "title": "DeleteElements",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/edge",
+      "title": "Edge",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/edge-change",
+      "title": "EdgeChange",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/edge-marker",
+      "title": "EdgeMarker",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/edge-mouse-handler",
+      "title": "EdgeMouseHandler",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/edge-props",
+      "title": "EdgeProps",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/edge-types",
+      "title": "EdgeTypes",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/fit-view-options",
+      "title": "FitViewOptions",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/handle",
+      "title": "Handle",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/handle-connection",
+      "title": "HandleConnection",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/internal-node",
+      "title": "InternalNode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/is-valid-connection",
+      "title": "IsValidConnection",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/key-code",
+      "title": "KeyCode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/marker-type",
+      "title": "MarkerType",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/mini-map-node-props",
+      "title": "MiniMapNodeProps",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node",
+      "title": "Node",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-change",
+      "title": "NodeChange",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-connection",
+      "title": "NodeConnection",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-handle",
+      "title": "NodeHandle",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-mouse-handler",
+      "title": "NodeMouseHandler",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-origin",
+      "title": "NodeOrigin",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-props",
+      "title": "NodeProps",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/node-types",
+      "title": "NodeTypes",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-before-delete",
+      "title": "OnBeforeDelete",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-connect",
+      "title": "OnConnect",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-connect-end",
+      "title": "OnConnectEnd",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-connect-start",
+      "title": "OnConnectStart",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-delete",
+      "title": "OnDelete",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-edges-change",
+      "title": "OnEdgesChange",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-edges-delete",
+      "title": "OnEdgesDelete",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-error",
+      "title": "OnError",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-init",
+      "title": "OnInit",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-move",
+      "title": "OnMove",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-node-drag",
+      "title": "OnNodeDrag",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-nodes-change",
+      "title": "OnNodesChange",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-nodes-delete",
+      "title": "OnNodesDelete",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-reconnect",
+      "title": "OnReconnect",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/on-selection-change-func",
+      "title": "OnSelectionChangeFunc",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/pan-on-scroll-mode",
+      "title": "PanOnScrollMode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/panel-position",
+      "title": "PanelPosition",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/position",
+      "title": "Position",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/pro-options",
+      "title": "ProOptions",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/react-flow-instance",
+      "title": "ReactFlowInstance",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/react-flow-json-object",
+      "title": "ReactFlowJsonObject",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/rect",
+      "title": "Rect",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/resize-params",
+      "title": "ResizeParams",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/selection-drag-handler",
+      "title": "SelectionDragHandler",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/selection-mode",
+      "title": "SelectionMode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/snap-grid",
+      "title": "SnapGrid",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/viewport",
+      "title": "Viewport",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/xy-position",
+      "title": "XYPosition",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/types/z-index-mode",
+      "title": "ZIndexMode",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/api-reference/utils",
+      "title": "Utils",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/add-edge",
+      "title": "addEdge()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/apply-edge-changes",
+      "title": "applyEdgeChanges()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/apply-node-changes",
+      "title": "applyNodeChanges()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-bezier-path",
+      "title": "getBezierPath()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-connected-edges",
+      "title": "getConnectedEdges()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-incomers",
+      "title": "getIncomers()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-nodes-bounds",
+      "title": "getNodesBounds()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-outgoers",
+      "title": "getOutgoers()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path",
+      "title": "getSimpleBezierPath()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-smooth-step-path",
+      "title": "getSmoothStepPath()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-straight-path",
+      "title": "getStraightPath()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/get-viewport-for-bounds",
+      "title": "getViewportForBounds()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/is-edge",
+      "title": "isEdge()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/is-node",
+      "title": "isNode()",
+      "listedPro": false
+    },
+    {
+      "section": "api-reference",
+      "kind": "capability",
+      "url": "https://reactflow.dev/api-reference/utils/reconnect-edge",
+      "title": "reconnectEdge()",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/examples",
+      "title": "All Examples",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/examples/pro-examples",
+      "title": "Pro Examples",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/overview",
+      "title": "Feature Overview",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/add-node-on-edge-drop",
+      "title": "Add Node On Edge Drop",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/connection-limit",
+      "title": "Connection Limit",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/custom-node",
+      "title": "Custom Nodes",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/delete-middle-node",
+      "title": "Delete Middle Node",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/drag-handle",
+      "title": "Drag Handle",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/easy-connect",
+      "title": "Easy Connect",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/intersections",
+      "title": "Intersections",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/node-resizer",
+      "title": "Node Resizer",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/node-toolbar",
+      "title": "Node Toolbar",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/proximity-connect",
+      "title": "Proximity Connect",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/rotatable-node",
+      "title": "Rotatable Node",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/node-position-animation",
+      "title": "Node Position Animation",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/stress",
+      "title": "Stress Test",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/update-node",
+      "title": "Updating Nodes",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/nodes/shapes",
+      "title": "Shapes",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/animating-edges",
+      "title": "Animating Edges",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/custom-connectionline",
+      "title": "Custom Connection Line",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/custom-edges",
+      "title": "Custom Edges",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/delete-edge-on-drop",
+      "title": "Delete Edge on Drop",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/edge-label-renderer",
+      "title": "Edge Label Renderer",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/edge-intersection",
+      "title": "Edge Intersection",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/edge-toolbar",
+      "title": "Edge Toolbar",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/edge-types",
+      "title": "Edge Types",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/edge-routing",
+      "title": "Edge Routing",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/floating-edges",
+      "title": "Floating Edges",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/markers",
+      "title": "Edge Markers",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/multi-connection-line",
+      "title": "Multi Connection Line",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/reconnect-edge",
+      "title": "Reconnect Edge",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/simple-floating-edges",
+      "title": "Simple Floating Edges",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/temporary-edges",
+      "title": "Temporary Edges",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/edges/editable-edge",
+      "title": "Editable Edge",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/computing-flows",
+      "title": "Computing Flows",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/connection-events",
+      "title": "Connection Events",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/context-menu",
+      "title": "Context Menu",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/contextual-zoom",
+      "title": "Contextual Zoom",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/drag-and-drop",
+      "title": "Drag and Drop",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/prevent-cycles",
+      "title": "Preventing Cycles",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/save-and-restore",
+      "title": "Save and Restore",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/touch-device",
+      "title": "Touch Device",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/validation",
+      "title": "Validation",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/helper-lines",
+      "title": "Helper Lines",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/collaborative",
+      "title": "Collaborative",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/copy-paste",
+      "title": "Copy and Paste",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/interaction/undo-redo",
+      "title": "Undo and Redo",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/grouping/selection-grouping",
+      "title": "Selection Grouping",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/grouping/parent-child-relation",
+      "title": "Parent Child Relation",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/grouping/sub-flows",
+      "title": "Sub Flow",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/dagre",
+      "title": "Dagre Tree",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/elkjs",
+      "title": "Elkjs Tree",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/elkjs-multiple-handles",
+      "title": "Elkjs Multiple Handles",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/horizontal",
+      "title": "Horizontal Flow",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/expand-collapse",
+      "title": "Expand and Collapse",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/auto-layout",
+      "title": "Auto Layout",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/force-layout",
+      "title": "Force Layout",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/dynamic-layouting",
+      "title": "Dynamic Layouting",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/layout/node-collisions",
+      "title": "Node Collisions",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/styling/base-style",
+      "title": "Base Style",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/styling/dark-mode",
+      "title": "Dark Mode",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/styling/tailwind",
+      "title": "Tailwind",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/styling/turbo-flow",
+      "title": "Turbo Flow",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/whiteboard/eraser",
+      "title": "Eraser Tool",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/whiteboard/lasso-selection",
+      "title": "Lasso Selection",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/whiteboard/rectangle",
+      "title": "Rectangle",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/whiteboard/freehand-draw",
+      "title": "Freehand Draw",
+      "listedPro": true
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/misc/download-image",
+      "title": "Download Image",
+      "listedPro": false
+    },
+    {
+      "section": "examples",
+      "kind": "capability",
+      "url": "https://reactflow.dev/examples/misc/server-side-image-creation",
+      "title": "Server Side Image Creation",
+      "listedPro": true
+    },
+    {
+      "section": "ui",
+      "kind": "navigation",
+      "url": "https://reactflow.dev/ui",
+      "title": "Introduction",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/templates/ai-workflow-editor",
+      "title": "AI Workflow Editor",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/templates/workflow-editor",
+      "title": "Workflow Editor",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/base-node",
+      "title": "Base Node",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/node-status-indicator",
+      "title": "Status Indicator",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/node-appendix",
+      "title": "Appendix",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/node-tooltip",
+      "title": "Tooltip",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/database-schema-node",
+      "title": "Database Schema",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/placeholder-node",
+      "title": "Placeholder",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/labeled-group-node",
+      "title": "Labeled Group",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/base-handle",
+      "title": "Base Handle",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/labeled-handle",
+      "title": "Labeled Handle",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/button-handle",
+      "title": "Button Handle",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/button-edge",
+      "title": "Edge with Button",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/data-edge",
+      "title": "Edge with Node Data",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/animated-svg-edge",
+      "title": "Animated SVG Edge",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/node-search",
+      "title": "Node Search",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/zoom-slider",
+      "title": "Zoom Slider",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/zoom-select",
+      "title": "Zoom Select",
+      "listedPro": false
+    },
+    {
+      "section": "ui",
+      "kind": "capability",
+      "url": "https://reactflow.dev/ui/components/devtools",
+      "title": "DevTools",
+      "listedPro": false
+    }
+  ]
+}

@@ -296,9 +296,7 @@ test('node dragging auto-pans at the canvas edge and escape stops the frame', as
     canvas.x + canvas.width - 5,
     canvas.y + canvas.height / 2
   )
-  await expect
-    .poll(() => readViewportX(page))
-    .not.toBe('0')
+  await expect.poll(() => readViewportX(page)).not.toBe('0')
   await expect.poll(() => pendingAnimationFrames(page)).toBeGreaterThan(0)
   await page
     .getByTestId('flow-canvas')
@@ -343,9 +341,7 @@ for (const cancellation of [
       canvas.x + canvas.width - 5,
       canvas.y + canvas.height / 2
     )
-    await expect
-      .poll(() => readViewportX(page))
-      .not.toBe('0')
+    await expect.poll(() => readViewportX(page)).not.toBe('0')
     await expect.poll(() => pendingAnimationFrames(page)).toBeGreaterThan(0)
 
     if (cancellation === 'blur') {
@@ -415,9 +411,7 @@ test('controlled node auto-pan cancellation restores preview and publishes no po
   await page.mouse.move(box.x + 120, box.y + 20)
   await page.mouse.down()
   await page.mouse.move(canvas.x + 5, canvas.y + canvas.height / 2)
-  await expect
-    .poll(() => readViewportX(page))
-    .not.toBe('0')
+  await expect.poll(() => readViewportX(page)).not.toBe('0')
   await page
     .getByTestId('flow-canvas')
     .evaluate((element) =>
@@ -458,9 +452,7 @@ test('node auto-pan at zoom 2 updates drag and incident-edge previews', async ({
     canvas.x + canvas.width - 5,
     canvas.y + canvas.height / 2
   )
-  await expect
-    .poll(() => readViewportX(page))
-    .not.toBe('0')
+  await expect.poll(() => readViewportX(page)).not.toBe('0')
   await expect.poll(() => path.getAttribute('d')).not.toBe(beforePath)
   const viewportX = await page.locator('.flow-viewport').getAttribute('data-x')
   expect(Number(viewportX)).toBeLessThan(0)
@@ -511,9 +503,7 @@ test('keyboard movement reveals the focused node without a frame loop', async ({
   await alpha.focus()
   await page.keyboard.press('ArrowRight')
   await expect(alpha).toBeFocused()
-  await expect
-    .poll(() => readViewportX(page))
-    .not.toBe('-250')
+  await expect.poll(() => readViewportX(page)).not.toBe('-250')
   const afterMove = await page.locator('.flow-viewport').getAttribute('data-x')
   await page.waitForTimeout(80)
   await expect(page.locator('.flow-viewport')).toHaveAttribute(

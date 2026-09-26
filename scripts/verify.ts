@@ -5,6 +5,10 @@ import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
 const checks = [
   ['architecture boundaries', ['bun', 'run', 'check:architecture']],
   ['documentation', ['bun', 'run', 'docs:check']],
+  [
+    'React Flow catalog coverage',
+    ['bun', 'run', 'scripts/check-react-flow-catalog.ts'],
+  ],
   ['research inventory', ['bun', 'run', 'research:inventory']],
   ['research trace citations', ['bun', 'run', 'research:check-traces']],
   ['package builds', ['bun', 'run', 'build:packages']],
