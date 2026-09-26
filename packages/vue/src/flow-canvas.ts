@@ -5,12 +5,14 @@ import {
   decodeFlowDocument,
   edgeAttachmentPosition,
   nextConnectionEdge,
+  panViewport,
   resolveEdgeHandles,
   simpleBezierEdgePath,
   smoothStepEdgePath,
   straightEdgePath,
   stepEdgePath,
   validateFlowConnection,
+  zoomViewportAt,
 } from '@flow/core'
 import type {
   FlowChange,
@@ -62,9 +64,22 @@ interface ConnectionSession {
   readonly captureTarget: HTMLElement
   readonly sourceNode: FlowNode
   readonly sourceHandle: string
+  readonly start: { readonly x: number; readonly y: number }
+  readonly pointer: { readonly x: number; readonly y: number }
 }
 
-type Session = DragSession | ConnectionSession
+interface PanSession {
+  readonly kind: 'pan'
+  readonly pointerId: number
+  readonly captureTarget: HTMLElement
+  readonly startX: number
+  readonly startY: number
+  readonly viewportStart: Viewport
+}
+
+type Session = DragSession | ConnectionSession | PanSession
+
+const viewportLimits = { minZoom: 0.4, maxZoom: 2 }
 
 type NodeVisual = Component<{ readonly node: FlowNode }>
 
@@ -266,6 +281,7 @@ export const FlowCanvas = defineComponent({
 
     const graph = computed(() => createFlowGraph(activeDocument.value))
     const session = shallowRef<Session>()
+    const clickConnection = shallowRef<ConnectionSession>()
     const canvas = shallowRef<HTMLElement>()
     const canvasWidth = shallowRef(960)
     const canvasHeight = shallowRef(640)
@@ -523,9 +539,14 @@ export const FlowCanvas = defineComponent({
       () => activeDocument.value.nodes.map(({ id }) => id),
       (ids) => {
         const active = session.value
+        const pending = clickConnection.value
 
         if (active?.kind === 'node' && !ids.includes(active.node.id)) {
           cleanupPreview(active)
+        }
+
+        if (pending !== undefined && !ids.includes(pending.sourceNode.id)) {
+          clickConnection.value = undefined
         }
       }
     )
@@ -603,54 +624,70 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      session.value =
-        handleId === undefined
-          ? {
-              kind: 'node',
-              pointerId: event.pointerId,
-              node,
-              element: currentTarget,
-              captureTarget: currentTarget,
-              startX: event.clientX,
-              startY: event.clientY,
-              originX: node.position.x,
-              originY: node.position.y,
-            }
-          : {
-              kind: 'connection',
-              pointerId: event.pointerId,
-              captureTarget: currentTarget,
-              sourceNode: node,
-              sourceHandle: handleId,
-            }
+      if (handleId === undefined) {
+        session.value = {
+          kind: 'node',
+          pointerId: event.pointerId,
+          node,
+          element: currentTarget,
+          captureTarget: currentTarget,
+          startX: event.clientX,
+          startY: event.clientY,
+          originX: node.position.x,
+          originY: node.position.y,
+        }
+      } else {
+        const source = graph.value.nodes.get(node.id)
+
+        const handle = node.handles?.find(
+          (candidate) => candidate.id === handleId
+        )
+
+        const measured = measuredHandles.value.get(node.id)?.get(handleId)
+
+        if (
+          source === undefined ||
+          handle === undefined ||
+          measured === undefined
+        ) {
+          return
+        }
+
+        const start = edgeAttachmentPosition(
+          source.absolutePosition,
+          handle,
+          measured
+        )
+
+        const bounds = canvas.value?.getBoundingClientRect()
+
+        const viewport = activeViewport.value
+
+        session.value = {
+          kind: 'connection',
+          pointerId: event.pointerId,
+          captureTarget: currentTarget,
+          sourceNode: node,
+          sourceHandle: handleId,
+          start,
+          pointer:
+            bounds === undefined
+              ? start
+              : {
+                  x: (event.clientX - bounds.left - viewport.x) / viewport.zoom,
+                  y: (event.clientY - bounds.top - viewport.y) / viewport.zoom,
+                },
+        }
+      }
 
       currentTarget.setPointerCapture?.(event.pointerId)
     }
 
-    const onPointerUp = (event: PointerEvent): void => {
-      const active = session.value
-
-      if (active === undefined || active.pointerId !== event.pointerId) {
-        return
-      }
-
-      if (active.kind === 'node') {
-        cleanupPreview(active)
-        const dx = (event.clientX - active.startX) / activeViewport.value.zoom
-        const dy = (event.clientY - active.startY) / activeViewport.value.zoom
-
-        if (Math.hypot(dx, dy) < 8) {
-          return
-        }
-
-        publish({
-          kind: 'node-position',
-          nodeId: active.node.id,
-          position: { x: active.originX + dx, y: active.originY + dy },
-        })
-
-        return
-      }
+    const finishConnection = (
+      event: PointerEvent,
+      active: ConnectionSession
+    ): void => {
+      const pending = clickConnection.value
 
       cleanupPreview(active)
 
@@ -664,12 +701,31 @@ export const FlowCanvas = defineComponent({
       const targetNodeId = targetNodeElement?.dataset.nodeId
       const targetHandleId = targetElement?.dataset.handleId
 
-      if (
-        targetNodeId === undefined ||
-        targetHandleId === undefined ||
-        targetNodeId === active.sourceNode.id ||
-        !props.isValidConnection(targetNodeId)
-      ) {
+      if (targetNodeId === undefined || targetHandleId === undefined) {
+        return
+      }
+
+      const source = pending ?? active
+
+      if (targetNodeId === source.sourceNode.id) {
+        const candidateHandle = source.sourceNode.handles?.find(
+          (handle) =>
+            handle.id === source.sourceHandle && handle.kind === 'source'
+        )
+
+        if (
+          candidateHandle !== undefined &&
+          targetHandleId === source.sourceHandle
+        ) {
+          clickConnection.value = source
+        }
+
+        return
+      }
+
+      clickConnection.value = undefined
+
+      if (!props.isValidConnection(targetNodeId)) {
         return
       }
 
@@ -677,9 +733,9 @@ export const FlowCanvas = defineComponent({
         (node) => node.id === targetNodeId
       )
 
-      const sourceHandle = active.sourceNode.handles?.find(
+      const sourceHandle = source.sourceNode.handles?.find(
         (handle) =>
-          handle.id === active.sourceHandle && handle.kind === 'source'
+          handle.id === source.sourceHandle && handle.kind === 'source'
       )
 
       const targetHandle = targetNode?.handles?.find(
@@ -695,7 +751,7 @@ export const FlowCanvas = defineComponent({
       }
 
       const connection = {
-        source: active.sourceNode.id,
+        source: source.sourceNode.id,
         sourceHandle: sourceHandle.id,
         target: targetNode.id,
         targetHandle: targetHandle.id,
@@ -717,10 +773,96 @@ export const FlowCanvas = defineComponent({
       })
     }
 
+    const onPointerUp = (event: PointerEvent): void => {
+      const active = session.value
+
+      if (active === undefined || active.pointerId !== event.pointerId) {
+        return
+      }
+
+      if (active.kind === 'connection') {
+        finishConnection(event, active)
+
+        return
+      }
+
+      if (active.kind === 'pan') {
+        updateViewport(
+          panViewport(active.viewportStart, {
+            x: event.clientX - active.startX,
+            y: event.clientY - active.startY,
+          })
+        )
+        cleanupPreview(active)
+
+        return
+      }
+
+      cleanupPreview(active)
+      const dx = (event.clientX - active.startX) / activeViewport.value.zoom
+      const dy = (event.clientY - active.startY) / activeViewport.value.zoom
+
+      if (Math.hypot(dx, dy) < 8) {
+        return
+      }
+
+      publish({
+        kind: 'node-position',
+        nodeId: active.node.id,
+        position: { x: active.originX + dx, y: active.originY + dy },
+      })
+    }
+
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         cleanupPreview()
+        clickConnection.value = undefined
       }
+    }
+
+    const onCanvasPointerDown = (event: PointerEvent): void => {
+      const { target, currentTarget } = event
+
+      if (
+        event.button !== 0 ||
+        session.value !== undefined ||
+        !(target instanceof Element) ||
+        !(currentTarget instanceof HTMLElement) ||
+        target.closest('[data-node-id]') !== null
+      ) {
+        return
+      }
+
+      session.value = {
+        kind: 'pan',
+        pointerId: event.pointerId,
+        captureTarget: currentTarget,
+        startX: event.clientX,
+        startY: event.clientY,
+        viewportStart: activeViewport.value,
+      }
+      currentTarget.setPointerCapture?.(event.pointerId)
+      event.preventDefault()
+    }
+
+    const onWheel = (event: WheelEvent): void => {
+      const bounds = canvas.value?.getBoundingClientRect()
+
+      if (bounds === undefined) {
+        return
+      }
+
+      const anchor = {
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+      }
+
+      const zoom = activeViewport.value.zoom * Math.exp(-event.deltaY * 0.001)
+
+      updateViewport(
+        zoomViewportAt(activeViewport.value, zoom, anchor, viewportLimits)
+      )
+      event.preventDefault()
     }
 
     const renderNode = (node: FlowNode): VNode | null => {
@@ -850,8 +992,24 @@ export const FlowCanvas = defineComponent({
       cleanupPreview()
     })
 
-    return () =>
-      h(
+    return () => {
+      const connection =
+        session.value?.kind === 'connection'
+          ? session.value
+          : clickConnection.value
+
+      const connectionPreview =
+        connection === undefined
+          ? []
+          : [
+              h('path', {
+                class: 'flow-vue-connection-preview',
+                'data-testid': 'flow-connection-preview',
+                d: straightEdgePath(connection.start, connection.pointer),
+              }),
+            ]
+
+      return h(
         'div',
         {
           ref: (element: Element | ComponentPublicInstance | null) => {
@@ -871,9 +1029,58 @@ export const FlowCanvas = defineComponent({
             const active = session.value
 
             if (
-              active?.kind !== 'node' ||
-              active.pointerId !== event.pointerId
+              active === undefined &&
+              clickConnection.value !== undefined &&
+              canvas.value !== undefined
             ) {
+              const bounds = canvas.value.getBoundingClientRect()
+              const viewport = activeViewport.value
+              const pending = clickConnection.value
+
+              clickConnection.value = {
+                ...pending,
+                pointer: {
+                  x: (event.clientX - bounds.left - viewport.x) / viewport.zoom,
+                  y: (event.clientY - bounds.top - viewport.y) / viewport.zoom,
+                },
+              }
+
+              return
+            }
+
+            if (active === undefined || active.pointerId !== event.pointerId) {
+              return
+            }
+
+            if (active.kind === 'pan') {
+              updateViewport(
+                panViewport(active.viewportStart, {
+                  x: event.clientX - active.startX,
+                  y: event.clientY - active.startY,
+                })
+              )
+
+              return
+            }
+
+            if (active.kind === 'connection') {
+              const bounds = canvas.value?.getBoundingClientRect()
+
+              if (bounds !== undefined) {
+                const viewport = activeViewport.value
+
+                session.value = {
+                  ...active,
+                  pointer: {
+                    x:
+                      (event.clientX - bounds.left - viewport.x) /
+                      viewport.zoom,
+                    y:
+                      (event.clientY - bounds.top - viewport.y) / viewport.zoom,
+                  },
+                }
+              }
+
               return
             }
 
@@ -885,10 +1092,13 @@ export const FlowCanvas = defineComponent({
 
             active.element.style.transform = `translate(${dx}px, ${dy}px)`
           },
+          onPointerdown: onCanvasPointerDown,
           onPointerup: onPointerUp,
+          onWheel,
           onPointercancel: (event: PointerEvent) => {
             if (session.value?.pointerId === event.pointerId) {
               cleanupPreview()
+              clickConnection.value = undefined
             }
           },
         },
@@ -903,7 +1113,10 @@ export const FlowCanvas = defineComponent({
                 transformOrigin: '0 0',
               },
             },
-            activeDocument.value.edges.map(renderEdge)
+            [
+              ...activeDocument.value.edges.map(renderEdge),
+              ...connectionPreview,
+            ]
           ),
           h(
             'div',
@@ -918,5 +1131,6 @@ export const FlowCanvas = defineComponent({
           slots.default?.({}),
         ]
       )
+    }
   },
 })

@@ -72,3 +72,10 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.flow-vue-connection-preview {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 2;
+  pointer-events: none;
+}

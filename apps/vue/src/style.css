@@ -29,6 +29,7 @@ header p {
   max-width: 1080px;
   margin: 0 auto 10px;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 .flow-vue-actions button {
