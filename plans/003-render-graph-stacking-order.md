@@ -23,10 +23,13 @@ Core defines parent-before-child and sibling `zIndex` ordering, but the vanilla 
 ```ts
 // packages/core/src/domain/flow-graph.ts:75-88
 const compareSiblings = (first: NodeId, second: NodeId): number => {
-  const a = graphNodes.get(first)!;
-  const b = graphNodes.get(second)!;
-  return (a.node.zIndex ?? 0) - (b.node.zIndex ?? 0) || a.documentIndex - b.documentIndex;
-};
+  const a = graphNodes.get(first)!
+  const b = graphNodes.get(second)!
+  return (
+    (a.node.zIndex ?? 0) - (b.node.zIndex ?? 0) ||
+    a.documentIndex - b.documentIndex
+  )
+}
 // ... orderedNodes is filled by appendSubtree(root)
 ```
 

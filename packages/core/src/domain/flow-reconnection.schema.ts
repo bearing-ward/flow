@@ -1,26 +1,26 @@
-import { Effect, Schema as S } from "effect";
+import { Effect, Schema as S } from 'effect'
 
-import { validateFlowConnection } from "./flow-connection.schema.ts";
+import { validateFlowConnection } from './flow-connection.schema.ts'
 import type {
   FlowConnection,
   InvalidFlowConnection,
-} from "./flow-connection.schema.ts";
-import { resolveEdgeHandles } from "./flow-edge.schema.ts";
-import { EdgeIdSchema } from "./flow-values.ts";
-import type { EdgeId, HandleId, NodeId } from "./flow-values.ts";
-import type { FlowDocument, FlowEdge } from "./flow.schema.ts";
+} from './flow-connection.schema.ts'
+import { resolveEdgeHandles } from './flow-edge.schema.ts'
+import { EdgeIdSchema } from './flow-values.ts'
+import type { EdgeId, HandleId, NodeId } from './flow-values.ts'
+import type { FlowDocument, FlowEdge } from './flow.schema.ts'
 
-export const ReconnectEndpointSchema = S.Literals(["source", "target"]);
+export const ReconnectEndpointSchema = S.Literals(['source', 'target'])
 
-export type ReconnectEndpoint = typeof ReconnectEndpointSchema.Type;
+export type ReconnectEndpoint = typeof ReconnectEndpointSchema.Type
 
 export const ActiveEdgeReconnectSchema = S.Struct({
   edgeId: EdgeIdSchema,
   endpoint: ReconnectEndpointSchema,
   pointerId: S.Number,
-});
+})
 
-export type ActiveEdgeReconnect = typeof ActiveEdgeReconnectSchema.Type;
+export type ActiveEdgeReconnect = typeof ActiveEdgeReconnectSchema.Type
 
 export const canReconnectEdge = (
   edge: FlowEdge,
@@ -28,7 +28,7 @@ export const canReconnectEdge = (
 ): boolean =>
   edge.reconnectable === undefined ||
   edge.reconnectable === true ||
-  edge.reconnectable === endpoint;
+  edge.reconnectable === endpoint
 
 export const reconnectFlowEdge = (
   document: FlowDocument,
@@ -38,23 +38,23 @@ export const reconnectFlowEdge = (
   handleId: HandleId
 ): Effect.Effect<FlowEdge | undefined, InvalidFlowConnection> =>
   Effect.gen(function* reconnectEdge() {
-    const edge = document.edges.find((item) => item.id === edgeId);
-    const resolved = edge && resolveEdgeHandles(document, edge);
+    const edge = document.edges.find((item) => item.id === edgeId)
+    const resolved = edge && resolveEdgeHandles(document, edge)
 
     if (
       edge === undefined ||
       !canReconnectEdge(edge, endpoint) ||
       resolved === undefined
     ) {
-      return;
+      return
     }
 
     const connection: FlowConnection = {
-      source: endpoint === "source" ? nodeId : edge.source,
-      sourceHandle: endpoint === "source" ? handleId : resolved.sourceHandle.id,
-      target: endpoint === "target" ? nodeId : edge.target,
-      targetHandle: endpoint === "target" ? handleId : resolved.targetHandle.id,
-    };
+      source: endpoint === 'source' ? nodeId : edge.source,
+      sourceHandle: endpoint === 'source' ? handleId : resolved.sourceHandle.id,
+      target: endpoint === 'target' ? nodeId : edge.target,
+      targetHandle: endpoint === 'target' ? handleId : resolved.targetHandle.id,
+    }
 
     if (
       connection.source === edge.source &&
@@ -62,7 +62,7 @@ export const reconnectFlowEdge = (
       connection.target === edge.target &&
       connection.targetHandle === resolved.targetHandle.id
     ) {
-      return;
+      return
     }
 
     yield* validateFlowConnection(
@@ -71,9 +71,9 @@ export const reconnectFlowEdge = (
         edges: document.edges.filter((item) => item.id !== edgeId),
       },
       connection
-    );
+    )
 
-    return endpoint === "source"
+    return endpoint === 'source'
       ? { ...edge, source: nodeId, sourceHandle: handleId }
-      : { ...edge, target: nodeId, targetHandle: handleId };
-  });
+      : { ...edge, target: nodeId, targetHandle: handleId }
+  })

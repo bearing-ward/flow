@@ -1,64 +1,64 @@
-import { Effect, Match, Schema as S } from "effect";
+import { Effect, Match, Schema as S } from 'effect'
 
-import { FlowAttribute, FlowSpan } from "../telemetry/flow-telemetry.ts";
-import { DuplicateEdgeId } from "./duplicate-edge-id.ts";
-import { DuplicateHandleId } from "./duplicate-handle-id.ts";
-import { DuplicateNodeId } from "./duplicate-node-id.ts";
+import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
+import { DuplicateEdgeId } from './duplicate-edge-id.ts'
+import { DuplicateHandleId } from './duplicate-handle-id.ts'
+import { DuplicateNodeId } from './duplicate-node-id.ts'
 import {
   EdgeIdSchema,
   HandleIdSchema,
   NodeIdSchema,
   XYPositionSchema,
-} from "./flow-values.ts";
-import type { EdgeId, NodeId } from "./flow-values.ts";
-import { MissingEdgeEndpoint } from "./missing-edge-endpoint.ts";
-import { MissingEdgeHandle } from "./missing-edge-handle.ts";
-import { MissingParentNode } from "./missing-parent-node.ts";
-import { ParentCycle } from "./parent-cycle.ts";
-import { ParentExtentWithoutParent } from "./parent-extent-without-parent.ts";
-import { SelfParentNode } from "./self-parent-node.ts";
+} from './flow-values.ts'
+import type { EdgeId, NodeId } from './flow-values.ts'
+import { MissingEdgeEndpoint } from './missing-edge-endpoint.ts'
+import { MissingEdgeHandle } from './missing-edge-handle.ts'
+import { MissingParentNode } from './missing-parent-node.ts'
+import { ParentCycle } from './parent-cycle.ts'
+import { ParentExtentWithoutParent } from './parent-extent-without-parent.ts'
+import { SelfParentNode } from './self-parent-node.ts'
 
-export { DuplicateEdgeId } from "./duplicate-edge-id.ts";
+export { DuplicateEdgeId } from './duplicate-edge-id.ts'
 
-export { DuplicateHandleId } from "./duplicate-handle-id.ts";
+export { DuplicateHandleId } from './duplicate-handle-id.ts'
 
-export { DuplicateNodeId } from "./duplicate-node-id.ts";
+export { DuplicateNodeId } from './duplicate-node-id.ts'
 
-export { MissingEdgeEndpoint } from "./missing-edge-endpoint.ts";
+export { MissingEdgeEndpoint } from './missing-edge-endpoint.ts'
 
-export { MissingEdgeHandle } from "./missing-edge-handle.ts";
+export { MissingEdgeHandle } from './missing-edge-handle.ts'
 
-export { MissingParentNode } from "./missing-parent-node.ts";
+export { MissingParentNode } from './missing-parent-node.ts'
 
-export { ParentCycle } from "./parent-cycle.ts";
+export { ParentCycle } from './parent-cycle.ts'
 
-export { ParentExtentWithoutParent } from "./parent-extent-without-parent.ts";
+export { ParentExtentWithoutParent } from './parent-extent-without-parent.ts'
 
-export { SelfParentNode } from "./self-parent-node.ts";
+export { SelfParentNode } from './self-parent-node.ts'
 
 export {
   EdgeIdSchema,
   HandleIdSchema,
   NodeIdSchema,
   XYPositionSchema,
-} from "./flow-values.ts";
+} from './flow-values.ts'
 
-export type { EdgeId, HandleId, NodeId, XYPosition } from "./flow-values.ts";
+export type { EdgeId, HandleId, NodeId, XYPosition } from './flow-values.ts'
 
 export const FlowHandleSchema = S.Struct({
   id: HandleIdSchema,
-  kind: S.Literals(["source", "target"]),
-  side: S.Literals(["top", "right", "bottom", "left"]),
-});
+  kind: S.Literals(['source', 'target']),
+  side: S.Literals(['top', 'right', 'bottom', 'left']),
+})
 
-export type FlowHandle = typeof FlowHandleSchema.Type;
+export type FlowHandle = typeof FlowHandleSchema.Type
 
 export const NodeSizeSchema = S.Struct({
   width: S.Finite.check(S.isGreaterThan(0)),
   height: S.Finite.check(S.isGreaterThan(0)),
-});
+})
 
-export type NodeSize = typeof NodeSizeSchema.Type;
+export type NodeSize = typeof NodeSizeSchema.Type
 
 export const FlowNodeSchema = S.Struct({
   id: NodeIdSchema,
@@ -69,7 +69,7 @@ export const FlowNodeSchema = S.Struct({
   data: S.optional(S.JsonObject),
   zIndex: S.optional(S.Finite),
   size: S.optional(NodeSizeSchema),
-  extent: S.optional(S.Literals(["parent"])),
+  extent: S.optional(S.Literals(['parent'])),
   handles: S.optional(S.Array(FlowHandleSchema)),
   selected: S.optional(S.Boolean),
   selectable: S.optional(S.Boolean),
@@ -78,34 +78,34 @@ export const FlowNodeSchema = S.Struct({
   ariaLabel: S.optional(S.NonEmptyString),
   ariaDescription: S.optional(S.NonEmptyString),
   hidden: S.optional(S.Boolean),
-});
+})
 
-export type FlowNode = typeof FlowNodeSchema.Type;
+export type FlowNode = typeof FlowNodeSchema.Type
 
 export const FlowEdgePathSchema = S.Literals([
-  "straight",
-  "bezier",
-  "step",
-  "smoothstep",
-  "simplebezier",
-]);
+  'straight',
+  'bezier',
+  'step',
+  'smoothstep',
+  'simplebezier',
+])
 
-export type FlowEdgePath = typeof FlowEdgePathSchema.Type;
+export type FlowEdgePath = typeof FlowEdgePathSchema.Type
 
-export const FlowEdgeMarkerSchema = S.Literals(["arrow", "arrowclosed"]);
+export const FlowEdgeMarkerSchema = S.Literals(['arrow', 'arrowclosed'])
 
-export type FlowEdgeMarker = typeof FlowEdgeMarkerSchema.Type;
+export type FlowEdgeMarker = typeof FlowEdgeMarkerSchema.Type
 
 export const FlowEdgeReconnectableSchema = S.Union([
   S.Boolean,
-  S.Literals(["source", "target"]),
-]);
+  S.Literals(['source', 'target']),
+])
 
-export type FlowEdgeReconnectable = typeof FlowEdgeReconnectableSchema.Type;
+export type FlowEdgeReconnectable = typeof FlowEdgeReconnectableSchema.Type
 
 export const FlowEdgeStrokeSchema = S.String.check(
   S.isPattern(/^#[0-9a-fA-F]{6}$/u)
-);
+)
 
 export const FlowEdgeSchema = S.Struct({
   id: EdgeIdSchema,
@@ -129,16 +129,16 @@ export const FlowEdgeSchema = S.Struct({
   ariaLabel: S.optional(S.NonEmptyString),
   hidden: S.optional(S.Boolean),
   zIndex: S.optional(S.Finite),
-});
+})
 
-export type FlowEdge = typeof FlowEdgeSchema.Type;
+export type FlowEdge = typeof FlowEdgeSchema.Type
 
 export const FlowDocumentSchema = S.Struct({
   edges: S.Array(FlowEdgeSchema),
   nodes: S.Array(FlowNodeSchema),
-});
+})
 
-export type FlowDocument = typeof FlowDocumentSchema.Type;
+export type FlowDocument = typeof FlowDocumentSchema.Type
 
 export const FlowDocumentIntegrityErrorSchema = S.Union([
   DuplicateNodeId,
@@ -150,115 +150,167 @@ export const FlowDocumentIntegrityErrorSchema = S.Union([
   SelfParentNode,
   ParentCycle,
   ParentExtentWithoutParent,
-]);
+])
 
 export type FlowDocumentIntegrityError =
-  typeof FlowDocumentIntegrityErrorSchema.Type;
+  typeof FlowDocumentIntegrityErrorSchema.Type
 
-const decodeUnknownFlowDocument = S.decodeUnknownEffect(FlowDocumentSchema);
+const decodeUnknownFlowDocument = S.decodeUnknownEffect(FlowDocumentSchema)
 
-const findDocumentIntegrityError = (
-  document: FlowDocument
-): FlowDocumentIntegrityError | undefined => {
-  const nodesById = new Map<NodeId, FlowNode>();
+const indexDocumentNodes = (
+  nodes: readonly FlowNode[]
+):
+  | { readonly nodesById: ReadonlyMap<NodeId, FlowNode> }
+  | {
+      readonly nodesById: ReadonlyMap<NodeId, FlowNode>
+      readonly error: DuplicateNodeId
+    } => {
+  const nodesById = new Map<NodeId, FlowNode>()
 
-  for (const node of document.nodes) {
+  for (const node of nodes) {
     if (nodesById.has(node.id)) {
-      return new DuplicateNodeId({ nodeId: node.id });
+      return { nodesById, error: new DuplicateNodeId({ nodeId: node.id }) }
     }
 
-    nodesById.set(node.id, node);
+    nodesById.set(node.id, node)
   }
 
-  for (const node of document.nodes) {
+  return { nodesById }
+}
+
+const findParentReferenceError = (
+  nodes: readonly FlowNode[],
+  nodesById: ReadonlyMap<NodeId, FlowNode>
+): FlowDocumentIntegrityError | undefined => {
+  for (const node of nodes) {
     if (node.parentId === undefined) {
-      if (node.extent === "parent") {
-        return new ParentExtentWithoutParent({ nodeId: node.id });
+      if (node.extent === 'parent') {
+        return new ParentExtentWithoutParent({ nodeId: node.id })
       }
-      continue;
+
+      continue
     }
 
     if (node.parentId === node.id) {
-      return new SelfParentNode({ nodeId: node.id });
+      return new SelfParentNode({ nodeId: node.id })
     }
 
     if (!nodesById.has(node.parentId)) {
-      return new MissingParentNode({ nodeId: node.id, parentId: node.parentId });
+      return new MissingParentNode({ nodeId: node.id, parentId: node.parentId })
     }
   }
 
-  const visited = new Set<NodeId>();
-  const visiting = new Set<NodeId>();
+  return undefined
+}
+
+const findParentCycleError = (
+  nodes: readonly FlowNode[],
+  nodesById: ReadonlyMap<NodeId, FlowNode>
+): ParentCycle | undefined => {
+  const visited = new Set<NodeId>()
+  const visiting = new Set<NodeId>()
+
   const visitParentChain = (nodeId: NodeId): NodeId | undefined => {
-    if (visiting.has(nodeId)) return nodeId;
-    if (visited.has(nodeId)) return;
-
-    visiting.add(nodeId);
-    const parentId = nodesById.get(nodeId)?.parentId;
-    const cycleNode = parentId === undefined ? undefined : visitParentChain(parentId);
-    visiting.delete(nodeId);
-    visited.add(nodeId);
-    return cycleNode;
-  };
-
-  for (const node of document.nodes) {
-    const cycleNode = visitParentChain(node.id);
-    if (cycleNode !== undefined) return new ParentCycle({ nodeId: cycleNode });
-  }
-
-  const edgeIds = new Set<EdgeId>();
-
-  for (const edge of document.edges) {
-    if (edgeIds.has(edge.id)) {
-      return new DuplicateEdgeId({ edgeId: edge.id });
+    if (visiting.has(nodeId)) {
+      return nodeId
     }
 
-    edgeIds.add(edge.id);
+    if (visited.has(nodeId)) {
+      return
+    }
+
+    visiting.add(nodeId)
+    const parentId = nodesById.get(nodeId)?.parentId
+
+    const cycleNode =
+      parentId === undefined ? undefined : visitParentChain(parentId)
+
+    visiting.delete(nodeId)
+    visited.add(nodeId)
+
+    return cycleNode
   }
 
-  for (const node of document.nodes) {
-    const handleIds = new Set<string>();
+  for (const node of nodes) {
+    const cycleNode = visitParentChain(node.id)
+
+    if (cycleNode !== undefined) {
+      return new ParentCycle({ nodeId: cycleNode })
+    }
+  }
+
+  return undefined
+}
+
+const findDuplicateEdgeId = (
+  edges: readonly FlowEdge[]
+): DuplicateEdgeId | undefined => {
+  const edgeIds = new Set<EdgeId>()
+
+  for (const edge of edges) {
+    if (edgeIds.has(edge.id)) {
+      return new DuplicateEdgeId({ edgeId: edge.id })
+    }
+
+    edgeIds.add(edge.id)
+  }
+
+  return undefined
+}
+
+const findDuplicateHandleId = (
+  nodes: readonly FlowNode[]
+): DuplicateHandleId | undefined => {
+  for (const node of nodes) {
+    const handleIds = new Set<string>()
 
     for (const handle of node.handles ?? []) {
       if (handleIds.has(handle.id)) {
-        return new DuplicateHandleId({ handleId: handle.id, nodeId: node.id });
+        return new DuplicateHandleId({ handleId: handle.id, nodeId: node.id })
       }
 
-      handleIds.add(handle.id);
+      handleIds.add(handle.id)
     }
   }
 
-  for (const edge of document.edges) {
+  return undefined
+}
+
+const findEdgeReferenceError = (
+  edges: readonly FlowEdge[],
+  nodesById: ReadonlyMap<NodeId, FlowNode>
+): FlowDocumentIntegrityError | undefined => {
+  for (const edge of edges) {
     if (!nodesById.has(edge.source)) {
       return new MissingEdgeEndpoint({
         edgeId: edge.id,
-        endpoint: "source",
+        endpoint: 'source',
         nodeId: edge.source,
-      });
+      })
     }
 
     if (!nodesById.has(edge.target)) {
       return new MissingEdgeEndpoint({
         edgeId: edge.id,
-        endpoint: "target",
+        endpoint: 'target',
         nodeId: edge.target,
-      });
+      })
     }
 
-    for (const endpoint of ["source", "target"] as const) {
+    for (const endpoint of ['source', 'target'] as const) {
       const handleId =
-        endpoint === "source" ? edge.sourceHandle : edge.targetHandle;
+        endpoint === 'source' ? edge.sourceHandle : edge.targetHandle
 
       if (handleId === undefined) {
-        continue;
+        continue
       }
 
-      const nodeId = edge[endpoint];
-      const node = nodesById.get(nodeId);
+      const nodeId = edge[endpoint]
+      const node = nodesById.get(nodeId)
 
       const handle = node?.handles?.find(
         (candidate) => candidate.id === handleId
-      );
+      )
 
       if (handle?.kind !== endpoint) {
         return new MissingEdgeHandle({
@@ -266,36 +318,58 @@ const findDocumentIntegrityError = (
           endpoint,
           handleId,
           nodeId,
-        });
+        })
       }
     }
   }
-};
+
+  return undefined
+}
+
+const findDocumentIntegrityError = (
+  document: FlowDocument
+): FlowDocumentIntegrityError | undefined => {
+  const nodeIndex = indexDocumentNodes(document.nodes)
+
+  if ('error' in nodeIndex) {
+    return nodeIndex.error
+  }
+
+  const { nodesById } = nodeIndex
+
+  return (
+    findParentReferenceError(document.nodes, nodesById) ??
+    findParentCycleError(document.nodes, nodesById) ??
+    findDuplicateEdgeId(document.edges) ??
+    findDuplicateHandleId(document.nodes) ??
+    findEdgeReferenceError(document.edges, nodesById)
+  )
+}
 
 const integrityAttributes = (error: FlowDocumentIntegrityError) =>
   Match.value(error).pipe(
     Match.tagsExhaustive({
       DuplicateNodeId: (duplicate) => ({
-        [FlowAttribute.documentIssue]: "duplicate-node-id",
+        [FlowAttribute.documentIssue]: 'duplicate-node-id',
         [FlowAttribute.nodeId]: duplicate.nodeId,
       }),
       DuplicateEdgeId: (duplicate) => ({
-        [FlowAttribute.documentIssue]: "duplicate-edge-id",
+        [FlowAttribute.documentIssue]: 'duplicate-edge-id',
         [FlowAttribute.edgeId]: duplicate.edgeId,
       }),
       DuplicateHandleId: (duplicate) => ({
-        [FlowAttribute.documentIssue]: "duplicate-handle-id",
+        [FlowAttribute.documentIssue]: 'duplicate-handle-id',
         [FlowAttribute.nodeId]: duplicate.nodeId,
         [FlowAttribute.handleId]: duplicate.handleId,
       }),
       MissingEdgeEndpoint: (missing) => ({
-        [FlowAttribute.documentIssue]: "missing-edge-endpoint",
+        [FlowAttribute.documentIssue]: 'missing-edge-endpoint',
         [FlowAttribute.edgeId]: missing.edgeId,
         [FlowAttribute.edgeEndpoint]: missing.endpoint,
         [FlowAttribute.nodeId]: missing.nodeId,
       }),
       MissingEdgeHandle: (missing) => ({
-        [FlowAttribute.documentIssue]: "missing-edge-handle",
+        [FlowAttribute.documentIssue]: 'missing-edge-handle',
         [FlowAttribute.edgeId]: missing.edgeId,
         [FlowAttribute.edgeEndpoint]: missing.endpoint,
         [FlowAttribute.nodeId]: missing.nodeId,
@@ -306,40 +380,40 @@ const integrityAttributes = (error: FlowDocumentIntegrityError) =>
         [FlowAttribute.nodeId]: missing.nodeId,
       }),
       SelfParentNode: (invalid) => ({
-        [FlowAttribute.documentIssue]: "self-parent-node",
+        [FlowAttribute.documentIssue]: 'self-parent-node',
         [FlowAttribute.nodeId]: invalid.nodeId,
       }),
       ParentCycle: (invalid) => ({
-        [FlowAttribute.documentIssue]: "parent-cycle",
+        [FlowAttribute.documentIssue]: 'parent-cycle',
         [FlowAttribute.nodeId]: invalid.nodeId,
       }),
       ParentExtentWithoutParent: (invalid) => ({
-        [FlowAttribute.documentIssue]: "parent-extent-without-parent",
+        [FlowAttribute.documentIssue]: 'parent-extent-without-parent',
         [FlowAttribute.nodeId]: invalid.nodeId,
       }),
     })
-  );
+  )
 
 export const validateFlowDocument = (
   document: FlowDocument
 ): Effect.Effect<FlowDocument, FlowDocumentIntegrityError> =>
   Effect.gen(function* validateDocumentIntegrity() {
-    const error = findDocumentIntegrityError(document);
+    const error = findDocumentIntegrityError(document)
 
     if (error === undefined) {
-      return document;
+      return document
     }
 
-    const attributes = integrityAttributes(error);
-    yield* Effect.logWarning("Rejected flow document integrity").pipe(
+    const attributes = integrityAttributes(error)
+    yield* Effect.logWarning('Rejected flow document integrity').pipe(
       Effect.annotateLogs(attributes)
-    );
-    yield* Effect.annotateCurrentSpan(attributes);
+    )
+    yield* Effect.annotateCurrentSpan(attributes)
 
-    return yield* error;
-  }).pipe(Effect.withSpan(FlowSpan.documentIntegrity));
+    return yield* error
+  }).pipe(Effect.withSpan(FlowSpan.documentIntegrity))
 
-export type FlowDocumentInput = Parameters<typeof decodeUnknownFlowDocument>[0];
+export type FlowDocumentInput = Parameters<typeof decodeUnknownFlowDocument>[0]
 
 export const decodeFlowDocument = (input: FlowDocumentInput) =>
   decodeUnknownFlowDocument(input).pipe(
@@ -349,13 +423,13 @@ export const decodeFlowDocument = (input: FlowDocumentInput) =>
         const attributes = {
           [FlowAttribute.nodeCount]: document.nodes.length,
           [FlowAttribute.edgeCount]: document.edges.length,
-        };
+        }
 
-        yield* Effect.annotateCurrentSpan(attributes);
-        yield* Effect.logDebug("Decoded flow document").pipe(
+        yield* Effect.annotateCurrentSpan(attributes)
+        yield* Effect.logDebug('Decoded flow document').pipe(
           Effect.annotateLogs(attributes)
-        );
+        )
       })
     ),
     Effect.withSpan(FlowSpan.documentDecode)
-  );
+  )

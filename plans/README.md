@@ -1,27 +1,8 @@
 # Implementation plans
 
-Plan 001 was written against the original unborn `main` and is complete at
-`e393e3e`. Plans 002-010 were written with the improve skill on 2026-09-23
-against that commit after a standard audit; the user selected all nine vetted
-findings. Read each plan fully, run its drift check and STOP conditions, and
-update its status row after the complete verification gate passes. Preserve
-unrelated work. Do not commit, push, or open a PR without operator instruction.
-Plan 011 was added on 2026-09-23 against `5274aef` and is complete. Plans
-012-021 were written against `6e84008` as the next ten bounded scopes from
-`research/PROGRESS.md` and the Plan 011 baseline. The former handoff is a dated
-snapshot in `docs/archive/`; current status lives in `research/PROGRESS.md`. Later
-plans must re-read the contracts produced by earlier plans before executing;
-their drift checks and STOP conditions make that dependency explicit.
+Plan 001 was written against the original unborn `main` and is complete at `e393e3e`. Plans 002-010 were written with the improve skill on 2026-09-23 against that commit after a standard audit; the user selected all nine vetted findings. Read each plan fully, run its drift check and STOP conditions, and update its status row after the complete verification gate passes. Preserve unrelated work. Do not commit, push, or open a PR without operator instruction. Plan 011 was added on 2026-09-23 against `5274aef` and is complete. Plans 012-021 were written against `6e84008` as the next ten bounded scopes from `research/PROGRESS.md` and the Plan 011 baseline. The former handoff is a dated snapshot in `docs/archive/`; current status lives in `research/PROGRESS.md`. Later plans must re-read the contracts produced by earlier plans before executing; their drift checks and STOP conditions make that dependency explicit.
 
-Plans 022-029 were written on 2026-09-24 against `5e5d496` using the open
-items in `research/PROGRESS.md`. They form one interaction and canvas UI chunk:
-reference boundaries, deterministic browser proof, multi-direction resize,
-gesture cancellation, custom drag handles, panel placement, and focused
-verification. They do not promise full xyflow or framework-adapter parity.
-Plan 029's keyboard proof exposed a native renderer-control activation defect;
-Plan 032 fixed native key ownership before Plan 029's proof resumed.
-The advisor checkout had uncommitted documentation changes when these plans
-were written; each executor must inspect live status and preserve them.
+Plans 022-029 were written on 2026-09-24 against `5e5d496` using the open items in `research/PROGRESS.md`. They form one interaction and canvas UI chunk: reference boundaries, deterministic browser proof, multi-direction resize, gesture cancellation, custom drag handles, panel placement, and focused verification. They do not promise full xyflow or framework-adapter parity. Plan 029's keyboard proof exposed a native renderer-control activation defect; Plan 032 fixed native key ownership before Plan 029's proof resumed. The advisor checkout had uncommitted documentation changes when these plans were written; each executor must inspect live status and preserve them.
 
 ## Execution order and status
 
@@ -70,57 +51,29 @@ were written; each executor must inspect live status and preserve them.
 | [041](041-audit-visual-and-accessibility-output.md) | Broaden visual and accessibility evidence | P2 | L | 033, 034 | DONE — `045e158`, `e99f624`; full verify passed; manual and screen-reader cells remain unverified |
 | [042](042-expose-completed-interactions-in-playground.md) | Expose completed vanilla interactions in the playground | P2 | M | none | DONE — `c1ff849`; full verify passed |
 
-Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with
-a reason.
+Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, or REJECTED with a reason.
 
-Plans 002-010 were executed and reviewed in the isolated worktree
-`/Users/richardmcandrews/.codex/worktrees/flow-plans-002-010/flow`, based on
-`e393e3e`. Their nine commits are now on `main` through fast-forward `a1e1e3a`.
+Plans 002-010 were executed and reviewed in the isolated worktree `/Users/richardmcandrews/.codex/worktrees/flow-plans-002-010/flow`, based on `e393e3e`. Their nine commits are now on `main` through fast-forward `a1e1e3a`.
 
 ## Dependency notes
 
-- Land 002 before 003 and 004: all three touch node reconciliation, and 002
-  establishes the absolute-position update behavior they must preserve.
-- Land 004 and 005 before 007: general gesture cancellation should build on
-  correct group cancellation and guaranteed mount cleanup.
-- Run 008 after the P1 implementation plans if its handoff should describe
-  their results; it can be moved earlier for a documentation-only handoff.
-- Land 003 and 004 before 009, then 009 before 010, to keep the culling and
-  drag-edge performance work grounded in a stable browser reconciliation path.
-- 006 is independent of the browser plans and should land before freezing or
-  distributing the public persistence contract.
-- Foldkit and Vue adapter work should wait for the graph/browser contract fixes
-  and shared conformance design. The separate direction suggestions from the
-  audit were not part of the nine selected defect/maintenance findings.
-- 011 characterized spatial and gesture paths. Its 4,000-node local timings
-  did not justify an index, so 012 compares a core-only candidate with the
-  current scan before any production index integration.
-- 013 stabilizes gesture state before 014 adds resize and 015 adds node
-  auto-pan. 016 then captures the shared behavioral contract. 017 settles
-  package and JavaScript consumption before 018's optional UI layer.
-- 019 and 020 run the same suite on Foldkit and Vue. 021 adds delivery checks
-  after package and adapter contracts exist. The plans are numbered in
-  recommended order; 012 can run independently of 013-015 in separate
-  isolated checkouts, but their implementation changes must be reconciled
-  before landing.
-- 022 defines observable boundaries before the resize, gesture, drag-handle,
-  and overlay slices. 023 fixes a reproduced stale-Vite test-server problem;
-  it can run alongside 022 but must land before browser-heavy 025-029.
-- 024 keeps signed resize and extent math in core. 025 wires one atomic
-  position/size result through vanilla; 026 then tests cancellation against
-  the final resize gesture. 027 builds on those node interaction rules.
-- 028 is independent of resize after 022-023 and can execute in a separate
-  worktree. 029 follows the feature slices and records what the three
-  adapters and pinned reference actually prove.
-- Plan 029's renderer-button test found that the canvas node key handler
-  prevented native Enter activation. Plan 032 fixed native key ownership;
-  Plan 029 then completed its keyboard and capability evidence.
+- Land 002 before 003 and 004: all three touch node reconciliation, and 002 establishes the absolute-position update behavior they must preserve.
+- Land 004 and 005 before 007: general gesture cancellation should build on correct group cancellation and guaranteed mount cleanup.
+- Run 008 after the P1 implementation plans if its handoff should describe their results; it can be moved earlier for a documentation-only handoff.
+- Land 003 and 004 before 009, then 009 before 010, to keep the culling and drag-edge performance work grounded in a stable browser reconciliation path.
+- 006 is independent of the browser plans and should land before freezing or distributing the public persistence contract.
+- Foldkit and Vue adapter work should wait for the graph/browser contract fixes and shared conformance design. The separate direction suggestions from the audit were not part of the nine selected defect/maintenance findings.
+- 011 characterized spatial and gesture paths. Its 4,000-node local timings did not justify an index, so 012 compares a core-only candidate with the current scan before any production index integration.
+- 013 stabilizes gesture state before 014 adds resize and 015 adds node auto-pan. 016 then captures the shared behavioral contract. 017 settles package and JavaScript consumption before 018's optional UI layer.
+- 019 and 020 run the same suite on Foldkit and Vue. 021 adds delivery checks after package and adapter contracts exist. The plans are numbered in recommended order; 012 can run independently of 013-015 in separate isolated checkouts, but their implementation changes must be reconciled before landing.
+- 022 defines observable boundaries before the resize, gesture, drag-handle, and overlay slices. 023 fixes a reproduced stale-Vite test-server problem; it can run alongside 022 but must land before browser-heavy 025-029.
+- 024 keeps signed resize and extent math in core. 025 wires one atomic position/size result through vanilla; 026 then tests cancellation against the final resize gesture. 027 builds on those node interaction rules.
+- 028 is independent of resize after 022-023 and can execute in a separate worktree. 029 follows the feature slices and records what the three adapters and pinned reference actually prove.
+- Plan 029's renderer-button test found that the canvas node key handler prevented native Enter activation. Plan 032 fixed native key ownership; Plan 029 then completed its keyboard and capability evidence.
 
 ## Coverage recorded for Plans 012-021
 
-`research/PROGRESS.md` is authoritative. This table records the scope and
-limits of the earlier 012-021 rollout; a checklist box closes only when its
-whole contract and test boundary pass.
+`research/PROGRESS.md` is authoritative. This table records the scope and limits of the earlier 012-021 rollout; a checklist box closes only when its whole contract and test boundary pass.
 
 | Open checklist area | Planned scope | Completion limit |
 | --- | --- | --- |
@@ -146,26 +99,13 @@ whole contract and test boundary pass.
 
 ## Findings considered and rejected
 
-- Split the 3,556-line vanilla host immediately: structural cost is real, but
-  a broad extraction before these contract fixes would add high regression
-  risk. Reconsider after interaction characterization and a shared suite.
-- Broad full-adapter feature parity in this chunk: Foldkit and Vue still have
-  bounded surfaces, and adding vanilla gestures to them before the contracts
-  settle would duplicate unstable behavior. Plan 029 records capability gaps
-  for a later adapter chunk.
-- No security issue met the evidence threshold in the audited host and core
-  paths. Imported upstream artifacts and dependency advisories were not audited.
+- Split the 3,556-line vanilla host immediately: structural cost is real, but a broad extraction before these contract fixes would add high regression risk. Reconsider after interaction characterization and a shared suite.
+- Broad full-adapter feature parity in this chunk: Foldkit and Vue still have bounded surfaces, and adding vanilla gestures to them before the contracts settle would duplicate unstable behavior. Plan 029 records capability gaps for a later adapter chunk.
+- No security issue met the evidence threshold in the audited host and core paths. Imported upstream artifacts and dependency advisories were not audited.
 
 ## September 25 advisory: next ten scopes
 
-Plans 033-042 were written against `f9b2b13` using `research/PROGRESS.md`, the
-completed interaction plans, current adapter source, and the browser evidence
-matrix. This is a reliability and proof chunk before broad framework-feature
-parity or public release. The P1 sequence is 033 then 034, with 035 independent;
-run 036 after those source edits to avoid a wide formatter/lint conflict. Plan
-037 can proceed separately if a native-capable device is available. Plans
-038-042 are independent except for 041's adapter prerequisite and may use separate
-worktrees; their browser gates should run serially on strict test ports.
+Plans 033-042 were written against `f9b2b13` using `research/PROGRESS.md`, the completed interaction plans, current adapter source, and the browser evidence matrix. This is a reliability and proof chunk before broad framework-feature parity or public release. The P1 sequence is 033 then 034, with 035 independent; run 036 after those source edits to avoid a wide formatter/lint conflict. Plan 037 can proceed separately if a native-capable device is available. Plans 038-042 are independent except for 041's adapter prerequisite and may use separate worktrees; their browser gates should run serially on strict test ports.
 
 | Plan | Checklist or contract addressed | Completion boundary |
 | --- | --- | --- |
@@ -190,21 +130,10 @@ worktrees; their browser gates should run serially on strict test ports.
 | Native multi-pointer cases remain skipped | tests | Capture/cancellation paths unverified | L | MED | HIGH | `apps/vanilla/e2e/advanced-gestures.e2e.ts:356-359`; `docs/browser-and-accessibility.md:5` |
 | Browser reconcile and minimap hot paths lack budgets | performance | Scaling risk is unmeasured | M | LOW for measurement | HIGH for code pattern, MED for user impact | `apps/vanilla/src/edge-renderer.ts:185-196`; `apps/vanilla/src/canvas-ui.ts:171-188`; `scripts/bench-flow-geometry.ts:61-66` |
 
-Direction choices are separate from defects: Plan 038 narrows a reference
-comparison; Plan 042 makes completed vanilla interactions inspectable. Broad
-Vue/Foldkit feature parity and package release remain later decisions. The
-first-slice adapters have only six shared scenarios (`research/fixtures/README.md:18-45`),
-and packages remain private at `0.0.0` with licensing deferred
-(`docs/release-process.md:1-11`).
+Direction choices are separate from defects: Plan 038 narrows a reference comparison; Plan 042 makes completed vanilla interactions inspectable. Broad Vue/Foldkit feature parity and package release remain later decisions. The first-slice adapters have only six shared scenarios (`research/fixtures/README.md:18-45`), and packages remain private at `0.0.0` with licensing deferred (`docs/release-process.md:1-11`).
 
 ### Considered and deferred in this audit
 
-- An immediate split of the roughly 4,200-line `apps/vanilla/src/mount-flow.ts`
-  would touch tightly coupled gesture and cleanup state. Revisit after Plans
-  037, 039, and 040 characterize the relevant behavior; a broad extraction now
-  has higher regression risk than the selected correctness work.
-- A spatial index is not justified by the earlier 4,000-node core prototype.
-  Plan 040 measures browser hot paths before selecting an optimization.
-- Full framework-feature parity and public package release are not included in
-  these ten scopes. The shared contract and delivery decisions need the
-  selected correctness/proof results first.
+- An immediate split of the roughly 4,200-line `apps/vanilla/src/mount-flow.ts` would touch tightly coupled gesture and cleanup state. Revisit after Plans 037, 039, and 040 characterize the relevant behavior; a broad extraction now has higher regression risk than the selected correctness work.
+- A spatial index is not justified by the earlier 4,000-node core prototype. Plan 040 measures browser hot paths before selecting an optimization.
+- Full framework-feature parity and public package release are not included in these ten scopes. The shared contract and delivery decisions need the selected correctness/proof results first.

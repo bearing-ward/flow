@@ -26,7 +26,7 @@ const SavedFlowEdgeSchema = S.Struct({
   // ... domain fields repeated here
   stroke: S.optional(S.String),
   strokeWidth: S.optional(S.Finite.check(S.isGreaterThan(0))),
-});
+})
 ```
 
 ## Commands and scope

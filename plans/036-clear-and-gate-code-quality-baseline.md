@@ -22,11 +22,11 @@
 
 ## Commands and scope
 
-| Purpose | Command | Expected |
-| --- | --- | --- |
-| Baseline and final check | `bun run check` | final exit 0 |
-| Stability | `bun run check && bun run check` | both exit 0 |
-| Full gate | `bun run verify` | exit 0 |
+| Purpose                  | Command                          | Expected     |
+| ------------------------ | -------------------------------- | ------------ |
+| Baseline and final check | `bun run check`                  | final exit 0 |
+| Stability                | `bun run check && bun run check` | both exit 0  |
+| Full gate                | `bun run verify`                 | exit 0       |
 
 **In scope:** repository-owned files reported by the current `bun run check`, `scripts/verify.ts`, `docs/tooling.md`, `research/PROGRESS.md`, and this index row. **Out of scope:** imported `research/artifacts/`, generated indexes, `dist/`, vendored anti-slop source, dependency upgrades, semantic feature changes, and disabling rules to make the gate green.
 

@@ -1,6 +1,6 @@
-import { Schema as S } from "effect";
+import { Schema as S } from 'effect'
 
-import type { Viewport } from "./flow-runtime.schema.ts";
+import type { Viewport } from './flow-runtime.schema.ts'
 
 export const PanExtentSchema = S.Struct({
   minX: S.Finite,
@@ -11,11 +11,11 @@ export const PanExtentSchema = S.Struct({
   S.makeFilter((extent) =>
     extent.minX <= extent.maxX && extent.minY <= extent.maxY
       ? undefined
-      : "pan extent minimums must be less than or equal to maximums"
+      : 'pan extent minimums must be less than or equal to maximums'
   )
-);
+)
 
-export type PanExtent = typeof PanExtentSchema.Type;
+export type PanExtent = typeof PanExtentSchema.Type
 
 const constrainAxis = (
   translation: number,
@@ -24,15 +24,15 @@ const constrainAxis = (
   zoom: number,
   screenSize: number
 ): number => {
-  const lowerTranslation = screenSize - maximum * zoom;
-  const upperTranslation = minimum === 0 ? 0 : -minimum * zoom;
+  const lowerTranslation = screenSize - maximum * zoom
+  const upperTranslation = minimum === 0 ? 0 : -minimum * zoom
 
   if (lowerTranslation > upperTranslation) {
-    return (lowerTranslation + upperTranslation) / 2;
+    return (lowerTranslation + upperTranslation) / 2
   }
 
-  return Math.min(upperTranslation, Math.max(lowerTranslation, translation));
-};
+  return Math.min(upperTranslation, Math.max(lowerTranslation, translation))
+}
 
 /** Keep the visible flow-space rectangle inside an extent at the given zoom. */
 export const constrainViewportToExtent = (
@@ -56,4 +56,4 @@ export const constrainViewportToExtent = (
     screenHeight
   ),
   zoom: viewport.zoom,
-});
+})

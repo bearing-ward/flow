@@ -22,14 +22,16 @@ The interaction schema permits disjoint pointer sessions and a pinch owns two po
 
 ```ts
 // packages/core/src/domain/flow-runtime.schema.ts:141-148
-export const FlowInteractionSessionsSchema = S.Array(FlowInteractionSessionSchema).check(
+export const FlowInteractionSessionsSchema = S.Array(
+  FlowInteractionSessionSchema
+).check(
   S.makeFilter((sessions) => {
-    const owned = sessions.flatMap(pointerIdsForSession);
+    const owned = sessions.flatMap(pointerIdsForSession)
     return new Set(owned).size === owned.length
       ? undefined
-      : "A pointer id can belong to only one interaction session";
+      : 'A pointer id can belong to only one interaction session'
   })
-);
+)
 ```
 
 Keep keyboard movement immediate, click-to-connect separate, no pointer-move logs, and browser resource ownership in `apps/` (`docs/architecture.md:5-16,86-90`).

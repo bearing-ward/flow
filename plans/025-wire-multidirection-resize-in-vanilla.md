@@ -25,10 +25,10 @@ The vanilla host exposes only a selected node's lower-right button. Wiring all d
 const change = resizeNode(resize.nodeId, resize.sizeStart, {
   x: pointerInFlow(event).x - resize.pointerStart.x,
   y: pointerInFlow(event).y - resize.pointerStart.y,
-});
-element.style.width = `${change.size.width}px`;
-element.style.height = `${change.size.height}px`;
-element.style.boxSizing = "border-box";
+})
+element.style.width = `${change.size.width}px`
+element.style.height = `${change.size.height}px`
+element.style.boxSizing = 'border-box'
 ```
 
 Keep document position parent-local, measurement host-owned, and final-only semantic changes (`docs/architecture.md:5-16,104-110`). Do not add pointer-move logs; use the established telemetry names in `packages/core/src/telemetry/flow-telemetry.ts`.

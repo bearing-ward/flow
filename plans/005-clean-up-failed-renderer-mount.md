@@ -21,12 +21,18 @@
 
 ```ts
 // apps/vanilla/src/mount-flow.ts:3306-3313
-canvas.append(viewport, connectionStatus);
-root.replaceChildren(canvas);
-authoritativeViewport = constrainViewport(authoritativeViewport);
-renderViewport(authoritativeViewport);
-operations.reconcile(document);
-yield* Scope.addFinalizer(hostScope, Effect.sync(() => { /* cleanup */ }));
+canvas.append(viewport, connectionStatus)
+root.replaceChildren(canvas)
+authoritativeViewport = constrainViewport(authoritativeViewport)
+renderViewport(authoritativeViewport)
+operations.reconcile(document)
+yield *
+  Scope.addFinalizer(
+    hostScope,
+    Effect.sync(() => {
+      /* cleanup */
+    })
+  )
 ```
 
 ## Commands and scope

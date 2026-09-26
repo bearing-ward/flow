@@ -25,13 +25,13 @@ export const resizeNode = (
   initialSize: NodeSize,
   delta: XYPosition
 ): NodeSizeChange => ({
-  kind: "node-size",
+  kind: 'node-size',
   nodeId,
   size: S.decodeUnknownSync(NodeSizeSchema)({
     width: Math.max(40, initialSize.width + delta.x),
     height: Math.max(24, initialSize.height + delta.y),
   }),
-});
+})
 ```
 
 - `packages/core/src/domain/flow.schema.ts:63-81` stores optional declared `size`, parent-local `position`, and `extent: "parent"`. `docs/architecture.md:104-110` says measured dimensions stay outside the document and a parent does not auto-expand.

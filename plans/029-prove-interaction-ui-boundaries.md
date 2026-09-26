@@ -24,9 +24,9 @@ The new interaction slices will add behavior faster than the six original adapte
 
 ```ts
 // apps/vanilla/e2e/canvas-ui.e2e.ts:31-38
-await expect(page.getByRole("button", { name: "Zoom in" })).toBeVisible();
-await expect(page.getByRole("img", { name: "Graph minimap" })).toBeVisible();
-await expect(page).toHaveScreenshot("canvas-ui.png", { animations: "disabled" });
+await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible()
+await expect(page.getByRole('img', { name: 'Graph minimap' })).toBeVisible()
+await expect(page).toHaveScreenshot('canvas-ui.png', { animations: 'disabled' })
 ```
 
 Parity means tested equivalence to the pinned reference (`CONTEXT.md:14-15`). Flow browser proof alone is a Flow contract claim.

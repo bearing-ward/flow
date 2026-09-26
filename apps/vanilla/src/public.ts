@@ -4,18 +4,19 @@ export {
   createFlow,
   createFlowHost,
   mountFlow,
-} from "./mount-flow.ts";
+} from './mount-flow.ts'
 
-export { FlowBrowser, FlowBrowserLive } from "./flow-browser.ts";
+export { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
 
-export { BrowserCapabilityError } from "./browser-capability-error.ts";
-export { CanvasUIOptionsError } from "./mount-flow.ts";
+export { BrowserCapabilityError } from './browser-capability-error.ts'
+
+export { CanvasUIOptionsError } from './mount-flow.ts'
 
 export type {
   ElementSize,
   FlowBrowserService,
   ResizeObservation,
-} from "./flow-browser.ts";
+} from './flow-browser.ts'
 
 export type {
   FlowController,
@@ -30,4 +31,4 @@ export type {
   FlowEdgeRenderer,
   FlowEdgeRenderContext,
   FlowEdgeRendererInstance,
-} from "./mount-flow.ts";
+} from './mount-flow.ts'

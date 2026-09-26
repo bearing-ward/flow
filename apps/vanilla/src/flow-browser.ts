@@ -1,19 +1,19 @@
-import { FlowAttribute, FlowSpan } from "@flow/core";
-import type { Scope } from "effect";
-import { Context, Effect, Layer } from "effect";
+import { FlowAttribute, FlowSpan } from '@flow/core'
+import type { Scope } from 'effect'
+import { Context, Effect, Layer } from 'effect'
 
-import { BrowserCapabilityError } from "./browser-capability-error.ts";
+import { BrowserCapabilityError } from './browser-capability-error.ts'
 
-export { BrowserCapabilityError } from "./browser-capability-error.ts";
+export { BrowserCapabilityError } from './browser-capability-error.ts'
 
 export interface ElementSize {
-  readonly width: number;
-  readonly height: number;
+  readonly width: number
+  readonly height: number
 }
 
 export interface ResizeObservation {
-  readonly observe: (element: Element) => void;
-  readonly unobserve: (element: Element) => void;
+  readonly observe: (element: Element) => void
+  readonly unobserve: (element: Element) => void
 }
 
 export interface FlowBrowserService {
@@ -22,37 +22,37 @@ export interface FlowBrowserService {
     type: K,
     listener: (event: HTMLElementEventMap[K]) => void,
     options?: AddEventListenerOptions
-  ) => Effect.Effect<void, never, Scope.Scope>;
+  ) => Effect.Effect<void, never, Scope.Scope>
   readonly listenWindow: <K extends keyof WindowEventMap>(
     target: Window,
     type: K,
     listener: (event: WindowEventMap[K]) => void,
     options?: AddEventListenerOptions
-  ) => Effect.Effect<void, never, Scope.Scope>;
+  ) => Effect.Effect<void, never, Scope.Scope>
   readonly observeResize: (
     listener: (entries: readonly ResizeObserverEntry[]) => void
-  ) => Effect.Effect<ResizeObservation, BrowserCapabilityError, Scope.Scope>;
-  readonly measure: (element: HTMLElement) => ElementSize;
-  readonly focus: (element: HTMLElement) => Effect.Effect<void>;
+  ) => Effect.Effect<ResizeObservation, BrowserCapabilityError, Scope.Scope>
+  readonly measure: (element: HTMLElement) => ElementSize
+  readonly focus: (element: HTMLElement) => Effect.Effect<void>
   readonly requestAnimationFrame: (
     callback: FrameRequestCallback
-  ) => Effect.Effect<number, never, Scope.Scope>;
+  ) => Effect.Effect<number, never, Scope.Scope>
   readonly capturePointer: (
     element: HTMLElement,
     pointerId: number
-  ) => Effect.Effect<boolean>;
+  ) => Effect.Effect<boolean>
   readonly releasePointer: (
     element: HTMLElement,
     pointerId: number
-  ) => Effect.Effect<boolean>;
+  ) => Effect.Effect<boolean>
 }
 
 export class FlowBrowser extends Context.Service<
   FlowBrowser,
   FlowBrowserService
->()("@flow/vanilla/FlowBrowser") {}
+>()('@flow/vanilla/FlowBrowser') {}
 
-const listen: FlowBrowserService["listen"] = (
+const listen: FlowBrowserService['listen'] = (
   target,
   type,
   listener,
@@ -61,9 +61,9 @@ const listen: FlowBrowserService["listen"] = (
   Effect.acquireRelease(
     Effect.sync(() => target.addEventListener(type, listener, options)),
     () => Effect.sync(() => target.removeEventListener(type, listener, options))
-  );
+  )
 
-const listenWindow: FlowBrowserService["listenWindow"] = (
+const listenWindow: FlowBrowserService['listenWindow'] = (
   target,
   type,
   listener,
@@ -72,61 +72,61 @@ const listenWindow: FlowBrowserService["listenWindow"] = (
   Effect.acquireRelease(
     Effect.sync(() => target.addEventListener(type, listener, options)),
     () => Effect.sync(() => target.removeEventListener(type, listener, options))
-  );
+  )
 
 const pointerOperation = (
-  operation: "capture" | "release",
+  operation: 'capture' | 'release',
   element: HTMLElement,
   pointerId: number
 ): Effect.Effect<boolean> => {
   const recoverPointerOperation = (error: BrowserCapabilityError) =>
-    Effect.logWarning("Browser pointer operation failed").pipe(
+    Effect.logWarning('Browser pointer operation failed').pipe(
       Effect.annotateLogs({
         [FlowAttribute.browserCapability]: error.capability,
         [FlowAttribute.browserOperation]: error.operation,
         [FlowAttribute.pointerId]: pointerId,
       }),
       Effect.as(false)
-    );
+    )
 
   return Effect.try({
     catch: (cause) =>
       new BrowserCapabilityError({
-        capability: "pointer-capture",
+        capability: 'pointer-capture',
         operation,
         cause,
       }),
     try: () => {
-      if (operation === "capture") {
-        element.setPointerCapture(pointerId);
+      if (operation === 'capture') {
+        element.setPointerCapture(pointerId)
       } else if (element.hasPointerCapture(pointerId)) {
-        element.releasePointerCapture(pointerId);
+        element.releasePointerCapture(pointerId)
       }
 
-      return true;
+      return true
     },
   }).pipe(
-    Effect.catchTag("BrowserCapabilityError", recoverPointerOperation),
+    Effect.catchTag('BrowserCapabilityError', recoverPointerOperation),
     Effect.withSpan(FlowSpan.browserPointerCapture, {
       attributes: {
         [FlowAttribute.browserOperation]: operation,
         [FlowAttribute.pointerId]: pointerId,
       },
     })
-  );
-};
+  )
+}
 
 const logResizeObservationError = (error: BrowserCapabilityError) =>
-  Effect.logError("Browser resize observation is unavailable").pipe(
+  Effect.logError('Browser resize observation is unavailable').pipe(
     Effect.annotateLogs({
       [FlowAttribute.browserCapability]: error.capability,
       [FlowAttribute.browserOperation]: error.operation,
     })
-  );
+  )
 
 export const FlowBrowserLive = Layer.succeed(FlowBrowser, {
   capturePointer: (element, pointerId) =>
-    pointerOperation("capture", element, pointerId),
+    pointerOperation('capture', element, pointerId),
   listen,
   listenWindow,
   measure: (element) => ({
@@ -143,18 +143,18 @@ export const FlowBrowserLive = Layer.succeed(FlowBrowser, {
     Effect.acquireRelease(
       Effect.try({
         try: () => {
-          const observer = new ResizeObserver(listener);
+          const observer = new ResizeObserver(listener)
 
           return {
             observe: (element: Element): void => observer.observe(element),
             unobserve: (element: Element): void => observer.unobserve(element),
             disconnect: (): void => observer.disconnect(),
-          };
+          }
         },
         catch: (cause) =>
           new BrowserCapabilityError({
-            capability: "resize-observer",
-            operation: "acquire",
+            capability: 'resize-observer',
+            operation: 'acquire',
             cause,
           }),
       }).pipe(
@@ -164,5 +164,5 @@ export const FlowBrowserLive = Layer.succeed(FlowBrowser, {
       (observation) => Effect.sync(() => observation.disconnect())
     ),
   releasePointer: (element, pointerId) =>
-    pointerOperation("release", element, pointerId),
-});
+    pointerOperation('release', element, pointerId),
+})

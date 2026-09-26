@@ -1,14 +1,14 @@
-import { Schema } from "effect";
+import { Schema } from 'effect'
 
-import { EdgeIdSchema, NodeIdSchema } from "./flow-values.ts";
+import { EdgeIdSchema, NodeIdSchema } from './flow-values.ts'
 
-const tagged = Schema.TaggedError;
+const tagged = Schema.TaggedError
 
 export class MissingEdgeEndpoint extends tagged<MissingEdgeEndpoint>()(
-  "MissingEdgeEndpoint",
+  'MissingEdgeEndpoint',
   {
     edgeId: EdgeIdSchema,
-    endpoint: Schema.Literals(["source", "target"]),
+    endpoint: Schema.Literals(['source', 'target']),
     nodeId: NodeIdSchema,
   }
 ) {}

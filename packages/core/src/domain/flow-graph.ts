@@ -1,151 +1,263 @@
-import type { MeasuredNode } from "./flow-runtime.schema.ts";
-import type { FlowDocument, FlowEdge, FlowNode, NodeId, XYPosition } from "./flow.schema.ts";
-import type { FlowRect } from "./flow-visibility.schema.ts";
+import type { MeasuredNode } from './flow-runtime.schema.ts'
+import type { FlowRect } from './flow-visibility.schema.ts'
+import type {
+  FlowDocument,
+  FlowEdge,
+  FlowNode,
+  NodeId,
+  XYPosition,
+} from './flow.schema.ts'
 
 export interface FlowGraphNode {
-  readonly id: NodeId;
-  readonly node: FlowNode;
-  readonly documentIndex: number;
-  readonly parentId: NodeId | undefined;
-  readonly absolutePosition: XYPosition;
-  readonly dimensions: { readonly width: number; readonly height: number };
-  readonly hidden: boolean;
+  readonly id: NodeId
+  readonly node: FlowNode
+  readonly documentIndex: number
+  readonly parentId: NodeId | undefined
+  readonly absolutePosition: XYPosition
+  readonly dimensions: { readonly width: number; readonly height: number }
+  readonly hidden: boolean
 }
 
 export interface FlowGraphView {
-  readonly document: FlowDocument;
-  readonly nodes: ReadonlyMap<NodeId, FlowGraphNode>;
-  readonly children: ReadonlyMap<NodeId, readonly NodeId[]>;
-  readonly orderedNodes: readonly FlowGraphNode[];
+  readonly document: FlowDocument
+  readonly nodes: ReadonlyMap<NodeId, FlowGraphNode>
+  readonly children: ReadonlyMap<NodeId, readonly NodeId[]>
+  readonly orderedNodes: readonly FlowGraphNode[]
 }
 
-const fallbackDimensions = { width: 150, height: 44 } as const;
+const fallbackDimensions = { width: 150, height: 44 } as const
 
 /** Build a pure geometry view from a document already accepted by decodeFlowDocument. */
 export const createFlowGraph = (
   document: FlowDocument,
   measurements: ReadonlyMap<NodeId, MeasuredNode> = new Map(),
   positionOverrides: ReadonlyMap<NodeId, XYPosition> = new Map(),
-  fallback: { readonly width: number; readonly height: number } = fallbackDimensions
+  fallback: {
+    readonly width: number
+    readonly height: number
+  } = fallbackDimensions
 ): FlowGraphView => {
-  const documentIndex = new Map<NodeId, number>();
-  const nodeById = new Map<NodeId, FlowNode>();
-  const childLists = new Map<NodeId, NodeId[]>();
+  const documentIndex = new Map<NodeId, number>()
+  const nodeById = new Map<NodeId, FlowNode>()
+  const childLists = new Map<NodeId, NodeId[]>()
 
-  document.nodes.forEach((node, index) => {
-    documentIndex.set(node.id, index);
-    nodeById.set(node.id, node);
+  for (const [index, node] of document.nodes.entries()) {
+    documentIndex.set(node.id, index)
+    nodeById.set(node.id, node)
+
     if (node.parentId !== undefined) {
-      const siblings = childLists.get(node.parentId) ?? [];
-      siblings.push(node.id);
-      childLists.set(node.parentId, siblings);
+      const siblings = childLists.get(node.parentId) ?? []
+      siblings.push(node.id)
+      childLists.set(node.parentId, siblings)
     }
-  });
+  }
 
-  const graphNodes = new Map<NodeId, FlowGraphNode>();
+  const graphNodes = new Map<NodeId, FlowGraphNode>()
+
   const resolve = (id: NodeId): FlowGraphNode => {
-    const cached = graphNodes.get(id);
-    if (cached !== undefined) return cached;
+    const cached = graphNodes.get(id)
 
-    const node = nodeById.get(id)!;
-    const measurement = measurements.get(id);
-    const parent = node.parentId === undefined ? undefined : resolve(node.parentId);
-    const position = positionOverrides.get(id) ?? node.position;
+    if (cached !== undefined) {
+      return cached
+    }
+
+    const node = nodeById.get(id)
+
+    if (node === undefined) {
+      throw new Error(`Flow graph is missing node ${id}`)
+    }
+
+    const measurement = measurements.get(id)
+    const documentOrder = documentIndex.get(id)
+
+    if (documentOrder === undefined) {
+      throw new Error(`Flow graph is missing document index for node ${id}`)
+    }
+
+    const parent =
+      node.parentId === undefined ? undefined : resolve(node.parentId)
+
+    const position = positionOverrides.get(id) ?? node.position
+
     const dimensions =
-      measurement !== undefined && measurement.width > 0 && measurement.height > 0
+      measurement !== undefined &&
+      measurement.width > 0 &&
+      measurement.height > 0
         ? { width: measurement.width, height: measurement.height }
-        : node.size ?? fallback;
+        : (node.size ?? fallback)
+
     const resolved: FlowGraphNode = {
       id,
       node,
-      documentIndex: documentIndex.get(id)!,
+      documentIndex: documentOrder,
       parentId: node.parentId,
-      absolutePosition: parent === undefined
-        ? position
-        : { x: parent.absolutePosition.x + position.x, y: parent.absolutePosition.y + position.y },
+      absolutePosition:
+        parent === undefined
+          ? position
+          : {
+              x: parent.absolutePosition.x + position.x,
+              y: parent.absolutePosition.y + position.y,
+            },
       dimensions,
       hidden: node.hidden === true || parent?.hidden === true,
-    };
-    graphNodes.set(id, resolved);
-    return resolved;
-  };
+    }
 
-  for (const node of document.nodes) resolve(node.id);
+    graphNodes.set(id, resolved)
+
+    return resolved
+  }
+
+  for (const node of document.nodes) {
+    resolve(node.id)
+  }
 
   const compareSiblings = (first: NodeId, second: NodeId): number => {
-    const a = graphNodes.get(first)!;
-    const b = graphNodes.get(second)!;
-    return (a.node.zIndex ?? 0) - (b.node.zIndex ?? 0) || a.documentIndex - b.documentIndex;
-  };
-  for (const siblings of childLists.values()) siblings.sort(compareSiblings);
+    const a = graphNodes.get(first)
+    const b = graphNodes.get(second)
 
-  const roots = document.nodes.filter((node) => node.parentId === undefined).map((node) => node.id).sort(compareSiblings);
-  const orderedNodes: FlowGraphNode[] = [];
-  const appendSubtree = (id: NodeId): void => {
-    orderedNodes.push(graphNodes.get(id)!);
-    for (const childId of childLists.get(id) ?? []) appendSubtree(childId);
-  };
-  for (const rootId of roots) appendSubtree(rootId);
+    if (a === undefined || b === undefined) {
+      throw new Error('Flow graph sibling references a missing node')
+    }
 
-  return { document, nodes: graphNodes, children: childLists, orderedNodes };
-};
-
-export const graphNode = (graph: FlowGraphView, id: NodeId): FlowGraphNode | undefined => graph.nodes.get(id);
-
-export const graphAncestors = (graph: FlowGraphView, id: NodeId): readonly FlowGraphNode[] => {
-  const result: FlowGraphNode[] = [];
-  let current = graph.nodes.get(id);
-  while (current?.parentId !== undefined) {
-    current = graph.nodes.get(current.parentId);
-    if (current !== undefined) result.push(current);
+    return (
+      (a.node.zIndex ?? 0) - (b.node.zIndex ?? 0) ||
+      a.documentIndex - b.documentIndex
+    )
   }
-  return result;
-};
 
-export const graphDescendants = (graph: FlowGraphView, id: NodeId): readonly FlowGraphNode[] => {
-  const result: FlowGraphNode[] = [];
+  for (const siblings of childLists.values()) {
+    siblings.sort(compareSiblings)
+  }
+
+  const roots = document.nodes
+    .filter((node) => node.parentId === undefined)
+    .map((node) => node.id)
+    .toSorted(compareSiblings)
+
+  const orderedNodes: FlowGraphNode[] = []
+
+  const appendSubtree = (id: NodeId): void => {
+    const node = graphNodes.get(id)
+
+    if (node === undefined) {
+      throw new Error(`Flow graph is missing ordered node ${id}`)
+    }
+
+    orderedNodes.push(node)
+
+    for (const childId of childLists.get(id) ?? []) {
+      appendSubtree(childId)
+    }
+  }
+
+  for (const rootId of roots) {
+    appendSubtree(rootId)
+  }
+
+  return { document, nodes: graphNodes, children: childLists, orderedNodes }
+}
+
+export const graphNode = (
+  graph: FlowGraphView,
+  id: NodeId
+): FlowGraphNode | undefined => graph.nodes.get(id)
+
+export const graphAncestors = (
+  graph: FlowGraphView,
+  id: NodeId
+): readonly FlowGraphNode[] => {
+  const result: FlowGraphNode[] = []
+  let current = graph.nodes.get(id)
+
+  while (current?.parentId !== undefined) {
+    current = graph.nodes.get(current.parentId)
+
+    if (current !== undefined) {
+      result.push(current)
+    }
+  }
+
+  return result
+}
+
+export const graphDescendants = (
+  graph: FlowGraphView,
+  id: NodeId
+): readonly FlowGraphNode[] => {
+  const result: FlowGraphNode[] = []
+
   const visit = (parentId: NodeId): void => {
     for (const childId of graph.children.get(parentId) ?? []) {
-      const child = graph.nodes.get(childId);
-      if (child !== undefined) result.push(child);
-      visit(childId);
+      const child = graph.nodes.get(childId)
+
+      if (child !== undefined) {
+        result.push(child)
+      }
+
+      visit(childId)
     }
-  };
-  visit(id);
-  return result;
-};
+  }
+
+  visit(id)
+
+  return result
+}
 
 export const graphNodeBounds = (node: FlowGraphNode) => ({
   x: node.absolutePosition.x,
   y: node.absolutePosition.y,
   width: node.dimensions.width,
   height: node.dimensions.height,
-});
+})
 
-export const graphBounds = (graph: FlowGraphView, ids?: ReadonlySet<NodeId>) => {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+export const graphBounds = (
+  graph: FlowGraphView,
+  ids?: ReadonlySet<NodeId>
+) => {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+
   for (const node of graph.orderedNodes) {
-    if (node.hidden || (ids !== undefined && !ids.has(node.id))) continue;
-    const bounds = graphNodeBounds(node);
-    minX = Math.min(minX, bounds.x);
-    minY = Math.min(minY, bounds.y);
-    maxX = Math.max(maxX, bounds.x + bounds.width);
-    maxY = Math.max(maxY, bounds.y + bounds.height);
+    if (node.hidden || (ids !== undefined && !ids.has(node.id))) {
+      continue
+    }
+
+    const bounds = graphNodeBounds(node)
+    minX = Math.min(minX, bounds.x)
+    minY = Math.min(minY, bounds.y)
+    maxX = Math.max(maxX, bounds.x + bounds.width)
+    maxY = Math.max(maxY, bounds.y + bounds.height)
   }
-  return minX === Infinity ? undefined : { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
-};
+
+  return minX === Infinity
+    ? undefined
+    : { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+}
 
 const intersects = (a: FlowRect, b: FlowRect): boolean =>
-  a.x <= b.x + b.width && a.x + a.width >= b.x && a.y <= b.y + b.height && a.y + a.height >= b.y;
+  a.x <= b.x + b.width &&
+  a.x + a.width >= b.x &&
+  a.y <= b.y + b.height &&
+  a.y + a.height >= b.y
 
-export const graphNodesIntersecting = (graph: FlowGraphView, rect: FlowRect): readonly FlowGraphNode[] =>
-  graph.orderedNodes.filter((node) => !node.hidden && intersects(graphNodeBounds(node), rect));
+export const graphNodesIntersecting = (
+  graph: FlowGraphView,
+  rect: FlowRect
+): readonly FlowGraphNode[] =>
+  graph.orderedNodes.filter(
+    (node) => !node.hidden && intersects(graphNodeBounds(node), rect)
+  )
 
-export const graphIncomers = (graph: FlowGraphView, id: NodeId): readonly FlowEdge[] =>
-  graph.document.edges.filter((edge) => edge.target === id);
+export const graphIncomers = (
+  graph: FlowGraphView,
+  id: NodeId
+): readonly FlowEdge[] =>
+  graph.document.edges.filter((edge) => edge.target === id)
 
-export const graphOutgoers = (graph: FlowGraphView, id: NodeId): readonly FlowEdge[] =>
-  graph.document.edges.filter((edge) => edge.source === id);
+export const graphOutgoers = (
+  graph: FlowGraphView,
+  id: NodeId
+): readonly FlowEdge[] =>
+  graph.document.edges.filter((edge) => edge.source === id)

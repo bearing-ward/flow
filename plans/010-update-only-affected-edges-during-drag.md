@@ -23,11 +23,11 @@ Each node pointer move invokes full `edgeRenderer.reconcile`. That builds a grap
 ```ts
 // apps/vanilla/src/mount-flow.ts:1935-1955
 for (const { nodeId, position } of change.positions) {
-  renderedNodePositions.set(nodeId, position);
+  renderedNodePositions.set(nodeId, position)
 }
-renderGraphPositions();
+renderGraphPositions()
 // ... single-node branch also calls renderGraphPositions()
-edgeRenderer.reconcile(document, renderedNodePositions);
+edgeRenderer.reconcile(document, renderedNodePositions)
 ```
 
 ## Commands and scope

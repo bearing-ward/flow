@@ -22,7 +22,7 @@ A group drag holds an initial list of node IDs. If an external document update r
 ```ts
 // apps/vanilla/src/mount-flow.ts:1350-1355
 if (activeDrag !== null && !visibleNodes.has(dragAnchorId(activeDrag))) {
-  cancelActiveDrag("node-removed");
+  cancelActiveDrag('node-removed')
 }
 ```
 

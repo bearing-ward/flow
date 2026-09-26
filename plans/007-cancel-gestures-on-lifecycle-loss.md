@@ -21,10 +21,10 @@ The host has cancellation helpers for most gestures, but Escape currently cancel
 
 ```ts
 // apps/vanilla/src/mount-flow.ts:3037-3043
-if (event.key === "Escape" && activeClickConnection !== null) {
-  event.preventDefault();
-  cancelClickConnection("escape");
-  return;
+if (event.key === 'Escape' && activeClickConnection !== null) {
+  event.preventDefault()
+  cancelClickConnection('escape')
+  return
 }
 ```
 

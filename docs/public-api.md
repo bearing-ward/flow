@@ -12,21 +12,21 @@ Pass `onChange` in `createFlow` options to subscribe during acquisition. Destroy
 
 ```ts
 const controller = await createFlow(root, unknownDocument, {
-  documentMode: "controlled",
+  documentMode: 'controlled',
   viewport: {
-    mode: "uncontrolled",
+    mode: 'uncontrolled',
     initial: { x: 0, y: 0, zoom: 1 },
     limits: { minZoom: 0.5, maxZoom: 2 },
   },
   onChange(change) {
     // Validate/acknowledge controlled changes in the application.
   },
-});
+})
 
-controller.update(nextDocument);
-const stopListening = controller.subscribe(handleChange);
-stopListening();
-controller.destroy();
+controller.update(nextDocument)
+const stopListening = controller.subscribe(handleChange)
+stopListening()
+controller.destroy()
 ```
 
 ## Ownership and acknowledgement

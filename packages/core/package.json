@@ -2,7 +2,12 @@
   "name": "@flow/core",
   "version": "0.0.0",
   "private": true,
-  "files": ["dist/public.js", "dist/public.d.ts", "dist/domain", "dist/telemetry"],
+  "files": [
+    "dist/public.js",
+    "dist/public.d.ts",
+    "dist/domain",
+    "dist/telemetry"
+  ],
   "type": "module",
   "exports": {
     ".": {

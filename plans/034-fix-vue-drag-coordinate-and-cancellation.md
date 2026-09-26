@@ -22,10 +22,10 @@ Vue captures a child's absolute position at drag start and publishes it as a par
 
 ## Commands and scope
 
-| Purpose | Command | Expected |
-| --- | --- | --- |
-| Vue browser | `bun run test:conformance:vue` | exit 0 |
-| Full gate | `bun run verify` | exit 0 |
+| Purpose     | Command                        | Expected |
+| ----------- | ------------------------------ | -------- |
+| Vue browser | `bun run test:conformance:vue` | exit 0   |
+| Full gate   | `bun run verify`               | exit 0   |
 
 **In scope:** `apps/vue/src/FlowCanvas.ts`, `apps/vue/e2e/shared-conformance.e2e.ts`, `apps/vue/e2e/conformance.ts` and its harness if required, `packages/conformance/src/index.ts` only for a cross-adapter case every host can run, `research/fixtures/README.md`, and this index row. **Out of scope:** core schemas, vanilla/Foldkit gesture redesign, framework feature parity, imported research artifacts.
 

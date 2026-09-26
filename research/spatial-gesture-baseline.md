@@ -11,7 +11,7 @@ Core cases in `packages/core/src/domain/flow-graph.test.ts` verify parent-local 
 Command: `bun run scripts/bench-flow-geometry.ts`, run three times consecutively in the same session. Runtime: Bun 1.3.14 on Darwin 27.0.0, arm64, Apple M4 Max. Each fixture is decoded once before timed loops. It has 250, 1,000 or 4,000 nodes with stable grid positions, all nodes declared at a fixed small size pattern, every second node after `n0` parented to `n0`, every fourth node given a fixed measurement, and one directed edge per node pair. Each operation is warmed five times and has 31 timed samples. Query samples reuse a prebuilt graph. Values below are the min / median / max of the three run medians in milliseconds; p95 is the highest p95 across those runs.
 
 | Operation | 250 median min / median / max (p95 max) | 1,000 median min / median / max (p95 max) | 4,000 median min / median / max (p95 max) | 4,000 / 250 median growth per run |
-| --- | ---: | ---: | ---: | ---: |
+| --- | --: | --: | --: | --: |
 | `createFlowGraph` | 0.0424 / 0.0448 / 0.0453 (0.0644) | 0.1500 / 0.1550 / 0.1660 (0.7642) | 0.5341 / 0.5496 / 0.5581 (0.8064) | 11.80x / 12.96x / 12.45x |
 | `graphBounds` | 0.0100 / 0.0105 / 0.0109 (0.0140) | 0.0075 / 0.0077 / 0.0091 (0.0150) | 0.0348 / 0.0354 / 0.0369 (0.0714) | 3.20x / 3.71x / 3.37x |
 | `graphNodesIntersecting` | 0.0067 / 0.0071 / 0.0082 (0.0135) | 0.0078 / 0.0078 / 0.0166 (0.0190) | 0.0253 / 0.0303 / 0.0318 (0.0421) | 3.79x / 4.27x / 3.89x |
@@ -34,7 +34,7 @@ The non-integrated prototype in `packages/core/src/domain/flow-spatial-prototype
 The benchmark was run three times in the same session with the 250/1,000/4,000-node fixtures and 31 samples per timed operation. It reports baseline scan, prototype build, and prototype query separately; graph decoding remains outside timed loops. Across the three runs, median timings (minimum / median / maximum of run medians, milliseconds) were:
 
 | Fixture | Scan query | Prototype build | Prototype query | Stored cell/id entries |
-| ---: | ---: | ---: | ---: | ---: |
+| --: | --: | --: | --: | --: |
 | 250 | 0.0068 / 0.0077 / 0.0081 | 0.0328 / 0.0337 / 0.0342 | 0.0352 / 0.0365 / 0.0380 | 402 |
 | 1,000 | 0.0083 / 0.0085 / 0.0089 | 0.1222 / 0.1240 / 0.1341 | 0.1072 / 0.1077 / 0.1103 | 1,845 |
 | 4,000 | 0.0282 / 0.0283 / 0.0322 | 0.4023 / 0.4048 / 0.4250 | 0.1947 / 0.1953 / 0.1989 | 6,898 |

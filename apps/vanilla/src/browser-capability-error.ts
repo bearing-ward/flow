@@ -1,9 +1,9 @@
-import { Data } from "effect";
+import { Data } from 'effect'
 
 export class BrowserCapabilityError extends Data.TaggedError(
-  "BrowserCapabilityError"
+  'BrowserCapabilityError'
 )<{
-  readonly capability: string;
-  readonly operation: string;
-  readonly cause: unknown;
+  readonly capability: string
+  readonly operation: string
+  readonly cause: unknown
 }> {}

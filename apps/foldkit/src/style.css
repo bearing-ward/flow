@@ -1,13 +1,75 @@
-:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; background: #f1f5f9; }
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
-main { padding: 20px; }
-.flow-foldkit-canvas { position: relative; width: min(1080px, calc(100vw - 40px)); height: min(620px, calc(100vh - 100px)); min-height: 420px; margin: 0 auto; overflow: hidden; border: 1px solid #cbd5e1; border-radius: 10px; background: white radial-gradient(#cbd5e1 1px, transparent 1px) 0 0 / 20px 20px; touch-action: none; }
-.flow-foldkit-viewport { position: absolute; inset: 0; transform-origin: 0 0; }
-.flow-foldkit-node { position: absolute; width: 150px; min-height: 44px; padding: 12px 14px; border: 1px solid #7b8ba5; border-radius: 7px; background: white; box-shadow: 0 2px 7px #0f172a18; cursor: grab; touch-action: none; }
-.flow-foldkit-handle { position: absolute; top: 50%; width: 11px; height: 11px; padding: 0; border: 1px solid white; border-radius: 50%; background: #2563eb; transform: translateY(-50%); }
-.flow-foldkit-handle-left { left: -6px; }
-.flow-foldkit-handle-right { right: -6px; }
-.flow-foldkit-edge { position: absolute; pointer-events: none; color: #526078; }
-.flow-foldkit-edge svg { position: absolute; overflow: visible; }
-.flow-foldkit-edge path { stroke: #64748b; stroke-width: 2; }
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #172033;
+  background: #f1f5f9;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+main {
+  padding: 20px;
+}
+.flow-foldkit-canvas {
+  position: relative;
+  width: min(1080px, calc(100vw - 40px));
+  height: min(620px, calc(100vh - 100px));
+  min-height: 420px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white radial-gradient(#cbd5e1 1px, transparent 1px) 0 0 / 20px
+    20px;
+  touch-action: none;
+}
+.flow-foldkit-viewport {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+}
+.flow-foldkit-node {
+  position: absolute;
+  width: 150px;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid #7b8ba5;
+  border-radius: 7px;
+  background: white;
+  box-shadow: 0 2px 7px #0f172a18;
+  cursor: grab;
+  touch-action: none;
+}
+.flow-foldkit-handle {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 1px solid white;
+  border-radius: 50%;
+  background: #2563eb;
+  transform: translateY(-50%);
+}
+.flow-foldkit-handle-left {
+  left: -6px;
+}
+.flow-foldkit-handle-right {
+  right: -6px;
+}
+.flow-foldkit-edge {
+  position: absolute;
+  pointer-events: none;
+  color: #526078;
+}
+.flow-foldkit-edge svg {
+  position: absolute;
+  overflow: visible;
+}
+.flow-foldkit-edge path {
+  stroke: #64748b;
+  stroke-width: 2;
+}

@@ -18,16 +18,18 @@ Open `http://127.0.0.1:4173/`. The runnable entry point is [`apps/vanilla/src/ma
 A node needs a unique id, a label, and a position. An edge connects node ids. `decodeFlowDocument` checks the input against the Effect Schema and checks cross-record rules such as unique identifiers and valid edge endpoints. See the [generated schema reference](../api-reference.md#document).
 
 ```ts
-import { Effect } from "effect";
-import { decodeFlowDocument } from "@flow/core";
+import { Effect } from 'effect'
+import { decodeFlowDocument } from '@flow/core'
 
-const document = Effect.runSync(decodeFlowDocument({
-  nodes: [
-    { id: "source", label: "Source", position: { x: 80, y: 120 } },
-    { id: "target", label: "Target", position: { x: 360, y: 220 } },
-  ],
-  edges: [{ id: "source-target", source: "source", target: "target" }],
-}));
+const document = Effect.runSync(
+  decodeFlowDocument({
+    nodes: [
+      { id: 'source', label: 'Source', position: { x: 80, y: 120 } },
+      { id: 'target', label: 'Target', position: { x: 360, y: 220 } },
+    ],
+    edges: [{ id: 'source-target', source: 'source', target: 'target' }],
+  })
+)
 ```
 
 The example's actual document data and custom renderers live in [`main.ts`](../../apps/vanilla/src/main.ts). Its browser checks cover rendered nodes, edge paths, selection, and connection input.

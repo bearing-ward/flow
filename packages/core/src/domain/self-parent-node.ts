@@ -1,10 +1,9 @@
-import { Schema } from "effect";
+import { Schema } from 'effect'
 
-import { NodeIdSchema } from "./flow-values.ts";
+import { NodeIdSchema } from './flow-values.ts'
 
-const tagged = Schema.TaggedError;
+const tagged = Schema.TaggedError
 
-export class SelfParentNode extends tagged<SelfParentNode>()(
-  "SelfParentNode",
-  { nodeId: NodeIdSchema }
-) {}
+export class SelfParentNode extends tagged<SelfParentNode>()('SelfParentNode', {
+  nodeId: NodeIdSchema,
+}) {}

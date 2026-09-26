@@ -24,12 +24,13 @@ With `renderOnlyVisible`, the host first finds visible edges, then scans the ent
 if (
   !measurements.has(node.id) ||
   nodeIntersectsViewport(graph, node.id, rect) ||
-  next.edges.some((edge) =>
-    visibleEdges?.has(edge.id) &&
-    (edge.source === node.id || edge.target === node.id)
+  next.edges.some(
+    (edge) =>
+      visibleEdges?.has(edge.id) &&
+      (edge.source === node.id || edge.target === node.id)
   )
 ) {
-  visibleNodes.add(node.id);
+  visibleNodes.add(node.id)
 }
 ```
 

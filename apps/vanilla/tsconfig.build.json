@@ -10,5 +10,13 @@
     "rewriteRelativeImportExtensions": true,
     "types": ["vite/client"]
   },
-  "include": ["src/public.ts", "src/mount-flow.ts", "src/flow-browser.ts", "src/browser-capability-error.ts", "src/edge-renderer.ts", "src/node-renderer.ts", "src/telemetry.ts"]
+  "include": [
+    "src/public.ts",
+    "src/mount-flow.ts",
+    "src/flow-browser.ts",
+    "src/browser-capability-error.ts",
+    "src/edge-renderer.ts",
+    "src/node-renderer.ts",
+    "src/telemetry.ts"
+  ]
 }
