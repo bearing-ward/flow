@@ -4,6 +4,20 @@ Checked items work in the repository today. Unchecked items are still part of th
 
 Current milestone: the core validates nested graph documents, provides graph queries and geometry, and saves declared fields in a version-1 envelope. The vanilla host includes custom renderers, node and edge interactions, eight-direction pointer and keyboard resizing, custom drag handles, six-position caller panels, overlay portals, viewport controls, and reusable canvas UI. A JavaScript facade and packed consumer check are in place. Vue and Foldkit pass eight shared Flow adapter scenarios, including three-level parent-relative positions after a controlled parent update and inherited hidden state for descendants and incident edges. Feature-specific vanilla checks do not establish matching capabilities in those adapters. Local CI configuration and a release dry run exist; packages remain private and unpublished. The eight shared scenarios and three pinned interaction captures do not establish full xyflow parity; one left-edge resize case with a direct child now has matching normalized parent bounds and child positions. Open items include broader resize directions and cancellation, native multi-pointer coverage, broader visual and accessibility checks, property tests, performance budgets, and release work.
 
+### Definitive project goal
+
+Flow aims to match React Flow's public interfaces, examples, and reusable UI components and templates as closely as each supported framework permits. The target includes the complete [API reference](https://reactflow.dev/api-reference), [examples](https://reactflow.dev/examples), and [UI catalog](https://reactflow.dev/ui), including their sidebars and publicly listed Pro capabilities. Every demonstrated outcome should be achievable through supported Flow APIs and idiomatic integrations in plain JavaScript, Vue, Foldkit, and future supported adapters. Framework-specific hooks, providers, composition, reactivity, and lifecycle should have idiomatic equivalents; a reference-compatible adapter API may preserve a different internal contract. Optional integrations can live in core, adapters, reusable UI, or examples as appropriate. Track implementation and reference conformity separately per framework, classifying evidence as conforming, intentionally different, or unverified with a reason and test boundary. Current website catalogs define future coverage; the pinned source in `research/UPSTREAM.json` remains separate evidence and must not be presented as proof of current website behavior.
+
+The catalogs were inspected on 2026-09-26. Establish a dated catalog baseline and review upstream additions at milestone boundaries. Detailed mapping should account for intentional internal differences, optional integrations, licensing constraints, and unavailable Pro evidence without silently excluding capabilities. Sequence the work as catalog baseline, API mapping, shared capability work, framework and UI delivery, then catalog-wide proof. Deliver examples with each capability slice to expose missing contracts early; this sequence does not supersede unfinished correctness work.
+
+- [ ] Catalog baseline: map every API, example, and UI entry to a dated upstream URL.
+- [ ] API correspondence: map each public contract to its closest practical equivalent and document necessary framework adaptations.
+- [ ] Example coverage: demonstrate every catalog example through supported APIs, including required optional integrations.
+- [ ] UI coverage: provide equivalents for every catalog component and template.
+- [ ] Framework coverage: prove mapped capabilities separately in plain JavaScript, Vue, Foldkit, and future supported adapters.
+- [ ] Parity evidence: connect each claim to reference comparisons, runnable examples, and applicable interaction, visual, accessibility, and lifecycle checks.
+- [ ] Upstream review: review catalog changes at milestone boundaries and keep omissions visible in the checklist.
+
 ### Project foundation
 
 - [x] Initialize the workspace

@@ -2,6 +2,8 @@
 
 Flow is an Effect v4 graph canvas with a shared core and plain JavaScript, Foldkit, and Vue browser hosts. The vanilla host has the broadest rendering and interaction surface. Foldkit and Vue implement the six shared adapter conformance scenarios; their feature surfaces are documented separately in [architecture](docs/architecture.md).
 
+Flow's definitive goal is to match the [React Flow public API](https://reactflow.dev/api-reference), [examples](https://reactflow.dev/examples), and [UI components and templates](https://reactflow.dev/ui) as closely as each supported framework permits. This is the project ambition, separate from the capabilities demonstrated today; see the [definitive project goal](research/PROGRESS.md#definitive-project-goal) for its milestones and evidence requirements.
+
 Use [project progress](research/PROGRESS.md) for the current checklist and open work, and the [plan index](plans/README.md) for completed implementation slices and their verification boundaries. See [architecture](docs/architecture.md) for ownership and behavior decisions, [browser support](docs/browser-and-accessibility.md) for test limits, and [release process](docs/release-process.md) for delivery status. [Research fixtures](research/fixtures/README.md) distinguish Flow behavior from direct comparison with the pinned xyflow source.
 
 ## Current capabilities
