@@ -3,6 +3,8 @@ import {
   FlowControlModeSchema,
   FlowCommandSchema,
   FlowDocumentSchema,
+  FlowSnapshotSchema,
+  FlowStateChangeSchema,
   ViewportSchema,
   applyNodePositionChange,
   createFlowGraph,
@@ -13,6 +15,10 @@ import type {
   FlowChange as CoreFlowChange,
   FlowCommand as CoreFlowCommand,
   FlowDocument,
+  FlowSnapshot,
+  FlowStateChange,
+  FlowStateChangeCause,
+  FlowEdge,
   FlowNode,
   Viewport as CoreViewport,
 } from '@flow/core'
@@ -40,7 +46,11 @@ export const ModelSchema = Schema.Struct({
 export type Model = typeof ModelSchema.Type
 
 export const OutMessage = FoldMessage.defineMessageUnion({
-  SemanticChange: { change: FlowChangeSchema },
+  SemanticChange: {
+    change: FlowChangeSchema,
+    acceptedState: Schema.optional(FlowStateChangeSchema),
+  },
+  AcceptedState: { change: FlowStateChangeSchema },
 })
 
 export type OutMessageData = typeof OutMessage.Type
@@ -76,13 +86,63 @@ const noChange = (
   model,
 })
 
+export const selectSnapshot = (model: Model): FlowSnapshot => ({
+  document: model.document,
+  viewport: model.viewport,
+})
+
+export const selectNodes = (model: Model): readonly FlowNode[] =>
+  model.document.nodes
+
+export const selectEdges = (model: Model): readonly FlowEdge[] =>
+  model.document.edges
+
+export const selectNode = (model: Model, id: string): FlowNode | undefined =>
+  model.document.nodes.find((node) => node.id === id)
+
+export const selectEdge = (model: Model, id: string): FlowEdge | undefined =>
+  model.document.edges.find((edge) => edge.id === id)
+
+export const selectViewport = (model: Model): CoreViewport => model.viewport
+
+const snapshotEquivalence = Schema.toEquivalence(FlowSnapshotSchema)
+
+const stateChange = (
+  previous: Model,
+  current: Model,
+  cause: FlowStateChangeCause
+): FlowStateChange | undefined => {
+  const previousSnapshot = selectSnapshot(previous)
+  const currentSnapshot = selectSnapshot(current)
+
+  return snapshotEquivalence(previousSnapshot, currentSnapshot)
+    ? undefined
+    : { previous: previousSnapshot, current: currentSnapshot, cause }
+}
+
 const report = (
+  previous: Model,
   model: Model,
   change: CoreFlowChange
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => ({
   model,
-  outMessage: OutMessage.SemanticChange({ change }),
+  outMessage: OutMessage.SemanticChange({
+    change,
+    acceptedState: stateChange(previous, model, 'semantic-change') ?? undefined,
+  }),
 })
+
+const acceptReplacement = (
+  previous: Model,
+  current: Model,
+  cause: 'document-update' | 'viewport-update'
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const change = stateChange(previous, current, cause)
+
+  return change === undefined
+    ? { model: current }
+    : { model: current, outMessage: OutMessage.AcceptedState({ change }) }
+}
 
 const setNodePosition = (
   model: Model,
@@ -106,6 +166,7 @@ const setNodePosition = (
   return document === undefined
     ? noChange(model)
     : report(
+        model,
         {
           ...model,
           document:
@@ -122,9 +183,12 @@ const dispatchCommand = (model: Model, command: CoreFlowCommand) => {
       viewport: command.viewport,
     }
 
-    return model.viewportMode === 'uncontrolled'
-      ? report({ ...model, viewport: command.viewport }, change)
-      : report(model, change)
+    const next =
+      model.viewportMode === 'uncontrolled'
+        ? { ...model, viewport: command.viewport }
+        : model
+
+    return report(model, next, change)
   }
 
   if (command.kind === 'set-node-position') {
@@ -195,7 +259,7 @@ const finishConnection = (
       ? { ...model.document, edges: [...model.document.edges, edge] }
       : model.document
 
-  return report({ ...cleared, document }, change)
+  return report(model, { ...cleared, document }, change)
 }
 
 const finishNodeDrag = (
@@ -256,10 +320,14 @@ export const update = (
   message: GraphMessageData
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> =>
   Message.match(message, {
-    ReplaceDocument: ({ document }) => ({
-      model: { ...model, document, pointerSession: null },
-    }),
-    ReplaceViewport: ({ viewport }) => ({ model: { ...model, viewport } }),
+    ReplaceDocument: ({ document }) =>
+      acceptReplacement(
+        model,
+        { ...model, document, pointerSession: null },
+        'document-update'
+      ),
+    ReplaceViewport: ({ viewport }) =>
+      acceptReplacement(model, { ...model, viewport }, 'viewport-update'),
     SetAllowedTargets: ({ targets }) => ({
       model: { ...model, allowedConnectionTargets: targets },
     }),

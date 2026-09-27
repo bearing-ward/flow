@@ -12,7 +12,7 @@
 - Depends on: 046, 047, 048, 049
 - Category: tests
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: COMPLETE
 
 ## Why this matters
 
@@ -20,15 +20,18 @@ A common fixture set will prevent the new getters and framework bindings from dr
 
 ## Current state
 
+The cross-host value, event and lifecycle expectations are settled by [Plan 045's trace](../research/traces/public-state-contract.md). Fixture expectations must include complete hidden/culled document values, parent-relative positions, missing-ID results, accepted-state sequence separate from proposals, no initial callback, equal-value deduplication, controlled acknowledgement timing, cancellation, unsubscribe/disposal, and mutation-safety limits per host.
+
 `packages/conformance/src/index.ts:1-80` defines encoded fixture documents, actions, rendered snapshots, and ConformanceAdapter. The existing adapter contract includes:
 
 ```ts
 snapshot: () => Promise<ConformanceSnapshot>
 changeKinds: () => Promise<readonly string[]>
-destroy: () => Promise<{
-  readonly mountedElements: number
-  readonly changesAfterDestroy: number
-}>
+destroy: () =>
+  Promise<{
+    readonly mountedElements: number
+    readonly changesAfterDestroy: number
+  }>
 ```
 
 It records rendered node IDs, positions, identity markers, and semantic kinds. It does not yet compare public accepted-state reads. `apps/vanilla/e2e/shared-conformance.e2e.ts:8` runs fixtures through a real controller adapter. Vue and Foldkit drivers reach their actual component/Runtime via test harnesses. PROGRESS records eight shared scenarios; older README language must be reconciled with the live suite.
@@ -82,7 +85,7 @@ Full browser gates must run serially, with strict test ports 4176, 4177, and 417
 
 ### 1. Extend the fixture model without weakening existing proof
 
-Add a versioned shared read-contract fixture set with Schema-derived input and expected-output data. Keep the existing eight rendering cases. Extend the adapter with public state/query observation and accepted-state sequences. Preserve tests for controlled proposals and DOM snapshots as separate channels. Normalization may remove framework scheduling details, but must preserve values and acceptance order.
+Add a versioned shared read-contract fixture set with Schema-derived input and expected-output data. Keep the existing eight rendering cases. Extend the adapter with public state/query observation and accepted-state sequences. Preserve tests for controlled proposals and DOM snapshots as separate channels. Normalization may remove framework scheduling details, but must preserve values and acceptance order. Assert the shared initial-delivery, deduplication, event ordering, cancellation and controlled-ack rules; host-specific mutation protections are tested in each adapter plan.
 
 Add at least four named cases: initial/hidden/missing-ID reads; external replacement; controlled proposal followed by acknowledgement; uncontrolled commit plus viewport update. Add disposal and neighboring-node/connected-edge expectations. Verify `bun run test -- packages/conformance/src/index.test.ts` passes and checks unique fixture IDs and populated expectations.
 
@@ -104,11 +107,11 @@ Assert exact snapshots and accepted-state sequences, including unchanged reads b
 
 ## Done criteria
 
-- [ ] Every step's named verification command passes and its output is recorded.
-- [ ] `bun run check` and `bun run verify` exit 0 in the executor checkout.
-- [ ] `git diff --check` exits 0; `git status --short` contains only scoped edits and generated outputs named in scope.
-- [ ] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
-- [ ] The status row is updated only after the required evidence exists.
+- [x] Every step's named verification command passes and its output is recorded.
+- [x] `bun run check` and `bun run verify` exit 0 in the executor checkout.
+- [x] `git diff --check` exits 0; `git status --short` contains the scoped Plan 050 edits plus inherited completed-plan changes.
+- [x] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
+- [x] The status row is updated only after the required evidence exists.
 
 ## STOP conditions
 
@@ -120,3 +123,12 @@ Assert exact snapshots and accepted-state sequences, including unchanged reads b
 ## Maintenance notes
 
 Future adapters must implement this driver contract and run the same fixtures. Add cases when public ownership or state read semantics change. Keep Flow conformance and React Flow reference proof separate.
+
+## Execution record (2026-09-26)
+
+- Scope files changed: `README.md`; conformance schema/fixture validation; vanilla, Vue, and Foldkit production-driver E2Es and harnesses; `research/fixtures/public-state-contract.json`; fixture README; public-state trace; React Flow coverage catalog; and `research/PROGRESS.md`. The original eight rendering fixture definitions remain unchanged. No production source was changed for Plan 050.
+- Fixture unit validation: `bun run test -- packages/conformance/src/index.test.ts` — 1 file, 4 tests passed. Full unit suite: `bun run test` — 19 files, 136 tests passed.
+- Browser commands ran serially: vanilla `bun run test:browser -- shared-conformance.e2e.ts` — 2 passed; Vue `bun run test:conformance:vue -- shared-conformance.e2e.ts` — 6 passed; Foldkit `bun run test:conformance:foldkit -- shared-conformance.e2e.ts` — 6 passed. Full verifier browser suite — 192 tests, 190 passed, 2 skipped.
+- `bun run check`, `bun run typecheck`, `bun run docs:generate-api`, `bun run docs:check`, `bun run research:check-traces` (2,039 citations across 48 traces), and `bun run scripts/check-react-flow-catalog.ts` (208 entries, 200 capabilities, upstream check disabled) passed. `bun run verify` returned exit code 0; its Vue conformance suite passed 11 tests and Foldkit conformance passed 9 tests. `git diff --check` passed.
+- `research/generated/SUMMARY.md` was regenerated by verify and restored because it is generated and outside this plan's scope. `plans/README.md` remains reviewer-owned.
+- Limits: fixture JSON is Flow-authored, not an upstream capture. No new React Flow runtime equivalence, hosted CI, package publication, collector delivery, or native multi-pointer proof is claimed. The full verify retained two existing skipped browser cases.

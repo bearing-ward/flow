@@ -250,14 +250,62 @@ export const graphNodesIntersecting = (
     (node) => !node.hidden && intersects(graphNodeBounds(node), rect)
   )
 
+/** Return incoming edges for one graph node; this Flow API does not return neighboring nodes. */
 export const graphIncomers = (
   graph: FlowGraphView,
   id: NodeId
 ): readonly FlowEdge[] =>
   graph.document.edges.filter((edge) => edge.target === id)
 
+/** Return outgoing edges for one graph node; this Flow API does not return neighboring nodes. */
 export const graphOutgoers = (
   graph: FlowGraphView,
   id: NodeId
 ): readonly FlowEdge[] =>
   graph.document.edges.filter((edge) => edge.source === id)
+
+/** Return supplied nodes with edges directed into the selected node, in node input order. */
+export const getIncomers = (
+  node: Pick<FlowNode, 'id'>,
+  nodes: readonly FlowNode[],
+  edges: readonly FlowEdge[]
+): readonly FlowNode[] => {
+  const incomingIds = new Set<NodeId>()
+
+  for (const edge of edges) {
+    if (edge.target === node.id) {
+      incomingIds.add(edge.source)
+    }
+  }
+
+  return nodes.filter((candidate) => incomingIds.has(candidate.id))
+}
+
+/** Return supplied nodes with edges directed out of the selected node, in node input order. */
+export const getOutgoers = (
+  node: Pick<FlowNode, 'id'>,
+  nodes: readonly FlowNode[],
+  edges: readonly FlowEdge[]
+): readonly FlowNode[] => {
+  const outgoingIds = new Set<NodeId>()
+
+  for (const edge of edges) {
+    if (edge.source === node.id) {
+      outgoingIds.add(edge.target)
+    }
+  }
+
+  return nodes.filter((candidate) => outgoingIds.has(candidate.id))
+}
+
+/** Return edges incident to at least one supplied node, in edge input order. */
+export const getConnectedEdges = (
+  nodes: readonly Pick<FlowNode, 'id'>[],
+  edges: readonly FlowEdge[]
+): readonly FlowEdge[] => {
+  const nodeIds = new Set(nodes.map((node) => node.id))
+
+  return edges.filter(
+    (edge) => nodeIds.has(edge.source) || nodeIds.has(edge.target)
+  )
+}

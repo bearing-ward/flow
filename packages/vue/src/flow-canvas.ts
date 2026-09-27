@@ -1,9 +1,11 @@
 import {
   applyNodePositionChange,
   bezierEdgePath,
+  createFlowSnapshot,
   createFlowGraph,
   decodeFlowDocument,
   edgeAttachmentPosition,
+  FlowSnapshotSchema,
   nextConnectionEdge,
   panViewport,
   resolveEdgeHandles,
@@ -12,6 +14,7 @@ import {
   straightEdgePath,
   stepEdgePath,
   validateFlowConnection,
+  ViewportSchema,
   zoomViewportAt,
 } from '@flow/core'
 import type {
@@ -22,10 +25,12 @@ import type {
   FlowEdgePath,
   FlowHandle,
   FlowNode,
+  FlowSnapshot,
+  FlowStateChange,
   MeasuredHandle,
   Viewport,
 } from '@flow/core'
-import { Effect, Exit } from 'effect'
+import { Effect, Exit, Predicate, Schema as S } from 'effect'
 import {
   computed,
   defineComponent,
@@ -38,6 +43,7 @@ import {
 import type {
   Component,
   ComponentPublicInstance,
+  DeepReadonly,
   PropType,
   SlotsType,
   VNode,
@@ -68,6 +74,10 @@ interface ConnectionSession {
   readonly pointer: { readonly x: number; readonly y: number }
 }
 
+const snapshotEquivalence = S.toEquivalence(FlowSnapshotSchema)
+
+const viewportEquivalence = S.toEquivalence(ViewportSchema)
+
 interface PanSession {
   readonly kind: 'pan'
   readonly pointerId: number
@@ -80,6 +90,24 @@ interface PanSession {
 type Session = DragSession | ConnectionSession | PanSession
 
 const viewportLimits = { minZoom: 0.4, maxZoom: 2 }
+
+const unwrapReactive = <Value>(value: Value): Value => {
+  if (Array.isArray(value)) {
+    // SAFETY: Mapping keeps the input array's element type and order.
+    return value.map((item) => unwrapReactive(item)) as Value
+  }
+
+  if (Predicate.isObject(value)) {
+    const plainValue = Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, unwrapReactive(item)])
+    )
+
+    // SAFETY: This helper only receives acyclic FlowDocument and Viewport schema values.
+    return plainValue as Value
+  }
+
+  return value
+}
 
 type NodeVisual = Component<{ readonly node: FlowNode }>
 
@@ -278,6 +306,116 @@ export const FlowCanvas = defineComponent({
         ? (props.viewport ?? ownedViewport.value)
         : ownedViewport.value
     )
+
+    const stateSnapshot = computed<DeepReadonly<FlowSnapshot>>(() => {
+      const document = unwrapReactive(activeDocument.value)
+      const viewport = unwrapReactive(activeViewport.value)
+
+      return createFlowSnapshot(document, viewport)
+    })
+
+    const stateListeners = new Set<(change: FlowStateChange) => void>()
+    const stateQueue: FlowStateChange[] = []
+    let acceptedSnapshot = stateSnapshot.value
+    let publishingState = false
+    let stateDisposed = false
+    let requestedStateCause: FlowStateChange['cause'] | undefined
+
+    const drainStateQueue = (): void => {
+      if (publishingState || stateDisposed) {
+        return
+      }
+
+      publishingState = true
+
+      try {
+        while (stateQueue.length > 0) {
+          if (stateDisposed) {
+            return
+          }
+
+          const change = stateQueue.shift()
+
+          if (change === undefined) {
+            continue
+          }
+
+          const notificationListeners = [...stateListeners]
+
+          for (const listener of notificationListeners) {
+            if (stateDisposed) {
+              break
+            }
+
+            if (!stateListeners.has(listener)) {
+              continue
+            }
+
+            try {
+              listener(change)
+            } catch (error) {
+              console.error('Accepted-state listener failed', error)
+            }
+          }
+        }
+      } finally {
+        publishingState = false
+      }
+    }
+
+    const withStateCause = <Value>(
+      cause: FlowStateChange['cause'],
+      action: () => Value
+    ): Value => {
+      const previousCause = requestedStateCause
+      requestedStateCause = cause
+
+      try {
+        return action()
+      } finally {
+        requestedStateCause = previousCause
+      }
+    }
+
+    watch(
+      stateSnapshot,
+      (current) => {
+        const previous = acceptedSnapshot
+
+        if (snapshotEquivalence(previous, current)) {
+          return
+        }
+
+        acceptedSnapshot = current
+
+        const viewportChanged = !viewportEquivalence(
+          previous.viewport,
+          current.viewport
+        )
+
+        stateQueue.push(
+          Object.freeze({
+            previous,
+            current,
+            cause:
+              requestedStateCause ??
+              (viewportChanged ? 'viewport-update' : 'document-update'),
+          })
+        )
+        drainStateQueue()
+      },
+      { flush: 'sync' }
+    )
+
+    const subscribeState: FlowEditor['subscribeState'] = (listener) => {
+      if (stateDisposed) {
+        return () => stateListeners.delete(listener)
+      }
+
+      stateListeners.add(listener)
+
+      return () => stateListeners.delete(listener)
+    }
 
     const graph = computed(() => createFlowGraph(activeDocument.value))
     const session = shallowRef<Session>()
@@ -490,13 +628,17 @@ export const FlowCanvas = defineComponent({
         const updated = applyNodePositionChange(activeDocument.value, change)
 
         if (updated !== undefined) {
-          ownedDocument.value = updated
+          withStateCause('semantic-change', () => {
+            ownedDocument.value = updated
+          })
         }
       } else if (change.kind === 'edge-add') {
-        ownedDocument.value = {
-          ...activeDocument.value,
-          edges: [...activeDocument.value.edges, change.edge],
-        }
+        withStateCause('semantic-change', () => {
+          ownedDocument.value = {
+            ...activeDocument.value,
+            edges: [...activeDocument.value.edges, change.edge],
+          }
+        })
       }
     }
 
@@ -507,7 +649,9 @@ export const FlowCanvas = defineComponent({
       } else if (props.documentMode === 'controlled') {
         emit('update:document', next)
       } else {
-        ownedDocument.value = next
+        withStateCause('document-update', () => {
+          ownedDocument.value = next
+        })
       }
     }
 
@@ -515,7 +659,9 @@ export const FlowCanvas = defineComponent({
       if (props.viewportMode === 'controlled') {
         emit('update:viewport', next)
       } else {
-        ownedViewport.value = next
+        withStateCause('viewport-update', () => {
+          ownedViewport.value = next
+        })
       }
     }
 
@@ -572,8 +718,10 @@ export const FlowCanvas = defineComponent({
     }
 
     const editor: FlowEditor = {
-      document: activeDocument,
-      viewport: activeViewport,
+      document: computed(() => stateSnapshot.value.document),
+      viewport: computed(() => stateSnapshot.value.viewport),
+      snapshot: stateSnapshot,
+      subscribeState,
       dispatch,
       updateDocument,
       updateViewport,
@@ -983,6 +1131,10 @@ export const FlowCanvas = defineComponent({
     }
 
     onBeforeUnmount(() => {
+      stateDisposed = true
+      stateListeners.clear()
+      stateQueue.length = 0
+
       if (canvas.value !== undefined) {
         resizeObserver.unobserve(canvas.value)
       }

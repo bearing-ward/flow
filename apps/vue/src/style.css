@@ -39,3 +39,36 @@ header p {
   background: white;
   color: inherit;
 }
+.flow-state-tools {
+  position: absolute;
+  z-index: 12;
+  top: 200px;
+  left: 12px;
+  display: grid;
+  gap: 7px;
+  width: min(320px, calc(100vw - 56px));
+  max-height: min(300px, calc(100% - 212px));
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 95%);
+}
+.flow-state-tools h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.flow-state-tools label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.flow-state-tools input {
+  min-width: 0;
+  padding: 6px;
+}
+.flow-state-tools small,
+.flow-state-tools output {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}

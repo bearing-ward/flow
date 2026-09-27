@@ -6,6 +6,9 @@ import type {
   ConformanceAdapter,
   ConformanceFixture,
   ConformanceSnapshot,
+  PublicStateChange,
+  PublicStateQuery,
+  PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
 
 export const createFoldkitConformanceAdapter = (
@@ -127,12 +130,29 @@ export const createFoldkitConformanceAdapter = (
   changeKinds(): Promise<readonly string[]> {
     return page.evaluate(() => window.__flowFoldkitTest?.changeKinds() ?? [])
   },
+  readState(query: PublicStateQuery): Promise<PublicStateRead> {
+    return page.evaluate((selectedQuery) => {
+      const state = window.__flowFoldkitTest
+
+      if (state === undefined) {
+        throw new Error('Missing Foldkit conformance host')
+      }
+
+      return state.readMountedState(selectedQuery)
+    }, query)
+  },
+  acceptedStates(): Promise<readonly PublicStateChange[]> {
+    return page.evaluate(
+      () => window.__flowFoldkitTest?.mountedAcceptedStates() ?? []
+    )
+  },
   destroy() {
     return page.evaluate(
       () =>
         window.__flowFoldkitTest?.destroy() ?? {
           mountedElements: -1,
           changesAfterDestroy: -1,
+          acceptedStatesAfterDestroy: -1,
         }
     )
   },

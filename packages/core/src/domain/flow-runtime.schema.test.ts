@@ -451,7 +451,7 @@ describe('atomic node bounds changes', () => {
         ...change,
         childPositions: [...change.childPositions, ...change.childPositions],
       })
-    ).toThrow(/Expected/u)
+    ).toThrow(/duplicate node ids/u)
     const serializedChange = JSON.stringify(change)
 
     if (serializedChange === undefined) {
@@ -511,7 +511,7 @@ describe('node resize contract', () => {
         pointerStart: { x: 0, y: 0 },
         sizeStart: { width: 0, height: 40 },
       })
-    ).toThrow(/Expected/u)
+    ).toThrow(/direction/u)
     expect(() =>
       S.decodeUnknownSync(NodeSizeChangeSchema)({
         kind: 'node-size',
@@ -654,7 +654,7 @@ describe('node resize contract', () => {
         ...valid,
         bounds: { minX: 0, minY: 0, maxX: -1, maxY: 10 },
       })
-    ).toThrow(/Expected/u)
+    ).toThrow(/pan extent minimums/u)
   })
 
   it('keeps valid node resize geometry unchanged', () => {

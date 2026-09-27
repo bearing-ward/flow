@@ -12,7 +12,7 @@
 - Depends on: 044, 045
 - Category: direction
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: DONE
 
 ## Why this matters
 
@@ -31,6 +31,8 @@ export const graphIncomers = (
 ```
 
 The outgoer helper at 259 filters source. `flow-graph.test.ts:251` explicitly tests directed neighboring edges. In the pinned system `utils/graph.ts:76,118`, getOutgoers/getIncomers collect endpoint IDs into a Set and filter the supplied nodes in input order. Its getConnectedEdges at 332 returns edges touching any supplied node.
+
+Plan 045 correspondence: [docs/react-flow-api-correspondence.md](../docs/react-flow-api-correspondence.md). State selectors use the complete accepted document and do not apply render visibility filters; this plan's neighbor helpers likewise do not filter hidden elements.
 
 ## Scope
 
@@ -96,11 +98,18 @@ At minimum test incoming and outgoing direction, stable node order differing fro
 
 ## Done criteria
 
-- [ ] Every step's named verification command passes and its output is recorded.
-- [ ] `bun run check` and `bun run verify` exit 0 in the executor checkout.
-- [ ] `git diff --check` exits 0; `git status --short` contains only scoped edits and generated outputs named in scope.
-- [ ] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
-- [ ] The status row is updated only after the required evidence exists.
+- [x] Every step's named verification command passes and its output is recorded.
+- [x] `bun run check` and `bun run verify` exit 0 in the executor checkout.
+- [x] `git diff --check` exits 0; `git status --short` contains only scoped edits and generated outputs named in scope.
+- [x] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
+- [x] The status row is updated only after the required evidence exists.
+
+## Execution record
+
+- Changes: `packages/core/src/domain/flow-graph.ts`, `packages/core/src/domain/flow-graph.test.ts`, `packages/core/src/public.ts`, `tests/consumer/consumer.typecheck.ts`, `docs/api-reference.md`, `docs/react-flow-api-correspondence.md`, `research/traces/public-graph-queries.md`, `research/catalogs/react-flow-coverage.md`, `research/PROGRESS.md`, and this plan. `plans/README.md` remains reviewer-owned.
+- Verification: focused graph test passed (13 tests); `bun run test` passed (18 files, 133 tests); `bun run typecheck`, `bun run test:consumer`, `bun run docs:generate-api`, `bun run docs:check`, `bun run scripts/check-react-flow-catalog.ts`, `bun run research:check-traces`, `bun run check`, `git diff --check`, and `bun run verify` passed. Catalog output: 208 entries, 200 capabilities, `upstreamChecked: false`. Trace checker: 2039 citations across 48 traces.
+- Full gate: 185 vanilla browser tests passed and 2 native-pointer tests skipped; 7 Vue and 5 Foldkit browser tests passed. No hosted CI, publication, collector, or native multi-pointer claim is made.
+- Boundary: the pinned source algorithm and captured Cypress source were inspected, but the reference runtime and Cypress suite were not executed. Runtime parity remains unverified; bounds, intersection, and path helpers remain open.
 
 ## STOP conditions
 

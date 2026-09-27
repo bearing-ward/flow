@@ -12,7 +12,7 @@
 - Depends on: 044, 045, 046
 - Category: direction
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: COMPLETE
 
 ## Why this matters
 
@@ -30,6 +30,8 @@ subscribe: (listener): (() => void) => {
 ```
 
 `FlowChangeSchema` is a semantic proposal union. State acceptance notifications need a distinct contract. `scripts/check-packed-consumer.ts:21` copies the real consumer fixtures and proves imports from packed packages.
+
+Plan 045 settles the contract in [the public state trace](../research/traces/public-state-contract.md): complete accepted `{ document, viewport }`; detached immutable JavaScript values; no initial state callback; value-equality deduplication; semantic proposal before accepted-state notification; FIFO queued reentrant updates; per-listener exception isolation; immediate unsubscribe and inert subscriptions after disposal. Implement and test these rules; do not infer them from existing listener behavior.
 
 ## Scope
 
@@ -80,13 +82,13 @@ Full browser gates must run serially, with strict test ports 4176, 4177, and 417
 
 ### 1. Add the shared data contract
 
-Implement Plan 045's approved `FlowSnapshotSchema` and derived type in `packages/core/src/domain/flow-snapshot.ts`, composed from FlowDocumentSchema and ViewportSchema. Export it. Add pure selectors only where they are reused by adapters; avoid a new store or event bus. Exclude transient preview, measurements, and DOM state.
+Implement Plan 045's approved `FlowSnapshotSchema` and derived type in `packages/core/src/domain/flow-snapshot.ts`, composed from FlowDocumentSchema and ViewportSchema. Export it. Add pure selectors only where they are reused by adapters; avoid a new store or event bus. Exclude transient preview, measurements, and DOM state. Preserve hidden/culled document entries, parent-relative positions, missing-ID `undefined`, and detached deeply immutable output. Object identity is not stable.
 
 Verify `bun run test -- packages/core/src/domain/flow-snapshot.test.ts` and `bun run typecheck` pass, covering the chosen snapshot ownership and lookup rules.
 
 ### 2. Wire reads and accepted-state notifications
 
-Extend both controller interfaces and the JavaScript wrapper with the approved getSnapshot/getNodes/getEdges/getNode/getEdge/getViewport and state-subscription contract. Trace every authoritative document/viewport assignment, including external updates, accepted dispatch, pointer commit, and fitView. Notify only under Plan 045's accepted-state rules. Keep semantic subscriptions compatible. Centralize publication to avoid one host path omitting notifications.
+Extend both controller interfaces and the JavaScript wrapper with the approved getSnapshot/getNodes/getEdges/getNode/getEdge/getViewport and accepted-state subscription contract. Trace every authoritative document/viewport assignment, including external updates, accepted dispatch, pointer commit, and fitView. Apply Plan 045's equality, event ordering, no-initial-delivery, FIFO reentrancy, exception isolation and disposal rules. Keep semantic subscriptions compatible. Centralize publication to avoid one host path omitting notifications.
 
 Add `apps/vanilla/e2e/public-state.e2e.ts`. Mount through `createFlow` or the exported public facade. Prove initial reads, external updates, controlled proposal versus acknowledgement, uncontrolled commit, viewport changes, cancellation, multiple hosts, missing IDs, hidden/culled reads, unsubscription, and destruction. Include reentrant callback and listener-failure cases using the approved policy.
 
@@ -102,11 +104,11 @@ A controlled drag proposal must not appear as accepted state before acknowledgem
 
 ## Done criteria
 
-- [ ] Every step's named verification command passes and its output is recorded.
-- [ ] `bun run check` and `bun run verify` exit 0 in the executor checkout.
-- [ ] `git diff --check` exits 0; `git status --short` contains only scoped edits and generated outputs named in scope.
-- [ ] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
-- [ ] The status row is updated only after the required evidence exists.
+- [x] Every step's named verification command passes and its output is recorded.
+- [x] `bun run check` and `bun run verify` exit 0 in the executor checkout.
+- [x] `git diff --check` exits 0; Plan 047 edits are limited to scoped files and its generated API reference.
+- [x] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
+- [x] The status row is updated only after the required evidence exists.
 
 ## STOP conditions
 
@@ -118,3 +120,11 @@ A controlled drag proposal must not appear as accepted state before acknowledgem
 ## Maintenance notes
 
 Any future authoritative state mutation must pass the same publication boundary. New semantic changes must preserve controlled ownership. Full drag/move lifecycle callbacks remain a later implementation slice.
+
+## Execution record
+
+Completed on 2026-09-26 in branch `codex/047-expose-javascript-state-reads`; it was later consolidated with Plans 044-051 for the requested commit and merge. Snapshot Schema and deep-freezing live in `packages/core/src/domain/flow-snapshot.ts` and its unit test; core exports and both vanilla controller interfaces expose the contract. The host publishes accepted changes after semantic listeners, deduplicates equal snapshots, queues reentrant mutations FIFO, isolates state-listener failures, and clears subscriptions on destroy. The public browser suite covers initial, hidden and culled reads; missing IDs; mutation safety; external replacements; controlled proposals and acknowledgement; uncontrolled event ordering; cancellation; multiple hosts; listener failure/reentrancy; unsubscribe and destroy. Packed-consumer declarations and runtime exercise getters and state subscriptions.
+
+Changed for this plan: `packages/core/src/domain/flow-snapshot.ts`, `packages/core/src/domain/flow-snapshot.test.ts`, `packages/core/src/public.ts`, `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/public-state.e2e.ts`, `tests/consumer/main.ts`, `tests/consumer/consumer.typecheck.ts`, `scripts/check-packed-consumer.ts`, `scripts/generate-api-reference.ts`, `docs/public-api.md`, `docs/api-reference.md`, `docs/react-flow-api-correspondence.md`, `research/traces/public-state-contract.md`, `research/catalogs/react-flow-coverage.md`, and `research/PROGRESS.md`.
+
+Evidence: `bun run test -- packages/core/src/domain/flow-snapshot.test.ts` passed (2 tests); `bun run check`, `bun run typecheck`, and `bun run test` passed (19 files, 135 tests); `bun run test:browser -- public-state.e2e.ts` passed (4 tests); `bun run test:consumer`, `bun run docs:generate-api`, `bun run docs:check`, `bun run scripts/check-react-flow-catalog.ts` (208 entries), `bun run research:check-traces` (2,039 citations across 48 traces), and `git diff --check` passed. `bun run verify` completed all gates: vanilla browser 189 passed and 2 existing native multi-pointer cases skipped; Vue conformance 7 passed; Foldkit conformance 5 passed. Repository-wide unit tests passed at 135. No hosted CI, publication, live React Flow runtime comparison, or native multi-pointer result is claimed. Vue/Foldkit state APIs and other React Flow instance methods remain open.

@@ -4,6 +4,9 @@ import type {
   ConformanceAction,
   ConformanceAdapter,
   ConformanceSnapshot,
+  PublicStateChange,
+  PublicStateQuery,
+  PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
 
 export const createVueConformanceAdapter = (
@@ -129,12 +132,27 @@ export const createVueConformanceAdapter = (
   changeKinds() {
     return page.evaluate(() => window.__flowVueTest?.changeKinds() ?? [])
   },
+  readState(query: PublicStateQuery): Promise<PublicStateRead> {
+    return page.evaluate((selectedQuery) => {
+      const state = window.__flowVueTest
+
+      if (state === undefined) {
+        throw new Error('Missing Vue conformance host')
+      }
+
+      return state.readState(selectedQuery)
+    }, query)
+  },
+  acceptedStates(): Promise<readonly PublicStateChange[]> {
+    return page.evaluate(() => window.__flowVueTest?.acceptedStates() ?? [])
+  },
   destroy() {
     return page.evaluate(
       () =>
         window.__flowVueTest?.destroy() ?? {
           mountedElements: -1,
           changesAfterDestroy: -1,
+          acceptedStatesAfterDestroy: -1,
         }
     )
   },

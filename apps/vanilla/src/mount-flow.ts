@@ -1,6 +1,7 @@
 import {
   FlowAttribute,
   FlowCommandSchema,
+  FlowSnapshotSchema,
   FlowControlModeSchema,
   FitViewPaddingSchema,
   FitViewNodeDimensionsSchema,
@@ -23,6 +24,7 @@ import {
   applyNodeSizeChange,
   applyNodeBoundsChange,
   calculateNodeResize,
+  createFlowSnapshot,
   beginNodeDrag,
   beginViewportPan,
   clampViewport,
@@ -101,12 +103,17 @@ import type {
   FlowInteractionSession,
   FlowInteractionSessions,
   FlowInteractionOutcome,
+  FlowSnapshot,
+  FlowStateChange,
+  FlowStateChangeCause,
 } from '@flow/core'
-import { Effect, Exit, Result, Schema as S, Scope } from 'effect'
+import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 
 import { createCanvasUI } from './canvas-ui.ts'
 import { createEdgeRenderer } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
+
+const flowSnapshotEquivalence = S.toEquivalence(FlowSnapshotSchema)
 
 type KeyboardResizeKey = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
 
@@ -423,11 +430,20 @@ export interface FlowHostOptions {
 
 export interface FlowController {
   readonly overlayPortal: HTMLElement
+  readonly getSnapshot: () => FlowSnapshot
+  readonly getNodes: () => readonly FlowNode[]
+  readonly getEdges: () => readonly FlowEdge[]
+  readonly getNode: (id: string) => FlowNode | undefined
+  readonly getEdge: (id: string) => FlowEdge | undefined
+  readonly getViewport: () => Viewport
   readonly fitView: (options?: FitViewOptions) => boolean
   readonly update: (document: FlowDocument) => void
   readonly updateViewport: (viewport: Viewport) => void
   readonly dispatch: (command: FlowCommand) => void
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
+  readonly subscribeState: (
+    listener: (change: FlowStateChange) => void
+  ) => () => void
   readonly destroy: () => void
 }
 
@@ -463,11 +479,20 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
 
 export interface JavaScriptFlowController {
   readonly overlayPortal: HTMLElement
+  readonly getSnapshot: () => FlowSnapshot
+  readonly getNodes: () => readonly FlowNode[]
+  readonly getEdges: () => readonly FlowEdge[]
+  readonly getNode: (id: string) => FlowNode | undefined
+  readonly getEdge: (id: string) => FlowEdge | undefined
+  readonly getViewport: () => Viewport
   readonly fitView: (options?: typeof FitViewOptionsSchema.Encoded) => boolean
   readonly update: (document: FlowDocumentInput) => void
   readonly updateViewport: (viewport: ViewportInput) => void
   readonly dispatch: (command: FlowCommandInput) => void
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
+  readonly subscribeState: (
+    listener: (change: FlowStateChange) => void
+  ) => () => void
   readonly destroy: () => void
 }
 
@@ -776,6 +801,8 @@ export const createFlowHost = (
     const measurements = new Map<NodeId, MeasuredNode>()
     const renderedNodePositions = new Map<NodeId, XYPosition>()
     let document = initialDocument
+    let acceptedSnapshot = createFlowSnapshot(document, authoritativeViewport)
+    let destroyed = false
 
     const findNode = (nodeId: NodeId): FlowNode | undefined =>
       document.nodes.find((node) => node.id === nodeId)
@@ -901,6 +928,114 @@ export const createFlowHost = (
     }
 
     const listeners = new Set<(change: FlowChange) => void>()
+    const stateListeners = new Set<(change: FlowStateChange) => void>()
+    const deferredMutations: (() => void)[] = []
+    let mutationDepth = 0
+    let drainingMutations = false
+
+    const reportStateListenerFailure = (cause: Cause.Cause<unknown>): void => {
+      try {
+        runTelemetry(
+          Effect.logError('Accepted-state listener failed').pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.documentIssue]: Cause.pretty(cause),
+            })
+          )
+        )
+      } catch {
+        // Listener isolation must survive telemetry failures too.
+      }
+    }
+
+    const publishAcceptedState = (cause: FlowStateChangeCause): void => {
+      if (destroyed) {
+        return
+      }
+
+      const current = createFlowSnapshot(document, authoritativeViewport)
+
+      if (flowSnapshotEquivalence(acceptedSnapshot, current)) {
+        return
+      }
+
+      const change: FlowStateChange = Object.freeze({
+        previous: acceptedSnapshot,
+        current,
+        cause,
+      })
+
+      acceptedSnapshot = current
+
+      const notificationListeners = [...stateListeners]
+
+      for (const listener of notificationListeners) {
+        if (destroyed) {
+          return
+        }
+
+        if (!stateListeners.has(listener)) {
+          continue
+        }
+
+        try {
+          listener(change)
+        } catch (error) {
+          reportStateListenerFailure(Cause.die(error))
+        }
+      }
+    }
+
+    const drainDeferredMutations = (): void => {
+      if (mutationDepth > 0 || drainingMutations || destroyed) {
+        return
+      }
+
+      drainingMutations = true
+
+      try {
+        while (deferredMutations.length > 0) {
+          if (destroyed) {
+            break
+          }
+
+          const mutation = deferredMutations.shift()
+
+          if (mutation === undefined) {
+            continue
+          }
+
+          try {
+            mutation()
+          } catch (error) {
+            reportStateListenerFailure(Cause.die(error))
+          }
+        }
+      } finally {
+        drainingMutations = false
+      }
+    }
+
+    const executeMutation = (mutation: () => void): void => {
+      if (destroyed) {
+        return
+      }
+
+      if (mutationDepth > 0) {
+        deferredMutations.push(mutation)
+
+        return
+      }
+
+      mutationDepth += 1
+
+      try {
+        mutation()
+      } finally {
+        mutationDepth -= 1
+        drainDeferredMutations()
+      }
+    }
+
     let interactionSessions: FlowInteractionSessions = []
 
     const changePublisher = {
@@ -1212,7 +1347,6 @@ export const createFlowHost = (
       suppressCanvasClick = true
     }
 
-    let destroyed = false
     // eslint-disable-next-line prefer-const -- Assigned after the operations object is initialized.
     let reconcileVisible: (() => void) | undefined
 
@@ -2844,6 +2978,13 @@ export const createFlowHost = (
 
       // eslint-disable-next-line complexity -- The change union has one branch per public operation.
       publishChange(change: FlowChange): void {
+        if (mutationDepth > 0) {
+          const queuedChange = structuredClone(change)
+          deferredMutations.push(() => operations.publishChange(queuedChange))
+
+          return
+        }
+
         let publishedChange = change
 
         switch (change.kind) {
@@ -3134,11 +3275,16 @@ export const createFlowHost = (
           }
         }
 
-        for (const listener of listeners) {
-          listener(publishedChange)
-        }
+        executeMutation(() => {
+          try {
+            for (const listener of listeners) {
+              listener(publishedChange)
+            }
+          } finally {
+            publishAcceptedState('semantic-change')
+          }
+        })
       },
-
       toggleNodeSelection(node: FlowNode): void {
         operations.publishChange({
           kind: 'selection-set',
@@ -5774,6 +5920,7 @@ export const createFlowHost = (
         }
 
         listeners.clear()
+        stateListeners.clear()
         const restorePanelFocus = canvasUIHandle.current?.captureActiveFocus()
 
         try {
@@ -5860,6 +6007,8 @@ export const createFlowHost = (
         cancelPinch('host-destroyed')
         clearSelectionRect('cancelled')
         destroyed = true
+        stateListeners.clear()
+        deferredMutations.length = 0
         runTelemetry(
           Scope.close(hostScope, Exit.void).pipe(
             Effect.tap(() => Effect.logDebug('Destroyed flow host')),
@@ -5868,6 +6017,21 @@ export const createFlowHost = (
           )
         )
       },
+      getSnapshot: () => createFlowSnapshot(document, authoritativeViewport),
+      getNodes: () =>
+        createFlowSnapshot(document, authoritativeViewport).document.nodes,
+      getEdges: () =>
+        createFlowSnapshot(document, authoritativeViewport).document.edges,
+      getNode: (id) =>
+        createFlowSnapshot(document, authoritativeViewport).document.nodes.find(
+          (node) => node.id === id
+        ),
+      getEdge: (id) =>
+        createFlowSnapshot(document, authoritativeViewport).document.edges.find(
+          (edge) => edge.id === id
+        ),
+      getViewport: () =>
+        createFlowSnapshot(document, authoritativeViewport).viewport,
       fitView: (fitOptions = {}): boolean => {
         if (destroyed) {
           return false
@@ -5958,54 +6122,73 @@ export const createFlowHost = (
 
         return () => listeners.delete(listener)
       },
+      subscribeState: (listener): (() => void) => {
+        if (destroyed) {
+          return () => stateListeners.delete(listener)
+        }
+
+        stateListeners.add(listener)
+
+        return () => stateListeners.delete(listener)
+      },
       update: (nextDocument): void => {
         if (destroyed) {
           return
         }
 
-        const previous = document
-        document = nextDocument
-        operations.reconcile(document, previous)
-        runTelemetry(
-          Effect.logDebug('Updated flow controller').pipe(
-            Effect.annotateLogs({
-              [FlowAttribute.controlMode]: documentMode,
-              [FlowAttribute.nodeCount]: document.nodes.length,
-            }),
-            Effect.withSpan(FlowSpan.controllerUpdate, {
-              attributes: {
+        const replacement = structuredClone(nextDocument)
+
+        executeMutation(() => {
+          const previous = document
+          document = replacement
+          operations.reconcile(document, previous)
+          publishAcceptedState('document-update')
+          runTelemetry(
+            Effect.logDebug('Updated flow controller').pipe(
+              Effect.annotateLogs({
                 [FlowAttribute.controlMode]: documentMode,
                 [FlowAttribute.nodeCount]: document.nodes.length,
-              },
-            })
+              }),
+              Effect.withSpan(FlowSpan.controllerUpdate, {
+                attributes: {
+                  [FlowAttribute.controlMode]: documentMode,
+                  [FlowAttribute.nodeCount]: document.nodes.length,
+                },
+              })
+            )
           )
-        )
+        })
       },
       updateViewport: (nextViewport): void => {
         if (destroyed) {
           return
         }
 
-        authoritativeViewport = constrainViewport(nextViewport)
-        renderViewport(authoritativeViewport)
-        runTelemetry(
-          Effect.logDebug('Updated authoritative viewport').pipe(
-            Effect.annotateLogs({
-              [FlowAttribute.controlMode]: viewportMode,
-              [FlowAttribute.viewportX]: authoritativeViewport.x,
-              [FlowAttribute.viewportY]: authoritativeViewport.y,
-              [FlowAttribute.viewportZoom]: authoritativeViewport.zoom,
-            }),
-            Effect.withSpan(FlowSpan.viewportUpdate, {
-              attributes: {
+        const replacement = structuredClone(nextViewport)
+
+        executeMutation(() => {
+          authoritativeViewport = constrainViewport(replacement)
+          renderViewport(authoritativeViewport)
+          publishAcceptedState('viewport-update')
+          runTelemetry(
+            Effect.logDebug('Updated authoritative viewport').pipe(
+              Effect.annotateLogs({
                 [FlowAttribute.controlMode]: viewportMode,
                 [FlowAttribute.viewportX]: authoritativeViewport.x,
                 [FlowAttribute.viewportY]: authoritativeViewport.y,
                 [FlowAttribute.viewportZoom]: authoritativeViewport.zoom,
-              },
-            })
+              }),
+              Effect.withSpan(FlowSpan.viewportUpdate, {
+                attributes: {
+                  [FlowAttribute.controlMode]: viewportMode,
+                  [FlowAttribute.viewportX]: authoritativeViewport.x,
+                  [FlowAttribute.viewportY]: authoritativeViewport.y,
+                  [FlowAttribute.viewportZoom]: authoritativeViewport.zoom,
+                },
+              })
+            )
           )
-        )
+        })
       },
     }
 
@@ -6075,6 +6258,12 @@ export const mountFlow = (
 
   return {
     overlayPortal: host.overlayPortal,
+    getSnapshot: host.getSnapshot,
+    getNodes: host.getNodes,
+    getEdges: host.getEdges,
+    getNode: host.getNode,
+    getEdge: host.getEdge,
+    getViewport: host.getViewport,
     destroy: host.destroy,
     fitView: (fitOptions): boolean =>
       host.fitView(
@@ -6088,6 +6277,7 @@ export const mountFlow = (
       )
     },
     subscribe: host.subscribe,
+    subscribeState: host.subscribeState,
     update: (nextInput): void => {
       host.update(Effect.runSync(decodeFlowDocument(nextInput)))
     },
@@ -6106,16 +6296,19 @@ export const createFlow = (
   inputOptions: FlowCreateOptions
 ): Promise<JavaScriptFlowController> => {
   const { onChange, ...mountOptions } = inputOptions
-  const controller = mountFlow(root, input, mountOptions)
 
-  const unsubscribe =
-    onChange === undefined ? undefined : controller.subscribe(onChange)
+  return Promise.resolve().then(() => {
+    const controller = mountFlow(root, input, mountOptions)
 
-  return Promise.resolve({
-    ...controller,
-    destroy: (): void => {
-      unsubscribe?.()
-      controller.destroy()
-    },
+    const unsubscribe =
+      onChange === undefined ? undefined : controller.subscribe(onChange)
+
+    return {
+      ...controller,
+      destroy: (): void => {
+        unsubscribe?.()
+        controller.destroy()
+      },
+    }
   })
 }

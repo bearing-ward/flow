@@ -4,7 +4,12 @@ import { Effect, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import { decodeFlowDocument } from '../../core/src/domain/flow.schema.ts'
-import { conformanceFixtures, validateConformanceFixtures } from './index.ts'
+import {
+  PublicStateContractFixtureSchema,
+  conformanceFixtures,
+  validateConformanceFixtures,
+  validatePublicStateContractFixtures,
+} from './index.ts'
 
 const XYSchema = S.Struct({ x: S.Number, y: S.Number })
 
@@ -45,6 +50,41 @@ describe('shared conformance fixtures', () => {
     ).toBeTruthy()
   })
 
+  it('loads four schema-checked public-state contract scenarios with complete expectations', () => {
+    const file = S.decodeUnknownSync(
+      S.Struct({
+        version: S.Literal(1),
+        fixtures: S.Array(PublicStateContractFixtureSchema),
+      })
+    )(
+      JSON.parse(
+        readFileSync('research/fixtures/public-state-contract.json', 'utf-8')
+      )
+    )
+
+    expect(file.version).toBe(1)
+    expect(file.fixtures.map(({ id }) => id)).toStrictEqual([
+      'initial-hidden-missing-reads',
+      'external-document-replacement',
+      'controlled-proposal-acknowledgement',
+      'uncontrolled-commit-and-viewport',
+    ])
+    expect(() =>
+      validatePublicStateContractFixtures(file.fixtures)
+    ).not.toThrow()
+    expect(
+      file.fixtures.every((fixture) =>
+        fixture.steps.every(
+          ({ expected }) =>
+            expected.read.snapshot.document.nodes.length > 0 &&
+            expected.rendered.nodeIds.length > 0 &&
+            expected.acceptedStates !== undefined &&
+            expected.semanticKinds !== undefined
+        )
+      )
+    ).toBeTruthy()
+  })
+
   it('rejects duplicate node ids through the core document boundary', () => {
     const fixture = conformanceFixtures.at(0)
 
@@ -82,7 +122,7 @@ describe('shared conformance fixtures', () => {
                 ),
               })
             ),
-            observed: S.Record({ key: S.String, value: S.Unknown }),
+            observed: S.Record(S.String, S.Unknown),
           })
         ),
       })

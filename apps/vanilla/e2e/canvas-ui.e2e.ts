@@ -3,13 +3,13 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 const viewportData = (page: Page, key: 'x' | 'y' | 'zoom') =>
-  page.getByTestId('flow-viewport').evaluate((element) => {
+  page.getByTestId('flow-viewport').evaluate((element, datasetKey) => {
     if (!(element instanceof HTMLElement)) {
       throw new Error('Expected the viewport to be an HTML element')
     }
 
-    return element.dataset[key]
-  })
+    return element.dataset[datasetKey]
+  }, key)
 
 const mount = async (page: Page): Promise<void> => {
   await page.goto('/')

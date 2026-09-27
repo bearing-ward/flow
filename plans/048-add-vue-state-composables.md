@@ -12,13 +12,15 @@
 - Depends on: 045, 047
 - Category: direction
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: COMPLETE (2026-09-26)
 
 ## Why this matters
 
 Vue consumers should read the same accepted state as JavaScript through Vue reactivity. This slice supplies edges, selected lookups, and node/edge/viewport composables without forcing a callback facade onto Vue components.
 
 ## Current state
+
+The chosen read and notification semantics are in [Plan 045's public state trace](../research/traces/public-state-contract.md). Vue reads are readonly reactive views over accepted state, including hidden/culled entries; object identity is not stable. Semantic proposals remain separate from accepted-state notifications. No callback is delivered on subscription. Equality, acknowledgement, cancellation and disposal expectations are shared across hosts; Vue scheduler timing remains adapter-specific.
 
 `packages/vue/src/use-flow.ts:11` defines a canvas-local injected editor. Its existing return value is:
 
@@ -77,7 +79,7 @@ Full browser gates must run serially, with strict test ports 4176, 4177, and 417
 
 ### 1. Extend the injected public API
 
-Implement the signatures settled in Plan 045 using Plan 047's shared snapshot type/selectors. Add edges and getSnapshot/getNode/getEdge lookups to useFlow, plus useNodes, useEdges, and useViewport as the mapped Vue equivalents. Use canvas-local readonly computed values. Reactivity must follow authoritative activeDocument/activeViewport and Vue's documented tick timing. Do not create another authoritative ref, singleton store, polling loop, or JavaScript host instance.
+Implement the signatures settled in Plan 045 using Plan 047's shared snapshot type/selectors. Add edges and getSnapshot/getNode/getEdge lookups to useFlow, plus useNodes, useEdges, and useViewport as the mapped Vue equivalents. Use canvas-local deeply readonly computed projections without mutable aliases to owner props/internal state; object identity is not stable. Reactivity must follow authoritative activeDocument/activeViewport and Vue's documented tick timing. Implement the shared accepted-state event ordering, deduplication, exception isolation, reentrancy queue, no-initial-delivery and disposal policy from the state trace. Do not create another authoritative ref, singleton store, polling loop, or JavaScript host instance.
 
 Export through `packages/vue/src/public.ts`. Verify `bun run typecheck` and `bun run check:architecture` pass.
 
@@ -113,3 +115,11 @@ Use the existing `apps/vue/src/test-harness.ts` pattern of a real descendant com
 ## Maintenance notes
 
 Keep computeds local to the injected canvas. Additional composables should build on this accepted-state contract. Framework-native scheduling is an explicit adaptation, not evidence of a missing synchronous API.
+
+## Execution record
+
+- Implemented canvas-local readonly computed `snapshot`, `document`, `nodes`, `edges`, and `viewport` projections; `getSnapshot`, `getNode`, `getEdge`, `subscribeState`; and exported `useNodes`, `useEdges`, and `useViewport`. The accepted state derives from controlled props or the existing canvas-owned refs. Snapshots are detached and deeply frozen. Notifications deduplicate equal values, deliver no initial event, isolate listener failures, preserve registration order, queue reentrant changes, and stop on unsubscription or canvas disposal.
+- Added a real descendant probe using only `@flow/vue` exports. Focused browser cases cover controlled proposal/acknowledgement, uncontrolled updates, replacement and edge removal, viewport updates, missing IDs, hidden/cull reads, independent canvases, readonly values, observer unmount, canvas disposal, no-initial delivery, equality, reentrancy, exception isolation, and missing-provider guidance.
+- Updated the correspondence matrix, public-state trace, coverage map and `research/PROGRESS.md`. Foldkit selectors remain open; no live React Flow runtime comparison, hosted CI, collector test, or native multi-pointer proof is claimed.
+- Verification: `bun run check`, `bun run check:architecture`, `bun run typecheck`, `bun run test` (19 files, 135 tests), `bun run docs:generate-api`, `bun run docs:check`, `bun run scripts/check-react-flow-catalog.ts` (208 entries, 200 capabilities; upstream check disabled), `bun run research:check-traces` (2,039 citations across 48 traces), focused `bun run test:conformance:vue -- public-state.e2e.ts` (2 passed), `git diff --check`, and `bun run verify` all exited 0. Full verify ran 189 vanilla browser tests with 2 pre-existing native multi-pointer skips and passed Vue and Foldkit conformance gates (Foldkit: 5 passed).
+- Changed files for this plan: `packages/vue/src/use-flow.ts`, `packages/vue/src/flow-canvas.ts`, `packages/vue/src/public.ts`, `apps/vue/src/test-harness.ts`, `apps/vue/e2e/public-state.e2e.ts`, `docs/react-flow-api-correspondence.md`, `research/traces/public-state-contract.md`, `research/catalogs/react-flow-coverage.md`, `research/PROGRESS.md`, and this plan. `plans/README.md` remains reviewer-owned.

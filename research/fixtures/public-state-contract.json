@@ -1,0 +1,1475 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "version": 1,
+      "id": "initial-hidden-missing-reads",
+      "description": "Read accepted values, including hidden and culled records, and return missing lookups as null. Edge DOM output is recorded per host because renderers differ before handle measurement.",
+      "fixture": {
+        "version": 1,
+        "id": "initial-hidden-missing-reads",
+        "description": "Initial complete state queries retain hidden and culled graph data; host-specific edge rendering is compared explicitly.",
+        "documentMode": "uncontrolled",
+        "viewportMode": "uncontrolled",
+        "renderOnlyVisible": true,
+        "document": {
+          "nodes": [
+            {
+              "id": "visible",
+              "label": "visible",
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            {
+              "id": "hidden",
+              "label": "hidden",
+              "position": {
+                "x": 300,
+                "y": 100
+              },
+              "hidden": true
+            },
+            {
+              "id": "far",
+              "label": "far",
+              "position": {
+                "x": 5000,
+                "y": 100
+              }
+            },
+            {
+              "id": "parent",
+              "label": "parent",
+              "position": {
+                "x": 400,
+                "y": 300
+              }
+            },
+            {
+              "id": "child",
+              "label": "child",
+              "position": {
+                "x": 30,
+                "y": 40
+              },
+              "parentId": "parent"
+            }
+          ],
+          "edges": [
+            {
+              "id": "visible-hidden",
+              "source": "visible",
+              "target": "hidden"
+            },
+            {
+              "id": "child-visible",
+              "source": "child",
+              "target": "visible"
+            },
+            {
+              "id": "hidden-edge",
+              "source": "hidden",
+              "target": "far",
+              "hidden": true
+            }
+          ]
+        },
+        "actions": [],
+        "expected": {
+          "nodeIds": ["visible", "parent", "child"],
+          "edgeIds": [],
+          "positions": [
+            {
+              "id": "visible",
+              "x": 100,
+              "y": 100
+            },
+            {
+              "id": "parent",
+              "x": 400,
+              "y": 300
+            },
+            {
+              "id": "child",
+              "x": 430,
+              "y": 340
+            }
+          ],
+          "changeKinds": []
+        }
+      },
+      "graphQuery": {
+        "nodeId": "visible"
+      },
+      "steps": [
+        {
+          "query": {
+            "nodeId": "missing-node",
+            "edgeId": "missing-edge"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "visible",
+                      "label": "visible",
+                      "position": {
+                        "x": 100,
+                        "y": 100
+                      }
+                    },
+                    {
+                      "id": "hidden",
+                      "label": "hidden",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      },
+                      "hidden": true
+                    },
+                    {
+                      "id": "far",
+                      "label": "far",
+                      "position": {
+                        "x": 5000,
+                        "y": 100
+                      }
+                    },
+                    {
+                      "id": "parent",
+                      "label": "parent",
+                      "position": {
+                        "x": 400,
+                        "y": 300
+                      }
+                    },
+                    {
+                      "id": "child",
+                      "label": "child",
+                      "position": {
+                        "x": 30,
+                        "y": 40
+                      },
+                      "parentId": "parent"
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "visible-hidden",
+                      "source": "visible",
+                      "target": "hidden"
+                    },
+                    {
+                      "id": "child-visible",
+                      "source": "child",
+                      "target": "visible"
+                    },
+                    {
+                      "id": "hidden-edge",
+                      "source": "hidden",
+                      "target": "far",
+                      "hidden": true
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": null,
+              "edge": null,
+              "neighborNodeIds": ["hidden", "child"],
+              "connectedEdgeIds": ["visible-hidden", "child-visible"]
+            },
+            "semanticKinds": [],
+            "acceptedStates": [],
+            "neighborNodeIds": ["hidden", "child"],
+            "connectedEdgeIds": ["visible-hidden", "child-visible"],
+            "rendered": {
+              "nodeIds": ["visible", "parent", "child"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "visible",
+                  "x": 100,
+                  "y": 100
+                },
+                {
+                  "id": "parent",
+                  "x": 400,
+                  "y": 300
+                },
+                {
+                  "id": "child",
+                  "x": 430,
+                  "y": 340
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["child-visible"],
+                "foldkit": ["child-visible"]
+              }
+            }
+          }
+        }
+      ],
+      "expectedDisposal": {
+        "mountedElements": 0,
+        "changesAfterDestroy": 0,
+        "acceptedStatesAfterDestroy": 0
+      }
+    },
+    {
+      "version": 1,
+      "id": "external-document-replacement",
+      "description": "A host replacement updates public reads and emits accepted state without a semantic proposal. Rendered edge output is recorded per host.",
+      "fixture": {
+        "version": 1,
+        "id": "external-document-replacement",
+        "description": "External document replacement changes accepted state.",
+        "documentMode": "controlled",
+        "viewportMode": "controlled",
+        "document": {
+          "nodes": [
+            {
+              "id": "old",
+              "label": "old",
+              "position": {
+                "x": 80,
+                "y": 90
+              }
+            }
+          ],
+          "edges": []
+        },
+        "actions": [],
+        "expected": {
+          "nodeIds": ["new-a", "new-b"],
+          "edgeIds": ["new-edge"],
+          "positions": [
+            {
+              "id": "new-a",
+              "x": 120,
+              "y": 130
+            },
+            {
+              "id": "new-b",
+              "x": 350,
+              "y": 130
+            }
+          ],
+          "changeKinds": []
+        }
+      },
+      "graphQuery": {
+        "nodeId": "new-a"
+      },
+      "steps": [
+        {
+          "query": {
+            "nodeId": "old",
+            "edgeId": "missing-edge"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "old",
+                      "label": "old",
+                      "position": {
+                        "x": 80,
+                        "y": 90
+                      }
+                    }
+                  ],
+                  "edges": []
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "old",
+                "label": "old",
+                "position": {
+                  "x": 80,
+                  "y": 90
+                }
+              },
+              "edge": null
+            },
+            "semanticKinds": [],
+            "acceptedStates": [],
+            "neighborNodeIds": [],
+            "connectedEdgeIds": [],
+            "rendered": {
+              "nodeIds": ["old"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "old",
+                  "x": 80,
+                  "y": 90
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": [],
+                "foldkit": []
+              }
+            }
+          }
+        },
+        {
+          "action": {
+            "kind": "update-document",
+            "document": {
+              "nodes": [
+                {
+                  "id": "new-a",
+                  "label": "new-a",
+                  "position": {
+                    "x": 120,
+                    "y": 130
+                  }
+                },
+                {
+                  "id": "new-b",
+                  "label": "new-b",
+                  "position": {
+                    "x": 350,
+                    "y": 130
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "new-edge",
+                  "source": "new-a",
+                  "target": "new-b"
+                }
+              ]
+            }
+          },
+          "query": {
+            "nodeId": "new-a",
+            "edgeId": "new-edge"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "new-a",
+                      "label": "new-a",
+                      "position": {
+                        "x": 120,
+                        "y": 130
+                      }
+                    },
+                    {
+                      "id": "new-b",
+                      "label": "new-b",
+                      "position": {
+                        "x": 350,
+                        "y": 130
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "new-edge",
+                      "source": "new-a",
+                      "target": "new-b"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "new-a",
+                "label": "new-a",
+                "position": {
+                  "x": 120,
+                  "y": 130
+                }
+              },
+              "edge": {
+                "id": "new-edge",
+                "source": "new-a",
+                "target": "new-b"
+              }
+            },
+            "semanticKinds": [],
+            "acceptedStates": [
+              {
+                "previous": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "old",
+                        "label": "old",
+                        "position": {
+                          "x": 80,
+                          "y": 90
+                        }
+                      }
+                    ],
+                    "edges": []
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "current": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "new-a",
+                        "label": "new-a",
+                        "position": {
+                          "x": 120,
+                          "y": 130
+                        }
+                      },
+                      {
+                        "id": "new-b",
+                        "label": "new-b",
+                        "position": {
+                          "x": 350,
+                          "y": 130
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "new-edge",
+                        "source": "new-a",
+                        "target": "new-b"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "cause": "document-update"
+              }
+            ],
+            "neighborNodeIds": ["new-b"],
+            "connectedEdgeIds": ["new-edge"],
+            "rendered": {
+              "nodeIds": ["new-a", "new-b"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "new-a",
+                  "x": 120,
+                  "y": 130
+                },
+                {
+                  "id": "new-b",
+                  "x": 350,
+                  "y": 130
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["new-edge"],
+                "foldkit": ["new-edge"]
+              }
+            }
+          }
+        }
+      ],
+      "expectedDisposal": {
+        "mountedElements": 0,
+        "changesAfterDestroy": 0,
+        "acceptedStatesAfterDestroy": 0
+      }
+    },
+    {
+      "version": 1,
+      "id": "controlled-proposal-acknowledgement",
+      "description": "A controlled drag proposes a new position; reads remain old until owner acknowledgement. Rendered edge output is recorded per host.",
+      "fixture": {
+        "version": 1,
+        "id": "controlled-proposal-acknowledgement",
+        "description": "Controlled proposal and accepted acknowledgement remain distinct.",
+        "documentMode": "controlled",
+        "viewportMode": "controlled",
+        "document": {
+          "nodes": [
+            {
+              "id": "move",
+              "label": "move",
+              "position": {
+                "x": 80,
+                "y": 100
+              }
+            },
+            {
+              "id": "neighbor",
+              "label": "neighbor",
+              "position": {
+                "x": 300,
+                "y": 100
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "move-neighbor",
+              "source": "move",
+              "target": "neighbor"
+            }
+          ]
+        },
+        "actions": [],
+        "expected": {
+          "nodeIds": ["move", "neighbor"],
+          "edgeIds": ["move-neighbor"],
+          "positions": [
+            {
+              "id": "move",
+              "x": 120,
+              "y": 120
+            },
+            {
+              "id": "neighbor",
+              "x": 300,
+              "y": 100
+            }
+          ],
+          "changeKinds": ["node-position"]
+        }
+      },
+      "graphQuery": {
+        "nodeId": "move"
+      },
+      "steps": [
+        {
+          "query": {
+            "nodeId": "move",
+            "edgeId": "move-neighbor"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "move",
+                      "label": "move",
+                      "position": {
+                        "x": 80,
+                        "y": 100
+                      }
+                    },
+                    {
+                      "id": "neighbor",
+                      "label": "neighbor",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "move-neighbor",
+                      "source": "move",
+                      "target": "neighbor"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "move",
+                "label": "move",
+                "position": {
+                  "x": 80,
+                  "y": 100
+                }
+              },
+              "edge": {
+                "id": "move-neighbor",
+                "source": "move",
+                "target": "neighbor"
+              }
+            },
+            "semanticKinds": [],
+            "acceptedStates": [],
+            "neighborNodeIds": ["neighbor"],
+            "connectedEdgeIds": ["move-neighbor"],
+            "rendered": {
+              "nodeIds": ["move", "neighbor"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "move",
+                  "x": 80,
+                  "y": 100
+                },
+                {
+                  "id": "neighbor",
+                  "x": 300,
+                  "y": 100
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["move-neighbor"],
+                "foldkit": ["move-neighbor"]
+              }
+            }
+          }
+        },
+        {
+          "action": {
+            "kind": "drag-node",
+            "nodeId": "move",
+            "dx": 40,
+            "dy": 20
+          },
+          "query": {
+            "nodeId": "move",
+            "edgeId": "move-neighbor"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "move",
+                      "label": "move",
+                      "position": {
+                        "x": 80,
+                        "y": 100
+                      }
+                    },
+                    {
+                      "id": "neighbor",
+                      "label": "neighbor",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "move-neighbor",
+                      "source": "move",
+                      "target": "neighbor"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "move",
+                "label": "move",
+                "position": {
+                  "x": 80,
+                  "y": 100
+                }
+              },
+              "edge": {
+                "id": "move-neighbor",
+                "source": "move",
+                "target": "neighbor"
+              }
+            },
+            "semanticKinds": ["node-position"],
+            "acceptedStates": [],
+            "neighborNodeIds": ["neighbor"],
+            "connectedEdgeIds": ["move-neighbor"],
+            "rendered": {
+              "nodeIds": ["move", "neighbor"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "move",
+                  "x": 80,
+                  "y": 100
+                },
+                {
+                  "id": "neighbor",
+                  "x": 300,
+                  "y": 100
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["move-neighbor"],
+                "foldkit": ["move-neighbor"]
+              }
+            }
+          }
+        },
+        {
+          "action": {
+            "kind": "update-document",
+            "document": {
+              "nodes": [
+                {
+                  "id": "move",
+                  "label": "move",
+                  "position": {
+                    "x": 120,
+                    "y": 120
+                  }
+                },
+                {
+                  "id": "neighbor",
+                  "label": "neighbor",
+                  "position": {
+                    "x": 300,
+                    "y": 100
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "move-neighbor",
+                  "source": "move",
+                  "target": "neighbor"
+                }
+              ]
+            }
+          },
+          "query": {
+            "nodeId": "move",
+            "edgeId": "move-neighbor"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "move",
+                      "label": "move",
+                      "position": {
+                        "x": 120,
+                        "y": 120
+                      }
+                    },
+                    {
+                      "id": "neighbor",
+                      "label": "neighbor",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "move-neighbor",
+                      "source": "move",
+                      "target": "neighbor"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "move",
+                "label": "move",
+                "position": {
+                  "x": 120,
+                  "y": 120
+                }
+              },
+              "edge": {
+                "id": "move-neighbor",
+                "source": "move",
+                "target": "neighbor"
+              }
+            },
+            "semanticKinds": ["node-position"],
+            "acceptedStates": [
+              {
+                "previous": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 80,
+                          "y": 100
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "current": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 120,
+                          "y": 120
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "cause": "document-update"
+              }
+            ],
+            "neighborNodeIds": ["neighbor"],
+            "connectedEdgeIds": ["move-neighbor"],
+            "rendered": {
+              "nodeIds": ["move", "neighbor"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "move",
+                  "x": 120,
+                  "y": 120
+                },
+                {
+                  "id": "neighbor",
+                  "x": 300,
+                  "y": 100
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["move-neighbor"],
+                "foldkit": ["move-neighbor"]
+              }
+            }
+          }
+        }
+      ],
+      "expectedDisposal": {
+        "mountedElements": 0,
+        "changesAfterDestroy": 0,
+        "acceptedStatesAfterDestroy": 0
+      }
+    },
+    {
+      "version": 1,
+      "id": "uncontrolled-commit-and-viewport",
+      "description": "Uncontrolled node commit and viewport replacement produce ordered accepted snapshots. Rendered edge output is recorded per host.",
+      "fixture": {
+        "version": 1,
+        "id": "uncontrolled-commit-and-viewport",
+        "description": "An uncontrolled commit and viewport replacement create ordered accepted-state notifications.",
+        "documentMode": "uncontrolled",
+        "viewportMode": "uncontrolled",
+        "document": {
+          "nodes": [
+            {
+              "id": "move",
+              "label": "move",
+              "position": {
+                "x": 80,
+                "y": 100
+              }
+            },
+            {
+              "id": "neighbor",
+              "label": "neighbor",
+              "position": {
+                "x": 300,
+                "y": 100
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "move-neighbor",
+              "source": "move",
+              "target": "neighbor"
+            }
+          ]
+        },
+        "actions": [],
+        "expected": {
+          "nodeIds": ["move", "neighbor"],
+          "edgeIds": ["move-neighbor"],
+          "positions": [
+            {
+              "id": "move",
+              "x": 120,
+              "y": 120
+            },
+            {
+              "id": "neighbor",
+              "x": 300,
+              "y": 100
+            }
+          ],
+          "changeKinds": ["node-position"]
+        }
+      },
+      "graphQuery": {
+        "nodeId": "move"
+      },
+      "steps": [
+        {
+          "query": {
+            "nodeId": "move",
+            "edgeId": "move-neighbor"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "move",
+                      "label": "move",
+                      "position": {
+                        "x": 80,
+                        "y": 100
+                      }
+                    },
+                    {
+                      "id": "neighbor",
+                      "label": "neighbor",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "move-neighbor",
+                      "source": "move",
+                      "target": "neighbor"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "move",
+                "label": "move",
+                "position": {
+                  "x": 80,
+                  "y": 100
+                }
+              },
+              "edge": {
+                "id": "move-neighbor",
+                "source": "move",
+                "target": "neighbor"
+              }
+            },
+            "semanticKinds": [],
+            "acceptedStates": [],
+            "neighborNodeIds": ["neighbor"],
+            "connectedEdgeIds": ["move-neighbor"],
+            "rendered": {
+              "nodeIds": ["move", "neighbor"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "move",
+                  "x": 80,
+                  "y": 100
+                },
+                {
+                  "id": "neighbor",
+                  "x": 300,
+                  "y": 100
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["move-neighbor"],
+                "foldkit": ["move-neighbor"]
+              }
+            }
+          }
+        },
+        {
+          "action": {
+            "kind": "drag-node",
+            "nodeId": "move",
+            "dx": 40,
+            "dy": 20
+          },
+          "query": {
+            "nodeId": "move",
+            "edgeId": "move-neighbor"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "move",
+                      "label": "move",
+                      "position": {
+                        "x": 120,
+                        "y": 120
+                      }
+                    },
+                    {
+                      "id": "neighbor",
+                      "label": "neighbor",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "move-neighbor",
+                      "source": "move",
+                      "target": "neighbor"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": 0,
+                  "y": 0,
+                  "zoom": 1
+                }
+              },
+              "node": {
+                "id": "move",
+                "label": "move",
+                "position": {
+                  "x": 120,
+                  "y": 120
+                }
+              },
+              "edge": {
+                "id": "move-neighbor",
+                "source": "move",
+                "target": "neighbor"
+              }
+            },
+            "semanticKinds": ["node-position"],
+            "acceptedStates": [
+              {
+                "previous": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 80,
+                          "y": 100
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "current": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 120,
+                          "y": 120
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "cause": "semantic-change"
+              }
+            ],
+            "neighborNodeIds": ["neighbor"],
+            "connectedEdgeIds": ["move-neighbor"],
+            "rendered": {
+              "nodeIds": ["move", "neighbor"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "move",
+                  "x": 120,
+                  "y": 120
+                },
+                {
+                  "id": "neighbor",
+                  "x": 300,
+                  "y": 100
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["move-neighbor"],
+                "foldkit": ["move-neighbor"]
+              }
+            }
+          }
+        },
+        {
+          "action": {
+            "kind": "update-viewport",
+            "viewport": {
+              "x": -12,
+              "y": 25,
+              "zoom": 1.25
+            }
+          },
+          "query": {
+            "nodeId": "move",
+            "edgeId": "move-neighbor"
+          },
+          "expected": {
+            "read": {
+              "snapshot": {
+                "document": {
+                  "nodes": [
+                    {
+                      "id": "move",
+                      "label": "move",
+                      "position": {
+                        "x": 120,
+                        "y": 120
+                      }
+                    },
+                    {
+                      "id": "neighbor",
+                      "label": "neighbor",
+                      "position": {
+                        "x": 300,
+                        "y": 100
+                      }
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "id": "move-neighbor",
+                      "source": "move",
+                      "target": "neighbor"
+                    }
+                  ]
+                },
+                "viewport": {
+                  "x": -12,
+                  "y": 25,
+                  "zoom": 1.25
+                }
+              },
+              "node": {
+                "id": "move",
+                "label": "move",
+                "position": {
+                  "x": 120,
+                  "y": 120
+                }
+              },
+              "edge": {
+                "id": "move-neighbor",
+                "source": "move",
+                "target": "neighbor"
+              }
+            },
+            "semanticKinds": ["node-position"],
+            "acceptedStates": [
+              {
+                "previous": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 80,
+                          "y": 100
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "current": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 120,
+                          "y": 120
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "cause": "semantic-change"
+              },
+              {
+                "previous": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 120,
+                          "y": 120
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                  }
+                },
+                "current": {
+                  "document": {
+                    "nodes": [
+                      {
+                        "id": "move",
+                        "label": "move",
+                        "position": {
+                          "x": 120,
+                          "y": 120
+                        }
+                      },
+                      {
+                        "id": "neighbor",
+                        "label": "neighbor",
+                        "position": {
+                          "x": 300,
+                          "y": 100
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "move-neighbor",
+                        "source": "move",
+                        "target": "neighbor"
+                      }
+                    ]
+                  },
+                  "viewport": {
+                    "x": -12,
+                    "y": 25,
+                    "zoom": 1.25
+                  }
+                },
+                "cause": "viewport-update"
+              }
+            ],
+            "neighborNodeIds": ["neighbor"],
+            "connectedEdgeIds": ["move-neighbor"],
+            "rendered": {
+              "nodeIds": ["move", "neighbor"],
+              "edgeIds": [],
+              "positions": [
+                {
+                  "id": "move",
+                  "x": 120,
+                  "y": 120
+                },
+                {
+                  "id": "neighbor",
+                  "x": 300,
+                  "y": 100
+                }
+              ],
+              "edgeIdsByHost": {
+                "vanilla": [],
+                "vue": ["move-neighbor"],
+                "foldkit": ["move-neighbor"]
+              }
+            }
+          }
+        }
+      ],
+      "expectedDisposal": {
+        "mountedElements": 0,
+        "changesAfterDestroy": 0,
+        "acceptedStatesAfterDestroy": 0
+      }
+    }
+  ]
+}

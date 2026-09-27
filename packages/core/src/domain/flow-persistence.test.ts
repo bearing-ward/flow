@@ -52,13 +52,23 @@ describe('saved flow documents', () => {
     )
 
     const saved = encodeSavedFlowDocument(document)
+    const [savedRoot, savedChild] = saved.document.nodes
+    const [savedEdge] = saved.document.edges
+
+    if (
+      savedChild === undefined ||
+      savedRoot === undefined ||
+      savedEdge === undefined
+    ) {
+      throw new Error('Expected saved nodes and edge')
+    }
 
     expect([
       saved.version,
-      saved.document.nodes[1],
-      'selected' in saved.document.nodes[1],
-      saved.document.nodes[0],
-      'selected' in saved.document.edges[0],
+      savedChild,
+      'selected' in savedChild,
+      savedRoot,
+      'selected' in savedEdge,
     ]).toStrictEqual([
       1,
       expect.objectContaining({
@@ -102,7 +112,7 @@ describe('saved flow documents', () => {
     const invalidVersion = Effect.runSync(
       Effect.exit(
         decodeSavedFlowDocument({
-          version: 2,
+          version: 2 as const,
           document: { nodes: [], edges: [] },
         })
       )
@@ -133,7 +143,7 @@ describe('saved flow documents', () => {
   })
 
   it('rejects domain-invalid fields through both saved schema and full decode', () => {
-    const invalidDocuments = [
+    const invalidDocuments: readonly unknown[] = [
       {
         version: 1,
         document: {
@@ -179,7 +189,9 @@ describe('saved flow documents', () => {
       measurements: [{ nodeId: 'node', width: 100, height: 50 }],
     }
 
-    expect(encodeSavedFlowDocument(input)).toStrictEqual({
+    const document = Effect.runSync(decodeFlowDocument(input))
+
+    expect(encodeSavedFlowDocument(document)).toStrictEqual({
       version: 1,
       document: {
         nodes: [{ id: 'node', label: 'Node', position: { x: 1, y: 2 } }],

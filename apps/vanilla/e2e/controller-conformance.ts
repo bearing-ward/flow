@@ -1,4 +1,4 @@
-import type { FlowChange, FlowConnection } from '@flow/core'
+import type { FlowChange, FlowConnection, FlowStateChange } from '@flow/core'
 import { expect } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
@@ -7,6 +7,9 @@ import type {
   ConformanceAdapter,
   ConformanceFixture,
   ConformanceSnapshot,
+  PublicStateChange,
+  PublicStateQuery,
+  PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
 
 const documentWith = (
@@ -175,9 +178,11 @@ export const createVanillaConformanceAdapter = (
       const state = globalThis as typeof globalThis & {
         __conformanceChangeCount?: number
         __conformanceUnsubscribe?: () => void
+        __conformanceAcceptedStates?: unknown[]
       }
 
       globalThis.flowChanges = []
+      state.__conformanceAcceptedStates = []
       state.__conformanceChangeCount = 0
       state.__conformanceUnsubscribe = controller.subscribe(
         (change: FlowChange) => {
@@ -186,6 +191,9 @@ export const createVanillaConformanceAdapter = (
             (state.__conformanceChangeCount ?? 0) + 1
         }
       )
+      controller.subscribeState((change: FlowStateChange) => {
+        state.__conformanceAcceptedStates?.push(change)
+      })
       globalThis.flowController = controller
     }, fixture)
   },
@@ -312,14 +320,43 @@ export const createVanillaConformanceAdapter = (
       (globalThis.flowChanges ?? []).map((change) => change.kind)
     )
   },
+  readState(query: PublicStateQuery): Promise<PublicStateRead> {
+    return page.evaluate(({ nodeId, edgeId }) => {
+      const controller = globalThis.flowController
+
+      if (controller === undefined) {
+        throw new Error('Missing conformance controller')
+      }
+
+      return {
+        snapshot: controller.getSnapshot(),
+        node:
+          nodeId === undefined ? null : (controller.getNode(nodeId) ?? null),
+        edge:
+          edgeId === undefined ? null : (controller.getEdge(edgeId) ?? null),
+      }
+    }, query)
+  },
+  acceptedStates(): Promise<readonly PublicStateChange[]> {
+    return page.evaluate(() => {
+      // SAFETY: This intersection adds only a test observation populated during adapter mount.
+      const state = globalThis as typeof globalThis & {
+        __conformanceAcceptedStates?: PublicStateChange[]
+      }
+
+      return state.__conformanceAcceptedStates ?? []
+    })
+  },
   destroy(): Promise<{
     readonly mountedElements: number
     readonly changesAfterDestroy: number
+    readonly acceptedStatesAfterDestroy: number
   }> {
     return page.evaluate(() => {
       // SAFETY: This intersection adds only optional test-hook fields; reads are guarded or follow assignment in this test.
       const state = globalThis as typeof globalThis & {
         __conformanceChangeCount?: number
+        __conformanceAcceptedStates?: unknown[]
       }
 
       const root = document.querySelector<HTMLElement>('#app')
@@ -329,6 +366,7 @@ export const createVanillaConformanceAdapter = (
       )
 
       const before = state.__conformanceChangeCount ?? 0
+      const acceptedBefore = state.__conformanceAcceptedStates?.length ?? 0
       globalThis.flowController?.destroy()
       canvas?.dispatchEvent(
         new PointerEvent('pointerdown', {
@@ -350,6 +388,8 @@ export const createVanillaConformanceAdapter = (
         mountedElements:
           root?.querySelectorAll("[data-testid='flow-canvas']").length ?? 0,
         changesAfterDestroy,
+        acceptedStatesAfterDestroy:
+          (state.__conformanceAcceptedStates?.length ?? 0) - acceptedBefore,
       }
     })
   },

@@ -417,6 +417,10 @@ body,
   line-height: 1.45;
 }
 
+.flow-demo-panel-with-state-tools {
+  max-height: min(280px, calc(100vh - 168px));
+}
+
 .flow-demo-kicker {
   color: #2563eb;
   font-size: 10px;
@@ -433,6 +437,37 @@ body,
 .flow-demo-panel p {
   margin: 0 0 14px;
   font-size: 13px;
+}
+.flow-state-tools {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #dbe3ee;
+}
+.flow-state-tools[hidden] {
+  display: none;
+}
+.flow-state-tools h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.flow-state-tools label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.flow-state-tools input {
+  min-width: 0;
+  padding: 6px;
+}
+.flow-state-tools button {
+  text-align: left;
+}
+.flow-state-tools small,
+.flow-state-tools output {
+  overflow-wrap: anywhere;
+  font-size: 11px;
 }
 
 .flow-scene-panel {

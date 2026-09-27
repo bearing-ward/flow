@@ -1,5 +1,7 @@
 # React Flow catalog coverage
 
+For member-level correspondence of ReactFlow, Node, Edge, ReactFlowInstance, selected hooks, and callback families, see [the API correspondence matrix](../../docs/react-flow-api-correspondence.md). For accepted-state and lifecycle decisions across JS, Vue, and Foldkit, see [the state contract trace](../traces/public-state-contract.md). These are bounded mappings; they do not close broad API or framework coverage.
+
 Captured 2026-09-26 against Flow commit `9a583d7`, with pre-existing working-tree edits left intact. This is a discovery map for the definitive goal in [project progress](../PROGRESS.md). It maps sidebar entries to current building blocks and evidence, without claiming that a whole page's API or example has been reproduced.
 
 ## Baseline and counts
@@ -25,7 +27,6 @@ The API count includes 2 primary interfaces, 14 components, 19 hooks, 64 types, 
 Each row links to a local evidence section. Production pointers identify implementation contracts. Test pointers identify checked-in tests, not tests rerun for every row during this inventory. The three adapter columns are independent. No full-entry parity percentage can be inferred from these counts.
 
 ## API reference
-
 
 ### api-reference overview
 
@@ -66,24 +67,24 @@ Each row links to a local evidence section. Production pointers identify impleme
 | Entry | Flow starting point and evidence | Vanilla | Vue | Foldkit | Reference | Remaining work |
 | --- | --- | --- | --- | --- | --- | --- |
 | [useConnection()](https://reactflow.dev/api-reference/hooks/use-connection) | [ActiveConnection is internal state backing](#open-api) | G | G | G | U | Expose a reactive connection-state API. |
-| [useEdges()](https://reactflow.dev/api-reference/hooks/use-edges) | [Caller document.edges / Vue document / Foldkit model](#state) | P | P | P | U | Define dedicated reactive edge access and update semantics. |
+| [useEdges()](https://reactflow.dev/api-reference/hooks/use-edges) | [Accepted state reads and adapters](#state) | P | P | P | U | Bounded reads exist in all three hosts; React hook equivalence and granular reactivity remain open. |
 | [useEdgesState()](https://reactflow.dev/api-reference/hooks/use-edges-state) | [Controlled/uncontrolled document ownership](#state) | P | P | P | U | Map array/change-handler convenience without requiring React state. |
 | [useHandleConnections()](https://reactflow.dev/api-reference/hooks/use-handle-connections) | [Graph topology and handle IDs are backing](#open-api) | G | G | G | U | Provide handle-filtered reactive connection access. |
 | [useInternalNode()](https://reactflow.dev/api-reference/hooks/use-internal-node) | [Graph view and measured geometry](#measurements) | P | P | G | U | Expose stable observable internal-node access without DOM in core. |
 | [useKeyPress()](https://reactflow.dev/api-reference/hooks/use-key-press) | [Host keyboard handlers only](#open-api) | G | G | G | U | Provide a reusable key-state API with focus rules. |
 | [useNodeConnections()](https://reactflow.dev/api-reference/hooks/use-node-connections) | [Graph topology is backing](#open-api) | G | G | G | U | Provide node-filtered reactive connection access. |
 | [useNodeId()](https://reactflow.dev/api-reference/hooks/use-node-id) | [Renderer/slot receives node.id explicitly](#open-api) | G | G | G | U | Decide idiomatic descendant node context for each framework. |
-| [useNodes()](https://reactflow.dev/api-reference/hooks/use-nodes) | [Caller nodes / Vue useFlow().nodes / Foldkit model](#state) | P | P | P | U | Match subscription and ownership semantics. |
+| [useNodes()](https://reactflow.dev/api-reference/hooks/use-nodes) | [Accepted state reads and adapters](#state) | P | P | P | U | Bounded reads exist in all three hosts; React hook equivalence and granular reactivity remain open. |
 | [useNodesData()](https://reactflow.dev/api-reference/hooks/use-nodes-data) | [FlowNode.data through document state](#state) | P | P | P | U | Add selective data observation and typed update semantics. |
 | [useNodesInitialized()](https://reactflow.dev/api-reference/hooks/use-nodes-initialized) | [Host measurement lifecycle](#measurements) | P | P | G | U | Expose readiness with equivalent hidden-node semantics. |
 | [useNodesState()](https://reactflow.dev/api-reference/hooks/use-nodes-state) | [Controlled/uncontrolled document ownership](#state) | P | P | P | U | Map node/change-handler convenience per framework. |
 | [useOnSelectionChange()](https://reactflow.dev/api-reference/hooks/use-on-selection-change) | [SelectionSetChange / node and edge selection](#changes) | P | G | G | U | Map selected collections and callback timing across adapters. |
 | [useOnViewportChange()](https://reactflow.dev/api-reference/hooks/use-on-viewport-change) | [ViewportChange / Vue viewport updates](#changes) | P | P | G | U | Define start/change/end subscription semantics. |
-| [useReactFlow()](https://reactflow.dev/api-reference/hooks/use-react-flow) | [Controller / useFlow / Model and Message](#state) | P | P | P | U | Map instance methods, query access, and reactivity differences. |
+| [useReactFlow()](https://reactflow.dev/api-reference/hooks/use-react-flow) | [Controller / useFlow / Model and Message](#state) | P | P | P | U | All three hosts have bounded reads; remaining instance methods and React hook equivalence remain open. |
 | [useStore()](https://reactflow.dev/api-reference/hooks/use-store) | [No equivalent store selector contract](#open-api) | G | G | G | U | Define supported reactive selection without adopting React store internals. |
 | [useStoreApi()](https://reactflow.dev/api-reference/hooks/use-store-api) | [No equivalent public store access](#open-api) | G | G | G | U | Decide supported imperative access and lifetime. |
 | [useUpdateNodeInternals()](https://reactflow.dev/api-reference/hooks/use-update-node-internals) | [ResizeObserver-fed measurements](#measurements) | P | P | G | U | Expose an explicit refresh operation and dynamic handle proof. |
-| [useViewport()](https://reactflow.dev/api-reference/hooks/use-viewport) | [Viewport state / Vue useFlow().viewport / Foldkit model](#state) | P | P | P | U | Compare subscriptions and viewport ownership. |
+| [useViewport()](https://reactflow.dev/api-reference/hooks/use-viewport) | [Accepted state reads and adapters](#state) | P | P | P | U | Bounded reads exist in all three hosts; React hook equivalence and granular reactivity remain open. |
 
 ### api-reference overview
 
@@ -174,10 +175,10 @@ Each row links to a local evidence section. Production pointers identify impleme
 | [applyEdgeChanges()](https://reactflow.dev/api-reference/utils/apply-edge-changes) | [applyEdgeSelectionChange / reconnect / remove](#changes) | P | P | P | U | Provide full ordered change-array behavior. |
 | [applyNodeChanges()](https://reactflow.dev/api-reference/utils/apply-node-changes) | [applyNodePositionChange / size / bounds / selection](#changes) | P | P | P | U | Provide full ordered change-array behavior. |
 | [getBezierPath()](https://reactflow.dev/api-reference/utils/get-bezier-path) | [bezierEdgePath + edgeLabelPosition](#geometry) | P | P | P | U | Compare parameters and tuple outputs; current path helper returns a path string. |
-| [getConnectedEdges()](https://reactflow.dev/api-reference/utils/get-connected-edges) | [Document edge endpoints; no same-name helper](#geometry) | P | P | P | U | Add equivalent incident-edge query with identical input/output semantics. |
-| [getIncomers()](https://reactflow.dev/api-reference/utils/get-incomers) | [graphIncomers](#geometry) | P | P | P | U | Current helper returns incoming edges; upstream utility returns nodes. |
+| [getConnectedEdges()](https://reactflow.dev/api-reference/utils/get-connected-edges) | [getConnectedEdges](#geometry) | P | P | P | U | Reference source inspected; executable output comparison remains unverified. |
+| [getIncomers()](https://reactflow.dev/api-reference/utils/get-incomers) | [getIncomers](#geometry) | P | P | P | U | Reference source inspected; executable output comparison remains unverified. Legacy graphIncomers still returns edges. |
 | [getNodesBounds()](https://reactflow.dev/api-reference/utils/get-nodes-bounds) | [graphBounds](#geometry) | P | P | P | U | Compare origins, measured sizes, hidden nodes, and empty input. |
-| [getOutgoers()](https://reactflow.dev/api-reference/utils/get-outgoers) | [graphOutgoers](#geometry) | P | P | P | U | Current helper returns outgoing edges; map to outgoing nodes. |
+| [getOutgoers()](https://reactflow.dev/api-reference/utils/get-outgoers) | [getOutgoers](#geometry) | P | P | P | U | Reference source inspected; executable output comparison remains unverified. Legacy graphOutgoers still returns edges. |
 | [getSimpleBezierPath()](https://reactflow.dev/api-reference/utils/get-simple-bezier-path) | [simpleBezierEdgePath + edgeLabelPosition](#geometry) | P | P | P | U | Compare params and tuple outputs. |
 | [getSmoothStepPath()](https://reactflow.dev/api-reference/utils/get-smooth-step-path) | [smoothStepEdgePath + stepEdgeLabelPosition](#geometry) | P | P | P | U | Compare route options and tuple outputs. |
 | [getStraightPath()](https://reactflow.dev/api-reference/utils/get-straight-path) | [straightEdgePath + edgeLabelPosition](#geometry) | P | P | P | U | Compare params and tuple outputs. |
@@ -187,7 +188,6 @@ Each row links to a local evidence section. Production pointers identify impleme
 | [reconnectEdge()](https://reactflow.dev/api-reference/utils/reconnect-edge) | [reconnectFlowEdge / applyEdgeReconnectChange](#connections) | P | P | P | U | Compare IDs, replacement options, and document update semantics. |
 
 ## Examples
-
 
 ### examples overview
 
@@ -214,7 +214,7 @@ Each row links to a local evidence section. Production pointers identify impleme
 | [Rotatable Node](https://reactflow.dev/examples/nodes/rotatable-node) | [No equivalent example identified](#open-example) | G | G | G | U | Implement rotation, handle geometry, and controls. |
 | [Node Position Animation · Pro](https://reactflow.dev/examples/nodes/node-position-animation) | [No equivalent example identified](#open-example) | G | G | G | U | Implement layout transition animation. |
 | [Stress Test](https://reactflow.dev/examples/nodes/stress) | [Vanilla 250/1000/4000-node benchmark](#performance) | P | G | G | U | Match stress scenario and establish adapter-specific budgets. |
-| [Updating Nodes](https://reactflow.dev/examples/nodes/update-node) | [Controlled keyed document updates](#state) | P | P | P | U | Map all demonstrated data/style/visibility changes. |
+| [Updating Nodes](https://reactflow.dev/examples/nodes/update-node) | [Bounded state example](#state-demo) | P | P | P | U | Demonstrates label and hidden-state edits plus state inspection; styling controls and the rest of the upstream example remain unmapped. |
 | [Shapes · Pro](https://reactflow.dev/examples/nodes/shapes) | [No equivalent example identified](#open-example) | G | G | G | U | Provide graph-specific shape nodes. |
 
 ### examples edges
@@ -248,7 +248,7 @@ Each row links to a local evidence section. Production pointers identify impleme
 | [Contextual Zoom](https://reactflow.dev/examples/interaction/contextual-zoom) | [No equivalent example identified](#open-example) | G | G | G | U | Render content conditioned on viewport zoom. |
 | [Drag and Drop](https://reactflow.dev/examples/interaction/drag-and-drop) | [No equivalent example identified](#open-example) | G | G | G | U | Add external palette drop and coordinate conversion recipe. |
 | [Preventing Cycles](https://reactflow.dev/examples/interaction/prevent-cycles) | [No equivalent example identified](#open-example) | G | G | G | U | Add directed-edge cycle prevention; parent-cycle validation is a different contract. |
-| [Save and Restore](https://reactflow.dev/examples/interaction/save-and-restore) | [SavedFlowDocument](#persistence) | P | P | P | U | Build browser recipe; explicitly map viewport persistence. |
+| [Save and Restore](https://reactflow.dev/examples/interaction/save-and-restore) | [App-owned snapshot example](#state-demo) | P | P | P | U | Demonstrates session-memory restore of document and viewport; browser storage/export and the full upstream recipe remain unmapped. |
 | [Touch Device](https://reactflow.dev/examples/interaction/touch-device) | [Vanilla touch pan/pinch tests](#input) | P | G | G | U | Add complete touch recipe; native multi-contact lifecycle remains unverified. |
 | [Validation](https://reactflow.dev/examples/interaction/validation) | [Host-specific validators](#connections) | P | P | P | U | Align candidate contracts and demonstrate the recipe per framework. |
 | [Helper Lines · Pro](https://reactflow.dev/examples/interaction/helper-lines) | [No equivalent example identified](#open-example) | G | G | G | U | Add alignment guides and snapping. |
@@ -305,7 +305,6 @@ Each row links to a local evidence section. Production pointers identify impleme
 
 ## UI components and templates
 
-
 ### ui overview
 
 | Entry | Flow starting point and evidence | Vanilla | Vue | Foldkit | Reference | Remaining work |
@@ -353,9 +352,15 @@ Tests: the [shared fixture definitions and limits](../fixtures/README.md) descri
 
 ### State
 
-Production: vanilla callers retain their supplied document and can [subscribe to changes](../../apps/vanilla/src/mount-flow.ts#L424). Vue's [useFlow](../../packages/vue/src/use-flow.ts#L25) exposes computed document, nodes, and viewport with dispatch/update actions. It has no dedicated edge or node-data selector hooks. [Foldkit's model](../../apps/foldkit/src/graph.ts#L31) holds document and viewport. These are starting points for idiomatic state APIs, not equivalent React hooks or store APIs.
+Production: vanilla callers retain their supplied document and can [subscribe to changes](../../apps/vanilla/src/mount-flow.ts#L424). Vue's [useFlow](../../packages/vue/src/use-flow.ts#L48) exposes readonly computed snapshot/document/nodes/edges/viewport views, point lookups, and accepted-state subscriptions; [useNodes, useEdges and useViewport](../../packages/vue/src/use-flow.ts#L83) are canvas-local composables. Foldkit provides pure model [selectors](../../apps/foldkit/src/graph.ts#L89) and typed [snapshot and accepted-state ports](../../apps/foldkit/src/application.ts#L34). These are idiomatic state reads, not equivalent React hooks or store APIs; Foldkit remains an app-scoped prototype.
 
-Tests: [Vue split bindings](../../apps/vue/e2e/shared-conformance.e2e.ts#L85), [Foldkit controlled connection acknowledgement](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L139), and the shared keyed-update and controlled-acknowledgement fixtures. Selector granularity, subscription behavior, and the complete instance-method list remain unmapped.
+#### State demo
+
+The [example guide](../../docs/examples/state-and-persistence.md) defines the shared action subset. Vanilla uses the playground controller in [main.ts](../../apps/vanilla/src/main.ts); Vue uses the canvas-scoped composable from a descendant component in [main.ts](../../apps/vue/src/main.ts); Foldkit uses model selectors and typed runtime ports in [application.ts](../../apps/foldkit/src/application.ts) and [main.ts](../../apps/foldkit/src/main.ts). The app-owned snapshot envelope combines the core versioned document with viewport state; its in-memory lifetime means reload discards it. Core persistence remains unchanged.
+
+The corresponding visible-control browser specifications are [vanilla](../../apps/vanilla/e2e/catalog-state-examples.e2e.ts), [Vue](../../apps/vue/e2e/catalog-state-examples.e2e.ts), and [Foldkit](../../apps/foldkit/e2e/catalog-state-examples.e2e.ts). Their checked-in presence identifies the intended proof boundary; completion and verification results are recorded in [project progress](../PROGRESS.md). Until those tests pass, user outcomes remain unverified. Even after they pass, the evidence covers this bounded subset only; it does not establish whole-entry upstream parity.
+
+Tests: [Vue state composables](../../apps/vue/e2e/public-state.e2e.ts#L3) cover controlled proposal and acknowledgement, replacement, edge removal, viewport reads, hidden data, missing IDs, canvas isolation, disposal, and notification ordering. The [versioned public-state fixtures](../fixtures/public-state-contract.json) are exercised through [vanilla](../../apps/vanilla/e2e/shared-conformance.e2e.ts), [Vue](../../apps/vue/e2e/shared-conformance.e2e.ts), and [Foldkit](../../apps/foldkit/e2e/shared-conformance.e2e.ts) production drivers. [Vue split bindings](../../apps/vue/e2e/shared-conformance.e2e.ts#L85), [Foldkit controlled connection acknowledgement](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L139), and the shared keyed-update and controlled-acknowledgement fixtures cover other adapter boundaries. Selector granularity and the complete instance-method list remain unmapped.
 
 ### Schema
 
@@ -371,9 +376,9 @@ Tests: [core change/drag behavior](../../packages/core/src/domain/flow-runtime.s
 
 ### Geometry
 
-Production: [graph bounds and queries](../../packages/core/src/domain/flow-graph.ts#L206), [edge path helpers](../../packages/core/src/domain/flow-edge.schema.ts#L78), [step paths](../../packages/core/src/domain/flow-step-edge.schema.ts#L230), and [fitViewportToNodes](../../packages/core/src/domain/flow-fit-view.ts#L42). `graphIncomers` and `graphOutgoers` return edges, so they require adaptation to node-returning utilities. Path and label helpers are separate. Fit accepts a document and measurements rather than only bounds.
+Production: [graph bounds and queries](../../packages/core/src/domain/flow-graph.ts#L206), [reference-shaped node and edge queries](../../packages/core/src/domain/flow-graph.ts#L268), [legacy edge-returning queries](../../packages/core/src/domain/flow-graph.ts#L253), [edge path helpers](../../packages/core/src/domain/flow-edge.schema.ts#L78), [step paths](../../packages/core/src/domain/flow-step-edge.schema.ts#L230), and [fitViewportToNodes](../../packages/core/src/domain/flow-fit-view.ts#L42). The legacy `graphIncomers` and `graphOutgoers` retain their edge-returning semantics. Path and label helpers are separate. Fit accepts a document and measurements rather than only bounds.
 
-Tests: [graph query cases](../../packages/core/src/domain/flow-graph.test.ts#L251), [edge geometry tests](../../packages/core/src/domain/flow-edge.schema.test.ts), [fit tests](../../packages/core/src/domain/flow-fit-view.test.ts#L43), and [vanilla fit behavior](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L2098). These helpers are available through core in all three frameworks. Recipe-level rendering and reference output comparisons remain open.
+Tests: [graph query cases](../../packages/core/src/domain/flow-graph.test.ts#L251), [reference-shaped utility cases](../../packages/core/src/domain/flow-graph.test.ts#L438), [edge geometry tests](../../packages/core/src/domain/flow-edge.schema.test.ts), [fit tests](../../packages/core/src/domain/flow-fit-view.test.ts#L43), and [vanilla fit behavior](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L2098). These helpers are available through core in all three frameworks. Recipe-level rendering and executable reference output comparisons remain open.
 
 ### Connections
 
@@ -431,7 +436,7 @@ Tests/evidence: [measurement trace](../traces/node-measurement.md), [unmeasured 
 
 ### Persistence
 
-Production: [versioned document persistence](../../packages/core/src/domain/flow-persistence.ts#L23) deliberately omits viewport and transient selection. Tests: [round-trip persistence](../../packages/core/src/domain/flow-persistence.test.ts#L12). Core serialization is usable by each framework, but there is no complete catalog save/restore recipe or matching ReactFlowJsonObject contract.
+Production: [versioned document persistence](../../packages/core/src/domain/flow-persistence.ts#L23) deliberately omits viewport and transient selection. Tests: [round-trip persistence](../../packages/core/src/domain/flow-persistence.test.ts#L12). The [bounded app-owned snapshot example](#state-demo) composes this document format with viewport state in session memory. It does not add browser storage/export or a matching ReactFlowJsonObject contract; full catalog behavior remains unverified.
 
 ### Styles
 

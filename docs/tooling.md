@@ -7,7 +7,7 @@ Flow uses Ultracite with the Oxlint and Oxfmt toolchain. All four direct develop
 - `@oxlint/plugins@1.85.0`
 - `oxfmt@0.70.0`
 
-`oxlint.config.ts` extends the Ultracite core and Vitest presets. It also loads the vendored anti-slop generic and Effect plugins. `oxfmt.config.ts` uses the Ultracite Oxfmt preset. Both configurations ignore imported research evidence, generated research indexes, build output, agent directories, and the vendored plugin source.
+`oxlint.config.ts` extends the Ultracite core and Vitest presets. It also loads the vendored anti-slop generic and Effect plugins. `oxfmt.config.ts` uses the Ultracite Oxfmt preset. Both configurations ignore imported research evidence, generated research indexes, build output, agent directories, and the vendored plugin source. Oxfmt also skips `docs/api-reference.md` because it is generated; `bun run docs:check` verifies its freshness and links without rewriting generated TypeScript code blocks.
 
 ## Commands
 
@@ -50,7 +50,7 @@ No absolute latency threshold is enforced. On the initial Darwin / HeadlessChrom
 
 Ultracite Doctor reports eight passing setup checks with no warnings or failures. The first repository check found 465 lint errors across 18 owned files and formatting changes in 22 files after the generated configuration was normalized. The largest groups are readable-spacing, sorted-key, curly-brace, array-type, type-assertion-comment, generator-name, and Vitest findings.
 
-The installation does not add `bun run check` to `bun run verify` yet. Clear the existing findings in a separate reviewed cleanup, run the formatter and lint fixer twice to prove stability, then add the read-only check to the complete gate.
+`bun run verify` starts with `bun run check`, before documentation, research, build, test, and browser work. Keep this gate read-only; use targeted formatter or lint-fix commands only when the files being changed need cleanup.
 
 ## Anti-slop provenance
 

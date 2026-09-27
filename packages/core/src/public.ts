@@ -169,6 +169,9 @@ export {
   graphAncestors,
   graphBounds,
   graphDescendants,
+  getConnectedEdges,
+  getIncomers,
+  getOutgoers,
   graphIncomers,
   graphNode,
   graphNodeBounds,
@@ -185,6 +188,19 @@ export {
 } from './domain/flow-toolbar-anchor.ts'
 
 export type { FlowToolbarAnchor } from './domain/flow-toolbar-anchor.ts'
+
+export {
+  createFlowSnapshot,
+  FlowSnapshotSchema,
+  FlowStateChangeCauseSchema,
+  FlowStateChangeSchema,
+} from './domain/flow-snapshot.ts'
+
+export type {
+  FlowSnapshot,
+  FlowStateChange,
+  FlowStateChangeCause,
+} from './domain/flow-snapshot.ts'
 
 export {
   SavedFlowDocumentSchema,

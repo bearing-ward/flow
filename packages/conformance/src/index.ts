@@ -1,4 +1,12 @@
-import type { FlowDocumentSchema } from '@flow/core'
+import {
+  FlowDocumentSchema,
+  FlowEdgeSchema,
+  FlowNodeSchema,
+  FlowSnapshotSchema,
+  FlowStateChangeSchema,
+  ViewportSchema,
+} from '@flow/core'
+import { Schema } from 'effect'
 
 export type ConformanceDocument = typeof FlowDocumentSchema.Encoded
 
@@ -15,7 +23,7 @@ export type ConformanceAction =
       readonly nodeId: string
       readonly dx: number
       readonly dy: number
-      readonly cancel?: boolean
+      readonly cancel?: boolean | undefined
     }
   | {
       readonly kind: 'connect'
@@ -67,10 +75,154 @@ export interface ConformanceAdapter {
   snapshot: () => Promise<ConformanceSnapshot>
   markIdentity: (nodeId: string, marker: string) => Promise<void>
   changeKinds: () => Promise<readonly string[]>
+  readState: (query: PublicStateQuery) => Promise<PublicStateRead>
+  acceptedStates: () => Promise<readonly PublicStateChange[]>
   destroy: () => Promise<{
     readonly mountedElements: number
     readonly changesAfterDestroy: number
+    readonly acceptedStatesAfterDestroy: number
   }>
+}
+
+export const PublicStateQuerySchema = Schema.Struct({
+  nodeId: Schema.optional(Schema.String),
+  edgeId: Schema.optional(Schema.String),
+})
+
+export type PublicStateQuery = typeof PublicStateQuerySchema.Encoded
+
+export const PublicStateReadSchema = Schema.Struct({
+  snapshot: FlowSnapshotSchema,
+  node: Schema.NullOr(FlowNodeSchema),
+  edge: Schema.NullOr(FlowEdgeSchema),
+})
+
+export type PublicStateRead = typeof PublicStateReadSchema.Encoded
+
+export const PublicStateChangeSchema = FlowStateChangeSchema
+
+export type PublicStateChange = typeof PublicStateChangeSchema.Encoded
+
+const ConformanceActionSchema = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal('update-document'),
+    document: FlowDocumentSchema,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('drag-node'),
+    nodeId: Schema.String,
+    dx: Schema.Number,
+    dy: Schema.Number,
+    cancel: Schema.optional(Schema.Boolean),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('update-viewport'),
+    viewport: ViewportSchema,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('connect'),
+    sourceNodeId: Schema.String,
+    sourceHandleId: Schema.String,
+    targetNodeId: Schema.String,
+    targetHandleId: Schema.String,
+  }),
+])
+
+const ConformanceFixtureSchema = Schema.Struct({
+  version: Schema.Literal(1),
+  id: Schema.String,
+  description: Schema.String,
+  documentMode: Schema.Literals(['controlled', 'uncontrolled']),
+  viewportMode: Schema.Literals(['controlled', 'uncontrolled']),
+  renderOnlyVisible: Schema.optional(Schema.Boolean),
+  allowedConnectionTargets: Schema.optional(Schema.Array(Schema.String)),
+  document: FlowDocumentSchema,
+  actions: Schema.Array(ConformanceActionSchema),
+  expected: Schema.Struct({
+    nodeIds: Schema.Array(Schema.String),
+    edgeIds: Schema.Array(Schema.String),
+    positions: Schema.Array(
+      Schema.Struct({ id: Schema.String, x: Schema.Number, y: Schema.Number })
+    ),
+    changeKinds: Schema.Array(Schema.String),
+    preservedIdentityIds: Schema.optional(Schema.Array(Schema.String)),
+  }),
+})
+
+const StateContractStepSchema = Schema.Struct({
+  action: Schema.optional(ConformanceActionSchema),
+  query: PublicStateQuerySchema,
+  expected: Schema.Struct({
+    read: PublicStateReadSchema,
+    semanticKinds: Schema.Array(Schema.String),
+    acceptedStates: Schema.Array(PublicStateChangeSchema),
+    neighborNodeIds: Schema.Array(Schema.String),
+    connectedEdgeIds: Schema.Array(Schema.String),
+    rendered: Schema.Struct({
+      nodeIds: Schema.Array(Schema.String),
+      edgeIds: Schema.Array(Schema.String),
+      edgeIdsByHost: Schema.Struct({
+        vanilla: Schema.Array(Schema.String),
+        vue: Schema.Array(Schema.String),
+        foldkit: Schema.Array(Schema.String),
+      }),
+      positions: Schema.Array(
+        Schema.Struct({ id: Schema.String, x: Schema.Number, y: Schema.Number })
+      ),
+    }),
+  }),
+})
+
+export const PublicStateContractFixtureSchema = Schema.Struct({
+  version: Schema.Literal(1),
+  id: Schema.String,
+  description: Schema.String,
+  fixture: ConformanceFixtureSchema,
+  graphQuery: Schema.Struct({ nodeId: Schema.String }),
+  steps: Schema.Array(StateContractStepSchema),
+  expectedDisposal: Schema.Struct({
+    mountedElements: Schema.Literal(0),
+    changesAfterDestroy: Schema.Literal(0),
+    acceptedStatesAfterDestroy: Schema.Literal(0),
+  }),
+})
+
+export type PublicStateContractFixture =
+  typeof PublicStateContractFixtureSchema.Encoded
+
+export const validatePublicStateContractFixtures = (
+  fixtures: readonly PublicStateContractFixture[]
+): void => {
+  const fixtureIds = new Set<string>()
+
+  for (const fixture of fixtures) {
+    if (
+      fixture.version !== 1 ||
+      fixture.id.length === 0 ||
+      fixtureIds.has(fixture.id) ||
+      fixture.fixture.id !== fixture.id ||
+      fixture.steps.length === 0 ||
+      fixture.steps[0]?.action !== undefined
+    ) {
+      throw new Error(
+        `Invalid or duplicate public state fixture id: ${fixture.id}`
+      )
+    }
+
+    fixtureIds.add(fixture.id)
+
+    for (const step of fixture.steps) {
+      if (
+        step.expected.read.snapshot.document.nodes.length === 0 ||
+        step.expected.read.snapshot.viewport.zoom <= 0 ||
+        step.expected.rendered.nodeIds.length === 0
+      ) {
+        throw new Error(
+          `Incomplete public state fixture expectation: ${fixture.id}`
+        )
+      }
+    }
+  }
 }
 
 export const conformanceFixtures: readonly ConformanceFixture[] = [

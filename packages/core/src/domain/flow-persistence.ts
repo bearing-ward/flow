@@ -40,9 +40,7 @@ export const encodeSavedFlowDocument = (
   })
 
 /** Decode the versioned envelope, then apply the normal graph integrity workflow. */
-export const decodeSavedFlowDocument = (
-  input: typeof SavedFlowDocumentSchema.Encoded
-) =>
-  S.decodeUnknownEffect(SavedFlowDocumentSchema)(input).pipe(
+export const decodeSavedFlowDocument = <Input>(savedFlowDocument: Input) =>
+  S.decodeUnknownEffect(SavedFlowDocumentSchema)(savedFlowDocument).pipe(
     Effect.flatMap((saved) => decodeFlowDocument(saved.document))
   )

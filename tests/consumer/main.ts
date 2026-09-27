@@ -10,6 +10,9 @@ declare global {
     __flowConsumerResult?: {
       readonly decodedNodeId: string
       readonly canvasCount: number
+      readonly initialSnapshotNodeId: string | undefined
+      readonly updatedNodeId: string | undefined
+      readonly stateNotificationCount: number
     }
   }
 }
@@ -44,7 +47,37 @@ const controller = await createFlow(root, document, {
 
 window.__flowConsumerController = controller
 
+let stateNotificationCount = 0
+
+const stopState = controller.subscribeState(() => {
+  stateNotificationCount += 1
+})
+
+const initialSnapshotNodeId = controller.getSnapshot().document.nodes[0]?.id
+
+controller.update({
+  nodes: [
+    {
+      id: 'packed-updated',
+      label: 'Packed update',
+      position: { x: 55, y: 65 },
+    },
+  ],
+  edges: [],
+})
+
+const updatedNodeId = controller.getNode('packed-updated')?.id
+
+stopState()
+
+controller.updateViewport({ x: 5, y: 6, zoom: 1.25 })
+
+const stateChangeAfterUnsubscribe = stateNotificationCount
+
 window.__flowConsumerResult = {
   decodedNodeId: document.nodes[0]?.id ?? 'missing',
   canvasCount: root.querySelectorAll("[data-testid='flow-canvas']").length,
+  initialSnapshotNodeId,
+  updatedNodeId,
+  stateNotificationCount: stateChangeAfterUnsubscribe,
 }

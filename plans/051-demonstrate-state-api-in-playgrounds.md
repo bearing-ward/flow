@@ -12,7 +12,7 @@
 - Depends on: 046, 047, 048, 049, 050
 - Category: direction
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: DONE (2026-09-26; local gates passed)
 
 ## Why this matters
 
@@ -47,6 +47,7 @@ Only modify the following files or explicitly named directory subsets:
 - `apps/foldkit/src/application.ts`
 - `apps/foldkit/src/style.css`
 - `apps/foldkit/e2e/catalog-state-examples.e2e.ts`
+- `apps/vanilla/e2e/playground.e2e.ts-snapshots/playground-scene-chooser-darwin.png` (the generated visual evidence for the bounded Vanilla state-tools panel)
 - `docs/examples/state-and-persistence.md`
 - `research/catalogs/react-flow-coverage.md`
 - `research/PROGRESS.md`
@@ -117,3 +118,11 @@ Use browser interactions with actual playground controls, not test-only setter m
 ## Maintenance notes
 
 These examples become public API smoke tests. Keep the saved app envelope separate from the reusable document format. Future catalog work should expand explicit missing outcomes and retain runnable examples with every capability slice.
+
+## Execution record (2026-09-26)
+
+Changed for this plan: `apps/vanilla/src/main.ts`, `apps/vanilla/src/style.css`, `apps/vanilla/e2e/catalog-state-examples.e2e.ts`, and its generated `playground-scene-chooser-darwin.png` visual evidence; `apps/vue/src/main.ts`, `apps/vue/src/style.css`, `apps/vue/e2e/catalog-state-examples.e2e.ts`; `apps/foldkit/src/main.ts`, `apps/foldkit/src/style.css`, `apps/foldkit/e2e/catalog-state-examples.e2e.ts`; `docs/examples/state-and-persistence.md`; `research/catalogs/react-flow-coverage.md`; and `research/PROGRESS.md`. The reviewer owns the `plans/README.md` index row.
+
+Verification: all three focused example E2Es pass 1/1. `bun run check`, `bun run typecheck`, `bun run test` (136 passed), `bun run docs:generate-api`, `bun run docs:check`, `bun run scripts/check-react-flow-catalog.ts` (208 entries / 200 capabilities), `git diff --check`, and final `bun run verify` pass. Final verifier reports 191 Vanilla browser tests passed and two existing native-pointer skips, 12 Vue conformance tests passed, and 10 Foldkit conformance tests passed.
+
+Visual inspection: the six desktop/narrow screenshots named in the Plan 051 `research/PROGRESS.md` entry were inspected locally; the Vanilla scene-chooser baseline is the one checked-in generated screenshot and the other captures are temporary. The Vanilla state panel scrolls within 280px above Transform; the Vue panel leaves the output handle clear. Foldkit demo edges omit labels because this host currently has no edge-label placement. The examples do not establish parity with the upstream pages, hosted CI, publication, collector delivery, or native multi-pointer behavior.

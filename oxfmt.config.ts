@@ -16,6 +16,7 @@ const localIgnores = [
   'apps/vanilla/dist/**',
   'research/artifacts/**',
   'research/generated/**',
+  'docs/api-reference.md',
   'tools/oxlint/anti-slop/**',
 ]
 

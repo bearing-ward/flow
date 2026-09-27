@@ -10,6 +10,9 @@ declare global {
     __flowConsumerResult?: {
       readonly decodedNodeId: string
       readonly canvasCount: number
+      readonly initialSnapshotNodeId: string | undefined
+      readonly updatedNodeId: string | undefined
+      readonly stateNotificationCount: number
     }
   }
 }
@@ -166,6 +169,9 @@ const program = Effect.gen(function* checkPackedConsumer() {
           if (
             result.decodedNodeId !== 'packed-node' ||
             result.canvasCount !== 1 ||
+            result.initialSnapshotNodeId !== 'packed-node' ||
+            result.updatedNodeId !== 'packed-updated' ||
+            result.stateNotificationCount !== 1 ||
             result.canvasCountAfterDestroy !== 0
           ) {
             throw new Error(

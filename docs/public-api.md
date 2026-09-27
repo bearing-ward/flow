@@ -10,6 +10,14 @@
 
 Pass `onChange` in `createFlow` options to subscribe during acquisition. Destroying the returned controller removes that subscription and releases the host. Both entry points also expose `subscribe(listener)`, which returns an unsubscriber for a caller-owned subscription.
 
+## Accepted-state reads
+
+Both controller facades expose `getSnapshot()`, `getNodes()`, `getEdges()`, `getNode(id)`, `getEdge(id)`, and `getViewport()`. They read the current accepted document and viewport. Snapshots contain all document nodes and edges, including hidden items and items omitted from rendering by viewport culling. Node positions remain parent-relative. Missing IDs return `undefined`.
+
+Each getter returns a detached, deeply frozen point-in-time value. Object identity is not stable between reads. These values exclude DOM nodes, measured geometry, pointer sessions, and uncommitted preview positions; mutating a returned value cannot change live host state.
+
+`subscribeState(listener)` reports `{ previous, current, cause }` synchronously after a distinct accepted document or viewport value is installed. It has no initial delivery, deduplicates schema-equal values, and returns an immediate unsubscriber. Semantic `subscribe` proposals remain separate: controlled proposals do not change reads until the owner acknowledges them with `update`; uncontrolled changes are installed before accepted-state notification. For an uncontrolled semantic change, the existing semantic listener runs first. Reentrant updates queue FIFO until current listeners finish. Listener failures are reported and isolated so remaining listeners still run. Destroy invalidates subscriptions; a subscription created after destroy is inert.
+
 ```ts
 const controller = await createFlow(root, unknownDocument, {
   documentMode: 'controlled',
@@ -25,7 +33,12 @@ const controller = await createFlow(root, unknownDocument, {
 
 controller.update(nextDocument)
 const stopListening = controller.subscribe(handleChange)
+const stopState = controller.subscribeState(({ current }) => {
+  saveFlow(current.document, current.viewport)
+})
 stopListening()
+controller.getNode('node-1')
+stopState()
 controller.destroy()
 ```
 

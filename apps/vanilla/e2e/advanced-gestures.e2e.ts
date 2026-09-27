@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 import { runSerially } from '../../shared-e2e/run-serially.ts'
+import type { FlowDocumentInput } from '../src/mount-flow.ts'
 
 interface ResizeSourceNodeInput {
   id: string
@@ -331,14 +332,13 @@ const mountResizeScenario = async (
       globalThis.flowAuthoritativeNodes = structuredClone(nodes)
 
       const toolbar = mountOptions.derivedUI
-        ? globalThis.document.body.append(
-            globalThis.document.createElement('div')
-          )
+        ? globalThis.document.createElement('div')
         : undefined
 
       if (toolbar !== undefined) {
         toolbar.id = 'resize-node-toolbar'
         toolbar.textContent = 'Node toolbar'
+        globalThis.document.body.append(toolbar)
       }
 
       const controller = mountFlow(root, document, {
@@ -806,8 +806,8 @@ test('removing a dragged node clears its preview and releases gesture resources'
   expect(captured).toBe(true)
 
   // SAFETY: The public schema decoder validates this raw document or options value before use in the test.
-  await page.evaluate(() =>
-    globalThis.flowController?.update({
+  await page.evaluate(() => {
+    const document: FlowDocumentInput = {
       nodes: [
         {
           id: 'source',
@@ -824,9 +824,11 @@ test('removing a dragged node clears its preview and releases gesture resources'
         { id: 'spare', label: 'Spare', position: { x: 700, y: 180 } },
       ],
       edges: [],
-    } as never)
-  )
-  await expect(drag).toHaveCount(0)
+    }
+
+    globalThis.flowController?.update(document)
+  })
+  await expect(draggedNode).toHaveCount(0)
   expect(
     await element.evaluate(
       (node) => node instanceof HTMLElement && node.hasPointerCapture(1)

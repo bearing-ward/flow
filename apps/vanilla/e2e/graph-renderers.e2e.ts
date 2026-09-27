@@ -1036,13 +1036,22 @@ test('overlapping nodes follow graph order and controlled zIndex updates retain 
   expect(
     await page
       .locator('.flow-node')
-      .evaluateAll((nodes) => nodes.map((node) => node.dataset.nodeId))
+      .evaluateAll((nodes) =>
+        nodes.map((node) =>
+          node instanceof HTMLElement ? node.dataset.nodeId : undefined
+        )
+      )
   ).toEqual(['sibling', 'parent', 'child'])
   expect(
     await page.evaluate(
       ({ x, y }) =>
-        globalThis.document.elementFromPoint(x, y)?.closest('.flow-node')
-          ?.dataset.nodeId,
+        (() => {
+          const node = globalThis.document
+            .elementFromPoint(x, y)
+            ?.closest('.flow-node')
+
+          return node instanceof HTMLElement ? node.dataset.nodeId : undefined
+        })(),
       {
         x: overlap.x + 20,
         y: overlap.y + 20,
@@ -1075,15 +1084,21 @@ test('overlapping nodes follow graph order and controlled zIndex updates retain 
     .poll(() =>
       page
         .locator('.flow-node')
-        .evaluateAll((nodes) => nodes.map((node) => node.dataset.nodeId))
+        .evaluateAll((nodes) =>
+          nodes.map((node) =>
+            node instanceof HTMLElement ? node.dataset.nodeId : undefined
+          )
+        )
     )
     .toEqual(['parent', 'child', 'sibling'])
   expect(
-    await page.evaluate(
-      () =>
-        globalThis.document.elementFromPoint(120, 120)?.closest('.flow-node')
-          ?.dataset.nodeId
-    )
+    await page.evaluate(() => {
+      const node = globalThis.document
+        .elementFromPoint(120, 120)
+        ?.closest('.flow-node')
+
+      return node instanceof HTMLElement ? node.dataset.nodeId : undefined
+    })
   ).toBe('sibling')
   expect(
     await page.evaluate(() => {
@@ -1117,14 +1132,14 @@ test('controlled parent updates reposition unchanged descendants and edge endpoi
 
     root.replaceChildren()
 
-    const document = {
+    const document: FlowDocumentInput = {
       nodes: [
         {
           id: 'parent',
           label: 'Parent',
           position: { x: 100, y: 120 },
           size: { width: 220, height: 160 },
-          handles: [{ id: 'out', kind: 'source', side: 'right' }],
+          handles: [{ id: 'out', kind: 'source', side: 'right' }] as const,
         },
         {
           id: 'child',
@@ -1140,7 +1155,7 @@ test('controlled parent updates reposition unchanged descendants and edge endpoi
           id: 'other',
           label: 'Other',
           position: { x: 400, y: 120 },
-          handles: [{ id: 'in', kind: 'target', side: 'left' }],
+          handles: [{ id: 'in', kind: 'target', side: 'left' }] as const,
         },
       ],
       edges: [
@@ -2183,9 +2198,9 @@ test('node drag updates only incident custom edge renderers', async ({
           handles: [
             { id: 'out', kind: 'source', side: 'right' },
             { id: 'in', kind: 'target', side: 'left' },
-          ],
+          ] as const,
         })),
-      ],
+      ] as const satisfies FlowDocumentInput['nodes'],
       edges: [
         {
           id: 'connected',

@@ -3,15 +3,22 @@ import {
   applyEdgeRemoveChange,
   applyEdgeSelectionChange,
   applyNodePositionChange,
+  applyNodeSizeChange,
   applyNodeBoundsChange,
   applyNodePositionsChange,
   applyNodeSelectionChange,
   applySelectionSetChange,
   decodeFlowDocument,
+  decodeSavedFlowDocument,
+  getIncomers,
+  getOutgoers,
+  getConnectedEdges,
+  SavedFlowDocumentSchema,
+  ViewportSchema,
   simpleBezierEdgePath,
 } from '@flow/core'
 import type { FlowChange, FlowDocument, FlowEdge, FlowNode } from '@flow/core'
-import { Effect, ManagedRuntime } from 'effect'
+import { Effect, ManagedRuntime, Schema } from 'effect'
 
 import './style.css'
 import { createFlowHost } from './mount-flow.ts'
@@ -258,13 +265,25 @@ const playgroundCopy = {
   },
 } as const
 
+const applyNodeGeometryChange = (
+  document: FlowDocument,
+  change: Extract<FlowChange, { kind: 'node-bounds' | 'node-size' }>
+): FlowDocument =>
+  change.kind === 'node-size'
+    ? (applyNodeSizeChange(document, change) ?? document)
+    : (applyNodeBoundsChange(document, change) ?? document)
+
 const applyDocumentChange = (
   document: FlowDocument,
   change: FlowChange
 ): FlowDocument => {
   switch (change.kind) {
     case 'node-bounds': {
-      return applyNodeBoundsChange(document, change) ?? document
+      return applyNodeGeometryChange(document, change)
+    }
+
+    case 'node-size': {
+      return applyNodeGeometryChange(document, change)
     }
 
     case 'node-position': {
@@ -435,6 +454,211 @@ const program = Effect.gen(function* program() {
     <output class="flow-demo-status" aria-live="polite">Ready · 5 edge paths · 6 nodes</output>`
   root.append(panel)
 
+  const statePanel = globalThis.document.createElement('section')
+  statePanel.className = 'flow-state-tools'
+  panel.classList.add('flow-demo-panel-with-state-tools')
+  statePanel.innerHTML = `<h2>State and persistence</h2>
+    <label>Node label <input aria-label="Node label" value="Validate"></label>
+    <button type="button" data-state="label">Update label</button>
+    <button type="button" data-state="hidden">Hide selected node</button>
+    <button type="button" data-state="inspect">Inspect graph</button>
+    <button type="button" data-state="save">Save snapshot</button>
+    <button type="button" data-state="change">Change graph and viewport</button>
+    <button type="button" data-state="restore" disabled>Restore snapshot</button>
+    <button type="button" data-state="reset">Reset example</button>
+    <small>Saved in this page session only. Reloading discards the snapshot.</small>
+    <output data-state-result aria-live="polite"></output>`
+  panel.append(statePanel)
+  const stateInput = statePanel.querySelector<HTMLInputElement>('input')
+  const stateOutput = statePanel.querySelector<HTMLOutputElement>('output')
+  let savedState: unknown
+
+  const stateEnvelope = Schema.Struct({
+    version: Schema.Literal(1),
+    savedDocument: SavedFlowDocumentSchema,
+    viewport: ViewportSchema,
+  })
+
+  const selectedId = 'validate'
+
+  const showState = (text: string): void => {
+    stateOutput?.replaceChildren(text)
+  }
+
+  const inspectState = (): void => {
+    const snapshot = host.getSnapshot()
+    const node = host.getNode(selectedId)
+
+    const incomers =
+      node === undefined
+        ? []
+        : getIncomers(node, snapshot.document.nodes, snapshot.document.edges)
+
+    const outgoers =
+      node === undefined
+        ? []
+        : getOutgoers(node, snapshot.document.nodes, snapshot.document.edges)
+
+    showState(
+      JSON.stringify({
+        nodes: host.getNodes().length,
+        edges: host.getEdges().length,
+        selected: node?.label,
+        isSelected: node?.selected === true,
+        hidden: node?.hidden === true,
+        viewport: host.getViewport(),
+        incomers: incomers.map((item) => item.id),
+        outgoers: outgoers.map((item) => item.id),
+      })
+    )
+  }
+
+  statePanel.addEventListener('click', (event) => {
+    const button =
+      event.target instanceof HTMLElement
+        ? event.target.closest<HTMLButtonElement>('button[data-state]')
+        : null
+
+    if (button === null) {
+      return
+    }
+
+    const snapshot = host.getSnapshot()
+
+    switch (button.dataset.state) {
+      case 'label': {
+        const label = stateInput?.value ?? ''
+        currentDocument = {
+          ...snapshot.document,
+          nodes: snapshot.document.nodes.map((node) =>
+            node.id === selectedId ? { ...node, label } : node
+          ),
+        }
+        host.update(currentDocument)
+        mainDocument = currentDocument
+        showState(`Updated ${selectedId} to ${label}`)
+        break
+      }
+
+      case 'hidden': {
+        const target = host.getNode(selectedId)
+
+        if (target === undefined) {
+          return
+        }
+
+        currentDocument = {
+          ...snapshot.document,
+          nodes: snapshot.document.nodes.map((node) =>
+            node.id === selectedId
+              ? { ...node, hidden: node.hidden !== true }
+              : node
+          ),
+        }
+        host.update(currentDocument)
+        mainDocument = currentDocument
+        button.textContent =
+          target.hidden === true ? 'Hide selected node' : 'Show selected node'
+        showState(
+          `${selectedId} hidden=${String(target.hidden !== true)}; incident edges=${getConnectedEdges([target], snapshot.document.edges).filter((edge) => edge.hidden !== true).length}`
+        )
+        break
+      }
+
+      case 'inspect': {
+        inspectState()
+        break
+      }
+
+      case 'save': {
+        savedState = Schema.encodeSync(stateEnvelope)({
+          version: 1,
+          savedDocument: { version: 1, document: snapshot.document },
+          viewport: snapshot.viewport,
+        })
+
+        const restore = statePanel.querySelector<HTMLButtonElement>(
+          '[data-state="restore"]'
+        )
+
+        restore?.removeAttribute('disabled')
+        showState('Snapshot saved for this session')
+        break
+      }
+
+      case 'change': {
+        currentDocument = {
+          ...snapshot.document,
+          nodes: snapshot.document.nodes.map((node) =>
+            node.id === selectedId
+              ? { ...node, label: 'Changed after save', hidden: false }
+              : node
+          ),
+        }
+        host.update(currentDocument)
+        host.updateViewport({ x: -80, y: 30, zoom: 0.9 })
+        mainDocument = currentDocument
+        showState('Changed label, visibility, and viewport')
+        break
+      }
+
+      case 'restore': {
+        if (savedState === undefined) {
+          showState('No snapshot saved')
+
+          return
+        }
+
+        const decoded = Schema.decodeUnknownSync(stateEnvelope)(savedState)
+
+        const restored = Effect.runSync(
+          decodeSavedFlowDocument(decoded.savedDocument)
+        )
+
+        currentDocument = restored
+        mainDocument = restored
+        host.update(restored)
+        host.updateViewport(decoded.viewport)
+        showState(
+          'Restored document and viewport; transient selection is not saved'
+        )
+        break
+      }
+
+      case 'reset': {
+        savedState = undefined
+        currentDocument = document
+        mainDocument = document
+
+        if (stateInput !== null) {
+          stateInput.value = 'Validate'
+        }
+
+        const restore = statePanel.querySelector<HTMLButtonElement>(
+          '[data-state="restore"]'
+        )
+
+        if (restore !== null) {
+          restore.disabled = true
+        }
+
+        const hiddenButton = statePanel.querySelector<HTMLButtonElement>(
+          '[data-state="hidden"]'
+        )
+
+        hiddenButton?.replaceChildren('Hide selected node')
+        host.update(document)
+        host.updateViewport({ x: 0, y: 0, zoom: 1 })
+        showState('Reset to the original example')
+        break
+      }
+
+      default: {
+        break
+      }
+    }
+  })
+
   const status = panel.querySelector<HTMLOutputElement>('output')
 
   const description = panel.querySelector<HTMLParagraphElement>(
@@ -471,6 +695,8 @@ const program = Effect.gen(function* program() {
 
   const showExample = (example: 'home' | 'remote'): void => {
     placedPanel.hidden = true
+    statePanel.hidden = false
+    panel.classList.add('flow-demo-panel-with-state-tools')
     interactionSceneActive = false
     currentDocument = mainDocument
     host.update(currentDocument)
@@ -492,6 +718,8 @@ const program = Effect.gen(function* program() {
 
   const showScene = (scene: 'resize' | 'drag' | 'panels'): void => {
     interactionSceneActive = true
+    statePanel.hidden = true
+    panel.classList.remove('flow-demo-panel-with-state-tools')
     currentDocument = sceneDocuments[scene]
     host.update(currentDocument)
     host.updateViewport({ x: 0, y: 0, zoom: 1 })

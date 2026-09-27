@@ -12,7 +12,7 @@
 - Depends on: 044 for final verification; read-only mapping may begin earlier
 - Category: direction
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: COMPLETE (2026-09-26)
 
 ## Why this matters
 
@@ -114,3 +114,12 @@ No production tests are added by this design plan. Supply explicit input/action/
 ## Maintenance notes
 
 Revisit correspondence at catalog milestones. New upstream members remain visible as gaps. The initial committed-state design is a bounded decision; future preview/lifecycle APIs require separate contracts and evidence.
+
+## Execution record
+
+- Added `docs/react-flow-api-correspondence.md` and `research/traces/public-state-contract.md`; linked both from the coverage map and progress notes.
+- Settled the complete accepted `{ document, viewport }` contract, read surfaces for JS/Vue/Foldkit, copy/reference ownership, parent-relative coordinates, hidden/culled inclusion, proposal separation, equality deduplication, initial delivery, event ordering, reentrancy, listener failures, unsubscribe/disposal, and lifecycle callback deferral. Refreshed Plans 046-050 with those decisions.
+- Current live React Flow interface pages were consulted on 2026-09-26 and linked in the matrix. The dated catalog/pinned source remain separate historical evidence. No live React Flow runtime comparison was performed.
+- Verification: `bun run check` exit 0; `bun run typecheck` exit 0; `bun run test` exit 0 (18 files, 129 tests); `bun run docs:generate-api` and `bun run docs:check` exit 0; `bun run scripts/check-react-flow-catalog.ts` exit 0 (208 entries, 200 capabilities); `bun run research:check-traces` exit 0 (2,039 citations across 47 traces); `git diff --check` exit 0; `bun run verify` exit 0. Full verify included 185 vanilla browser tests passed, 2 native-pointer tests skipped, 7 Vue tests passed, and 5 Foldkit tests passed.
+- Existing browser skips are the two native multi-pointer tests. Local verification does not establish hosted CI, live website runtime parity, publication, collector delivery, or native multi-pointer behavior.
+- The Plan 045 changes contain documentation, research, and plans only; no production source or tests were changed by this plan. The worktree also contains inherited Plan 044 changes. `plans/README.md` status remains reviewer-owned.

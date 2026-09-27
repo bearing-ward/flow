@@ -25,7 +25,7 @@ The route must render the stated nodes with React Flow's `NodeResizer`, use the 
 
 ## Shared Flow fixtures
 
-The shared suite has eight scenarios. The same fixture definitions run through the vanilla, Vue, and Foldkit drivers (`apps/vanilla/e2e/shared-conformance.e2e.ts`, `apps/vue/e2e/shared-conformance.e2e.ts`, and `apps/foldkit/e2e/shared-conformance.e2e.ts`). These rows mean that the scenario is covered within Flow; they do not establish xyflow parity because no equivalent reference run was made.
+The shared rendering suite has eight scenarios. The same fixture definitions run through the vanilla, Vue, and Foldkit drivers (`apps/vanilla/e2e/shared-conformance.e2e.ts`, `apps/vue/e2e/shared-conformance.e2e.ts`, and `apps/foldkit/e2e/shared-conformance.e2e.ts`). These rows mean that the scenario is covered within Flow; they do not establish xyflow parity because no equivalent reference run was made.
 
 | Scenario | Observable contract | Reference comparison |
 | --- | --- | --- |
@@ -40,13 +40,27 @@ The shared suite has eight scenarios. The same fixture definitions run through t
 
 The unit tests keep the fixture ids unique and versioned, reject invalid duplicate-node documents, and validate the three pinned captures, including the repeated normalized resize output. Do not extend this shared set with an interaction that only one adapter currently tests.
 
+## Shared public-state fixtures
+
+`public-state-contract.json` adds four versioned Flow-authored scenarios, driven through the real JavaScript controller, a Vue descendant composable, and Foldkit Runtime ports. It is not an upstream capture. Each run compares complete accepted snapshots and point lookups, semantic proposal sequences, accepted-state notifications, graph neighbors/connected edges, rendered DOM, and disposal observation.
+
+| Scenario | Observable contract | Reference comparison |
+| --- | --- | --- |
+| `initial-hidden-missing-reads` | Complete reads retain hidden and viewport-culled graph values; missing IDs return `null` at the fixture boundary; parent-relative positions and graph queries remain available. Per-host rendered edge output is explicit because the adapters differ before edge-handle measurement. | Unverified |
+| `external-document-replacement` | Replacement reads expose accepted state and do not invent a semantic proposal; the two steps distinguish the old and replacement document. | Unverified |
+| `controlled-proposal-acknowledgement` | Reads remain at the last accepted document after a proposal and change only after owner acknowledgement. | Unverified |
+| `uncontrolled-commit-and-viewport` | Committed document and viewport updates appear in accepted reads in order. | Unverified |
+
+The same JSON is decoded by each host test and validated by `packages/conformance/src/index.test.ts`. The host drivers transport observations from production state; they do not calculate expected values from fixture inputs. Rendered positions/edges are polled until host rendering settles. These cases prove only the listed Flow contracts; they are not additional React Flow conformity evidence.
+
 ## Capability and evidence matrix
 
 Labels describe checked-in automated evidence, not a statement that an unlisted adapter cannot implement a behavior. `Unverified` means this repository has no equivalent test for that adapter or no supported test environment for the behavior.
 
 | Capability | Vanilla evidence | Vue evidence | Foldkit evidence | Reference status |
 | --- | --- | --- | --- | --- |
-| Eight shared Flow scenarios above | Shared conformance browser test | Shared conformance browser test | Shared conformance browser test | Unverified for these eight exact fixtures |
+| Eight shared Flow rendering scenarios above | Shared conformance browser test | Shared conformance browser test | Shared conformance browser test | Unverified for these eight exact fixtures |
+| Four shared public-state fixtures above | Production JavaScript controller reads | Vue descendant composable reads | Foldkit Runtime selector/port reads | Unverified for these four exact fixtures |
 | Eight-direction pointer resize, child compensation, cancellation, and derived UI | Vanilla-only: `advanced-gestures.e2e.ts:361-579` | Unverified | Unverified | Unverified overall; conforms for the captured left-edge +20 px case with a direct child, based on parent bounds and child world/local positions |
 | Keyboard resize, key ownership, native descendant editing, focus, and Escape | Vanilla-only: `advanced-gestures.e2e.ts:590-775`, `graph-renderers.e2e.ts:246-412` | Unverified | Unverified | Unverified |
 | Custom drag handle and nested no-drag control | Vanilla-only: `graph-renderers.e2e.ts:143-267` | Unverified | Unverified | Conforms only for normalized outside/inside transform-change booleans in the pinned capture and Flow E2E; nested no-drag remains Flow-only |
@@ -60,4 +74,4 @@ The `draggable: false` capture also remains unverified for direct parity: Flow's
 
 ## Evidence limits
 
-The eight shared fixtures establish only the listed Flow contracts across three adapters. Feature-specific vanilla tests do not imply Vue or Foldkit support. The custom drag-handle comparison is deliberately narrow: both runs reduce the node transform to unchanged outside the handle and changed inside it. The resize comparison is limited to one left-edge drag at zoom 1 with a 90×60 parent and a 20×20 direct child; other directions, nested extent behavior, cancellation, panel positions, portals, native multi-pointer cancellation, broader accessibility, cross-browser behavior, property coverage, and performance budgets remain unverified against xyflow or outside the tested scope.
+The eight shared rendering fixtures and four public-state fixtures establish only the listed Flow contracts across three adapters. Feature-specific vanilla tests do not imply Vue or Foldkit support. The custom drag-handle comparison is deliberately narrow: both runs reduce the node transform to unchanged outside the handle and changed inside it. The resize comparison is limited to one left-edge drag at zoom 1 with a 90×60 parent and a 20×20 direct child; other directions, nested extent behavior, cancellation, panel positions, portals, native multi-pointer cancellation, broader accessibility, cross-browser behavior, property coverage, and performance budgets remain unverified against xyflow or outside the tested scope.

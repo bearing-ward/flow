@@ -8,6 +8,8 @@ import {
   FlowDocumentSchema,
   FlowEdgeSchema,
   FlowNodeSchema,
+  FlowSnapshotSchema,
+  FlowStateChangeSchema,
   SavedFlowDocumentSchema,
 } from '../packages/core/src/public.ts'
 
@@ -112,6 +114,22 @@ const renderReference = (): string =>
     schemaSection('Document', 'FlowDocumentSchema', FlowDocumentSchema.ast),
     schemaSection('Commands', 'FlowCommandSchema', FlowCommandSchema.ast),
     schemaSection('Changes', 'FlowChangeSchema', FlowChangeSchema.ast),
+    schemaSection('Snapshot', 'FlowSnapshotSchema', FlowSnapshotSchema.ast),
+    schemaSection(
+      'Accepted-state change',
+      'FlowStateChangeSchema',
+      FlowStateChangeSchema.ast
+    ),
+    schemaSection(
+      'Accepted state snapshot',
+      'FlowSnapshotSchema',
+      FlowSnapshotSchema.ast
+    ),
+    schemaSection(
+      'Accepted state notification',
+      'FlowStateChangeSchema',
+      FlowStateChangeSchema.ast
+    ),
     schemaSection(
       'Saved envelope',
       'SavedFlowDocumentSchema',

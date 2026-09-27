@@ -1,7 +1,15 @@
-import { decodeFlowDocument, fitViewportToNodes } from '@flow/core'
+import {
+  decodeFlowDocument,
+  decodeSavedFlowDocument,
+  fitViewportToNodes,
+  getIncomers,
+  getOutgoers,
+  SavedFlowDocumentSchema,
+  ViewportSchema,
+} from '@flow/core'
 import type { FlowDocument, Viewport } from '@flow/core'
-import { FlowCanvas } from '@flow/vue'
-import { Effect } from 'effect'
+import { FlowCanvas, useFlow } from '@flow/vue'
+import { Effect, Schema } from 'effect'
 import { createApp, defineComponent, h, ref } from 'vue'
 
 import '@flow/vue/style.css'
@@ -96,6 +104,197 @@ const main = Effect.runSync(
     edges: initial.edges,
   })
 )
+
+const StateTools = defineComponent({
+  setup() {
+    const flow = useFlow()
+    const label = ref('Validate')
+    const message = ref('')
+    const saved = ref<unknown>()
+
+    const envelope = Schema.Struct({
+      version: Schema.Literal(1),
+      savedDocument: SavedFlowDocumentSchema,
+      viewport: ViewportSchema,
+    })
+
+    const changeNode = (
+      update: (
+        node: FlowDocument['nodes'][number]
+      ) => FlowDocument['nodes'][number]
+    ) => {
+      const snapshot = flow.getSnapshot()
+      flow.updateDocument(
+        Effect.runSync(
+          decodeFlowDocument({
+            ...snapshot.document,
+            nodes: snapshot.document.nodes.map((node) =>
+              node.id === 'validate' ? update(node) : node
+            ),
+          })
+        )
+      )
+    }
+
+    return () =>
+      h(
+        'section',
+        {
+          class: 'flow-state-tools',
+          onPointerdown: (event: PointerEvent) => event.stopPropagation(),
+        },
+        [
+          h('h2', 'State and persistence'),
+          h('label', [
+            'Node label ',
+            h('input', {
+              'aria-label': 'Node label',
+              value: label.value,
+              onInput: (event: Event) => {
+                label.value =
+                  event.target instanceof HTMLInputElement
+                    ? event.target.value
+                    : label.value
+              },
+            }),
+          ]),
+          h(
+            'button',
+            {
+              onClick: () => {
+                changeNode((node) => ({ ...node, label: label.value }))
+                message.value = `Updated Validate to ${label.value}`
+              },
+            },
+            'Update label'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                const nextHidden = flow.getNode('validate')?.hidden !== true
+                changeNode((node) => ({ ...node, hidden: nextHidden }))
+                message.value = `Validate hidden=${String(nextHidden)}`
+              },
+            },
+            'Toggle hidden'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                const snapshot = flow.getSnapshot()
+                const node = flow.getNode('validate')
+                message.value = JSON.stringify({
+                  nodes: flow.nodes.value.length,
+                  edges: flow.edges.value.length,
+                  selected: node?.label,
+                  isSelected: node?.selected === true,
+                  hidden: node?.hidden === true,
+                  viewport: snapshot.viewport,
+                  incomers:
+                    node === undefined
+                      ? []
+                      : getIncomers(
+                          node,
+                          [...snapshot.document.nodes],
+                          [...snapshot.document.edges]
+                        ).map((item) => item.id),
+                  outgoers:
+                    node === undefined
+                      ? []
+                      : getOutgoers(
+                          node,
+                          [...snapshot.document.nodes],
+                          [...snapshot.document.edges]
+                        ).map((item) => item.id),
+                })
+              },
+            },
+            'Inspect graph'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                const snapshot = flow.getSnapshot()
+                saved.value = Schema.encodeSync(envelope)({
+                  version: 1,
+                  savedDocument: {
+                    version: 1,
+                    document: Effect.runSync(
+                      decodeFlowDocument(snapshot.document)
+                    ),
+                  },
+                  viewport: snapshot.viewport,
+                })
+                message.value = 'Snapshot saved for this session'
+              },
+            },
+            'Save snapshot'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                changeNode((node) => ({
+                  ...node,
+                  label: 'Changed after save',
+                  hidden: false,
+                }))
+                flow.updateViewport({ x: -80, y: 30, zoom: 0.9 })
+                message.value = 'Changed label, visibility, and viewport'
+              },
+            },
+            'Change graph and viewport'
+          ),
+          h(
+            'button',
+            {
+              disabled: saved.value === undefined,
+              onClick: () => {
+                if (saved.value === undefined) {
+                  message.value = 'No snapshot saved'
+
+                  return
+                }
+
+                const state = Schema.decodeUnknownSync(envelope)(saved.value)
+
+                const document = Effect.runSync(
+                  decodeSavedFlowDocument(state.savedDocument)
+                )
+
+                flow.updateDocument(document)
+                flow.updateViewport(state.viewport)
+                message.value =
+                  'Restored document and viewport; selection is transient'
+              },
+            },
+            'Restore snapshot'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                flow.updateDocument(main)
+                flow.updateViewport({ x: 0, y: 0, zoom: 1 })
+                saved.value = undefined
+                label.value = 'Validate'
+                message.value = 'Reset to the original example'
+              },
+            },
+            'Reset example'
+          ),
+          h(
+            'small',
+            'Saved in this page session only. Reloading discards the snapshot.'
+          ),
+          h('output', { 'aria-live': 'polite' }, message.value),
+        ]
+      )
+  },
+})
 
 const Demo = defineComponent({
   setup() {
@@ -230,20 +429,24 @@ const Demo = defineComponent({
             'Add node'
           ),
         ]),
-        h(FlowCanvas, {
-          document: document.value,
-          documentMode: 'controlled',
-          viewport: viewport.value,
-          viewportMode: 'controlled',
-          'onUpdate:viewport': (next: Viewport) => {
-            viewport.value = next
+        h(
+          FlowCanvas,
+          {
+            document: document.value,
+            documentMode: 'controlled',
+            viewport: viewport.value,
+            viewportMode: 'controlled',
+            'onUpdate:viewport': (next: Viewport) => {
+              viewport.value = next
+            },
+            'onUpdate:document': (next) => {
+              document.value = next
+            },
+            isValidConnection: (target: string) =>
+              !blocked.value || target !== 'output',
           },
-          'onUpdate:document': (next) => {
-            document.value = next
-          },
-          isValidConnection: (target: string) =>
-            !blocked.value || target !== 'output',
-        }),
+          { default: () => h(StateTools) }
+        ),
       ])
   },
 })

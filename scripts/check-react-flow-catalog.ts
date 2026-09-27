@@ -28,7 +28,7 @@ const snapshot = 'research/catalogs/react-flow-2026-09-26.json'
 const document = 'research/catalogs/react-flow-coverage.md'
 
 const rowPattern =
-  /^\| \[[^\]]+\]\((?<url>https:\/\/reactflow\.dev\/[^)]+)\) \|/u
+  /^\|\s*\[[^\]]+\]\(\s*(?<url>https:\/\/reactflow\.dev\/[^)\s]+)\s*\)\s*\|/u
 
 const checkRow = (
   line: string,

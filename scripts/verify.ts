@@ -3,6 +3,7 @@ import { Effect } from 'effect'
 import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
 
 const checks = [
+  ['quality check', ['bun', 'run', 'check']],
   ['architecture boundaries', ['bun', 'run', 'check:architecture']],
   ['documentation', ['bun', 'run', 'docs:check']],
   [

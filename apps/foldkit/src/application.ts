@@ -2,6 +2,10 @@ import {
   FlowChangeSchema,
   FlowCommandSchema,
   FlowDocumentSchema,
+  FlowEdgeSchema,
+  FlowNodeSchema,
+  FlowSnapshotSchema,
+  FlowStateChangeSchema,
   ViewportSchema,
 } from '@flow/core'
 import type { FlowDocument, Viewport } from '@flow/core'
@@ -27,17 +31,43 @@ export const HostAction = FoldMessage.defineMessageUnion({
 
 export type HostActionData = typeof HostAction.Type
 
+export const SnapshotRequestSchema = Schema.Struct({
+  requestId: Schema.String,
+  nodeId: Schema.optional(Schema.String),
+  edgeId: Schema.optional(Schema.String),
+})
+
+export type SnapshotRequest = typeof SnapshotRequestSchema.Type
+
+export const SnapshotResponseSchema = Schema.Struct({
+  requestId: Schema.String,
+  snapshot: FlowSnapshotSchema,
+  node: Schema.optional(FlowNodeSchema),
+  edge: Schema.optional(FlowEdgeSchema),
+})
+
+export type SnapshotResponse = typeof SnapshotResponseSchema.Type
+
 export const AppMessage = FoldMessage.defineMessageUnion({
   GraphMessage: { message: Graph.Message },
   HostAction: { action: HostAction },
+  SnapshotRequest: { request: SnapshotRequestSchema },
+  SnapshotPublished: {},
   ChangePublished: {},
 })
 
 export type AppMessageData = typeof AppMessage.Type
 
 export const ports = {
-  inbound: { actions: Port.inbound(HostAction) },
-  outbound: { changes: Port.outbound(FlowChangeSchema) },
+  inbound: {
+    actions: Port.inbound(HostAction),
+    snapshotRequests: Port.inbound(SnapshotRequestSchema),
+  },
+  outbound: {
+    changes: Port.outbound(FlowChangeSchema),
+    snapshots: Port.outbound(SnapshotResponseSchema),
+    acceptedStates: Port.outbound(FlowStateChangeSchema),
+  },
 }
 
 export const ModelSchema = Schema.Struct({
@@ -47,26 +77,66 @@ export const ModelSchema = Schema.Struct({
 
 export type Model = typeof ModelSchema.Type
 
-const PublishChange = Command.define('PublishFlowChange', {
-  args: { change: FlowChangeSchema },
+const PublishChanges = Command.define('PublishFlowChanges', {
+  args: {
+    change: Schema.optional(FlowChangeSchema),
+    acceptedState: Schema.optional(FlowStateChangeSchema),
+  },
   messages: [AppMessage.ChangePublished],
-  execute: ({ change }) =>
-    Port.emit(ports.outbound.changes, change).pipe(
-      Effect.as(AppMessage.ChangePublished())
+  execute: ({ change, acceptedState }) =>
+    Effect.gen(function* publishFlowChanges() {
+      if (change !== undefined) {
+        yield* Port.emit(ports.outbound.changes, change)
+      }
+
+      if (acceptedState !== undefined) {
+        yield* Port.emit(ports.outbound.acceptedStates, acceptedState)
+      }
+
+      return AppMessage.ChangePublished()
+    }),
+})
+
+const RespondSnapshot = Command.define('RespondFlowSnapshot', {
+  args: { response: SnapshotResponseSchema },
+  messages: [AppMessage.SnapshotPublished],
+  execute: ({ response }) =>
+    Port.emit(ports.outbound.snapshots, response).pipe(
+      Effect.as(AppMessage.SnapshotPublished())
     ),
 })
 
-const graphFold = Update.foldChild({
+const graphFold = Update.foldChild<
+  Model,
+  AppMessageData,
+  Graph.Model,
+  Graph.GraphMessageData,
+  Graph.GraphMessageData,
+  Graph.OutMessageData
+>({
   update: Graph.update,
   read: (model: Model) => Option.some(model.graph),
   write: (model, graph) => ({ ...model, graph }),
   toParentMessage: (message) => AppMessage.GraphMessage({ message }),
   foldOutMessage: Graph.OutMessage.match({
     SemanticChange:
+      ({ change, acceptedState }) =>
+      (model: Model) => {
+        const changeKinds: Model['changeKinds'] = [
+          ...model.changeKinds,
+          change.kind,
+        ]
+
+        return {
+          model: { ...model, changeKinds },
+          commands: [PublishChanges({ change, acceptedState })],
+        }
+      },
+    AcceptedState:
       ({ change }) =>
       (model: Model) => ({
-        model: { ...model, changeKinds: [...model.changeKinds, change.kind] },
-        commands: [PublishChange({ change })],
+        model,
+        commands: [PublishChanges({ acceptedState: change })],
       }),
   }),
 })
@@ -74,6 +144,10 @@ const graphFold = Update.foldChild({
 const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
   actions: Port.subscription(ports.inbound.actions, (action) =>
     AppMessage.HostAction({ action })
+  ),
+  snapshotRequests: Port.subscription(
+    ports.inbound.snapshotRequests,
+    (request) => AppMessage.SnapshotRequest({ request })
   ),
 }))
 
@@ -96,6 +170,26 @@ export const update = (
   AppMessage.match(message, {
     GraphMessage: ({ message: graphMessage }) => graphFold(model, graphMessage),
     HostAction: ({ action }) => routeAction(model, action),
+    SnapshotRequest: ({ request }) => ({
+      model,
+      commands: [
+        RespondSnapshot({
+          response: {
+            requestId: request.requestId,
+            snapshot: Graph.selectSnapshot(model.graph),
+            node:
+              request.nodeId === undefined
+                ? undefined
+                : Graph.selectNode(model.graph, request.nodeId),
+            edge:
+              request.edgeId === undefined
+                ? undefined
+                : Graph.selectEdge(model.graph, request.edgeId),
+          },
+        }),
+      ],
+    }),
+    SnapshotPublished: () => ({ model }),
     ChangePublished: () => ({ model }),
   })
 
@@ -154,7 +248,7 @@ export const createProgram = (
       hostSubscriptions,
       Subscription.lift(Graph.subscriptions)({
         toChildModel: (model: Model) => model.graph,
-        toParentMessage: (message: Graph.Message) =>
+        toParentMessage: (message: typeof Graph.Message.Type) =>
           AppMessage.GraphMessage({ message }),
       })
     ),

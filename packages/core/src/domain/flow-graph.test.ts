@@ -6,6 +6,9 @@ import {
   graphAncestors,
   graphBounds,
   graphDescendants,
+  getConnectedEdges,
+  getIncomers,
+  getOutgoers,
   graphIncomers,
   graphNode,
   graphNodesIntersecting,
@@ -436,5 +439,129 @@ describe('flow graph view', () => {
     )
 
     expect(result._tag).toBe('Failure')
+  })
+})
+
+const graphQueryFixture = () => {
+  const document = Effect.runSync(
+    decodeFlowDocument({
+      nodes: [
+        {
+          id: 'target',
+          label: 'Target',
+          position: { x: 0, y: 0 },
+          hidden: true,
+        },
+        { id: 'source-b', label: 'B', position: { x: 0, y: 0 } },
+        { id: 'source-a', label: 'A', position: { x: 0, y: 0 } },
+        { id: 'isolated', label: 'Isolated', position: { x: 0, y: 0 } },
+        {
+          id: 'outside',
+          label: 'Outside supplied subset',
+          position: { x: 0, y: 0 },
+        },
+      ],
+      edges: [
+        { id: 'b-target', source: 'source-b', target: 'target' },
+        { id: 'a-target', source: 'source-a', target: 'target' },
+        { id: 'b-target-parallel', source: 'source-b', target: 'target' },
+        { id: 'target-self', source: 'target', target: 'target' },
+        { id: 'target-b', source: 'target', target: 'source-b' },
+        { id: 'unselected-source', source: 'outside', target: 'isolated' },
+      ],
+    })
+  )
+
+  const nodes = document.nodes.filter((node) => node.id !== nodeId('outside'))
+  const edges = [...document.edges]
+
+  return { nodes, edges }
+}
+
+describe('reference-shaped graph query helpers', () => {
+  it('returns unique incomers and outgoers in supplied node order, including hidden nodes and self-loops', () => {
+    const { nodes, edges } = graphQueryFixture()
+    const selected = { id: nodeId('target') }
+    const incomers = getIncomers(selected, nodes, edges)
+    const outgoers = getOutgoers(selected, nodes, edges)
+
+    expect(incomers.map((node) => node.id)).toStrictEqual([
+      nodeId('target'),
+      nodeId('source-b'),
+      nodeId('source-a'),
+    ])
+
+    expect(outgoers.map((node) => node.id)).toStrictEqual([
+      nodeId('target'),
+      nodeId('source-b'),
+    ])
+
+    expect(incomers.every((node) => nodes.includes(node))).toBeTruthy()
+  })
+
+  it('handles missing IDs, empty collections, and endpoints outside the supplied node subset', () => {
+    const { nodes, edges } = graphQueryFixture()
+    const selected = { id: nodeId('target') }
+
+    expect(getIncomers({ id: nodeId('isolated') }, nodes, edges)).toStrictEqual(
+      []
+    )
+
+    expect(getIncomers({ id: nodeId('absent') }, nodes, edges)).toStrictEqual(
+      []
+    )
+
+    expect(getOutgoers({ id: nodeId('absent') }, nodes, edges)).toStrictEqual(
+      []
+    )
+
+    expect(getIncomers(selected, [], edges)).toStrictEqual([])
+
+    expect(getOutgoers(selected, nodes, [])).toStrictEqual([])
+  })
+
+  it('returns connected edges in supplied edge order when either endpoint is selected', () => {
+    const { nodes, edges } = graphQueryFixture()
+    const selected = { id: nodeId('target') }
+    const connected = getConnectedEdges([selected], edges)
+
+    expect(connected.map((edge) => edge.id)).toStrictEqual([
+      'b-target',
+      'a-target',
+      'b-target-parallel',
+      'target-self',
+      'target-b',
+    ])
+
+    const isolated = nodes.find((node) => node.id === nodeId('isolated'))
+
+    if (isolated === undefined) {
+      throw new Error('Fixture is missing the isolated node')
+    }
+
+    expect(
+      getConnectedEdges([isolated], edges).map((edge) => edge.id)
+    ).toStrictEqual(['unselected-source'])
+
+    expect(getConnectedEdges([], edges)).toStrictEqual([])
+
+    expect(getConnectedEdges([selected], [])).toStrictEqual([])
+
+    expect(connected.every((edge) => edges.includes(edge))).toBeTruthy()
+  })
+
+  it('does not mutate supplied node or edge collections', () => {
+    const { nodes, edges } = graphQueryFixture()
+    const nodesBefore = [...nodes]
+    const edgesBefore = [...edges]
+
+    getIncomers({ id: nodeId('target') }, nodes, edges)
+    getOutgoers({ id: nodeId('target') }, nodes, edges)
+    getConnectedEdges(nodes, edges)
+
+    expect({ nodes, edges }).toStrictEqual({
+      nodes: nodesBefore,
+      edges: edgesBefore,
+    })
   })
 })

@@ -3,10 +3,12 @@ import type {
   FlowDocument,
   FlowEdge,
   FlowNode,
+  FlowSnapshot,
+  FlowStateChange,
   Viewport,
   FlowDocumentSchema,
 } from '@flow/core'
-import { FlowCanvas, useFlow } from '@flow/vue'
+import { FlowCanvas, useEdges, useFlow, useNodes, useViewport } from '@flow/vue'
 import { Effect } from 'effect'
 import {
   createApp,
@@ -17,9 +19,13 @@ import {
   onUnmounted,
   ref,
 } from 'vue'
-import type { App, PropType } from 'vue'
+import type { App, PropType, Ref } from 'vue'
 
-import type { ConformanceFixture } from '../../../packages/conformance/src/index.ts'
+import type {
+  ConformanceFixture,
+  PublicStateQuery,
+  PublicStateRead,
+} from '../../../packages/conformance/src/index.ts'
 
 import '@flow/vue/style.css'
 import './style.css'
@@ -29,9 +35,12 @@ interface TestApi {
   updateDocument: (document: typeof FlowDocumentSchema.Encoded) => void
   updateViewport: (viewport: Viewport) => void
   changeKinds: () => readonly string[]
+  readState: (query: PublicStateQuery) => PublicStateRead
+  acceptedStates: () => readonly FlowStateChange[]
   destroy: () => {
     readonly mountedElements: number
     readonly changesAfterDestroy: number
+    readonly acceptedStatesAfterDestroy: number
   }
   smoke: () => Promise<{
     readonly leftCount: string | null
@@ -63,6 +72,31 @@ interface TestApi {
   updateNestedDragDocument: (
     document: typeof FlowDocumentSchema.Encoded
   ) => void
+  startPublicState: () => void
+  publicState: (id: 'left' | 'right') => {
+    readonly nodeIds: readonly string[]
+    readonly edgeIds: readonly string[]
+    readonly viewport: Viewport
+    readonly firstNodeX: number | null
+    readonly missingNode: boolean
+    readonly missingEdge: boolean
+    readonly frozen: boolean
+    readonly mutationRejected: boolean
+    readonly notifications: number
+    readonly events: readonly string[]
+  }
+  updatePublicDocument: (
+    id: 'left' | 'right',
+    document: typeof FlowDocumentSchema.Encoded
+  ) => void
+  updatePublicViewport: (viewport: Viewport) => void
+  proposePublicViewport: () => void
+  proposePublicPosition: (id: 'left' | 'right') => void
+  acceptPublicProposals: () => void
+  exercisePublicNotificationPolicy: () => readonly string[]
+  unmountPublicObserver: () => void
+  destroyPublicCanvases: () => void
+  outsideProviderError: () => string
 }
 
 declare global {
@@ -94,29 +128,80 @@ let positionChanges: {
   readonly position: { readonly x: number; readonly y: number }
 }[] = []
 
+let conformanceSnapshot: (() => FlowSnapshot) | undefined
+
+let conformanceNode: ((id: string) => FlowNode | undefined) | undefined
+
+let conformanceEdge: ((id: string) => FlowEdge | undefined) | undefined
+
+let conformanceAcceptedStates: FlowStateChange[] = []
+
 let splitNodeUpdates = 0
 
 let splitEdgeUpdates = 0
 
 let splitDocumentUpdater: ((document: FlowDocument) => void) | undefined
 
+interface PublicProbe {
+  readonly flow: ReturnType<typeof useFlow>
+  readonly nodes: ReturnType<typeof useNodes>
+  readonly edges: ReturnType<typeof useEdges>
+  readonly viewport: ReturnType<typeof useViewport>
+  readonly notifications: number
+  readonly unsubscribe: () => void
+}
+
+const publicProbes = new Map<'left' | 'right', PublicProbe>()
+
+const publicDocuments = new Map<'left' | 'right', Ref<FlowDocument>>()
+
+const publicViewports = new Map<'left' | 'right', Ref<Viewport>>()
+
+const publicEvents = new Map<'left' | 'right', string[]>()
+
+let publicAcceptLeft = false
+
+const publicProbeMounted = ref(true)
+
 const Component = defineComponent({
   name: 'FlowVueTestRoot',
   setup() {
+    const Probe = defineComponent({
+      setup() {
+        const flow = useFlow()
+
+        conformanceSnapshot = () => flow.getSnapshot()
+        conformanceNode = (id) => flow.getNode(id)
+        conformanceEdge = (id) => flow.getEdge(id)
+
+        const unsubscribe = flow.subscribeState((change) => {
+          conformanceAcceptedStates.push(change)
+        })
+
+        onUnmounted(unsubscribe)
+
+        return () => null
+      },
+    })
+
     return () =>
-      h(FlowCanvas, {
-        document: documentState.value,
-        documentMode: documentMode.value,
-        viewport: viewportState.value,
-        viewportMode: viewportMode.value,
-        renderOnlyVisible: cullOffscreen.value,
-        onChange: (change: { kind: string }) => {
-          changes.push(change.kind)
+      h(
+        FlowCanvas,
+        {
+          document: documentState.value,
+          documentMode: documentMode.value,
+          viewport: viewportState.value,
+          viewportMode: viewportMode.value,
+          renderOnlyVisible: cullOffscreen.value,
+          onChange: (change: { kind: string }) => {
+            changes.push(change.kind)
+          },
+          isValidConnection: (target: string) =>
+            allowedTargets.value === undefined ||
+            allowedTargets.value.includes(target),
         },
-        isValidConnection: (target: string) =>
-          allowedTargets.value === undefined ||
-          allowedTargets.value.includes(target),
-      })
+        { default: () => h(Probe) }
+      )
   },
 })
 
@@ -131,6 +216,10 @@ const api: TestApi = {
     viewportState.value = { x: 0, y: 0, zoom: 1 }
     changes = []
     positionChanges = []
+    conformanceAcceptedStates = []
+    conformanceSnapshot = undefined
+    conformanceNode = undefined
+    conformanceEdge = undefined
     app = createApp(Component)
     app.mount('#app')
   },
@@ -141,10 +230,35 @@ const api: TestApi = {
     viewportState.value = viewport
   },
   changeKinds() {
-    return [...new Set(changes)]
+    return [...changes]
+  },
+  readState(query) {
+    if (
+      conformanceSnapshot === undefined ||
+      conformanceNode === undefined ||
+      conformanceEdge === undefined
+    ) {
+      throw new Error('Missing Vue conformance state probe')
+    }
+
+    return {
+      snapshot: conformanceSnapshot(),
+      node:
+        query.nodeId === undefined
+          ? null
+          : (conformanceNode(query.nodeId) ?? null),
+      edge:
+        query.edgeId === undefined
+          ? null
+          : (conformanceEdge(query.edgeId) ?? null),
+    }
+  },
+  acceptedStates() {
+    return [...conformanceAcceptedStates]
   },
   destroy() {
     const changesBeforeDestroy = changes.length
+    const acceptedBeforeDestroy = conformanceAcceptedStates.length
     app?.unmount()
     app = undefined
     document
@@ -158,6 +272,8 @@ const api: TestApi = {
     return {
       mountedElements,
       changesAfterDestroy: changes.length - changesBeforeDestroy,
+      acceptedStatesAfterDestroy:
+        conformanceAcceptedStates.length - acceptedBeforeDestroy,
     }
   },
   async smoke() {
@@ -457,6 +573,306 @@ const api: TestApi = {
   },
   updateNestedDragDocument(document) {
     documentState.value = Effect.runSync(decodeFlowDocument(document))
+  },
+  startPublicState() {
+    app?.unmount()
+    publicProbes.clear()
+    publicDocuments.clear()
+    publicViewports.clear()
+    publicEvents.clear()
+    publicAcceptLeft = false
+    publicProbeMounted.value = true
+
+    const leftDocument = ref(
+      Effect.runSync(
+        decodeFlowDocument({
+          nodes: [
+            {
+              id: 'left-visible',
+              label: 'Left visible',
+              position: { x: 20, y: 30 },
+            },
+            {
+              id: 'left-hidden',
+              label: 'Left hidden',
+              hidden: true,
+              position: { x: 240, y: 30 },
+            },
+          ],
+          edges: [
+            { id: 'left-edge', source: 'left-visible', target: 'left-hidden' },
+          ],
+        })
+      )
+    )
+
+    const rightDocument = ref(
+      Effect.runSync(
+        decodeFlowDocument({
+          nodes: [
+            {
+              id: 'right-node',
+              label: 'Right node',
+              position: { x: 20, y: 120 },
+            },
+          ],
+          edges: [],
+        })
+      )
+    )
+
+    const leftViewport = ref<Viewport>({ x: 0, y: 0, zoom: 1 })
+    const rightViewport = ref<Viewport>({ x: 15, y: 25, zoom: 1.25 })
+    publicDocuments.set('left', leftDocument)
+    publicDocuments.set('right', rightDocument)
+    publicViewports.set('left', leftViewport)
+    publicViewports.set('right', rightViewport)
+    publicEvents.set('left', [])
+    publicEvents.set('right', [])
+
+    const Probe = defineComponent({
+      props: {
+        // SAFETY: The harness only mounts this probe with the two declared ids below.
+        id: { type: String as PropType<'left' | 'right'>, required: true },
+      },
+      setup(props) {
+        const flow = useFlow()
+        const nodes = useNodes()
+        const edges = useEdges()
+        const viewport = useViewport()
+
+        if (props.id !== 'left' && props.id !== 'right') {
+          throw new Error(`Unknown public state probe ${props.id}`)
+        }
+
+        let notificationCount = 0
+
+        const unsubscribe = flow.subscribeState(() => {
+          notificationCount += 1
+          publicEvents.get(props.id)?.push('accepted')
+        })
+
+        const probe: PublicProbe = {
+          flow,
+          nodes,
+          edges,
+          viewport,
+          get notifications() {
+            return notificationCount
+          },
+          unsubscribe,
+        }
+
+        publicProbes.set(props.id, probe)
+        onUnmounted(() => probe.unsubscribe())
+
+        return () =>
+          h(
+            'output',
+            {
+              'data-testid': `state-probe-${props.id}`,
+              'data-node-count': nodes.value.length,
+              'data-edge-count': edges.value.length,
+              'data-viewport-x': viewport.value.x,
+            },
+            flow.snapshot.value.document.nodes
+              .map(({ label }) => label)
+              .join(',')
+          )
+      },
+    })
+
+    const Root = defineComponent({
+      setup() {
+        return () =>
+          h('section', [
+            h(
+              FlowCanvas,
+              {
+                document: leftDocument.value,
+                documentMode: 'controlled',
+                viewport: leftViewport.value,
+                viewportMode: 'controlled',
+                renderOnlyVisible: true,
+                onChange: () => publicEvents.get('left')?.push('proposal'),
+                'onUpdate:document': (next: FlowDocument) => {
+                  if (publicAcceptLeft) {
+                    leftDocument.value = next
+                  }
+                },
+                'onUpdate:viewport': (next: Viewport) => {
+                  leftViewport.value = next
+                },
+              },
+              {
+                default: () =>
+                  publicProbeMounted.value ? h(Probe, { id: 'left' }) : null,
+              }
+            ),
+            h(
+              FlowCanvas,
+              {
+                defaultDocument: rightDocument.value,
+                documentMode: 'uncontrolled',
+                defaultViewport: rightViewport.value,
+                viewportMode: 'uncontrolled',
+                onChange: () => publicEvents.get('right')?.push('proposal'),
+              },
+              {
+                default: () =>
+                  publicProbeMounted.value ? h(Probe, { id: 'right' }) : null,
+              }
+            ),
+          ])
+      },
+    })
+
+    app = createApp(Root)
+    app.mount('#app')
+  },
+  publicState(id) {
+    const probe = publicProbes.get(id)
+
+    if (probe === undefined) {
+      throw new Error(`Missing ${id} state probe`)
+    }
+
+    const snapshot = probe.flow.getSnapshot()
+    const [firstNode] = snapshot.document.nodes
+
+    return {
+      nodeIds: snapshot.document.nodes.map(({ id: nodeId }) => nodeId),
+      edgeIds: snapshot.document.edges.map(({ id: edgeId }) => edgeId),
+      viewport: probe.viewport.value,
+      firstNodeX: snapshot.document.nodes[0]?.position.x ?? null,
+      missingNode: probe.flow.getNode('missing') === undefined,
+      missingEdge: probe.flow.getEdge('missing') === undefined,
+      frozen:
+        Object.isFrozen(snapshot) &&
+        Object.isFrozen(snapshot.document) &&
+        Object.isFrozen(snapshot.document.nodes) &&
+        Object.isFrozen(snapshot.document.nodes[0]),
+      mutationRejected:
+        firstNode === undefined || !Reflect.set(firstNode, 'label', 'mutated'),
+      notifications: probe.notifications,
+      events: publicEvents.get(id) ?? [],
+    }
+  },
+  updatePublicDocument(id, document) {
+    const state = publicDocuments.get(id)
+
+    if (state === undefined) {
+      throw new Error(`Missing ${id} owner document`)
+    }
+
+    state.value = Effect.runSync(decodeFlowDocument(document))
+  },
+  updatePublicViewport(viewport) {
+    const state = publicViewports.get('left')
+
+    if (state === undefined) {
+      throw new Error('Missing left owner viewport')
+    }
+
+    state.value = viewport
+  },
+  proposePublicViewport() {
+    const probe = publicProbes.get('left')
+
+    if (probe === undefined) {
+      throw new Error('Missing left state probe')
+    }
+
+    probe.flow.updateViewport({ x: 35, y: 45, zoom: 1.2 })
+  },
+  proposePublicPosition(id) {
+    const probe = publicProbes.get(id)
+
+    if (probe === undefined) {
+      throw new Error(`Missing ${id} state probe`)
+    }
+
+    const [node] = probe.nodes.value
+
+    if (node === undefined) {
+      throw new Error(`Missing ${id} graph node`)
+    }
+
+    probe.flow.dispatch({
+      kind: 'set-node-position',
+      nodeId: node.id,
+      position: { x: 90, y: 100 },
+    })
+  },
+  acceptPublicProposals() {
+    publicAcceptLeft = true
+  },
+  exercisePublicNotificationPolicy() {
+    const probe = publicProbes.get('right')
+
+    if (probe === undefined) {
+      throw new Error('Missing right state probe')
+    }
+
+    const order: string[] = []
+    let reentered = false
+
+    const unsubscribeFirst = probe.flow.subscribeState(({ current }) => {
+      order.push(`first:${current.viewport.x}`)
+
+      if (!reentered) {
+        reentered = true
+        probe.flow.updateViewport({ x: 101, y: 25, zoom: 1.25 })
+      }
+    })
+
+    const unsubscribeFailure = probe.flow.subscribeState(({ current }) => {
+      order.push(`failure:${current.viewport.x}`)
+      throw new Error('expected test listener failure')
+    })
+
+    const unsubscribeLast = probe.flow.subscribeState(({ current }) => {
+      order.push(`last:${current.viewport.x}`)
+    })
+
+    probe.flow.updateViewport({ x: 100, y: 25, zoom: 1.25 })
+    probe.flow.updateViewport({ x: 101, y: 25, zoom: 1.25 })
+    unsubscribeFirst()
+    unsubscribeFailure()
+    unsubscribeLast()
+
+    return order
+  },
+  unmountPublicObserver() {
+    publicProbeMounted.value = false
+  },
+  destroyPublicCanvases() {
+    app?.unmount()
+    app = undefined
+  },
+  outsideProviderError() {
+    let message = ''
+
+    const Outside = defineComponent({
+      setup() {
+        try {
+          useFlow()
+        } catch (error) {
+          message = error instanceof Error ? error.message : String(error)
+        }
+
+        return () => h('span')
+      },
+    })
+
+    const outsideApp = createApp(Outside)
+    const container = document.createElement('div')
+    document.body.append(container)
+    outsideApp.mount(container)
+    outsideApp.unmount()
+    container.remove()
+
+    return message
   },
   splitModelSnapshot() {
     const node = document.querySelector<HTMLElement>("[data-node-id='split-a']")

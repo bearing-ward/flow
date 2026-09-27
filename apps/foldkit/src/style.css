@@ -26,6 +26,74 @@ main {
     20px;
   touch-action: none;
 }
+.flow-foldkit-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  width: min(1180px, calc(100vw - 32px));
+  margin: 16px auto;
+  align-items: start;
+}
+.flow-foldkit-tools {
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+}
+.flow-foldkit-tools h1 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+.flow-foldkit-tools p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #526078;
+}
+.flow-foldkit-host {
+  min-width: 0;
+}
+.flow-foldkit-host .flow-foldkit-canvas {
+  width: 100%;
+  margin: 0;
+}
+.flow-state-tools {
+  display: grid;
+  gap: 7px;
+}
+.flow-state-tools h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.flow-state-tools label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.flow-state-tools input {
+  min-width: 0;
+  padding: 6px;
+}
+.flow-state-tools button {
+  text-align: left;
+}
+.flow-state-tools small,
+.flow-state-tools output {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .flow-foldkit-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow-foldkit-tools {
+    max-height: 42vh;
+  }
+  .flow-foldkit-canvas {
+    min-height: 52vh;
+  }
+}
 .flow-foldkit-viewport {
   position: absolute;
   inset: 0;

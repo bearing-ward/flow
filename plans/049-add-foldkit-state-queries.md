@@ -12,13 +12,15 @@
 - Depends on: 045, 047
 - Category: direction
 - Planned at: `1aa5915`, 2026-09-26
-- Execution status: TODO
+- Execution status: COMPLETE (2026-09-26)
 
 ## Why this matters
 
 Foldkit should use pure model reads and typed message/port observation for the shared contract. This proves the capability in the real host while keeping package extraction a separate, visible roadmap item.
 
 ## Current state
+
+Plan 045's selected contract is recorded in [the public state trace](../research/traces/public-state-contract.md): pure selectors over complete accepted model state, typed read/accepted-state messages and ports, proposals separate from acceptance, value equality for deduplication, no initial event, and FIFO event processing. Return readonly model values by immutable convention; no runtime freeze or private store exposure is promised.
 
 `apps/foldkit/src/graph.ts:31` uses a Schema-derived model with document, viewport, ownership modes, and a pointer session. `Graph.update` at 254 replaces authoritative state and dispatches semantic commands. Application ports at `apps/foldkit/src/application.ts:38` currently expose only actions and changes:
 
@@ -72,13 +74,13 @@ Full browser gates must run serially, with strict test ports 4176, 4177, and 417
 
 ### 1. Implement native reads
 
-Use Plan 045's selected API names and Plan 047's snapshot type. Add pure Graph selectors for accepted snapshot, nodes, edges, node, edge, and viewport. Read the existing model; exclude pointerSession previews. Do not introduce mutable refs, a JavaScript controller, or another authoritative store.
+Use Plan 045's selected API names and Plan 047's snapshot type. Add pure Graph selectors for accepted snapshot, nodes, edges, node, edge, and viewport. Read the existing model; include hidden/culled entries and parent-relative positions; missing IDs return `undefined`; exclude pointerSession previews. Return readonly references under the immutable-model contract, with no identity guarantee. Do not introduce mutable refs, a JavaScript controller, or another authoritative store.
 
 Verify `bun run typecheck` and `bun run check:architecture` pass. Keep the app-only layout explicitly documented; do not create a nominal package that still imports from apps.
 
 ### 2. Add typed observation at the host boundary
 
-Implement the approved typed snapshot request/response or accepted-state notification messages and ports. Reuse Foldkit Message, Port, and Command patterns from application.ts. Ensure initial reads are obtainable after Runtime embedding, accepted updates use the latest model, controlled proposals do not masquerade as accepted changes, and emission follows the chosen ordering/deduplication rules. Keep SemanticChange separate.
+Implement the approved typed snapshot request/response and accepted-state notification messages/ports. Reuse Foldkit Message, Port, and Command patterns from application.ts. Ensure initial reads are obtainable after Runtime embedding, accepted updates use the latest model, controlled proposals do not masquerade as accepted changes, and emission follows the shared ordering/deduplication, no-initial-delivery, exception, reentrancy and disposal rules in Plan 045. Keep SemanticChange separate.
 
 Extend the harness using these real ports, then add `public-state.e2e.ts`. Cover initial request, update/dispatch in both ownership modes, viewport changes, cancellation, two programs, unsubscribe, and disposal. Assert observer emissions as well as rendered output. Verify `bun run test:conformance:foldkit -- public-state.e2e.ts` passes.
 
@@ -92,11 +94,11 @@ Use the actual Runtime embed handle and typed ports, not direct calls to Graph.u
 
 ## Done criteria
 
-- [ ] Every step's named verification command passes and its output is recorded.
-- [ ] `bun run check` and `bun run verify` exit 0 in the executor checkout.
-- [ ] `git diff --check` exits 0; `git status --short` contains only scoped edits and generated outputs named in scope.
-- [ ] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
-- [ ] The status row is updated only after the required evidence exists.
+- [x] Every step's named verification command passes and its output is recorded.
+- [x] `bun run check` and `bun run verify` exit 0 in the executor checkout.
+- [x] `git diff --check` exits 0; Plan 049 files are within scope. The worktree also contains previously authorized edits from Plans 044-048 and 050; `plans/README.md` remains reviewer-owned.
+- [x] The execution record names changed files, tests, remaining gaps, and any reference-proof limits.
+- [x] This plan's execution status was updated after the required evidence existed; the reviewer-owned `plans/README.md` index remains untouched for this plan.
 
 ## STOP conditions
 
@@ -108,3 +110,11 @@ Use the actual Runtime embed handle and typed ports, not direct calls to Graph.u
 ## Maintenance notes
 
 A later package-promotion plan must carry these contracts and tests across the app/package boundary. Do not label an app prototype a released adapter.
+
+## Execution record
+
+- **Status:** complete, with local verification only.
+- **Changed for Plan 049:** `apps/foldkit/src/graph.ts`, `apps/foldkit/src/application.ts`, `apps/foldkit/e2e/test-harness.ts`, `apps/foldkit/e2e/public-state.e2e.ts`, `docs/react-flow-api-correspondence.md`, `research/traces/public-state-contract.md`, `research/catalogs/react-flow-coverage.md`, and `research/PROGRESS.md`. The execution record is this plan file. The reviewer-owned `plans/README.md` was not changed for this plan.
+- **Implementation:** pure selectors expose the complete accepted model value; typed Runtime ports expose correlated snapshot/optional lookup requests and accepted-state notifications. Schema equality deduplicates equal values, semantic proposals remain distinct from accepted updates, and the app-scoped host preserves ordering and lifecycle behavior.
+- **Evidence:** `bun run check` passed; `bun run typecheck` passed; `bun run check:architecture` passed (65 production files); `bun run test` passed (19 files, 135 tests); `bun run docs:generate-api` passed; `bun run docs:check` passed (16 Markdown files); `bun run scripts/check-react-flow-catalog.ts` passed (208 entries, 200 capabilities); `bun run research:check-traces` passed (2,039 citations across 48 traces); `bun run test:conformance:foldkit -- public-state.e2e.ts` passed (3 tests); `git diff --check` passed; `bun run verify` exited 0 (189 vanilla browser tests passed, 2 native-pointer cases skipped, 10 Vue tests passed, and 8 Foldkit tests passed).
+- **Remaining gaps and limits:** Foldkit is still an app-scoped prototype; package consumers cannot import a reusable Foldkit adapter. The checks do not prove hosted CI, publication, current React Flow runtime equivalence, collector delivery, or native multi-pointer behavior. The full local browser gate skipped two native pointer-capture cases.

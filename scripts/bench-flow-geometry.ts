@@ -18,13 +18,21 @@ const sampleCount = 31
 
 const rect = { x: 0, y: 0, width: 1600, height: 1000 }
 
-interface GeometryBenchmarkResult {
+interface TimedGeometryBenchmarkResult {
   fixtureSize: number
   operation: string
   sampleCount: number
   medianMs: number
   p95Ms: number
 }
+
+type GeometryBenchmarkResult =
+  | TimedGeometryBenchmarkResult
+  | {
+      fixtureSize: number
+      operation: 'spatialPrototypeMemoryProxy'
+      storedCellEntries: number
+    }
 
 const percentile = (values: readonly number[], fraction: number): number => {
   if (values.length === 0) {
@@ -51,7 +59,7 @@ const measure = <Result>(
   size: number,
   operation: string,
   run: () => Result
-): GeometryBenchmarkResult => {
+): TimedGeometryBenchmarkResult => {
   for (let index = 0; index < 5; index += 1) {
     run()
   }
