@@ -8,7 +8,7 @@ The scope is defined by all entries in the [API reference sidebar](https://react
 
 Every catalog capability belongs on the roadmap, including advanced examples and templates. A capability may be delivered through shared core logic, an adapter, reusable UI, or an example integration. Capability gaps remain open until demonstrated in each supported framework. Existing bounded adapter milestones describe current progress; they do not limit the final goal. Parity claims still require reference evidence, and current architecture differences must be reviewed against the goal rather than assumed permanent.
 
-[Plan 043](043-establish-definitive-react-flow-parity-goal.md) carried this decision into the project overview and authoritative progress checklist at `9a583d7`; catalog discovery followed at `1aa5915`. Its full verification acceptance remains blocked by the baseline failures assigned to Plan 044. The next selected chunk is Plans 044-051 below. Earlier deferrals of full adapter parity below are historical sequencing decisions. Their local completion boundaries remain valid.
+[Plan 043](043-establish-definitive-react-flow-parity-goal.md) carried this decision into the project overview and authoritative progress checklist at `9a583d7`; catalog discovery followed at `1aa5915`. Plan 044 restored its verification baseline, and Plans 044-051 are complete. The next selected milestone is Plan 052, public graph editing across all three hosts. Earlier deferrals of full adapter parity below are historical sequencing decisions. Their local completion boundaries remain valid.
 
 ## Planning history
 
@@ -71,6 +71,7 @@ Plans 022-029 were written on 2026-09-24 against `5e5d496` using the open items 
 | [049](049-add-foldkit-state-queries.md) | Add Foldkit model queries and typed state observation | P2 | M | 045, 047 | DONE — reviewed Runtime ports and controlled-state coverage; full verify passed with two existing native-pointer skips |
 | [050](050-prove-shared-read-contract.md) | Prove shared state and query behavior across all hosts | P2 | M | 046, 047, 048, 049 | DONE — reviewed four shared fixtures through all production hosts; full verify passed with two existing native-pointer skips |
 | [051](051-demonstrate-state-api-in-playgrounds.md) | Demonstrate node updates and save/restore across frameworks | P2 | L | 046, 047, 048, 049, 050 | DONE — reviewed three public-API demos, browser coverage, and bounded layouts; full verify passed with two native-pointer skips |
+| [052](052-complete-public-graph-editing.md) | Complete public graph editing across JavaScript, Vue, and Foldkit | P1 | L | 044-051 | TODO — eight ordered work packages; contract decisions and reference capture first |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, STALE with its replacement, or REJECTED with a reason.
 
@@ -199,3 +200,31 @@ Broad pointer lifecycle callback implementation, the remaining hooks, measuremen
 - Start reusable UI components immediately: gives earlier component output, but inspector/search/data-driven components need stable reads. Plan 051 provides visible output while the shared API is established.
 - Implement every API member together: would expand the design and three adapters too far before shared proof. Plan 045 maps gaps first, then this chunk implements a bounded subset.
 - Replace the old edge-returning helpers in place: risks silently changing consumers. Plan 046 adds the reference-shaped public helpers and documents the existing semantics.
+
+## Next milestone: public graph editing
+
+[Plan 052](052-complete-public-graph-editing.md) was written against `e653e0a` on 2026-09-26. Plans 044-051 have delivered bounded state reads and shared fixtures. The next related chunk is the write side: collection additions/replacements, node and edge updates, JSON data, atomic deletion, and equivalent production APIs in each host.
+
+The recommendation is to finish these shared operations before expanding reusable UI. Measurement and viewport parity are the strongest alternative, and follow this milestone; a full lifecycle callback pass and Foldkit package extraction remain separately bounded work. Plan 052 is one milestone with eight verifiable work packages, rather than a claim that one unreviewed implementation should change every host at once.
+
+1. Decide write ownership and capture pinned reference behavior.
+2. Add edge data and node deletion policy to shared schemas/persistence.
+3. Implement atomic edit preparation, validation, and typed failures.
+4. Deliver JavaScript methods and the first visible editing controls.
+5. Deliver Vue methods and prove document/split-model bindings.
+6. Deliver Foldkit typed requests/results and lifecycle cleanup.
+7. Prove shared edits and demonstrate Updating Nodes and Delete Middle Node subsets in all hosts.
+8. Complete reference comparison, packed-consumer proof, and checklist/catalog updates.
+
+Order is 1 → 2 → 3 → 4 → {5, 6} → 7 → 8. Vue and Foldkit may proceed independently after the shared/JavaScript contract is verified, if parallel execution is authorized. Full browser gates remain serial. New operation types must migrate every exhaustive consumer in the same integration wave.
+
+### Checklist mapping
+
+- Graph schemas and persistence: edge data and explicit node deletion protection, with backward-readable version-1 documents.
+- Public API correspondence: named write methods and typed failures, while all other instance members remain tracked gaps.
+- Framework coverage: the same accepted/proposed graph edit semantics through real JavaScript, Vue, and Foldkit entry points.
+- Example coverage: visible graph editing and neighbor reconnection with tests; broader styling, custom renderers, and Computing Flows remain open.
+- Parity evidence: reproducible pinned cases plus explicit intentional differences. Passing shared Flow fixtures alone does not close reference parity.
+- Testing/delivery: atomic rollback, invalid graphs, active-gesture removal, disposal, package-consumer checks, and complete local verification.
+
+Planning-time read-only quality/docs/catalog checks passed. The preceding implementation turn's full gate passed on the Foldkit fix now committed at this base; it was not rerun as part of this planning pass. Existing native-input skips remain open. The advisor changed planning files only; source/status documentation updates are assigned to the executor within Plan 052.
