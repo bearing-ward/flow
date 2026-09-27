@@ -29,7 +29,12 @@ describe('Flow snapshots', () => {
           },
         ],
         edges: [
-          { id: 'edge', source: 'parent', target: 'child', hidden: true },
+          {
+            id: 'edge',
+            source: 'parent',
+            target: 'child',
+            hidden: true,
+          },
         ],
       })
     )
@@ -81,6 +86,43 @@ describe('Flow snapshots', () => {
 
     expect(Reflect.set(nested, 'changed', true)).toBeFalsy()
     expect(document.nodes[0]?.data?.nested).toStrictEqual({ values: [1, 2] })
+  })
+
+  it('detaches and freezes edge JSON data in accepted snapshots', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [{ id: 'node', label: 'Node', position: { x: 0, y: 0 } }],
+        edges: [
+          {
+            id: 'edge',
+            source: 'node',
+            target: 'node',
+            data: { nested: { labels: ['kept'] } },
+          },
+        ],
+      })
+    )
+
+    const snapshot = createFlowSnapshot(
+      document,
+      S.decodeUnknownSync(ViewportSchema)({ x: 0, y: 0, zoom: 1 })
+    )
+
+    const edgeData = snapshot.document.edges[0]?.data
+
+    expect({
+      cloned: edgeData !== document.edges[0]?.data,
+      frozen: Object.isFrozen(edgeData) && Object.isFrozen(edgeData?.nested),
+      value: edgeData,
+    }).toStrictEqual({
+      cloned: true,
+      frozen: true,
+      value: { nested: { labels: ['kept'] } },
+    })
+    expect([
+      Reflect.set(edgeData ?? {}, 'changed', true),
+      document.edges[0]?.data,
+    ]).toStrictEqual([false, { nested: { labels: ['kept'] } }])
   })
 
   it('validates accepted-state transition payloads from the snapshot schema', () => {

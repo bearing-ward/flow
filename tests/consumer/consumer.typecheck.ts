@@ -62,9 +62,54 @@ export const readAndSubscribe = async (): Promise<void> => {
   const node: FlowNode | undefined = controller.getNode('consumer-node')
   const edge: FlowEdge | undefined = controller.getEdge('missing')
   const currentViewport = controller.getViewport()
+  await controller.setNodes(nodes)
+  await controller.setNodes((nextNodes) => nextNodes)
+  const [firstNode] = nodes
+
+  if (firstNode !== undefined) {
+    await controller.addNodes(firstNode)
+  }
+
+  await controller.setEdges(edges)
+  await controller.setEdges((nextEdges) => nextEdges)
+  await controller.addEdges(edges)
+  await controller.updateNode('consumer-node', { label: 'updated' })
+  await controller.updateNode('consumer-node', (currentNode) => ({
+    label: `${currentNode.label} updated`,
+  }))
+  await controller.updateNodeData('consumer-node', { value: 1 })
+  await controller.updateNodeData('consumer-node', (data) => ({
+    ...data,
+    value: 2,
+  }))
+  await controller.updateEdge('missing', { label: 'updated' })
+  await controller.updateEdge('missing', (currentEdge) => ({
+    label: currentEdge.label,
+  }))
+  await controller.updateEdgeData('missing', { value: 1 }, { replace: true })
+  await controller.updateEdgeData(
+    'missing',
+    (data) => ({ ...data, value: 2 }),
+    { replace: true }
+  )
+  const deletion = await controller.deleteElements({ nodeIds: ['missing'] })
+
+  const transaction = await controller.applyEdit({
+    operations: [{ kind: 'delete-elements', nodeIds: ['missing'] }],
+  })
+
   const unsubscribe = controller.subscribeState(consumeState)
   unsubscribe()
-  void [current, nodes, edges, node, edge, currentViewport]
+  void [
+    current,
+    nodes,
+    edges,
+    node,
+    edge,
+    currentViewport,
+    deletion,
+    transaction,
+  ]
 }
 
 const graphNodes: readonly FlowNode[] = document.nodes

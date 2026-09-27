@@ -52,6 +52,7 @@ export type FlowNode = {
   readonly selectable?: boolean;
   readonly focusable?: boolean;
   readonly draggable?: boolean;
+  readonly deletable?: boolean;
   readonly ariaLabel?: string;
   readonly ariaDescription?: string;
   readonly hidden?: boolean;
@@ -72,6 +73,7 @@ export type FlowEdge = {
   readonly targetHandle?: string;
   readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
   readonly label?: string;
+  readonly data?: Readonly<Record<string, JsonValue>>;
   readonly markerStart?: "arrow" | "arrowclosed";
   readonly markerEnd?: "arrow" | "arrowclosed";
   readonly stroke?: string;
@@ -103,6 +105,7 @@ export type FlowDocument = {
     readonly targetHandle?: string;
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
     readonly label?: string;
+    readonly data?: Readonly<Record<string, JsonValue>>;
     readonly markerStart?: "arrow" | "arrowclosed";
     readonly markerEnd?: "arrow" | "arrowclosed";
     readonly stroke?: string;
@@ -142,6 +145,7 @@ export type FlowDocument = {
     readonly selectable?: boolean;
     readonly focusable?: boolean;
     readonly draggable?: boolean;
+    readonly deletable?: boolean;
     readonly ariaLabel?: string;
     readonly ariaDescription?: string;
     readonly hidden?: boolean;
@@ -168,6 +172,160 @@ export type FlowCommand = {
     readonly x: number;
     readonly y: number;
     readonly zoom: number;
+  };
+}
+| {
+  readonly kind: "edit-transaction";
+  readonly transaction: {
+    readonly operations: ReadonlyArray<{
+      readonly kind: "set-nodes";
+      readonly nodes: ReadonlyArray<{
+        readonly id: string;
+        readonly label: string;
+        readonly position: {
+          readonly x: number;
+          readonly y: number;
+        };
+        readonly parentId?: string;
+        readonly type?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
+        readonly zIndex?: number;
+        readonly size?: {
+          readonly width: number;
+          readonly height: number;
+        };
+        readonly extent?: "parent";
+        readonly handles?: ReadonlyArray<{
+          readonly id: string;
+          readonly kind: "source" | "target";
+          readonly side: "top" | "right" | "bottom" | "left";
+        }>;
+        readonly selected?: boolean;
+        readonly selectable?: boolean;
+        readonly focusable?: boolean;
+        readonly draggable?: boolean;
+        readonly deletable?: boolean;
+        readonly ariaLabel?: string;
+        readonly ariaDescription?: string;
+        readonly hidden?: boolean;
+      }>;
+    }
+    | {
+      readonly kind: "add-nodes";
+      readonly nodes: ReadonlyArray<{
+        readonly id: string;
+        readonly label: string;
+        readonly position: {
+          readonly x: number;
+          readonly y: number;
+        };
+        readonly parentId?: string;
+        readonly type?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
+        readonly zIndex?: number;
+        readonly size?: {
+          readonly width: number;
+          readonly height: number;
+        };
+        readonly extent?: "parent";
+        readonly handles?: ReadonlyArray<{
+          readonly id: string;
+          readonly kind: "source" | "target";
+          readonly side: "top" | "right" | "bottom" | "left";
+        }>;
+        readonly selected?: boolean;
+        readonly selectable?: boolean;
+        readonly focusable?: boolean;
+        readonly draggable?: boolean;
+        readonly deletable?: boolean;
+        readonly ariaLabel?: string;
+        readonly ariaDescription?: string;
+        readonly hidden?: boolean;
+      }>;
+    }
+    | {
+      readonly kind: "set-edges";
+      readonly edges: ReadonlyArray<{
+        readonly id: string;
+        readonly source: string;
+        readonly target: string;
+        readonly type?: string;
+        readonly sourceHandle?: string;
+        readonly targetHandle?: string;
+        readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
+        readonly markerStart?: "arrow" | "arrowclosed";
+        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly stroke?: string;
+        readonly strokeWidth?: number;
+        readonly selected?: boolean;
+        readonly deletable?: boolean;
+        readonly selectable?: boolean;
+        readonly focusable?: boolean;
+        readonly reconnectable?: boolean | "source" | "target";
+        readonly interactionWidth?: number;
+        readonly ariaLabel?: string;
+        readonly hidden?: boolean;
+        readonly zIndex?: number;
+      }>;
+    }
+    | {
+      readonly kind: "add-edges";
+      readonly edges: ReadonlyArray<{
+        readonly id: string;
+        readonly source: string;
+        readonly target: string;
+        readonly type?: string;
+        readonly sourceHandle?: string;
+        readonly targetHandle?: string;
+        readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
+        readonly markerStart?: "arrow" | "arrowclosed";
+        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly stroke?: string;
+        readonly strokeWidth?: number;
+        readonly selected?: boolean;
+        readonly deletable?: boolean;
+        readonly selectable?: boolean;
+        readonly focusable?: boolean;
+        readonly reconnectable?: boolean | "source" | "target";
+        readonly interactionWidth?: number;
+        readonly ariaLabel?: string;
+        readonly hidden?: boolean;
+        readonly zIndex?: number;
+      }>;
+    }
+    | {
+      readonly kind: "update-node";
+      readonly nodeId: string;
+      readonly patch: Readonly<Record<string, JsonValue>>;
+      readonly replace?: boolean;
+    }
+    | {
+      readonly kind: "update-edge";
+      readonly edgeId: string;
+      readonly patch: Readonly<Record<string, JsonValue>>;
+      readonly replace?: boolean;
+    }
+    | {
+      readonly kind: "update-node-data";
+      readonly nodeId: string;
+      readonly data: Readonly<Record<string, JsonValue>>;
+      readonly replace?: boolean;
+    }
+    | {
+      readonly kind: "update-edge-data";
+      readonly edgeId: string;
+      readonly data: Readonly<Record<string, JsonValue>>;
+      readonly replace?: boolean;
+    }
+    | {
+      readonly kind: "delete-elements";
+      readonly nodeIds?: ReadonlyArray<string>;
+      readonly edgeIds?: ReadonlyArray<string>;
+    }>;
   };
 };
 ```
@@ -241,6 +399,7 @@ export type FlowChange = {
     readonly targetHandle?: string;
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
     readonly label?: string;
+    readonly data?: Readonly<Record<string, JsonValue>>;
     readonly markerStart?: "arrow" | "arrowclosed";
     readonly markerEnd?: "arrow" | "arrowclosed";
     readonly stroke?: string;
@@ -282,6 +441,7 @@ export type FlowChange = {
     readonly targetHandle?: string;
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
     readonly label?: string;
+    readonly data?: Readonly<Record<string, JsonValue>>;
     readonly markerStart?: "arrow" | "arrowclosed";
     readonly markerEnd?: "arrow" | "arrowclosed";
     readonly stroke?: string;
@@ -300,15 +460,9 @@ export type FlowChange = {
 | {
   readonly kind: "edge-remove";
   readonly edgeId: string;
-};
-```
-
-## Snapshot
-
-Generated from `FlowSnapshotSchema` in `packages/core/src/public.ts`.
-
-```ts
-export type FlowSnapshot = {
+}
+| {
+  readonly kind: "edit-proposal";
   readonly document: {
     readonly edges: ReadonlyArray<{
       readonly id: string;
@@ -319,6 +473,7 @@ export type FlowSnapshot = {
       readonly targetHandle?: string;
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
       readonly label?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
       readonly markerStart?: "arrow" | "arrowclosed";
       readonly markerEnd?: "arrow" | "arrowclosed";
       readonly stroke?: string;
@@ -358,6 +513,76 @@ export type FlowSnapshot = {
       readonly selectable?: boolean;
       readonly focusable?: boolean;
       readonly draggable?: boolean;
+      readonly deletable?: boolean;
+      readonly ariaLabel?: string;
+      readonly ariaDescription?: string;
+      readonly hidden?: boolean;
+    }>;
+  };
+  readonly deletion: {
+    readonly deletedNodeIds: ReadonlyArray<string>;
+    readonly deletedEdgeIds: ReadonlyArray<string>;
+  };
+};
+```
+
+## Snapshot
+
+Generated from `FlowSnapshotSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowSnapshot = {
+  readonly document: {
+    readonly edges: ReadonlyArray<{
+      readonly id: string;
+      readonly source: string;
+      readonly target: string;
+      readonly type?: string;
+      readonly sourceHandle?: string;
+      readonly targetHandle?: string;
+      readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+      readonly label?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
+      readonly markerStart?: "arrow" | "arrowclosed";
+      readonly markerEnd?: "arrow" | "arrowclosed";
+      readonly stroke?: string;
+      readonly strokeWidth?: number;
+      readonly selected?: boolean;
+      readonly deletable?: boolean;
+      readonly selectable?: boolean;
+      readonly focusable?: boolean;
+      readonly reconnectable?: boolean | "source" | "target";
+      readonly interactionWidth?: number;
+      readonly ariaLabel?: string;
+      readonly hidden?: boolean;
+      readonly zIndex?: number;
+    }>;
+    readonly nodes: ReadonlyArray<{
+      readonly id: string;
+      readonly label: string;
+      readonly position: {
+        readonly x: number;
+        readonly y: number;
+      };
+      readonly parentId?: string;
+      readonly type?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
+      readonly zIndex?: number;
+      readonly size?: {
+        readonly width: number;
+        readonly height: number;
+      };
+      readonly extent?: "parent";
+      readonly handles?: ReadonlyArray<{
+        readonly id: string;
+        readonly kind: "source" | "target";
+        readonly side: "top" | "right" | "bottom" | "left";
+      }>;
+      readonly selected?: boolean;
+      readonly selectable?: boolean;
+      readonly focusable?: boolean;
+      readonly draggable?: boolean;
+      readonly deletable?: boolean;
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
@@ -388,6 +613,7 @@ export type FlowStateChange = {
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed";
         readonly markerEnd?: "arrow" | "arrowclosed";
         readonly stroke?: string;
@@ -427,6 +653,7 @@ export type FlowStateChange = {
         readonly selectable?: boolean;
         readonly focusable?: boolean;
         readonly draggable?: boolean;
+        readonly deletable?: boolean;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -449,6 +676,7 @@ export type FlowStateChange = {
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed";
         readonly markerEnd?: "arrow" | "arrowclosed";
         readonly stroke?: string;
@@ -488,6 +716,7 @@ export type FlowStateChange = {
         readonly selectable?: boolean;
         readonly focusable?: boolean;
         readonly draggable?: boolean;
+        readonly deletable?: boolean;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -519,6 +748,7 @@ export type FlowSnapshot = {
       readonly targetHandle?: string;
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
       readonly label?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
       readonly markerStart?: "arrow" | "arrowclosed";
       readonly markerEnd?: "arrow" | "arrowclosed";
       readonly stroke?: string;
@@ -558,6 +788,7 @@ export type FlowSnapshot = {
       readonly selectable?: boolean;
       readonly focusable?: boolean;
       readonly draggable?: boolean;
+      readonly deletable?: boolean;
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
@@ -588,6 +819,7 @@ export type FlowStateChange = {
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed";
         readonly markerEnd?: "arrow" | "arrowclosed";
         readonly stroke?: string;
@@ -627,6 +859,7 @@ export type FlowStateChange = {
         readonly selectable?: boolean;
         readonly focusable?: boolean;
         readonly draggable?: boolean;
+        readonly deletable?: boolean;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -649,6 +882,7 @@ export type FlowStateChange = {
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed";
         readonly markerEnd?: "arrow" | "arrowclosed";
         readonly stroke?: string;
@@ -688,6 +922,7 @@ export type FlowStateChange = {
         readonly selectable?: boolean;
         readonly focusable?: boolean;
         readonly draggable?: boolean;
+        readonly deletable?: boolean;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -735,6 +970,7 @@ export type SavedFlowDocument = {
       readonly selectable?: boolean;
       readonly focusable?: boolean;
       readonly draggable?: boolean;
+      readonly deletable?: boolean;
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
@@ -748,6 +984,7 @@ export type SavedFlowDocument = {
       readonly targetHandle?: string;
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
       readonly label?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
       readonly markerStart?: "arrow" | "arrowclosed";
       readonly markerEnd?: "arrow" | "arrowclosed";
       readonly stroke?: string;

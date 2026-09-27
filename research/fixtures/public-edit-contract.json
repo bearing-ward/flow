@@ -1,0 +1,459 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "version": 1,
+      "id": "data-merge-and-replacement",
+      "description": "Merge node data and replace edge data in one transaction.",
+      "documentMode": "uncontrolled",
+      "document": {
+        "nodes": [
+          {
+            "id": "a",
+            "label": "A",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "keep": true,
+              "value": 1
+            }
+          },
+          {
+            "id": "b",
+            "label": "B",
+            "position": {
+              "x": 200,
+              "y": 0
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "ab",
+            "source": "a",
+            "target": "b",
+            "data": {
+              "old": true,
+              "value": 1
+            }
+          }
+        ]
+      },
+      "transaction": {
+        "operations": [
+          {
+            "kind": "update-node-data",
+            "nodeId": "a",
+            "data": {
+              "value": 2
+            }
+          },
+          {
+            "kind": "update-edge-data",
+            "edgeId": "ab",
+            "data": {
+              "value": 3
+            },
+            "replace": true
+          }
+        ]
+      },
+      "expected": {
+        "document": {
+          "nodes": [
+            {
+              "id": "a",
+              "label": "A",
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "data": {
+                "keep": true,
+                "value": 2
+              }
+            },
+            {
+              "id": "b",
+              "label": "B",
+              "position": {
+                "x": 200,
+                "y": 0
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "ab",
+              "source": "a",
+              "target": "b",
+              "data": {
+                "value": 3
+              }
+            }
+          ]
+        },
+        "deletedNodeIds": [],
+        "deletedEdgeIds": []
+      }
+    },
+    {
+      "version": 1,
+      "id": "cascade-delete",
+      "description": "Delete a middle node and its incident edges.",
+      "documentMode": "controlled",
+      "document": {
+        "nodes": [
+          {
+            "id": "a",
+            "label": "A",
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "b",
+            "label": "B",
+            "position": {
+              "x": 100,
+              "y": 0
+            }
+          },
+          {
+            "id": "c",
+            "label": "C",
+            "position": {
+              "x": 200,
+              "y": 0
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "ab",
+            "source": "a",
+            "target": "b"
+          },
+          {
+            "id": "bc",
+            "source": "b",
+            "target": "c"
+          }
+        ]
+      },
+      "transaction": {
+        "operations": [
+          {
+            "kind": "delete-elements",
+            "nodeIds": ["b"]
+          }
+        ]
+      },
+      "expected": {
+        "document": {
+          "nodes": [
+            {
+              "id": "a",
+              "label": "A",
+              "position": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "id": "c",
+              "label": "C",
+              "position": {
+                "x": 200,
+                "y": 0
+              }
+            }
+          ],
+          "edges": []
+        },
+        "deletedNodeIds": ["b"],
+        "deletedEdgeIds": ["ab", "bc"]
+      }
+    },
+    {
+      "version": 1,
+      "id": "protected-edge-conflict",
+      "description": "Reject deletion when a protected incident edge would be removed.",
+      "documentMode": "uncontrolled",
+      "document": {
+        "nodes": [
+          {
+            "id": "a",
+            "label": "A",
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "b",
+            "label": "B",
+            "position": {
+              "x": 200,
+              "y": 0
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "ab",
+            "source": "a",
+            "target": "b",
+            "deletable": false
+          }
+        ]
+      },
+      "transaction": {
+        "operations": [
+          {
+            "kind": "delete-elements",
+            "nodeIds": ["a"]
+          }
+        ]
+      },
+      "expected": {
+        "document": {
+          "nodes": [
+            {
+              "id": "a",
+              "label": "A",
+              "position": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "id": "b",
+              "label": "B",
+              "position": {
+                "x": 200,
+                "y": 0
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "ab",
+              "source": "a",
+              "target": "b",
+              "deletable": false
+            }
+          ]
+        },
+        "deletedNodeIds": [],
+        "deletedEdgeIds": [],
+        "error": {
+          "_tag": "ProtectedDeletionConflict",
+          "nodeIds": [],
+          "edgeIds": ["ab"]
+        }
+      }
+    },
+    {
+      "version": 1,
+      "id": "protected-descendant-conflict",
+      "description": "Reject deletion of a parent when a non-deletable descendant would also be removed; preserve the complete graph.",
+      "documentMode": "uncontrolled",
+      "document": {
+        "nodes": [
+          {
+            "id": "parent",
+            "label": "Parent",
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "protected-child",
+            "label": "Protected child",
+            "position": {
+              "x": 0,
+              "y": 80
+            },
+            "parentId": "parent",
+            "deletable": false
+          },
+          {
+            "id": "other",
+            "label": "Other",
+            "position": {
+              "x": 240,
+              "y": 0
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "child-other",
+            "source": "protected-child",
+            "target": "other"
+          }
+        ]
+      },
+      "transaction": {
+        "operations": [
+          {
+            "kind": "delete-elements",
+            "nodeIds": ["parent"]
+          }
+        ]
+      },
+      "expected": {
+        "document": {
+          "nodes": [
+            {
+              "id": "parent",
+              "label": "Parent",
+              "position": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "id": "protected-child",
+              "label": "Protected child",
+              "position": {
+                "x": 0,
+                "y": 80
+              },
+              "parentId": "parent",
+              "deletable": false
+            },
+            {
+              "id": "other",
+              "label": "Other",
+              "position": {
+                "x": 240,
+                "y": 0
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "child-other",
+              "source": "protected-child",
+              "target": "other"
+            }
+          ]
+        },
+        "deletedNodeIds": [],
+        "deletedEdgeIds": [],
+        "error": {
+          "_tag": "ProtectedDeletionConflict",
+          "nodeIds": ["protected-child"],
+          "edgeIds": []
+        }
+      }
+    },
+    {
+      "version": 1,
+      "id": "invalid-final-endpoint-rollback",
+      "description": "Reject a transaction that adds an edge to a missing node.",
+      "documentMode": "uncontrolled",
+      "document": {
+        "nodes": [
+          {
+            "id": "a",
+            "label": "A",
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "edges": []
+      },
+      "transaction": {
+        "operations": [
+          {
+            "kind": "add-edges",
+            "edges": [
+              {
+                "id": "invalid-edge",
+                "source": "a",
+                "target": "missing"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "document": {
+          "nodes": [
+            {
+              "id": "a",
+              "label": "A",
+              "position": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ],
+          "edges": []
+        },
+        "deletedNodeIds": [],
+        "deletedEdgeIds": [],
+        "error": {
+          "_tag": "MissingEdgeEndpoint",
+          "edgeId": "invalid-edge",
+          "endpoint": "target",
+          "nodeId": "missing"
+        }
+      }
+    }
+  ],
+  "queuedDisposal": {
+    "version": 1,
+    "id": "queued-disposal",
+    "description": "A production observer queues a second edit and disposes its host during the first accepted publication. The trigger is accepted, the queued request settles as disposed, and no notification arrives after disposal.",
+    "document": {
+      "nodes": [
+        {
+          "id": "right-node",
+          "label": "Right node",
+          "position": {
+            "x": 20,
+            "y": 120
+          }
+        }
+      ],
+      "edges": []
+    },
+    "trigger": {
+      "operations": [
+        {
+          "kind": "update-node-data",
+          "nodeId": "right-node",
+          "data": {
+            "count": 1
+          }
+        }
+      ]
+    },
+    "queued": {
+      "operations": [
+        {
+          "kind": "update-node-data",
+          "nodeId": "right-node",
+          "data": {
+            "count": 2
+          }
+        }
+      ]
+    },
+    "expected": {
+      "triggerOutcome": "accepted",
+      "queuedOutcome": "disposed",
+      "lateNotifications": 0
+    }
+  }
+}

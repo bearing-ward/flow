@@ -35,7 +35,8 @@ import {
   createFlowGraph,
   graphBounds,
   flowToolbarAnchors,
-  commandToChange,
+  prepareFlowCommand,
+  prepareFlowEdit,
   completeNodeDrag,
   moveViewportPan,
   movePinch,
@@ -81,6 +82,9 @@ import type {
   FlowDocument,
   FlowDocumentSchema,
   FlowEdge,
+  FlowDeleteResult,
+  FlowEditResult,
+  FlowEditTransactionInput,
   FlowNode,
   FlowToolbarAnchor,
   NodePositionChange,
@@ -106,12 +110,85 @@ import type {
   FlowSnapshot,
   FlowStateChange,
   FlowStateChangeCause,
+  FlowNodeSchema,
+  FlowEdgeSchema,
 } from '@flow/core'
 import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 
 import { createCanvasUI } from './canvas-ui.ts'
 import { createEdgeRenderer } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
+
+const noActiveGestures = (): boolean => false
+
+const decodeJsonPatch = (
+  patch: Partial<FlowNode> | Partial<FlowEdge>
+): typeof S.JsonObject.Type =>
+  S.decodeUnknownSync(S.JsonObject)(
+    Object.fromEntries(
+      Object.entries(patch).filter(([, value]) => value !== undefined)
+    )
+  )
+
+type NodeUpdaterInput =
+  | readonly (typeof FlowNodeSchema.Encoded)[]
+  | ((nodes: readonly FlowNode[]) => readonly FlowNode[])
+
+type EdgeUpdaterInput =
+  | readonly (typeof FlowEdgeSchema.Encoded)[]
+  | ((edges: readonly FlowEdge[]) => readonly FlowEdge[])
+
+type NodePatchInput =
+  | Partial<FlowNode>
+  | ((node: FlowNode) => Partial<FlowNode>)
+
+type EdgePatchInput =
+  | Partial<FlowEdge>
+  | ((edge: FlowEdge) => Partial<FlowEdge>)
+
+type NodeDataUpdaterInput =
+  | typeof S.JsonObject.Type
+  | ((data: NonNullable<FlowNode['data']>) => typeof S.JsonObject.Type)
+
+type EdgeDataUpdaterInput =
+  | typeof S.JsonObject.Type
+  | ((data: NonNullable<FlowEdge['data']>) => typeof S.JsonObject.Type)
+
+const isNodeUpdater = (
+  input: NodeUpdaterInput
+): input is (nodes: readonly FlowNode[]) => readonly FlowNode[] =>
+  // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
+  typeof input === 'function'
+
+const isEdgeUpdater = (
+  input: EdgeUpdaterInput
+): input is (edges: readonly FlowEdge[]) => readonly FlowEdge[] =>
+  // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
+  typeof input === 'function'
+
+const isNodePatchUpdater = (
+  input: NodePatchInput
+): input is (node: FlowNode) => Partial<FlowNode> =>
+  // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
+  typeof input === 'function'
+
+const isEdgePatchUpdater = (
+  input: EdgePatchInput
+): input is (edge: FlowEdge) => Partial<FlowEdge> =>
+  // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
+  typeof input === 'function'
+
+const isNodeDataUpdater = (
+  input: NodeDataUpdaterInput
+): input is (data: NonNullable<FlowNode['data']>) => typeof S.JsonObject.Type =>
+  // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
+  typeof input === 'function'
+
+const isEdgeDataUpdater = (
+  input: EdgeDataUpdaterInput
+): input is (data: NonNullable<FlowEdge['data']>) => typeof S.JsonObject.Type =>
+  // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
+  typeof input === 'function'
 
 const flowSnapshotEquivalence = S.toEquivalence(FlowSnapshotSchema)
 
@@ -438,6 +515,12 @@ export interface FlowController {
   readonly getViewport: () => Viewport
   readonly fitView: (options?: FitViewOptions) => boolean
   readonly update: (document: FlowDocument) => void
+  readonly applyEdit: (
+    transaction: FlowEditTransactionInput
+  ) => Promise<FlowEditResult>
+  readonly applyEditResolved: (
+    resolve: (document: FlowDocument) => FlowEditTransactionInput
+  ) => Promise<FlowEditResult>
   readonly updateViewport: (viewport: Viewport) => void
   readonly dispatch: (command: FlowCommand) => void
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
@@ -487,6 +570,57 @@ export interface JavaScriptFlowController {
   readonly getViewport: () => Viewport
   readonly fitView: (options?: typeof FitViewOptionsSchema.Encoded) => boolean
   readonly update: (document: FlowDocumentInput) => void
+  readonly applyEdit: (
+    transaction: FlowEditTransactionInput
+  ) => Promise<FlowEditResult>
+  readonly setNodes: (
+    nodes:
+      | readonly (typeof FlowNodeSchema.Encoded)[]
+      | ((nodes: readonly FlowNode[]) => readonly FlowNode[])
+  ) => Promise<FlowEditResult>
+  readonly addNodes: (
+    nodes:
+      | typeof FlowNodeSchema.Encoded
+      | readonly (typeof FlowNodeSchema.Encoded)[]
+  ) => Promise<FlowEditResult>
+  readonly setEdges: (
+    edges:
+      | readonly (typeof FlowEdgeSchema.Encoded)[]
+      | ((edges: readonly FlowEdge[]) => readonly FlowEdge[])
+  ) => Promise<FlowEditResult>
+  readonly addEdges: (
+    edges:
+      | typeof FlowEdgeSchema.Encoded
+      | readonly (typeof FlowEdgeSchema.Encoded)[]
+  ) => Promise<FlowEditResult>
+  readonly updateNode: (
+    id: string,
+    patch: Partial<FlowNode> | ((node: FlowNode) => Partial<FlowNode>),
+    options?: { replace?: boolean }
+  ) => Promise<FlowEditResult>
+  readonly updateNodeData: (
+    id: string,
+    data:
+      | typeof S.JsonObject.Type
+      | ((data: NonNullable<FlowNode['data']>) => typeof S.JsonObject.Type),
+    options?: { replace?: boolean }
+  ) => Promise<FlowEditResult>
+  readonly updateEdge: (
+    id: string,
+    patch: Partial<FlowEdge> | ((edge: FlowEdge) => Partial<FlowEdge>),
+    options?: { replace?: boolean }
+  ) => Promise<FlowEditResult>
+  readonly updateEdgeData: (
+    id: string,
+    data:
+      | typeof S.JsonObject.Type
+      | ((data: NonNullable<FlowEdge['data']>) => typeof S.JsonObject.Type),
+    options?: { replace?: boolean }
+  ) => Promise<FlowEditResult>
+  readonly deleteElements: (input: {
+    nodeIds?: readonly string[]
+    edgeIds?: readonly string[]
+  }) => Promise<FlowDeleteResult>
   readonly updateViewport: (viewport: ViewportInput) => void
   readonly dispatch: (command: FlowCommandInput) => void
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
@@ -930,6 +1064,11 @@ export const createFlowHost = (
     const listeners = new Set<(change: FlowChange) => void>()
     const stateListeners = new Set<(change: FlowStateChange) => void>()
     const deferredMutations: (() => void)[] = []
+    const pendingEditRejectors = new Set<(reason: Error) => void>()
+
+    let cancelActiveGestures: (reason: string, pointerId?: number) => boolean =
+      noActiveGestures
+
     let mutationDepth = 0
     let drainingMutations = false
 
@@ -3269,6 +3408,24 @@ export const createFlowHost = (
             break
           }
 
+          case 'edit-proposal': {
+            if (change.deletion.deletedNodeIds.length > 0) {
+              cancelActiveGestures('node-removed')
+            }
+
+            if (documentMode === 'uncontrolled') {
+              const previous = document
+              const { document: candidateDocument } = change
+              document = candidateDocument
+              operations.reconcile(document, previous)
+            } else {
+              renderGraphPositions()
+              edgeRenderer.reconcile(document, renderedNodePositions)
+            }
+
+            break
+          }
+
           default: {
             const exhaustive: never = change
             void exhaustive
@@ -4685,10 +4842,7 @@ export const createFlowHost = (
       (pointerId === undefined && activeKeyboardResize !== null) ||
       (pointerId === undefined && activeClickConnection !== null)
 
-    const cancelActiveGestures = (
-      reason: string,
-      pointerId?: number
-    ): boolean => {
+    cancelActiveGestures = (reason: string, pointerId?: number): boolean => {
       if (!hasActivePointerGesture(pointerId)) {
         return false
       }
@@ -6008,6 +6162,12 @@ export const createFlowHost = (
         clearSelectionRect('cancelled')
         destroyed = true
         stateListeners.clear()
+
+        for (const reject of pendingEditRejectors) {
+          reject(new Error('FlowControllerDisposed'))
+        }
+
+        pendingEditRejectors.clear()
         deferredMutations.length = 0
         runTelemetry(
           Scope.close(hostScope, Exit.void).pipe(
@@ -6102,7 +6262,7 @@ export const createFlowHost = (
           return
         }
 
-        const change = commandToChange(command)
+        const change = Effect.runSync(prepareFlowCommand(document, command))
         operations.publishChange(change)
         runTelemetry(
           Effect.logDebug('Dispatched flow command').pipe(
@@ -6158,6 +6318,59 @@ export const createFlowHost = (
             )
           )
         })
+      },
+      applyEdit: (transaction): Promise<FlowEditResult> =>
+        controller.applyEditResolved(() => transaction),
+      applyEditResolved: (resolveInput): Promise<FlowEditResult> => {
+        const pending = Promise.withResolvers<FlowEditResult>()
+
+        const { resolve, reject } = pending
+
+        const rejectPending = (reason: Error): void => {
+          pendingEditRejectors.delete(rejectPending)
+
+          reject(reason)
+        }
+
+        const execute = (): void => {
+          pendingEditRejectors.delete(rejectPending)
+
+          if (destroyed) {
+            reject(new Error('FlowControllerDisposed'))
+
+            return
+          }
+
+          try {
+            const transaction = resolveInput(
+              createFlowSnapshot(document, authoritativeViewport).document
+            )
+
+            const result = Effect.runSync(
+              prepareFlowEdit(document, transaction)
+            )
+
+            operations.publishChange({
+              kind: 'edit-proposal',
+              document: result.document,
+              deletion: result.deletion,
+            })
+            resolve(result)
+          } catch (error) {
+            reject(error)
+          }
+        }
+
+        if (destroyed) {
+          reject(new Error('FlowControllerDisposed'))
+        } else if (mutationDepth > 0) {
+          pendingEditRejectors.add(rejectPending)
+          deferredMutations.push(execute)
+        } else {
+          execute()
+        }
+
+        return pending.promise
       },
       updateViewport: (nextViewport): void => {
         if (destroyed) {
@@ -6265,6 +6478,150 @@ export const mountFlow = (
     getEdge: host.getEdge,
     getViewport: host.getViewport,
     destroy: host.destroy,
+    setNodes: (nodes) =>
+      isNodeUpdater(nodes)
+        ? host.applyEditResolved((currentDocument) => ({
+            operations: [
+              { kind: 'set-nodes', nodes: nodes(currentDocument.nodes) },
+            ],
+          }))
+        : host.applyEdit({ operations: [{ kind: 'set-nodes', nodes }] }),
+    addNodes: (nodes) =>
+      host.applyEdit({
+        operations: [
+          {
+            kind: 'add-nodes',
+            nodes: Array.isArray(nodes) ? nodes : [nodes],
+          },
+        ],
+      }),
+    setEdges: (edges) =>
+      isEdgeUpdater(edges)
+        ? host.applyEditResolved((currentDocument) => ({
+            operations: [
+              { kind: 'set-edges', edges: edges(currentDocument.edges) },
+            ],
+          }))
+        : host.applyEdit({ operations: [{ kind: 'set-edges', edges }] }),
+    addEdges: (edges) =>
+      host.applyEdit({
+        operations: [
+          {
+            kind: 'add-edges',
+            edges: Array.isArray(edges) ? edges : [edges],
+          },
+        ],
+      }),
+    updateNode: (id, patch, updateOptions) =>
+      host.applyEditResolved((currentDocument) => {
+        const node = currentDocument.nodes.find(
+          (candidate) => candidate.id === id
+        )
+
+        if (node === undefined) {
+          return { operations: [] }
+        }
+
+        const resolvedPatch = isNodePatchUpdater(patch) ? patch(node) : patch
+
+        return {
+          operations: [
+            {
+              kind: 'update-node',
+              nodeId: id,
+              patch: decodeJsonPatch(resolvedPatch),
+              replace: updateOptions?.replace,
+            },
+          ],
+        }
+      }),
+    updateNodeData: (id, data, updateOptions) =>
+      host.applyEditResolved((currentDocument) => {
+        const node = currentDocument.nodes.find(
+          (candidate) => candidate.id === id
+        )
+
+        if (node === undefined) {
+          return { operations: [] }
+        }
+
+        const resolvedData = isNodeDataUpdater(data)
+          ? data(node.data ?? {})
+          : data
+
+        return {
+          operations: [
+            {
+              kind: 'update-node-data',
+              nodeId: id,
+              data: resolvedData,
+              replace: updateOptions?.replace,
+            },
+          ],
+        }
+      }),
+    updateEdge: (id, patch, updateOptions) =>
+      host.applyEditResolved((currentDocument) => {
+        const edge = currentDocument.edges.find(
+          (candidate) => candidate.id === id
+        )
+
+        if (edge === undefined) {
+          return { operations: [] }
+        }
+
+        const resolvedPatch = isEdgePatchUpdater(patch) ? patch(edge) : patch
+
+        return {
+          operations: [
+            {
+              kind: 'update-edge',
+              edgeId: id,
+              patch: decodeJsonPatch(resolvedPatch),
+              replace: updateOptions?.replace,
+            },
+          ],
+        }
+      }),
+    updateEdgeData: (id, data, updateOptions) =>
+      host.applyEditResolved((currentDocument) => {
+        const edge = currentDocument.edges.find(
+          (candidate) => candidate.id === id
+        )
+
+        if (edge === undefined) {
+          return { operations: [] }
+        }
+
+        const resolvedData = isEdgeDataUpdater(data)
+          ? data(edge.data ?? {})
+          : data
+
+        return {
+          operations: [
+            {
+              kind: 'update-edge-data',
+              edgeId: id,
+              data: resolvedData,
+              replace: updateOptions?.replace,
+            },
+          ],
+        }
+      }),
+    deleteElements: async (request) => {
+      const result = await host.applyEdit({
+        operations: [
+          {
+            kind: 'delete-elements',
+            nodeIds: request.nodeIds,
+            edgeIds: request.edgeIds,
+          },
+        ],
+      })
+
+      return result.deletion
+    },
+    applyEdit: (transaction) => host.applyEdit(transaction),
     fitView: (fitOptions): boolean =>
       host.fitView(
         Effect.runSync(

@@ -56,6 +56,7 @@ export {
   FlowInteractionSessionsSchema,
   FlowChangeSchema,
   FlowCommandSchema,
+  EditTransactionCommandSchema,
   FlowControlModeSchema,
   MeasuredNodeSchema,
   NodePositionChangeSchema,
@@ -68,6 +69,7 @@ export {
   NodeResizeCalculationSchema,
   SetNodePositionCommandSchema,
   SetViewportCommandSchema,
+  FlowEditProposalChangeSchema,
   ViewportChangeSchema,
   EdgeAddChangeSchema,
   EdgeSelectionChangeSchema,
@@ -95,6 +97,7 @@ export {
   cancelFlowInteraction,
   clampViewport,
   commandToChange,
+  prepareFlowCommand,
   completeNodeDrag,
   finishFlowInteraction,
   flowToScreenPosition,
@@ -110,6 +113,40 @@ export {
   screenToFlowPosition,
   zoomViewportAt,
 } from './domain/flow-runtime.schema.ts'
+
+export {
+  FlowEditOperationSchema,
+  FlowEditTransactionSchema,
+  FlowDeleteResultSchema,
+  FlowEditResultSchema,
+  AddNodesEditSchema,
+  AddEdgesEditSchema,
+  SetNodesEditSchema,
+  SetEdgesEditSchema,
+  UpdateNodeEditSchema,
+  UpdateEdgeEditSchema,
+  UpdateNodeDataEditSchema,
+  UpdateEdgeDataEditSchema,
+  DeleteElementsEditSchema,
+} from './domain/flow-edit.schema.ts'
+
+export type {
+  FlowEditOperation,
+  FlowEditTransaction,
+  FlowEditTransactionInput,
+  FlowDeleteResult,
+  FlowEditResult,
+} from './domain/flow-edit.schema.ts'
+
+export { prepareFlowEdit } from './domain/flow-edit.ts'
+
+export {
+  ProtectedDeletionConflict,
+  FlowEditDisposedSchema,
+  FlowEditErrorSchema,
+} from './domain/flow-edit-error.ts'
+
+export type { FlowEditError } from './domain/flow-edit-error.ts'
 
 export {
   PanExtentSchema,

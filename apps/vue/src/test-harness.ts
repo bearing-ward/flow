@@ -4,9 +4,11 @@ import type {
   FlowEdge,
   FlowNode,
   FlowSnapshot,
+  FlowEditResult,
   FlowStateChange,
   Viewport,
   FlowDocumentSchema,
+  FlowEditTransactionSchema,
 } from '@flow/core'
 import { FlowCanvas, useEdges, useFlow, useNodes, useViewport } from '@flow/vue'
 import { Effect } from 'effect'
@@ -25,6 +27,7 @@ import type {
   ConformanceFixture,
   PublicStateQuery,
   PublicStateRead,
+  PublicEditQueuedDisposal,
 } from '../../../packages/conformance/src/index.ts'
 
 import '@flow/vue/style.css'
@@ -63,6 +66,14 @@ interface TestApi {
     readonly documentUpdateAcknowledged: boolean
     readonly identityPreserved: boolean
   }
+  applySplitEdit: () => Promise<FlowEditResult | undefined>
+  splitEditSnapshot: () => {
+    readonly nodeIds: readonly string[]
+    readonly edgeIds: readonly string[]
+    readonly nodeUpdates: number
+    readonly edgeUpdates: number
+    readonly proposals: number
+  }
   readonly changes: string[]
   readonly positionChanges: {
     readonly nodeId: string
@@ -97,6 +108,36 @@ interface TestApi {
   unmountPublicObserver: () => void
   destroyPublicCanvases: () => void
   outsideProviderError: () => string
+  proposePublicDataEdit: () => Promise<FlowEditResult>
+  applyPublicEditFixture: (
+    document: typeof FlowDocumentSchema.Encoded,
+    transaction: typeof FlowEditTransactionSchema.Encoded
+  ) => Promise<
+    FlowEditResult & {
+      readonly acceptedDocument: FlowDocument
+      readonly events: readonly string[]
+      readonly domNodeIds: readonly string[]
+      readonly retainedDomIdentity: boolean
+    }
+  >
+  exercisePublicEditIsolation: () => Promise<{
+    readonly leftNodeIds: readonly string[]
+    readonly rightData: FlowNode['data'] | null
+    readonly leftEvents: readonly string[]
+    readonly rightEvents: readonly string[]
+  }>
+  exerciseFunctionalEditUpdaters: () => Promise<{
+    readonly calls: number
+    readonly count: number | null
+    readonly mutationBlocked: boolean
+  }>
+  disposeDuringEditPreparation: (
+    scenario: PublicEditQueuedDisposal
+  ) => Promise<{
+    readonly error: string
+    readonly events: readonly string[]
+  }>
+  acknowledgePublicEdit: () => void
 }
 
 declare global {
@@ -142,6 +183,14 @@ let splitEdgeUpdates = 0
 
 let splitDocumentUpdater: ((document: FlowDocument) => void) | undefined
 
+let splitEditRequester:
+  | ((
+      transaction: typeof FlowEditTransactionSchema.Encoded
+    ) => Promise<FlowEditResult>)
+  | undefined
+
+let splitProposalCount = 0
+
 interface PublicProbe {
   readonly flow: ReturnType<typeof useFlow>
   readonly nodes: ReturnType<typeof useNodes>
@@ -160,6 +209,8 @@ const publicViewports = new Map<'left' | 'right', Ref<Viewport>>()
 const publicEvents = new Map<'left' | 'right', string[]>()
 
 let publicAcceptLeft = false
+
+let publicCandidateLeft: FlowDocument | undefined
 
 const publicProbeMounted = ref(true)
 
@@ -469,12 +520,16 @@ const api: TestApi = {
     splitNodeUpdates = 0
     splitEdgeUpdates = 0
     splitDocumentUpdater = undefined
+    splitEditRequester = undefined
+    splitProposalCount = 0
 
     // SAFETY: Vue receives split-node values from the decoded initial FlowDocument in this test.
     const SplitNode = defineComponent({
       props: { node: { type: Object as PropType<FlowNode>, required: true } },
       setup(props) {
-        splitDocumentUpdater = useFlow().updateDocument
+        const flow = useFlow()
+        splitDocumentUpdater = flow.updateDocument
+        splitEditRequester = flow.applyEdit
 
         return () => h('span', props.node.label)
       },
@@ -495,6 +550,11 @@ const api: TestApi = {
               splitEdgeUpdates += 1
               edges.value = next
             },
+            onChange: (change: { readonly kind: string }) => {
+              if (change.kind === 'edit-proposal') {
+                splitProposalCount += 1
+              }
+            },
           })
       },
     })
@@ -510,6 +570,72 @@ const api: TestApi = {
     }
 
     update(Effect.runSync(decodeFlowDocument(document)))
+  },
+  async applySplitEdit() {
+    const request = splitEditRequester
+
+    if (request === undefined) {
+      throw new Error('Split FlowCanvas edit action is unavailable')
+    }
+
+    const result = await request({
+      operations: [
+        {
+          kind: 'set-nodes',
+          nodes: [
+            {
+              id: 'split-a',
+              label: 'Split A',
+              position: { x: 20, y: 30 },
+              handles: [{ id: 'out', kind: 'source', side: 'right' }],
+            },
+            {
+              id: 'split-c',
+              label: 'Split C',
+              position: { x: 460, y: 30 },
+              handles: [{ id: 'in', kind: 'target', side: 'left' }],
+            },
+          ],
+        },
+        {
+          kind: 'set-edges',
+          edges: [
+            {
+              id: 'split-reconnected-edge',
+              source: 'split-a',
+              target: 'split-c',
+              sourceHandle: 'out',
+              targetHandle: 'in',
+            },
+          ],
+        },
+      ],
+    })
+
+    await nextTick()
+
+    return result
+  },
+  splitEditSnapshot() {
+    return {
+      nodeIds: [
+        ...document.querySelectorAll<HTMLElement>('[data-node-id]'),
+      ].flatMap((node) => {
+        const id = node.dataset.nodeId ?? ''
+
+        return id.startsWith('split-') ? [id] : []
+      }),
+      edgeIds: [
+        ...document.querySelectorAll<HTMLElement>('[data-edge-id]'),
+      ].flatMap((edge) => {
+        const id = edge.dataset.edgeId ?? ''
+
+        return id.startsWith('split-') ? [id] : []
+      }),
+      nodeUpdates: splitNodeUpdates,
+      edgeUpdates: splitEdgeUpdates,
+      proposals: splitProposalCount,
+    }
   },
   startNestedDragCase(mode) {
     app?.unmount()
@@ -581,6 +707,7 @@ const api: TestApi = {
     publicViewports.clear()
     publicEvents.clear()
     publicAcceptLeft = false
+    publicCandidateLeft = undefined
     publicProbeMounted.value = true
 
     const leftDocument = ref(
@@ -741,10 +868,12 @@ const api: TestApi = {
     const [firstNode] = snapshot.document.nodes
 
     return {
+      document: snapshot.document,
       nodeIds: snapshot.document.nodes.map(({ id: nodeId }) => nodeId),
       edgeIds: snapshot.document.edges.map(({ id: edgeId }) => edgeId),
       viewport: probe.viewport.value,
       firstNodeX: snapshot.document.nodes[0]?.position.x ?? null,
+      firstNodeData: snapshot.document.nodes[0]?.data ?? null,
       missingNode: probe.flow.getNode('missing') === undefined,
       missingEdge: probe.flow.getEdge('missing') === undefined,
       frozen:
@@ -806,6 +935,179 @@ const api: TestApi = {
   },
   acceptPublicProposals() {
     publicAcceptLeft = true
+  },
+  async proposePublicDataEdit() {
+    const probe = publicProbes.get('left')
+
+    if (probe === undefined) {
+      throw new Error('Missing left state probe')
+    }
+
+    const result = await probe.flow.updateNodeData('left-visible', {
+      label: 'edited',
+    })
+
+    publicCandidateLeft = result.document
+
+    return result
+  },
+  async exerciseFunctionalEditUpdaters() {
+    const probe = publicProbes.get('right')
+
+    if (probe === undefined) {
+      throw new Error('Missing right public edit probe')
+    }
+
+    let calls = 0
+    let mutationBlocked = false
+    let queued: Promise<FlowEditResult> | undefined
+
+    const unsubscribe = probe.flow.subscribeState(({ current }) => {
+      if (
+        current.document.nodes[0]?.data?.count === 1 &&
+        queued === undefined
+      ) {
+        queued = probe.flow.updateNodeData('right-node', (data) => {
+          calls += 1
+
+          try {
+            mutationBlocked = !Reflect.set(data, 'count', 100)
+          } catch {
+            mutationBlocked = true
+          }
+
+          return { count: Number(data.count ?? 0) + 1 }
+        })
+      }
+    })
+
+    await probe.flow.updateNodeData('right-node', (data) => {
+      calls += 1
+
+      return { count: Number(data.count ?? 0) + 1 }
+    })
+    await queued
+    unsubscribe()
+
+    return {
+      calls,
+      count: Number(
+        probe.flow.getNode('right-node')?.data?.count ?? Number.NaN
+      ),
+      mutationBlocked,
+    }
+  },
+  async disposeDuringEditPreparation(scenario) {
+    const probe = publicProbes.get('right')
+
+    if (probe === undefined) {
+      throw new Error('Missing right public edit probe')
+    }
+
+    const events: string[] = []
+    let queued: Promise<FlowEditResult> | undefined
+
+    const stop = probe.flow.subscribeState(({ current }) => {
+      if (
+        current.document.nodes[0]?.data?.count === 1 &&
+        queued === undefined
+      ) {
+        events.push('accepted:trigger')
+        queued = probe.flow.applyEdit(scenario.queued)
+        app?.unmount()
+        app = undefined
+      } else {
+        events.push('late:notification')
+      }
+    })
+
+    await probe.flow.applyEdit(scenario.trigger)
+    let errorMessage = ''
+
+    try {
+      await queued
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error)
+    }
+
+    stop()
+
+    return { error: errorMessage, events }
+  },
+  async applyPublicEditFixture(document, transaction) {
+    const owner = publicDocuments.get('left')
+    const probe = publicProbes.get('left')
+
+    if (owner === undefined || probe === undefined) {
+      throw new Error('Missing left public edit probe')
+    }
+
+    owner.value = Effect.runSync(decodeFlowDocument(document))
+    await nextTick()
+    publicEvents.get('left')?.splice(0)
+
+    const [leftCanvas] =
+      globalThis.document.querySelectorAll<HTMLElement>('.flow-vue-canvas')
+
+    const retainedNode = leftCanvas?.querySelector<HTMLElement>(
+      '.flow-vue-node[data-node-id="b"]'
+    )
+
+    const result = await probe.flow.applyEdit(transaction)
+    const accepted = probe.flow.getSnapshot()
+
+    const settledNode = leftCanvas?.querySelector<HTMLElement>(
+      '.flow-vue-node[data-node-id="b"]'
+    )
+
+    return Object.assign(result, {
+      acceptedDocument: accepted.document,
+      events: [...(publicEvents.get('left') ?? [])],
+      domNodeIds: [
+        ...(leftCanvas?.querySelectorAll<HTMLElement>(
+          '.flow-vue-node[data-node-id]'
+        ) ?? []),
+      ].map((element) => element.dataset.nodeId ?? ''),
+      retainedDomIdentity:
+        retainedNode !== null &&
+        retainedNode !== undefined &&
+        retainedNode === settledNode,
+    })
+  },
+  async exercisePublicEditIsolation() {
+    const left = publicProbes.get('left')
+    const right = publicProbes.get('right')
+
+    if (left === undefined || right === undefined) {
+      throw new Error('Missing public edit isolation probes')
+    }
+
+    const leftEvents = publicEvents.get('left') ?? []
+    const rightEvents = publicEvents.get('right') ?? []
+    const leftStart = leftEvents.length
+    const rightStart = rightEvents.length
+
+    await right.flow.updateNodeData('right-node', { isolatedEdit: true })
+
+    return {
+      leftNodeIds: left.flow
+        .getSnapshot()
+        .document.nodes.map(({ id: nodeId }) => nodeId),
+      rightData: right.flow.getNode('right-node')?.data ?? null,
+      leftEvents: leftEvents.slice(leftStart),
+      rightEvents: rightEvents.slice(rightStart),
+    }
+  },
+
+  acknowledgePublicEdit() {
+    const owner = publicDocuments.get('left')
+
+    if (owner === undefined || publicCandidateLeft === undefined) {
+      throw new Error('Missing pending left edit proposal')
+    }
+
+    owner.value = publicCandidateLeft
+    publicCandidateLeft = undefined
   },
   exercisePublicNotificationPolicy() {
     const probe = publicProbes.get('right')

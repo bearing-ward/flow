@@ -3,12 +3,20 @@ import { readFileSync } from 'node:fs'
 import { Effect, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { decodeFlowDocument } from '../../core/src/domain/flow.schema.ts'
+import { FlowEditErrorSchema } from '../../core/src/domain/flow-edit-error.ts'
+import { prepareFlowEdit } from '../../core/src/domain/flow-edit.ts'
+import {
+  FlowDocumentSchema,
+  decodeFlowDocument,
+} from '../../core/src/domain/flow.schema.ts'
 import {
   PublicStateContractFixtureSchema,
+  PublicEditContractFixtureSchema,
+  PublicEditQueuedDisposalSchema,
   conformanceFixtures,
   validateConformanceFixtures,
   validatePublicStateContractFixtures,
+  validatePublicEditContractFixtures,
 } from './index.ts'
 
 const XYSchema = S.Struct({ x: S.Number, y: S.Number })
@@ -24,6 +32,73 @@ const ResizeCaptureSchema = S.Struct({
 })
 
 describe('shared conformance fixtures', () => {
+  it('loads fixed public-edit outcomes and prepares their complete candidates', () => {
+    const file = S.decodeUnknownSync(
+      S.Struct({
+        version: S.Literal(1),
+        fixtures: S.Array(PublicEditContractFixtureSchema),
+        queuedDisposal: PublicEditQueuedDisposalSchema,
+      })
+    )(
+      JSON.parse(
+        readFileSync('research/fixtures/public-edit-contract.json', 'utf-8')
+      )
+    )
+
+    expect(() =>
+      validatePublicEditContractFixtures(file.fixtures)
+    ).not.toThrow()
+    expect(file.queuedDisposal.expected).toStrictEqual({
+      triggerOutcome: 'accepted',
+      queuedOutcome: 'disposed',
+      lateNotifications: 0,
+    })
+    expect(file.fixtures.map(({ id }) => id)).toStrictEqual([
+      'data-merge-and-replacement',
+      'cascade-delete',
+      'protected-edge-conflict',
+      'protected-descendant-conflict',
+      'invalid-final-endpoint-rollback',
+    ])
+
+    for (const fixture of file.fixtures) {
+      const document = Effect.runSync(decodeFlowDocument(fixture.document))
+
+      const actual = (() => {
+        try {
+          const result = Effect.runSync(
+            prepareFlowEdit(document, fixture.transaction)
+          )
+
+          return {
+            document: S.encodeSync(FlowDocumentSchema)(result.document),
+            deletedNodeIds: result.deletion.deletedNodeIds,
+            deletedEdgeIds: result.deletion.deletedEdgeIds,
+          }
+        } catch (error) {
+          return {
+            document: fixture.document,
+            deletedNodeIds: [],
+            deletedEdgeIds: [],
+            error: S.encodeSync(FlowEditErrorSchema)(
+              S.decodeUnknownSync(FlowEditErrorSchema)(error)
+            ),
+          }
+        }
+      })()
+
+      const expected =
+        fixture.expected.error === undefined
+          ? fixture.expected
+          : {
+              ...fixture.expected,
+              error: S.encodeSync(FlowEditErrorSchema)(fixture.expected.error),
+            }
+
+      expect(actual).toStrictEqual(expected)
+    }
+  })
+
   it('uses unique versioned fixture identifiers for the eight shared scenarios', () => {
     expect(conformanceFixtures.map(({ id }) => id)).toStrictEqual([
       'keyed-update',

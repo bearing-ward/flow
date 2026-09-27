@@ -1,0 +1,52 @@
+# Public graph edit contract
+
+Captured for Plan 052 on 2026-09-26. This selects Flow semantics for the new graph-write API. Runtime probes use a disposable full checkout at xyflow commit `0a1f9575b25679f2880175de8d3eae21aedde921`; the imported tree remains immutable. The reproducible output is `research/fixtures/graph-edit-reference.json`.
+
+## Selected write contract
+
+Named adapter methods accept the reference-shaped values below. The core receives only Schema-validated serializable operations; updater functions are evaluated once by the JavaScript or Vue adapter when the request executes against a frozen snapshot of the then-accepted document. In controlled mode, a proposal does not become a hidden base for a later updater. Callers that require dependent edits use one transaction.
+
+| Operation | Input | Result / behavior |
+| --- | --- | --- |
+| `setNodes(nodes)` / `setEdges(edges)` | Full collection or updater callback | Replace only that collection. Callback runs once with the then-accepted collection. Validate the final whole document; dangling endpoints reject atomically. |
+| `addNodes(nodes)` / `addEdges(edges)` | One element or array | Append; duplicate IDs reject. Distinct-ID parallel edges remain allowed. |
+| `updateNode(id, patch, options?)` / `updateEdge(...)` | Shallow patch or full replacement with `replace`; either may be returned by an updater callback | Preserve target ID; replacement must satisfy the whole element schema. Missing ID is a no-op and does not call the updater. |
+| `updateNodeData(id, patch, options?)` / `updateEdgeData(...)` | JSON-object patch or updater callback with `replace` option | Shallow merge by default; replacement drops absent keys. Missing ID does not call the updater. |
+| `deleteElements({ nodes?, edges? })` | Requested IDs | Deterministic result lists; delete requested removable nodes, descendants, and incident edges. Missing/repeated IDs are harmless. Protected objects that would leave dangling references cause a typed conflict. |
+| `dispatch({ kind: 'edit-transaction', operations })` | Ordered serializable operations | Build one final candidate, validate once, publish one semantic proposal, and accept atomically in uncontrolled mode. |
+
+All external inputs decode at adapter boundaries. Core node and edge data remain JSON objects. Invalid input or final graph integrity leaves document, DOM, semantic observers, and accepted-state observers unchanged. Uncontrolled acceptance reconciles once and emits at most one accepted-state event. Controlled mode emits a proposal while accepted getters and DOM remain on the owner value until acknowledgement. A controlled `deleteElements` result describes the validated proposal, not owner acknowledgement.
+
+Document replacement remains an owner action. Full collection setters and named edits are requests and never call the authoritative replacement route directly. Schema-equal no-ops emit nothing. Existing listener isolation, FIFO reentrancy, and disposal guarantees remain. A listener exception is isolated; a listener-enqueued operation runs after the current publication. Calls after disposal fail through the adapter's documented disposed error. Disposal settles pending async edit results as disposed and emits no late event.
+
+Vue document `v-model` and split models publish one candidate. Split nodes/edges updates are emitted in the same Vue scheduler turn; a transaction is supported only when both owner props acknowledge coherently. Independently delayed split acknowledgements are not accumulated as pending graph state: the parent must acknowledge a complete coherent document or use document `v-model`. No invalid intermediate document is installed.
+
+Foldkit ports carry only typed operation and result messages. Graph preparation runs synchronously inside the Model update, so each request uses the Model current when that inbound message is handled; no candidate waits to be applied against a later Model. The app bridge correlates results by request ID, and its page-disposal path settles pending edits with the typed `FlowEditDisposed` case before disposing the Runtime. No functions cross ports.
+
+## Current production paths and test bridges
+
+### JavaScript
+
+`apps/vanilla/src/public.ts` exports the external `createFlow` boundary; `apps/vanilla/src/mount-flow.ts:424-476` defines the controller read/update/dispatch surface. `mount-flow.ts:6276` decodes command input before dispatch. Semantic changes enter `publishChange` (`mount-flow.ts:2980-`), which queues reentrant mutations, applies the change against the current document, reconciles uncontrolled state or restores controlled state, then continues to observer publication and accepted-state handling. `mount-flow.ts:2980-3050` shows the state-aware mutation boundary; existing edge-add is handled later in the same switch. Reconciliation and renderer ownership are in `mount-flow.ts`'s `reconcile` and render helpers; geometry/handles and edge DOM are updated by those host paths. `destroy` owns subscription and DOM cleanup.
+
+Tests use public exports through the browser in `apps/vanilla/e2e/public-state.e2e.ts`, `apps/vanilla/e2e/shared-conformance.e2e.ts`, and `apps/vanilla/e2e/public-edits.e2e.ts`; those tests exercise accepted reads, controlled acknowledgement, semantic/accepted ordering, data-edit DOM identity, invalid-edit rollback, updater evaluation, and queued disposal. `apps/vanilla/e2e/graph-editing-examples.e2e.ts` checks atomic reconnection and edge-data save/restore. These are test bridges, not production state paths.
+
+### Vue
+
+`packages/vue/src/flow-canvas.ts` owns props, accepted `activeDocument`, render projection, and the `publish` boundary (`flow-canvas.ts:159-315`, `589-635`). In controlled or split mode it emits a proposal and model update; otherwise it updates `ownedDocument`. `packages/vue/src/use-flow.ts:7-90` injects the editor and provides readonly computed state and named read/dispatch/update methods. Node/edge component rendering and measured-handle updates stay in the canvas lifecycle; owner props are watched to acknowledge document changes. Tests mount the real package entry and descendants through `apps/vue/e2e/public-state.e2e.ts`, `apps/vue/e2e/public-edits.e2e.ts`, and `apps/vue/e2e/graph-editing-examples.e2e.ts`, using the `apps/vue/src/test-harness.ts` bridge. They check proposal/acknowledgement, updater evaluation, same-tick split bindings, two-canvas edit isolation, DOM retention, unmount settlement, graph reconnection, and edge-data save/restore. Harness helpers are not the production reducer.
+
+### Foldkit
+
+`apps/foldkit/src/graph.ts` owns the immutable Model, message schemas, `update`, command handling, and view projection. `graph.ts:310-340` routes replacement, viewport, and command messages through the model update; `graph.ts:179-` handles supported commands and has an exhaustive branch. `apps/foldkit/src/application.ts:34-71` declares typed ports; `application.ts:135-` routes host actions and snapshot requests. The program's view renders the accepted Model, while subscriptions publish semantic and accepted-state outputs; runtime disposal owns cleanup. `apps/foldkit/e2e/test-harness.ts` embeds actual Runtime programs and typed ports; `apps/foldkit/e2e/public-state.e2e.ts`, `apps/foldkit/e2e/public-edits.e2e.ts`, and `apps/foldkit/e2e/graph-editing-examples.e2e.ts` drive state and edits. They check typed results, observer order, rendered node retention, separate Runtime isolation, reentrant request IDs, disposal settlement, atomic reconnection, and edge-data save/restore. These tests exercise the app-scoped host, not a reusable Foldkit package.
+
+## Reference execution boundary
+
+`scripts/capture-graph-edit-reference.ts --checkout /tmp/flow-052-xyflow` verifies the exact pinned SHA and clean checkout, installs with the pinned upstream lockfile, builds the upstream React packages, mounts the real `@xyflow/react` instance API in Chromium, and captures two runs per invocation. Its normalized outputs matched across two invocations after adding the setter case. Captures cover collection addition; `setNodes` and `setEdges` on valid full collections with one node-data and one edge-data change; node/edge data merge and replacement; missing IDs; and descendant/incident-edge deletion. The setter probe preserves IDs and valid endpoints; it does not test removing nodes, creating dangling endpoints, or controlled setter behavior. `apps/vanilla/e2e/public-edits.e2e.ts` compares the captured valid setter output to Flow's public `setNodes`/`setEdges` result, projecting only ID, position, parent, and data fields; Flow's required top-level node label is excluded because the pinned API stores display labels in `data`. Normalization removes only renderer-measured node geometry and timestamps; array order and API values remain.
+
+## Conformity and deviations
+
+- **Conforming for captured subcases:** data updates merge and replace the supplied `data` object keys as captured; missing update IDs leave the collections unchanged; deleting `b` removes its descendant `b-child` and the three incident edges in the reported result and accepted collections. Evidence is the mounted pinned React instance probe and its twice-matched normalized fixture. This does not prove Flow parity for the rest of deletion or update semantics.
+- **Conforming for the valid setter subcase:** full valid `setNodes`/`setEdges` calls that preserve collection membership and endpoints produce the captured node-data and edge-data outputs after the documented label projection. The reference capture and direct Flow assertion do not establish setter behavior when membership changes.
+- **Intentionally different:** Flow requires JSON-object data and final-document integrity validation. These constraints are not relaxed by the selected reference cases; those rejection cases remain unverified against xyflow.
+- **Intentionally different:** protected descendants or incident edges produce a typed Flow conflict if deletion would invalidate references. The captured simple cascade had no protected descendants and does not test this policy.
+- **Unverified:** setter behavior that removes nodes, leaves invalid endpoints, or runs under controlled ownership remains unverified. Controlled proposal/acknowledgement, updater callback queue timing, deletion of protected objects, measured DOM/geometry parity, and edit cancellation during active gestures also have no captured runtime comparison.

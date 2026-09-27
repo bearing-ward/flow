@@ -1,6 +1,11 @@
-import { Schema as S } from 'effect'
+import { Effect, Schema as S } from 'effect'
 
 import { ActiveConnectionSchema } from './flow-connection.schema.ts'
+import {
+  FlowEditTransactionSchema,
+  FlowDeleteResultSchema,
+} from './flow-edit.schema.ts'
+import { prepareFlowEdit } from './flow-edit.ts'
 import { NodeExtentSchema } from './flow-node-extent.schema.ts'
 import {
   canReconnectEdge,
@@ -10,6 +15,7 @@ import { snapGroupDelta, snapPosition } from './flow-snap-grid.schema.ts'
 import type { SnapGrid } from './flow-snap-grid.schema.ts'
 import {
   FlowEdgeSchema,
+  FlowDocumentSchema,
   EdgeIdSchema,
   NodeIdSchema,
   NodeSizeSchema,
@@ -818,6 +824,12 @@ export const EdgeRemoveChangeSchema = S.Struct({
 
 export type EdgeRemoveChange = typeof EdgeRemoveChangeSchema.Type
 
+export const FlowEditProposalChangeSchema = S.Struct({
+  kind: S.Literal('edit-proposal'),
+  document: FlowDocumentSchema,
+  deletion: FlowDeleteResultSchema,
+})
+
 export const FlowChangeSchema = S.Union([
   NodePositionChangeSchema,
   NodePositionsChangeSchema,
@@ -830,6 +842,7 @@ export const FlowChangeSchema = S.Union([
   SelectionSetChangeSchema,
   EdgeReconnectChangeSchema,
   EdgeRemoveChangeSchema,
+  FlowEditProposalChangeSchema,
 ])
 
 export type FlowChange = typeof FlowChangeSchema.Type
@@ -1067,9 +1080,17 @@ export const SetViewportCommandSchema = S.Struct({
 
 export type SetViewportCommand = typeof SetViewportCommandSchema.Type
 
+export const EditTransactionCommandSchema = S.Struct({
+  kind: S.Literal('edit-transaction'),
+  transaction: FlowEditTransactionSchema,
+})
+
+export type EditTransactionCommand = typeof EditTransactionCommandSchema.Type
+
 export const FlowCommandSchema = S.Union([
   SetNodePositionCommandSchema,
   SetViewportCommandSchema,
+  EditTransactionCommandSchema,
 ])
 
 export type FlowCommand = typeof FlowCommandSchema.Type
@@ -1307,7 +1328,9 @@ export const moveSelectedNodes = (
   }
 }
 
-export const commandToChange = (command: FlowCommand): FlowChange => {
+export const commandToChange = (
+  command: Exclude<FlowCommand, EditTransactionCommand>
+): FlowChange => {
   switch (command.kind) {
     case 'set-node-position': {
       return {
@@ -1328,6 +1351,21 @@ export const commandToChange = (command: FlowCommand): FlowChange => {
     }
   }
 }
+
+/** Resolve a command that needs the accepted document before it can become a semantic change. */
+export const prepareFlowCommand = (
+  document: FlowDocument,
+  command: FlowCommand
+) =>
+  command.kind === 'edit-transaction'
+    ? prepareFlowEdit(document, command.transaction).pipe(
+        Effect.map(({ document: candidate, deletion }) => ({
+          kind: 'edit-proposal' as const,
+          document: candidate,
+          deletion,
+        }))
+      )
+    : Effect.succeed(commandToChange(command))
 
 export const applyNodePositionChange = (
   document: FlowDocument,

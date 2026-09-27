@@ -221,16 +221,16 @@ Source: [current ReactFlowInstance](https://reactflow.dev/api-reference/types/re
 | getInternalNode | gap | gap | gap | gap | Private internal-store data intentionally excluded. |
 | getEdges | FlowDocumentSchema.edges | `getEdges()` returns complete accepted edges | useFlow edges computed | selectEdges / snapshot request | Host reads include hidden and culled edges; Foldkit E2E exercises real Runtime ports. |
 | getEdge | FlowDocumentSchema edge lookup | `getEdge(id)` returns edge or undefined | lookup function | selectEdge / optional snapshot-request result | Missing IDs return undefined; Foldkit E2E exercises real Runtime ports. |
-| setNodes | commands/change ops | dispatch/update partial | dispatch/updateDocument | DispatchCommand/ReplaceDocument | Setter callback shape differs. |
-| addNodes | gap helper | gap | gap | gap | Could compose replacement; helper absent. |
-| setEdges | commands/change ops | dispatch/update partial | dispatch/updateDocument | DispatchCommand/ReplaceDocument | Setter callback shape differs. |
-| addEdges | edge-add change | dispatch proposal | dispatch/publish | DispatchCommand proposal | Proposal exists; imperative helper absent. |
+| setNodes | edit transaction | `setNodes` | `useFlow().setNodes` | typed edit request | Valid full-collection field-update subcase matches the pinned capture; membership changes, dangling endpoints, and controlled setter behavior remain unverified. |
+| addNodes | edit transaction | `addNodes` | `useFlow().addNodes` | typed edit request | Append; duplicate IDs reject atomically. |
+| setEdges | edit transaction | `setEdges` | `useFlow().setEdges` | typed edit request | Valid full-collection field-update subcase matches the pinned capture; full candidate validation rejects dangling endpoints. |
+| addEdges | edit transaction | `addEdges` | `useFlow().addEdges` | typed edit request | Append with duplicate-ID validation; distinct-ID parallel edges permitted. |
 | toObject | persistence envelope differs | persistence APIs | gap | gap | Serialization compatibility separate plan. |
-| deleteElements | delete commands partial | dispatch | dispatch | DispatchCommand | Async result/options differ. |
-| updateNode | node replacement ops | gap helper | updateDocument | ReplaceDocument | Named helper absent. |
-| updateNodeData | node data only | gap | gap | gap | Core helper follow-up. |
-| updateEdge | edge replacement ops | gap helper | updateDocument | ReplaceDocument | Named helper absent. |
-| updateEdgeData | no edge data field | gap | gap | gap | Requires schema evolution. |
+| deleteElements | cascading edit transaction | async deletion result | async deletion result | request/result ports | Requested nodes, descendants, and incident edges; protected references conflict; controlled result means proposal only. |
+| updateNode | edit transaction | `updateNode` | `useFlow().updateNode` | typed edit request | Shallow patch by default; replacement preserves ID and validates fully. |
+| updateNodeData | JSON-object edit | `updateNodeData` | `useFlow().updateNodeData` | typed edit request | Shallow merge by default; replacement drops absent keys. |
+| updateEdge | edit transaction | `updateEdge` | `useFlow().updateEdge` | typed edit request | Shallow patch by default; replacement preserves ID and validates fully. |
+| updateEdgeData | JSON-object edit | `updateEdgeData` | `useFlow().updateEdgeData` | typed edit request | FlowEdge.data is additive in version-1 persistence. |
 | getNodesBounds | graphBounds/fit partial | fitView partial | gap | gap | Return/signature differs; Plan 046. |
 | getHandleConnections | graph query partial | partial core query | gap | partial graph query | Result contract not matched. |
 | getNodeConnections | graph query partial | partial core query | gap | partial graph query | Result contract not matched. |

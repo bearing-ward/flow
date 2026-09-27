@@ -1,0 +1,440 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "normalization": "timestamps and renderer-measured node geometry excluded; API outputs retain array order",
+    "capturedAt": "2026-09-27T15:27:46.028Z"
+  },
+  "cases": {
+    "initial": {
+      "nodes": [
+        {
+          "id": "a",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "data": {
+            "label": "A",
+            "nested": {
+              "keep": 1
+            }
+          }
+        },
+        {
+          "id": "b",
+          "position": {
+            "x": 100,
+            "y": 0
+          },
+          "data": {
+            "label": "B"
+          }
+        },
+        {
+          "id": "b-child",
+          "parentId": "b",
+          "position": {
+            "x": 0,
+            "y": 60
+          },
+          "data": {
+            "label": "B child"
+          }
+        },
+        {
+          "id": "c",
+          "position": {
+            "x": 200,
+            "y": 0
+          },
+          "data": {
+            "label": "C"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "data": {
+            "label": "AB",
+            "nested": {
+              "keep": 1
+            }
+          }
+        },
+        {
+          "id": "bc",
+          "source": "b",
+          "target": "c"
+        },
+        {
+          "id": "child-c",
+          "source": "b-child",
+          "target": "c"
+        }
+      ]
+    },
+    "add": {
+      "nodes": [
+        {
+          "id": "a",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "data": {
+            "label": "A",
+            "nested": {
+              "keep": 1
+            }
+          }
+        },
+        {
+          "id": "b",
+          "position": {
+            "x": 100,
+            "y": 0
+          },
+          "data": {
+            "label": "B"
+          }
+        },
+        {
+          "id": "b-child",
+          "parentId": "b",
+          "position": {
+            "x": 0,
+            "y": 60
+          },
+          "data": {
+            "label": "B child"
+          }
+        },
+        {
+          "id": "c",
+          "position": {
+            "x": 200,
+            "y": 0
+          },
+          "data": {
+            "label": "C"
+          }
+        },
+        {
+          "id": "d",
+          "position": {
+            "x": 300,
+            "y": 0
+          },
+          "data": {
+            "label": "D"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "data": {
+            "label": "AB",
+            "nested": {
+              "keep": 1
+            }
+          }
+        },
+        {
+          "id": "bc",
+          "source": "b",
+          "target": "c"
+        },
+        {
+          "id": "child-c",
+          "source": "b-child",
+          "target": "c"
+        },
+        {
+          "id": "cd",
+          "source": "c",
+          "target": "d",
+          "data": {
+            "label": "CD"
+          }
+        }
+      ]
+    },
+    "setters": {
+      "nodes": [
+        {
+          "id": "a",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "data": {
+            "label": "A",
+            "nested": {
+              "keep": 1
+            }
+          }
+        },
+        {
+          "id": "b",
+          "position": {
+            "x": 100,
+            "y": 0
+          },
+          "data": {
+            "label": "B"
+          }
+        },
+        {
+          "id": "b-child",
+          "parentId": "b",
+          "position": {
+            "x": 0,
+            "y": 60
+          },
+          "data": {
+            "label": "B child"
+          }
+        },
+        {
+          "id": "c",
+          "position": {
+            "x": 200,
+            "y": 0
+          },
+          "data": {
+            "label": "C set"
+          }
+        },
+        {
+          "id": "d",
+          "position": {
+            "x": 300,
+            "y": 0
+          },
+          "data": {
+            "label": "D"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "data": {
+            "label": "AB",
+            "nested": {
+              "keep": 1
+            }
+          }
+        },
+        {
+          "id": "bc",
+          "source": "b",
+          "target": "c",
+          "data": {
+            "label": "BC set"
+          }
+        },
+        {
+          "id": "child-c",
+          "source": "b-child",
+          "target": "c"
+        },
+        {
+          "id": "cd",
+          "source": "c",
+          "target": "d",
+          "data": {
+            "label": "CD"
+          }
+        }
+      ]
+    },
+    "merge": {
+      "node": {
+        "id": "a",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "label": "A merged",
+          "extra": true
+        }
+      },
+      "edge": {
+        "id": "ab",
+        "source": "a",
+        "target": "b",
+        "data": {
+          "label": "AB merged",
+          "extra": true
+        }
+      }
+    },
+    "replace": {
+      "node": {
+        "id": "a",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "label": "A replaced"
+        }
+      },
+      "edge": {
+        "id": "ab",
+        "source": "a",
+        "target": "b",
+        "data": {
+          "label": "AB replaced"
+        }
+      }
+    },
+    "missing": {
+      "nodes": [
+        {
+          "id": "a",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "data": {
+            "label": "A replaced"
+          }
+        },
+        {
+          "id": "b",
+          "position": {
+            "x": 100,
+            "y": 0
+          },
+          "data": {
+            "label": "B"
+          }
+        },
+        {
+          "id": "b-child",
+          "parentId": "b",
+          "position": {
+            "x": 0,
+            "y": 60
+          },
+          "data": {
+            "label": "B child"
+          }
+        },
+        {
+          "id": "c",
+          "position": {
+            "x": 200,
+            "y": 0
+          },
+          "data": {
+            "label": "C set"
+          }
+        },
+        {
+          "id": "d",
+          "position": {
+            "x": 300,
+            "y": 0
+          },
+          "data": {
+            "label": "D"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "data": {
+            "label": "AB replaced"
+          }
+        },
+        {
+          "id": "bc",
+          "source": "b",
+          "target": "c",
+          "data": {
+            "label": "BC set"
+          }
+        },
+        {
+          "id": "child-c",
+          "source": "b-child",
+          "target": "c"
+        },
+        {
+          "id": "cd",
+          "source": "c",
+          "target": "d",
+          "data": {
+            "label": "CD"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "result": {
+        "nodes": ["b", "b-child"],
+        "edges": ["ab", "bc", "child-c"]
+      },
+      "nodes": [
+        {
+          "id": "a",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "data": {
+            "label": "A replaced"
+          }
+        },
+        {
+          "id": "c",
+          "position": {
+            "x": 200,
+            "y": 0
+          },
+          "data": {
+            "label": "C set"
+          }
+        },
+        {
+          "id": "d",
+          "position": {
+            "x": 300,
+            "y": 0
+          },
+          "data": {
+            "label": "D"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "cd",
+          "source": "c",
+          "target": "d",
+          "data": {
+            "label": "CD"
+          }
+        }
+      ]
+    }
+  }
+}

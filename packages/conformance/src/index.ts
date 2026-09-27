@@ -1,10 +1,12 @@
 import {
+  FlowEditTransactionSchema,
   FlowDocumentSchema,
   FlowEdgeSchema,
   FlowNodeSchema,
   FlowSnapshotSchema,
   FlowStateChangeSchema,
   ViewportSchema,
+  FlowEditErrorSchema,
 } from '@flow/core'
 import { Schema } from 'effect'
 
@@ -186,6 +188,62 @@ export const PublicStateContractFixtureSchema = Schema.Struct({
     acceptedStatesAfterDestroy: Schema.Literal(0),
   }),
 })
+
+export const PublicEditContractFixtureSchema = Schema.Struct({
+  version: Schema.Literal(1),
+  id: Schema.String,
+  description: Schema.String,
+  documentMode: Schema.Literals(['controlled', 'uncontrolled']),
+  document: FlowDocumentSchema,
+  transaction: FlowEditTransactionSchema,
+  expected: Schema.Struct({
+    document: FlowDocumentSchema,
+    deletedNodeIds: Schema.Array(Schema.String),
+    deletedEdgeIds: Schema.Array(Schema.String),
+    error: Schema.optional(FlowEditErrorSchema),
+  }),
+})
+
+export type PublicEditContractFixture =
+  typeof PublicEditContractFixtureSchema.Encoded
+
+export const PublicEditQueuedDisposalSchema = Schema.Struct({
+  version: Schema.Literal(1),
+  id: Schema.Literal('queued-disposal'),
+  description: Schema.String,
+  document: FlowDocumentSchema,
+  trigger: FlowEditTransactionSchema,
+  queued: FlowEditTransactionSchema,
+  expected: Schema.Struct({
+    triggerOutcome: Schema.Literal('accepted'),
+    queuedOutcome: Schema.Literal('disposed'),
+    lateNotifications: Schema.Literal(0),
+  }),
+})
+
+export type PublicEditQueuedDisposal =
+  typeof PublicEditQueuedDisposalSchema.Encoded
+
+export const validatePublicEditContractFixtures = (
+  fixtures: readonly PublicEditContractFixture[]
+): void => {
+  const fixtureIds = new Set<string>()
+
+  for (const fixture of fixtures) {
+    if (
+      fixture.version !== 1 ||
+      fixture.id.length === 0 ||
+      fixtureIds.has(fixture.id) ||
+      fixture.transaction.operations.length === 0
+    ) {
+      throw new Error(
+        `Invalid or duplicate public edit fixture id: ${fixture.id}`
+      )
+    }
+
+    fixtureIds.add(fixture.id)
+  }
+}
 
 export type PublicStateContractFixture =
   typeof PublicStateContractFixtureSchema.Encoded

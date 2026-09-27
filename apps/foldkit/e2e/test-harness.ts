@@ -1,19 +1,26 @@
-import { FlowCommandSchema, decodeFlowDocument } from '@flow/core'
+import {
+  FlowCommandSchema,
+  FlowEditDisposedSchema,
+  decodeFlowDocument,
+} from '@flow/core'
 import type {
   Viewport,
   FlowChangeSchema,
   FlowDocumentSchema,
   FlowStateChangeSchema,
+  FlowEditTransactionSchema,
 } from '@flow/core'
 import { Effect, Schema } from 'effect'
 import { Runtime } from 'foldkit'
 
 import type {
   ConformanceFixture,
+  PublicEditQueuedDisposal,
   PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
 import { createProgram, HostAction } from '../src/application.ts'
 import type {
+  EditResponse,
   ports,
   SnapshotRequest,
   SnapshotResponseSchema,
@@ -52,10 +59,26 @@ interface FoldkitHarness {
     id: PublicProgramId,
     command: typeof FlowCommandSchema.Encoded
   ) => void
+  requestPublicEdit: (
+    id: PublicProgramId,
+    transaction: typeof FlowEditTransactionSchema.Encoded
+  ) => Promise<EditResponse>
+  exercisePublicEditReentrancy: () => Promise<{
+    readonly responseOrder: readonly string[]
+    readonly firstCount: number
+    readonly secondCount: number
+    readonly finalCount: number
+  }>
+  exercisePublicEditDisposal: (scenario: PublicEditQueuedDisposal) => Promise<{
+    readonly responses: readonly EditResponse[]
+    readonly pendingCount: number
+    readonly lateNotifications: number
+  }>
   publicChanges: (id: PublicProgramId) => readonly EncodedFlowChange[]
   publicAcceptedStates: (
     id: PublicProgramId
   ) => readonly EncodedFlowStateChange[]
+  publicEventOrder: (id: PublicProgramId) => readonly string[]
   readMountedState: (
     query: Omit<SnapshotRequest, 'requestId'>
   ) => Promise<PublicStateRead>
@@ -110,10 +133,16 @@ const publicChangeEvents = new Map<PublicProgramId, EncodedFlowChange[]>()
 
 const publicStateEvents = new Map<PublicProgramId, EncodedFlowStateChange[]>()
 
+const publicEventOrders = new Map<PublicProgramId, string[]>()
+
 const pendingSnapshots = new Map<
   string,
   (response: EncodedSnapshotResponse) => void
 >()
+
+const pendingEdits = new Map<string, (response: EditResponse) => void>()
+
+let nextEditRequestId = 1
 
 let nextSnapshotRequestId = 1
 
@@ -262,15 +291,22 @@ const publicProgram = (
   publicHandles.set(id, active)
   publicChangeEvents.set(id, [])
   publicStateEvents.set(id, [])
+  publicEventOrders.set(id, [])
   active.ports.changes.subscribe((change) => {
     publicChangeEvents.get(id)?.push(change)
+    publicEventOrders.get(id)?.push(`change:${change.kind}`)
   })
   active.ports.acceptedStates.subscribe((change) => {
     publicStateEvents.get(id)?.push(change)
+    publicEventOrders.get(id)?.push(`state:${change.cause}`)
   })
   active.ports.snapshots.subscribe((response) => {
     pendingSnapshots.get(response.requestId)?.(response)
     pendingSnapshots.delete(response.requestId)
+  })
+  active.ports.editResults.subscribe((response) => {
+    pendingEdits.get(response.requestId)?.(response)
+    pendingEdits.delete(response.requestId)
   })
 
   return active
@@ -284,7 +320,9 @@ const startPublicState = async (): Promise<void> => {
   publicHandles.clear()
   publicChangeEvents.clear()
   publicStateEvents.clear()
+  publicEventOrders.clear()
   pendingSnapshots.clear()
+  pendingEdits.clear()
 
   const container = document.querySelector<HTMLElement>('#app')
 
@@ -388,6 +426,157 @@ const dispatchPublicCommand = (
   )
 }
 
+const requestPublicEdit = (
+  id: PublicProgramId,
+  transaction: typeof FlowEditTransactionSchema.Encoded
+): Promise<EditResponse> => {
+  const active = publicHandles.get(id)
+
+  if (active === undefined) {
+    throw new Error(`Missing ${id} Foldkit program`)
+  }
+
+  const requestId = `edit-${nextEditRequestId}`
+  nextEditRequestId += 1
+  const { promise, resolve } = Promise.withResolvers<EditResponse>()
+  pendingEdits.set(requestId, resolve)
+  active.ports.editRequests.send({ requestId, transaction })
+
+  return promise
+}
+
+const disposePublicState = (): void => {
+  for (const [requestId, resolve] of pendingEdits) {
+    resolve({ requestId, error: FlowEditDisposedSchema.make({}) })
+  }
+
+  pendingEdits.clear()
+
+  for (const active of publicHandles.values()) {
+    active.dispose()
+  }
+}
+
+const exercisePublicEditReentrancy = async (): Promise<{
+  readonly responseOrder: readonly string[]
+  readonly firstCount: number
+  readonly secondCount: number
+  readonly finalCount: number
+}> => {
+  const active = publicHandles.get('uncontrolled')
+
+  if (active === undefined) {
+    throw new Error('Missing uncontrolled Foldkit program')
+  }
+
+  const responseOrder: string[] = []
+  active.ports.editResults.subscribe(({ requestId }) => {
+    responseOrder.push(requestId)
+  })
+
+  let queued: Promise<EditResponse> | undefined
+
+  const stopListening = active.ports.changes.subscribe((change) => {
+    if (
+      change.kind === 'edit-proposal' &&
+      Number(change.document.nodes[0]?.data?.count ?? 0) === 1 &&
+      queued === undefined
+    ) {
+      queued = requestPublicEdit('uncontrolled', {
+        operations: [
+          {
+            kind: 'update-node-data',
+            nodeId: 'visible',
+            data: { count: 2 },
+          },
+        ],
+      })
+    }
+  })
+
+  const first = await requestPublicEdit('uncontrolled', {
+    operations: [
+      {
+        kind: 'update-node-data',
+        nodeId: 'visible',
+        data: { count: 1 },
+      },
+    ],
+  })
+
+  const queuedRequest = queued
+  stopListening()
+
+  if (queuedRequest === undefined) {
+    throw new Error('Accepted-state listener did not enqueue the second edit')
+  }
+
+  const second = await queuedRequest
+  const snapshot = await requestSnapshot('uncontrolled', { nodeId: 'visible' })
+
+  if (!('result' in first) || !('result' in second)) {
+    throw new Error('Reentrant Foldkit edit request returned a typed failure')
+  }
+
+  return {
+    responseOrder,
+    firstCount: Number(first.result.document.nodes[0]?.data?.count ?? 0),
+    secondCount: Number(second.result.document.nodes[0]?.data?.count ?? 0),
+    finalCount: Number(snapshot.node?.data?.count ?? 0),
+  }
+}
+
+const exercisePublicEditDisposal = async (
+  scenario: PublicEditQueuedDisposal
+): Promise<{
+  readonly responses: readonly EditResponse[]
+  readonly pendingCount: number
+  readonly lateNotifications: number
+}> => {
+  replacePublicDocument('uncontrolled', scenario.document)
+  await nextAnimationFrame()
+  await nextAnimationFrame()
+
+  const active = publicHandles.get('uncontrolled')
+
+  if (active === undefined) {
+    throw new Error('Missing uncontrolled Foldkit program')
+  }
+
+  let reentrant: Promise<EditResponse> | undefined
+  let lateNotifications = 0
+  let disposed = false
+
+  const stopAccepted = active.ports.acceptedStates.subscribe(() => {
+    if (disposed) {
+      lateNotifications += 1
+    }
+  })
+
+  const stopListening = active.ports.editResults.subscribe((response) => {
+    if ('result' in response && reentrant === undefined) {
+      reentrant = requestPublicEdit('uncontrolled', scenario.queued)
+      disposed = true
+      disposePublicState()
+    }
+  })
+
+  const first = requestPublicEdit('uncontrolled', scenario.trigger)
+
+  const firstResponse = await first
+  const reentrantRequest = reentrant
+
+  if (reentrantRequest === undefined) {
+    throw new Error('Edit-result listener did not enqueue the second edit')
+  }
+
+  const responses = [firstResponse, await reentrantRequest]
+  stopListening()
+  stopAccepted()
+
+  return { responses, pendingCount: pendingEdits.size, lateNotifications }
+}
+
 const exercisePublicReentrancy = (): Promise<readonly string[]> => {
   const active = publicHandles.get('uncontrolled')
 
@@ -463,12 +652,6 @@ const settlePublicState = async (): Promise<void> => {
   await nextAnimationFrame()
 }
 
-const disposePublicState = (): void => {
-  for (const active of publicHandles.values()) {
-    active.dispose()
-  }
-}
-
 const probeAfterPublicDisposal = async (id: PublicProgramId) => {
   const active = publicHandles.get(id)
 
@@ -507,8 +690,12 @@ window.__flowFoldkitTest = {
   replacePublicDocument,
   replacePublicViewport,
   dispatchPublicCommand,
+  requestPublicEdit,
+  exercisePublicEditReentrancy,
+  exercisePublicEditDisposal,
   publicChanges: (id) => publicChangeEvents.get(id) ?? [],
   publicAcceptedStates: (id) => publicStateEvents.get(id) ?? [],
+  publicEventOrder: (id) => publicEventOrders.get(id) ?? [],
   readMountedState,
   mountedAcceptedStates: () => mountedAcceptedStateEvents,
   exercisePublicReentrancy,

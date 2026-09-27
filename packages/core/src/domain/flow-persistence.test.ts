@@ -24,6 +24,7 @@ describe('saved flow documents', () => {
             selected: true,
             draggable: false,
             ariaDescription: 'Fixed group',
+            deletable: false,
           },
           {
             id: 'child',
@@ -46,6 +47,7 @@ describe('saved flow documents', () => {
             type: 'custom',
             path: 'bezier',
             selected: true,
+            data: { config: { retries: [1, 2] } },
           },
         ],
       })
@@ -82,6 +84,7 @@ describe('saved flow documents', () => {
       expect.objectContaining({
         draggable: false,
         ariaDescription: 'Fixed group',
+        deletable: false,
       }),
       false,
     ])
@@ -106,6 +109,9 @@ describe('saved flow documents', () => {
       true,
       true,
     ])
+    expect(savedEdge?.data).toStrictEqual({ config: { retries: [1, 2] } })
+    expect(loaded.edges[0]?.data).toStrictEqual({ config: { retries: [1, 2] } })
+    expect(loaded.nodes[0]?.deletable).toBeFalsy()
   })
 
   it('rejects unknown versions and invalid parent graphs', () => {

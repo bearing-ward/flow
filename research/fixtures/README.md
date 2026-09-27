@@ -1,5 +1,7 @@
 # Behavior fixtures
 
+`graph-edit-reference.json` records a twice-reproducible mounted `@xyflow/react` instance probe at the pinned SHA. Rebuild and capture it from a disposable full checkout with `bun run scripts/capture-graph-edit-reference.ts --checkout /absolute/path/to/xyflow`. The script refuses a different SHA or a dirty checkout, uses the upstream pnpm lockfile, and writes the capture here. Its current proof boundary is collection addition; valid full-collection `setNodes`/`setEdges` calls that update one node and one edge data value; node/edge data merge and replacement; missing update IDs; and descendant/incident-edge deletion. `apps/vanilla/e2e/public-edits.e2e.ts` compares that valid setter output to Flow after projecting required top-level node labels out and retaining IDs, positions, parents, and data. Setter cases do not test removing nodes, dangling endpoints, or controlled ownership. Controlled acknowledgement, protected deletion, and updater queue scheduling remain unverified. The metadata timestamp is outside `cases`; renderer-measured node geometry and timestamps are normalized away.
+
 `reference-captures.json` stores three browser-observed behaviors from xyflow commit `0a1f9575b25679f2880175de8d3eae21aedde921`. The immutable imported tree omits the `tooling/` workspace and built package outputs, so it cannot start by itself. The captures were run from a disposable full checkout at the exact pinned commit; its install and build did not change `research/artifacts/`.
 
 Reproduce the first two captures from that full checkout with:
@@ -39,6 +41,10 @@ The shared rendering suite has eight scenarios. The same fixture definitions run
 | `viewport-culling` | Viewport change culls one node and reveals the other | Unverified |
 
 The unit tests keep the fixture ids unique and versioned, reject invalid duplicate-node documents, and validate the three pinned captures, including the repeated normalized resize output. Do not extend this shared set with an interaction that only one adapter currently tests.
+
+## Public-edit fixtures
+
+`public-edit-contract.json` is a versioned Flow-authored set of fixed inputs and expected candidate documents or errors. The conformance unit test schema-checks the file and runs all five transactions through the shared core preparation function. Data merge/replacement, cascading deletion, protected-edge conflict, protected-descendant conflict, and invalid-endpoint rollback also run through the production JavaScript controller, Vue composable, and Foldkit Runtime ports in each host's `public-edits.e2e.ts`. The protected-descendant case requests deletion of a parent containing a `deletable: false` child with an incident edge; all hosts assert the typed conflict and unchanged complete accepted graph. The host tests compare candidate or accepted documents and typed errors; the data edit additionally verifies observer ordering and rendered node identity/IDs for each production host. Vanilla also verifies rejected edits leave events and DOM unchanged. Edge JSON data save/restore is verified in each playground. The shared `queuedDisposal` scenario sends its trigger and queued transaction through each production host; all three assert trigger acceptance, disposed settlement for queued work, and zero late notifications. Host-native result shapes remain covered by their lifecycle E2Es alongside controlled acknowledgement, Vue canvas isolation/split-model cases, and Foldkit runtime isolation/reentrant requests.
 
 ## Shared public-state fixtures
 

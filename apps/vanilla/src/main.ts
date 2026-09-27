@@ -10,6 +10,7 @@ import {
   applySelectionSetChange,
   decodeFlowDocument,
   decodeSavedFlowDocument,
+  FlowEditErrorSchema,
   getIncomers,
   getOutgoers,
   getConnectedEdges,
@@ -17,7 +18,13 @@ import {
   ViewportSchema,
   simpleBezierEdgePath,
 } from '@flow/core'
-import type { FlowChange, FlowDocument, FlowEdge, FlowNode } from '@flow/core'
+import type {
+  FlowChange,
+  FlowDocument,
+  FlowEdge,
+  FlowNode,
+  FlowSnapshot,
+} from '@flow/core'
 import { Effect, ManagedRuntime, Schema } from 'effect'
 
 import './style.css'
@@ -322,6 +329,10 @@ const applyDocumentChange = (
       return document
     }
 
+    case 'edit-proposal': {
+      return change.document
+    }
+
     default: {
       const exhaustive: never = change
 
@@ -460,6 +471,13 @@ const program = Effect.gen(function* program() {
   statePanel.innerHTML = `<h2>State and persistence</h2>
     <label>Node label <input aria-label="Node label" value="Validate"></label>
     <button type="button" data-state="label">Update label</button>
+    <button type="button" data-state="add">Add node</button>
+    <button type="button" data-state="node-data">Update node data</button>
+    <button type="button" data-state="edge-data">Update edge data</button>
+    <button type="button" data-state="remove">Remove added node</button>
+    <button type="button" data-state="add-protected">Add protected node</button>
+    <button type="button" data-state="protected-delete">Try protected delete</button>
+    <button type="button" data-state="reconnect-middle">Delete middle and reconnect</button>
     <button type="button" data-state="hidden">Hide selected node</button>
     <button type="button" data-state="inspect">Inspect graph</button>
     <button type="button" data-state="save">Save snapshot</button>
@@ -506,6 +524,10 @@ const program = Effect.gen(function* program() {
         selected: node?.label,
         isSelected: node?.selected === true,
         hidden: node?.hidden === true,
+        nodeData: host.getNode('added-node')?.data,
+        protectedNode: host.getNode('protected-node')?.id,
+        edgeData: snapshot.document.edges.find((edge) => edge.id === 'straight')
+          ?.data,
         viewport: host.getViewport(),
         incomers: incomers.map((item) => item.id),
         outgoers: outgoers.map((item) => item.id),
@@ -513,7 +535,225 @@ const program = Effect.gen(function* program() {
     )
   }
 
-  statePanel.addEventListener('click', (event) => {
+  const handleAdditionalGraphEditAction = async (
+    action: string | undefined
+  ): Promise<boolean> => {
+    switch (action) {
+      case 'node-data': {
+        const result = await host.applyEdit({
+          operations: [
+            {
+              kind: 'update-node-data',
+              nodeId: 'added-node',
+              data: { editedInPlayground: true },
+            },
+          ],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState(
+          `Updated added-node data; ${JSON.stringify(host.getNode('added-node')?.data)}`
+        )
+
+        return true
+      }
+
+      case 'add-protected': {
+        const result = await host.applyEdit({
+          operations: [
+            {
+              kind: 'add-nodes',
+              nodes: [
+                {
+                  id: 'protected-node',
+                  label: 'Protected',
+                  position: { x: 620, y: 300 },
+                  deletable: false,
+                },
+              ],
+            },
+          ],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState('Added protected node')
+
+        return true
+      }
+
+      case 'protected-delete': {
+        try {
+          await host.applyEdit({
+            operations: [
+              { kind: 'delete-elements', nodeIds: ['protected-node'] },
+            ],
+          })
+          showState('Protected delete unexpectedly succeeded')
+        } catch (error) {
+          showState(Schema.decodeUnknownSync(FlowEditErrorSchema)(error)._tag)
+        }
+
+        return true
+      }
+
+      default: {
+        return false
+      }
+    }
+  }
+
+  const handleGraphEditAction = async (
+    action: string | undefined,
+    snapshot: FlowSnapshot
+  ): Promise<boolean> => {
+    switch (action) {
+      case 'label': {
+        const label = stateInput?.value ?? ''
+
+        const result = await host.applyEdit({
+          operations: [
+            { kind: 'update-node', nodeId: selectedId, patch: { label } },
+          ],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState(`Updated ${selectedId} to ${label}`)
+
+        return true
+      }
+
+      case 'add': {
+        if (host.getNode('added-node') !== undefined) {
+          showState('Added node already exists')
+
+          return true
+        }
+
+        const result = await host.applyEdit({
+          operations: [
+            {
+              kind: 'add-nodes',
+              nodes: [
+                {
+                  id: 'added-node',
+                  label: 'Added',
+                  position: { x: 560, y: 300 },
+                  data: { source: 'playground' },
+                },
+              ],
+            },
+          ],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState(`Added node; accepted nodes=${host.getNodes().length}`)
+
+        return true
+      }
+
+      case 'edge-data': {
+        const edge = snapshot.document.edges.find(
+          (item) => item.id === 'straight'
+        )
+
+        if (edge === undefined) {
+          showState('No edge is available to update')
+
+          return true
+        }
+
+        const result = await host.applyEdit({
+          operations: [
+            {
+              kind: 'update-edge-data',
+              edgeId: edge.id,
+              data: { editedInPlayground: true },
+            },
+          ],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState(
+          `Updated ${edge.id} data; ${JSON.stringify(host.getEdge(edge.id)?.data)}`
+        )
+
+        return true
+      }
+
+      case 'remove': {
+        const result = await host.applyEdit({
+          operations: [{ kind: 'delete-elements', nodeIds: ['added-node'] }],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState(
+          `Removed nodes=${result.deletion.deletedNodeIds.join(',')}; edges=${result.deletion.deletedEdgeIds.join(',')}`
+        )
+
+        return true
+      }
+
+      case 'reconnect-middle': {
+        const middle = snapshot.document.nodes.find(
+          (node) => node.id === 'transform'
+        )
+
+        if (middle === undefined) {
+          showState('Middle node is already removed; reset to try again')
+
+          return true
+        }
+
+        const incoming = getIncomers(
+          middle,
+          snapshot.document.nodes,
+          snapshot.document.edges
+        )
+
+        const outgoing = getOutgoers(
+          middle,
+          snapshot.document.nodes,
+          snapshot.document.edges
+        )
+
+        const edges = incoming.flatMap((sourceNode) =>
+          outgoing.map((target) => ({
+            id: `reconnected-${sourceNode.id}-${target.id}`,
+            source: sourceNode.id,
+            target: target.id,
+            path: 'bezier' as const,
+          }))
+        )
+
+        const result = await host.applyEdit({
+          operations: [
+            { kind: 'delete-elements', nodeIds: [middle.id] },
+            { kind: 'add-edges', edges },
+          ],
+        })
+
+        currentDocument = result.document
+        mainDocument = currentDocument
+        showState(
+          `Removed ${middle.id}; connected ${incoming.map(({ id }) => id).join(', ')} to ${outgoing.map(({ id }) => id).join(', ')}`
+        )
+
+        return true
+      }
+
+      default: {
+        return false
+      }
+    }
+  }
+
+  statePanel.addEventListener('click', async (event) => {
     const button =
       event.target instanceof HTMLElement
         ? event.target.closest<HTMLButtonElement>('button[data-state]')
@@ -523,23 +763,17 @@ const program = Effect.gen(function* program() {
       return
     }
 
+    if (await handleAdditionalGraphEditAction(button.dataset.state)) {
+      return
+    }
+
     const snapshot = host.getSnapshot()
 
-    switch (button.dataset.state) {
-      case 'label': {
-        const label = stateInput?.value ?? ''
-        currentDocument = {
-          ...snapshot.document,
-          nodes: snapshot.document.nodes.map((node) =>
-            node.id === selectedId ? { ...node, label } : node
-          ),
-        }
-        host.update(currentDocument)
-        mainDocument = currentDocument
-        showState(`Updated ${selectedId} to ${label}`)
-        break
-      }
+    if (await handleGraphEditAction(button.dataset.state, snapshot)) {
+      return
+    }
 
+    switch (button.dataset.state) {
       case 'hidden': {
         const target = host.getNode(selectedId)
 
@@ -593,6 +827,11 @@ const program = Effect.gen(function* program() {
             node.id === selectedId
               ? { ...node, label: 'Changed after save', hidden: false }
               : node
+          ),
+          edges: snapshot.document.edges.map((edge) =>
+            edge.id === 'straight'
+              ? { ...edge, data: { changedAfterSave: true } }
+              : edge
           ),
         }
         host.update(currentDocument)

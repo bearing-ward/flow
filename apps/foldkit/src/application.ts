@@ -3,6 +3,9 @@ import {
   FlowCommandSchema,
   FlowDocumentSchema,
   FlowEdgeSchema,
+  FlowEditErrorSchema,
+  FlowEditResultSchema,
+  FlowEditTransactionSchema,
   FlowNodeSchema,
   FlowSnapshotSchema,
   FlowStateChangeSchema,
@@ -37,6 +40,24 @@ export const SnapshotRequestSchema = Schema.Struct({
   edgeId: Schema.optional(Schema.String),
 })
 
+export const EditRequestSchema = Schema.Struct({
+  requestId: Schema.String,
+  transaction: FlowEditTransactionSchema,
+})
+
+export const EditResponseSchema = Schema.Union([
+  Schema.Struct({
+    requestId: Schema.String,
+    result: FlowEditResultSchema,
+  }),
+  Schema.Struct({
+    requestId: Schema.String,
+    error: FlowEditErrorSchema,
+  }),
+])
+
+export type EditResponse = typeof EditResponseSchema.Encoded
+
 export type SnapshotRequest = typeof SnapshotRequestSchema.Type
 
 export const SnapshotResponseSchema = Schema.Struct({
@@ -52,8 +73,10 @@ export const AppMessage = FoldMessage.defineMessageUnion({
   GraphMessage: { message: Graph.Message },
   HostAction: { action: HostAction },
   SnapshotRequest: { request: SnapshotRequestSchema },
+  EditRequest: { request: EditRequestSchema },
   SnapshotPublished: {},
   ChangePublished: {},
+  EditPublished: {},
 })
 
 export type AppMessageData = typeof AppMessage.Type
@@ -62,11 +85,13 @@ export const ports = {
   inbound: {
     actions: Port.inbound(HostAction),
     snapshotRequests: Port.inbound(SnapshotRequestSchema),
+    editRequests: Port.inbound(EditRequestSchema),
   },
   outbound: {
     changes: Port.outbound(FlowChangeSchema),
     snapshots: Port.outbound(SnapshotResponseSchema),
     acceptedStates: Port.outbound(FlowStateChangeSchema),
+    editResults: Port.outbound(EditResponseSchema),
   },
 }
 
@@ -106,6 +131,15 @@ const RespondSnapshot = Command.define('RespondFlowSnapshot', {
     ),
 })
 
+const RespondEdit = Command.define('RespondFlowEdit', {
+  args: { response: EditResponseSchema },
+  messages: [AppMessage.EditPublished],
+  execute: ({ response }) =>
+    Port.emit(ports.outbound.editResults, response).pipe(
+      Effect.as(AppMessage.EditPublished())
+    ),
+})
+
 const graphFold = Update.foldChild<
   Model,
   AppMessageData,
@@ -138,6 +172,21 @@ const graphFold = Update.foldChild<
         model,
         commands: [PublishChanges({ acceptedState: change })],
       }),
+    EditCompleted:
+      ({ requestId, result, change, acceptedState }) =>
+      (model: Model) => ({
+        model,
+        commands: [
+          PublishChanges({ change, acceptedState }),
+          RespondEdit({ response: { requestId, result } }),
+        ],
+      }),
+    EditFailed:
+      ({ requestId, error }) =>
+      (model: Model) => ({
+        model,
+        commands: [RespondEdit({ response: { requestId, error } })],
+      }),
   }),
 })
 
@@ -148,6 +197,9 @@ const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
   snapshotRequests: Port.subscription(
     ports.inbound.snapshotRequests,
     (request) => AppMessage.SnapshotRequest({ request })
+  ),
+  editRequests: Port.subscription(ports.inbound.editRequests, (request) =>
+    AppMessage.EditRequest({ request })
   ),
 }))
 
@@ -189,8 +241,17 @@ export const update = (
         }),
       ],
     }),
+    EditRequest: ({ request }) =>
+      graphFold(
+        model,
+        Graph.Message.EditRequest({
+          requestId: request.requestId,
+          transaction: request.transaction,
+        })
+      ),
     SnapshotPublished: () => ({ model }),
     ChangePublished: () => ({ model }),
+    EditPublished: () => ({ model }),
   })
 
 export const initialModel = (

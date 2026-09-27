@@ -403,4 +403,53 @@ describe('FlowDocumentSchema', () => {
 
     expect(validated).toBe(document)
   })
+
+  it('accepts JSON edge data and an explicit non-deletable node', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            id: 'source',
+            label: 'Source',
+            position: { x: 0, y: 0 },
+            deletable: false,
+          },
+          { id: 'target', label: 'Target', position: { x: 1, y: 1 } },
+        ],
+        edges: [
+          {
+            id: 'edge',
+            source: 'source',
+            target: 'target',
+            data: { nested: { tags: ['one', 2, null] } },
+          },
+        ],
+      })
+    )
+
+    expect(document.nodes[0]?.deletable).toBeFalsy()
+    expect(document.edges[0]?.data).toStrictEqual({
+      nested: { tags: ['one', 2, null] },
+    })
+  })
+
+  it('rejects non-JSON edge data', () => {
+    const result = Effect.runSync(
+      Effect.exit(
+        decodeFlowDocument({
+          nodes: [{ id: 'node', label: 'Node', position: { x: 0, y: 0 } }],
+          edges: [
+            {
+              id: 'edge',
+              source: 'node',
+              target: 'node',
+              data: { invalid: Number.NaN },
+            },
+          ],
+        })
+      )
+    )
+
+    expect(result._tag).toBe('Failure')
+  })
 })

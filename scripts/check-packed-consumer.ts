@@ -13,6 +13,7 @@ declare global {
       readonly initialSnapshotNodeId: string | undefined
       readonly updatedNodeId: string | undefined
       readonly stateNotificationCount: number
+      readonly editResult: string
     }
   }
 }
@@ -172,6 +173,7 @@ const program = Effect.gen(function* checkPackedConsumer() {
             result.initialSnapshotNodeId !== 'packed-node' ||
             result.updatedNodeId !== 'packed-updated' ||
             result.stateNotificationCount !== 1 ||
+            result.editResult !== 'A updated:3:3:2:true:edit-b:edit-edge' ||
             result.canvasCountAfterDestroy !== 0
           ) {
             throw new Error(

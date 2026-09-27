@@ -1,5 +1,6 @@
 import {
   decodeFlowDocument,
+  FlowEditErrorSchema,
   decodeSavedFlowDocument,
   fitViewportToNodes,
   getIncomers,
@@ -112,29 +113,82 @@ const StateTools = defineComponent({
     const message = ref('')
     const saved = ref<unknown>()
 
+    const removeAddedNode = async (): Promise<void> => {
+      const result = await flow.deleteElements({
+        nodeIds: ['public-edit-node'],
+      })
+
+      message.value = `Removed ${result.deletedNodeIds.join(', ')}`
+    }
+
+    const addProtectedNode = async (): Promise<void> => {
+      await flow.addNodes({
+        id: 'protected-node',
+        label: 'Protected',
+        position: { x: 560, y: 300 },
+        deletable: false,
+      })
+      message.value = 'Added protected node'
+    }
+
+    const tryProtectedDelete = async (): Promise<void> => {
+      try {
+        await flow.deleteElements({ nodeIds: ['protected-node'] })
+        message.value = 'Protected delete unexpectedly succeeded'
+      } catch (error) {
+        message.value =
+          Schema.decodeUnknownSync(FlowEditErrorSchema)(error)._tag
+      }
+    }
+
+    const reconnectMiddle = async (): Promise<void> => {
+      const snapshot = flow.getSnapshot()
+
+      const middle = snapshot.document.nodes.find(
+        (node) => node.id === 'transform'
+      )
+
+      if (middle === undefined) {
+        message.value = 'Middle node is already removed; reset to try again'
+
+        return
+      }
+
+      const incoming = getIncomers(
+        middle,
+        snapshot.document.nodes,
+        snapshot.document.edges
+      )
+
+      const outgoing = getOutgoers(
+        middle,
+        snapshot.document.nodes,
+        snapshot.document.edges
+      )
+
+      const edges = incoming.flatMap((source) =>
+        outgoing.map((target) => ({
+          id: `reconnected-${source.id}-${target.id}`,
+          source: source.id,
+          target: target.id,
+          path: 'bezier' as const,
+        }))
+      )
+
+      await flow.applyEdit({
+        operations: [
+          { kind: 'delete-elements', nodeIds: [middle.id] },
+          { kind: 'add-edges', edges },
+        ],
+      })
+      message.value = `Removed ${middle.id}; connected ${incoming.map(({ id }) => id).join(', ')} to ${outgoing.map(({ id }) => id).join(', ')}`
+    }
+
     const envelope = Schema.Struct({
       version: Schema.Literal(1),
       savedDocument: SavedFlowDocumentSchema,
       viewport: ViewportSchema,
     })
-
-    const changeNode = (
-      update: (
-        node: FlowDocument['nodes'][number]
-      ) => FlowDocument['nodes'][number]
-    ) => {
-      const snapshot = flow.getSnapshot()
-      flow.updateDocument(
-        Effect.runSync(
-          decodeFlowDocument({
-            ...snapshot.document,
-            nodes: snapshot.document.nodes.map((node) =>
-              node.id === 'validate' ? update(node) : node
-            ),
-          })
-        )
-      )
-    }
 
     return () =>
       h(
@@ -162,7 +216,7 @@ const StateTools = defineComponent({
             'button',
             {
               onClick: () => {
-                changeNode((node) => ({ ...node, label: label.value }))
+                void flow.updateNode('validate', { label: label.value })
                 message.value = `Updated Validate to ${label.value}`
               },
             },
@@ -171,13 +225,64 @@ const StateTools = defineComponent({
           h(
             'button',
             {
+              onClick: async () => {
+                await flow.updateNodeData('public-edit-node', {
+                  editedInPlayground: true,
+                })
+                message.value = `Updated public-edit-node data; ${JSON.stringify(flow.getNode('public-edit-node')?.data)}`
+              },
+            },
+            'Update node data'
+          ),
+          h(
+            'button',
+            {
               onClick: () => {
                 const nextHidden = flow.getNode('validate')?.hidden !== true
-                changeNode((node) => ({ ...node, hidden: nextHidden }))
+                void flow.updateNode('validate', { hidden: nextHidden })
                 message.value = `Validate hidden=${String(nextHidden)}`
               },
             },
             'Toggle hidden'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                void flow.updateEdgeData('straight', { edited: true })
+                message.value = 'Updated straight edge data'
+              },
+            },
+            'Update edge data'
+          ),
+          h(
+            'button',
+            {
+              onClick: () => {
+                void flow.addNodes({
+                  id: 'public-edit-node',
+                  label: 'Added node',
+                  position: { x: 560, y: 300 },
+                  data: { source: 'playground' },
+                })
+                message.value = 'Added public edit node'
+              },
+            },
+            'Add graph node'
+          ),
+          h('button', { onClick: addProtectedNode }, 'Add protected node'),
+          h('button', { onClick: tryProtectedDelete }, 'Try protected delete'),
+          h(
+            'button',
+            {
+              onClick: removeAddedNode,
+            },
+            'Remove added node'
+          ),
+          h(
+            'button',
+            { onClick: reconnectMiddle },
+            'Delete middle and reconnect'
           ),
           h(
             'button',
@@ -191,6 +296,11 @@ const StateTools = defineComponent({
                   selected: node?.label,
                   isSelected: node?.selected === true,
                   hidden: node?.hidden === true,
+                  nodeData: flow.getNode('public-edit-node')?.data,
+                  protectedNode: flow.getNode('protected-node')?.id,
+                  edgeData: snapshot.document.edges.find(
+                    (edge) => edge.id === 'straight'
+                  )?.data,
                   viewport: snapshot.viewport,
                   incomers:
                     node === undefined
@@ -236,12 +346,22 @@ const StateTools = defineComponent({
           h(
             'button',
             {
-              onClick: () => {
-                changeNode((node) => ({
-                  ...node,
-                  label: 'Changed after save',
-                  hidden: false,
-                }))
+              onClick: async () => {
+                await flow.applyEdit({
+                  operations: [
+                    {
+                      kind: 'update-node',
+                      nodeId: 'validate',
+                      patch: { label: 'Changed after save', hidden: false },
+                    },
+                    {
+                      kind: 'update-edge-data',
+                      edgeId: 'straight',
+                      data: { changedAfterSave: true },
+                      replace: true,
+                    },
+                  ],
+                })
                 flow.updateViewport({ x: -80, y: 30, zoom: 0.9 })
                 message.value = 'Changed label, visibility, and viewport'
               },

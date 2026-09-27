@@ -8,6 +8,7 @@ import {
   FlowSnapshotSchema,
   nextConnectionEdge,
   panViewport,
+  prepareFlowEdit,
   resolveEdgeHandles,
   simpleBezierEdgePath,
   smoothStepEdgePath,
@@ -22,6 +23,8 @@ import type {
   FlowCommand,
   FlowDocument,
   FlowEdge,
+  FlowEditResult,
+  FlowEditTransactionInput,
   FlowEdgePath,
   FlowHandle,
   FlowNode,
@@ -665,6 +668,64 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const applyEditResolved = async (
+      resolveInput: (document: FlowDocument) => FlowEditTransactionInput
+    ): Promise<FlowEditResult> => {
+      if (stateDisposed) {
+        throw new Error('FlowCanvasDisposed')
+      }
+
+      const currentDocument = createFlowSnapshot(
+        unwrapReactive(activeDocument.value),
+        unwrapReactive(activeViewport.value)
+      ).document
+
+      const transaction = resolveInput(currentDocument)
+
+      const result = await Effect.runPromise(
+        prepareFlowEdit(currentDocument, transaction)
+      )
+
+      if (stateDisposed) {
+        throw new Error('FlowCanvasDisposed')
+      }
+
+      if (hasSplitModel || props.documentMode === 'controlled') {
+        const proposal: FlowChange = {
+          kind: 'edit-proposal',
+          document: result.document,
+          deletion: result.deletion,
+        }
+
+        emit('change', proposal)
+
+        if (hasSplitModel) {
+          emit('update:nodes', result.document.nodes)
+          emit('update:edges', result.document.edges)
+        } else {
+          emit('update:document', result.document)
+        }
+
+        return result
+      }
+
+      emit('change', {
+        kind: 'edit-proposal',
+        document: result.document,
+        deletion: result.deletion,
+      })
+
+      withStateCause('semantic-change', () => {
+        ownedDocument.value = result.document
+      })
+
+      return result
+    }
+
+    const applyEdit = (
+      transaction: FlowEditTransactionInput
+    ): Promise<FlowEditResult> => applyEditResolved(() => transaction)
+
     const cleanupPreview = (
       active: Session | undefined = session.value
     ): void => {
@@ -724,6 +785,8 @@ export const FlowCanvas = defineComponent({
       subscribeState,
       dispatch,
       updateDocument,
+      applyEdit,
+      applyEditResolved,
       updateViewport,
       publish,
     }

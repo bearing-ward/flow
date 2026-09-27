@@ -3,18 +3,24 @@ import {
   FlowControlModeSchema,
   FlowCommandSchema,
   FlowDocumentSchema,
+  FlowEditErrorSchema,
+  FlowEditResultSchema,
+  FlowEditTransactionSchema,
   FlowSnapshotSchema,
   FlowStateChangeSchema,
   ViewportSchema,
   applyNodePositionChange,
   createFlowGraph,
   nextConnectionEdge,
+  prepareFlowEdit,
   validateFlowConnection,
 } from '@flow/core'
 import type {
   FlowChange as CoreFlowChange,
   FlowCommand as CoreFlowCommand,
   FlowDocument,
+  FlowEditError,
+  FlowEditResult,
   FlowSnapshot,
   FlowStateChange,
   FlowStateChangeCause,
@@ -22,7 +28,7 @@ import type {
   FlowNode,
   Viewport as CoreViewport,
 } from '@flow/core'
-import { Effect, Exit, Option, Schema, Stream } from 'effect'
+import { Cause, Effect, Exit, Option, Schema, Stream } from 'effect'
 import type { Update } from 'foldkit'
 import { Message as FoldMessage, Submodel, Subscription } from 'foldkit'
 
@@ -51,6 +57,13 @@ export const OutMessage = FoldMessage.defineMessageUnion({
     acceptedState: Schema.optional(FlowStateChangeSchema),
   },
   AcceptedState: { change: FlowStateChangeSchema },
+  EditCompleted: {
+    requestId: Schema.String,
+    result: FlowEditResultSchema,
+    change: FlowChangeSchema,
+    acceptedState: Schema.optional(FlowStateChangeSchema),
+  },
+  EditFailed: { requestId: Schema.String, error: FlowEditErrorSchema },
 })
 
 export type OutMessageData = typeof OutMessage.Type
@@ -60,6 +73,10 @@ export const Message = FoldMessage.defineMessageUnion({
   ReplaceViewport: { viewport: ViewportSchema },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
   DispatchCommand: { command: FlowCommandSchema },
+  EditRequest: {
+    requestId: Schema.String,
+    transaction: FlowEditTransactionSchema,
+  },
   PointerDown: {
     pointerId: Schema.Number,
     clientX: Schema.Number,
@@ -177,6 +194,30 @@ const setNodePosition = (
 }
 
 const dispatchCommand = (model: Model, command: CoreFlowCommand) => {
+  if (command.kind === 'edit-transaction') {
+    const prepared = Effect.runSync(
+      prepareFlowEdit(model.document, command.transaction)
+    )
+
+    const change: CoreFlowChange = {
+      kind: 'edit-proposal',
+      document: prepared.document,
+      deletion: prepared.deletion,
+    }
+
+    return report(
+      model,
+      {
+        ...model,
+        document:
+          model.documentMode === 'uncontrolled'
+            ? change.document
+            : model.document,
+      },
+      change
+    )
+  }
+
   if (command.kind === 'set-viewport') {
     const change: CoreFlowChange = {
       kind: 'viewport',
@@ -198,6 +239,59 @@ const dispatchCommand = (model: Model, command: CoreFlowCommand) => {
   const exhaustive: never = command
 
   return exhaustive
+}
+
+const requestEdit = (
+  model: Model,
+  requestId: string,
+  transaction: typeof FlowEditTransactionSchema.Type
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const exit = Effect.runSyncExit(prepareFlowEdit(model.document, transaction))
+
+  return Exit.match(exit, {
+    onFailure: (cause) => {
+      const failure = Cause.findErrorOption(cause)
+
+      if (Option.isNone(failure)) {
+        throw new Error('FlowEditFailedWithoutTypedError')
+      }
+
+      const error: FlowEditError = Schema.decodeUnknownSync(
+        FlowEditErrorSchema
+      )(failure.value)
+
+      return {
+        model,
+        outMessage: OutMessage.EditFailed({ requestId, error }),
+      }
+    },
+    onSuccess: (result: FlowEditResult) => {
+      const change: CoreFlowChange = {
+        kind: 'edit-proposal',
+        document: result.document,
+        deletion: result.deletion,
+      }
+
+      const next = {
+        ...model,
+        document:
+          model.documentMode === 'uncontrolled'
+            ? result.document
+            : model.document,
+      }
+
+      return {
+        model: next,
+        outMessage: OutMessage.EditCompleted({
+          requestId,
+          result,
+          change,
+          acceptedState:
+            stateChange(model, next, 'semantic-change') ?? undefined,
+        }),
+      }
+    },
+  })
 }
 
 type PointerReleased = Extract<
@@ -332,6 +426,8 @@ export const update = (
       model: { ...model, allowedConnectionTargets: targets },
     }),
     DispatchCommand: ({ command }) => dispatchCommand(model, command),
+    EditRequest: ({ requestId, transaction }) =>
+      requestEdit(model, requestId, transaction),
     PointerDown: ({ pointerId, clientX, clientY, nodeId, handleId }) => {
       if (nodeId === null) {
         return noChange(model)

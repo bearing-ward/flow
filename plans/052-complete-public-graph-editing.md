@@ -12,7 +12,7 @@
 - Category: direction, public API, shared adapter behavior
 - Depends on: completed Plans 044-051; preserve the Foldkit Vite fix at `e653e0a`
 - Planned at: `e653e0a`, 2026-09-26
-- Execution status: TODO
+- Execution status: DONE — all eight work packages and listed done criteria verified on 2026-09-27. Full-entry React Flow parity remains open as recorded in the catalog and trace.
 
 ## Intended outcome
 
@@ -261,16 +261,31 @@ Run from the Flow root, except commands explicitly documented for a disposable u
 
 ## Done criteria
 
-- [ ] All eight work packages have recorded commands/results, file changes, and remaining limits.
-- [ ] Nine named instance edit methods and the atomic transaction route work in JavaScript and Vue; equivalent typed Foldkit operations are proven through Runtime ports.
-- [ ] Node deletable and edge JSON data decode, appear in accepted reads, and round-trip through version-1 persistence without changing older valid documents.
-- [ ] Invalid transactions roll back fully; protected nested deletion and controlled ownership tests pass in all three hosts.
-- [ ] Shared fixtures assert actual production state, event order, results, and rendered output; no shadow test store computes observed answers.
-- [ ] Both bounded examples run through supported APIs in every host and have inspected normal/narrow output.
-- [ ] Equivalent pinned reference cases have reproducible captures and explicit classifications. Remaining broader catalog claims stay open.
-- [ ] Packed core/vanilla consumer, docs, architecture, catalog, quality, and full verify gates pass.
-- [ ] `git diff --check` exits 0 and `git status --short` contains only scoped source/docs and expected generated API output.
-- [ ] Plan/index status is updated by the executor or reviewer only after evidence is complete.
+- [x] All eight work packages have recorded commands/results, file changes, and remaining limits in the implementation diff, research trace, catalog, and verification record below.
+- [x] Nine named instance edit methods and the atomic transaction route work in JavaScript and Vue; equivalent typed Foldkit operations are proven through Runtime ports.
+- [x] Node deletable and edge JSON data decode, appear in accepted reads, and round-trip through version-1 persistence without changing older valid documents.
+- [x] Invalid transactions roll back fully; protected nested deletion and controlled ownership tests pass in all three hosts.
+- [x] Shared fixtures assert actual production state, event order, results, rendered output, and queued disposal; no shadow test store computes observed answers.
+- [x] Updating Nodes and Delete Middle Node examples run through supported APIs in every host, with keyboard activation, desktop/narrow viewport coverage, reset/repeat, and inspected screenshots.
+- [x] Pinned reference captures are reproducible and selected cases have explicit classifications. Broader API and catalog claims remain open in the trace/catalog.
+- [x] Packed core/vanilla consumer, docs, architecture, catalog, quality, and full verify gates pass.
+- [x] `git diff --check` exits 0; changed files are within the plan's scope, including generated API/research output.
+- [x] Plan/index status is updated after review evidence.
+
+## Execution record — 2026-09-27
+
+| Work package | Result and verification | Remaining boundary |
+| --- | --- | --- |
+| 1. Contract and reference | `bun run docs:check`, `bun run research:check-traces`; the pinned mounted xyflow capture ran twice with normalized outputs matching. | Controlled acknowledgement, protected deletion, updater timing, and broader setter cases remain unverified against xyflow. |
+| 2. Schemas and persistence | Schema/persistence/snapshot tests passed in `bun run verify`; older version-1 documents still decode. | Older readers may discard additive fields. |
+| 3. Core edit preparation | Core transaction/error tests passed in `bun run verify`; `bun run check:architecture` passed. | Effect core accepts only JSON-object data and validates the final candidate. |
+| 4. JavaScript host | Public API, updater, rollback, queued disposal, and playground E2Es passed in the full gate. | No claim of broader upstream lifecycle parity. |
+| 5. Vue host | Controlled/uncontrolled edits, updater evaluation, same-tick split acknowledgement, isolation, unmount, and example E2Es passed in the full gate. | Independently delayed split-model acknowledgements require the owner to publish a coherent document; no pending merge store is maintained. |
+| 6. Foldkit host | Typed Runtime requests/results, protected failures, isolation, reentrancy, disposal, and example E2Es passed in the full gate. | Foldkit remains app-scoped and is not package-promoted. |
+| 7. Shared fixtures and examples | Conformance fixture tests and all three production-host E2E suites passed, including queued disposal, protected descendants, data/DOM/event observations, save/restore, and both visible examples. | Broader upstream example shells and unrelated catalog entries are out of scope. |
+| 8. Consumer, catalog, and docs | `bun run test:consumer`, docs/trace checks, offline and upstream catalog checks, `bun run check`, and `bun run verify` all passed. | Full-entry reference parity remains unverified; see `research/traces/public-edit-contract.md` and the coverage catalog. |
+
+The final independent `bun run verify` exited 0 on 2026-09-27. It ran 146 unit tests, 203 Vanilla browser tests with two existing native-pointer skips, and the Vue/Foldkit conformance suites. `git diff --check`, `bun run docs:check`, `bun run research:check-traces`, and both catalog checks passed. No commit, merge, or push was performed.
 
 ## STOP conditions
 

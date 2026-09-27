@@ -16,7 +16,9 @@ Labels and hidden state are fields of the existing Flow graph document. The insp
 
 Core persistence remains the versioned document format in [`flow-persistence.ts`](../../packages/core/src/domain/flow-persistence.ts). That format deliberately omits viewport and transient selection. The playground wraps the existing saved document and viewport in an app-owned, schema-validated envelope. It does not change the reusable core format.
 
-Save reads the current document and viewport, encodes the document with the core persistence API, and validates the application envelope. Restore decodes that envelope, then restores document and viewport through the host API. Selection and preview state remain transient and are not restored as saved graph state. Reset returns the playground to its initial document and viewport and clears the in-memory snapshot. If no snapshot has been saved, restore reports that state and leaves the current graph unchanged.
+Version 1 documents now allow optional JSON-object data on edges and an optional node `deletable` flag. Existing version 1 documents that omit these fields still decode. A reader built before these fields existed may discard them when it decodes and re-encodes a document; this is additive input compatibility, not a promise that older readers preserve new fields.
+
+Save reads the current document and viewport, encodes the document with the core persistence API, and validates the application envelope. The examples edit JSON data on a straight edge before saving, replace that data afterward, and verify that restore returns the saved edge data in Vanilla, Vue, and Foldkit. Restore decodes the envelope, then restores document and viewport through the host API. Selection and preview state remain transient and are not restored as saved graph state. Reset returns the playground to its initial document and viewport and clears the in-memory snapshot. If no snapshot has been saved, restore reports that state and leaves the current graph unchanged.
 
 The envelope belongs to the application example. It does not promise storage across reloads. Browser storage and export/import are later integrations.
 
