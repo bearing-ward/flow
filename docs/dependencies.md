@@ -21,6 +21,7 @@
 | --- | --- | --- |
 | `typescript` | Compiles strict contracts and will power source analysis without another AST dependency. | Babel and ts-morph add dependencies without supplying stronger TypeScript semantics. |
 | `vite` | Builds and serves the browser host with a stable URL for Playwright. | Bun HTML serving is smaller, but Vite gives predictable browser transforms and reload behavior for the first visual slices. Reassess after the renderer stabilizes. |
+| `@foldkit/vite-plugin` | Owned by `apps/foldkit`; version 0.24.0 supplies Foldkit's model-preservation handshake and view identity transforms with Vite 8 and Effect rc.116. Remove with the Foldkit host or when its development server no longer uses Vite. | Plain Vite cannot answer Foldkit's model-preservation requests; use the official plugin instead of maintaining a custom protocol handler. |
 | `vitest` | Runs unit and contract tests in the Vite TypeScript environment, including browser-adjacent tests. | Bun test is smaller, but Vitest integrates directly with Vite and Playwright. |
 | `@playwright/test` | Verifies the real browser output, interaction path, accessibility state, and later pixel parity. | DOM emulators cannot prove layout, pointer behavior, SVG output, or screenshots. |
 | `@types/bun` | Types the selected tooling runtime. | Handwritten declarations would drift from Bun. |

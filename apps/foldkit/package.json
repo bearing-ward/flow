@@ -14,6 +14,7 @@
     "foldkit": "0.163.0"
   },
   "devDependencies": {
+    "@foldkit/vite-plugin": "0.24.0",
     "vite": "8.0.13"
   }
 }
