@@ -64,6 +64,9 @@
     "packages/conformance": {
       "name": "@flow/conformance",
       "version": "0.0.0",
+      "dependencies": {
+        "@flow/core": "workspace:*",
+      },
     },
     "packages/core": {
       "name": "@flow/core",
