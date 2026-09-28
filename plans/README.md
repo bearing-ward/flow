@@ -8,7 +8,7 @@ The scope is defined by all entries in the [API reference sidebar](https://react
 
 Every catalog capability belongs on the roadmap, including advanced examples and templates. A capability may be delivered through shared core logic, an adapter, reusable UI, or an example integration. Capability gaps remain open until demonstrated in each supported framework. Existing bounded adapter milestones describe current progress; they do not limit the final goal. Parity claims still require reference evidence, and current architecture differences must be reviewed against the goal rather than assumed permanent.
 
-[Plan 043](043-establish-definitive-react-flow-parity-goal.md) carried this decision into the project overview and authoritative progress checklist at `9a583d7`; catalog discovery followed at `1aa5915`. Plan 044 restored its verification baseline, and Plans 044-051 are complete. The next selected milestone is Plan 052, public graph editing across all three hosts. Earlier deferrals of full adapter parity below are historical sequencing decisions. Their local completion boundaries remain valid.
+[Plan 043](043-establish-definitive-react-flow-parity-goal.md) carried this decision into the project overview and authoritative progress checklist at `9a583d7`; catalog discovery followed at `1aa5915`. Plan 044 restored its verification baseline, and Plans 044-051 are complete. Plan 052 is complete at `f8b73f2`. Plans 053-062 below cover the next recommended chunks, beginning with measured geometry and rendering across all three hosts. Earlier deferrals of full adapter parity below are historical sequencing decisions. Their local completion boundaries remain valid.
 
 ## Planning history
 
@@ -72,6 +72,16 @@ Plans 022-029 were written on 2026-09-24 against `5e5d496` using the open items 
 | [050](050-prove-shared-read-contract.md) | Prove shared state and query behavior across all hosts | P2 | M | 046, 047, 048, 049 | DONE — reviewed four shared fixtures through all production hosts; full verify passed with two existing native-pointer skips |
 | [051](051-demonstrate-state-api-in-playgrounds.md) | Demonstrate node updates and save/restore across frameworks | P2 | L | 046, 047, 048, 049, 050 | DONE — reviewed three public-API demos, browser coverage, and bounded layouts; full verify passed with two native-pointer skips |
 | [052](052-complete-public-graph-editing.md) | Complete public graph editing across JavaScript, Vue, and Foldkit | P1 | L | 044-051 | DONE — all eight work packages and listed acceptance criteria verified; full-entry React Flow parity remains explicitly open |
+| [053](053-unify-measured-geometry.md) | Unify measured geometry and readiness across hosts | P1 | L | 052 | DONE — shared three-host production fixture, Foldkit observer teardown, pinned-upstream comparison, and independent full `bun run verify` pass |
+| [054](054-complete-renderer-contracts.md) | Complete node, edge, and handle renderer contracts | P1 | L | 053 | DONE — approved renderer contracts across three hosts; independent full `bun run verify` passed |
+| [055](055-complete-viewport-api.md) | Complete viewport operations and coordinate contracts | P1 | L | 053; 054 for rendered examples | DONE — public viewport operations and coordinate contracts verified across hosts; extent and CSS-transform limits are explicit |
+| [056](056-complete-interaction-lifecycles.md) | Complete shared gestures, connections, and lifecycle events | P1 | L | 053-055 | TODO |
+| [057](057-finish-public-api-correspondence.md) | Complete remaining public contracts and member-level correspondence | P1 | L | 053-056 | TODO |
+| [058](058-deliver-reusable-canvas-and-ui.md) | Deliver reusable canvas UI and catalog components | P2 | L | 053-057 | TODO |
+| [059](059-complete-example-catalog.md) | Complete catalog examples through supported APIs | P2 | L | 053-058; 060A for stress budget | TODO |
+| [060](060-establish-catalog-wide-proof.md) | Establish catalog-wide proof | P2 | L | A: 053-056; B: 057-059 | TODO |
+| [061](061-package-all-supported-adapters.md) | Package Foldkit and verify every adapter from tarballs | P2 | L | 053-058 | TODO |
+| [062](062-prepare-versioned-delivery.md) | Prepare versioned delivery and the first reviewed release | P2 | L | 060B, 061; actual catalog coverage | TODO |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, STALE with its replacement, or REJECTED with a reason.
 
@@ -228,3 +238,55 @@ Order is 1 → 2 → 3 → 4 → {5, 6} → 7 → 8. Vue and Foldkit may proceed
 - Testing/delivery: atomic rollback, invalid graphs, active-gesture removal, disposal, package-consumer checks, and complete local verification.
 
 Planning-time read-only quality/docs/catalog checks passed. The preceding implementation turn's full gate passed on the Foldkit fix now committed at this base; it was not rerun as part of this planning pass. Existing native-input skips remain open. The advisor changed planning files only; source/status documentation updates are assigned to the executor within Plan 052.
+
+## September 27 selected roadmap: all next recommended chunks
+
+The maintainer selected all recommended follow-on chunks after Plan 052. These ten plans were written against clean `main` at `f8b73f2`. The advisor changed only `plans/`; no implementation or full verification run occurred during planning. This is targeted roadmap specification, not a new nine-category audit. Source entry points, standards, current checklist, completed plan boundaries, the dated catalog, and official API/example/UI landing pages were inspected. Private Pro source, all upstream page members, dependency advisories, hardware benchmarks, manual accessibility, and collector delivery were not audited in this pass.
+
+### Recommended sequence
+
+1. **053 then 054:** common measured geometry and native renderer contracts, including real Foldkit edge paths.
+2. **055 then 056:** viewport operations followed by gestures, connection behavior, and lifecycle events.
+3. **057 then 058:** finish member-level public contracts and reusable canvas/UI components.
+4. **059:** deliver example families through those public contracts. Advanced integration choices receive bounded child designs before implementation; the parent stays open until its required families land.
+5. **060A starts after 053-056:** establish proof registry, device strategy, and benchmark environments/budgets while API/UI/example work proceeds. **060B closes after 057-059:** run the completed capability matrix. This two-stage boundary avoids a dependency cycle with the stress example in 059.
+6. **061 after 053-058:** package Foldkit and test every adapter from tarballs. This can proceed alongside 059/060; final archives must be retested after later exports land.
+7. **062:** prepare a concrete release candidate with actual coverage and support claims. Publication requires explicit approval after license, version, artifacts, and evidence are reviewable.
+
+Plan numbers identify work ownership, not permission to run all source changes concurrently. Most plans touch shared host contracts, catalogs, and conformance drivers. Reconcile each prerequisite before its dependent implementation, use isolated worktrees for dispatched execution, and run browser gates serially. Each plan contains its own commands, current-state excerpts, test cases, ownership rules, completion limits, and STOP conditions. Later plans must refresh against landed contracts; a stale snippet cannot justify reverting prerequisite work.
+
+### Checklist coverage
+
+| Open checklist area | Owning plans | Completion boundary |
+| --- | --- | --- |
+| Measured geometry, readiness, and internal-node contracts | 053 | Real host-fed geometry and lifecycle proof; no automatic spatial-index decision |
+| Custom rendering and handle/edge parity | 054 | Native registries, measured paths, labels/markers, lifecycle, bounded reference output |
+| Full viewport instance and coordinate APIs | 055 | Public operation/result/event contracts, fit/readiness and container-offset proof |
+| Pointer/keyboard state, resizing, cancellation, connections, lifecycle diagnostics | 056 | Shared production-host fixtures; native device proof closes separately in 060 |
+| Complete public API correspondence, state/change utilities, async deletion, persistence | 057 | All API members inventoried, implemented batches and owned residual child plans; no mutable-store shortcut |
+| Built-in canvas UI, all catalog UI components/templates | 058 | Native exports/recipes and actual per-host user outcomes; original implementation and license boundaries |
+| Every catalog example including advanced optional integrations | 059 | All dated example journeys work in all hosts; Pro reference limitations stay visible |
+| Research-test mapping, visual/input/a11y/property/lifecycle proof, performance budgets, collector delivery | 060 | Environment-specific evidence and validated claims; unsupported environments remain open |
+| Reusable adapters and installation from packed packages | 061 | Native Vue/Foldkit/core/vanilla tarball consumers, styles/types/peers/lifecycle, separate HMR proof |
+| Release/changelog automation, docs/tutorials, licensing, versioning, publication | 062 | Reviewed candidate first; actual publication and registry consumer proof only after approval |
+| Upstream review and future catalog additions | 057-060, 062 | Member and sidebar drift reviewed at milestones without deleting dated evidence or open gaps |
+
+### Exhaustive dated catalog allocation
+
+[The allocation manifest](next-chunks-coverage.json) assigns all 200 capability entries and retains all eight navigation entries from the September 26 baseline. Each capability has one primary owner, related plans, all three required hosts, and proof/package/release gates. API page ownership does not replace member-level acceptance in 057. Existing completed subcases remain useful evidence; their catalog entries remain owned until their full target is demonstrated.
+
+Run `bun run plans/check-next-chunks.mjs` to verify exact URL/title/Pro-flag coverage, owner files, required hosts, and the ten plan records. It is read-only and does not change the authoritative research checklist. Planning coverage is not a parity percentage.
+
+### Decisions and alternatives
+
+- **Primary recommendation:** geometry and rendering first, then viewport/interactions/API/UI, with visible examples and proof in every slice. This addresses the documented host differences before layering more recipes on them.
+- **Packaging earlier:** 061 can run once contracts through 058 settle; doing it before 053-056 would move unstable app boundaries and create unnecessary migration churn.
+- **More demos first:** useful for a prototype, but would force private adapter workarounds for missing measurements, renderer registries, and lifecycle APIs. Each plan instead includes an early visible scene through supported contracts.
+- **Spatial index now:** still deferred until the measured production workloads in 060 justify it. Existing geometry scans/prototype results are not evidence that indexing will fix browser reconciliation cost.
+- **One large rewrite or invented complete parity:** rejected. Existing accepted-state/edit contracts and verified behavior must survive every slice. Framework-native equivalents require documented mappings and tests.
+
+The ten plans put the whole remaining destination on the map. They are not a claim that every future protocol, licensed reference, hardware environment, or release decision is already settled. Advanced integrations have explicit design gates; unfinished implementation or unavailable required evidence keeps the relevant milestone open.
+
+### Planning verification
+
+On 2026-09-27, `bun run plans/check-next-chunks.mjs` passed for ten plans, 200 capabilities, and eight navigation entries. In-memory negative probes rejected a missing capability, duplicate URL, missing host, invented completion status, and lost Pro flag. Scoped Oxfmt check, `git diff --check`, `bun run docs:check`, and the offline catalog checker passed. No source implementation, package build, full `bun run verify`, commit, or publication was performed. The landing pages were consulted for current scope; this pass did not run a complete upstream sidebar/member drift audit.
