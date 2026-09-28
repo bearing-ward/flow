@@ -10,7 +10,7 @@ test('Vue playground demonstrates descendant composables and session restore', a
   ).toBeVisible()
   await page.screenshot({ path: '/tmp/flow-051-vue-desktop.png' })
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-testid="measurement-result"])')
   await expect(
     panel.getByRole('button', { name: 'Restore snapshot' })
   ).toBeDisabled()

@@ -1,5 +1,7 @@
 export {
   FlowMountOptionsSchema,
+  FitBoundsOptionsSchema,
+  FitViewOptionsSchema,
   acquireFlowHost,
   createFlow,
   createFlowHost,
@@ -20,15 +22,27 @@ export type {
 
 export type {
   FlowController,
+  FitBoundsOptions,
+  FitViewOptions,
+  ViewportObservation,
   CanvasPanelPlacement,
   FlowPanelOption,
   FlowCreateOptions,
   FlowHostOptions,
   FlowMountOptions,
   JavaScriptFlowController,
+  NodeInternalsRefreshResult,
   FlowNodeRenderer,
   FlowNodeRendererInstance,
   FlowEdgeRenderer,
   FlowEdgeRenderContext,
   FlowEdgeRendererInstance,
 } from './mount-flow.ts'
+
+export type {
+  Viewport,
+  ViewportBounds,
+  ViewportPadding,
+  ViewportAnimationOptions,
+  ViewportOperationResult,
+} from '@flow/core'

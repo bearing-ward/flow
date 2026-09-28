@@ -6,6 +6,7 @@ import type {
   FlowSnapshot,
   FlowEditResult,
   FlowStateChange,
+  FlowInternalNode,
   Viewport,
   FlowDocumentSchema,
   FlowEditTransactionSchema,
@@ -37,6 +38,30 @@ interface TestApi {
   mount: (fixture: ConformanceFixture) => void
   updateDocument: (document: typeof FlowDocumentSchema.Encoded) => void
   updateViewport: (viewport: Viewport) => void
+  mountMeasurementDocument: (
+    document: typeof FlowDocumentSchema.Encoded,
+    renderOnlyVisible: boolean
+  ) => Promise<void>
+  updateMeasurementDocument: (
+    document: typeof FlowDocumentSchema.Encoded
+  ) => Promise<void>
+  internalNode: (id: string) => FlowInternalNode | undefined
+  nodesInitialized: (includeHidden: boolean) => boolean
+  refreshNode: (
+    id: string
+  ) => Promise<
+    Awaited<
+      ReturnType<ReturnType<typeof useFlow>['updateNodeInternals']>
+    >[number]
+  >
+  refreshAndUnmountMeasurementDocument: (
+    id: string
+  ) => Promise<
+    Awaited<
+      ReturnType<ReturnType<typeof useFlow>['updateNodeInternals']>
+    >[number]
+  >
+  destroyMeasurementDocument: () => void
   changeKinds: () => readonly string[]
   readState: (query: PublicStateQuery) => PublicStateRead
   acceptedStates: () => readonly FlowStateChange[]
@@ -175,6 +200,20 @@ let conformanceNode: ((id: string) => FlowNode | undefined) | undefined
 
 let conformanceEdge: ((id: string) => FlowEdge | undefined) | undefined
 
+let conformanceInternalNode:
+  | ((id: string) => FlowInternalNode | undefined)
+  | undefined
+
+let conformanceNodesInitialized:
+  | ((includeHidden: boolean) => boolean)
+  | undefined
+
+let conformanceRefreshNode:
+  | ((
+      id: string
+    ) => ReturnType<ReturnType<typeof useFlow>['updateNodeInternals']>)
+  | undefined
+
 let conformanceAcceptedStates: FlowStateChange[] = []
 
 let splitNodeUpdates = 0
@@ -224,6 +263,10 @@ const Component = defineComponent({
         conformanceSnapshot = () => flow.getSnapshot()
         conformanceNode = (id) => flow.getNode(id)
         conformanceEdge = (id) => flow.getEdge(id)
+        conformanceInternalNode = (id) => flow.getInternalNode(id)
+        conformanceNodesInitialized = (includeHidden) =>
+          flow.nodesInitialized({ includeHidden })
+        conformanceRefreshNode = (id) => flow.updateNodeInternals([id])
 
         const unsubscribe = flow.subscribeState((change) => {
           conformanceAcceptedStates.push(change)
@@ -276,6 +319,74 @@ const api: TestApi = {
   },
   updateDocument(document) {
     documentState.value = Effect.runSync(decodeFlowDocument(document))
+  },
+  async mountMeasurementDocument(document, renderOnlyVisible) {
+    app?.unmount()
+    documentState.value = Effect.runSync(decodeFlowDocument(document))
+    cullOffscreen.value = renderOnlyVisible
+    documentMode.value = 'uncontrolled'
+    viewportMode.value = 'uncontrolled'
+    viewportState.value = { x: 0, y: 0, zoom: 1 }
+    conformanceSnapshot = undefined
+    conformanceNode = undefined
+    conformanceEdge = undefined
+    conformanceInternalNode = undefined
+    conformanceNodesInitialized = undefined
+    conformanceRefreshNode = undefined
+    app = createApp(Component)
+    app.mount('#app')
+    await nextTick()
+  },
+  async updateMeasurementDocument(document) {
+    documentState.value = Effect.runSync(decodeFlowDocument(document))
+    await nextTick()
+    await nextTick()
+  },
+  internalNode(id) {
+    return conformanceInternalNode?.(id)
+  },
+  nodesInitialized(includeHidden) {
+    return conformanceNodesInitialized?.(includeHidden) ?? false
+  },
+  async refreshNode(id) {
+    if (conformanceRefreshNode === undefined) {
+      throw new Error('Missing Vue measurement editor')
+    }
+
+    const [first] = await conformanceRefreshNode(id)
+
+    if (first === undefined) {
+      throw new Error('Vue refresh returned no result')
+    }
+
+    return first
+  },
+  refreshAndUnmountMeasurementDocument(id) {
+    if (conformanceRefreshNode === undefined) {
+      throw new Error('Missing Vue measurement editor')
+    }
+
+    const pending = (async () => {
+      const [first] = await conformanceRefreshNode(id)
+
+      if (first === undefined) {
+        throw new Error('Vue refresh returned no result')
+      }
+
+      return first
+    })()
+
+    app?.unmount()
+    app = undefined
+
+    return pending
+  },
+  destroyMeasurementDocument() {
+    app?.unmount()
+    app = undefined
+    conformanceInternalNode = undefined
+    conformanceNodesInitialized = undefined
+    conformanceRefreshNode = undefined
   },
   updateViewport(viewport) {
     viewportState.value = viewport

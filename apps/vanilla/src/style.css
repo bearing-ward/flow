@@ -207,14 +207,24 @@ body,
 }
 
 .flow-edge-label {
-  fill: #1a192b;
-  stroke: #ffffff;
-  stroke-width: 3;
-  paint-order: stroke;
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  color: #1a192b;
+  -webkit-text-stroke: 3px #ffffff;
+  paint-order: stroke fill;
   font-size: 12px;
   font-weight: 600;
-  text-anchor: middle;
-  dominant-baseline: central;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.flow-edge-labels {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: visible;
   pointer-events: none;
 }
 

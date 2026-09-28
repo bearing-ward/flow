@@ -5,6 +5,7 @@ import {
   getConnectedEdges,
   getIncomers,
   getOutgoers,
+  NodeIdSchema,
   SavedFlowDocumentSchema,
   ViewportSchema,
 } from '@flow/core'
@@ -20,8 +21,13 @@ import type {
   EditResponse,
   ports,
   SnapshotResponseSchema,
+  MeasurementResultSchema,
 } from './application.ts'
-import { createProgram, HostAction } from './application.ts'
+import {
+  createProgram,
+  createViewportClient,
+  HostAction,
+} from './application.ts'
 
 import './style.css'
 
@@ -37,6 +43,8 @@ const original = Effect.runSync(
       {
         id: 'validate',
         label: 'Validate',
+        type: 'demo-node',
+        selected: true,
         position: { x: 420, y: 120 },
         handles: [
           { id: 'in', kind: 'target', side: 'left' },
@@ -55,7 +63,10 @@ const original = Effect.runSync(
         id: 'source-validate',
         source: 'source',
         target: 'validate',
+        type: 'demo-edge',
         path: 'bezier',
+        label: 'validated input',
+        markerEnd: 'arrowclosed',
       },
       {
         id: 'validate-target',
@@ -73,13 +84,15 @@ if (root === null) {
   throw new Error('Missing #app')
 }
 
-root.innerHTML = `<main class="flow-foldkit-layout"><aside class="flow-foldkit-tools"><h1>Flow Foldkit playground</h1><p>Foldkit owns the graph model; selectors and typed ports expose state.</p><section class="flow-state-tools"><h2>State and persistence</h2><label>Node label <input aria-label="Node label" value="Validate"></label><button data-state="label">Update label</button><button data-state="hidden">Toggle hidden</button><button data-state="node-data">Update node data</button><button data-state="edge-data">Update edge data</button><button data-state="add-node">Add node</button><button data-state="remove-node">Remove added node</button><button data-state="add-protected">Add protected node</button><button data-state="protected-delete">Try protected delete</button><button data-state="reconnect-middle">Delete middle and reconnect</button><button data-state="inspect">Inspect graph</button><button data-state="save">Save snapshot</button><button data-state="change">Change graph and viewport</button><button data-state="restore" disabled>Restore snapshot</button><button data-state="reset">Reset example</button><small>Saved in this page session only. Reloading discards the snapshot.</small><output aria-live="polite"></output></section></aside><div class="flow-foldkit-host"></div></main>`
+root.innerHTML = `<main class="flow-foldkit-layout"><aside class="flow-foldkit-tools"><h1>Flow Foldkit playground</h1><p>Foldkit owns the graph model; typed renderer registries customize the host view.</p><section class="flow-state-tools"><h2>State and persistence</h2><button data-state="measure-toggle">Toggle measured size and handle offset</button><output data-measurement aria-live="polite"></output><label>Node label <input aria-label="Node label" value="Validate"></label><button data-state="label">Update label</button><button data-state="hidden">Toggle hidden</button><button data-state="node-data">Update node data</button><button data-state="edge-data">Update edge data</button><button data-state="add-node">Add node</button><button data-state="remove-node">Remove added node</button><button data-state="add-protected">Add protected node</button><button data-state="protected-delete">Try protected delete</button><button data-state="reconnect-middle">Delete middle and reconnect</button><button data-state="inspect">Inspect graph</button><button data-state="save">Save snapshot</button><button data-state="change">Change graph and viewport</button><button data-state="restore" disabled>Restore snapshot</button><button data-state="reset">Reset example</button><small>Saved in this page session only. Reloading discards the snapshot.</small><output aria-live="polite"></output></section><section class="flow-viewport-tools"><h2>Viewport</h2><button data-viewport="center">Center on selected</button><button data-viewport="fit">Fit selected</button><button data-viewport="zoom">Zoom to 1.25</button><button data-viewport="convert">Show coordinate conversion</button><button data-viewport="cancel">Cancel animation</button><output data-viewport-result aria-live="polite"></output></section></aside><div class="flow-foldkit-host"></div></main>`
 
 const canvas = root.querySelector<HTMLElement>('.flow-foldkit-host')
 
 const input = root.querySelector<HTMLInputElement>('input')
 
-const output = root.querySelector<HTMLOutputElement>('output')
+const output = root.querySelector<HTMLOutputElement>(
+  'output:not([data-measurement])'
+)
 
 const restore = root.querySelector<HTMLButtonElement>('[data-state="restore"]')
 
@@ -97,9 +110,186 @@ if (
 
 canvas.id = 'flow-foldkit-runtime'
 
+const rendererRegistry = {
+  nodeTypes: {
+    'demo-node': (node, h) =>
+      h.div(
+        [
+          h.Class('flow-foldkit-demo-node'),
+          h.DataAttribute('demo-renderer', 'node'),
+        ],
+        [h.strong([], [node.label]), h.small([], ['Custom node renderer'])]
+      ),
+  },
+  edgeTypes: {
+    'demo-edge': (edge, geometry, h) =>
+      h.path([
+        h.Class('flow-foldkit-demo-edge'),
+        h.D(geometry.path),
+        h.Fill('none'),
+        h.Stroke(edge.stroke ?? '#7c3aed'),
+        h.StrokeWidth(String(edge.strokeWidth ?? 2.5)),
+        ...(geometry.markerEndId === undefined
+          ? []
+          : [h.MarkerEnd(`url(#${geometry.markerEndId})`)]),
+      ]),
+  },
+} satisfies NonNullable<Parameters<typeof createProgram>[6]>
+
+let runtimeDisposed = false
+
 const runtime = Runtime.embed<typeof ports, never, 'Element'>(
-  createProgram(canvas, original, { x: 0, y: 0, zoom: 1 }, ['target'])
+  createProgram(
+    canvas,
+    original,
+    { x: 0, y: 0, zoom: 1 },
+    ['target'],
+    'uncontrolled',
+    'uncontrolled',
+    rendererRegistry
+  )
 )
+
+const viewportClient = createViewportClient(
+  runtime.ports,
+  () => {
+    const pane =
+      root.querySelector<HTMLElement>('.flow-foldkit-canvas') ?? canvas
+
+    const bounds = pane.getBoundingClientRect()
+
+    return {
+      width: bounds.width,
+      height: bounds.height,
+      originX: bounds.left,
+      originY: bounds.top,
+    }
+  },
+  { x: 0, y: 0, zoom: 1 }
+)
+
+const viewportOutput = root.querySelector<HTMLOutputElement>(
+  '[data-viewport-result]'
+)
+
+const viewportAnimation = { duration: 450, easing: 'ease-in-out' as const }
+
+for (const button of root.querySelectorAll<HTMLButtonElement>(
+  '[data-viewport]'
+)) {
+  button.addEventListener('click', async () => {
+    const action = button.dataset.viewport
+    let result = ''
+
+    if (action === 'center') {
+      result =
+        JSON.stringify(
+          await viewportClient.setCenter({ x: 480, y: 210 }, viewportAnimation)
+        ) ?? ''
+    } else if (action === 'fit') {
+      result =
+        JSON.stringify(
+          await viewportClient.fitView('selected', 0.12, viewportAnimation)
+        ) ?? ''
+    } else if (action === 'zoom') {
+      result =
+        JSON.stringify(
+          await viewportClient.zoomTo(1.25, undefined, viewportAnimation)
+        ) ?? ''
+    } else if (action === 'convert') {
+      const converted = await viewportClient.flowToScreen({ x: 480, y: 210 })
+      result =
+        JSON.stringify({ flow: { x: 480, y: 210 }, screen: converted.point }) ??
+        ''
+    } else if (action === 'cancel') {
+      result = JSON.stringify(await viewportClient.cancelAnimation()) ?? ''
+    }
+
+    if (viewportOutput !== null) {
+      viewportOutput.textContent = result
+    }
+  })
+}
+
+type MeasurementResult = typeof MeasurementResultSchema.Encoded
+
+let measurementRequestNumber = 0
+
+const pendingMeasurementRequests = new Map<
+  string,
+  {
+    readonly nodeId: string
+    readonly resolve: (result: MeasurementResult) => void
+  }
+>()
+
+runtime.ports.measurementResults.subscribe((result) => {
+  pendingMeasurementRequests.get(result.requestId)?.resolve(result)
+  pendingMeasurementRequests.delete(result.requestId)
+})
+
+let measurementGeneration = 0
+
+let measurementObserved = 0
+
+const measuredElements = new WeakSet<Element>()
+
+const elementGenerations = new WeakMap<Element, number>()
+
+const measureElement = (element: Element, requestId?: string): void => {
+  if (runtimeDisposed || !(element instanceof HTMLElement)) {
+    return
+  }
+
+  const { nodeId } = element.dataset
+
+  if (nodeId === undefined) {
+    return
+  }
+
+  measurementRequestNumber += 1
+  const resolvedRequestId = requestId ?? `observer-${measurementRequestNumber}`
+
+  const bounds = element.getBoundingClientRect()
+
+  const sent = runtime.ports.actions.send(
+    HostAction.MeasureNode({
+      requestId: resolvedRequestId,
+      measurement: {
+        nodeId: NodeIdSchema.make(nodeId),
+        width: bounds.width,
+        height: bounds.height,
+        generation: elementGenerations.get(element) ?? measurementGeneration,
+      },
+    })
+  )
+
+  if (Exit.isFailure(sent)) {
+    throw new Error('Foldkit rejected a node measurement')
+  }
+
+  measurementObserved += 1
+}
+
+const resizeObserver = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    measureElement(entry.target)
+  }
+})
+
+const mutationObserver = new MutationObserver(() => {
+  for (const element of root.querySelectorAll<HTMLElement>('[data-node-id]')) {
+    if (!measuredElements.has(element)) {
+      measuredElements.add(element)
+      measurementGeneration += 1
+      elementGenerations.set(element, measurementGeneration)
+      resizeObserver.observe(element)
+      measureElement(element)
+    }
+  }
+})
+
+mutationObserver.observe(root, { childList: true, subtree: true })
 
 const nextAnimationFrame = (): Promise<undefined> => {
   const { promise, resolve } = Promise.withResolvers<undefined>()
@@ -119,8 +309,6 @@ let saved: unknown
 let requestNumber = 0
 
 let editRequestNumber = 0
-
-let runtimeDisposed = false
 
 const pendingSnapshots = new Map<
   string,
@@ -149,6 +337,21 @@ const disposeRuntime = (): void => {
   }
 
   runtimeDisposed = true
+  viewportClient.dispose()
+  mutationObserver.disconnect()
+  resizeObserver.disconnect()
+
+  for (const [requestId, pending] of pendingMeasurementRequests) {
+    pending.resolve({
+      requestId,
+      nodeId: pending.nodeId,
+      status: 'disposed',
+      internalNode: null,
+      nodesInitialized: false,
+    })
+  }
+
+  pendingMeasurementRequests.clear()
 
   for (const [requestId, resolve] of pendingEditRequests) {
     resolve({ requestId, error: FlowEditDisposedSchema.make({}) })
@@ -433,6 +636,44 @@ const handleGraphEdit = async (
 
 tools.addEventListener('pointerdown', (event) => event.stopPropagation())
 
+const toggleMeasuredGeometry = async (): Promise<void> => {
+  const node = root.querySelector<HTMLElement>('[data-node-id="validate"]')
+  const handle = node?.querySelector<HTMLElement>('[data-handle-id="out"]')
+
+  if (
+    node === null ||
+    node === undefined ||
+    handle === null ||
+    handle === undefined
+  ) {
+    setStatus('Measured node is not mounted')
+
+    return
+  }
+
+  node.style.width = node.style.width === '150px' ? '220px' : '150px'
+  node.style.height = node.style.height === '44px' ? '96px' : '44px'
+  handle.style.top = handle.style.top === '70%' ? '30%' : '70%'
+  measurementRequestNumber += 1
+  const requestId = `refresh-${measurementRequestNumber}`
+
+  const { promise: measurementResult, resolve } =
+    Promise.withResolvers<MeasurementResult>()
+
+  pendingMeasurementRequests.set(requestId, {
+    nodeId: 'validate',
+    resolve,
+  })
+
+  measureElement(node, requestId)
+
+  const result = await measurementResult
+  await nextAnimationFrame()
+  setStatus(
+    `Measurement ${result.status}; readiness=${String(result.nodesInitialized)}; observer deliveries=${measurementObserved}`
+  )
+}
+
 tools.addEventListener('click', async (event) => {
   const button =
     event.target instanceof HTMLElement
@@ -453,6 +694,11 @@ tools.addEventListener('click', async (event) => {
   }
 
   switch (button.dataset.state) {
+    case 'measure-toggle': {
+      await toggleMeasuredGeometry()
+      break
+    }
+
     case 'inspect': {
       const node = selectedNode
       setStatus(

@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "browser": "Chromium 151.0.7922.34",
+    "normalization": "captured normalized node dimensions, parent-local geometry, handle bounds, readiness, and missing-node result; timestamps excluded from equality",
+    "capturedAt": "2026-09-27T21:14:02.877Z"
+  },
+  "cases": {
+    "initial": {
+      "id": "measured",
+      "measured": {
+        "width": 100,
+        "height": 64
+      },
+      "absolutePosition": {
+        "x": 120,
+        "y": 90
+      },
+      "handles": {
+        "source": [
+          {
+            "id": "out",
+            "x": 96,
+            "y": 12,
+            "width": 8,
+            "height": 8,
+            "position": "right"
+          }
+        ],
+        "target": [
+          {
+            "id": "in",
+            "x": -4,
+            "y": 28,
+            "width": 8,
+            "height": 8,
+            "position": "left"
+          }
+        ]
+      }
+    },
+    "readiness": {
+      "visibleOnly": true,
+      "includingHidden": false
+    },
+    "hiddenInternal": {
+      "id": "hidden",
+      "measured": {},
+      "absolutePosition": {
+        "x": 420,
+        "y": 90
+      },
+      "handles": {
+        "source": [],
+        "target": []
+      }
+    },
+    "missingInternal": null,
+    "refreshed": {
+      "id": "measured",
+      "measured": {
+        "width": 180,
+        "height": 92
+      },
+      "absolutePosition": {
+        "x": 120,
+        "y": 90
+      },
+      "handles": {
+        "source": [
+          {
+            "id": "out",
+            "x": 176,
+            "y": 48,
+            "width": 8,
+            "height": 8,
+            "position": "right"
+          }
+        ],
+        "target": [
+          {
+            "id": "in",
+            "x": -4,
+            "y": 42,
+            "width": 8,
+            "height": 8,
+            "position": "left"
+          }
+        ]
+      }
+    }
+  },
+  "repeatedCaptureMatches": true
+}

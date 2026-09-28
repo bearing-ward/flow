@@ -141,6 +141,49 @@ export type {
 export { prepareFlowEdit } from './domain/flow-edit.ts'
 
 export {
+  ViewportAnimationOptionsSchema,
+  ViewportBoundsSchema,
+  ViewportOperationResultSchema,
+  ViewportOperationStatusSchema,
+  ViewportPaddingSchema,
+  getViewportForBounds,
+  interpolateViewport,
+} from './domain/flow-viewport-operation.schema.ts'
+
+export type {
+  GetViewportForBoundsInput,
+  ViewportAnimationOptions,
+  ViewportBounds,
+  ViewportOperationResult,
+  ViewportOperationStatus,
+  ViewportPadding,
+} from './domain/flow-viewport-operation.schema.ts'
+
+export {
+  advanceNodeMeasurementGeneration,
+  FlowMeasurementStateSchema,
+  FlowInternalNodeSchema,
+  MeasuredNodeGenerationSchema,
+  NodeMeasurementGenerationSchema,
+  NodeMeasurementInputSchema,
+  applyNodeMeasurements,
+  applyNodeMeasurement,
+  areFlowNodesInitialized,
+  emptyFlowMeasurementState,
+  getFlowInternalNode,
+  pruneFlowMeasurements,
+  setNodeMeasurementGenerations,
+} from './domain/flow-measurement.schema.ts'
+
+export type {
+  FlowInternalNode,
+  FlowMeasurementState,
+  MeasuredNodeGeneration,
+  NodeMeasurementGeneration,
+  NodeMeasurementInput,
+} from './domain/flow-measurement.schema.ts'
+
+export {
   ProtectedDeletionConflict,
   FlowEditDisposedSchema,
   FlowEditErrorSchema,

@@ -4,6 +4,11 @@ import { Effect, FileSystem, Path, Schema as S } from 'effect'
 const citationPattern =
   /`(?<path>(?:packages|examples|tests|apps)\/[^`:\n]+):(?<line>\d+)`/gu
 
+export const isFlowTraceSourcePath = (relativePath: string): boolean =>
+  relativePath.startsWith('packages/core/') ||
+  relativePath.startsWith('packages/vue/') ||
+  relativePath.startsWith('apps/')
+
 const UpstreamSchema = S.Struct({ commit: S.NonEmptyString })
 
 const root = new URL('..', import.meta.url)
@@ -59,12 +64,8 @@ const program = Effect.gen(function* program() {
         continue
       }
 
-      const isFlowPath =
-        relativePath.startsWith('packages/core/') ||
-        relativePath.startsWith('apps/')
-
       const citedPath = path.join(
-        isFlowPath ? rootPath : artifactPath,
+        isFlowTraceSourcePath(relativePath) ? rootPath : artifactPath,
         relativePath
       )
 
@@ -97,4 +98,6 @@ const program = Effect.gen(function* program() {
   )
 })
 
-BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))
+if (import.meta.main) {
+  BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))
+}

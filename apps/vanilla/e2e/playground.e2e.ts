@@ -124,3 +124,29 @@ test('playground exposes and switches between completed interaction scenes', asy
   await expect(page.locator('.flow-demo-panel')).toHaveCount(0)
   await expect(page.locator('.flow-panel-slot')).toHaveCount(0)
 })
+
+test('viewport API playground demonstrates fit, conversion, fractional zoom, and cancellation', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Viewport API scene' }).click()
+  const card = page.locator('.flow-node[data-node-id="viewport-card"]')
+  await expect(card).toHaveAttribute('data-measured-width', '230')
+  await expect(card).toHaveClass(/selected/u)
+
+  await page.getByRole('button', { name: 'Show conversion marker' }).click()
+  await expect(page.getByTestId('conversion-marker')).toBeVisible()
+  await page.getByRole('button', { name: 'Zoom to 0.73' }).click()
+  await expect(page.locator('.flow-viewport')).toHaveAttribute(
+    'data-zoom',
+    '0.73'
+  )
+  await page.getByRole('button', { name: 'Center selected' }).click()
+  await page.getByRole('button', { name: 'Fit selected' }).click()
+  await page.getByRole('button', { name: 'Animate viewport' }).click()
+  await page.getByRole('button', { name: 'Cancel animation' }).click()
+  await expect(page.locator('.flow-demo-status')).toHaveText(
+    'Viewport animation cancelled'
+  )
+  await expect(page.getByTestId('flow-canvas')).toBeVisible()
+})

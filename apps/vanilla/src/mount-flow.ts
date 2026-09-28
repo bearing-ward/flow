@@ -14,6 +14,7 @@ import {
   FlowSpan,
   ViewportLimitsSchema,
   ViewportSchema,
+  XYPositionSchema,
   applyEdgeSelectionChange,
   applyEdgeReconnectChange,
   applyEdgeRemoveChange,
@@ -23,6 +24,9 @@ import {
   applyNodePositionsChange,
   applyNodeSizeChange,
   applyNodeBoundsChange,
+  applyNodeMeasurements,
+  areFlowNodesInitialized,
+  setNodeMeasurementGenerations,
   calculateNodeResize,
   createFlowSnapshot,
   beginNodeDrag,
@@ -32,7 +36,14 @@ import {
   constrainNodePosition,
   constrainNodeGroupDelta,
   fitViewportToNodes,
+  getViewportForBounds,
+  interpolateViewport,
+  ViewportBoundsSchema,
+  ViewportOperationResultSchema,
+  ViewportPaddingSchema,
   createFlowGraph,
+  emptyFlowMeasurementState,
+  getFlowInternalNode,
   graphBounds,
   flowToolbarAnchors,
   prepareFlowCommand,
@@ -57,6 +68,7 @@ import {
   decodeFlowDocument,
   edgeIntersectsViewport,
   nodeIntersectsViewport,
+  pruneFlowMeasurements,
   viewportFlowRect,
   validateFlowConnection,
   activateFlowInteraction,
@@ -92,10 +104,16 @@ import type {
   NodeBoundsChange,
   NodeResizeDirection,
   MeasuredNode,
+  FlowMeasurementState,
+  NodeMeasurementGeneration,
+  NodeMeasurementInput,
+  FlowInternalNode,
   FlowHandle,
   ReconnectEndpoint,
   NodeId,
   Viewport,
+  ViewportBounds,
+  ViewportOperationResult,
   ViewportLimits,
   PanExtent,
   NodeExtent,
@@ -339,7 +357,35 @@ export const FitViewOptionsSchema = S.Struct({
   nodes: S.optional(S.Literals(['all', 'selected'])),
   padding: S.optional(FitViewPaddingSchema),
   fallbackDimensions: S.optional(FitViewNodeDimensionsSchema),
+  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
 })
+
+export const FitBoundsOptionsSchema = S.Struct({
+  padding: S.optional(ViewportPaddingSchema),
+  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
+})
+
+export type FitBoundsOptions = typeof FitBoundsOptionsSchema.Type
+
+const SetCenterOptionsSchema = S.Struct({
+  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
+  zoom: S.optional(S.Finite),
+})
+
+interface SetCenterOptions {
+  duration?: number
+  easing?: 'linear' | 'ease-in-out'
+  zoom?: number
+}
+
+export interface ViewportObservation {
+  readonly kind: 'start' | 'change' | 'end'
+  readonly source: 'programmatic' | 'user'
+  readonly viewport: Viewport
+}
 
 export type FitViewOptions = typeof FitViewOptionsSchema.Type
 
@@ -511,9 +557,47 @@ export interface FlowController {
   readonly getNodes: () => readonly FlowNode[]
   readonly getEdges: () => readonly FlowEdge[]
   readonly getNode: (id: string) => FlowNode | undefined
+  readonly getInternalNode: (id: string) => FlowInternalNode | undefined
+  readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
+  readonly updateNodeInternals: (
+    nodeIds: readonly string[]
+  ) => Promise<readonly NodeInternalsRefreshResult[]>
   readonly getEdge: (id: string) => FlowEdge | undefined
   readonly getViewport: () => Viewport
-  readonly fitView: (options?: FitViewOptions) => boolean
+  readonly getZoom: () => number
+  readonly viewportInitialized: boolean
+  readonly screenToFlowPosition: (position: XYPosition) => XYPosition
+  readonly flowToScreenPosition: (position: XYPosition) => XYPosition
+  readonly getViewportForBounds: (
+    bounds: ViewportBounds,
+    options?: FitBoundsOptions
+  ) => Viewport | undefined
+  readonly setViewport: (
+    viewport: Viewport,
+    options?: Pick<FitBoundsOptions, 'duration' | 'easing'>
+  ) => Promise<ViewportOperationResult>
+  readonly zoomIn: (
+    options?: Pick<FitBoundsOptions, 'duration' | 'easing'>
+  ) => Promise<ViewportOperationResult>
+  readonly zoomOut: (
+    options?: Pick<FitBoundsOptions, 'duration' | 'easing'>
+  ) => Promise<ViewportOperationResult>
+  readonly zoomTo: (
+    zoom: number,
+    options?: Pick<FitBoundsOptions, 'duration' | 'easing'>
+  ) => Promise<ViewportOperationResult>
+  readonly setCenter: (
+    x: number,
+    y: number,
+    options?: Pick<FitBoundsOptions, 'duration' | 'easing'> & { zoom?: number }
+  ) => Promise<ViewportOperationResult>
+  readonly fitBounds: (
+    bounds: ViewportBounds,
+    options?: FitBoundsOptions
+  ) => Promise<ViewportOperationResult>
+  readonly fitView: (
+    options?: FitViewOptions
+  ) => Promise<ViewportOperationResult>
   readonly update: (document: FlowDocument) => void
   readonly applyEdit: (
     transaction: FlowEditTransactionInput
@@ -526,6 +610,9 @@ export interface FlowController {
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
   readonly subscribeState: (
     listener: (change: FlowStateChange) => void
+  ) => () => void
+  readonly subscribeViewport: (
+    listener: (event: ViewportObservation) => void
   ) => () => void
   readonly destroy: () => void
 }
@@ -566,9 +653,49 @@ export interface JavaScriptFlowController {
   readonly getNodes: () => readonly FlowNode[]
   readonly getEdges: () => readonly FlowEdge[]
   readonly getNode: (id: string) => FlowNode | undefined
+  readonly getInternalNode: (id: string) => FlowInternalNode | undefined
+  readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
+  readonly updateNodeInternals: (
+    nodeIds: readonly string[]
+  ) => Promise<readonly NodeInternalsRefreshResult[]>
   readonly getEdge: (id: string) => FlowEdge | undefined
   readonly getViewport: () => Viewport
-  readonly fitView: (options?: typeof FitViewOptionsSchema.Encoded) => boolean
+  readonly getZoom: () => number
+  readonly viewportInitialized: boolean
+  readonly screenToFlowPosition: (position: XYPosition) => XYPosition
+  readonly flowToScreenPosition: (position: XYPosition) => XYPosition
+  readonly getViewportForBounds: (
+    bounds: typeof ViewportBoundsSchema.Encoded,
+    options?: typeof FitBoundsOptionsSchema.Encoded
+  ) => Viewport | undefined
+  readonly setViewport: (
+    viewport: ViewportInput,
+    options?: typeof FitBoundsOptionsSchema.Encoded
+  ) => Promise<ViewportOperationResult>
+  readonly zoomIn: (
+    options?: typeof FitBoundsOptionsSchema.Encoded
+  ) => Promise<ViewportOperationResult>
+  readonly zoomOut: (
+    options?: typeof FitBoundsOptionsSchema.Encoded
+  ) => Promise<ViewportOperationResult>
+  readonly zoomTo: (
+    zoom: number,
+    options?: typeof FitBoundsOptionsSchema.Encoded
+  ) => Promise<ViewportOperationResult>
+  readonly setCenter: (
+    x: number,
+    y: number,
+    options?: typeof FitBoundsOptionsSchema.Encoded & {
+      readonly zoom?: number | undefined
+    }
+  ) => Promise<ViewportOperationResult>
+  readonly fitBounds: (
+    bounds: typeof ViewportBoundsSchema.Encoded,
+    options?: typeof FitBoundsOptionsSchema.Encoded
+  ) => Promise<ViewportOperationResult>
+  readonly fitView: (
+    options?: typeof FitViewOptionsSchema.Encoded
+  ) => Promise<ViewportOperationResult>
   readonly update: (document: FlowDocumentInput) => void
   readonly applyEdit: (
     transaction: FlowEditTransactionInput
@@ -627,6 +754,9 @@ export interface JavaScriptFlowController {
   readonly subscribeState: (
     listener: (change: FlowStateChange) => void
   ) => () => void
+  readonly subscribeViewport: (
+    listener: (event: ViewportObservation) => void
+  ) => () => void
   readonly destroy: () => void
 }
 
@@ -639,9 +769,17 @@ interface NodeEntry {
   readonly content: HTMLElement
   readonly handles: HTMLElement
   readonly release: () => void
+  generation: number
   rendererType: string | undefined
   renderer: FlowNodeRendererInstance | undefined
 }
+
+export type NodeInternalsRefreshResult =
+  | { readonly nodeId: string; readonly status: 'refreshed' }
+  | {
+      readonly nodeId: string
+      readonly status: 'missing' | 'unrendered' | 'disposed'
+    }
 
 const dragAnchorId = (drag: ActiveNodeDrag | ActiveNodeGroupDrag): NodeId =>
   'nodeId' in drag ? drag.nodeId : drag.anchorNodeId
@@ -933,6 +1071,31 @@ export const createFlowHost = (
 
     const entries = new Map<NodeId, NodeEntry>()
     const measurements = new Map<NodeId, MeasuredNode>()
+    let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
+    let nextMeasurementGeneration = -1
+
+    const pendingMeasurementGenerations = new Map<
+      NodeId,
+      NodeMeasurementGeneration
+    >()
+
+    const advanceMeasurementGeneration = (nodeId: NodeId): number => {
+      nextMeasurementGeneration += 1
+      pendingMeasurementGenerations.set(nodeId, {
+        nodeId,
+        generation: nextMeasurementGeneration,
+      })
+
+      return nextMeasurementGeneration
+    }
+
+    let refreshFramePending = false
+
+    const pendingInternals = new Map<
+      NodeId,
+      ((result: NodeInternalsRefreshResult) => void)[]
+    >()
+
     const renderedNodePositions = new Map<NodeId, XYPosition>()
     let document = initialDocument
     let acceptedSnapshot = createFlowSnapshot(document, authoritativeViewport)
@@ -1063,6 +1226,61 @@ export const createFlowHost = (
 
     const listeners = new Set<(change: FlowChange) => void>()
     const stateListeners = new Set<(change: FlowStateChange) => void>()
+    const viewportListeners = new Set<(event: ViewportObservation) => void>()
+    let viewportObservationSource: ViewportObservation['source'] = 'user'
+    let userViewportObservationActive = false
+
+    const emitViewportObservation = (
+      kind: ViewportObservation['kind'],
+      value: Viewport,
+      source: ViewportObservation['source'] = viewportObservationSource
+    ): void => {
+      const event: ViewportObservation = {
+        kind,
+        source,
+        viewport: structuredClone(value),
+      }
+
+      const viewportListenerSnapshot = [...viewportListeners]
+
+      for (const listener of viewportListenerSnapshot) {
+        if (destroyed || !viewportListeners.has(listener)) {
+          continue
+        }
+
+        try {
+          listener(event)
+        } catch (error) {
+          runTelemetry(
+            Effect.logError('Viewport observer failed').pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.documentIssue]: String(error),
+              }),
+              Effect.withSpan(FlowSpan.viewportUpdate)
+            )
+          )
+        }
+      }
+    }
+
+    const beginUserViewportObservation = (): void => {
+      if (userViewportObservationActive) {
+        return
+      }
+
+      userViewportObservationActive = true
+      emitViewportObservation('start', renderedViewport, 'user')
+    }
+
+    const endUserViewportObservation = (): void => {
+      if (!userViewportObservationActive) {
+        return
+      }
+
+      userViewportObservationActive = false
+      emitViewportObservation('end', renderedViewport, 'user')
+    }
+
     const deferredMutations: (() => void)[] = []
     const pendingEditRejectors = new Set<(reason: Error) => void>()
 
@@ -1491,23 +1709,59 @@ export const createFlowHost = (
 
     const resizeObserver = yield* browser
       .observeResize((observedEntries) => {
+        const acceptedMeasurements: NodeMeasurementInput[] = []
+
         for (const entry of observedEntries) {
           if (!(entry.target instanceof HTMLElement)) {
             continue
           }
 
           const element = entry.target
+          const { nodeId } = element.dataset
+
+          const node = document.nodes.find(
+            (candidate) => candidate.id === nodeId
+          )
+
+          const currentEntry =
+            node === undefined ? undefined : entries.get(node.id)
+
+          if (currentEntry?.element !== element) {
+            continue
+          }
+
           const measurement = browser.measure(element)
           element.dataset.measuredWidth = String(measurement.width)
           element.dataset.measuredHeight = String(measurement.height)
           element.style.visibility = 'visible'
 
-          const node = document.nodes.find(
-            (candidate) => candidate.id === element.dataset.nodeId
-          )
-
           if (node !== undefined) {
             measurements.set(node.id, { nodeId: node.id, ...measurement })
+            acceptedMeasurements.push({
+              generation: currentEntry.generation,
+              nodeId: node.id,
+              ...measurement,
+            })
+            runTelemetry(
+              Effect.logDebug('Measured flow node geometry').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.nodeId]: node.id,
+                  [FlowAttribute.measurementCount]: 1,
+                }),
+                Effect.withSpan(FlowSpan.geometryMeasure, {
+                  attributes: {
+                    [FlowAttribute.nodeId]: node.id,
+                    [FlowAttribute.measurementCount]: 1,
+                  },
+                })
+              )
+            )
+
+            for (const resolve of pendingInternals.get(node.id) ?? []) {
+              resolve({ nodeId: node.id, status: 'refreshed' })
+            }
+
+            pendingInternals.delete(node.id)
 
             if (!isDraggingNode(node.id)) {
               restoreAdoptedPosition(node)
@@ -1516,6 +1770,14 @@ export const createFlowHost = (
 
             edgeRenderer.measureNode(node, element, renderedViewport.zoom)
           }
+        }
+
+        if (acceptedMeasurements.length > 0) {
+          measurementState = applyNodeMeasurements(
+            document,
+            measurementState,
+            acceptedMeasurements
+          )
         }
 
         if (options.renderOnlyVisible === true) {
@@ -1561,6 +1823,7 @@ export const createFlowHost = (
     const renderViewport = (next: Viewport): void => {
       renderedViewport = constrainViewport(next)
       applyViewport(viewport, renderedViewport)
+      emitViewportObservation('change', renderedViewport)
       updateToolbarAnchors()
       updateCanvasMinimap()
 
@@ -2671,6 +2934,7 @@ export const createFlowHost = (
       }
 
       const pan = interactionSlots.activeViewportPan
+      endUserViewportObservation()
       suppressClickUntilPointerUp()
       const outcome = endSession('pane-pan', pan.pointerId, 'cancelled')
       interactionSlots.activeViewportPan = null
@@ -2741,6 +3005,10 @@ export const createFlowHost = (
         quiet = false
       ): void {
         const nextIds = new Set(next.nodes.map((node) => node.id))
+
+        const hiddenNextIds = new Set(
+          next.nodes.filter((node) => node.hidden === true).map(({ id }) => id)
+        )
 
         const activeResize = interactionSlots.activeNodeResize
 
@@ -2829,7 +3097,6 @@ export const createFlowHost = (
             }
 
             if (
-              !measurements.has(node.id) ||
               nodeIntersectsViewport(graph, node.id, rect) ||
               visibleEdgeEndpointIds.has(node.id)
             ) {
@@ -2981,15 +3248,17 @@ export const createFlowHost = (
           entry.element.remove()
           entries.delete(nodeId)
 
-          const nextNode = next.nodes.find((node) => node.id === nodeId)
-
-          if (nextNode === undefined || nextNode.hidden === true) {
+          if (!nextIds.has(nodeId) || hiddenNextIds.has(nodeId)) {
             edgeRenderer.forgetNode(nodeId)
             renderedNodePositions.delete(nodeId)
             measurements.delete(nodeId)
           }
 
           removed += 1
+        }
+
+        if (removed > 0) {
+          measurementState = pruneFlowMeasurements(next, measurementState)
         }
 
         for (const graphNode of graph.orderedNodes) {
@@ -3013,6 +3282,7 @@ export const createFlowHost = (
               nextRenderer === undefined ? undefined : (node.type ?? 'default')
 
             if (entry.rendererType !== nextRendererType) {
+              entry.generation = advanceMeasurementGeneration(node.id)
               entry.renderer?.destroy()
               entry.content.replaceChildren()
               entry.renderer = nextRenderer?.(node, entry.content)
@@ -3110,6 +3380,13 @@ export const createFlowHost = (
               Effect.withSpan(FlowSpan.domReconcile, { attributes })
             )
           )
+        }
+
+        if (pendingMeasurementGenerations.size > 0) {
+          measurementState = setNodeMeasurementGenerations(measurementState, [
+            ...pendingMeasurementGenerations.values(),
+          ])
+          pendingMeasurementGenerations.clear()
         }
 
         updateToolbarAnchors(next)
@@ -3479,6 +3756,8 @@ export const createFlowHost = (
       },
 
       makeNodeEntry(node: FlowNode): NodeEntry {
+        const generation = advanceMeasurementGeneration(node.id)
+
         const element = globalThis.document.createElement('article')
         const content = globalThis.document.createElement('div')
         content.className = 'flow-node-content'
@@ -4150,6 +4429,7 @@ export const createFlowHost = (
           element,
           content,
           handles,
+          generation,
           rendererType,
           renderer: rendererInstance,
           release: () => {
@@ -4459,6 +4739,7 @@ export const createFlowHost = (
         pointerInCanvas(event),
         event.pointerId
       )
+      beginUserViewportObservation()
 
       if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
         cancelViewportPan('pointer-capture-failed')
@@ -4529,6 +4810,7 @@ export const createFlowHost = (
         pointerInCanvas(event),
         event.pointerId
       )
+      beginUserViewportObservation()
 
       if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
         cancelViewportPan('pointer-capture-failed')
@@ -4691,6 +4973,8 @@ export const createFlowHost = (
         operations.publishChange(change)
       }
 
+      endUserViewportObservation()
+
       runTelemetry(
         Effect.logDebug('Completed viewport pan').pipe(
           Effect.annotateLogs({
@@ -4720,6 +5004,7 @@ export const createFlowHost = (
       const pinch = interactionSlots.activePinch
       suppressClickUntilPointerUp()
       const outcome = endSession('pinch', pinch.firstPointerId, 'cancelled')
+      endUserViewportObservation()
       interactionSlots.activePinch = null
       touchPointers.clear()
 
@@ -4884,6 +5169,7 @@ export const createFlowHost = (
 
       const pinch = interactionSlots.activePinch
       const outcome = endSession('pinch', pinch.firstPointerId, 'finished')
+      endUserViewportObservation()
       interactionSlots.activePinch = null
       touchPointers.clear()
 
@@ -6075,6 +6361,7 @@ export const createFlowHost = (
 
         listeners.clear()
         stateListeners.clear()
+        viewportListeners.clear()
         const restorePanelFocus = canvasUIHandle.current?.captureActiveFocus()
 
         try {
@@ -6144,6 +6431,193 @@ export const createFlowHost = (
       throw new Error('Canvas UI was not initialized before the controller')
     }
 
+    let nextViewportRequestId = 0
+
+    const allocateViewportRequestId = (): number => {
+      nextViewportRequestId += 1
+
+      return nextViewportRequestId
+    }
+
+    let activeViewportOperation:
+      | {
+          readonly requestId: number
+          readonly resolve: (result: ViewportOperationResult) => void
+          readonly target: Viewport
+          readonly from: Viewport
+          startedAt: number
+          readonly duration: number
+          readonly easing: 'linear' | 'ease-in-out'
+          frame: number | undefined
+        }
+      | undefined
+
+    const settleViewportOperation = (
+      status: ViewportOperationResult['status']
+    ): void => {
+      const active = activeViewportOperation
+
+      if (active === undefined) {
+        return
+      }
+
+      activeViewportOperation = undefined
+
+      if (active.frame !== undefined) {
+        globalThis.cancelAnimationFrame(active.frame)
+      }
+
+      active.resolve(
+        S.decodeUnknownSync(ViewportOperationResultSchema)({
+          requestId: active.requestId,
+          status,
+          viewport:
+            status === 'superseded' || status === 'disposed'
+              ? authoritativeViewport
+              : active.target,
+        })
+      )
+
+      if (status === 'superseded' || status === 'disposed') {
+        emitViewportObservation('end', authoritativeViewport, 'programmatic')
+      }
+    }
+
+    const paneViewportForBounds = (
+      bounds: ViewportBounds,
+      padding?: FitBoundsOptions['padding']
+    ): Viewport | undefined =>
+      getViewportForBounds({
+        bounds,
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+        limits: viewportLimits,
+        padding,
+      })
+
+    const performViewportOperation = (
+      targetInput: Viewport,
+      operationOptions: Pick<FitBoundsOptions, 'duration' | 'easing'> = {}
+    ): Promise<ViewportOperationResult> => {
+      const requestId = allocateViewportRequestId()
+
+      if (destroyed) {
+        return Promise.resolve({
+          requestId,
+          status: 'disposed',
+          viewport: authoritativeViewport,
+        })
+      }
+
+      const target = constrainViewport(
+        S.decodeUnknownSync(ViewportSchema)(targetInput)
+      )
+
+      if (activeViewportOperation !== undefined) {
+        settleViewportOperation('superseded')
+      }
+
+      if (
+        target.x === authoritativeViewport.x &&
+        target.y === authoritativeViewport.y &&
+        target.zoom === authoritativeViewport.zoom
+      ) {
+        return Promise.resolve({
+          requestId,
+          status: 'unchanged',
+          viewport: authoritativeViewport,
+        })
+      }
+
+      if (viewportMode === 'controlled') {
+        emitViewportObservation('start', authoritativeViewport, 'programmatic')
+        operations.publishChange({ kind: 'viewport', viewport: target })
+        emitViewportObservation('change', target, 'programmatic')
+        emitViewportObservation('end', authoritativeViewport, 'programmatic')
+
+        return Promise.resolve({
+          requestId,
+          status: 'proposed',
+          viewport: target,
+        })
+      }
+
+      const reducedMotion = globalThis.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
+
+      const duration = reducedMotion ? 0 : (operationOptions.duration ?? 0)
+      const easing = operationOptions.easing ?? 'ease-in-out'
+      const from = authoritativeViewport
+
+      if (duration === 0) {
+        emitViewportObservation('start', from, 'programmatic')
+        viewportObservationSource = 'programmatic'
+        operations.publishChange({ kind: 'viewport', viewport: target })
+        viewportObservationSource = 'user'
+        emitViewportObservation('end', target, 'programmatic')
+
+        return Promise.resolve({
+          requestId,
+          status: 'accepted',
+          viewport: target,
+        })
+      }
+
+      // The RAF callback is the settlement source for an interruptible host animation.
+      // eslint-disable-next-line promise/avoid-new -- The host owns frame lifecycle and cancellation.
+      return new Promise((resolve) => {
+        emitViewportObservation('start', from, 'programmatic')
+
+        const active: NonNullable<typeof activeViewportOperation> = {
+          requestId,
+          resolve,
+          target,
+          from,
+          startedAt: 0,
+          duration,
+          easing,
+          frame: undefined,
+        }
+
+        activeViewportOperation = active
+
+        const tick = (time: number): void => {
+          if (activeViewportOperation !== active || destroyed) {
+            return
+          }
+
+          if (active.startedAt === 0) {
+            active.startedAt = time
+          }
+
+          const progress = Math.min(1, (time - active.startedAt) / duration)
+          const next = interpolateViewport(from, target, progress, easing)
+          viewportObservationSource = 'programmatic'
+          operations.publishChange({ kind: 'viewport', viewport: next })
+          viewportObservationSource = 'user'
+
+          if (progress >= 1) {
+            activeViewportOperation = undefined
+            emitViewportObservation(
+              'end',
+              authoritativeViewport,
+              'programmatic'
+            )
+            resolve({
+              requestId,
+              status: 'accepted',
+              viewport: authoritativeViewport,
+            })
+          } else {
+            active.frame = globalThis.requestAnimationFrame(tick)
+          }
+        }
+
+        active.frame = globalThis.requestAnimationFrame(tick)
+      })
+    }
+
     const controller: FlowController = {
       overlayPortal,
       destroy: (): void => {
@@ -6160,8 +6634,10 @@ export const createFlowHost = (
         cancelViewportPan('host-destroyed')
         cancelPinch('host-destroyed')
         clearSelectionRect('cancelled')
+        settleViewportOperation('disposed')
         destroyed = true
         stateListeners.clear()
+        viewportListeners.clear()
 
         for (const reject of pendingEditRejectors) {
           reject(new Error('FlowControllerDisposed'))
@@ -6169,6 +6645,14 @@ export const createFlowHost = (
 
         pendingEditRejectors.clear()
         deferredMutations.length = 0
+
+        for (const [nodeId, resolve] of pendingInternals) {
+          for (const settle of resolve) {
+            settle({ nodeId, status: 'disposed' })
+          }
+        }
+
+        pendingInternals.clear()
         runTelemetry(
           Scope.close(hostScope, Exit.void).pipe(
             Effect.tap(() => Effect.logDebug('Destroyed flow host')),
@@ -6186,15 +6670,214 @@ export const createFlowHost = (
         createFlowSnapshot(document, authoritativeViewport).document.nodes.find(
           (node) => node.id === id
         ),
+      getInternalNode: (id) => {
+        const node = document.nodes.find((candidate) => candidate.id === id)
+
+        return node === undefined
+          ? undefined
+          : getFlowInternalNode(document, measurementState, node.id)
+      },
+      nodesInitialized: (readinessOptions) =>
+        areFlowNodesInitialized(document, measurementState, {
+          ...readinessOptions,
+          mountedNodeIds: new Set(entries.keys()),
+        }),
+      updateNodeInternals: (nodeIds) => {
+        if (destroyed) {
+          return Promise.resolve(
+            nodeIds.map((nodeId) => ({ nodeId, status: 'disposed' as const }))
+          )
+        }
+
+        const requests = nodeIds.map((rawId) => {
+          const node = document.nodes.find(
+            (candidate) => candidate.id === rawId
+          )
+
+          if (node === undefined) {
+            return Promise.resolve({
+              nodeId: rawId,
+              status: 'missing' as const,
+            })
+          }
+
+          if (!entries.has(node.id)) {
+            return Promise.resolve({
+              nodeId: rawId,
+              status: 'unrendered' as const,
+            })
+          }
+
+          const pending = Promise.withResolvers<NodeInternalsRefreshResult>()
+          const waiters = pendingInternals.get(node.id) ?? []
+          waiters.push(pending.resolve)
+          pendingInternals.set(node.id, waiters)
+
+          return pending.promise
+        })
+
+        if (!refreshFramePending && pendingInternals.size > 0) {
+          refreshFramePending = true
+          runEffect(
+            Scope.provide(
+              browser.requestAnimationFrame(() => {
+                refreshFramePending = false
+                const acceptedMeasurements: NodeMeasurementInput[] = []
+
+                for (const [nodeId, resolve] of pendingInternals) {
+                  const node = document.nodes.find(
+                    (candidate) => candidate.id === nodeId
+                  )
+
+                  const entry = entries.get(nodeId)
+
+                  if (node === undefined) {
+                    for (const settle of resolve) {
+                      settle({ nodeId, status: 'missing' })
+                    }
+                  } else if (
+                    entry === undefined ||
+                    !entry.element.isConnected
+                  ) {
+                    for (const settle of resolve) {
+                      settle({ nodeId, status: 'unrendered' })
+                    }
+                  } else {
+                    const measurement = browser.measure(entry.element)
+                    measurements.set(nodeId, { nodeId, ...measurement })
+                    acceptedMeasurements.push({
+                      nodeId,
+                      generation: entry.generation,
+                      ...measurement,
+                    })
+                    edgeRenderer.measureNode(
+                      node,
+                      entry.element,
+                      renderedViewport.zoom
+                    )
+
+                    for (const settle of resolve) {
+                      settle({ nodeId, status: 'refreshed' })
+                    }
+                  }
+                }
+
+                if (acceptedMeasurements.length > 0) {
+                  measurementState = applyNodeMeasurements(
+                    document,
+                    measurementState,
+                    acceptedMeasurements
+                  )
+                }
+
+                pendingInternals.clear()
+                renderGraphPositions()
+                edgeRenderer.reconcile(document, renderedNodePositions)
+              }),
+              hostScope
+            )
+          )
+        }
+
+        return Promise.all(requests)
+      },
       getEdge: (id) =>
         createFlowSnapshot(document, authoritativeViewport).document.edges.find(
           (edge) => edge.id === id
         ),
       getViewport: () =>
         createFlowSnapshot(document, authoritativeViewport).viewport,
-      fitView: (fitOptions = {}): boolean => {
+      getZoom: () => authoritativeViewport.zoom,
+      get viewportInitialized() {
+        return canvas.clientWidth > 0 && canvas.clientHeight > 0
+      },
+      screenToFlowPosition: (position) => {
+        const rect = canvas.getBoundingClientRect()
+
+        return screenToFlowPosition(
+          { x: position.x - rect.left, y: position.y - rect.top },
+          authoritativeViewport
+        )
+      },
+      flowToScreenPosition: (position) => {
+        const rect = canvas.getBoundingClientRect()
+        const panePoint = flowToScreenPosition(position, authoritativeViewport)
+
+        return { x: panePoint.x + rect.left, y: panePoint.y + rect.top }
+      },
+      getViewportForBounds: (bounds, fitOptions = {}) =>
+        paneViewportForBounds(bounds, fitOptions.padding),
+      setViewport: (candidate, operationOptions) =>
+        performViewportOperation(candidate, operationOptions),
+      zoomIn: (operationOptions) =>
+        controller.zoomTo(authoritativeViewport.zoom * 1.2, operationOptions),
+      zoomOut: (operationOptions) =>
+        controller.zoomTo(authoritativeViewport.zoom / 1.2, operationOptions),
+      zoomTo: (zoom, operationOptions) => {
+        const boundedZoom = Math.max(
+          viewportLimits.minZoom,
+          Math.min(viewportLimits.maxZoom, zoom)
+        )
+
+        const centerX = canvas.clientWidth / 2
+        const centerY = canvas.clientHeight / 2
+
+        return performViewportOperation(
+          zoomViewportAt(
+            authoritativeViewport,
+            boundedZoom,
+            { x: centerX, y: centerY },
+            viewportLimits
+          ),
+          operationOptions
+        )
+      },
+      setCenter: (x, y, operationOptions = {}) => {
+        const zoom = Math.max(
+          viewportLimits.minZoom,
+          Math.min(
+            viewportLimits.maxZoom,
+            operationOptions.zoom ?? authoritativeViewport.zoom
+          )
+        )
+
+        return performViewportOperation(
+          {
+            x: canvas.clientWidth / 2 - x * zoom,
+            y: canvas.clientHeight / 2 - y * zoom,
+            zoom,
+          },
+          operationOptions
+        )
+      },
+      fitBounds: (bounds, fitOptions = {}) => {
+        const target = paneViewportForBounds(bounds, fitOptions.padding)
+
+        if (target === undefined) {
+          return Promise.resolve({
+            requestId: allocateViewportRequestId(),
+            status: 'unavailable',
+            viewport: authoritativeViewport,
+          })
+        }
+
+        return performViewportOperation(target, fitOptions)
+      },
+      fitView: (fitOptions = {}): Promise<ViewportOperationResult> => {
         if (destroyed) {
-          return false
+          return Promise.resolve({
+            requestId: allocateViewportRequestId(),
+            status: 'disposed',
+            viewport: authoritativeViewport,
+          })
+        }
+
+        if (canvas.clientWidth <= 0 || canvas.clientHeight <= 0) {
+          return Promise.resolve({
+            requestId: allocateViewportRequestId(),
+            status: 'unavailable',
+            viewport: authoritativeViewport,
+          })
         }
 
         const nodeIds =
@@ -6205,8 +6888,6 @@ export const createFlowHost = (
                   .map((node) => node.id)
               )
             : undefined
-
-        const fitNodeCount = nodeIds?.size ?? document.nodes.length
 
         const fitted = fitViewportToNodes({
           document,
@@ -6224,38 +6905,7 @@ export const createFlowHost = (
           },
         })
 
-        const candidate = constrainViewport(fitted)
-
-        if (
-          candidate.x === authoritativeViewport.x &&
-          candidate.y === authoritativeViewport.y &&
-          candidate.zoom === authoritativeViewport.zoom
-        ) {
-          return false
-        }
-
-        operations.publishChange({
-          kind: 'viewport',
-          viewport: candidate,
-        })
-        runTelemetry(
-          Effect.logDebug('Fitted viewport to measured nodes').pipe(
-            Effect.annotateLogs({
-              [FlowAttribute.inputKind]: 'fit-view',
-              [FlowAttribute.nodeCount]: fitNodeCount,
-              [FlowAttribute.viewportZoom]: candidate.zoom,
-            }),
-            Effect.withSpan(FlowSpan.viewportUpdate, {
-              attributes: {
-                [FlowAttribute.inputKind]: 'fit-view',
-                [FlowAttribute.nodeCount]: fitNodeCount,
-                [FlowAttribute.viewportZoom]: candidate.zoom,
-              },
-            })
-          )
-        )
-
-        return true
+        return performViewportOperation(constrainViewport(fitted), fitOptions)
       },
       dispatch: (command): void => {
         if (destroyed) {
@@ -6290,6 +6940,15 @@ export const createFlowHost = (
         stateListeners.add(listener)
 
         return () => stateListeners.delete(listener)
+      },
+      subscribeViewport: (listener): (() => void) => {
+        if (destroyed) {
+          return () => viewportListeners.delete(listener)
+        }
+
+        viewportListeners.add(listener)
+
+        return () => viewportListeners.delete(listener)
       },
       update: (nextDocument): void => {
         if (destroyed) {
@@ -6377,11 +7036,17 @@ export const createFlowHost = (
           return
         }
 
+        if (activeViewportOperation !== undefined) {
+          settleViewportOperation('superseded')
+        }
+
         const replacement = structuredClone(nextViewport)
 
         executeMutation(() => {
           authoritativeViewport = constrainViewport(replacement)
+          viewportObservationSource = 'programmatic'
           renderViewport(authoritativeViewport)
+          viewportObservationSource = 'user'
           publishAcceptedState('viewport-update')
           runTelemetry(
             Effect.logDebug('Updated authoritative viewport').pipe(
@@ -6475,8 +7140,88 @@ export const mountFlow = (
     getNodes: host.getNodes,
     getEdges: host.getEdges,
     getNode: host.getNode,
+    getInternalNode: host.getInternalNode,
+    nodesInitialized: host.nodesInitialized,
+    updateNodeInternals: host.updateNodeInternals,
     getEdge: host.getEdge,
     getViewport: host.getViewport,
+    getZoom: host.getZoom,
+    get viewportInitialized() {
+      return host.viewportInitialized
+    },
+    screenToFlowPosition: (position) =>
+      host.screenToFlowPosition(
+        Effect.runSync(S.decodeUnknownEffect(XYPositionSchema)(position))
+      ),
+    flowToScreenPosition: (position) =>
+      host.flowToScreenPosition(
+        Effect.runSync(S.decodeUnknownEffect(XYPositionSchema)(position))
+      ),
+    getViewportForBounds: (bounds, fitOptions) =>
+      host.getViewportForBounds(
+        Effect.runSync(S.decodeUnknownEffect(ViewportBoundsSchema)(bounds)),
+        Effect.runSync(
+          S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
+        )
+      ),
+    setViewport: (viewport, fitOptions) =>
+      host.setViewport(
+        Effect.runSync(S.decodeUnknownEffect(ViewportSchema)(viewport)),
+        Effect.runSync(
+          S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
+        )
+      ),
+    zoomIn: (fitOptions) =>
+      host.zoomIn(
+        Effect.runSync(
+          S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
+        )
+      ),
+    zoomOut: (fitOptions) =>
+      host.zoomOut(
+        Effect.runSync(
+          S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
+        )
+      ),
+    zoomTo: (zoom, fitOptions) =>
+      host.zoomTo(
+        Effect.runSync(S.decodeUnknownEffect(S.Finite)(zoom)),
+        Effect.runSync(
+          S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
+        )
+      ),
+    setCenter: (x, y, fitOptions) => {
+      const decoded = Effect.runSync(
+        S.decodeUnknownEffect(SetCenterOptionsSchema)(fitOptions ?? {})
+      )
+
+      const normalized: SetCenterOptions = {}
+
+      if (decoded.duration !== undefined) {
+        normalized.duration = decoded.duration
+      }
+
+      if (decoded.easing !== undefined) {
+        normalized.easing = decoded.easing
+      }
+
+      if (decoded.zoom !== undefined) {
+        normalized.zoom = decoded.zoom
+      }
+
+      return host.setCenter(
+        Effect.runSync(S.decodeUnknownEffect(S.Finite)(x)),
+        Effect.runSync(S.decodeUnknownEffect(S.Finite)(y)),
+        normalized
+      )
+    },
+    fitBounds: (bounds, fitOptions) =>
+      host.fitBounds(
+        Effect.runSync(S.decodeUnknownEffect(ViewportBoundsSchema)(bounds)),
+        Effect.runSync(
+          S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
+        )
+      ),
     destroy: host.destroy,
     setNodes: (nodes) =>
       isNodeUpdater(nodes)
@@ -6622,7 +7367,7 @@ export const mountFlow = (
       return result.deletion
     },
     applyEdit: (transaction) => host.applyEdit(transaction),
-    fitView: (fitOptions): boolean =>
+    fitView: (fitOptions) =>
       host.fitView(
         Effect.runSync(
           S.decodeUnknownEffect(FitViewOptionsSchema)(fitOptions ?? {})
@@ -6635,6 +7380,7 @@ export const mountFlow = (
     },
     subscribe: host.subscribe,
     subscribeState: host.subscribeState,
+    subscribeViewport: host.subscribeViewport,
     update: (nextInput): void => {
       host.update(Effect.runSync(decodeFlowDocument(nextInput)))
     },
@@ -6662,6 +7408,9 @@ export const createFlow = (
 
     return {
       ...controller,
+      get viewportInitialized() {
+        return controller.viewportInitialized
+      },
       destroy: (): void => {
         unsubscribe?.()
         controller.destroy()

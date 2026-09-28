@@ -8,9 +8,14 @@ test('Foldkit playground demonstrates typed state ports and session restore', as
   await expect(
     page.locator('.flow-foldkit-node[data-node-id="validate"]')
   ).toBeVisible()
+  await expect(page.locator('.flow-foldkit-demo-node')).toHaveCount(1)
+  await expect(page.locator('.flow-foldkit-demo-edge')).toHaveCount(1)
+  await expect(
+    page.locator('.flow-foldkit-edge-label[data-label-owner="host-overlay"]')
+  ).toHaveText('validated input')
   await page.screenshot({ path: '/tmp/flow-051-foldkit-desktop.png' })
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-measurement])')
   await expect(
     panel.getByRole('button', { name: 'Restore snapshot' })
   ).toBeDisabled()

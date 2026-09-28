@@ -1,0 +1,57 @@
+{
+  "contract": "flow-measured-geometry-v1",
+  "units": "unscaled-local-graph-units",
+  "cases": [
+    {
+      "name": "nested-visible-node",
+      "nodes": [
+        {
+          "id": "parent",
+          "position": { "x": 100, "y": 80 },
+          "size": { "width": 180, "height": 100 }
+        },
+        {
+          "id": "child",
+          "parentId": "parent",
+          "position": { "x": 20, "y": 30 },
+          "size": { "width": 40, "height": 25 }
+        }
+      ],
+      "expectedAbsolutePosition": { "x": 120, "y": 110 },
+      "expectedMeasurement": { "width": 40, "height": 25 }
+    },
+    {
+      "name": "hidden-node-readiness",
+      "nodes": [
+        { "id": "hidden", "hidden": true, "position": { "x": 0, "y": 0 } }
+      ],
+      "expectedReady": { "includeHidden": false, "excludeHidden": true }
+    },
+    {
+      "name": "zero-sized-node",
+      "nodes": [{ "id": "zero", "position": { "x": 0, "y": 0 } }],
+      "measurement": { "width": 0, "height": 0 },
+      "isMeasured": true
+    },
+    {
+      "name": "culled-node-fit-fallback",
+      "nodes": [
+        {
+          "id": "offscreen",
+          "position": { "x": 5000, "y": 5000 },
+          "size": { "width": 300, "height": 90 }
+        }
+      ],
+      "isDomMeasured": false,
+      "fitDimensions": { "width": 300, "height": 90 }
+    },
+    {
+      "name": "remove-readd-same-id",
+      "nodeId": "reused",
+      "nodes": [{ "id": "reused", "position": { "x": 0, "y": 0 } }],
+      "firstGeneration": 4,
+      "replacementGeneration": 5,
+      "staleGenerationAccepted": false
+    }
+  ]
+}

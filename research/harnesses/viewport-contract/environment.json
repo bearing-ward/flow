@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-09-28T09:49:42.355Z",
+  "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "checkout": "/tmp/flow-xyflow-renderer-contract",
+  "gitStatus": "clean before dependency install and build",
+  "bunVersion": "1.3.14",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "browser": "Chromium",
+  "browserVersion": "151.0.7922.34",
+  "viewport": {
+    "width": 800,
+    "height": 600,
+    "deviceScaleFactor": 1
+  },
+  "captureRuns": 2,
+  "normalizedRunsEqual": true
+}

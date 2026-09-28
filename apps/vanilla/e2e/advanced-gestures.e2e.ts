@@ -2109,7 +2109,9 @@ test('fitView shows measured distant nodes and supports selected-node fit', asyn
     'data-measured-width',
     '150'
   )
-  await page.evaluate(() => globalThis.flowController?.fitView())
+  await page.evaluate(() =>
+    globalThis.flowController?.fitView().then((result) => result.status)
+  )
   const canvas = await page.getByTestId('flow-canvas').boundingBox()
   const first = await page.locator('[data-node-id="a"]').boundingBox()
   const second = await page.locator('[data-node-id="b"]').boundingBox()
@@ -2122,7 +2124,9 @@ test('fitView shows measured distant nodes and supports selected-node fit', asyn
   expect(second.x + second.width).toBeLessThanOrEqual(canvas.x + canvas.width)
   await page.locator('[data-node-id="a"]').click()
   await page.evaluate(() =>
-    globalThis.flowController?.fitView({ nodes: 'selected' })
+    globalThis.flowController
+      ?.fitView({ nodes: 'selected' })
+      .then((result) => result.status)
   )
   const selected = await page.locator('[data-node-id="a"]').boundingBox()
 

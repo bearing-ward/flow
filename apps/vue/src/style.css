@@ -72,3 +72,69 @@ header p {
   overflow-wrap: anywhere;
   font-size: 11px;
 }
+
+.flow-vue-viewport-overlay {
+  position: absolute;
+  z-index: 12;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flow-vue-viewport-tools {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  gap: 7px;
+  width: min(260px, calc(100% - 24px));
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 95%);
+  pointer-events: auto;
+}
+
+.flow-vue-viewport-tools h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.flow-vue-viewport-tools button {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: inherit;
+  background: white;
+}
+
+.flow-vue-coordinate-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #dc2626;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+}
+
+.flow-vue-coordinate-marker-readout {
+  font-size: 11px;
+}
+
+.flow-vue-renderer-node {
+  display: grid;
+  gap: 8px;
+  height: 100%;
+  align-content: center;
+  color: #312e81;
+}
+
+.flow-vue-renderer-node p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.flow-vue-renderer-custom-edge {
+  stroke-dasharray: 7 3;
+}

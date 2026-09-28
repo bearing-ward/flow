@@ -203,7 +203,7 @@ Each row links to a local evidence section. Production pointers identify impleme
 | --- | --- | --- | --- | --- | --- | --- |
 | [Add Node On Edge Drop](https://reactflow.dev/examples/nodes/add-node-on-edge-drop) | [No equivalent example identified](#open-example) | G | G | G | U | Add node creation from failed connection drop. |
 | [Connection Limit](https://reactflow.dev/examples/nodes/connection-limit) | [Connection validators](#connections) | P | P | P | U | Implement and demonstrate per-handle limits. |
-| [Custom Nodes](https://reactflow.dev/examples/nodes/custom-node) | [Custom renderer / Vue component and slot](#rendering) | P | P | G | U | Build equivalent interactive custom-node example. |
+| [Custom Nodes](https://reactflow.dev/examples/nodes/custom-node) | [Per-type renderers and host lifecycle](#rendering) | P | P | P | U | Add reference-prop coverage and richer interactive examples in each host. |
 | [Delete Middle Node](https://reactflow.dev/examples/nodes/delete-middle-node) | [Bounded atomic reconnect recipe](#open-example); see [the example guide](../../docs/examples/graph-editing.md) | P | P | P | U | Each host has keyboard, narrow-viewport, reset, and graph assertions; broader upstream shell and callback parity remain open. |
 | [Drag Handle](https://reactflow.dev/examples/nodes/drag-handle) | [data-flow-drag-handle marker](#drag) | P | G | G | U | Port custom-handle ownership to adapters; retain narrow pinned proof. |
 | [Easy Connect](https://reactflow.dev/examples/nodes/easy-connect) | [Handle connection gestures](#connections) | P | P | P | U | Demonstrate the exact node-body connection recipe. |
@@ -223,7 +223,7 @@ Each row links to a local evidence section. Production pointers identify impleme
 | --- | --- | --- | --- | --- | --- | --- |
 | [Animating Edges](https://reactflow.dev/examples/edges/animating-edges) | [No equivalent example identified](#open-example) | G | G | G | U | Implement edge animation recipe. |
 | [Custom Connection Line](https://reactflow.dev/examples/edges/custom-connectionline) | [No equivalent example identified](#open-example) | G | G | G | U | Expose custom connection preview renderer. |
-| [Custom Edges](https://reactflow.dev/examples/edges/custom-edges) | [Edge renderer / Vue edge component](#rendering) | P | P | G | U | Demonstrate custom edge behavior and interactions. |
+| [Custom Edges](https://reactflow.dev/examples/edges/custom-edges) | [Per-type edge renderers and shared paths](#rendering) | P | P | P | U | Add reference-prop coverage and richer edge interaction examples. |
 | [Delete Edge on Drop](https://reactflow.dev/examples/edges/delete-edge-on-drop) | [No equivalent example identified](#open-example) | G | G | G | U | Implement reconnection-drop deletion policy. |
 | [Edge Label Renderer](https://reactflow.dev/examples/edges/edge-label-renderer) | [Custom edge labels](#labels) | P | G | G | U | Build equivalent interactive HTML-label example. |
 | [Edge Intersection](https://reactflow.dev/examples/edges/edge-intersection) | [No equivalent example identified](#open-example) | G | G | G | U | Implement edge intersection detection and display. |
@@ -388,15 +388,15 @@ Tests: [shared connection-validity fixture](../fixtures/README.md), [Vue rendere
 
 ### Rendering
 
-Production: [vanilla node and edge renderer contracts](../../apps/vanilla/src/mount-flow.ts#L273), [renderer registries](../../apps/vanilla/src/mount-flow.ts#L402), [Vue component/slot props](../../packages/vue/src/flow-canvas.ts#L183), and [Vue node/edge rendering](../../packages/vue/src/flow-canvas.ts#L868). Foldkit's current [fixed node and edge view](../../apps/foldkit/src/graph.ts#L320) exposes no equivalent custom registry. Vue accepts a component per kind, not a node-type registry matching React Flow.
+Production: [vanilla node and edge renderer contracts](../../apps/vanilla/src/mount-flow.ts#L367), [renderer registries](../../apps/vanilla/src/mount-flow.ts#L498), [Vue typed registries and legacy component fallbacks](../../packages/vue/src/flow-canvas.ts#L238), and [Foldkit's host-configured registry](../../apps/foldkit/src/graph.ts#L601). The hosts now expose per-type node and edge renderers, but their lifecycle and custom-edge context are framework-specific.
 
-Tests: [vanilla typed renderers and cleanup](../../apps/vanilla/e2e/graph-renderers.e2e.ts#L1348), [Vue component identity](../../apps/vue/e2e/shared-conformance.e2e.ts#L59), and [Vue default edge rendering](../../apps/vue/e2e/connection.e2e.ts#L3). All renderer props, edge component primitives, and complete example interactions remain open.
+Tests: [Vanilla lifecycle and edge output](../../apps/vanilla/e2e/renderer-contract.e2e.ts), [Vue registry identity and handle geometry](../../apps/vue/e2e/renderer-contract.e2e.ts), and [Foldkit keyed renderers and scoped markers](../../apps/foldkit/e2e/renderer-contract.e2e.ts). The bounded suites prove type replacement/fallback, handle refresh, core path choices, labels, markers, interactive controls, and host isolation. Reference props, all edge component primitives, and complete example interactions remain open.
 
 ### Labels
 
-Production: [vanilla edge labels and markers](../../apps/vanilla/src/edge-renderer.ts#L52) and the [edge renderer context](../../apps/vanilla/src/mount-flow.ts#L283). A built-in SVG label and custom renderer are useful starting points, but do not establish a compatible HTML label portal or reusable EdgeText component.
+Production: [Vanilla's host-owned HTML label overlay](../../apps/vanilla/src/edge-renderer.ts#L512), [Vue's edge label overlay](../../packages/vue/src/flow-canvas.ts#L1661), and [Foldkit's edge label layer](../../apps/foldkit/src/graph.ts#L1025). These place default labels in host-owned graph-coordinate HTML layers; they do not establish a reusable EdgeText component or full EdgeLabelRenderer portal contract.
 
-Evidence: [edge label trace](../traces/edge-label-render.md), [marker trace](../traces/edge-markers-styling.md), and [custom renderer browser tests](../../apps/vanilla/e2e/graph-renderers.e2e.ts#L1348). Vue's default edge renderer and Foldkit's textual edge labels do not establish equivalent catalog label/marker components.
+Evidence: [shared renderer trace](../traces/shared-renderer-contract.md), [edge label trace](../traces/edge-label-render.md), [marker trace](../traces/edge-markers-styling.md), and the three [host renderer suites](../../apps/vanilla/e2e/renderer-contract.e2e.ts). Label placement is tested as host behavior; custom portal APIs, rich label props, and reusable catalog label/marker components remain open.
 
 ### Canvas-ui
 

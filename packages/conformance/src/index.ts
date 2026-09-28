@@ -1,3 +1,4 @@
+import type { FlowInternalNodeSchema } from '@flow/core'
 import {
   FlowEditTransactionSchema,
   FlowDocumentSchema,
@@ -7,6 +8,8 @@ import {
   FlowStateChangeSchema,
   ViewportSchema,
   FlowEditErrorSchema,
+  NodeSizeSchema,
+  XYPositionSchema,
 } from '@flow/core'
 import { Schema } from 'effect'
 
@@ -84,6 +87,100 @@ export interface ConformanceAdapter {
     readonly changesAfterDestroy: number
     readonly acceptedStatesAfterDestroy: number
   }>
+}
+
+export type MeasuredGeometryNode = typeof FlowInternalNodeSchema.Encoded
+
+const RendererContractSceneSchema = Schema.Struct({
+  id: Schema.String,
+  type: Schema.optional(Schema.String),
+  path: Schema.optional(Schema.String),
+  label: Schema.optional(Schema.String),
+  markerStart: Schema.optional(Schema.String),
+  markerEnd: Schema.optional(Schema.String),
+})
+
+export const RendererContractFixtureSchema = Schema.Struct({
+  contract: Schema.Literal('flow-renderer-contract-v1'),
+  document: FlowDocumentSchema,
+  expected: Schema.Struct({
+    nodeTypes: Schema.Array(RendererContractSceneSchema),
+    edgeTypes: Schema.Array(RendererContractSceneSchema),
+    builtInPaths: Schema.Array(Schema.String),
+    customEdgeType: Schema.String,
+    unknownTypeFallback: Schema.String,
+    dynamicHandle: Schema.Struct({
+      nodeId: Schema.String,
+      handleId: Schema.String,
+      initialTop: Schema.Number,
+      resizedTop: Schema.Number,
+    }),
+    interactiveDescendant: Schema.String,
+    labelOwner: Schema.Literal('host-overlay'),
+  }),
+})
+
+export type RendererContractFixture =
+  typeof RendererContractFixtureSchema.Encoded
+
+const MeasuredGeometryCaseSchema = Schema.Struct({
+  name: Schema.String,
+  nodes: Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      parentId: Schema.optional(Schema.String),
+      hidden: Schema.optional(Schema.Boolean),
+      position: XYPositionSchema,
+      size: Schema.optional(NodeSizeSchema),
+    })
+  ),
+  expectedAbsolutePosition: Schema.optional(XYPositionSchema),
+  expectedMeasurement: Schema.optional(NodeSizeSchema),
+  expectedReady: Schema.optional(
+    Schema.Struct({
+      includeHidden: Schema.Boolean,
+      excludeHidden: Schema.Boolean,
+    })
+  ),
+  measurement: Schema.optional(
+    Schema.Struct({ width: Schema.Number, height: Schema.Number })
+  ),
+  isMeasured: Schema.optional(Schema.Boolean),
+  isDomMeasured: Schema.optional(Schema.Boolean),
+  fitDimensions: Schema.optional(NodeSizeSchema),
+  nodeId: Schema.optional(Schema.String),
+  firstGeneration: Schema.optional(Schema.Number),
+  replacementGeneration: Schema.optional(Schema.Number),
+  staleGenerationAccepted: Schema.optional(Schema.Boolean),
+})
+
+export const MeasuredGeometryContractSchema = Schema.Struct({
+  contract: Schema.Literal('flow-measured-geometry-v1'),
+  units: Schema.Literal('unscaled-local-graph-units'),
+  cases: Schema.Array(MeasuredGeometryCaseSchema),
+})
+
+export type MeasuredGeometryCase = typeof MeasuredGeometryCaseSchema.Encoded
+
+export interface MeasuredGeometryAdapter {
+  mountMeasurementDocument: (
+    document: ConformanceDocument,
+    renderOnlyVisible: boolean
+  ) => Promise<void>
+  updateMeasurementDocument: (document: ConformanceDocument) => Promise<void>
+  internalNode: (nodeId: string) => Promise<MeasuredGeometryNode | null>
+  nodesInitialized: (includeHidden: boolean) => Promise<boolean>
+  renderedNodeExists: (nodeId: string) => Promise<boolean>
+  resizeAndRefresh: (
+    nodeId: string,
+    size: { readonly width: number; readonly height: number }
+  ) => Promise<{
+    readonly status: string
+    readonly width: number | null
+    readonly height: number | null
+  }>
+  removeAndReadd: (nodeId: string) => Promise<void>
+  destroyMeasurementDocument: () => Promise<void>
 }
 
 export const PublicStateQuerySchema = Schema.Struct({

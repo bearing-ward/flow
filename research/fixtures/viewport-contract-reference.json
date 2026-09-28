@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "normalization": "fixed 800x600 browser viewport; retain public API values, final viewports, boolean results, and deduplicated lifecycle event order; exclude timestamps and intermediate animation frames"
+  },
+  "cases": {
+    "helperFit": {
+      "x": 17.80000000000001,
+      "y": 81.6,
+      "zoom": 1.82
+    },
+    "asymmetricFit": {
+      "x": -260,
+      "y": -40,
+      "zoom": 3.4
+    },
+    "initial": {
+      "x": 30,
+      "y": -20,
+      "zoom": 1.5
+    },
+    "conversions": {
+      "flowToScreen": {
+        "x": 180,
+        "y": 100
+      },
+      "screenToFlow": {
+        "x": 120,
+        "y": 80
+      },
+      "snapped": {
+        "x": 120,
+        "y": 80
+      }
+    },
+    "fitBounds": {
+      "result": true,
+      "viewport": {
+        "x": -146,
+        "y": 27,
+        "zoom": 1.82
+      },
+      "events": ["start", "change"]
+    },
+    "centered": {
+      "viewport": {
+        "x": 175,
+        "y": 150,
+        "zoom": 1.25
+      },
+      "events": ["start", "change"]
+    },
+    "zoomed": {
+      "viewport": {
+        "x": 40,
+        "y": 60,
+        "zoom": 2
+      },
+      "events": ["start", "change"]
+    },
+    "zoomedIn": {
+      "viewport": {
+        "x": -32,
+        "y": 12,
+        "zoom": 2.4
+      },
+      "events": ["start", "change"]
+    },
+    "zoomedOut": {
+      "viewport": {
+        "x": 40,
+        "y": 60,
+        "zoom": 2
+      },
+      "events": ["start", "change"]
+    },
+    "immediate": {
+      "viewport": {
+        "x": -40,
+        "y": 25,
+        "zoom": 1.1
+      },
+      "events": ["start", "change"]
+    },
+    "interrupted": {
+      "interruptionResult": true,
+      "viewport": {
+        "x": 12,
+        "y": 34,
+        "zoom": 0.9
+      },
+      "events": ["start", "change"]
+    }
+  }
+}

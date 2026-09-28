@@ -1,8 +1,50 @@
+import { readFile } from 'node:fs/promises'
+
+import {
+  ViewportBoundsSchema,
+  ViewportLimitsSchema,
+  ViewportPaddingSchema,
+  ViewportSchema,
+} from '@flow/core'
 import type * as CoreModule from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { Schema as S } from 'effect'
 
 type Scenario = 'extent' | 'fit' | 'fit-selected' | 'radius' | 'click'
+
+const ViewportContractFixtureSchema = S.Struct({
+  coordinateCases: S.Array(
+    S.Struct({
+      hostRect: S.Struct({ left: S.Finite, top: S.Finite }),
+      client: S.Struct({ x: S.Finite, y: S.Finite }),
+      viewport: ViewportSchema,
+      flow: S.Struct({ x: S.Finite, y: S.Finite }),
+      screen: S.Struct({ x: S.Finite, y: S.Finite }),
+    })
+  ),
+  fitCases: S.Array(
+    S.Struct({
+      bounds: ViewportBoundsSchema,
+      pane: S.Struct({ width: S.Finite, height: S.Finite }),
+      limits: ViewportLimitsSchema,
+      padding: ViewportPaddingSchema,
+      viewport: ViewportSchema,
+    })
+  ),
+})
+
+const readViewportContractFixture = async () => {
+  const source = await readFile(
+    new URL(
+      '../../../research/fixtures/viewport-contract.json',
+      import.meta.url
+    ),
+    'utf-8'
+  )
+
+  return S.decodeUnknownSync(ViewportContractFixtureSchema)(JSON.parse(source))
+}
 
 const mountScenario = async (page: Page, scenario: Scenario): Promise<void> => {
   await page.goto('/')
@@ -159,9 +201,11 @@ test('fitView includes a distant node before culling has measured it', async ({
   await expect(page.locator('[data-node-id="near"]')).toHaveCount(1)
   await expect(page.locator('[data-node-id="far"]')).toHaveCount(0)
 
-  await expect
-    .poll(() => page.evaluate(() => globalThis.flowController?.fitView()))
-    .toBe(true)
+  const fitResult = await page.evaluate(() =>
+    globalThis.flowController?.fitView().then((result) => result.status)
+  )
+
+  expect(fitResult).toBe('accepted')
   const far = page.locator('[data-node-id="far"]')
   await expect(far).toHaveCount(1)
   await expect(far).toHaveAttribute('data-measured-width', '150')
@@ -182,13 +226,14 @@ test('selected-node fit includes a selected node that was culled', async ({
 }) => {
   await mountScenario(page, 'fit-selected')
   await expect(page.locator('[data-node-id="far"]')).toHaveCount(0)
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        globalThis.flowController?.fitView({ nodes: 'selected' })
-      )
-    )
-    .toBe(true)
+
+  const fitResult = await page.evaluate(() =>
+    globalThis.flowController
+      ?.fitView({ nodes: 'selected' })
+      .then((result) => result.status)
+  )
+
+  expect(fitResult).toBe('accepted')
   const far = page.locator('[data-node-id="far"]')
   await expect(far).toHaveCount(1)
   const canvas = await page.getByTestId('flow-canvas').boundingBox()
@@ -288,4 +333,259 @@ test('pending click status is announced and focus returns on all exits', async (
   await expect(page.locator('.flow-edge-group')).toHaveCount(1)
   await expect(source).toBeFocused()
   await expect(status).toContainText(/connect/iu)
+})
+
+test('viewport operations match the shared coordinate fixture through host offsets and document scroll', async ({
+  page,
+}) => {
+  const fixture = await readViewportContractFixture()
+  const [coordinate] = fixture.coordinateCases
+
+  if (coordinate === undefined) {
+    throw new Error('Missing coordinate fixture')
+  }
+
+  await page.goto('/')
+  await page.evaluate(
+    async ({ viewport, hostRect }) => {
+      const modulePath = '/src/public.ts'
+      const { mountFlow } = await import(modulePath)
+      const root = globalThis.document.querySelector<HTMLElement>('#app')
+
+      if (root === null) {
+        throw new Error('Missing flow host')
+      }
+
+      root.style.position = 'absolute'
+      root.style.left = `${hostRect.left}px`
+      root.style.top = `${hostRect.top}px`
+      root.style.width = '800px'
+      root.style.height = '600px'
+      globalThis.document.body.style.minHeight = '1200px'
+      globalThis.scrollTo(0, 20)
+      globalThis.flowController = mountFlow(
+        root,
+        { nodes: [], edges: [] },
+        {
+          documentMode: 'uncontrolled',
+          viewport: {
+            mode: 'uncontrolled',
+            initial: viewport,
+            limits: { minZoom: 0.25, maxZoom: 4 },
+          },
+        }
+      )
+    },
+    { viewport: coordinate.viewport, hostRect: coordinate.hostRect }
+  )
+
+  const result = await page.evaluate(
+    ({ client, hostRect, expectedFlow }) => {
+      const controller = globalThis.flowController
+
+      if (controller === undefined) {
+        throw new Error('Missing controller')
+      }
+
+      const canvas = globalThis.document.querySelector<HTMLElement>(
+        '[data-testid="flow-canvas"]'
+      )
+
+      if (canvas === null) {
+        throw new Error('Missing canvas')
+      }
+
+      const rect = canvas.getBoundingClientRect()
+      const local = { x: client.x - hostRect.left, y: client.y - hostRect.top }
+      const clientPoint = { x: rect.left + local.x, y: rect.top + local.y }
+
+      return {
+        rect: { x: rect.left, y: rect.top },
+        flow: controller.screenToFlowPosition(clientPoint),
+        screen: controller.flowToScreenPosition(expectedFlow),
+        clientPoint,
+      }
+    },
+    {
+      client: coordinate.client,
+      hostRect: coordinate.hostRect,
+      expectedFlow: coordinate.flow,
+    }
+  )
+
+  expect(result.rect.x).toBeGreaterThan(0)
+  expect(result.rect.y).toBeGreaterThan(0)
+  expect(result.flow.x).toBeCloseTo(coordinate.flow.x, 8)
+  expect(result.flow.y).toBeCloseTo(coordinate.flow.y, 8)
+  expect(result.screen.x).toBeCloseTo(result.clientPoint.x, 8)
+  expect(result.screen.y).toBeCloseTo(result.clientPoint.y, 8)
+
+  const fitResults = await page.evaluate((fitCases) => {
+    const controller = globalThis.flowController
+
+    if (controller === undefined) {
+      throw new Error('Missing controller')
+    }
+
+    return fitCases.map((fit) =>
+      controller.getViewportForBounds(fit.bounds, { padding: fit.padding })
+    )
+  }, fixture.fitCases)
+
+  expect(fitResults).toHaveLength(fixture.fitCases.length)
+
+  for (const [index, fit] of fixture.fitCases.entries()) {
+    expect(fitResults[index]).toEqual(fit.viewport)
+  }
+
+  const zoomResult = await page.evaluate(() => {
+    const controller = globalThis.flowController
+
+    if (controller === undefined) {
+      throw new Error('Missing controller')
+    }
+
+    return controller.zoomTo(0.73)
+  })
+
+  expect(zoomResult.status).toBe('accepted')
+  expect(zoomResult.viewport.zoom).toBe(0.73)
+})
+
+test('programmatic viewport animations observe lifecycle and settle replaced and disposed requests', async ({
+  page,
+}) => {
+  await mountScenario(page, 'extent')
+
+  const results = await page.evaluate(async () => {
+    const controller = globalThis.flowController
+
+    if (controller === undefined) {
+      throw new Error('Missing controller')
+    }
+
+    const events: string[] = []
+    controller.subscribeViewport((event) => events.push(event.kind))
+
+    const animated = await controller.setViewport(
+      { x: -5, y: -10, zoom: 1.2 },
+      { duration: 80, easing: 'linear' }
+    )
+
+    const animatedChanges = events.filter((kind) => kind === 'change').length
+
+    const replaced = controller.setViewport(
+      { x: -10, y: -20, zoom: 1.4 },
+      { duration: 180, easing: 'linear' }
+    )
+
+    const accepted = controller.setViewport({ x: -30, y: -40, zoom: 1.6 })
+
+    const [replacedResult, acceptedResult] = await Promise.all([
+      replaced,
+      accepted,
+    ])
+
+    const disposed = controller.setViewport(
+      { x: -50, y: -60, zoom: 1.8 },
+      { duration: 180 }
+    )
+
+    controller.destroy()
+    const disposedResult = await disposed
+
+    return {
+      animated: animated.status,
+      animatedChanges,
+      replaced: replacedResult.status,
+      accepted: acceptedResult.status,
+      disposed: disposedResult.status,
+      events,
+    }
+  })
+
+  expect(results.animated).toBe('accepted')
+  expect(results.animatedChanges).toBeGreaterThan(1)
+  expect(results.replaced).toBe('superseded')
+  expect(results.accepted).toBe('accepted')
+  expect(results.disposed).toBe('disposed')
+  expect(results.events).toContain('start')
+  expect(results.events).toContain('change')
+  expect(results.events).toContain('end')
+})
+
+test('controlled viewport operations return a proposal without changing accepted viewport', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.evaluate(() => globalThis.dispatchEvent(new Event('beforeunload')))
+  await page.evaluate(async () => {
+    const modulePath = '/src/public.ts'
+    const { mountFlow } = await import(modulePath)
+    const root = globalThis.document.querySelector<HTMLElement>('#app')
+
+    if (root === null) {
+      throw new Error('Missing flow host')
+    }
+
+    globalThis.flowController = mountFlow(
+      root,
+      { nodes: [], edges: [] },
+      {
+        documentMode: 'uncontrolled',
+        viewport: {
+          mode: 'controlled',
+          initial: { x: 0, y: 0, zoom: 1 },
+          limits: { minZoom: 0.5, maxZoom: 2 },
+        },
+      }
+    )
+  })
+
+  const result = await page.evaluate(async () => {
+    const controller = globalThis.flowController
+
+    if (controller === undefined) {
+      throw new Error('Missing controller')
+    }
+
+    const proposal = await controller.setViewport({ x: 10, y: 20, zoom: 1.5 })
+
+    return {
+      status: proposal.status,
+      proposal: proposal.viewport,
+      accepted: controller.getViewport(),
+    }
+  })
+
+  expect(result.status).toBe('proposed')
+  expect(result.proposal).toStrictEqual({ x: 10, y: 20, zoom: 1.5 })
+  expect(result.accepted).toStrictEqual({ x: 0, y: 0, zoom: 1 })
+})
+
+test('reduced motion completes viewport animations without waiting for the requested duration', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await mountScenario(page, 'extent')
+
+  const result = await page.evaluate(async () => {
+    const controller = globalThis.flowController
+
+    if (controller === undefined) {
+      throw new Error('Missing controller')
+    }
+
+    const startedAt = performance.now()
+
+    const operation = await controller.setViewport(
+      { x: -10, y: -20, zoom: 1.5 },
+      { duration: 1000 }
+    )
+
+    return { status: operation.status, elapsed: performance.now() - startedAt }
+  })
+
+  expect(result.status).toBe('accepted')
+  expect(result.elapsed).toBeLessThan(250)
 })

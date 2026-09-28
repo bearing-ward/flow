@@ -16,11 +16,12 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | defaultEdges | document initialization | mount document | defaultDocument only | initial Model | Host init; API shape differs, later adapter mapping. |
 | viewport | ViewportSchema | updateViewport | controlled viewport prop | ReplaceViewport + selectViewport | Host accepted state; typed snapshot requests expose current viewport. |
 | defaultViewport | initial ViewportSchema | mount options | defaultViewport prop | createProgram arg | Host initialization. |
-| onViewportChange | ViewportChange proposal | subscribe | update:viewport/change emit | SemanticChange port | Proposal only; separate accepted-state event contract in trace. |
-| fitView | fitViewportToNodes | fitView method | gap | gap | Core geometry / host measurement; Vue and Foldkit method gap. |
-| fitViewOptions | FitViewOptionsSchema | method argument partial | gap | gap | Host startup/API mapping remains open. |
-| minZoom | ViewportLimitsSchema | option | gap | gap | Core clamp math; host option mapping. |
-| maxZoom | ViewportLimitsSchema | option | gap | gap | Core clamp math; host option mapping. |
+| onViewportChange | ViewportChange proposal | `onViewport` callback + accepted-state subscription | `update:viewport` and local start/change/end emits | typed `viewportEvents` port | Movement observations are separate from accepted-state events; controlled proposals do not imply owner acknowledgement. See `research/traces/public-viewport-contract.md`. |
+| fitView | `fitViewportToNodes` | Promise operation | Promise operation | request/result client operation | All hosts support all/selected/id selection, measured dimensions, zoom limits, padding, terminal status, and optional animation; exact React option compatibility remains partial. |
+| fitViewOptions | operation options schema | padding, node selection, duration/easing | padding, node selection, duration/easing | padding, node selection, duration/easing | Hidden-node inclusion and upstream initialization prop are not mapped. |
+| minZoom | `ViewportLimitsSchema` | mount option | `viewportLimits` prop | program configuration | Host limits now feed operation math; defaults intentionally differ by host. |
+| maxZoom | `ViewportLimitsSchema` | mount option | `viewportLimits` prop | program configuration | Host limits now feed operation math; defaults intentionally differ by host. |
+| translateExtent / pan extent | `PanExtentSchema` + `constrainViewportToExtent` | preserve finite extent constraint on programmatic targets | intentional gap | intentional gap | Chosen policy preserves existing Vanilla behavior and adds no Vue/Foldkit option. Core math is unit-tested; Vanilla host enforcement through viewport operations, Vue/Foldkit behavior, and the upstream extent cell remain unverified. |
 | width | no graph field | mount root CSS/layout | canvas layout | container layout | Host DOM/layout ownership; unassessed. |
 | height | no graph field | mount root CSS/layout | canvas layout | container layout | Host DOM/layout ownership; unassessed. |
 | nodeTypes | node.type only | nodeRenderers | renderer registration | view renderer registry | Host rendering; names differ. |
@@ -218,7 +219,7 @@ Source: [current ReactFlowInstance](https://reactflow.dev/api-reference/types/re
 | --- | --- | --- | --- | --- | --- |
 | getNodes | FlowDocumentSchema.nodes | `getNodes()` returns complete accepted nodes | useFlow nodes computed | selectNodes / snapshot request | Host reads include hidden and culled nodes; Foldkit E2E exercises real Runtime ports. |
 | getNode | FlowDocumentSchema node lookup | `getNode(id)` returns node or undefined | lookup function | selectNode / optional snapshot-request result | Missing IDs return undefined; Foldkit E2E exercises real Runtime ports. |
-| getInternalNode | gap | gap | gap | gap | Private internal-store data intentionally excluded. |
+| getInternalNode | `getFlowInternalNode` projection | `getInternalNode(id)` | `useFlow().getInternalNode(id)` | `Graph.selectInternalNode(model, id)` | Returns detached accepted node plus absolute position, dimensions and measurement status. Pinned initial/refresh dimensions and handle bounds are captured in `research/fixtures/measured-geometry-reference.json`. |
 | getEdges | FlowDocumentSchema.edges | `getEdges()` returns complete accepted edges | useFlow edges computed | selectEdges / snapshot request | Host reads include hidden and culled edges; Foldkit E2E exercises real Runtime ports. |
 | getEdge | FlowDocumentSchema edge lookup | `getEdge(id)` returns edge or undefined | lookup function | selectEdge / optional snapshot-request result | Missing IDs return undefined; Foldkit E2E exercises real Runtime ports. |
 | setNodes | edit transaction | `setNodes` | `useFlow().setNodes` | typed edit request | Valid full-collection field-update subcase matches the pinned capture; membership changes, dangling endpoints, and controlled setter behavior remain unverified. |
@@ -236,18 +237,18 @@ Source: [current ReactFlowInstance](https://reactflow.dev/api-reference/types/re
 | getNodeConnections | graph query partial | partial core query | gap | partial graph query | Result contract not matched. |
 | getIntersectingNodes | intersection helper partial | core geometry partial | core geometry partial | core geometry partial | Full signature/semantics unverified. |
 | isNodeIntersecting | intersection helper partial | core geometry partial | core geometry partial | core geometry partial | Full signature/semantics unverified. |
-| zoomIn | zoomViewportAt math | viewport controls | gap | gap | Animated instance method absent. |
-| zoomOut | zoomViewportAt math | viewport controls | gap | gap | Animated instance method absent. |
-| zoomTo | set-viewport command | updateViewport | updateViewport | ReplaceViewport | Animation/easing promise absent. |
-| getZoom | Viewport.zoom | available via `getViewport()` | useFlow viewport | selectViewport | Scalar convenience absent. |
-| setViewport | set-viewport command | updateViewport | updateViewport | ReplaceViewport | Animation options differ. |
-| getViewport | ViewportSchema | `getViewport()` returns accepted viewport | useFlow viewport | selectViewport / snapshot request | JS, Vue, Foldkit accepted reads are covered by local adapter tests. |
-| setCenter | viewport calculations partial | gap | gap | gap | Instance helper absent. |
-| fitBounds | fit helper partial | gap | gap | gap | Low-level instance method absent. |
-| screenToFlowPosition | core conversion helper | partial host helper | gap | gap | Core function exists; instance method absent. |
-| flowToScreenPosition | core conversion helper | partial host helper | gap | gap | Core function exists; instance method absent. |
-| viewportInitialized | gap | host lifecycle state | component mount | Runtime embed | Host lifecycle, not snapshot. |
-| fitView | fitViewportToNodes | fitView method | gap | gap | Core helper; JS method only. |
+| zoomIn | shared viewport operation math | Promise operation | Promise operation | client operation | 1.2 factor; clamped by configured limits; accepts animation options. |
+| zoomOut | shared viewport operation math | Promise operation | Promise operation | client operation | Reciprocal 1.2 factor; clamped by configured limits; accepts animation options. |
+| zoomTo | shared viewport operation math | Promise operation | Promise operation | client operation | Anchors at pane center by default; animation options and replacement statuses are Flow-defined. |
+| getZoom | `Viewport.zoom` | `getZoom()` | `getZoom()` | `getZoom()` | Synchronous in Vanilla/Vue; Foldkit request client reads through typed ports. |
+| setViewport | serializable target viewport | Promise operation | Promise operation | request/result client operation | Controlled mode resolves `proposed`; uncontrolled acceptance resolves `accepted`; replacement/disposal settle explicitly. |
+| getViewport | `ViewportSchema` | `getViewport()` returns accepted viewport | `useFlow().getViewport()` | `getViewport()` client request | Public accepted reads are adapter-local; Foldkit uses a typed port rather than a synchronous call. |
+| setCenter | shared pane-centered transform math | Promise operation | Promise operation | client operation | Pane size and optional zoom determine target; animates and settles using the shared result contract. |
+| fitBounds | shared `getViewportForBounds` | Promise operation | Promise operation | client operation | Supports fractional and per-side pixel padding and configured limits; zero-area inputs are unavailable. |
+| getViewportForBounds | shared pure bounds helper | synchronous controller helper | synchronous composable helper | shared helper in request path | Pane-local math; host sizing remains adapter-owned. |
+| screenToFlowPosition | viewport conversion math | client-coordinate method | client-coordinate method | client request with host origin | Offset and page-scroll conversion tested; CSS transforms are unsupported. |
+| flowToScreenPosition | viewport conversion math | client-coordinate method | client-coordinate method | client request with host origin | Offset and page-scroll conversion tested; CSS transforms are unsupported. |
+| viewportInitialized | positive pane dimensions | readiness boolean | readiness boolean | async client query | Means the viewport pane has positive dimensions; does not prove node measurement readiness. |
 
 ## Hooks and remaining unassessed members
 
@@ -257,7 +258,10 @@ Source: [current ReactFlowInstance](https://reactflow.dev/api-reference/types/re
 | useNodes | [hook](https://reactflow.dev/api-reference/hooks/use-nodes) | `getNodes()` plus `subscribeState` / `useNodes()` computed readonly array / `selectNodes` and accepted-state port | No granular node-only subscription; Vue invalidates with accepted document state; Foldkit selects from the model. |
 | useEdges | [hook](https://reactflow.dev/api-reference/hooks/use-edges) | `getEdges()` plus `subscribeState` / `useEdges()` computed readonly array / `selectEdges` and accepted-state port | No granular edge-only subscription; Vue invalidates with accepted document state; Foldkit selects from the model. |
 | useViewport | [hook](https://reactflow.dev/api-reference/hooks/use-viewport) | `getViewport()` plus `subscribeState` / `useViewport()` computed readonly value / `selectViewport` and accepted-state port | JS remains point-in-time; Vue invalidates reactively; Foldkit selects from the model. |
-| useEdgesState, useNodesState, useConnection, useHandleConnections, useInternalNode, useKeyPress, useNodeConnections, useNodeId, useNodesData, useNodesInitialized, useOnSelectionChange, useOnViewportChange, useStore, useStoreApi, useUpdateNodeInternals | [current Hooks catalog](https://reactflow.dev/api-reference) | Unassessed in each host | Keep open in dated coverage map. |
+| useInternalNode | internal-node projection | controller `getInternalNode` | `useFlow().getInternalNode` | `Graph.selectInternalNode` | Vue/vanilla public host APIs exist; Foldkit selector is app-scoped. The captured upstream shape includes measured dimensions, absolute position, and handle bounds. |
+| useNodesInitialized | measurement readiness | `nodesInitialized(options)` | `useFlow().nodesInitialized(options)` | `Graph.selectNodesInitialized(model)` | Hidden-node option is core-defined; pinned capture confirms visible readiness true and include-hidden readiness false while a hidden node remains unmeasured. |
+| useUpdateNodeInternals | explicit geometry refresh | `updateNodeInternals(ids)` | `useFlow().updateNodeInternals(ids)` | host measurement action | Refresh lifecycle differs by adapter; Foldkit visible toggle asserts live bounds and handle relocation. Pinned refresh updates dimensions and handle centers. |
+| useEdgesState, useNodesState, useConnection, useHandleConnections, useKeyPress, useNodeConnections, useNodeId, useNodesData, useOnSelectionChange, useOnViewportChange, useStore, useStoreApi | [current Hooks catalog](https://reactflow.dev/api-reference) | Unassessed in each host | Keep open in dated coverage map. |
 | Other ReactFlow props not named in the preceding member table | [current ReactFlow props](https://reactflow.dev/api-reference/react-flow) | Unassessed in each host | Dated catalog retains every URL; map at later API milestones. |
 | Other components, types, and utilities in current API sidebar | [API reference](https://reactflow.dev/api-reference) | Unassessed in each host | Broad API checklist remains open. |
 

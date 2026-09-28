@@ -176,6 +176,24 @@ const interactionScenes = {
     ],
     edges: [],
   },
+  viewport: {
+    nodes: [
+      {
+        id: 'viewport-card',
+        label: 'Measured custom card',
+        position: { x: 360, y: 260 },
+        size: { width: 230, height: 120 },
+        selected: true,
+      },
+      {
+        id: 'viewport-peer',
+        label: 'Viewport peer',
+        position: { x: 780, y: 410 },
+        size: { width: 170, height: 76 },
+      },
+    ],
+    edges: [],
+  },
   panels: {
     nodes: [
       {
@@ -221,6 +239,12 @@ const playgroundCopy = {
       'Placed panel: the caller-owned panel is mounted in the canvas at the top left and keeps its own focusable action.',
     helper:
       'Use the panel action or drag the graph behind it. Panel placement belongs to the vanilla host; the graph document contains no DOM elements.',
+  },
+  viewport: {
+    description:
+      'Viewport APIs: operate on measured, selected custom-sized nodes and inspect client-space conversion.',
+    helper:
+      'Center or fit the selected card, choose fractional zoom, place a conversion marker, or start and cancel an animated viewport request.',
   },
   fit: {
     description:
@@ -351,6 +375,7 @@ const program = Effect.gen(function* program() {
   const document = yield* decodeFlowDocument(source)
 
   const sceneDocuments = {
+    viewport: yield* decodeFlowDocument(interactionScenes.viewport),
     resize: yield* decodeFlowDocument(interactionScenes.resize),
     drag: yield* decodeFlowDocument(interactionScenes.drag),
     panels: yield* decodeFlowDocument(interactionScenes.panels),
@@ -456,6 +481,13 @@ const program = Effect.gen(function* program() {
       <button type="button" data-action="resize" aria-pressed="false">Nested resize</button>
       <button type="button" data-action="drag" aria-pressed="false">Custom drag handle</button>
       <button type="button" data-action="panels" aria-pressed="false">Placed panel</button>
+      <button type="button" data-action="viewport" aria-pressed="false">Viewport API scene</button>
+      <button type="button" data-action="center-selected">Center selected</button>
+      <button type="button" data-action="fit-selected">Fit selected</button>
+      <button type="button" data-action="zoom-fractional">Zoom to 0.73</button>
+      <button type="button" data-action="conversion-marker">Show conversion marker</button>
+      <button type="button" data-action="animate-viewport">Animate viewport</button>
+      <button type="button" data-action="cancel-animation">Cancel animation</button>
       <button type="button" data-action="fit">Fit graph</button>
       <button type="button" data-action="validator" aria-pressed="false">Block Output connections</button>
       <button type="button" data-action="hidden">Show hidden edge</button>
@@ -955,7 +987,9 @@ const program = Effect.gen(function* program() {
     }
   }
 
-  const showScene = (scene: 'resize' | 'drag' | 'panels'): void => {
+  const showScene = (
+    scene: 'resize' | 'drag' | 'panels' | 'viewport'
+  ): void => {
     interactionSceneActive = true
     statePanel.hidden = true
     panel.classList.remove('flow-demo-panel-with-state-tools')
@@ -975,10 +1009,14 @@ const program = Effect.gen(function* program() {
     }
   }
 
-  const showFit = (): void => {
+  const showFit = async (): Promise<void> => {
+    selectAction('fit', playgroundCopy.fitPending)
+    const result = await host.fitView()
     selectAction(
       'fit',
-      host.fitView() ? playgroundCopy.fit : playgroundCopy.fitPending
+      result.status === 'accepted' || result.status === 'proposed'
+        ? playgroundCopy.fit
+        : playgroundCopy.fitPending
     )
   }
 
@@ -1038,6 +1076,102 @@ const program = Effect.gen(function* program() {
     )
   }
 
+  const handleViewportPanelAction = (action: string | undefined): boolean => {
+    switch (action) {
+      case 'center-selected': {
+        const node = host.getNode('viewport-card')
+
+        if (node !== undefined) {
+          void host.setCenter(node.position.x + 115, node.position.y + 60, {
+            zoom: 1.1,
+          })
+        }
+
+        return true
+      }
+
+      case 'fit-selected': {
+        void host.fitView({ nodes: 'selected', duration: 180 })
+
+        return true
+      }
+
+      case 'zoom-fractional': {
+        void host.zoomTo(0.73, { duration: 180 })
+
+        return true
+      }
+
+      case 'conversion-marker': {
+        const node = host.getNode('viewport-card')
+
+        const canvas = root.querySelector<HTMLElement>(
+          '[data-testid="flow-canvas"]'
+        )
+
+        if (node !== undefined && canvas !== null) {
+          let marker = canvas.querySelector<HTMLElement>(
+            '[data-testid="conversion-marker"]'
+          )
+
+          if (marker === null) {
+            marker = globalThis.document.createElement('span')
+            marker.dataset.testid = 'conversion-marker'
+            marker.textContent = 'flow → screen'
+            marker.style.position = 'absolute'
+            marker.style.zIndex = '20'
+            marker.style.pointerEvents = 'none'
+            canvas.append(marker)
+          }
+
+          const screen = host.flowToScreenPosition({
+            x: node.position.x + 115,
+            y: node.position.y + 60,
+          })
+
+          const bounds = canvas.getBoundingClientRect()
+          marker.style.left = `${screen.x - bounds.left}px`
+          marker.style.top = `${screen.y - bounds.top}px`
+        }
+
+        return true
+      }
+
+      case 'animate-viewport': {
+        void host.setViewport(
+          { x: -240, y: -120, zoom: 1.3 },
+          { duration: 900 }
+        )
+
+        const resultOutput =
+          panel.querySelector<HTMLOutputElement>('.flow-demo-status')
+
+        if (resultOutput !== null) {
+          resultOutput.textContent = 'Viewport animation started'
+        }
+
+        return true
+      }
+
+      case 'cancel-animation': {
+        void host.setViewport(host.getViewport())
+
+        const resultOutput =
+          panel.querySelector<HTMLOutputElement>('.flow-demo-status')
+
+        if (resultOutput !== null) {
+          resultOutput.textContent = 'Viewport animation cancelled'
+        }
+
+        return true
+      }
+
+      default: {
+        return false
+      }
+    }
+  }
+
   const onPanelClick = (event: MouseEvent): void => {
     const button =
       event.target instanceof HTMLElement
@@ -1045,6 +1179,10 @@ const program = Effect.gen(function* program() {
         : null
 
     if (button === null) {
+      return
+    }
+
+    if (handleViewportPanelAction(button.dataset.action)) {
       return
     }
 
@@ -1061,7 +1199,8 @@ const program = Effect.gen(function* program() {
 
       case 'resize':
       case 'drag':
-      case 'panels': {
+      case 'panels':
+      case 'viewport': {
         showScene(button.dataset.action)
         break
       }

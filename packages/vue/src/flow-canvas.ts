@@ -1,11 +1,20 @@
 import {
   applyNodePositionChange,
+  applyNodeMeasurements,
+  areFlowNodesInitialized,
   bezierEdgePath,
   createFlowSnapshot,
   createFlowGraph,
   decodeFlowDocument,
   edgeAttachmentPosition,
+  edgeLabelPosition,
+  fitViewportToNodes,
+  emptyFlowMeasurementState,
+  getFlowInternalNode,
+  getViewportForBounds,
+  interpolateViewport,
   FlowSnapshotSchema,
+  setNodeMeasurementGenerations,
   nextConnectionEdge,
   panViewport,
   prepareFlowEdit,
@@ -16,6 +25,11 @@ import {
   stepEdgePath,
   validateFlowConnection,
   ViewportSchema,
+  ViewportBoundsSchema,
+  ViewportLimitsSchema,
+  ViewportAnimationOptionsSchema,
+  ViewportPaddingSchema,
+  pruneFlowMeasurements,
   zoomViewportAt,
 } from '@flow/core'
 import type {
@@ -27,11 +41,19 @@ import type {
   FlowEditTransactionInput,
   FlowEdgePath,
   FlowHandle,
+  FlowMeasurementState,
+  NodeMeasurementGeneration,
+  NodeMeasurementInput,
   FlowNode,
   FlowSnapshot,
   FlowStateChange,
   MeasuredHandle,
   Viewport,
+  ViewportAnimationOptions,
+  ViewportBounds,
+  ViewportOperationResult,
+  ViewportPadding,
+  ViewportLimits,
 } from '@flow/core'
 import { Effect, Exit, Predicate, Schema as S } from 'effect'
 import {
@@ -41,6 +63,8 @@ import {
   onBeforeUnmount,
   provide,
   shallowRef,
+  nextTick,
+  useId,
   watch,
 } from 'vue'
 import type {
@@ -90,9 +114,29 @@ interface PanSession {
   readonly viewportStart: Viewport
 }
 
+interface NodePositionStyle {
+  left: string
+  top: string
+  width?: string
+  height?: string
+}
+
 type Session = DragSession | ConnectionSession | PanSession
 
-const viewportLimits = { minZoom: 0.4, maxZoom: 2 }
+const FitBoundsOptionsSchema = S.Struct({
+  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
+  padding: S.optional(ViewportPaddingSchema),
+})
+
+const FitViewOptionsSchema = S.Struct({
+  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
+  nodes: S.optional(
+    S.Union([S.Literals(['all', 'selected']), S.Array(S.String)])
+  ),
+  padding: S.optional(ViewportPaddingSchema),
+})
 
 const unwrapReactive = <Value>(value: Value): Value => {
   if (Array.isArray(value)) {
@@ -115,6 +159,13 @@ const unwrapReactive = <Value>(value: Value): Value => {
 type NodeVisual = Component<{ readonly node: FlowNode }>
 
 type EdgeVisual = Component<{ readonly edge: FlowEdge }>
+
+type EdgeTypeVisual = Component<{
+  readonly edge: FlowEdge
+  readonly path: string
+  readonly markerStart: string | undefined
+  readonly markerEnd: string | undefined
+}>
 
 const edgePath = (
   path: FlowEdgePath | undefined,
@@ -156,27 +207,26 @@ const edgePath = (
 
 const renderDefaultEdgePath = (
   edge: FlowEdge,
-  sourcePosition: { readonly x: number; readonly y: number },
-  targetPosition: { readonly x: number; readonly y: number },
-  sourceHandle: FlowHandle,
-  targetHandle: FlowHandle,
-  sourceMeasured: MeasuredHandle,
-  targetMeasured: MeasuredHandle
+  path: string,
+  markerStart: string | undefined,
+  markerEnd: string | undefined
 ): VNode =>
   h('path', {
     class: 'flow-vue-edge-path',
     'data-testid': 'flow-edge-path',
-    d: edgePath(
-      edge.path,
-      edgeAttachmentPosition(sourcePosition, sourceHandle, sourceMeasured),
-      edgeAttachmentPosition(targetPosition, targetHandle, targetMeasured),
-      sourceHandle.side,
-      targetHandle.side
-    ),
+    d: path,
     fill: 'none',
     stroke: edge.stroke ?? '#64748b',
     'stroke-width': edge.strokeWidth ?? 1.5,
+    'marker-start': markerStart,
+    'marker-end': markerEnd,
   })
+
+const markerId = (
+  canvasId: string,
+  kind: 'arrow' | 'arrowclosed',
+  stroke: string
+): string => `${canvasId}-marker-${kind}-${stroke.slice(1)}`
 
 // SAFETY: DefaultNode receives FlowNode values created from the decoded graph.
 const DefaultNode = defineComponent({
@@ -186,6 +236,16 @@ const DefaultNode = defineComponent({
     return () => h('span', { class: 'flow-vue-node-label' }, props.node.label)
   },
 })
+
+const EdgeLabelAnchorSchema = S.Struct({ x: S.Finite, y: S.Finite })
+
+const edgeLabelAnchor = (
+  edge: FlowEdge
+): { x: number; y: number } | undefined => {
+  const anchor = edge.data?.labelAnchor
+
+  return S.is(EdgeLabelAnchorSchema)(anchor) ? anchor : undefined
+}
 
 // SAFETY: FlowCanvas decodes document, node, and edge props before graph use; Vue's PropType supplies their static contracts.
 export const FlowCanvas = defineComponent({
@@ -211,12 +271,24 @@ export const FlowCanvas = defineComponent({
       type: String as PropType<'controlled' | 'uncontrolled'>,
       default: 'uncontrolled',
     },
+    viewportLimits: {
+      type: Object as PropType<ViewportLimits>,
+      default: () => ({ minZoom: 0.4, maxZoom: 2 }),
+    },
     nodeComponent: {
       type: [Object, Function] as PropType<NodeVisual>,
       default: undefined,
     },
     edgeComponent: {
       type: [Object, Function] as PropType<EdgeVisual>,
+      default: undefined,
+    },
+    nodeTypes: {
+      type: Object as PropType<Readonly<Record<string, NodeVisual>>>,
+      default: undefined,
+    },
+    edgeTypes: {
+      type: Object as PropType<Readonly<Record<string, EdgeTypeVisual>>>,
       default: undefined,
     },
     isValidConnection: {
@@ -236,8 +308,22 @@ export const FlowCanvas = defineComponent({
     'update:nodes': (_nodes: readonly FlowNode[]) => true,
     'update:edges': (_edges: readonly FlowEdge[]) => true,
     'update:viewport': (_viewport: Viewport) => true,
+    // These describe proposals and transition frames; they are not accepted-state notifications.
+    viewportStart: (_viewport: Viewport) => true,
+    viewportChange: (_viewport: Viewport) => true,
+    viewportEnd: (
+      _viewport: Viewport,
+      _status: ViewportOperationResult['status']
+    ) => true,
+    edgeClick: (_edge: FlowEdge) => true,
   },
   setup(props, { emit, slots, expose }) {
+    const canvasId = `flow-vue-${useId()}`
+
+    const viewportLimits = S.decodeUnknownSync(ViewportLimitsSchema)(
+      props.viewportLimits
+    )
+
     const initialDocument = props.document ?? props.defaultDocument
     const hasSplitModel = props.nodes !== undefined || props.edges !== undefined
 
@@ -432,6 +518,46 @@ export const FlowCanvas = defineComponent({
     >(new Map())
 
     const nodeElements = new Map<string, HTMLElement>()
+    let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
+    const nodeGenerations = new Map<string, number>()
+    const pendingGenerations = new Map<string, NodeMeasurementGeneration>()
+    let nextNodeGeneration = 0
+    let generationFlushScheduled = false
+
+    let activeNodesById = new Map<string, FlowNode>(
+      activeDocument.value.nodes.map((node) => [node.id, node])
+    )
+
+    let refreshScheduled = false
+
+    const pendingInternals = new Map<
+      string,
+      ((
+        result: Awaited<ReturnType<FlowEditor['updateNodeInternals']>>[number]
+      ) => void)[]
+    >()
+
+    const flushNodeGenerations = (): void => {
+      if (generationFlushScheduled) {
+        return
+      }
+
+      generationFlushScheduled = true
+      queueMicrotask(() => {
+        generationFlushScheduled = false
+
+        if (stateDisposed || pendingGenerations.size === 0) {
+          pendingGenerations.clear()
+
+          return
+        }
+
+        measurementState = setNodeMeasurementGenerations(measurementState, [
+          ...pendingGenerations.values(),
+        ])
+        pendingGenerations.clear()
+      })
+    }
 
     const measureNodeHandles = (node: FlowNode, element: HTMLElement): void => {
       const nodeBounds = element.getBoundingClientRect()
@@ -494,6 +620,9 @@ export const FlowCanvas = defineComponent({
     }
 
     const resizeObserver = new ResizeObserver((entries) => {
+      const document = activeDocument.value
+      const measurements: NodeMeasurementInput[] = []
+
       for (const entry of entries) {
         if (entry.target === canvas.value) {
           canvasWidth.value = entry.contentRect.width
@@ -507,23 +636,82 @@ export const FlowCanvas = defineComponent({
 
         const { nodeId } = entry.target.dataset
 
-        const node = activeDocument.value.nodes.find(
-          (candidate) => candidate.id === nodeId
-        )
+        const node =
+          nodeId === undefined ? undefined : activeNodesById.get(nodeId)
 
         if (node !== undefined) {
+          const currentElement = nodeElements.get(node.id)
+
+          if (currentElement !== entry.target) {
+            continue
+          }
+
+          const bounds = currentElement.getBoundingClientRect()
+
+          const generation = nodeGenerations.get(node.id)
+
+          if (generation === undefined) {
+            continue
+          }
+
+          measurements.push({
+            nodeId: node.id,
+            generation,
+            width: bounds.width / activeViewport.value.zoom,
+            height: bounds.height / activeViewport.value.zoom,
+          })
           measureNodeHandles(node, entry.target)
         }
+      }
+
+      if (measurements.length > 0) {
+        measurementState = applyNodeMeasurements(
+          document,
+          measurementState,
+          measurements
+        )
       }
     })
 
     watch(
       () => activeDocument.value.nodes,
       (nodes) => {
+        activeNodesById = new Map<string, FlowNode>(
+          nodes.map((node) => [node.id, node])
+        )
+        measurementState = pruneFlowMeasurements(
+          activeDocument.value,
+          measurementState
+        )
+
         for (const [nodeId, element] of nodeElements) {
           const node = nodes.find((candidate) => candidate.id === nodeId)
 
           if (node !== undefined) {
+            measureNodeHandles(node, element)
+          }
+        }
+      },
+      { flush: 'sync' }
+    )
+
+    watch(
+      () =>
+        activeDocument.value.nodes.map(
+          ({ id, handles }) => [id, handles] as const
+        ),
+      async (nodes) => {
+        await nextTick()
+
+        if (stateDisposed) {
+          return
+        }
+
+        for (const [nodeId] of nodes) {
+          const node = activeNodesById.get(nodeId)
+          const element = nodeElements.get(nodeId)
+
+          if (node !== undefined && element !== undefined) {
             measureNodeHandles(node, element)
           }
         }
@@ -547,12 +735,15 @@ export const FlowCanvas = defineComponent({
 
       const callback = (element: Element | ComponentPublicInstance | null) => {
         if (element instanceof HTMLElement) {
+          const generation = nextNodeGeneration
+          nextNodeGeneration += 1
+          nodeGenerations.set(node.id, generation)
+          pendingGenerations.set(node.id, { nodeId: node.id, generation })
+          flushNodeGenerations()
           nodeElements.set(node.id, element)
           resizeObserver.observe(element)
 
-          const currentNode = activeDocument.value.nodes.find(
-            (candidate) => candidate.id === node.id
-          )
+          const currentNode = activeNodesById.get(node.id)
 
           if (currentNode !== undefined) {
             measureNodeHandles(currentNode, element)
@@ -658,7 +849,61 @@ export const FlowCanvas = defineComponent({
       }
     }
 
-    const updateViewport = (next: Viewport): void => {
+    let nextViewportRequestId = 0
+
+    let activeViewportRequest:
+      | {
+          readonly requestId: number
+          readonly cancelFrame: () => void
+          readonly settle: (result: ViewportOperationResult) => void
+        }
+      | undefined
+
+    let viewportObservationActive = false
+    let viewportGestureActive = false
+
+    const beginViewportObservation = (viewport: Viewport): void => {
+      if (viewportObservationActive) {
+        return
+      }
+
+      viewportObservationActive = true
+      emit('viewportStart', viewport)
+    }
+
+    const changeViewportObservation = (viewport: Viewport): void => {
+      emit('viewportChange', viewport)
+    }
+
+    const endViewportObservation = (
+      viewport: Viewport,
+      status: ViewportOperationResult['status']
+    ): void => {
+      if (!viewportObservationActive) {
+        return
+      }
+
+      viewportObservationActive = false
+      emit('viewportEnd', viewport, status)
+    }
+
+    const settleViewportRequest = (
+      status: ViewportOperationResult['status'],
+      viewport = activeViewport.value
+    ): void => {
+      const request = activeViewportRequest
+
+      if (request === undefined) {
+        return
+      }
+
+      activeViewportRequest = undefined
+      request.cancelFrame()
+      request.settle({ requestId: request.requestId, status, viewport })
+      endViewportObservation(viewport, status)
+    }
+
+    const updateViewportValue = (next: Viewport): void => {
       if (props.viewportMode === 'controlled') {
         emit('update:viewport', next)
       } else {
@@ -666,6 +911,344 @@ export const FlowCanvas = defineComponent({
           ownedViewport.value = next
         })
       }
+    }
+
+    const updateViewport = (next: Viewport): void => {
+      settleViewportRequest('superseded')
+      beginViewportObservation(activeViewport.value)
+      changeViewportObservation(next)
+      updateViewportValue(next)
+
+      if (!viewportGestureActive) {
+        endViewportObservation(
+          next,
+          props.viewportMode === 'controlled' ? 'proposed' : 'accepted'
+        )
+      }
+    }
+
+    watch(
+      () => props.viewport,
+      (next, previous) => {
+        if (
+          props.viewportMode === 'controlled' &&
+          next !== undefined &&
+          next !== previous
+        ) {
+          const hadPendingRequest = activeViewportRequest !== undefined
+          settleViewportRequest('superseded', next)
+
+          if (!hadPendingRequest) {
+            beginViewportObservation(previous ?? activeViewport.value)
+            changeViewportObservation(next)
+            endViewportObservation(next, 'accepted')
+          }
+        }
+      },
+      { flush: 'sync' }
+    )
+
+    const getViewport = (): Viewport => activeViewport.value
+    const getZoom = (): number => activeViewport.value.zoom
+
+    const viewportInitialized = (): boolean =>
+      canvas.value !== undefined &&
+      canvasWidth.value > 0 &&
+      canvasHeight.value > 0
+
+    const allocateViewportRequestId = (): number => {
+      nextViewportRequestId += 1
+
+      return nextViewportRequestId
+    }
+
+    const screenToFlowPosition = (position: { x: number; y: number }) => {
+      const bounds = canvas.value?.getBoundingClientRect()
+      const viewport = activeViewport.value
+
+      return {
+        x: (position.x - (bounds?.left ?? 0) - viewport.x) / viewport.zoom,
+        y: (position.y - (bounds?.top ?? 0) - viewport.y) / viewport.zoom,
+      }
+    }
+
+    const flowToScreenPosition = (position: { x: number; y: number }) => {
+      const bounds = canvas.value?.getBoundingClientRect()
+      const viewport = activeViewport.value
+
+      return {
+        x: (bounds?.left ?? 0) + position.x * viewport.zoom + viewport.x,
+        y: (bounds?.top ?? 0) + position.y * viewport.zoom + viewport.y,
+      }
+    }
+
+    const calculateViewportForBounds = (
+      bounds: ViewportBounds,
+      padding?: ViewportPadding
+    ): Viewport | undefined => {
+      if (!viewportInitialized()) {
+        return undefined
+      }
+
+      return getViewportForBounds({
+        bounds,
+        width: canvasWidth.value,
+        height: canvasHeight.value,
+        limits: viewportLimits,
+        padding,
+      })
+    }
+
+    const getViewportForBoundsInCanvas = (
+      bounds: ViewportBounds,
+      options?: { padding?: ViewportPadding }
+    ): Viewport | undefined => {
+      const validBounds = S.decodeUnknownSync(ViewportBoundsSchema)(bounds)
+
+      const padding =
+        options?.padding === undefined
+          ? undefined
+          : S.decodeUnknownSync(ViewportPaddingSchema)(options.padding)
+
+      return calculateViewportForBounds(validBounds, padding)
+    }
+
+    const requestViewport = (
+      target: Viewport,
+      validOptions: ViewportAnimationOptions
+    ): Promise<ViewportOperationResult> => {
+      const validTarget = S.decodeUnknownSync(ViewportSchema)(target)
+      const requestId = allocateViewportRequestId()
+      settleViewportRequest('superseded')
+
+      if (!viewportInitialized()) {
+        return Promise.resolve({
+          requestId,
+          status: 'unavailable',
+          viewport: activeViewport.value,
+        })
+      }
+
+      if (viewportEquivalence(activeViewport.value, validTarget)) {
+        return Promise.resolve({
+          requestId,
+          status: 'unchanged',
+          viewport: validTarget,
+        })
+      }
+
+      if (props.viewportMode === 'controlled') {
+        beginViewportObservation(activeViewport.value)
+        changeViewportObservation(validTarget)
+        emit('update:viewport', validTarget)
+        endViewportObservation(validTarget, 'proposed')
+
+        return Promise.resolve({
+          requestId,
+          status: 'proposed',
+          viewport: validTarget,
+        })
+      }
+
+      const start = activeViewport.value
+
+      const prefersReducedMotion =
+        globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ===
+        true
+
+      const duration = prefersReducedMotion
+        ? 0
+        : Math.max(0, validOptions.duration ?? 0)
+
+      if (duration === 0) {
+        beginViewportObservation(start)
+        changeViewportObservation(validTarget)
+        updateViewportValue(validTarget)
+        endViewportObservation(validTarget, 'accepted')
+
+        return Promise.resolve({
+          requestId,
+          status: 'accepted',
+          viewport: validTarget,
+        })
+      }
+
+      beginViewportObservation(start)
+
+      const { promise, resolve } =
+        Promise.withResolvers<ViewportOperationResult>()
+
+      let frame = 0
+      let startedAt: number | undefined
+
+      const cancelFrame = (): void => {
+        if (frame !== 0) {
+          cancelAnimationFrame(frame)
+        }
+      }
+
+      activeViewportRequest = { requestId, cancelFrame, settle: resolve }
+
+      const tick = (timestamp: number): void => {
+        if (activeViewportRequest?.requestId !== requestId || stateDisposed) {
+          return
+        }
+
+        startedAt ??= timestamp
+        const progress = Math.min(1, (timestamp - startedAt) / duration)
+
+        const current = interpolateViewport(
+          start,
+          validTarget,
+          progress,
+          validOptions.easing
+        )
+
+        changeViewportObservation(current)
+        withStateCause('viewport-update', () => {
+          ownedViewport.value = current
+        })
+
+        if (progress >= 1) {
+          settleViewportRequest('accepted', validTarget)
+        } else {
+          frame = requestAnimationFrame(tick)
+        }
+      }
+
+      frame = requestAnimationFrame(tick)
+
+      return promise
+    }
+
+    const setViewport = (
+      target: Viewport,
+      options?: ViewportAnimationOptions
+    ): Promise<ViewportOperationResult> =>
+      requestViewport(
+        target,
+        S.decodeUnknownSync(ViewportAnimationOptionsSchema)(options ?? {})
+      )
+
+    const zoomTo = (zoom: number, options?: ViewportAnimationOptions) =>
+      setViewport(
+        zoomViewportAt(
+          activeViewport.value,
+          zoom,
+          { x: canvasWidth.value / 2, y: canvasHeight.value / 2 },
+          viewportLimits
+        ),
+        options
+      )
+
+    const zoomIn = (options?: ViewportAnimationOptions) =>
+      zoomTo(activeViewport.value.zoom * 1.2, options)
+
+    const zoomOut = (options?: ViewportAnimationOptions) =>
+      zoomTo(activeViewport.value.zoom / 1.2, options)
+
+    const setCenter = (
+      x: number,
+      y: number,
+      options?: ViewportAnimationOptions & { zoom?: number }
+    ) => {
+      const zoom = options?.zoom ?? activeViewport.value.zoom
+
+      return setViewport(
+        {
+          x: canvasWidth.value / 2 - x * zoom,
+          y: canvasHeight.value / 2 - y * zoom,
+          zoom,
+        },
+        options
+      )
+    }
+
+    const fitBounds = (
+      bounds: ViewportBounds,
+      options?: ViewportAnimationOptions & { padding?: ViewportPadding }
+    ) => {
+      const validBounds = S.decodeUnknownSync(ViewportBoundsSchema)(bounds)
+
+      const validOptions = S.decodeUnknownSync(FitBoundsOptionsSchema)(
+        options ?? {}
+      )
+
+      const target = calculateViewportForBounds(
+        validBounds,
+        validOptions.padding
+      )
+
+      return target === undefined
+        ? Promise.resolve({
+            requestId: allocateViewportRequestId(),
+            status: 'unavailable' as const,
+            viewport: activeViewport.value,
+          })
+        : requestViewport(target, {
+            duration: validOptions.duration,
+            easing: validOptions.easing,
+          })
+    }
+
+    const fitView = (
+      options?: ViewportAnimationOptions & {
+        padding?: ViewportPadding
+        nodes?: 'all' | 'selected' | readonly string[]
+      }
+    ) => {
+      const validOptions = S.decodeUnknownSync(FitViewOptionsSchema)(
+        options ?? {}
+      )
+
+      if (!viewportInitialized()) {
+        return Promise.resolve({
+          requestId: allocateViewportRequestId(),
+          status: 'unavailable' as const,
+          viewport: activeViewport.value,
+        })
+      }
+
+      const nodeSelection = validOptions.nodes
+
+      let selectedIds:
+        | Set<(typeof activeDocument.value.nodes)[number]['id']>
+        | undefined
+
+      if (nodeSelection === 'selected') {
+        selectedIds = new Set(
+          activeDocument.value.nodes
+            .filter(({ selected }) => selected === true)
+            .map(({ id }) => id)
+        )
+      } else if (Array.isArray(nodeSelection)) {
+        selectedIds = new Set(
+          activeDocument.value.nodes
+            .filter(({ id }) => nodeSelection.includes(id))
+            .map(({ id }) => id)
+        )
+      }
+
+      const target = fitViewportToNodes({
+        document: activeDocument.value,
+        nodeIds: selectedIds,
+        measurements: new Map(
+          measurementState.nodes.map(({ measurement }) => [
+            measurement.nodeId,
+            measurement,
+          ])
+        ),
+        currentViewport: activeViewport.value,
+        paneWidth: canvasWidth.value,
+        paneHeight: canvasHeight.value,
+        limits: viewportLimits,
+        padding: validOptions.padding,
+      })
+
+      return requestViewport(target, {
+        duration: validOptions.duration,
+        easing: validOptions.easing,
+      })
     }
 
     const applyEditResolved = async (
@@ -788,7 +1371,135 @@ export const FlowCanvas = defineComponent({
       applyEdit,
       applyEditResolved,
       updateViewport,
+      getViewport,
+      getZoom,
+      viewportInitialized,
+      screenToFlowPosition,
+      flowToScreenPosition,
+      setViewport,
+      zoomIn,
+      zoomOut,
+      zoomTo,
+      setCenter,
+      fitBounds,
+      fitView,
+      getViewportForBounds: getViewportForBoundsInCanvas,
       publish,
+      getInternalNode: (id) => {
+        const node = activeDocument.value.nodes.find(
+          (candidate) => candidate.id === id
+        )
+
+        return node === undefined
+          ? undefined
+          : getFlowInternalNode(activeDocument.value, measurementState, node.id)
+      },
+      nodesInitialized: (options) =>
+        areFlowNodesInitialized(activeDocument.value, measurementState, {
+          ...options,
+          mountedNodeIds: new Set(
+            activeDocument.value.nodes
+              .filter((node) => nodeElements.has(node.id))
+              .map((node) => node.id)
+          ),
+        }),
+      updateNodeInternals: (nodeIds) => {
+        if (stateDisposed) {
+          return Promise.resolve(
+            nodeIds.map((nodeId) => ({ nodeId, status: 'disposed' as const }))
+          )
+        }
+
+        const requests = nodeIds.map((nodeId) => {
+          const node = activeDocument.value.nodes.find(
+            (candidate) => candidate.id === nodeId
+          )
+
+          if (node === undefined) {
+            return Promise.resolve({ nodeId, status: 'missing' as const })
+          }
+
+          if (!nodeElements.has(node.id)) {
+            return Promise.resolve({ nodeId, status: 'unrendered' as const })
+          }
+
+          const pending =
+            Promise.withResolvers<
+              Awaited<ReturnType<FlowEditor['updateNodeInternals']>>[number]
+            >()
+
+          const waiters = pendingInternals.get(node.id) ?? []
+          waiters.push(pending.resolve)
+          pendingInternals.set(node.id, waiters)
+
+          return pending.promise
+        })
+
+        if (!refreshScheduled && pendingInternals.size > 0) {
+          refreshScheduled = true
+          void nextTick(() => {
+            refreshScheduled = false
+            const document = activeDocument.value
+            const measurements: NodeMeasurementInput[] = []
+
+            for (const [nodeId, settle] of pendingInternals) {
+              const node = activeNodesById.get(nodeId)
+
+              const element = nodeElements.get(nodeId)
+
+              if (stateDisposed) {
+                for (const resolve of settle) {
+                  resolve({ nodeId, status: 'disposed' })
+                }
+              } else if (node === undefined) {
+                for (const resolve of settle) {
+                  resolve({ nodeId, status: 'missing' })
+                }
+              } else if (element === undefined || !element.isConnected) {
+                for (const resolve of settle) {
+                  resolve({ nodeId, status: 'unrendered' })
+                }
+              } else {
+                const bounds = element.getBoundingClientRect()
+
+                const generation = nodeGenerations.get(node.id)
+
+                if (generation === undefined) {
+                  for (const resolve of settle) {
+                    resolve({ nodeId, status: 'unrendered' })
+                  }
+
+                  continue
+                }
+
+                measurements.push({
+                  nodeId: node.id,
+                  generation,
+                  width: bounds.width / activeViewport.value.zoom,
+                  height: bounds.height / activeViewport.value.zoom,
+                })
+                measureNodeHandles(node, element)
+
+                for (const resolve of settle) {
+                  resolve({ nodeId, status: 'refreshed' })
+                }
+              }
+            }
+
+            if (!stateDisposed && measurements.length > 0) {
+              measurementState = applyNodeMeasurements(
+                document,
+                measurementState,
+                measurements
+              )
+            }
+
+            pendingInternals.clear()
+          })
+        }
+
+        return Promise.all(requests)
+      },
     }
 
     provide(FlowEditorKey, editor)
@@ -826,8 +1537,18 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const handleId =
-        target.closest<HTMLElement>('[data-handle-id]')?.dataset.handleId
+      const handle = target.closest<HTMLElement>('[data-handle-id]')
+
+      const isNativeControl =
+        target.closest(
+          'button, input, select, textarea, a, [contenteditable="true"], [data-flow-nodrag]'
+        ) !== null
+
+      if (isNativeControl && handle === null) {
+        return
+      }
+
+      const handleId = handle?.dataset.handleId
 
       const { currentTarget } = event
 
@@ -850,7 +1571,7 @@ export const FlowCanvas = defineComponent({
       } else {
         const source = graph.value.nodes.get(node.id)
 
-        const handle = node.handles?.find(
+        const sourceHandle = node.handles?.find(
           (candidate) => candidate.id === handleId
         )
 
@@ -858,7 +1579,7 @@ export const FlowCanvas = defineComponent({
 
         if (
           source === undefined ||
-          handle === undefined ||
+          sourceHandle === undefined ||
           measured === undefined
         ) {
           return
@@ -866,7 +1587,7 @@ export const FlowCanvas = defineComponent({
 
         const start = edgeAttachmentPosition(
           source.absolutePosition,
-          handle,
+          sourceHandle,
           measured
         )
 
@@ -1005,6 +1726,8 @@ export const FlowCanvas = defineComponent({
           })
         )
         cleanupPreview(active)
+        viewportGestureActive = false
+        endViewportObservation(activeViewport.value, 'accepted')
 
         return
       }
@@ -1052,6 +1775,8 @@ export const FlowCanvas = defineComponent({
         startY: event.clientY,
         viewportStart: activeViewport.value,
       }
+      viewportGestureActive = true
+      beginViewportObservation(activeViewport.value)
       currentTarget.setPointerCapture?.(event.pointerId)
       event.preventDefault()
     }
@@ -1082,7 +1807,11 @@ export const FlowCanvas = defineComponent({
       }
 
       const position = nodePosition(node)
-      const Node: NodeVisual = props.nodeComponent ?? DefaultNode
+
+      const Node: NodeVisual =
+        props.nodeTypes?.[node.type ?? 'default'] ??
+        props.nodeComponent ??
+        DefaultNode
 
       const nodeSlots =
         slots.node === undefined
@@ -1095,9 +1824,20 @@ export const FlowCanvas = defineComponent({
           type: 'button',
           class: ['flow-vue-handle', `flow-vue-handle-${handle.side}`],
           'data-handle-id': handle.id,
+          'data-handle-kind': handle.kind,
           'aria-label': `${handle.kind} handle ${handle.id}`,
         })
       )
+
+      const style: NodePositionStyle = {
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+      }
+
+      if (node.size !== undefined) {
+        style.width = `${node.size.width}px`
+        style.height = `${node.size.height}px`
+      }
 
       return h(
         'div',
@@ -1107,7 +1847,7 @@ export const FlowCanvas = defineComponent({
           'data-testid': 'flow-node',
           'data-node-id': node.id,
           ref: nodeRef(node),
-          style: { left: `${position.x}px`, top: `${position.y}px` },
+          style,
           onPointerdown: (event: PointerEvent) => onPointerDown(event, node),
         },
         [
@@ -1115,6 +1855,157 @@ export const FlowCanvas = defineComponent({
           ...handleChildren,
         ]
       )
+    }
+
+    const renderMarkers = (): VNode[] => {
+      const markers = new Map<string, VNode>()
+
+      for (const edge of activeDocument.value.edges) {
+        const stroke = edge.stroke ?? '#64748b'
+
+        for (const kind of [edge.markerStart, edge.markerEnd]) {
+          if (kind === undefined) {
+            continue
+          }
+
+          const id = markerId(canvasId, kind, stroke)
+
+          if (markers.has(id)) {
+            continue
+          }
+
+          markers.set(
+            id,
+            h(
+              'marker',
+              {
+                id,
+                key: id,
+                markerWidth: 10,
+                markerHeight: 10,
+                refX: 9,
+                refY: 5,
+                orient: 'auto-start-reverse',
+                markerUnits: 'strokeWidth',
+                viewBox: '0 0 10 10',
+              },
+              [
+                h('path', {
+                  d:
+                    kind === 'arrowclosed'
+                      ? 'M 0 0 L 10 5 L 0 10 z'
+                      : 'M 0 0 L 10 5 L 0 10',
+                  fill: kind === 'arrowclosed' ? stroke : 'none',
+                  stroke,
+                }),
+              ]
+            )
+          )
+        }
+      }
+
+      return [...markers.values()]
+    }
+
+    const resolveRenderedEdge = (edge: FlowEdge) => {
+      const resolved = resolveEdgeHandles(activeDocument.value, edge)
+
+      if (resolved === undefined) {
+        return
+      }
+
+      const sourceNode = graph.value.nodes.get(resolved.sourceNode.id)
+      const targetNode = graph.value.nodes.get(resolved.targetNode.id)
+
+      const sourceMeasured = measuredHandles.value
+        .get(resolved.sourceNode.id)
+        ?.get(resolved.sourceHandle.id)
+
+      const targetMeasured = measuredHandles.value
+        .get(resolved.targetNode.id)
+        ?.get(resolved.targetHandle.id)
+
+      if (
+        sourceNode === undefined ||
+        targetNode === undefined ||
+        sourceMeasured === undefined ||
+        targetMeasured === undefined
+      ) {
+        return
+      }
+
+      const sourceAnchor = edgeAttachmentPosition(
+        sourceNode.absolutePosition,
+        resolved.sourceHandle,
+        sourceMeasured
+      )
+
+      const targetAnchor = edgeAttachmentPosition(
+        targetNode.absolutePosition,
+        resolved.targetHandle,
+        targetMeasured
+      )
+
+      return {
+        path: edgePath(
+          edge.path,
+          sourceAnchor,
+          targetAnchor,
+          resolved.sourceHandle.side,
+          resolved.targetHandle.side
+        ),
+        sourceNode,
+        targetNode,
+      }
+    }
+
+    const renderEdgeHitTarget = (
+      edge: FlowEdge,
+      path: string,
+      sourceLabel: string,
+      targetLabel: string
+    ): VNode =>
+      h('path', {
+        class: 'flow-vue-edge-hit-target',
+        'data-testid': 'flow-edge-hit-target',
+        'data-flow-edge-hit': edge.id,
+        d: path,
+        fill: 'none',
+        stroke: 'rgba(0, 0, 0, 0.001)',
+        'stroke-width': edge.interactionWidth ?? 20,
+        'pointer-events': 'stroke',
+        tabindex: edge.focusable === false ? -1 : 0,
+        role: edge.selectable === false ? 'img' : 'button',
+        'aria-label':
+          edge.ariaLabel ?? `Edge from ${sourceLabel} to ${targetLabel}`,
+        onPointerdown: (event: PointerEvent) => {
+          if (event.button === 0) {
+            event.preventDefault()
+            emit('edgeClick', edge)
+          }
+        },
+        onKeydown: (event: KeyboardEvent) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            event.stopPropagation()
+            emit('edgeClick', edge)
+          }
+        },
+      })
+
+    const edgeMarkers = (edge: FlowEdge) => {
+      const stroke = edge.stroke ?? '#64748b'
+
+      return {
+        markerStart:
+          edge.markerStart === undefined
+            ? undefined
+            : `url(#${markerId(canvasId, edge.markerStart, stroke)})`,
+        markerEnd:
+          edge.markerEnd === undefined
+            ? undefined
+            : `url(#${markerId(canvasId, edge.markerEnd, stroke)})`,
+      }
     }
 
     const renderEdge = (edge: FlowEdge): VNode | null => {
@@ -1129,61 +2020,48 @@ export const FlowCanvas = defineComponent({
         return null
       }
 
-      const Edge = props.edgeComponent
+      const Edge = props.edgeTypes?.[edge.type ?? 'default']
+      const LegacyEdge = Edge === undefined ? props.edgeComponent : undefined
 
       const edgeSlots =
         slots.edge === undefined
           ? undefined
           : { default: () => slots.edge?.({ edge }) }
 
-      const resolved = resolveEdgeHandles(activeDocument.value, edge)
-
-      const sourceNode =
-        resolved === undefined
-          ? undefined
-          : graph.value.nodes.get(resolved.sourceNode.id)
-
-      const targetNode =
-        resolved === undefined
-          ? undefined
-          : graph.value.nodes.get(resolved.targetNode.id)
-
-      const sourceMeasured =
-        resolved === undefined
-          ? undefined
-          : measuredHandles.value
-              .get(resolved.sourceNode.id)
-              ?.get(resolved.sourceHandle.id)
-
-      const targetMeasured =
-        resolved === undefined
-          ? undefined
-          : measuredHandles.value
-              .get(resolved.targetNode.id)
-              ?.get(resolved.targetHandle.id)
+      const geometry = resolveRenderedEdge(edge)
+      const path = geometry?.path
+      const sourceNode = geometry?.sourceNode
+      const targetNode = geometry?.targetNode
 
       let edgeChildren: VNode[] = []
 
-      if (Edge !== undefined) {
-        edgeChildren = [h(Edge, { edge }, edgeSlots)]
-      } else if (
-        resolved !== undefined &&
-        sourceNode !== undefined &&
-        targetNode !== undefined &&
-        sourceMeasured !== undefined &&
-        targetMeasured !== undefined
-      ) {
+      const { markerStart, markerEnd } = edgeMarkers(edge)
+
+      if (path !== undefined && Edge !== undefined) {
         edgeChildren = [
-          renderDefaultEdgePath(
-            edge,
-            sourceNode.absolutePosition,
-            targetNode.absolutePosition,
-            resolved.sourceHandle,
-            resolved.targetHandle,
-            sourceMeasured,
-            targetMeasured
-          ),
+          h(Edge, { edge, path, markerStart, markerEnd }, edgeSlots),
         ]
+      } else if (LegacyEdge !== undefined) {
+        edgeChildren = [h(LegacyEdge, { edge }, edgeSlots)]
+      } else if (path !== undefined) {
+        edgeChildren = [
+          renderDefaultEdgePath(edge, path, markerStart, markerEnd),
+        ]
+      }
+
+      if (
+        path !== undefined &&
+        sourceNode !== undefined &&
+        targetNode !== undefined
+      ) {
+        edgeChildren.push(
+          renderEdgeHitTarget(
+            edge,
+            path,
+            sourceNode.node.label,
+            targetNode.node.label
+          )
+        )
       }
 
       return h(
@@ -1193,8 +2071,103 @@ export const FlowCanvas = defineComponent({
       )
     }
 
+    const resolveEdgeLabelPosition = (
+      edge: FlowEdge
+    ): { readonly x: number; readonly y: number } | undefined => {
+      if (edge.label === undefined || edge.label.length === 0 || edge.hidden) {
+        return undefined
+      }
+
+      const resolved = resolveEdgeHandles(activeDocument.value, edge)
+
+      if (resolved === undefined) {
+        return undefined
+      }
+
+      const sourceNode = graph.value.nodes.get(resolved.sourceNode.id)
+      const targetNode = graph.value.nodes.get(resolved.targetNode.id)
+
+      if (
+        sourceNode === undefined ||
+        targetNode === undefined ||
+        sourceNode.hidden ||
+        targetNode.hidden
+      ) {
+        return undefined
+      }
+
+      const sourceMeasured = measuredHandles.value
+        .get(resolved.sourceNode.id)
+        ?.get(resolved.sourceHandle.id)
+
+      const targetMeasured = measuredHandles.value
+        .get(resolved.targetNode.id)
+        ?.get(resolved.targetHandle.id)
+
+      if (sourceMeasured === undefined || targetMeasured === undefined) {
+        return undefined
+      }
+
+      const source = edgeAttachmentPosition(
+        sourceNode.absolutePosition,
+        resolved.sourceHandle,
+        sourceMeasured
+      )
+
+      const target = edgeAttachmentPosition(
+        targetNode.absolutePosition,
+        resolved.targetHandle,
+        targetMeasured
+      )
+
+      return (
+        edgeLabelAnchor(edge) ??
+        edgeLabelPosition(
+          source,
+          target,
+          edge.path ?? 'straight',
+          resolved.sourceHandle.side,
+          resolved.targetHandle.side
+        )
+      )
+    }
+
+    const renderEdgeLabel = (edge: FlowEdge): VNode | null => {
+      const position = resolveEdgeLabelPosition(edge)
+
+      if (position === undefined || edge.label === undefined) {
+        return null
+      }
+
+      return h(
+        'div',
+        {
+          key: edge.id,
+          class: 'flow-vue-edge-label',
+          'data-testid': 'flow-edge-label',
+          'data-flow-edge-label': edge.id,
+          style: {
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+          },
+        },
+        edge.label
+      )
+    }
+
     onBeforeUnmount(() => {
       stateDisposed = true
+      settleViewportRequest('disposed')
+      viewportGestureActive = false
+      endViewportObservation(activeViewport.value, 'disposed')
+
+      for (const [nodeId, resolve] of pendingInternals) {
+        for (const settle of resolve) {
+          settle({ nodeId, status: 'disposed' })
+        }
+      }
+
+      pendingInternals.clear()
       stateListeners.clear()
       stateQueue.length = 0
 
@@ -1312,6 +2285,11 @@ export const FlowCanvas = defineComponent({
           onWheel,
           onPointercancel: (event: PointerEvent) => {
             if (session.value?.pointerId === event.pointerId) {
+              if (session.value.kind === 'pan') {
+                viewportGestureActive = false
+                endViewportObservation(activeViewport.value, 'superseded')
+              }
+
               cleanupPreview()
               clickConnection.value = undefined
             }
@@ -1322,13 +2300,13 @@ export const FlowCanvas = defineComponent({
             'svg',
             {
               class: 'flow-vue-edges',
-              'aria-hidden': 'true',
               style: {
                 transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
                 transformOrigin: '0 0',
               },
             },
             [
+              h('defs', renderMarkers()),
               ...activeDocument.value.edges.map(renderEdge),
               ...connectionPreview,
             ]
@@ -1342,6 +2320,17 @@ export const FlowCanvas = defineComponent({
               },
             },
             graph.value.orderedNodes.map(({ node }) => renderNode(node))
+          ),
+          h(
+            'div',
+            {
+              class: 'flow-vue-edge-labels',
+              'aria-hidden': 'true',
+              style: {
+                transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
+              },
+            },
+            activeDocument.value.edges.map(renderEdgeLabel)
           ),
           slots.default?.({}),
         ]
