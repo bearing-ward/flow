@@ -1,0 +1,187 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "normalization": "fixed 1280x720 browser viewport; retain measured node/handle geometry and rendered path strings; omit generated marker ids and elapsed time",
+    "capturedAt": "2026-09-27T22:23:41.535Z"
+  },
+  "cases": {
+    "initial": {
+      "nodes": [
+        {
+          "id": "source",
+          "measured": {
+            "width": 142,
+            "height": 78
+          },
+          "handles": {
+            "source": [
+              {
+                "id": "out",
+                "type": "source",
+                "nodeId": "source",
+                "position": "right",
+                "x": 137,
+                "y": 21,
+                "width": 8,
+                "height": 8
+              }
+            ],
+            "target": [
+              {
+                "id": "in",
+                "type": "target",
+                "nodeId": "source",
+                "position": "left",
+                "x": -3,
+                "y": 15,
+                "width": 8,
+                "height": 8
+              }
+            ]
+          }
+        },
+        {
+          "id": "target",
+          "measured": {
+            "width": 142,
+            "height": 78
+          },
+          "handles": {
+            "source": [
+              {
+                "id": "out",
+                "type": "source",
+                "nodeId": "target",
+                "position": "right",
+                "x": 137,
+                "y": 21,
+                "width": 8,
+                "height": 8
+              }
+            ],
+            "target": [
+              {
+                "id": "in",
+                "type": "target",
+                "nodeId": "target",
+                "position": "left",
+                "x": -3,
+                "y": 15,
+                "width": 8,
+                "height": 8
+              }
+            ]
+          }
+        }
+      ],
+      "paths": [
+        {
+          "kind": "straight",
+          "path": "M 245,125L 437,119"
+        },
+        {
+          "kind": "bezier",
+          "path": "M245,125 C341,125 341,119 437,119"
+        },
+        {
+          "kind": "step",
+          "path": "M245 125L265 125L 341,125Q 341,125 341,125L 341,119Q 341,119 341,119L417 119L437 119"
+        },
+        {
+          "kind": "smoothstep",
+          "path": "M245 125L265 125L 338,125Q 341,125 341,122L 341,122Q 341,119 344,119L417 119L437 119"
+        },
+        {
+          "kind": "simplebezier",
+          "path": "M245,125 C341,125 341,119 437,119"
+        }
+      ],
+      "customLabel": true,
+      "markers": [
+        {
+          "tag": "marker",
+          "orient": "auto-start-reverse",
+          "width": "12.5",
+          "height": "12.5",
+          "markerChildren": [
+            {
+              "tag": "polyline",
+              "attributes": [
+                ["class", "arrowclosed"],
+                ["points", "-5,-4 0,0 -5,4 -5,-4"],
+                ["stroke-linecap", "round"],
+                ["stroke-linejoin", "round"],
+                [
+                  "style",
+                  "stroke-width: 1; stroke: rgb(18, 52, 86); fill: rgb(18, 52, 86);"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "marker",
+          "orient": "auto-start-reverse",
+          "width": "12.5",
+          "height": "12.5",
+          "markerChildren": [
+            {
+              "tag": "polyline",
+              "attributes": [
+                ["class", "arrow"],
+                ["fill", "none"],
+                ["points", "-5,-4 0,0 -5,4"],
+                ["stroke-linecap", "round"],
+                ["stroke-linejoin", "round"],
+                ["style", "stroke-width: 1; stroke: rgb(177, 177, 183);"]
+              ]
+            }
+          ]
+        }
+      ],
+      "unknownFallback": true
+    },
+    "refreshed": {
+      "measured": {
+        "width": 142,
+        "height": 118
+      },
+      "output": {
+        "id": "out",
+        "type": "source",
+        "nodeId": "source",
+        "position": "right",
+        "x": 137,
+        "y": 49,
+        "width": 8,
+        "height": 8
+      },
+      "paths": [
+        {
+          "kind": "straight",
+          "path": "M 245,153L 437,119"
+        },
+        {
+          "kind": "bezier",
+          "path": "M245,153 C341,153 341,119 437,119"
+        },
+        {
+          "kind": "step",
+          "path": "M245 153L265 153L 341,153Q 341,153 341,153L 341,119Q 341,119 341,119L417 119L437 119"
+        },
+        {
+          "kind": "smoothstep",
+          "path": "M245 153L265 153L 336,153Q 341,153 341,148L 341,124Q 341,119 346,119L417 119L437 119"
+        },
+        {
+          "kind": "simplebezier",
+          "path": "M245,153 C341,153 341,119 437,119"
+        }
+      ]
+    },
+    "pathKinds": ["straight", "bezier", "step", "smoothstep", "simplebezier"]
+  }
+}

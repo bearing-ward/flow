@@ -986,14 +986,10 @@ playwrightTest(
 
     const localX = Number(await label.getAttribute('x'))
 
-    const before = await label.evaluate((element: SVGTextElement) => {
-      const matrix = element.getScreenCTM()
+    const before = await label.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
 
-      if (matrix === null) {
-        throw new Error('Label has no screen geometry')
-      }
-
-      return Number(element.getAttribute('x')) * matrix.a + matrix.e
+      return bounds.left + bounds.width / 2
     })
 
     await page.evaluate(() => {
@@ -1002,14 +998,10 @@ playwrightTest(
     await expectPage(label).toHaveAttribute('x', '387.5')
     await expectPage
       .poll(() =>
-        label.evaluate((element: SVGTextElement) => {
-          const matrix = element.getScreenCTM()
+        label.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
 
-          if (matrix === null) {
-            throw new Error('Label has no screen geometry')
-          }
-
-          return Number(element.getAttribute('x')) * matrix.a + matrix.e
+          return bounds.left + bounds.width / 2
         })
       )
       .toBeCloseTo(before + localX + 80, 1)

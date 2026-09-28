@@ -17,6 +17,8 @@
   position: absolute;
   inset: 0;
   transform-origin: 0 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .flow-vue-node {
@@ -30,6 +32,7 @@
   box-shadow: 0 2px 7px #0f172a18;
   cursor: grab;
   touch-action: none;
+  pointer-events: auto;
 }
 
 .flow-vue-node:active {
@@ -60,17 +63,61 @@
   right: -6px;
 }
 
+.flow-vue-handle-top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.flow-vue-handle-bottom {
+  top: auto;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .flow-vue-edges {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 1;
 }
 
 .flow-vue-edge-path {
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.flow-vue-edge-hit-target {
+  cursor: pointer;
+}
+
+.flow-vue-edge-hit-target:focus-visible {
+  outline: none;
+  stroke: #2563eb;
+  stroke-dasharray: 3 3;
+}
+
+.flow-vue-edge-labels {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.flow-vue-edge-label {
+  position: absolute;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: white;
+  box-shadow: 0 1px 3px #0f172a24;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
 }
 
 .flow-vue-connection-preview {

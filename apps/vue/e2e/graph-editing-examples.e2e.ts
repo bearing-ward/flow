@@ -7,7 +7,7 @@ test('Vue Updating Nodes adds, edits, removes, inspects data, and reports protec
   await page.setViewportSize({ width: 1280, height: 900 })
   await page.goto('/')
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-testid="measurement-result"])')
 
   const exerciseWorkflow = async () => {
     const add = panel.getByRole('button', { name: 'Add graph node' })
@@ -97,7 +97,7 @@ test('Vue Delete Middle Node reconnects one controlled transaction', async ({
   await page.setViewportSize({ width: 960, height: 640 })
   await page.goto('/')
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-testid="measurement-result"])')
 
   const action = panel.getByRole('button', {
     name: 'Delete middle and reconnect',
@@ -138,7 +138,7 @@ test('Vue Delete Middle Node reconnects one controlled transaction', async ({
 test('Vue session restore round-trips JSON edge data', async ({ page }) => {
   await page.goto('/')
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-testid="measurement-result"])')
 
   await panel.getByRole('button', { name: 'Update edge data' }).click()
   await panel.getByRole('button', { name: 'Inspect graph' }).click()

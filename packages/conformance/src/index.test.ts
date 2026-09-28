@@ -13,6 +13,7 @@ import {
   PublicStateContractFixtureSchema,
   PublicEditContractFixtureSchema,
   PublicEditQueuedDisposalSchema,
+  RendererContractFixtureSchema,
   conformanceFixtures,
   validateConformanceFixtures,
   validatePublicStateContractFixtures,
@@ -32,6 +33,89 @@ const ResizeCaptureSchema = S.Struct({
 })
 
 describe('shared conformance fixtures', () => {
+  it('keeps the renderer contract scene schema-valid and host-neutral', () => {
+    const fixture = S.decodeUnknownSync(RendererContractFixtureSchema)(
+      JSON.parse(
+        readFileSync('research/fixtures/renderer-contract.json', 'utf-8')
+      )
+    )
+
+    const decoded = Effect.runSync(decodeFlowDocument(fixture.document))
+
+    expect({
+      nodeIds: decoded.nodes.map(({ id }) => id),
+      paths: decoded.edges.map(({ path }) => path),
+      builtInPaths: fixture.expected.builtInPaths,
+      labelOwner: fixture.expected.labelOwner,
+      dynamicHandle: fixture.expected.dynamicHandle,
+      nodesSized: decoded.nodes.every(
+        (node) => node.data?.width === 140 && node.data.height === 76
+      ),
+    }).toStrictEqual({
+      nodeIds: ['source', 'target'],
+      paths: [
+        'straight',
+        'bezier',
+        'simplebezier',
+        'step',
+        'smoothstep',
+        undefined,
+        'bezier',
+        'simplebezier',
+      ],
+      builtInPaths: [
+        'straight',
+        'bezier',
+        'simplebezier',
+        'step',
+        'smoothstep',
+      ],
+      labelOwner: 'host-overlay',
+      dynamicHandle: {
+        nodeId: 'source',
+        handleId: 'out',
+        initialTop: 21,
+        resizedTop: 49,
+      },
+      nodesSized: true,
+    })
+  })
+
+  it('keeps the shared measured-geometry cases in a fixed contract fixture', () => {
+    const fixture = S.decodeUnknownSync(
+      S.Struct({
+        contract: S.Literal('flow-measured-geometry-v1'),
+        units: S.Literal('unscaled-local-graph-units'),
+        cases: S.Array(S.Json),
+      })
+    )(
+      JSON.parse(
+        readFileSync('research/fixtures/measurement-contract.json', 'utf-8')
+      )
+    )
+
+    expect(fixture.cases).toHaveLength(5)
+
+    const caseIds = fixture.cases.map((item) => {
+      const decodedCase = S.decodeUnknownSync(
+        S.Struct({
+          name: S.optional(S.String),
+          nodeId: S.optional(S.String),
+        })
+      )(item)
+
+      return decodedCase.name ?? decodedCase.nodeId
+    })
+
+    expect(caseIds).toStrictEqual([
+      'nested-visible-node',
+      'hidden-node-readiness',
+      'zero-sized-node',
+      'culled-node-fit-fallback',
+      'remove-readd-same-id',
+    ])
+  })
+
   it('loads fixed public-edit outcomes and prepares their complete candidates', () => {
     const file = S.decodeUnknownSync(
       S.Struct({

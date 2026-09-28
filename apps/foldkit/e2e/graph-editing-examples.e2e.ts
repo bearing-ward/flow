@@ -7,7 +7,7 @@ test('Foldkit Updating Nodes edits data, removes nodes, and reports protected de
   await page.setViewportSize({ width: 1280, height: 900 })
   await page.goto('/')
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-measurement])')
 
   const exerciseWorkflow = async () => {
     const add = panel.getByRole('button', { name: 'Add node' })
@@ -100,7 +100,7 @@ test('Foldkit Delete Middle Node reconnects from one pre-edit model snapshot', a
   await page.setViewportSize({ width: 960, height: 640 })
   await page.goto('/')
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-measurement])')
 
   await expect(
     page.locator('.flow-foldkit-node[data-node-id="validate"]')
@@ -154,7 +154,7 @@ test('Foldkit Delete Middle Node reconnects from one pre-edit model snapshot', a
 test('Foldkit session restore round-trips JSON edge data', async ({ page }) => {
   await page.goto('/')
   const panel = page.locator('.flow-state-tools')
-  const result = panel.locator('output')
+  const result = panel.locator('output:not([data-measurement])')
 
   await panel.getByRole('button', { name: 'Update edge data' }).click()
   await panel.getByRole('button', { name: 'Inspect graph' }).click()

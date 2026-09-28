@@ -7,6 +7,11 @@ import type {
   ViewportLimits,
 } from './flow-runtime.schema.ts'
 import type { XYPosition } from './flow-values.ts'
+import {
+  getViewportForBounds,
+  ViewportPaddingSchema,
+} from './flow-viewport-operation.schema.ts'
+import type { ViewportPadding } from './flow-viewport-operation.schema.ts'
 import type { FlowDocument, NodeId } from './flow.schema.ts'
 
 export interface FitViewInput {
@@ -17,17 +22,14 @@ export interface FitViewInput {
   readonly paneWidth: number
   readonly paneHeight: number
   readonly limits: ViewportLimits
-  /** Fraction of each pane dimension reserved on each side. */
-  readonly padding?: FitViewPadding | undefined
+  /** Uniform pane fraction or per-side pixel padding. */
+  readonly padding?: ViewportPadding | undefined
   /** Dimensions used until a visible node has a positive DOM measurement. */
   readonly fallbackDimensions?: FitViewNodeDimensions | undefined
   readonly positionOverrides?: ReadonlyMap<NodeId, XYPosition> | undefined
 }
 
-export const FitViewPaddingSchema = S.Finite.check(
-  S.isGreaterThanOrEqualTo(0),
-  S.isLessThan(0.5)
-)
+export const FitViewPaddingSchema = ViewportPaddingSchema
 
 export type FitViewPadding = typeof FitViewPaddingSchema.Type
 
@@ -68,19 +70,13 @@ export const fitViewportToNodes = ({
     return currentViewport
   }
 
-  const usableWidth = paneWidth * (1 - padding * 2)
-  const usableHeight = paneHeight * (1 - padding * 2)
-
-  const fitZoom = Math.min(
-    usableWidth / bounds.width,
-    usableHeight / bounds.height
+  return (
+    getViewportForBounds({
+      bounds,
+      height: paneHeight,
+      limits,
+      padding,
+      width: paneWidth,
+    }) ?? currentViewport
   )
-
-  const zoom = Math.min(limits.maxZoom, Math.max(limits.minZoom, fitZoom))
-
-  return {
-    x: paneWidth / 2 - (bounds.x + bounds.width / 2) * zoom,
-    y: paneHeight / 2 - (bounds.y + bounds.height / 2) * zoom,
-    zoom,
-  }
 }

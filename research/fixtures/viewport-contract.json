@@ -1,0 +1,52 @@
+{
+  "coordinateCases": [
+    {
+      "id": "client-offset-fractional-zoom",
+      "hostRect": { "left": 100, "top": 50 },
+      "client": { "x": 125, "y": 90 },
+      "viewport": { "x": -30, "y": 10, "zoom": 0.5 },
+      "flow": { "x": 110, "y": 60 },
+      "screen": { "x": 125, "y": 90 }
+    }
+  ],
+  "fitCases": [
+    {
+      "id": "fit-bounds-fractional-padding",
+      "bounds": { "x": 100, "y": 50, "width": 200, "height": 100 },
+      "pane": { "width": 800, "height": 600 },
+      "limits": { "minZoom": 0.25, "maxZoom": 4 },
+      "padding": 0.1,
+      "viewport": { "x": -240, "y": -20, "zoom": 3.2 }
+    },
+    {
+      "id": "fit-bounds-asymmetric-pixel-padding",
+      "bounds": { "x": 100, "y": 50, "width": 200, "height": 100 },
+      "pane": { "width": 800, "height": 600 },
+      "limits": { "minZoom": 0.25, "maxZoom": 4 },
+      "padding": { "top": 20, "right": 40, "bottom": 60, "left": 80 },
+      "viewport": { "x": -260, "y": -40, "zoom": 3.4 }
+    }
+  ],
+  "operationContract": {
+    "controlled": {
+      "finalStatus": "proposed",
+      "mustResolveWithoutOwnerAcknowledgement": true
+    },
+    "uncontrolled": {
+      "finalStatus": "accepted"
+    },
+    "superseded": {
+      "previousStatus": "superseded",
+      "replacementFinalStatus": "accepted"
+    },
+    "disposed": {
+      "inFlightStatus": "disposed"
+    },
+    "observationKinds": ["start", "change", "end"],
+    "acceptedStateEventsRemainSeparate": true
+  },
+  "coordinateLimitations": {
+    "accountsFor": ["document-scroll", "offset-host"],
+    "cssScaledOrRotatedHost": "unsupported"
+  }
+}

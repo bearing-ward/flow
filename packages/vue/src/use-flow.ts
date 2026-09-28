@@ -8,10 +8,15 @@ import type {
   FlowEditResult,
   FlowEditTransactionInput,
   FlowNode,
+  FlowInternalNode,
   FlowNodeSchema,
   FlowSnapshot,
   FlowStateChange,
   Viewport,
+  ViewportAnimationOptions,
+  ViewportBounds,
+  ViewportOperationResult,
+  ViewportPadding,
 } from '@flow/core'
 import { Schema as S } from 'effect'
 import { computed, inject } from 'vue'
@@ -106,7 +111,59 @@ export interface FlowEditor {
     resolve: (document: FlowDocument) => FlowEditTransactionInput
   ) => Promise<FlowEditResult>
   readonly updateViewport: (viewport: Viewport) => void
+  readonly getViewport: () => Viewport
+  readonly getZoom: () => number
+  readonly viewportInitialized: () => boolean
+  readonly screenToFlowPosition: (position: { x: number; y: number }) => {
+    x: number
+    y: number
+  }
+  readonly flowToScreenPosition: (position: { x: number; y: number }) => {
+    x: number
+    y: number
+  }
+  readonly setViewport: (
+    viewport: Viewport,
+    options?: ViewportAnimationOptions
+  ) => Promise<ViewportOperationResult>
+  readonly zoomIn: (
+    options?: ViewportAnimationOptions
+  ) => Promise<ViewportOperationResult>
+  readonly zoomOut: (
+    options?: ViewportAnimationOptions
+  ) => Promise<ViewportOperationResult>
+  readonly zoomTo: (
+    zoom: number,
+    options?: ViewportAnimationOptions
+  ) => Promise<ViewportOperationResult>
+  readonly setCenter: (
+    x: number,
+    y: number,
+    options?: ViewportAnimationOptions & { zoom?: number }
+  ) => Promise<ViewportOperationResult>
+  readonly fitBounds: (
+    bounds: ViewportBounds,
+    options?: ViewportAnimationOptions & { padding?: ViewportPadding }
+  ) => Promise<ViewportOperationResult>
+  readonly fitView: (
+    options?: ViewportAnimationOptions & {
+      padding?: ViewportPadding
+      nodes?: 'all' | 'selected' | readonly string[]
+    }
+  ) => Promise<ViewportOperationResult>
+  readonly getViewportForBounds: (
+    bounds: ViewportBounds,
+    options?: { padding?: ViewportPadding }
+  ) => Viewport | undefined
   readonly publish: (change: FlowChange) => void
+  readonly getInternalNode: (id: string) => FlowInternalNode | undefined
+  readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
+  readonly updateNodeInternals: (nodeIds: readonly string[]) => Promise<
+    readonly {
+      readonly nodeId: string
+      readonly status: 'refreshed' | 'missing' | 'unrendered' | 'disposed'
+    }[]
+  >
 }
 
 export const FlowEditorKey: InjectionKey<FlowEditor> = Symbol('FlowEditor')
@@ -181,6 +238,22 @@ export interface FlowActions {
     edgeIds?: readonly string[]
   }) => Promise<FlowDeleteResult>
   readonly updateViewport: FlowEditor['updateViewport']
+  readonly getViewport: FlowEditor['getViewport']
+  readonly getZoom: FlowEditor['getZoom']
+  readonly viewportInitialized: FlowEditor['viewportInitialized']
+  readonly screenToFlowPosition: FlowEditor['screenToFlowPosition']
+  readonly flowToScreenPosition: FlowEditor['flowToScreenPosition']
+  readonly setViewport: FlowEditor['setViewport']
+  readonly zoomIn: FlowEditor['zoomIn']
+  readonly zoomOut: FlowEditor['zoomOut']
+  readonly zoomTo: FlowEditor['zoomTo']
+  readonly setCenter: FlowEditor['setCenter']
+  readonly fitBounds: FlowEditor['fitBounds']
+  readonly fitView: FlowEditor['fitView']
+  readonly getViewportForBounds: FlowEditor['getViewportForBounds']
+  readonly getInternalNode: FlowEditor['getInternalNode']
+  readonly nodesInitialized: FlowEditor['nodesInitialized']
+  readonly updateNodeInternals: FlowEditor['updateNodeInternals']
 }
 
 export const useFlow = (): FlowActions => {
@@ -214,10 +287,26 @@ export const useFlow = (): FlowActions => {
     getSnapshot,
     getNode,
     getEdge,
+    getInternalNode: editor.getInternalNode,
+    nodesInitialized: editor.nodesInitialized,
+    updateNodeInternals: editor.updateNodeInternals,
     subscribeState: editor.subscribeState,
     dispatch: editor.dispatch,
     updateDocument: editor.updateDocument,
     updateViewport: editor.updateViewport,
+    getViewport: editor.getViewport,
+    getZoom: editor.getZoom,
+    viewportInitialized: editor.viewportInitialized,
+    screenToFlowPosition: editor.screenToFlowPosition,
+    flowToScreenPosition: editor.flowToScreenPosition,
+    setViewport: editor.setViewport,
+    zoomIn: editor.zoomIn,
+    zoomOut: editor.zoomOut,
+    zoomTo: editor.zoomTo,
+    setCenter: editor.setCenter,
+    fitBounds: editor.fitBounds,
+    fitView: editor.fitView,
+    getViewportForBounds: editor.getViewportForBounds,
     applyEdit: editor.applyEdit,
     setNodes: (nodes) =>
       isNodeListUpdater(nodes)

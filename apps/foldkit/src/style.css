@@ -111,6 +111,18 @@ main {
   cursor: grab;
   touch-action: none;
 }
+.flow-foldkit-demo-node {
+  display: grid;
+  gap: 4px;
+  color: #312e81;
+}
+.flow-foldkit-demo-node small {
+  color: #64748b;
+  font-size: 10px;
+}
+.flow-foldkit-demo-edge {
+  stroke-dasharray: 6 3;
+}
 .flow-foldkit-handle {
   position: absolute;
   top: 50%;
@@ -128,6 +140,17 @@ main {
 .flow-foldkit-handle-right {
   right: -6px;
 }
+.flow-foldkit-handle-top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-handle-bottom {
+  top: auto;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 .flow-foldkit-edge {
   position: absolute;
   pointer-events: none;
@@ -137,7 +160,28 @@ main {
   position: absolute;
   overflow: visible;
 }
-.flow-foldkit-edge path {
+.flow-foldkit-edge .flow-foldkit-edge-path {
   stroke: #64748b;
   stroke-width: 2;
+}
+.flow-foldkit-edge .flow-foldkit-edge-hit-target {
+  stroke: transparent;
+  stroke-width: 16px;
+  pointer-events: stroke;
+}
+.flow-foldkit-edge-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.flow-foldkit-edge-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: white;
+  color: #334155;
+  font-size: 12px;
+  pointer-events: none;
 }

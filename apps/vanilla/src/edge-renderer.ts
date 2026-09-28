@@ -55,19 +55,21 @@ export const createEdgeRenderer = (
   layer.dataset.testid = 'flow-edges'
   const definitions = globalThis.document.createElementNS(svgNamespace, 'defs')
   const pathLayer = globalThis.document.createElementNS(svgNamespace, 'g')
-  const labelLayer = globalThis.document.createElementNS(svgNamespace, 'g')
+  const labelLayer = globalThis.document.createElement('div')
   labelLayer.classList.add('flow-edge-labels')
-  layer.append(definitions, pathLayer, labelLayer)
+  labelLayer.setAttribute('aria-hidden', 'true')
+  layer.append(definitions, pathLayer)
   viewport.append(layer)
 
   const anchorLayer = globalThis.document.createElementNS(svgNamespace, 'svg')
   anchorLayer.classList.add('flow-edge-anchor-layer')
   anchorLayer.dataset.testid = 'flow-edge-anchor-layer'
   viewport.append(anchorLayer)
+  viewport.append(labelLayer)
 
   const measurements = new Map<NodeId, Map<HandleId, MeasuredHandle>>()
   const edges = new Map<EdgeId, EdgeElements>()
-  const labels = new Map<EdgeId, SVGTextElement>()
+  const labels = new Map<EdgeId, HTMLDivElement>()
 
   const customRenderers = new Map<
     EdgeId,
@@ -506,7 +508,7 @@ export const createEdgeRenderer = (
         let label = labels.get(edge.id)
 
         if (label === undefined) {
-          label = globalThis.document.createElementNS(svgNamespace, 'text')
+          label = globalThis.document.createElement('div')
           label.classList.add('flow-edge-label')
           label.dataset.edgeId = edge.id
           label.dataset.testid = 'flow-edge-label'
@@ -516,6 +518,8 @@ export const createEdgeRenderer = (
         label.textContent = edge.label
         label.setAttribute('x', String(position.x))
         label.setAttribute('y', String(position.y))
+        label.style.left = `${position.x}px`
+        label.style.top = `${position.y}px`
 
         if (onlyEdges === undefined || label.parentElement === null) {
           labelLayer.append(label)

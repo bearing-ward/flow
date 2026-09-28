@@ -6,6 +6,8 @@ import type {
   ConformanceAdapter,
   ConformanceFixture,
   ConformanceSnapshot,
+  ConformanceDocument,
+  MeasuredGeometryAdapter,
   PublicStateChange,
   PublicStateQuery,
   PublicStateRead,
@@ -13,150 +15,252 @@ import type {
 
 export const createFoldkitConformanceAdapter = (
   page: Page
-): ConformanceAdapter => ({
-  async mount(fixture: ConformanceFixture): Promise<void> {
-    await page.goto('/test.html')
-    await page.evaluate(async (scenario) => {
-      const harnessPath = '/e2e/test-harness.ts'
-      await import(harnessPath)
-      await window.__flowFoldkitTest?.mount(scenario)
-    }, fixture)
-  },
-  async perform(action: ConformanceAction): Promise<void> {
-    if (action.kind === 'update-document') {
-      await page.evaluate(
-        (document) => window.__flowFoldkitTest?.replaceDocument(document),
-        action.document
-      )
+): ConformanceAdapter & MeasuredGeometryAdapter => {
+  let measurementDocument: ConformanceDocument | undefined
 
-      return
-    }
-
-    if (action.kind === 'update-viewport') {
-      await page.evaluate(
-        (viewport) => window.__flowFoldkitTest?.replaceViewport(viewport),
-        action.viewport
-      )
-
-      return
-    }
-
-    if (action.kind === 'drag-node') {
-      const node = page.locator(`[data-node-id="${action.nodeId}"]`)
-      const box = await node.boundingBox()
-
-      if (box === null) {
-        throw new Error(`Missing node ${action.nodeId}`)
-      }
-
-      const startX = box.x + box.width / 2
-      const startY = box.y + box.height / 2
-      await page.mouse.move(startX, startY)
-      await page.mouse.down()
-      await page.mouse.move(startX + action.dx, startY + action.dy, {
-        steps: 4,
+  return {
+    async mount(fixture: ConformanceFixture): Promise<void> {
+      await page.goto('/test.html')
+      await page.evaluate(async (scenario) => {
+        const harnessPath = '/e2e/test-harness.ts'
+        await import(harnessPath)
+        await window.__flowFoldkitTest?.mount(scenario)
+      }, fixture)
+    },
+    async mountMeasurementDocument(document, renderOnlyVisible) {
+      await page.goto('/test.html')
+      await page.evaluate(async () => {
+        const harnessPath = '/e2e/test-harness.ts'
+        await import(harnessPath)
       })
+      measurementDocument = document
+      await page.evaluate(
+        async ({ nextDocument, cull }) => {
+          await window.__flowFoldkitTest?.mountMeasurementDocument(
+            nextDocument,
+            cull
+          )
+        },
+        { nextDocument: document, cull: renderOnlyVisible }
+      )
+    },
+    async updateMeasurementDocument(document) {
+      measurementDocument = document
+      await page.evaluate(
+        (nextDocument) =>
+          window.__flowFoldkitTest?.updateMeasurementDocument(nextDocument),
+        document
+      )
+    },
+    internalNode(nodeId) {
+      return page.evaluate(
+        async (id) =>
+          (await window.__flowFoldkitTest?.measurementInternalNode(id)) ?? null,
+        nodeId
+      )
+    },
+    nodesInitialized(includeHidden) {
+      return page.evaluate(
+        async (include) =>
+          (await window.__flowFoldkitTest?.measurementNodesInitialized(
+            include
+          )) ?? false,
+        includeHidden
+      )
+    },
+    async renderedNodeExists(nodeId) {
+      return (await page.locator(`[data-node-id="${nodeId}"]`).count()) > 0
+    },
+    async resizeAndRefresh(nodeId, size) {
+      await page
+        .locator(`[data-node-id="${nodeId}"]`)
+        .evaluate((element, nextSize) => {
+          if (!(element instanceof HTMLElement)) {
+            throw new Error('Expected measured Foldkit node element')
+          }
 
-      if (action.cancel === true) {
-        await page.locator("[data-testid='flow-canvas']").focus()
-        await page.keyboard.press('Escape')
+          element.style.boxSizing = 'border-box'
+          element.style.minWidth = '0'
+          element.style.minHeight = '0'
+          element.style.padding = '0'
+          element.style.border = '0'
+          element.style.width = `${nextSize.width}px`
+          element.style.height = `${nextSize.height}px`
+        }, size)
+
+      return page.evaluate(async (id) => {
+        const result =
+          await window.__flowFoldkitTest?.refreshMeasurementNode(id)
+
+        return result === undefined
+          ? {
+              status: 'missing',
+              width: null,
+              height: null,
+            }
+          : {
+              ...result,
+              status:
+                result.status === 'measured' ? 'refreshed' : result.status,
+            }
+      }, nodeId)
+    },
+    async removeAndReadd(nodeId) {
+      if (measurementDocument === undefined) {
+        throw new Error('Missing active Foldkit measurement document')
       }
 
-      await page.mouse.up()
+      const document = measurementDocument
+      await this.updateMeasurementDocument({
+        ...document,
+        nodes: document.nodes.filter(({ id }) => id !== nodeId),
+      })
+      await this.updateMeasurementDocument(document)
+    },
+    async destroyMeasurementDocument() {
+      await page.evaluate(() =>
+        window.__flowFoldkitTest?.destroyMeasurementDocument()
+      )
+      measurementDocument = undefined
+    },
+    async perform(action: ConformanceAction): Promise<void> {
+      if (action.kind === 'update-document') {
+        await page.evaluate(
+          (document) => window.__flowFoldkitTest?.replaceDocument(document),
+          action.document
+        )
 
-      return
-    }
-
-    const source = page.locator(
-      `[data-node-id="${action.sourceNodeId}"] [data-handle-id="${action.sourceHandleId}"]`
-    )
-
-    const target = page.locator(
-      `[data-node-id="${action.targetNodeId}"] [data-handle-id="${action.targetHandleId}"]`
-    )
-
-    const sourceBox = await source.boundingBox()
-    const targetBox = await target.boundingBox()
-
-    if (sourceBox === null || targetBox === null) {
-      throw new Error('Missing connection handle')
-    }
-
-    await page.mouse.move(
-      sourceBox.x + sourceBox.width / 2,
-      sourceBox.y + sourceBox.height / 2
-    )
-    await page.mouse.down()
-    await page.mouse.move(
-      targetBox.x + targetBox.width / 2,
-      targetBox.y + targetBox.height / 2,
-      { steps: 5 }
-    )
-    await page.mouse.up()
-  },
-  snapshot(): Promise<ConformanceSnapshot> {
-    return page.evaluate(() => {
-      const nodes = [
-        ...document.querySelectorAll<HTMLElement>(
-          '.flow-foldkit-node[data-node-id]'
-        ),
-      ]
-
-      const edges = [
-        ...document.querySelectorAll<HTMLElement>('[data-edge-id]'),
-      ]
-
-      return {
-        nodeIds: nodes.map((node) => node.dataset.nodeId ?? ''),
-        edgeIds: edges.map((edge) => edge.dataset.edgeId ?? ''),
-        positions: nodes.map((node) => ({
-          id: node.dataset.nodeId ?? '',
-          x: Number(node.style.left.replace('px', '')),
-          y: Number(node.style.top.replace('px', '')),
-        })),
-        identityMarkers: nodes.flatMap((node) =>
-          node.dataset.identity === 'preserved'
-            ? [node.dataset.nodeId ?? '']
-            : []
-        ),
-      }
-    })
-  },
-  async markIdentity(nodeId: string, marker: string): Promise<void> {
-    await page.locator(`[data-node-id="${nodeId}"]`).evaluate((node, value) => {
-      node.dataset.identity = value
-    }, marker)
-  },
-  changeKinds(): Promise<readonly string[]> {
-    return page.evaluate(() => window.__flowFoldkitTest?.changeKinds() ?? [])
-  },
-  readState(query: PublicStateQuery): Promise<PublicStateRead> {
-    return page.evaluate((selectedQuery) => {
-      const state = window.__flowFoldkitTest
-
-      if (state === undefined) {
-        throw new Error('Missing Foldkit conformance host')
+        return
       }
 
-      return state.readMountedState(selectedQuery)
-    }, query)
-  },
-  acceptedStates(): Promise<readonly PublicStateChange[]> {
-    return page.evaluate(
-      () => window.__flowFoldkitTest?.mountedAcceptedStates() ?? []
-    )
-  },
-  destroy() {
-    return page.evaluate(
-      () =>
-        window.__flowFoldkitTest?.destroy() ?? {
-          mountedElements: -1,
-          changesAfterDestroy: -1,
-          acceptedStatesAfterDestroy: -1,
+      if (action.kind === 'update-viewport') {
+        await page.evaluate(
+          (viewport) => window.__flowFoldkitTest?.replaceViewport(viewport),
+          action.viewport
+        )
+
+        return
+      }
+
+      if (action.kind === 'drag-node') {
+        const node = page.locator(`[data-node-id="${action.nodeId}"]`)
+        const box = await node.boundingBox()
+
+        if (box === null) {
+          throw new Error(`Missing node ${action.nodeId}`)
         }
-    )
-  },
-})
+
+        const startX = box.x + box.width / 2
+        const startY = box.y + box.height / 2
+        await page.mouse.move(startX, startY)
+        await page.mouse.down()
+        await page.mouse.move(startX + action.dx, startY + action.dy, {
+          steps: 4,
+        })
+
+        if (action.cancel === true) {
+          await page.locator("[data-testid='flow-canvas']").focus()
+          await page.keyboard.press('Escape')
+        }
+
+        await page.mouse.up()
+
+        return
+      }
+
+      const source = page.locator(
+        `[data-node-id="${action.sourceNodeId}"] [data-handle-id="${action.sourceHandleId}"]`
+      )
+
+      const target = page.locator(
+        `[data-node-id="${action.targetNodeId}"] [data-handle-id="${action.targetHandleId}"]`
+      )
+
+      const sourceBox = await source.boundingBox()
+      const targetBox = await target.boundingBox()
+
+      if (sourceBox === null || targetBox === null) {
+        throw new Error('Missing connection handle')
+      }
+
+      await page.mouse.move(
+        sourceBox.x + sourceBox.width / 2,
+        sourceBox.y + sourceBox.height / 2
+      )
+      await page.mouse.down()
+      await page.mouse.move(
+        targetBox.x + targetBox.width / 2,
+        targetBox.y + targetBox.height / 2,
+        { steps: 5 }
+      )
+      await page.mouse.up()
+    },
+    snapshot(): Promise<ConformanceSnapshot> {
+      return page.evaluate(() => {
+        const nodes = [
+          ...document.querySelectorAll<HTMLElement>(
+            '.flow-foldkit-node[data-node-id]'
+          ),
+        ]
+
+        const edges = [
+          ...document.querySelectorAll<HTMLElement>('[data-edge-id]'),
+        ]
+
+        return {
+          nodeIds: nodes.map((node) => node.dataset.nodeId ?? ''),
+          edgeIds: edges.map((edge) => edge.dataset.edgeId ?? ''),
+          positions: nodes.map((node) => ({
+            id: node.dataset.nodeId ?? '',
+            x: Number(node.style.left.replace('px', '')),
+            y: Number(node.style.top.replace('px', '')),
+          })),
+          identityMarkers: nodes.flatMap((node) =>
+            node.dataset.identity === 'preserved'
+              ? [node.dataset.nodeId ?? '']
+              : []
+          ),
+        }
+      })
+    },
+    async markIdentity(nodeId: string, marker: string): Promise<void> {
+      await page
+        .locator(`[data-node-id="${nodeId}"]`)
+        .evaluate((node, value) => {
+          node.dataset.identity = value
+        }, marker)
+    },
+    changeKinds(): Promise<readonly string[]> {
+      return page.evaluate(() => window.__flowFoldkitTest?.changeKinds() ?? [])
+    },
+    readState(query: PublicStateQuery): Promise<PublicStateRead> {
+      return page.evaluate((selectedQuery) => {
+        const state = window.__flowFoldkitTest
+
+        if (state === undefined) {
+          throw new Error('Missing Foldkit conformance host')
+        }
+
+        return state.readMountedState(selectedQuery)
+      }, query)
+    },
+    acceptedStates(): Promise<readonly PublicStateChange[]> {
+      return page.evaluate(
+        () => window.__flowFoldkitTest?.mountedAcceptedStates() ?? []
+      )
+    },
+    destroy() {
+      return page.evaluate(
+        () =>
+          window.__flowFoldkitTest?.destroy() ?? {
+            mountedElements: -1,
+            changesAfterDestroy: -1,
+            acceptedStatesAfterDestroy: -1,
+          }
+      )
+    },
+  }
+}
 
 export const assertFixtureOutputs = async (
   adapter: ConformanceAdapter,

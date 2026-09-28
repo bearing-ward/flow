@@ -11,3 +11,15 @@ For custom node content, add `data-flow-drag-handle` to a descendant when only a
 Custom edge renderers provide path geometry from measured endpoints. The renderer should not reimplement connection validation or mutate the graph directly. Dispatch a Flow command or publish a semantic change through the adapter contract instead.
 
 For Vue, use the typed component slots on [`FlowCanvas`](../../packages/vue/src/flow-canvas.ts); the [Vue conformance suite](../../apps/vue/e2e/shared-conformance.e2e.ts) checks the browser-facing contract through `@flow/vue`.
+
+## Per-type renderers and measured handles
+
+Vanilla mount options accept `nodeRenderers` and `edgeRenderers` records keyed by each node or edge `type`. A renderer instance keeps its resources in the host and implements `update` and `destroy`; same-ID, same-type updates reuse it, while a type change destroys it once and mounts the replacement. An absent or unknown type uses the built-in fallback. The demo uses the public [`mountFlow` API](../../apps/vanilla/src/public.ts) and shows both registrations.
+
+Vue `FlowCanvas` accepts `nodeTypes` and `edgeTypes` component records. The older `nodeComponent` and `edgeComponent` props remain as fallback options, and the default renderer remains the final fallback. Vue keys preserve component identity across data updates; changing the registered type replaces the component. Components receive the decoded graph value and custom edge context with the computed path and marker IDs. See the [Vue playground](../../apps/vue/src/main.ts) and [renderer contract E2E](../../apps/vue/e2e/renderer-contract.e2e.ts).
+
+Foldkit keeps `nodeTypes` and `edgeTypes` in the `createProgram` host configuration, outside the serializable graph model. Its keyed HTML views receive graph values and measured edge geometry, and rebuilt views retain keyed identity. The [Foldkit playground](../../apps/foldkit/src/main.ts) demonstrates both registries.
+
+Declared handle IDs and sides belong to graph data; actual handle bounds belong to host measurement state. When custom node content moves a handle, notify the host's measurement refresh API or let its observer report the changed bounds. Incident edge endpoints are then recalculated from the measured handle boundary. Markers are defined per host SVG, SVG paths expose selectable hit targets, and default edge labels use the host's HTML overlay in graph coordinates. This lets label text use ordinary HTML without transferring pointer or keyboard ownership away from node controls and the canvas.
+
+A registry is host configuration rather than saved document data. Keep `FlowNode.data` and `FlowEdge.data` JSON-compatible; renderer functions, VNodes, DOM nodes, and measured dimensions are not serialized.

@@ -8,10 +8,11 @@ import {
   SavedFlowDocumentSchema,
   ViewportSchema,
 } from '@flow/core'
-import type { FlowDocument, Viewport } from '@flow/core'
+import type { FlowDocument, FlowEdge, FlowNode, Viewport } from '@flow/core'
 import { FlowCanvas, useFlow } from '@flow/vue'
 import { Effect, Schema } from 'effect'
 import { createApp, defineComponent, h, ref } from 'vue'
+import type { PropType } from 'vue'
 
 import '@flow/vue/style.css'
 import './style.css'
@@ -106,11 +107,136 @@ const main = Effect.runSync(
   })
 )
 
+const rendererScene = Effect.runSync(
+  decodeFlowDocument({
+    nodes: [
+      {
+        id: 'renderer-card',
+        type: 'renderer-card',
+        label: 'Custom renderer',
+        position: { x: 100, y: 130 },
+        size: { width: 230, height: 120 },
+        handles: [
+          { id: 'out-right', kind: 'source', side: 'right' },
+          { id: 'out-bottom', kind: 'source', side: 'bottom' },
+          { id: 'in-left', kind: 'target', side: 'left' },
+          { id: 'in-top', kind: 'target', side: 'top' },
+        ],
+      },
+      {
+        id: 'renderer-result',
+        label: 'Result',
+        position: { x: 610, y: 185 },
+        size: { width: 180, height: 80 },
+        handles: [{ id: 'in-left', kind: 'target', side: 'left' }],
+      },
+    ],
+    edges: [
+      {
+        id: 'renderer-straight',
+        source: 'renderer-card',
+        sourceHandle: 'out-right',
+        target: 'renderer-result',
+        targetHandle: 'in-left',
+        path: 'straight',
+        markerEnd: 'arrow',
+        label: 'Straight',
+      },
+      ...(['bezier', 'simplebezier', 'step', 'smoothstep'] as const).map(
+        (path) => ({
+          id: `renderer-${path}`,
+          source: 'renderer-card',
+          sourceHandle: 'out-bottom',
+          target: 'renderer-result',
+          targetHandle: 'in-left',
+          path,
+          label: path,
+        })
+      ),
+      {
+        id: 'renderer-custom-edge',
+        type: 'renderer-custom-edge',
+        source: 'renderer-card',
+        sourceHandle: 'out-right',
+        target: 'renderer-result',
+        targetHandle: 'in-left',
+        path: 'bezier',
+        markerEnd: 'arrowclosed',
+        label: 'Registered custom edge',
+      },
+    ],
+  })
+)
+
+const viewportScene = Effect.runSync(
+  decodeFlowDocument({
+    nodes: [
+      {
+        id: 'viewport-selected',
+        label: 'Selected · 260 × 124',
+        selected: true,
+        size: { width: 260, height: 124 },
+        position: { x: 90, y: 72 },
+      },
+      {
+        id: 'viewport-peer',
+        label: 'Peer · 190 × 88',
+        size: { width: 190, height: 88 },
+        position: { x: 570, y: 278 },
+      },
+    ],
+    edges: [
+      {
+        id: 'viewport-link',
+        source: 'viewport-selected',
+        target: 'viewport-peer',
+        path: 'bezier',
+      },
+    ],
+  })
+)
+
+const RendererNode = defineComponent({
+  // SAFETY: FlowCanvas renders schema-decoded FlowNode values.
+  props: { node: { type: Object as PropType<FlowNode>, required: true } },
+  setup(props) {
+    return () =>
+      h('section', { class: 'flow-vue-renderer-node' }, [
+        h('strong', props.node.label),
+        h('p', 'Typed node renderer with four directional handles.'),
+      ])
+  },
+})
+
+const RendererEdge = defineComponent({
+  props: {
+    // SAFETY: FlowCanvas renders schema-decoded FlowEdge values.
+    edge: { type: Object as PropType<FlowEdge>, required: true },
+    path: { type: String, required: true },
+    markerStart: { type: String, default: undefined },
+    markerEnd: { type: String, default: undefined },
+  },
+  setup(props) {
+    return () =>
+      h('path', {
+        class: 'flow-vue-edge-path flow-vue-renderer-custom-edge',
+        'data-testid': 'flow-edge-path',
+        d: props.path,
+        fill: 'none',
+        stroke: props.edge.stroke ?? '#7c3aed',
+        'stroke-width': props.edge.strokeWidth ?? 2,
+        'marker-start': props.markerStart,
+        'marker-end': props.markerEnd,
+      })
+  },
+})
+
 const StateTools = defineComponent({
   setup() {
     const flow = useFlow()
     const label = ref('Validate')
     const message = ref('')
+    const measurementMessage = ref('')
     const saved = ref<unknown>()
 
     const removeAddedNode = async (): Promise<void> => {
@@ -139,6 +265,23 @@ const StateTools = defineComponent({
         message.value =
           Schema.decodeUnknownSync(FlowEditErrorSchema)(error)._tag
       }
+    }
+
+    const toggleMeasuredSize = async (): Promise<void> => {
+      const current = flow.getNode('validate')
+      const width = current?.size?.width === 260 ? 180 : 260
+      await flow.updateNode('validate', { size: { width, height: 86 } })
+    }
+
+    const refreshMeasuredGeometry = async (): Promise<void> => {
+      const results = await flow.updateNodeInternals(['validate'])
+      const internal = flow.getInternalNode('validate')
+      measurementMessage.value = JSON.stringify({
+        results,
+        width: internal?.width,
+        height: internal?.height,
+        status: internal?.measurementStatus,
+      })
     }
 
     const reconnectMiddle = async (): Promise<void> => {
@@ -199,6 +342,17 @@ const StateTools = defineComponent({
         },
         [
           h('h2', 'State and persistence'),
+          h('button', { onClick: toggleMeasuredSize }, 'Toggle measured size'),
+          h(
+            'button',
+            { onClick: refreshMeasuredGeometry },
+            'Refresh node internals'
+          ),
+          h(
+            'output',
+            { 'data-testid': 'measurement-result' },
+            measurementMessage.value
+          ),
           h('label', [
             'Node label ',
             h('input', {
@@ -416,12 +570,134 @@ const StateTools = defineComponent({
   },
 })
 
+const ViewportControls = defineComponent({
+  setup() {
+    const flow = useFlow()
+    const status = ref('Ready')
+    const marker = ref<{ readonly x: number; readonly y: number }>()
+
+    const report = async (
+      label: string,
+      operation: Promise<{ readonly status: string }>
+    ): Promise<void> => {
+      status.value = `${label}: pending`
+
+      const result = await operation
+      status.value = `${label}: ${result.status}`
+    }
+
+    const setConversionMarker = (): void => {
+      const canvas =
+        globalThis.document.querySelector<HTMLElement>('.flow-vue-canvas')
+
+      if (canvas === null) {
+        return
+      }
+
+      const rect = canvas.getBoundingClientRect()
+      const screen = flow.flowToScreenPosition({ x: 250, y: 160 })
+      marker.value = { x: screen.x - rect.left, y: screen.y - rect.top }
+      status.value = `Flow (250, 160) → screen (${Math.round(screen.x)}, ${Math.round(screen.y)})`
+    }
+
+    const cancelAnimation = (): void => {
+      void flow.setViewport(flow.getViewport())
+      status.value = 'Cancellation requested'
+    }
+
+    return () =>
+      h('div', { class: 'flow-vue-viewport-overlay' }, [
+        h(
+          'section',
+          {
+            class: 'flow-vue-viewport-tools',
+            onPointerdown: (event: PointerEvent) => event.stopPropagation(),
+          },
+          [
+            h('h2', 'Viewport operations'),
+            h(
+              'button',
+              {
+                'data-testid': 'viewport-center',
+                onClick: () =>
+                  report('Center', flow.setCenter(250, 160, { duration: 250 })),
+              },
+              'Center'
+            ),
+            h(
+              'button',
+              {
+                'data-testid': 'viewport-fit-selected',
+                onClick: () =>
+                  report(
+                    'Fit selected',
+                    flow.fitView({ nodes: 'selected', duration: 250 })
+                  ),
+              },
+              'Fit selected'
+            ),
+            h(
+              'button',
+              {
+                'data-testid': 'viewport-zoom-to',
+                onClick: () =>
+                  report(
+                    'Zoom to 0.65',
+                    flow.zoomTo(0.65, { duration: 500, easing: 'ease-in-out' })
+                  ),
+              },
+              'Zoom to 0.65'
+            ),
+            h(
+              'button',
+              {
+                'data-testid': 'viewport-marker',
+                onClick: setConversionMarker,
+              },
+              'Mark flow point'
+            ),
+            h(
+              'button',
+              { 'data-testid': 'viewport-cancel', onClick: cancelAnimation },
+              'Cancel animation'
+            ),
+            h(
+              'output',
+              {
+                'data-testid': 'viewport-operation-status',
+                'aria-live': 'polite',
+              },
+              status.value
+            ),
+            h(
+              'output',
+              { class: 'flow-vue-coordinate-marker-readout' },
+              'Flow point: (250, 160)'
+            ),
+          ]
+        ),
+        marker.value === undefined
+          ? null
+          : h('span', {
+              class: 'flow-vue-coordinate-marker',
+              'data-testid': 'viewport-conversion-marker',
+              style: {
+                left: `${marker.value.x}px`,
+                top: `${marker.value.y}px`,
+              },
+              'aria-label': 'Converted flow position marker',
+            }),
+      ])
+  },
+})
+
 const Demo = defineComponent({
   setup() {
     const document = ref<FlowDocument>(main)
     const blocked = ref(false)
-    const scene = ref<'main' | 'remote'>('main')
+    const scene = ref<'main' | 'remote' | 'renderer' | 'viewport'>('main')
     const viewport = ref<Viewport>({ x: 0, y: 0, zoom: 1 })
+    const viewportObservation = ref('idle')
 
     const fitGraph = (): void => {
       const canvas =
@@ -465,8 +741,41 @@ const Demo = defineComponent({
       }
     }
 
-    return () =>
-      h('main', [
+    return () => {
+      const canvasProps = {
+        document: document.value,
+        documentMode: 'controlled' as const,
+        viewport: viewport.value,
+        viewportMode:
+          scene.value === 'viewport'
+            ? ('uncontrolled' as const)
+            : ('controlled' as const),
+        nodeTypes:
+          scene.value === 'renderer' ? { 'renderer-card': RendererNode } : {},
+        edgeTypes:
+          scene.value === 'renderer'
+            ? { 'renderer-custom-edge': RendererEdge }
+            : {},
+        'onUpdate:viewport': (next: Viewport) => {
+          viewport.value = next
+        },
+        'onUpdate:document': (next: typeof document.value) => {
+          document.value = next
+        },
+        onViewportStart: () => {
+          viewportObservation.value = 'start'
+        },
+        onViewportChange: (next: Viewport) => {
+          viewportObservation.value = `change:${next.zoom.toFixed(2)}`
+        },
+        onViewportEnd: (_next: Viewport, status: string) => {
+          viewportObservation.value = `end:${status}`
+        },
+        isValidConnection: (target: string) =>
+          !blocked.value || target !== 'output',
+      }
+
+      return h('main', [
         h('header', [
           h('h1', 'Flow Vue playground'),
           h(
@@ -498,6 +807,30 @@ const Demo = defineComponent({
               },
             },
             'Distant graph'
+          ),
+          h(
+            'button',
+            {
+              'aria-pressed': scene.value === 'renderer',
+              onClick: () => {
+                scene.value = 'renderer'
+                document.value = rendererScene
+                viewport.value = { x: 0, y: 0, zoom: 1 }
+              },
+            },
+            'Renderer contracts'
+          ),
+          h(
+            'button',
+            {
+              'aria-pressed': scene.value === 'viewport',
+              onClick: () => {
+                scene.value = 'viewport'
+                document.value = viewportScene
+                viewport.value = { x: 0, y: 0, zoom: 1 }
+              },
+            },
+            'Viewport operations'
           ),
           h(
             'button',
@@ -550,24 +883,16 @@ const Demo = defineComponent({
           ),
         ]),
         h(
-          FlowCanvas,
-          {
-            document: document.value,
-            documentMode: 'controlled',
-            viewport: viewport.value,
-            viewportMode: 'controlled',
-            'onUpdate:viewport': (next: Viewport) => {
-              viewport.value = next
-            },
-            'onUpdate:document': (next) => {
-              document.value = next
-            },
-            isValidConnection: (target: string) =>
-              !blocked.value || target !== 'output',
-          },
-          { default: () => h(StateTools) }
+          'output',
+          { 'data-testid': 'viewport-observation', 'aria-live': 'polite' },
+          viewportObservation.value
         ),
+        h(FlowCanvas, canvasProps, {
+          default: () =>
+            scene.value === 'viewport' ? h(ViewportControls) : h(StateTools),
+        }),
       ])
+    }
   },
 })
 

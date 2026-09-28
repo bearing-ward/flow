@@ -1,0 +1,154 @@
+{
+  "contract": "flow-renderer-contract-v1",
+  "document": {
+    "nodes": [
+      {
+        "id": "source",
+        "label": "Source",
+        "type": "contract-node",
+        "position": { "x": 100, "y": 100 },
+        "data": { "width": 140, "height": 76, "outputTop": 24 },
+        "handles": [
+          { "id": "in", "kind": "target", "side": "left" },
+          { "id": "out", "kind": "source", "side": "right" }
+        ]
+      },
+      {
+        "id": "target",
+        "label": "Target",
+        "type": "contract-node",
+        "position": { "x": 440, "y": 100 },
+        "data": { "width": 140, "height": 76, "outputTop": 24 },
+        "handles": [
+          { "id": "in", "kind": "target", "side": "left" },
+          { "id": "out", "kind": "source", "side": "right" }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-straight",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "builtin",
+        "path": "straight",
+        "label": "Straight",
+        "markerEnd": "arrowclosed"
+      },
+      {
+        "id": "edge-bezier",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "builtin",
+        "path": "bezier",
+        "label": "Bezier",
+        "markerEnd": "arrow"
+      },
+      {
+        "id": "edge-simplebezier",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "builtin",
+        "path": "simplebezier",
+        "label": "Simple Bezier"
+      },
+      {
+        "id": "edge-step",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "builtin",
+        "path": "step",
+        "label": "Step"
+      },
+      {
+        "id": "edge-smoothstep",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "builtin",
+        "path": "smoothstep",
+        "label": "Smooth step"
+      },
+      {
+        "id": "edge-default-path",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "builtin",
+        "label": "Default straight path"
+      },
+      {
+        "id": "edge-custom",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "contract-edge",
+        "path": "bezier",
+        "label": "Custom edge",
+        "markerStart": "arrow",
+        "markerEnd": "arrowclosed",
+        "stroke": "#d946ef"
+      },
+      {
+        "id": "edge-unknown",
+        "source": "source",
+        "target": "target",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "missing-renderer",
+        "path": "simplebezier",
+        "label": "Fallback edge"
+      }
+    ]
+  },
+  "expected": {
+    "nodeTypes": [
+      { "id": "source", "type": "contract-node" },
+      { "id": "target", "type": "contract-node" }
+    ],
+    "edgeTypes": [
+      {
+        "id": "edge-custom",
+        "type": "contract-edge",
+        "path": "bezier",
+        "label": "Custom edge",
+        "markerStart": "arrow",
+        "markerEnd": "arrowclosed"
+      },
+      {
+        "id": "edge-unknown",
+        "type": "missing-renderer",
+        "path": "simplebezier",
+        "label": "Fallback edge"
+      }
+    ],
+    "builtInPaths": [
+      "straight",
+      "bezier",
+      "simplebezier",
+      "step",
+      "smoothstep"
+    ],
+    "customEdgeType": "contract-edge",
+    "unknownTypeFallback": "default-renderer",
+    "dynamicHandle": {
+      "nodeId": "source",
+      "handleId": "out",
+      "initialTop": 21,
+      "resizedTop": 49
+    },
+    "interactiveDescendant": "input-and-button",
+    "labelOwner": "host-overlay"
+  }
+}
