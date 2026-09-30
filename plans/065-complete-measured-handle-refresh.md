@@ -2,7 +2,7 @@
 
 > Executor: read this entire file, execute steps in order and record every result. This is a required child of 057; completion of this bounded child does not close the parent. The coordinator maintains the index when dispatch says so.
 >
-> Drift check: `git diff --stat ce9210e61a7dcb370a45b91632c19d7e017e4898..HEAD -- packages/core/src packages/vue/src packages/foldkit/src apps/vanilla/src apps/vanilla/e2e apps/vue/src apps/vue/e2e apps/foldkit/src apps/foldkit/e2e scripts research/catalogs/api-members.json research/traces/public-api-completion.md docs plans` and `git status --short`. This plan was written over an uncommitted implementation snapshot, so inspect working-tree differences too. Compare quoted contracts, not just SHA. Existing accepted prerequisites are expected; source-contract disagreement is STOP.
+> Drift check: `git diff --stat 77a725e..HEAD -- packages/core/src packages/vue/src packages/foldkit/src apps/vanilla/src apps/vanilla/e2e apps/vue/src apps/vue/e2e apps/foldkit/src apps/foldkit/e2e scripts research/catalogs/api-members.json research/traces/public-api-completion.md docs plans` and `git status --short`. Reconciled against committed Plan 076 on main. Inspect working-tree differences too. Compare quoted contracts, not just SHA; source-contract disagreement is STOP.
 
 ## Status
 
@@ -13,20 +13,23 @@
 - Execution mode: Implementation after architectural contract review
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 066 decomposition approval; architecture section 065 approval; 053 measured geometry baseline; 054 custom renderer baseline; 057 accepted refresh facade
-- Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: IN PROGRESS — measured-handle source independently approved through Plan 076; original member reconciliation remains open
+- Planned at: `77a725e`, 2026-09-30 reconciliation; original baseline was `ce9210e61a7dcb370a45b91632c19d7e017e4898`
+- Status: IN PROGRESS — geometry implementation integrated through Plan 076 at `77a725e` and focused verification reproduced; 63 original members / 189 host cells remain open
 
 ## Why this matters
 
-The current refresh updates node bounds while an arbitrarily relocated DOM handle can leave edge endpoints on inferred side centers. Dynamic handle layouts need measured per-handle geometry scoped to the owning canvas, stable refresh scheduling and clear disposal semantics. These measurements must never enter persistence.
+Plan 076 implements dynamic measured handles through one owner-scoped, generation-tagged authority in all three hosts. Rendered endpoints, batching and disposal now have production proof. This plan remains open to reconcile the original API members, especially nullable/optional geometry and React handleBounds versus Flow's native projection. Measurements remain transient and never enter persistence.
 
 ## Current state and source excerpts
 
-- `packages/core/src/domain/flow-runtime.schema.ts:56-60`: `MeasuredNodeSchema = S.Struct({ height, nodeId, width })`; no handle centers.
-- `packages/core/src/domain/flow-measurement.schema.ts:47-52`: NodeMeasurementInput carries generation/height/nodeId/width, so stale generation guards can be extended rather than duplicated.
-- `packages/core/src/domain/flow.schema.ts:48-52` persists handle id/kind/side only; DOM coordinates are transient host-fed geometry.
-- `packages/foldkit/src/update-node-internals.ts:9-18` exposes single-ID `refresh(nodeId)` and host resolveElement/measure callbacks.
-- Pinned `packages/react/src/hooks/useUpdateNodeInternals.ts:54-67` accepts `string | string[]`, scopes element lookup under domNode, batches updates and schedules requestAnimationFrame with triggerFitView:false. This is evidence, not permission to put DOM in core.
+Reconciled against `77a725e` on 2026-09-30. Historical checkpoints below retain their original evidence; the source failures and uncommitted prerequisite assumptions are superseded.
+
+- `packages/core/src/domain/flow-runtime.schema.ts:56-62` includes optional `handles: S.Array(MeasuredHandleSchema)` in transient MeasuredNode.
+- `packages/core/src/domain/flow-measurement.schema.ts:51-58` carries generation-tagged optional handles. `:234-305` filters current generation, accepted declarations and visibility; `:335-383` returns detached frozen FlowInternalNode geometry.
+- `packages/core/src/domain/flow-measurement.schema.ts:16-23` exposes flat `handles`, numeric width/height and measurementStatus. React's optional measured dimensions, nullable bounds and split source/target handleBounds are not the same public structure.
+- `apps/vanilla/src/mount-flow.ts:8609-8643`, `packages/vue/src/flow-canvas.ts:2485-2508`, and `packages/foldkit/src/update-node-internals.ts:37-155` implement native batch refresh. Vue's public signature is `packages/vue/src/use-flow.ts:210-212`.
+- Pinned `research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/hooks/useUpdateNodeInternals.ts:51-68` accepts one/several IDs and schedules a frame without fitView. This is evidence for observable comparison, not a reason to put DOM in core.
+- `plans/065-member-reconciliation.json` enumerates all 63 original members and their 189 open host cells in five groups. Native mappings are inspected; unresolved nested variants remain explicit. `bun run plans/check-065-reconciliation.mjs` checks identity retention and local citation ranges, not semantic parity.
 
 ## Scope
 
@@ -36,7 +39,7 @@ Only these paths may change; existing files must be inspected before extending t
 - Vanilla measurement/mount/public files; Vue measurement observer/canvas/use-flow/public files; Foldkit measurement observer/update-node-internals/application/graph/public files and unit tests.
 - All hosts' `measured-geometry.e2e.ts`, dynamic custom renderer production fixtures; packed-consumer script/fixtures.
 - `scripts/capture-handle-refresh-reference.ts`, `research/harnesses/handle-refresh/`, fixture and conformance test (create).
-- This plan/index/parent 057/Plan 053 evidence appendix, public docs, API catalog/correspondence, named trace and PROGRESS; generated API docs.
+- This plan/index/parent 057/Plan 053 evidence appendix, public docs, API catalog/correspondence, named trace and PROGRESS; generated API docs. Plan-owned reconciliation JSON/checker and the 065 cells in `plans/057-member-closure.json` are included for acceptance bookkeeping.
 
 Out of scope: other feature families, renderer replacement, second graph/store authority, dependency upgrades, backend collaboration, publication, imported evidence, and unrelated dirty work. New required architecture discovered here gets a numbered child under 066; neither this child nor 057 closes before its required follow-up does.
 
@@ -59,23 +62,26 @@ Run from repository root. Browser suites run serially and alone with strict conf
 | Public builds/types | `bun run typecheck` | Exit 0 |
 | Architecture | `bun run check:architecture` | Exit 0 |
 | Unit suite | `bun run test` | All pass |
-| Vanilla production browser | `bun run test:browser -- public-state.e2e.ts` | All selected pass, no new skips |
-| Vue production browser | `bun run test:conformance:vue -- public-state.e2e.ts` | All selected pass |
-| Foldkit production browser | `bun run test:conformance:foldkit -- public-state.e2e.ts` | All selected pass |
+| Vanilla production browser | `bun run test:browser -- measured-geometry.e2e.ts` | All selected pass, no new skips |
+| Vue production browser | `bun run test:conformance:vue -- measured-geometry.e2e.ts` | All selected pass |
+| Foldkit production browser | `bun run test:conformance:foldkit -- measured-geometry.e2e.ts` | All selected pass |
 | Packed artifacts | `bun run test:consumer` | Every host install/typecheck/mount passes |
 | Generated API | `bun run docs:generate-api` | Exit 0 |
 | Docs | `bun run docs:check` | Exit 0 |
 | Trace | `bun run research:check-traces` | Exit 0 |
 | Member inventory | `bun run scripts/check-api-members.ts` | Exit 0; every dated API page retained |
 | Catalog | `bun run scripts/check-react-flow-catalog.ts` | Exit 0 |
-| Final local gate | `bun run verify` | Exit 0; no newly skipped tests |
+| Reconciliation identities | `bun run plans/check-065-reconciliation.mjs` | Exit 0; 63 members / 189 cells retained |
+| Member accounting | `bun run scripts/check-api-member-contracts.ts` | Exit 0; all original cells retained, gaps allowed |
+| Final development gate | `bun run verify` | Exit 0; saved focused scope plus any new relevant files; no newly skipped tests |
+| Integration or broad acceptance | `bun run verify:full` | Required at integration/release milestones and before broad parity claims |
 | Diff whitespace | `git diff --check` | Exit 0 |
 
 Record actual commands/counts, failures and environment limits. A hung or stopped verify is incomplete. Let generators update generated outputs; never hand-edit `research/generated/`. Existing two native-pointer skips stay explicit. Hosted CI, trusted devices, upstream runtime and collector-side telemetry are separate evidence.
 
 ## Git workflow and common done criteria
 
-Use an isolated `codex/065-complete-measured-handle-refresh` worktree. This planning snapshot contains uncommitted accepted prerequisite slices: compare them and obtain the required patch snapshot from the coordinator; HEAD alone does not contain all prerequisites. Preserve unrelated dirty work. Do not commit, merge, push, publish, or open a PR without separate authorization. Independent review owns plan acceptance.
+Use an isolated `codex/065-complete-measured-handle-refresh` worktree for future implementation. Accepted geometry and prerequisites are committed at `77a725e`; no archived patch recovery is needed. Reconciliation itself edits only plans/. Preserve unrelated dirty work. Do not commit, merge, push, publish, or open a PR without separate authorization. Independent review owns plan acceptance.
 
 - [ ] Each numbered step's targeted verification passes through real public APIs.
 - [ ] Every newly implemented contract has a member-specific source/test/reference mapping in all three hosts; remaining differences retain exact reason and test boundary.
@@ -89,7 +95,7 @@ Common STOP: a required check fails twice after focused repair; out-of-scope cha
 
 1. Plan 066 decomposition has a checked page/member/host assignment for this family's original scope, including source/reference/test expectations. Completion of 066 is not required; its decomposition phase is.
 2. Independent architecture review approves section 065 of `plans/057-public-contract-design.md` and any upstream/default matrix it requires. That artifact contains proposed usage/types/ownership/alternatives/risks and exact central rules. **Until the coordinator records approval, this child is not ready for implementation.** The executor implements that frozen contract; it does not decide origin/defaults/equality/schema serialization while coding.
-3. Accepted source prerequisites are present in the isolated snapshot; HEAD alone is insufficient. 063/064/067 additionally require 069 derived contract integration before final acceptance. 065 retains 066 decomposition as an explicit prerequisite.
+3. Accepted source prerequisites are committed at `77a725e`; compare the isolated checkout against that baseline. 063/064/067 additionally require 069 derived contract integration before final acceptance. 065 retains 066 decomposition as an explicit prerequisite.
 
 ## Ordered steps and behavior acceptance
 
@@ -172,3 +178,25 @@ The maintainer selected the remaining snapshot callers and measured-handle refre
 Primary independently ran the saved focused `bun run verify` in `/Users/richardmcandrews/.codex/worktrees/snapshot-and-handle-refresh/flow`: exit0, `/tmp/flow-076-review-verify.log`,409 unit tests across46 files,43 selected browser tests and all three packed consumers. Quality,architecture,builds,TypeScript,docs,catalog,member inventory,structural ownership and traces passed. Primary also generated API docs and reproduced the clean pinned reference capture with two matching samples. All-host actual public geometry and SVG endpoints are compared against that reference under an explicitly equivalent caller layout. Native-layout cases cover zoom0.5/2,nested offsets,controlled stability,addition/removal,real pointer candidate/commit and disposal.
 
 Verdict: APPROVE the bounded implementation and evidence. It remains uncommitted in the isolated worktree. This does not close the original member reconciliation, the8076 semantic cells,parents057/066/075,React hook scheduling,full-suite/native-device/CI or collector-delivery acceptance. The previous compiler/browser/packed blockers are resolved for this candidate. Plan076 records the complete execution and reviewer evidence.
+
+## Reconciliation on main, 2026-09-30
+
+Plan 076 is integrated by commit `77a725e`, present on main and `codex/snapshot-and-handle-refresh`. Both checkouts were clean at review start. The latest status supersedes the earlier isolated/uncommitted candidate descriptions. Do not repeat Steps 1-3 or recover the old failed candidate.
+
+Read-only source review confirmed the measurement schemas, current-generation projection, public batch entry points and actual browser endpoint assertions. `bun run verify` was independently rerun in the existing executor checkout at this same commit. Exit 0, focused profile, fullSuite=false, 49.315 seconds, log `/tmp/flow-065-reconcile-verify.log`. It passed quality, architecture, package builds, types, 409 unit tests across 46 files, docs/catalog/API-member accounting/contracts/traces, three packed consumers and 43 selected browser tests. Scope was Vanilla measured-geometry, Vue measured-geometry, and Foldkit measured-geometry/delete-approval/placeholder-recipe. No source files changed during verification.
+
+Stored pinned conformance fixtures and all-host rendered comparisons were rerun by that gate. The capture generator was inspected but not rerun in this advisor reconciliation because it writes the tracked reference fixture and invokes formatting. Fresh two-capture reproduction remains the separately recorded Plan 076 evidence. No full-suite, current-site refresh, CI, native-device or collector-delivery acceptance is claimed here.
+
+### Remaining acceptance work, in order
+
+1. Run `bun run plans/check-065-reconciliation.mjs` and `bun run scripts/check-api-member-contracts.ts`. Expect 5 groups, 63 original members, 189 host cells for this family, and 8,076 total original cells. Preserve every original member/host identity. The manifest currently has 3 evidence-gap and 186 implementation-gap cells for 065; these are acceptance categories, not a claim that 186 product behaviors are absent.
+2. Review the five mappings in `plans/065-member-reconciliation.json` against the exact pinned types and current public schemas. The remaining families are one refresh member, two dimension rows, six nullable bounds records, four measured-object records and fifty handleBounds records. Explicitly resolve null/undefined/empty, optional IDs, all four positions, source/target partitioning, fallback dimensions and callback identity/timing. The source implements numeric geometry and a flat native handle projection; rendered endpoint equality alone cannot settle these original structural variants. STOP and request a named child if new public behavior or a changed architecture is required. Do not approve a native difference merely because it removes a gap.
+3. Bind each decided member to its own implementation, actual public production assertion and exact reference. Add positive/negative installed-consumer probes where a declaration or optional/union branch is the contract. Reuse the current measurement authority and existing measured-geometry browser fixture. Refresh stale catalog links to the batch implementations and shared dynamic assertions; the existing hook row still cites pre-migration ranges such as Vanilla `:8521-8555`. Follow the existing Schema-derived `Proof` and `DifferenceCell` contracts in `scripts/check-api-member-contracts.ts:33-73`. Units are separate evidence from public browser assertions.
+4. Update only the reviewed 065 closure cells and corresponding inventory evidence. `implemented-with-evidence` requires an assertion tied to that original member. `reviewed-native-difference` requires a named reviewer, architecture reason and actual test boundary. Keep unproved cells open. Rerun both member checker suites, targeted type/browser probes, packed consumers and `bun run verify` with saved scope extended for any new files. Refresh the reconciliation artifact/checker after deliberate cell transitions. Do not require whole-parent `--require-closed` success to assess this child, because other owners remain open; retain that command as the separate parent gate.
+5. Independent acceptance may mark 065 DONE only when all 189 owned cells are resolved with reviewed proof or reviewed native differences, all original requirements hold and the relevant gates pass. Parent 057/066 remains IN PROGRESS. Geometry is already an accepted prerequisite for 067 source work; 067 final acceptance still depends on its own origin/persistence/generic requirements. Run the full profile at the next integration milestone as required by current project policy.
+
+### Conformity and deviations
+
+- Conforming within the tested boundary: all-host public geometry and SVG endpoints match the stored pinned equivalent caller layout; batches preserve document/viewport and addition/removal/disposal update transient state. Production assertions are `apps/shared-e2e/handle-refresh-contract.ts:141-210` and `:370-403`, registered by each host's measured-geometry suite.
+- Intentionally different within the approved native design: Flow owns a flat, detached frozen center-based handle projection and returns per-ID asynchronous results. React exposes optional source/target handleBounds and a void-return hook. Core and public runtime paths remain separate from DOM collection. The Plan 076 geometry acceptance does not automatically review every nested original type variant.
+- Unverified: the remaining optional/null and nested member mappings, exact React callback/frame scheduling, all 189 semantic closure cells, full-suite acceptance at this HEAD, and current upstream drift. This reconciliation audited Plan 065 and its direct measurement/test boundaries only; unrelated plans and feature families were not re-audited.

@@ -150,3 +150,7 @@ Review source: coordinator-reported `review_057_child_plans`, Round2 FINAL, 2026
 Required next action: source/reference-grounded named migration child “Migrate origin-aware persistence while preserving legacy v1 contracts” (number unassigned/design pending), plus independently reviewed parent 057 v1-policy amendment. Version2 proposal is unapproved; source origin/persistence execution remains blocked. No capability is dropped or declared intentional to close the plan.
 
 This record changes planning status only. Original requirements, implementation scope and acceptance checks remain intact. No source work, third revision, browser gate or completion claim is made. Central per-contract verdict and source boundary are recorded in `plans/057-public-contract-design.md`.
+
+## Geometry prerequisite reconciliation, 2026-09-30
+
+Plan 076's accepted measured-handle authority is committed on main at `77a725e`. Plan 065 reconciliation reproduced the focused gate, including all three measured-geometry browser suites and packed consumers. The historical source blocker on 065 geometry is resolved. Future authorized origin source execution consumes the committed current-generation projection; it must not recover the old stopped candidate or introduce another geometry authority. Original 065 member closure remains open and does not establish origin behavior. Final 067 acceptance still requires its own origin/connection assertions, reviewed 070 persistence migration and applicable 069 type integration. This bookkeeping update authorizes no source execution.

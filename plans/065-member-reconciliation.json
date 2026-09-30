@@ -1,0 +1,876 @@
+{
+  "reviewedAt": "2026-09-30",
+  "reviewedCommit": "77a725e",
+  "scope": "Plan 065 only. Native geometry implementation is accepted through integrated Plan 076. This artifact preserves original open acceptance cells and does not close parent 057/066.",
+  "counts": {
+    "groups": 5,
+    "members": 63,
+    "hostCells": 189,
+    "states": {
+      "evidence-gap": 3,
+      "implementation-gap": 186
+    },
+    "families": {
+      "refresh": 1,
+      "dimensions": 2,
+      "nullable-bounds": 6,
+      "handle-bounds": 50,
+      "measured": 4
+    }
+  },
+  "verification": {
+    "command": "bun run verify",
+    "checkout": "/Users/richardmcandrews/.codex/worktrees/snapshot-and-handle-refresh/flow",
+    "log": "/tmp/flow-065-reconcile-verify.log",
+    "profile": "focused",
+    "fullSuite": false,
+    "exitCode": 0,
+    "elapsedMs": 49315,
+    "unitTests": 409,
+    "unitFiles": 46,
+    "browserTests": {
+      "vanilla": 8,
+      "vue": 8,
+      "foldkit": 27
+    },
+    "packedConsumers": ["vanilla", "vue", "foldkit"],
+    "referenceBoundary": "Stored pinned fixture conformance and all-host browser comparisons rerun. Capture script was inspected but not rerun because it rewrites the tracked fixture and runs a formatter. Prior capture reproduction remains Plan 076 evidence."
+  },
+  "mappings": {
+    "refresh": {
+      "nativeMapping": "Vanilla controller and Vue useFlow.updateNodeInternals; Foldkit createFoldkitNodeInternalsRefresher.refresh. Ordered, coalesced owner-local remeasurement with per-ID promise results.",
+      "classification": "bounded behavior conforming; native facade intentionally different; exact scheduler unverified",
+      "remaining": "Review hook callback identity, owner lifecycle and void-versus-promise/status semantics. Do not infer exact frame completion from requested.",
+      "source": [
+        "apps/vanilla/src/mount-flow.ts:8609-8643",
+        "packages/vue/src/flow-canvas.ts:2485-2508",
+        "packages/vue/src/use-flow.ts:208-212",
+        "packages/foldkit/src/update-node-internals.ts:37-155"
+      ],
+      "productionTest": [
+        "apps/shared-e2e/handle-refresh-contract.ts:141-210",
+        "apps/shared-e2e/handle-refresh-contract.ts:370-403"
+      ],
+      "reference": [
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/hooks/useUpdateNodeInternals.ts:51-68"
+      ]
+    },
+    "dimensions": {
+      "nativeMapping": "FlowInternalNode.width/height are finite numeric current measurements or declared fallback dimensions.",
+      "classification": "numeric geometry implemented; original field semantics unverified",
+      "remaining": "Resolve unparsed dated documentation rows using retained rawSourceRow. Distinguish declared dimensions, accepted measurements, unmeasured fallback and hidden state; provide field-specific public assertions in each host.",
+      "source": [
+        "packages/core/src/domain/flow-measurement.schema.ts:16-23",
+        "packages/core/src/domain/flow-measurement.schema.ts:352-369"
+      ],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:188-202"],
+      "reference": [
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:76-94"
+      ]
+    },
+    "measured": {
+      "nativeMapping": "FlowInternalNode measurementStatus plus width/height; no React-shaped measured object.",
+      "classification": "native projection implemented; optional object/field mapping unverified",
+      "remaining": "Review and test measured/unmeasured/hidden and optional width/height semantics. A numeric fallback is not evidence for upstream absence; retain explicit native mapping and compile-time consumer proof.",
+      "source": [
+        "packages/core/src/domain/flow-measurement.schema.ts:16-23",
+        "packages/core/src/domain/flow-measurement.schema.ts:352-369"
+      ],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:188-202"],
+      "reference": [
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105"
+      ]
+    },
+    "nullable-bounds": {
+      "nativeMapping": "Numeric FlowInternalNode.width/height; no nullable internals.bounds object.",
+      "classification": "native numeric mapping implemented; null union branches unverified",
+      "remaining": "Specify number versus null meaning and optional bounds ownership. Require reviewed native difference or an explicit numbered implementation dependency; current geometry tests do not prove null branches.",
+      "source": [
+        "packages/core/src/domain/flow-measurement.schema.ts:16-23",
+        "packages/core/src/domain/flow-measurement.schema.ts:362-369"
+      ],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:188-202"],
+      "reference": [
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+      ]
+    },
+    "handle-bounds": {
+      "nativeMapping": "Frozen flat FlowInternalNode.handles with branded nodeId/handleId, graph-unit width/height and node-local center offset. Kind/side come from accepted FlowHandle declarations. React handleBounds is split by source/target and uses top-left coordinates.",
+      "classification": "equivalent caller endpoints conforming; public shape intentionally different; nested variants unverified",
+      "remaining": "Review each retained member, including null source/target, optional or null IDs, array/type parents and all four Position branches. Bind nodeId/handleId, size, center-to-top-left, kind/side and absence semantics to specific public assertions and positive/negative packed type probes. Endpoint equality does not prove every nested field.",
+      "source": [
+        "packages/core/src/domain/flow-edge.schema.ts:18-24",
+        "packages/core/src/domain/flow-measurement.schema.ts:234-305",
+        "packages/core/src/domain/flow-measurement.schema.ts:362-383"
+      ],
+      "productionTest": [
+        "apps/shared-e2e/handle-refresh-contract.ts:151-210",
+        "apps/shared-e2e/handle-refresh-contract.ts:370-403"
+      ],
+      "reference": [
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+      ]
+    }
+  },
+  "members": [
+    {
+      "page": "https://reactflow.dev/api-reference/hooks/use-update-node-internals",
+      "member": "useUpdateNodeInternals",
+      "contractId": "hooks/use-update-node-internals::065::useUpdateNodeInternals",
+      "mapping": "refresh",
+      "description": "React hook \u2014 Requests remeasurement/handle-position refresh after dynamic node/handle changes.",
+      "hostStates": {
+        "vanilla": "evidence-gap",
+        "vue": "evidence-gap",
+        "foldkit": "evidence-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "height",
+      "contractId": "types/internal-node::065::height",
+      "mapping": "dimensions",
+      "description": "Unparsed captured row: source extraction joined member name, type, description, and any default without preserving field boundaries; see rawSourceRow.",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "nullable-bounds",
+      "description": "field; required; type number | null; height: number | null;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "nullable-bounds",
+      "description": "union-variant; type number",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "nullable-bounds",
+      "description": "union-variant; type null",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "nullable-bounds",
+      "description": "field; required; type number | null; width: number | null;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "nullable-bounds",
+      "description": "union-variant; type number",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "nullable-bounds",
+      "description": "union-variant; type null",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; optional; type NodeHandleBounds; handleBounds?: NodeHandleBounds;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type NodeHandleBounds; resolves to packages/system/src/types/nodes.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type Handle[] | null; source: Handle[] | null;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type Handle[]",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "array-element; type Handle",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type Handle; resolves to packages/react/src/index.ts, packages/system/src/types/handles.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.<type:HandleBound>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type HandleBound",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.height",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; height: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; optional; type string | null; id?: string | null;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type string",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type null",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.nodeId",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type string; nodeId: string;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type Position; position: Position;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type Position; resolves to packages/system/src/types/utils.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Bottom",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Left",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Right",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Top",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type HandleType; type: HandleType;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type HandleType; resolves to packages/system/src/types/handles.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type 'source'",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type 'target'",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.width",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; width: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.x",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; x: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.y",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; y: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type null",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type Handle[] | null; target: Handle[] | null;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type Handle[]",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "array-element; type Handle",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type Handle; resolves to packages/react/src/index.ts, packages/system/src/types/handles.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.<type:HandleBound>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type HandleBound",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.height",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; height: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; optional; type string | null; id?: string | null;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type string",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type null",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.nodeId",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type string; nodeId: string;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type Position; position: Position;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type Position; resolves to packages/system/src/types/utils.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Bottom",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Left",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Right",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Top",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "enum-member",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type HandleType; type: HandleType;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "type-reference; type HandleType; resolves to packages/system/src/types/handles.ts",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:1>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type 'source'",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type 'target'",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.width",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; width: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.x",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; x: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.y",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "field; required; type number; y: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:2>",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "handle-bounds",
+      "description": "union-variant; type null",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "measured",
+      "description": "field; required; type { width?: number; height?: number; }; measured: { width?: number; height?: number; };",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured.height",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "measured",
+      "description": "field; optional; type number; height?: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured.width",
+      "contractId": "types/internal-node::065::InternalNode",
+      "mapping": "measured",
+      "description": "field; optional; type number; width?: number;",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "measured",
+      "contractId": "types/internal-node::065::measured",
+      "mapping": "measured",
+      "description": "Unparsed captured row: source extraction joined member name, type, description, and any default without preserving field boundaries; see rawSourceRow.",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    },
+    {
+      "page": "https://reactflow.dev/api-reference/types/internal-node",
+      "member": "width",
+      "contractId": "types/internal-node::065::width",
+      "mapping": "dimensions",
+      "description": "Unparsed captured row: source extraction joined member name, type, description, and any default without preserving field boundaries; see rawSourceRow.",
+      "hostStates": {
+        "vanilla": "implementation-gap",
+        "vue": "implementation-gap",
+        "foldkit": "implementation-gap"
+      }
+    }
+  ]
+}

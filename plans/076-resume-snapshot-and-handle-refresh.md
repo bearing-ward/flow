@@ -105,3 +105,7 @@ These primary gates supersede the pending-final-verification boundary in the can
 ## Integration authorization and pre-merge verification
 
 The maintainer explicitly requested commit and merge after bounded acceptance. Primary combined the reviewed implementation with its plan updates and reran the saved focused `bun run verify`: exit0,50.682seconds,fullSuite=false,log `/tmp/flow-076-premerge-verify.log`. The same409 unit tests,43 selected browser tests and three packed consumers passed. Integration uses `codex/snapshot-and-handle-refresh` from baseline `2128b9e` and a fast-forward into `main`. No push is requested. Earlier isolated/uncommitted statements above describe their recorded checkpoints.
+
+## Integrated state confirmed during Plan 065 reconciliation
+
+On 2026-09-30, `git log` and both clean checkouts confirm commit `77a725e` on main and `codex/snapshot-and-handle-refresh`. The earlier uncommitted/unmerged descriptions are historical checkpoints. A fresh focused `bun run verify` at this same commit passed 409 units, 43 selected browser tests and all three packed consumers in 49.315 seconds, exit 0; log `/tmp/flow-065-reconcile-verify.log`. No full-suite or publication claim follows. Remaining original 065 member acceptance is specified in that plan and its reconciliation artifact.
