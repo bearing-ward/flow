@@ -13,6 +13,16 @@ export interface FlowToolbarAnchors {
   readonly edges: readonly FlowToolbarAnchor[]
 }
 
+export type FlowToolbarPosition = 'top' | 'right' | 'bottom' | 'left'
+
+export type FlowToolbarAlign = 'start' | 'center' | 'end'
+
+export interface FlowNodeToolbarAnchorOptions {
+  readonly position?: FlowToolbarPosition
+  readonly align?: FlowToolbarAlign
+  readonly offset?: number
+}
+
 const toScreen = (position: XYPosition, viewport: Viewport): XYPosition => ({
   x: viewport.x + position.x * viewport.zoom,
   y: viewport.y + position.y * viewport.zoom,
@@ -21,7 +31,8 @@ const toScreen = (position: XYPosition, viewport: Viewport): XYPosition => ({
 export const nodeToolbarAnchor = (
   graph: FlowGraphView,
   nodeId: NodeId,
-  viewport: Viewport
+  viewport: Viewport,
+  options: FlowNodeToolbarAnchorOptions = {}
 ): FlowToolbarAnchor | undefined => {
   const node = graph.nodes.get(nodeId)
 
@@ -30,13 +41,50 @@ export const nodeToolbarAnchor = (
   }
 
   const bounds = graphNodeBounds(node)
+  const position = options.position ?? 'top'
+  const align = options.align ?? 'center'
+  const offset = options.offset ?? 0
+
+  const fractionByAlign: Record<FlowToolbarAlign, number> = {
+    start: 0,
+    center: 0.5,
+    end: 1,
+  }
+
+  const fraction = fractionByAlign[align]
+
+  const graphPointByPosition: Record<FlowToolbarPosition, XYPosition> = {
+    top: { x: bounds.x + bounds.width * fraction, y: bounds.y },
+    right: {
+      x: bounds.x + bounds.width,
+      y: bounds.y + bounds.height * fraction,
+    },
+    bottom: {
+      x: bounds.x + bounds.width * fraction,
+      y: bounds.y + bounds.height,
+    },
+    left: { x: bounds.x, y: bounds.y + bounds.height * fraction },
+  }
+
+  const point = graphPointByPosition[position]
+
+  const screenPoint = toScreen(point, viewport)
+
+  const offsetVectorByPosition: Record<FlowToolbarPosition, XYPosition> = {
+    top: { x: 0, y: -1 },
+    right: { x: 1, y: 0 },
+    bottom: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+  }
+
+  const offsetVector = offsetVectorByPosition[position]
 
   return {
     id: nodeId,
-    position: toScreen(
-      { x: bounds.x + bounds.width / 2, y: bounds.y },
-      viewport
-    ),
+    position: {
+      x: screenPoint.x + offsetVector.x * offset,
+      y: screenPoint.y + offsetVector.y * offset,
+    },
   }
 }
 

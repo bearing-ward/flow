@@ -2,6 +2,7 @@ import { Effect, Schema as S } from 'effect'
 
 import { validateFlowConnection } from './flow-connection.schema.ts'
 import type {
+  ConnectionMode,
   FlowConnection,
   InvalidFlowConnection,
 } from './flow-connection.schema.ts'
@@ -35,7 +36,8 @@ export const reconnectFlowEdge = (
   edgeId: EdgeId,
   endpoint: ReconnectEndpoint,
   nodeId: NodeId,
-  handleId: HandleId
+  handleId: HandleId,
+  mode: ConnectionMode = 'strict'
 ): Effect.Effect<FlowEdge | undefined, InvalidFlowConnection> =>
   Effect.gen(function* reconnectEdge() {
     const edge = document.edges.find((item) => item.id === edgeId)
@@ -70,7 +72,8 @@ export const reconnectFlowEdge = (
         ...document,
         edges: document.edges.filter((item) => item.id !== edgeId),
       },
-      connection
+      connection,
+      mode
     )
 
     return endpoint === 'source'

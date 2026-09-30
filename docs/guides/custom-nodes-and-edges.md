@@ -8,6 +8,8 @@ Keep custom node data JSON-compatible if it belongs in `FlowNode.data`. Put DOM 
 
 For custom node content, add `data-flow-drag-handle` to a descendant when only a specific part of the node should start pointer dragging. Once a marker exists, pointerdown elsewhere in that node content does not start a drag; nodes without a marker keep the normal node-body behavior. Add `data-flow-no-drag` to a nested control to suppress dragging even inside a marked handle. No-drag controls keep their normal click and focus behavior. The host reads these attributes from the current DOM on each pointerdown, so renderer updates can add or remove markers without replacing the keyed node. `draggable: false` still prevents movement regardless of the marker.
 
+Focused browser coverage exercises this contract in [Vanilla](../../apps/vanilla/e2e/playground.e2e.ts), [Vue](../../apps/vue/e2e/drag-handle-recipe.e2e.ts), and [Foldkit](../../apps/foldkit/e2e/drag-handle-recipe.e2e.ts). These are playground/test fixtures; dedicated gallery routes remain planned.
+
 Custom edge renderers provide path geometry from measured endpoints. The renderer should not reimplement connection validation or mutate the graph directly. Dispatch a Flow command or publish a semantic change through the adapter contract instead.
 
 For Vue, use the typed component slots on [`FlowCanvas`](../../packages/vue/src/flow-canvas.ts); the [Vue conformance suite](../../apps/vue/e2e/shared-conformance.e2e.ts) checks the browser-facing contract through `@flow/vue`.

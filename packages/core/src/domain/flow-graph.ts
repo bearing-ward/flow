@@ -1,4 +1,5 @@
 import type { MeasuredNode } from './flow-runtime.schema.ts'
+import type { HandleId } from './flow-values.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
 import type {
   FlowDocument,
@@ -309,3 +310,18 @@ export const getConnectedEdges = (
     (edge) => nodeIds.has(edge.source) || nodeIds.has(edge.target)
   )
 }
+
+/** Return edges attached to one node handle, preserving document edge order. */
+export const getHandleConnections = (
+  nodeId: NodeId,
+  handleId: HandleId | undefined,
+  kind: 'source' | 'target',
+  edges: readonly FlowEdge[]
+): readonly FlowEdge[] =>
+  edges.filter((edge) =>
+    kind === 'source'
+      ? edge.source === nodeId &&
+        (handleId === undefined || edge.sourceHandle === handleId)
+      : edge.target === nodeId &&
+        (handleId === undefined || edge.targetHandle === handleId)
+  )

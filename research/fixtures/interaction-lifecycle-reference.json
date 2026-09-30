@@ -1,0 +1,1141 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "viewport": {
+      "width": 1000,
+      "height": 700
+    },
+    "normalization": "timestamps and renderer-measured geometry removed; callback event order and public node/edge values retained",
+    "notes": "Pinned capture is xyflow v12.11.6 at the stated commit. Current website docs are a separate moving contract; the repository correspondence table marks connectionRadius adapter equivalence and onConnectEnd host callbacks partial or unverified, so this capture does not claim current-site parity.",
+    "capturedAt": "2026-09-28T11:35:12.461Z"
+  },
+  "cases": {
+    "connection": [
+      {
+        "event": "connectStart",
+        "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+      },
+      {
+        "event": "connect",
+        "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"parent\",\"targetHandle\":\"in\"}"
+      },
+      {
+        "event": "connectEnd",
+        "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+      },
+      {
+        "event": "connectStart",
+        "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+      },
+      {
+        "event": "connectEnd",
+        "detail": "{\"isValid\":null,\"toNode\":null}"
+      }
+    ],
+    "resize": [
+      {
+        "direction": "left",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,0],\"x\":77,\"y\":80,\"width\":123,\"height\":100}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,0],\"x\":74,\"y\":80,\"width\":126,\"height\":100}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,0],\"x\":71,\"y\":80,\"width\":129,\"height\":100}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,0],\"x\":68,\"y\":80,\"width\":132,\"height\":100}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":68,\"y\":80,\"width\":132,\"height\":100}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 68,
+              "y": 80
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 132,
+            "height": 100,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 32,
+              "y": 20
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "right",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,0],\"x\":68,\"y\":80,\"width\":135,\"height\":100}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,0],\"x\":68,\"y\":80,\"width\":138,\"height\":100}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,0],\"x\":68,\"y\":80,\"width\":141,\"height\":100}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,0],\"x\":68,\"y\":80,\"width\":144,\"height\":100}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":68,\"y\":80,\"width\":144,\"height\":100}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 68,
+              "y": 80
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 144,
+            "height": 100,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 32,
+              "y": 20
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "top",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,-1],\"x\":68,\"y\":77,\"width\":144,\"height\":103}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,-1],\"x\":68,\"y\":74,\"width\":144,\"height\":106}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,-1],\"x\":68,\"y\":71,\"width\":144,\"height\":109}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,-1],\"x\":68,\"y\":68,\"width\":144,\"height\":112}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":68,\"y\":68,\"width\":144,\"height\":112}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 68,
+              "y": 68
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 144,
+            "height": 112,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 32,
+              "y": 32
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "bottom",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,1],\"x\":68,\"y\":68,\"width\":144,\"height\":115}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,1],\"x\":68,\"y\":68,\"width\":144,\"height\":118}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,1],\"x\":68,\"y\":68,\"width\":144,\"height\":121}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[0,1],\"x\":68,\"y\":68,\"width\":144,\"height\":124}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":68,\"y\":68,\"width\":144,\"height\":124}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 68,
+              "y": 68
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 144,
+            "height": 124,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 32,
+              "y": 32
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "top-left",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,-1],\"x\":65,\"y\":65,\"width\":147,\"height\":127}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,-1],\"x\":62,\"y\":62,\"width\":150,\"height\":130}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,-1],\"x\":59,\"y\":59,\"width\":153,\"height\":133}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,-1],\"x\":56,\"y\":56,\"width\":156,\"height\":136}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":56,\"y\":56,\"width\":156,\"height\":136}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 56,
+              "y": 56
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 156,
+            "height": 136,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 44,
+              "y": 44
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "top-right",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,-1],\"x\":56,\"y\":53,\"width\":159,\"height\":139}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,-1],\"x\":56,\"y\":50,\"width\":162,\"height\":142}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,-1],\"x\":56,\"y\":47,\"width\":165,\"height\":145}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,-1],\"x\":56,\"y\":44,\"width\":168,\"height\":148}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":56,\"y\":44,\"width\":168,\"height\":148}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 56,
+              "y": 44
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 168,
+            "height": 148,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 44,
+              "y": 56
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "bottom-left",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,1],\"x\":53,\"y\":44,\"width\":171,\"height\":151}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,1],\"x\":50,\"y\":44,\"width\":174,\"height\":154}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,1],\"x\":47,\"y\":44,\"width\":177,\"height\":157}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[-1,1],\"x\":44,\"y\":44,\"width\":180,\"height\":160}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":44,\"y\":44,\"width\":180,\"height\":160}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 44,
+              "y": 44
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 180,
+            "height": 160,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 56,
+              "y": 56
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      },
+      {
+        "direction": "bottom-right",
+        "events": [
+          {
+            "event": "resizeStart",
+            "detail": "{}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,1],\"x\":44,\"y\":44,\"width\":183,\"height\":163}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,1],\"x\":44,\"y\":44,\"width\":186,\"height\":166}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,1],\"x\":44,\"y\":44,\"width\":189,\"height\":169}"
+          },
+          {
+            "event": "resize",
+            "detail": "{\"direction\":[1,1],\"x\":44,\"y\":44,\"width\":192,\"height\":172}"
+          },
+          {
+            "event": "resizeEnd",
+            "detail": "{\"x\":44,\"y\":44,\"width\":192,\"height\":172}"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "parent",
+            "type": "probe",
+            "position": {
+              "x": 44,
+              "y": 44
+            },
+            "style": {
+              "width": 120,
+              "height": 100
+            },
+            "data": {
+              "label": "Parent"
+            },
+            "width": 192,
+            "height": 172,
+            "resizing": false
+          },
+          {
+            "id": "child",
+            "type": "probe",
+            "parentId": "parent",
+            "position": {
+              "x": 56,
+              "y": 56
+            },
+            "style": {
+              "width": 50,
+              "height": 40
+            },
+            "data": {
+              "label": "Child"
+            }
+          },
+          {
+            "id": "target",
+            "type": "probe",
+            "position": {
+              "x": 250,
+              "y": 120
+            },
+            "style": {
+              "width": 100,
+              "height": 70
+            },
+            "data": {
+              "label": "Target"
+            }
+          }
+        ]
+      }
+    ],
+    "looseConnections": [
+      {
+        "variant": "source-to-source",
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"parent\",\"targetHandle\":\"out\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+          }
+        ],
+        "edges": [
+          {
+            "source": "target",
+            "sourceHandle": "out",
+            "target": "parent",
+            "targetHandle": "out",
+            "id": "xy-edge__targetout-parentout"
+          }
+        ]
+      },
+      {
+        "variant": "target-to-target",
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"in\",\"handleType\":\"target\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"parent\",\"sourceHandle\":\"in\",\"target\":\"target\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+          },
+          {
+            "event": "error",
+            "detail": "{\"code\":\"008\",\"message\":\"Couldn't create edge for source handle id: \\\"in\\\", edge id: xy-edge__parentin-targetin.\"}"
+          }
+        ],
+        "edges": [
+          {
+            "source": "parent",
+            "sourceHandle": "in",
+            "target": "target",
+            "targetHandle": "in",
+            "id": "xy-edge__parentin-targetin"
+          }
+        ]
+      },
+      {
+        "variant": "target-origin-to-source",
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"in\",\"handleType\":\"target\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"parent\",\"sourceHandle\":\"out\",\"target\":\"target\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+          }
+        ],
+        "edges": [
+          {
+            "source": "parent",
+            "sourceHandle": "out",
+            "target": "target",
+            "targetHandle": "in",
+            "id": "xy-edge__parentout-targetin"
+          }
+        ]
+      }
+    ],
+    "radius": [
+      {
+        "name": "direct-hit-zoom-1",
+        "zoom": 1,
+        "offset": 0,
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"parent\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+          }
+        ],
+        "connection": {
+          "inProgress": false,
+          "isValid": null,
+          "toNode": null
+        },
+        "edges": [
+          {
+            "source": "target",
+            "sourceHandle": "out",
+            "target": "parent",
+            "targetHandle": "in",
+            "id": "xy-edge__targetout-parentin"
+          }
+        ]
+      },
+      {
+        "name": "nearest-within-radius-zoom-1",
+        "zoom": 1,
+        "offset": 15,
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"child\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"child\"}"
+          }
+        ],
+        "connection": {
+          "inProgress": false,
+          "isValid": null,
+          "toNode": null
+        },
+        "edges": [
+          {
+            "source": "target",
+            "sourceHandle": "out",
+            "target": "child",
+            "targetHandle": "in",
+            "id": "xy-edge__targetout-childin"
+          }
+        ]
+      },
+      {
+        "name": "outside-radius-zoom-1",
+        "zoom": 1,
+        "offset": 45,
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":null,\"toNode\":null}"
+          }
+        ],
+        "connection": {
+          "inProgress": false,
+          "isValid": null,
+          "toNode": null
+        },
+        "edges": []
+      },
+      {
+        "name": "nearest-within-radius-zoom-2",
+        "zoom": 2,
+        "offset": 30,
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"child\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"child\"}"
+          }
+        ],
+        "connection": {
+          "inProgress": false,
+          "isValid": null,
+          "toNode": null
+        },
+        "edges": [
+          {
+            "source": "target",
+            "sourceHandle": "out",
+            "target": "child",
+            "targetHandle": "in",
+            "id": "xy-edge__targetout-childin"
+          }
+        ]
+      },
+      {
+        "name": "outside-radius-zoom-2",
+        "zoom": 2,
+        "offset": 90,
+        "events": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":null,\"toNode\":null}"
+          }
+        ],
+        "connection": {
+          "inProgress": false,
+          "isValid": null,
+          "toNode": null
+        },
+        "edges": []
+      }
+    ],
+    "cancellation": [
+      {
+        "method": "Escape",
+        "signalEvents": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          }
+        ],
+        "stateAfterSignal": {
+          "connection": {
+            "inProgress": true,
+            "isValid": null,
+            "toNode": null
+          },
+          "nodeIds": ["parent", "child", "target"],
+          "edgeIds": []
+        },
+        "terminalEvents": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":null,\"toNode\":null}"
+          }
+        ],
+        "stateAfterTerminal": {
+          "connection": {
+            "inProgress": false,
+            "isValid": null,
+            "toNode": null
+          },
+          "nodeIds": ["parent", "child", "target"],
+          "edgeIds": []
+        },
+        "retryEvents": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"parent\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+          }
+        ],
+        "retryState": {
+          "connection": {
+            "inProgress": false,
+            "isValid": null,
+            "toNode": null
+          },
+          "nodes": [
+            {
+              "id": "parent",
+              "type": "probe",
+              "position": {
+                "x": 80,
+                "y": 80
+              },
+              "style": {
+                "width": 120,
+                "height": 100
+              },
+              "data": {
+                "label": "Parent"
+              }
+            },
+            {
+              "id": "child",
+              "type": "probe",
+              "parentId": "parent",
+              "position": {
+                "x": 20,
+                "y": 20
+              },
+              "style": {
+                "width": 50,
+                "height": 40
+              },
+              "data": {
+                "label": "Child"
+              }
+            },
+            {
+              "id": "target",
+              "type": "probe",
+              "position": {
+                "x": 250,
+                "y": 120
+              },
+              "style": {
+                "width": 100,
+                "height": 70
+              },
+              "data": {
+                "label": "Target"
+              },
+              "selected": true
+            }
+          ],
+          "edges": [
+            {
+              "source": "target",
+              "sourceHandle": "out",
+              "target": "parent",
+              "targetHandle": "in",
+              "id": "xy-edge__targetout-parentin"
+            }
+          ]
+        }
+      },
+      {
+        "method": "pointercancel",
+        "signalEvents": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          }
+        ],
+        "stateAfterSignal": {
+          "connection": {
+            "inProgress": true,
+            "isValid": null,
+            "toNode": null
+          },
+          "nodeIds": ["parent", "child", "target"],
+          "edgeIds": []
+        },
+        "terminalEvents": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":null,\"toNode\":null}"
+          }
+        ],
+        "stateAfterTerminal": {
+          "connection": {
+            "inProgress": false,
+            "isValid": null,
+            "toNode": null
+          },
+          "nodeIds": ["parent", "child", "target"],
+          "edgeIds": []
+        },
+        "retryEvents": [
+          {
+            "event": "connectStart",
+            "detail": "{\"nodeId\":\"target\",\"handleId\":\"out\",\"handleType\":\"source\"}"
+          },
+          {
+            "event": "connect",
+            "detail": "{\"source\":\"target\",\"sourceHandle\":\"out\",\"target\":\"parent\",\"targetHandle\":\"in\"}"
+          },
+          {
+            "event": "connectEnd",
+            "detail": "{\"isValid\":true,\"toNode\":\"parent\"}"
+          }
+        ],
+        "retryState": {
+          "connection": {
+            "inProgress": false,
+            "isValid": null,
+            "toNode": null
+          },
+          "nodes": [
+            {
+              "id": "parent",
+              "type": "probe",
+              "position": {
+                "x": 80,
+                "y": 80
+              },
+              "style": {
+                "width": 120,
+                "height": 100
+              },
+              "data": {
+                "label": "Parent"
+              }
+            },
+            {
+              "id": "child",
+              "type": "probe",
+              "parentId": "parent",
+              "position": {
+                "x": 20,
+                "y": 20
+              },
+              "style": {
+                "width": 50,
+                "height": 40
+              },
+              "data": {
+                "label": "Child"
+              }
+            },
+            {
+              "id": "target",
+              "type": "probe",
+              "position": {
+                "x": 250,
+                "y": 120
+              },
+              "style": {
+                "width": 100,
+                "height": 70
+              },
+              "data": {
+                "label": "Target"
+              }
+            }
+          ],
+          "edges": [
+            {
+              "source": "target",
+              "sourceHandle": "out",
+              "target": "parent",
+              "targetHandle": "in",
+              "id": "xy-edge__targetout-parentin"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,3709 @@
+{
+  "version": 1,
+  "baseline": "research/catalogs/react-flow-2026-09-26.json",
+  "hosts": ["vanilla", "vue", "foldkit"],
+  "entries": [
+    {
+      "url": "https://reactflow.dev/examples/overview",
+      "title": "Feature Overview",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Scan the gallery sections and open one node, edge, interaction, layout, styling, whiteboard, and export example in each host.",
+      "observableResult": "Every dated capability has a labeled gallery destination per host; unsupported or not-yet-built destinations are identified instead of appearing runnable.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/overview",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/overview",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/overview",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Scan the gallery sections and open one node, edge, interaction, layout, styling, whiteboard, and export example in each host. Assert: Every dated capability has a labeled gallery destination per host; unsupported or not-yet-built destinations are identified instead of appearing runnable. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/add-node-on-edge-drop",
+      "title": "Add Node On Edge Drop",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Begin a connection from an existing node and release it on the empty pane.",
+      "observableResult": "A new node appears at the drop coordinates converted from screen space to flow space, and a new edge connects the starting node to the new node. Existing nodes and edges remain intact.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/add-node-on-edge-drop",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/add-node-on-edge-drop",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/add-node-on-edge-drop",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Begin a connection from an existing node and release it on the empty pane. Assert: A new node appears at the drop coordinates converted from screen space to flow space, and a new edge connects the starting node to the new node. Existing nodes and edges remain intact. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/connection-limit",
+      "title": "Connection Limit",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Connect nodes until one endpoint reaches its configured maximum, then attempt one more connection.",
+      "observableResult": "The final permitted edge appears; the over-limit attempt is rejected and the edge count and endpoint degrees stay unchanged.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/connection-limit",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/connection-limit",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/connection-limit",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Connect nodes until one endpoint reaches its configured maximum, then attempt one more connection. Assert: The final permitted edge appears; the over-limit attempt is rejected and the edge count and endpoint degrees stay unchanged. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/custom-node",
+      "title": "Custom Nodes",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Render a node with a custom title, status control, and data-driven detail, then change its status.",
+      "observableResult": "The custom node retains its identity and position while its displayed status and corresponding node data update together.",
+      "publicApis": [
+        "FlowNode",
+        "FlowDocument",
+        "FlowEditTransaction",
+        "FlowNodeRenderer"
+      ],
+      "apiEvidence": [
+        {
+          "api": "FlowNodeRenderer and updateNodeData",
+          "path": "apps/vanilla/src/mount-flow.ts"
+        },
+        {
+          "api": "FlowCanvas nodeTypes",
+          "path": "packages/vue/src/flow-canvas.ts"
+        },
+        {
+          "api": "FoldkitNodeRenderer and EditRequest",
+          "path": "packages/foldkit/src/graph.ts"
+        }
+      ],
+      "apiValidation": "validated",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/custom-node",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/custom-node",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/custom-node",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "partial",
+      "testedResult": {
+        "vanilla": {
+          "status": "partial",
+          "path": "apps/vanilla/e2e/custom-node-recipe.e2e.ts"
+        },
+        "vue": {
+          "status": "partial",
+          "path": "apps/vue/e2e/custom-node-recipe.e2e.ts"
+        },
+        "foldkit": {
+          "status": "partial",
+          "path": "apps/foldkit/e2e/renderer-contract.e2e.ts"
+        }
+      },
+      "acceptanceClaim": "implemented",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "Mount each host public renderer API with a custom title, status control, and data-driven detail. Activate the control and assert that the displayed status/detail and accepted node data update while the mounted node identity and position remain stable. Foldkit host instances remain independent. These are focused mounted test fixtures, not user-facing gallery routes; testedResult records the evidence. Then restore the documented reset state.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/delete-middle-node",
+      "title": "Delete Middle Node",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Delete the middle node in a three-node path and reconnect its incoming and outgoing neighbors.",
+      "observableResult": "One accepted edit removes the middle node and leaves a direct edge from the first node to the last; reset restores the original path.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/delete-middle-node",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/delete-middle-node",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/delete-middle-node",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "partial",
+      "testedResult": {
+        "vanilla": {
+          "status": "partial",
+          "path": "apps/vanilla/e2e/graph-editing-examples.e2e.ts"
+        },
+        "vue": {
+          "status": "partial",
+          "path": "apps/vue/e2e/graph-editing-examples.e2e.ts"
+        },
+        "foldkit": {
+          "status": "partial",
+          "path": "apps/foldkit/e2e/graph-editing-examples.e2e.ts"
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Delete the middle node in a three-node path and reconnect its incoming and outgoing neighbors. Assert: One accepted edit removes the middle node and leaves a direct edge from the first node to the last; reset restores the original path. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/drag-handle",
+      "title": "Drag Handle",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Drag a node from its designated header handle, then drag from its content area.",
+      "observableResult": "The header drag moves the node and its connected edge paths; dragging the content area leaves the node in place.",
+      "publicApis": [
+        "mountFlow",
+        "FlowCanvas",
+        "createProgram",
+        "data-flow-drag-handle",
+        "data-flow-no-drag"
+      ],
+      "apiValidation": "validated",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/drag-handle",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/drag-handle",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/drag-handle",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "partial",
+      "testedResult": {
+        "vanilla": {
+          "status": "partial",
+          "path": "apps/vanilla/e2e/playground.e2e.ts"
+        },
+        "vue": {
+          "status": "partial",
+          "path": "apps/vue/e2e/drag-handle-recipe.e2e.ts"
+        },
+        "foldkit": {
+          "status": "partial",
+          "path": "apps/foldkit/e2e/drag-handle-recipe.e2e.ts"
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "The Vanilla playground test asserts that a marked header drag moves the node, a content button remains actionable without moving it, and switching away and back resets the fixture. Vue and Foldkit focused tests assert that a marked handle moves its node, marked-node content does not, and reload restores initial position; Vue also verifies an unmarked node still moves from its body, while Foldkit checks nested no-drag controls, keyboard movement, and reset. These focused boundaries do not assert connected-edge path changes in every host; user-facing gallery routes remain planned.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      },
+      "apiEvidence": [
+        {
+          "api": "mountFlow",
+          "path": "apps/vanilla/src/public.ts"
+        },
+        {
+          "api": "FlowCanvas",
+          "path": "packages/vue/src/public.ts"
+        },
+        {
+          "api": "createProgram",
+          "path": "packages/foldkit/src/public.ts"
+        },
+        {
+          "api": "data-flow-drag-handle and data-flow-no-drag contract",
+          "path": "docs/guides/custom-nodes-and-edges.md"
+        }
+      ]
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/easy-connect",
+      "title": "Easy Connect",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Click a node’s connect affordance and choose a second node from the available targets.",
+      "observableResult": "A single edge joins the chosen pair, and the source node’s connection affordance closes or reports completion.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/easy-connect",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/easy-connect",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/easy-connect",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Click a node’s connect affordance and choose a second node from the available targets. Assert: A single edge joins the chosen pair, and the source node’s connection affordance closes or reports completion. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/intersections",
+      "title": "Intersections",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Move one node across the fixture and inspect the reported node intersections.",
+      "observableResult": "The intersection readout lists only nodes whose measured bounds overlap the moved node and clears when the overlap ends.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/intersections",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/intersections",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/intersections",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move one node across the fixture and inspect the reported node intersections. Assert: The intersection readout lists only nodes whose measured bounds overlap the moved node and clears when the overlap ends. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/node-resizer",
+      "title": "Node Resizer",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Resize a selected node from a corner and then from an edge handle.",
+      "observableResult": "The node’s rendered bounds and accepted width/height follow both drags while connected edges track the new handle positions.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/node-resizer",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/node-resizer",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/node-resizer",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Resize a selected node from a corner and then from an edge handle. Assert: The node’s rendered bounds and accepted width/height follow both drags while connected edges track the new handle positions. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/node-toolbar",
+      "title": "Node Toolbar",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Select a node to reveal its toolbar, invoke an available toolbar action, then deselect it.",
+      "observableResult": "The toolbar follows the selected node, the action changes the requested node state, and deselection removes the toolbar.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/node-toolbar",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/node-toolbar",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/node-toolbar",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Select a node to reveal its toolbar, invoke an available toolbar action, then deselect it. Assert: The toolbar follows the selected node, the action changes the requested node state, and deselection removes the toolbar. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/proximity-connect",
+      "title": "Proximity Connect",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Move a source node handle close to a target node without landing directly on the target handle.",
+      "observableResult": "A connection is offered only within the configured proximity radius; outside the radius no edge is committed.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/proximity-connect",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/proximity-connect",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/proximity-connect",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move a source node handle close to a target node without landing directly on the target handle. Assert: A connection is offered only within the configured proximity radius; outside the radius no edge is committed. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/rotatable-node",
+      "title": "Rotatable Node",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Rotate the rotatable node through several angles and connect to one of its handles.",
+      "observableResult": "The node’s orientation indicator and handle geometry rotate together, and the edge meets the rotated handle.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/rotatable-node",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/rotatable-node",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/rotatable-node",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Rotate the rotatable node through several angles and connect to one of its handles. Assert: The node’s orientation indicator and handle geometry rotate together, and the edge meets the rotated handle. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/node-position-animation",
+      "title": "Node Position Animation",
+      "listedPro": true,
+      "family": "styling-stress-and-overview",
+      "journey": "Trigger a node position update with animation enabled, then disable motion preference.",
+      "observableResult": "The node reaches the requested final coordinates; animation respects reduced-motion preference and does not change the accepted destination.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/node-position-animation",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/node-position-animation",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/node-position-animation",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Trigger a node position update with animation enabled, then disable motion preference. Assert: The node reaches the requested final coordinates; animation respects reduced-motion preference and does not change the accepted destination. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/stress",
+      "title": "Stress Test",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Choose a named graph size and workload, run it, then repeat with the same seed and environment metadata.",
+      "observableResult": "The run reports node/edge counts, elapsed time, memory and hardware labels; repeated seeded runs use the same graph input.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/stress",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/stress",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/stress",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Choose a named graph size and workload, run it, then repeat with the same seed and environment metadata. Assert: The run reports node/edge counts, elapsed time, memory and hardware labels; repeated seeded runs use the same graph input. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/update-node",
+      "title": "Updating Nodes",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Add a node, rename it, edit node data, inspect node and edge data, remove it, and reset.",
+      "observableResult": "The visible node and edge data reflect accepted edits; protected deletion is rejected without changing the graph, and reset restores the fixture.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/update-node",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/update-node",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/update-node",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "partial",
+      "testedResult": {
+        "vanilla": {
+          "status": "partial",
+          "path": "apps/vanilla/e2e/graph-editing-examples.e2e.ts"
+        },
+        "vue": {
+          "status": "partial",
+          "path": "apps/vue/e2e/graph-editing-examples.e2e.ts"
+        },
+        "foldkit": {
+          "status": "partial",
+          "path": "apps/foldkit/e2e/graph-editing-examples.e2e.ts"
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Add a node, rename it, edit node data, inspect node and edge data, remove it, and reset. Assert: The visible node and edge data reflect accepted edits; protected deletion is rejected without changing the graph, and reset restores the fixture. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/nodes/shapes",
+      "title": "Shapes",
+      "listedPro": true,
+      "family": "styling-stress-and-overview",
+      "journey": "Switch the node through each listed shape and adjust its shape-specific size or color control.",
+      "observableResult": "Each choice renders the corresponding silhouette and style while preserving node identity, position, and connected edges.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/nodes/shapes",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/nodes/shapes",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/nodes/shapes",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Switch the node through each listed shape and adjust its shape-specific size or color control. Assert: Each choice renders the corresponding silhouette and style while preserving node identity, position, and connected edges. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/animating-edges",
+      "title": "Animating Edges",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Toggle animation on an edge and change its direction or speed control.",
+      "observableResult": "The selected edge visibly animates according to the control values; disabling animation leaves a static edge with unchanged endpoints.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/animating-edges",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/animating-edges",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/animating-edges",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Toggle animation on an edge and change its direction or speed control. Assert: The selected edge visibly animates according to the control values; disabling animation leaves a static edge with unchanged endpoints. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/custom-connectionline",
+      "title": "Custom Connection Line",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Start a connection gesture and move its endpoint across valid and invalid targets.",
+      "observableResult": "The in-progress line uses the custom path and changes its validity treatment at eligible targets without adding an edge before release.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/custom-connectionline",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/custom-connectionline",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/custom-connectionline",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Start a connection gesture and move its endpoint across valid and invalid targets. Assert: The in-progress line uses the custom path and changes its validity treatment at eligible targets without adding an edge before release. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/custom-edges",
+      "title": "Custom Edges",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Switch an edge between the available custom edge renderers and select each edge.",
+      "observableResult": "Each renderer displays its own path and decoration; selection remains attached to the same edge ID.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/custom-edges",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/custom-edges",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/custom-edges",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Switch an edge between the available custom edge renderers and select each edge. Assert: Each renderer displays its own path and decoration; selection remains attached to the same edge ID. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/delete-edge-on-drop",
+      "title": "Delete Edge on Drop",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Drag an existing edge endpoint onto the designated delete area and then release another edge elsewhere.",
+      "observableResult": "The edge released on the delete area is removed; the other edge remains connected and rendered.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/delete-edge-on-drop",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/delete-edge-on-drop",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/delete-edge-on-drop",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag an existing edge endpoint onto the designated delete area and then release another edge elsewhere. Assert: The edge released on the delete area is removed; the other edge remains connected and rendered. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/edge-label-renderer",
+      "title": "Edge Label Renderer",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Show a label on an edge, move or select the edge, and activate the label control.",
+      "observableResult": "The label stays positioned on its edge in canvas coordinates and its action affects the intended edge without intercepting canvas panning.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/edge-label-renderer",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/edge-label-renderer",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/edge-label-renderer",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Show a label on an edge, move or select the edge, and activate the label control. Assert: The label stays positioned on its edge in canvas coordinates and its action affects the intended edge without intercepting canvas panning. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/edge-intersection",
+      "title": "Edge Intersection",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Move a node so its edge crosses another edge, then move it until the crossing disappears.",
+      "observableResult": "The intersection marker or readout appears at the crossing and clears when the edge paths no longer intersect.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/edge-intersection",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/edge-intersection",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/edge-intersection",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move a node so its edge crosses another edge, then move it until the crossing disappears. Assert: The intersection marker or readout appears at the crossing and clears when the edge paths no longer intersect. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/edge-toolbar",
+      "title": "Edge Toolbar",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Select an edge to reveal its toolbar and invoke an edge-specific action.",
+      "observableResult": "The toolbar is anchored to the selected edge; the chosen action updates or removes that edge and the toolbar follows the result.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/edge-toolbar",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/edge-toolbar",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/edge-toolbar",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Select an edge to reveal its toolbar and invoke an edge-specific action. Assert: The toolbar is anchored to the selected edge; the chosen action updates or removes that edge and the toolbar follows the result. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/edge-types",
+      "title": "Edge Types",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Change an edge’s type through each offered renderer, including the labeled and stepped variants.",
+      "observableResult": "The path style changes for the selected edge while its source, target, label data, and ID remain intact.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/edge-types",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/edge-types",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/edge-types",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Change an edge’s type through each offered renderer, including the labeled and stepped variants. Assert: The path style changes for the selected edge while its source, target, label data, and ID remain intact. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/edge-routing",
+      "title": "Edge Routing",
+      "listedPro": true,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Move nodes in a graph with obstacles and compare the routed edge before and after the move.",
+      "observableResult": "The route bends around configured obstacles, updates when geometry changes, and still terminates at the declared handles.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/edge-routing",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/edge-routing",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/edge-routing",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move nodes in a graph with obstacles and compare the routed edge before and after the move. Assert: The route bends around configured obstacles, updates when geometry changes, and still terminates at the declared handles. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/floating-edges",
+      "title": "Floating Edges",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Move source and target nodes around one another while keeping the edge attached to their nearest sides.",
+      "observableResult": "The edge endpoints slide to the nearest boundary positions and the path stays attached as the relative node positions change.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/floating-edges",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/floating-edges",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/floating-edges",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move source and target nodes around one another while keeping the edge attached to their nearest sides. Assert: The edge endpoints slide to the nearest boundary positions and the path stays attached as the relative node positions change. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/markers",
+      "title": "Edge Markers",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Apply each available start and end marker to an edge and change marker color or size.",
+      "observableResult": "Markers appear at the correct endpoints with the configured appearance; the underlying edge direction and connectivity remain stable.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/markers",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/markers",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/markers",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Apply each available start and end marker to an edge and change marker color or size. Assert: Markers appear at the correct endpoints with the configured appearance; the underlying edge direction and connectivity remain stable. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/multi-connection-line",
+      "title": "Multi Connection Line",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Start a connection from a handle that permits multiple links and connect it to several targets.",
+      "observableResult": "Each release adds one independent edge from the same source handle, and all existing links remain visible.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/multi-connection-line",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/multi-connection-line",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/multi-connection-line",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Start a connection from a handle that permits multiple links and connect it to several targets. Assert: Each release adds one independent edge from the same source handle, and all existing links remain visible. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/reconnect-edge",
+      "title": "Reconnect Edge",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Drag an existing edge endpoint from its current node to a different valid node.",
+      "observableResult": "The original edge ID and data remain while the selected endpoint changes; an invalid drop preserves the old endpoint.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/reconnect-edge",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/reconnect-edge",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/reconnect-edge",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag an existing edge endpoint from its current node to a different valid node. Assert: The original edge ID and data remain while the selected endpoint changes; an invalid drop preserves the old endpoint. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/simple-floating-edges",
+      "title": "Simple Floating Edges",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Move two nodes with the simple floating-edge renderer and vary their relative alignment.",
+      "observableResult": "The edge connects the closest boundary points with no fixed handle requirement and updates its path after each move.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/simple-floating-edges",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/simple-floating-edges",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/simple-floating-edges",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move two nodes with the simple floating-edge renderer and vary their relative alignment. Assert: The edge connects the closest boundary points with no fixed handle requirement and updates its path after each move. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/temporary-edges",
+      "title": "Temporary Edges",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Create a temporary edge, inspect it before commit, then either accept or cancel it.",
+      "observableResult": "The preview is visible only during the pending state; acceptance yields one persistent edge and cancellation leaves no edge behind.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/temporary-edges",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/temporary-edges",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/temporary-edges",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Create a temporary edge, inspect it before commit, then either accept or cancel it. Assert: The preview is visible only during the pending state; acceptance yields one persistent edge and cancellation leaves no edge behind. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/edges/editable-edge",
+      "title": "Editable Edge",
+      "listedPro": true,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Select an editable edge, move one of its control points, and commit the edit.",
+      "observableResult": "The edge path changes at the moved control point while its endpoint IDs remain unchanged; reset restores the initial curve.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/edges/editable-edge",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/edges/editable-edge",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/edges/editable-edge",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Select an editable edge, move one of its control points, and commit the edit. Assert: The edge path changes at the moved control point while its endpoint IDs remain unchanged; reset restores the initial curve. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/computing-flows",
+      "title": "Computing Flows",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Change a node input value and follow the dependent computation through downstream nodes.",
+      "observableResult": "Derived values update along reachable edges from accepted data, while unrelated branches retain their prior values.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/computing-flows",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/computing-flows",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/computing-flows",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Change a node input value and follow the dependent computation through downstream nodes. Assert: Derived values update along reachable edges from accepted data, while unrelated branches retain their prior values. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/connection-events",
+      "title": "Connection Events",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Complete one connection, reject another, and cancel a third gesture while observing the event log.",
+      "observableResult": "The event sequence distinguishes start, completion, rejection, and cancellation, and only the accepted gesture changes the edge list.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/connection-events",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/connection-events",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/connection-events",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Complete one connection, reject another, and cancel a third gesture while observing the event log. Assert: The event sequence distinguishes start, completion, rejection, and cancellation, and only the accepted gesture changes the edge list. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/context-menu",
+      "title": "Context Menu",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Open a node context menu, invoke one item, then open an edge menu and dismiss it without selection.",
+      "observableResult": "The node and edge menus anchor to the intended element, perform their own action, and dismissal changes no graph data.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/context-menu",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/context-menu",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/context-menu",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Open a node context menu, invoke one item, then open an edge menu and dismiss it without selection. Assert: The node and edge menus anchor to the intended element, perform their own action, and dismissal changes no graph data. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/contextual-zoom",
+      "title": "Contextual Zoom",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Zoom into a dense region and compare node detail at the configured zoom thresholds.",
+      "observableResult": "The chosen contextual labels or details appear at the correct zoom levels without changing graph positions or connections.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/contextual-zoom",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/contextual-zoom",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/contextual-zoom",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Zoom into a dense region and compare node detail at the configured zoom thresholds. Assert: The chosen contextual labels or details appear at the correct zoom levels without changing graph positions or connections. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/drag-and-drop",
+      "title": "Drag and Drop",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Drag a node type from the palette onto empty canvas space, then repeat outside the canvas.",
+      "observableResult": "A node is created at the translated flow-coordinate drop point inside the canvas; an outside drop creates nothing.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/drag-and-drop",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/drag-and-drop",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/drag-and-drop",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag a node type from the palette onto empty canvas space, then repeat outside the canvas. Assert: A node is created at the translated flow-coordinate drop point inside the canvas; an outside drop creates nothing. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/prevent-cycles",
+      "title": "Preventing Cycles",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Attempt to add a forward edge that is acyclic, then add a reverse edge that would close a cycle.",
+      "observableResult": "The acyclic edge is accepted; the cycle-forming edge is rejected and the graph remains without a directed cycle.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/prevent-cycles",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/prevent-cycles",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/prevent-cycles",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Attempt to add a forward edge that is acyclic, then add a reverse edge that would close a cycle. Assert: The acyclic edge is accepted; the cycle-forming edge is rejected and the graph remains without a directed cycle. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/save-and-restore",
+      "title": "Save and Restore",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Edit node position and data, serialize the declared document, then restore it and try malformed input.",
+      "observableResult": "Restoration recovers the supported node and edge fields; malformed data returns a visible decode error without replacing the current graph.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/save-and-restore",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/save-and-restore",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/save-and-restore",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Edit node position and data, serialize the declared document, then restore it and try malformed input. Assert: Restoration recovers the supported node and edge fields; malformed data returns a visible decode error without replacing the current graph. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/touch-device",
+      "title": "Touch Device",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "On a narrow touch viewport, pan the canvas, pinch-zoom, and connect two nodes using touch targets.",
+      "observableResult": "The viewport responds to touch gestures and the connection commits once; controls remain reachable and targets do not overlap.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/touch-device",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/touch-device",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/touch-device",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: On a narrow touch viewport, pan the canvas, pinch-zoom, and connect two nodes using touch targets. Assert: The viewport responds to touch gestures and the connection commits once; controls remain reachable and targets do not overlap. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/validation",
+      "title": "Validation",
+      "listedPro": false,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Attempt a connection rejected by a custom validation rule, then connect a valid pair.",
+      "observableResult": "The rejected candidate receives invalid feedback and leaves state unchanged; the valid candidate creates one edge.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/validation",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/validation",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/validation",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Attempt a connection rejected by a custom validation rule, then connect a valid pair. Assert: The rejected candidate receives invalid feedback and leaves state unchanged; the valid candidate creates one edge. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/helper-lines",
+      "title": "Helper Lines",
+      "listedPro": true,
+      "family": "nodes-edges-and-interactions",
+      "journey": "Drag a node near another node’s horizontal and vertical alignment guides.",
+      "observableResult": "Guides appear at matching coordinates and the node snaps to the documented threshold; guides disappear after release.",
+      "publicApis": [
+        "FlowCanvas",
+        "FlowDocument",
+        "FlowEdit",
+        "FlowConnection"
+      ],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/helper-lines",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/helper-lines",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/helper-lines",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag a node near another node’s horizontal and vertical alignment guides. Assert: Guides appear at matching coordinates and the node snaps to the documented threshold; guides disappear after release. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/collaborative",
+      "title": "Collaborative",
+      "listedPro": true,
+      "family": "advanced-integrations",
+      "journey": "Edit different nodes from two independent clients, make concurrent changes, disconnect one, then reconnect it.",
+      "observableResult": "Both clients converge on the agreed graph after reconnect; the displayed conflict result follows the documented resolution policy.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/collaborative",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/collaborative",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/collaborative",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "real transport and two independent clients required; protocol decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Edit different nodes from two independent clients, make concurrent changes, disconnect one, then reconnect it. Assert: Both clients converge on the agreed graph after reconnect; the displayed conflict result follows the documented resolution policy. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/copy-paste",
+      "title": "Copy and Paste",
+      "listedPro": true,
+      "family": "advanced-integrations",
+      "journey": "Select a parent with a child and internal edge, copy the selection, then paste it.",
+      "observableResult": "The pasted subgraph has fresh node and edge IDs, remapped internal references, and no accidental links to the original selection.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/copy-paste",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/copy-paste",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/copy-paste",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Select a parent with a child and internal edge, copy the selection, then paste it. Assert: The pasted subgraph has fresh node and edge IDs, remapped internal references, and no accidental links to the original selection. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/interaction/undo-redo",
+      "title": "Undo and Redo",
+      "listedPro": true,
+      "family": "advanced-integrations",
+      "journey": "Add a node, undo the accepted edit, then redo it.",
+      "observableResult": "Undo restores the exact prior accepted graph and redo restores the added node and its data.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/interaction/undo-redo",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/interaction/undo-redo",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/interaction/undo-redo",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Add a node, undo the accepted edit, then redo it. Assert: Undo restores the exact prior accepted graph and redo restores the added node and its data. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/grouping/selection-grouping",
+      "title": "Selection Grouping",
+      "listedPro": true,
+      "family": "grouping-and-layout",
+      "journey": "Select two sibling nodes, group them, move the new group, then ungroup it.",
+      "observableResult": "The grouped nodes retain their relative positions during group movement and return to the expected parent relationship after ungrouping.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/grouping/selection-grouping",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/grouping/selection-grouping",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/grouping/selection-grouping",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Select two sibling nodes, group them, move the new group, then ungroup it. Assert: The grouped nodes retain their relative positions during group movement and return to the expected parent relationship after ungrouping. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/grouping/parent-child-relation",
+      "title": "Parent Child Relation",
+      "listedPro": true,
+      "family": "grouping-and-layout",
+      "journey": "Move a child inside and outside its parent bounds, then move the parent.",
+      "observableResult": "The child’s parent-relative coordinates and visible containment update according to the configured parent rules.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/grouping/parent-child-relation",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/grouping/parent-child-relation",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/grouping/parent-child-relation",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Move a child inside and outside its parent bounds, then move the parent. Assert: The child’s parent-relative coordinates and visible containment update according to the configured parent rules. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/grouping/sub-flows",
+      "title": "Sub Flow",
+      "listedPro": false,
+      "family": "grouping-and-layout",
+      "journey": "Expand a parent node to reveal its children, connect child nodes, then collapse the parent.",
+      "observableResult": "Expanded children render in parent-relative positions; collapsing hides the declared descendants and their incident edges consistently.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/grouping/sub-flows",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/grouping/sub-flows",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/grouping/sub-flows",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Expand a parent node to reveal its children, connect child nodes, then collapse the parent. Assert: Expanded children render in parent-relative positions; collapsing hides the declared descendants and their incident edges consistently. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/dagre",
+      "title": "Dagre Tree",
+      "listedPro": false,
+      "family": "grouping-and-layout",
+      "journey": "Run the Dagre tree layout on the branching fixture and switch its direction.",
+      "observableResult": "Nodes are arranged in non-overlapping layers in the selected direction and each edge still joins its original pair.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/dagre",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/dagre",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/dagre",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "dagre candidate; dependency decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Run the Dagre tree layout on the branching fixture and switch its direction. Assert: Nodes are arranged in non-overlapping layers in the selected direction and each edge still joins its original pair. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/elkjs",
+      "title": "Elkjs Tree",
+      "listedPro": false,
+      "family": "grouping-and-layout",
+      "journey": "Run the ELK layout on the nested graph with the selected spacing and direction options.",
+      "observableResult": "ELK output places nodes and parents at the returned coordinates and leaves all declared edges attached.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/elkjs",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/elkjs",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/elkjs",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "elkjs candidate; dependency decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Run the ELK layout on the nested graph with the selected spacing and direction options. Assert: ELK output places nodes and parents at the returned coordinates and leaves all declared edges attached. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/elkjs-multiple-handles",
+      "title": "Elkjs Multiple Handles",
+      "listedPro": false,
+      "family": "grouping-and-layout",
+      "journey": "Run ELK layout with edges assigned to distinct source and target handles.",
+      "observableResult": "The resulting edge routes meet their assigned handles and the layout preserves handle IDs and edge connectivity.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/elkjs-multiple-handles",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/elkjs-multiple-handles",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/elkjs-multiple-handles",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "elkjs candidate; dependency decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Run ELK layout with edges assigned to distinct source and target handles. Assert: The resulting edge routes meet their assigned handles and the layout preserves handle IDs and edge connectivity. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/horizontal",
+      "title": "Horizontal Flow",
+      "listedPro": false,
+      "family": "grouping-and-layout",
+      "journey": "Switch the sample from its default orientation to horizontal flow.",
+      "observableResult": "The nodes form a left-to-right sequence and edge paths point between the same adjacent nodes.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/horizontal",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/horizontal",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/horizontal",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Switch the sample from its default orientation to horizontal flow. Assert: The nodes form a left-to-right sequence and edge paths point between the same adjacent nodes. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/expand-collapse",
+      "title": "Expand and Collapse",
+      "listedPro": true,
+      "family": "grouping-and-layout",
+      "journey": "Collapse a branch, expand it again, and inspect hidden descendants and connecting edges.",
+      "observableResult": "Collapsed descendants are hidden without deletion; expanding restores their prior positions and valid connections.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/expand-collapse",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/expand-collapse",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/expand-collapse",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Collapse a branch, expand it again, and inspect hidden descendants and connecting edges. Assert: Collapsed descendants are hidden without deletion; expanding restores their prior positions and valid connections. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/auto-layout",
+      "title": "Auto Layout",
+      "listedPro": true,
+      "family": "grouping-and-layout",
+      "journey": "Choose a layout engine and direction, apply it, then change one node and reapply.",
+      "observableResult": "Each run positions the current graph using the chosen engine; the second run reflects the edit rather than stale coordinates.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/auto-layout",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/auto-layout",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/auto-layout",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Choose a layout engine and direction, apply it, then change one node and reapply. Assert: Each run positions the current graph using the chosen engine; the second run reflects the edit rather than stale coordinates. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/force-layout",
+      "title": "Force Layout",
+      "listedPro": true,
+      "family": "grouping-and-layout",
+      "journey": "Start the force simulation, let nodes settle, and stop it before resetting.",
+      "observableResult": "Nodes move apart toward the force equilibrium, edge links remain valid, and stopping freezes the accepted positions.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/force-layout",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/force-layout",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/force-layout",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "force-layout engine candidate; dependency decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Start the force simulation, let nodes settle, and stop it before resetting. Assert: Nodes move apart toward the force equilibrium, edge links remain valid, and stopping freezes the accepted positions. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/dynamic-layouting",
+      "title": "Dynamic Layouting",
+      "listedPro": true,
+      "family": "grouping-and-layout",
+      "journey": "Add a node during an asynchronous layout run and allow the earlier run to finish.",
+      "observableResult": "The graph reflects the latest revision; a stale layout result does not overwrite positions after the edit.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/dynamic-layouting",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/dynamic-layouting",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/dynamic-layouting",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Add a node during an asynchronous layout run and allow the earlier run to finish. Assert: The graph reflects the latest revision; a stale layout result does not overwrite positions after the edit. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/layout/node-collisions",
+      "title": "Node Collisions",
+      "listedPro": false,
+      "family": "grouping-and-layout",
+      "journey": "Drag two nodes into overlapping bounds and then separate them.",
+      "observableResult": "The collision indicator or response appears for overlapping nodes and clears once their bounds no longer intersect.",
+      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/layout/node-collisions",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/layout/node-collisions",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/layout/node-collisions",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag two nodes into overlapping bounds and then separate them. Assert: The collision indicator or response appears for overlapping nodes and clears once their bounds no longer intersect. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/styling/base-style",
+      "title": "Base Style",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Inspect the default canvas, nodes, handles, and edge at normal and narrow widths.",
+      "observableResult": "Base styles provide visible node boundaries, handles, and edge contrast while the graph stays within the viewport.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/styling/base-style",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/styling/base-style",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/styling/base-style",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Inspect the default canvas, nodes, handles, and edge at normal and narrow widths. Assert: Base styles provide visible node boundaries, handles, and edge contrast while the graph stays within the viewport. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/styling/dark-mode",
+      "title": "Dark Mode",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Toggle dark mode while the graph is selected and while an edge label is visible.",
+      "observableResult": "Canvas, nodes, labels, and controls switch palette together without losing selection or changing graph data.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/styling/dark-mode",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/styling/dark-mode",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/styling/dark-mode",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Toggle dark mode while the graph is selected and while an edge label is visible. Assert: Canvas, nodes, labels, and controls switch palette together without losing selection or changing graph data. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/styling/tailwind",
+      "title": "Tailwind",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Build and open the optional Tailwind example with utility styling enabled.",
+      "observableResult": "The example’s utility classes style the canvas and controls while the core package remains usable without Tailwind.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/styling/tailwind",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/styling/tailwind",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/styling/tailwind",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "tailwind optional integration; dependency decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Build and open the optional Tailwind example with utility styling enabled. Assert: The example’s utility classes style the canvas and controls while the core package remains usable without Tailwind. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/styling/turbo-flow",
+      "title": "Turbo Flow",
+      "listedPro": false,
+      "family": "styling-stress-and-overview",
+      "journey": "Load the Turbo Flow fixture and compare its node, edge, and background treatment with the base style.",
+      "observableResult": "The specialized visual theme is applied to all intended elements and the graph remains interactive.",
+      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/styling/turbo-flow",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/styling/turbo-flow",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/styling/turbo-flow",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Load the Turbo Flow fixture and compare its node, edge, and background treatment with the base style. Assert: The specialized visual theme is applied to all intended elements and the graph remains interactive. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/whiteboard/eraser",
+      "title": "Eraser Tool",
+      "listedPro": false,
+      "family": "advanced-integrations",
+      "journey": "Draw or place an erasable mark, activate the eraser, and drag across that mark.",
+      "observableResult": "Only the intersected drawing is removed; nearby nodes and un-crossed strokes remain unchanged.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/whiteboard/eraser",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/whiteboard/eraser",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/whiteboard/eraser",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Draw or place an erasable mark, activate the eraser, and drag across that mark. Assert: Only the intersected drawing is removed; nearby nodes and un-crossed strokes remain unchanged. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/whiteboard/lasso-selection",
+      "title": "Lasso Selection",
+      "listedPro": false,
+      "family": "advanced-integrations",
+      "journey": "Drag a lasso around a subset of nodes and release, then move one selected node.",
+      "observableResult": "Only nodes enclosed by the lasso become selected and the selected set moves according to the normal selection rules.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/whiteboard/lasso-selection",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/whiteboard/lasso-selection",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/whiteboard/lasso-selection",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag a lasso around a subset of nodes and release, then move one selected node. Assert: Only nodes enclosed by the lasso become selected and the selected set moves according to the normal selection rules. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/whiteboard/rectangle",
+      "title": "Rectangle",
+      "listedPro": false,
+      "family": "advanced-integrations",
+      "journey": "Drag on empty canvas to draw a rectangle and then select or resize it.",
+      "observableResult": "A persistent rectangle has the gesture’s bounds and declared style; later selection or resize updates that rectangle only.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/whiteboard/rectangle",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/whiteboard/rectangle",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/whiteboard/rectangle",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Drag on empty canvas to draw a rectangle and then select or resize it. Assert: A persistent rectangle has the gesture’s bounds and declared style; later selection or resize updates that rectangle only. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/whiteboard/freehand-draw",
+      "title": "Freehand Draw",
+      "listedPro": true,
+      "family": "advanced-integrations",
+      "journey": "Draw a freehand stroke with multiple pointer samples and then select the stroke.",
+      "observableResult": "The rendered path follows the sampled points, persists as declared drawing data, and is selectable without changing graph nodes.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/whiteboard/freehand-draw",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/whiteboard/freehand-draw",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/whiteboard/freehand-draw",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "none-identified",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Draw a freehand stroke with multiple pointer samples and then select the stroke. Assert: The rendered path follows the sampled points, persists as declared drawing data, and is selectable without changing graph nodes. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/misc/download-image",
+      "title": "Download Image",
+      "listedPro": false,
+      "family": "advanced-integrations",
+      "journey": "Request a browser image download with visible nodes, labels, and a non-default theme.",
+      "observableResult": "The downloaded image has nonzero dimensions and includes the expected graph content and styles; export failures are reported.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/misc/download-image",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/misc/download-image",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/misc/download-image",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "browser image renderer/export package decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Request a browser image download with visible nodes, labels, and a non-default theme. Assert: The downloaded image has nonzero dimensions and includes the expected graph content and styles; export failures are reported. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    },
+    {
+      "url": "https://reactflow.dev/examples/misc/server-side-image-creation",
+      "title": "Server Side Image Creation",
+      "listedPro": true,
+      "family": "advanced-integrations",
+      "journey": "Submit a graph document to the server export path and inspect the returned image bytes.",
+      "observableResult": "The server returns a decodable image with expected dimensions and graph content without relying on browser globals.",
+      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
+      "apiValidation": "pending",
+      "hostRoutes": {
+        "vanilla": {
+          "path": "/examples/misc/server-side-image-creation",
+          "status": "planned"
+        },
+        "vue": {
+          "path": "/examples/misc/server-side-image-creation",
+          "status": "planned"
+        },
+        "foldkit": {
+          "path": "/examples/misc/server-side-image-creation",
+          "status": "planned"
+        }
+      },
+      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "optionalDependencies": "server renderer/export package decision pending",
+      "reference": {
+        "availability": "public-page-listed",
+        "licenseReview": "required-before-copy",
+        "comparison": "unverified"
+      },
+      "implementedRecipe": "none",
+      "testedResult": {
+        "vanilla": {
+          "status": "not-tested",
+          "path": null
+        },
+        "vue": {
+          "status": "not-tested",
+          "path": null
+        },
+        "foldkit": {
+          "status": "not-tested",
+          "path": null
+        }
+      },
+      "acceptanceClaim": "planned",
+      "dependencyDecision": "pending",
+      "testBoundary": {
+        "automated": "In each host, run the journey: Submit a graph document to the server export path and inspect the returned image bytes. Assert: The server returns a decodable image with expected dimensions and graph content without relying on browser globals. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
+      }
+    }
+  ]
+}

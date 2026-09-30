@@ -4,9 +4,14 @@ import { describe, expect, it } from 'vitest'
 import {
   FlowEditDisposedSchema,
   FlowEditErrorSchema,
+  FlowDeleteInvalidCandidate,
   ProtectedDeletionConflict,
 } from './flow-edit-error.ts'
-import { prepareFlowEdit } from './flow-edit.ts'
+import {
+  finalizeFlowDeleteCandidate,
+  prepareFlowDeleteCandidate,
+  prepareFlowEdit,
+} from './flow-edit.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
 const document = () =>
@@ -190,6 +195,82 @@ describe(prepareFlowEdit, () => {
     }
 
     expect(failure.nodeIds).toStrictEqual(['child'])
+  })
+
+  it('prepares a deletable candidate and allows only an approved subset', () => {
+    const initial = document()
+
+    const { candidate } = Effect.runSync(
+      prepareFlowDeleteCandidate(initial, { nodeIds: ['b'] })
+    )
+
+    expect(candidate.nodes.map(({ id }) => id)).toStrictEqual(['b', 'c'])
+    expect(candidate.edges.map(({ id }) => id)).toStrictEqual(['ab', 'cd'])
+
+    const [, selectedNode] = candidate.nodes
+    const [, selectedEdge] = candidate.edges
+
+    if (selectedNode === undefined || selectedEdge === undefined) {
+      throw new Error('Expected prepared deletion candidates')
+    }
+
+    const result = Effect.runSync(
+      finalizeFlowDeleteCandidate(
+        initial,
+        candidate,
+        { nodes: [selectedNode], edges: [selectedEdge] },
+        'delete-subset'
+      )
+    )
+
+    expect(result.deletion).toStrictEqual({
+      deletedNodeIds: ['c'],
+      deletedEdgeIds: ['cd'],
+    })
+    expect(result.document.nodes.map(({ id }) => id)).toStrictEqual([
+      'a',
+      'b',
+      'd',
+    ])
+  })
+
+  it('turns denial into a no-op and rejects candidates that widen eligibility', () => {
+    const initial = document()
+
+    const { candidate } = Effect.runSync(
+      prepareFlowDeleteCandidate(initial, { nodeIds: ['b'] })
+    )
+
+    const denied = Effect.runSync(
+      finalizeFlowDeleteCandidate(initial, candidate, false, 'delete-denied')
+    )
+
+    expect(denied.document).toBe(initial)
+    expect(denied.deletion).toStrictEqual({
+      deletedNodeIds: [],
+      deletedEdgeIds: [],
+    })
+
+    const [eligibleNode] = candidate.nodes
+    const ineligibleNode = initial.nodes.find(({ id }) => id === 'd')
+
+    if (eligibleNode === undefined || ineligibleNode === undefined) {
+      throw new Error('Expected deletion candidate and ineligible node')
+    }
+
+    const failure = Effect.runSync(
+      Effect.flip(
+        finalizeFlowDeleteCandidate(
+          initial,
+          candidate,
+          { nodes: [eligibleNode, ineligibleNode], edges: [] },
+          'delete-widened'
+        )
+      )
+    )
+
+    expect(failure).toBeInstanceOf(FlowDeleteInvalidCandidate)
+    expect(failure).toMatchObject({ nodeIds: ['d'] })
   })
 
   it('encodes edit disposal as a typed result failure', () => {

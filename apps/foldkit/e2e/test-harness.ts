@@ -3,8 +3,10 @@ import {
   FlowEditDisposedSchema,
   NodeIdSchema,
   decodeFlowDocument,
+  FlowSnapshotSchema,
 } from '@flow/core'
 import type {
+  ConnectionPreviewState,
   Viewport,
   FlowChangeSchema,
   FlowDocumentSchema,
@@ -12,6 +14,30 @@ import type {
   FlowStateChangeSchema,
   FlowEditTransactionSchema,
 } from '@flow/core'
+import {
+  HostAction,
+  createProgram,
+  createViewportClient,
+  defaultInteractionOptions,
+  Message,
+  createFoldkitObservers,
+} from '@flow/foldkit'
+import type {
+  MeasurementResultSchema,
+  ViewportEventSchema,
+  ViewportRequestSchema,
+  ViewportResponseSchema,
+  InteractionEventSchema,
+  EditResponse,
+  FoldkitObservers,
+  FlowKeyCode,
+  FlowKeyPressOptions,
+  GraphInteractionOptions,
+  ports,
+  SnapshotRequest,
+  SnapshotResponseSchema,
+  ViewportClient,
+} from '@flow/foldkit'
 import { Effect, Exit, Schema } from 'effect'
 import { Runtime } from 'foldkit'
 
@@ -20,19 +46,21 @@ import type {
   PublicEditQueuedDisposal,
   PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
-import * as Application from '../src/application.ts'
-import type {
-  EditResponse,
-  ports,
-  SnapshotRequest,
-  SnapshotResponseSchema,
-} from '../src/application.ts'
-import * as Graph from '../src/graph.ts'
 
-import '../src/style.css'
+import '@flow/foldkit/style.css'
+import '../src/playground.css'
 
 interface FoldkitHarness {
-  mount: (fixture: ConformanceFixture) => Promise<void>
+  mount: (
+    fixture: ConformanceFixture,
+    selectionMode?: 'full' | 'partial',
+    interactionOptions?: GraphInteractionOptions,
+    previewProbe?: boolean
+  ) => Promise<void>
+  connectionPreviewStates: () => readonly ConnectionPreviewState[]
+  readConnectionPreview: () => Promise<
+    EncodedSnapshotResponse['connectionPreview']
+  >
   mountMeasurementDocument: (
     document: typeof FlowDocumentSchema.Encoded,
     renderOnlyVisible: boolean
@@ -52,18 +80,26 @@ interface FoldkitHarness {
   destroyMeasurementDocument: () => Promise<void>
   startRendererContract: () => Promise<void>
   startRendererFixture: (
-    document: typeof FlowDocumentSchema.Encoded
+    document: typeof FlowDocumentSchema.Encoded,
+    defaultEdgeOptions?: GraphInteractionOptions['defaultEdgeOptions']
   ) => Promise<Readonly<Record<string, number>>>
   replaceRendererDocument: (document: typeof FlowDocumentSchema.Encoded) => void
   rendererContractState: () => {
     readonly renderCalls: number
     readonly disposedPrograms: number
   }
+  rendererCallCounts: () => readonly number[]
+  rendererInteractionEvents: (
+    index: number
+  ) => readonly (typeof InteractionEventSchema.Encoded)[]
+  rendererChanges: (index: number) => readonly EncodedFlowChange[]
+  clearRendererInteractionEvents: () => void
   disposeRendererContract: () => Promise<number>
   replaceDocument: (document: typeof FlowDocumentSchema.Encoded) => void
   replaceViewport: (viewport: Viewport) => void
   changeKinds: () => readonly string[]
   changes: () => readonly EncodedFlowChange[]
+  interactionEvents: () => readonly (typeof InteractionEventSchema.Encoded)[]
   dispose: () => void
   finishDestroy: () => Promise<{
     readonly mountedElements: number
@@ -76,6 +112,42 @@ interface FoldkitHarness {
     readonly acceptedStatesAfterDestroy: number
   }>
   startPublicState: () => Promise<void>
+  startPublicObservers: (
+    id: PublicProgramId,
+    target: HTMLElement
+  ) => Promise<void>
+  subscribePublicSelection: (id: PublicProgramId) => void
+  publicSelectionEvents: (id: PublicProgramId) => readonly string[]
+  observePublicNodeConnections: (
+    id: PublicProgramId,
+    nodeId: string,
+    failDisconnectOnce?: boolean,
+    filter?: {
+      readonly type?: 'source' | 'target'
+      readonly handleId?: string | null
+    }
+  ) => void
+  stopPublicNodeConnections: (id: PublicProgramId) => void
+  publicNodeConnectionEvents: (id: PublicProgramId) => readonly string[]
+  publicNodeConnectionErrors: (id: PublicProgramId) => readonly string[]
+  observePublicKeyPress: (id: PublicProgramId, target: HTMLElement) => void
+  publicKeyStates: (id: PublicProgramId) => readonly boolean[]
+  observeContractKeyPress: (
+    programId: PublicProgramId,
+    observerId: string,
+    keyCode: FlowKeyCode,
+    options: FlowKeyPressOptions
+  ) => void
+  contractKeyStates: (
+    programId: PublicProgramId,
+    observerId: string
+  ) => readonly boolean[]
+  unsubscribeContractKeyPress: (
+    programId: PublicProgramId,
+    observerId: string
+  ) => void
+  disposePublicObservers: (id: PublicProgramId) => void
+  startConnectionPreviewIsolation: () => Promise<void>
   requestSnapshot: (
     id: PublicProgramId,
     query?: Omit<SnapshotRequest, 'requestId'>
@@ -84,7 +156,7 @@ interface FoldkitHarness {
     id: PublicProgramId,
     nodeId: string,
     generation?: number
-  ) => Promise<typeof Application.MeasurementResultSchema.Encoded>
+  ) => Promise<typeof MeasurementResultSchema.Encoded>
   replacePublicDocument: (
     id: PublicProgramId,
     document: typeof FlowDocumentSchema.Encoded
@@ -100,12 +172,12 @@ interface FoldkitHarness {
   ) => Promise<EditResponse>
   requestPublicViewport: (
     id: PublicProgramId,
-    request: Omit<typeof Application.ViewportRequestSchema.Type, 'requestId'>
-  ) => Promise<typeof Application.ViewportResponseSchema.Type>
+    request: Omit<typeof ViewportRequestSchema.Type, 'requestId'>
+  ) => Promise<typeof ViewportResponseSchema.Type>
   requestViewportClient: (
     id: PublicProgramId,
-    request: Parameters<Application.ViewportClient['request']>[0]
-  ) => Promise<typeof Application.ViewportResponseSchema.Type>
+    request: Parameters<ViewportClient['request']>[0]
+  ) => Promise<typeof ViewportResponseSchema.Type>
   exercisePublicEditReentrancy: () => Promise<{
     readonly responseOrder: readonly string[]
     readonly firstCount: number
@@ -113,7 +185,8 @@ interface FoldkitHarness {
     readonly finalCount: number
   }>
   exercisePublicEditDisposal: (scenario: PublicEditQueuedDisposal) => Promise<{
-    readonly responses: readonly EditResponse[]
+    readonly responseTags: readonly string[]
+    readonly responseOrder: readonly string[]
     readonly pendingCount: number
     readonly lateNotifications: number
   }>
@@ -127,7 +200,10 @@ interface FoldkitHarness {
   ) => readonly MeasurementResultEncoded[]
   publicViewportEvents: (
     id: PublicProgramId
-  ) => readonly (typeof Application.ViewportEventSchema.Encoded)[]
+  ) => readonly (typeof ViewportEventSchema.Encoded)[]
+  publicInteractionEvents: (
+    id: PublicProgramId
+  ) => readonly (typeof InteractionEventSchema.Encoded)[]
   readMountedState: (
     query: Omit<SnapshotRequest, 'requestId'>
   ) => Promise<PublicStateRead>
@@ -173,18 +249,14 @@ type EncodedFlowStateChange = typeof FlowStateChangeSchema.Encoded
 
 type EncodedSnapshotResponse = typeof SnapshotResponseSchema.Encoded
 
-type MeasurementResultEncoded =
-  typeof Application.MeasurementResultSchema.Encoded
+type MeasurementResultEncoded = typeof MeasurementResultSchema.Encoded
 
 const publicHandles = new Map<
   PublicProgramId,
   Runtime.EmbedHandle<typeof ports>
 >()
 
-const publicViewportClients = new Map<
-  PublicProgramId,
-  Application.ViewportClient
->()
+const publicViewportClients = new Map<PublicProgramId, ViewportClient>()
 
 const publicContainers = new Map<PublicProgramId, HTMLElement>()
 
@@ -192,15 +264,13 @@ const pendingMeasurements = new Map<
   string,
   {
     readonly nodeId: string
-    readonly resolve: (
-      result: typeof Application.MeasurementResultSchema.Encoded
-    ) => void
+    readonly resolve: (result: typeof MeasurementResultSchema.Encoded) => void
   }
 >()
 
 const pendingViewport = new Map<
   string,
-  (response: typeof Application.ViewportResponseSchema.Type) => void
+  (response: typeof ViewportResponseSchema.Type) => void
 >()
 
 const publicChangeEvents = new Map<PublicProgramId, EncodedFlowChange[]>()
@@ -216,8 +286,34 @@ const publicMeasurementEvents = new Map<
 
 const publicViewportEventLog = new Map<
   PublicProgramId,
-  (typeof Application.ViewportEventSchema.Encoded)[]
+  (typeof ViewportEventSchema.Encoded)[]
 >()
+
+const publicInteractionEventLog = new Map<
+  PublicProgramId,
+  (typeof InteractionEventSchema.Encoded)[]
+>()
+
+const publicObservers = new Map<PublicProgramId, FoldkitObservers>()
+
+const publicSelectionEventLog = new Map<PublicProgramId, string[]>()
+
+const publicNodeConnectionEventLog = new Map<PublicProgramId, string[]>()
+
+const publicNodeConnectionErrorLog = new Map<PublicProgramId, string[]>()
+
+const publicNodeConnectionStops = new Map<PublicProgramId, () => void>()
+
+const publicKeyStateLog = new Map<PublicProgramId, boolean[]>()
+
+const contractKeyStateLogs = new Map<string, boolean[]>()
+
+const contractKeyStops = new Map<string, () => void>()
+
+const contractKeyObserverId = (
+  programId: PublicProgramId,
+  observerId: string
+): string => `${programId}:${observerId}`
 
 const pendingSnapshots = new Map<
   string,
@@ -236,6 +332,8 @@ let changes: EncodedFlowChange[] = []
 
 let mountedAcceptedStateEvents: EncodedFlowStateChange[] = []
 
+let mountedInteractionEvents: (typeof InteractionEventSchema.Encoded)[] = []
+
 let nextMountedRequestId = 1
 
 const rendererHandles: Runtime.EmbedHandle<typeof ports>[] = []
@@ -244,7 +342,25 @@ let rendererFixtureGeneration = 0
 
 let rendererCalls = 0
 
+let rendererCallsByHost: number[] = []
+
+let rendererEventsByHost: (typeof InteractionEventSchema.Encoded)[][] = []
+
+let rendererChangesByHost: EncodedFlowChange[][] = []
+
 let disposedRendererPrograms = 0
+
+const collectRendererEvents = (
+  hostIndex: number,
+  active: Runtime.EmbedHandle<typeof ports>
+): void => {
+  active.ports.interactionEvents.subscribe((events) => {
+    rendererEventsByHost[hostIndex]?.push(...events)
+  })
+  active.ports.changes.subscribe((change) => {
+    rendererChangesByHost[hostIndex]?.push(change)
+  })
+}
 
 const measureRendererFixtureNode = async (
   active: Runtime.EmbedHandle<typeof ports>,
@@ -261,7 +377,7 @@ const measureRendererFixtureNode = async (
   const requestId = `renderer-fixture-${rendererFixtureGeneration}`
 
   const response =
-    Promise.withResolvers<typeof Application.MeasurementResultSchema.Encoded>()
+    Promise.withResolvers<typeof MeasurementResultSchema.Encoded>()
 
   const stopListening = active.ports.measurementResults.subscribe((result) => {
     if (result.requestId === requestId) {
@@ -270,7 +386,7 @@ const measureRendererFixtureNode = async (
   })
 
   const result = active.ports.actions.send(
-    Application.HostAction.MeasureNode({
+    HostAction.MeasureNode({
       requestId,
       measurement: {
         nodeId: NodeIdSchema.make(nodeId),
@@ -373,6 +489,9 @@ const startRendererContract = async (): Promise<void> => {
 
   disposedRendererPrograms = 0
   rendererCalls = 0
+  rendererCallsByHost = [0, 0]
+  rendererEventsByHost = [[], []]
+  rendererChangesByHost = [[], []]
 
   const host = document.querySelector<HTMLElement>('#app')
 
@@ -385,65 +504,118 @@ const startRendererContract = async (): Promise<void> => {
 
   const decoded = Effect.runSync(decodeFlowDocument(rendererDocument))
 
-  const registry: NonNullable<Parameters<typeof Application.createProgram>[6]> =
-    {
-      nodeTypes: {
-        'custom-node': (node, h) => {
-          rendererCalls += 1
+  const registryForHost = (
+    hostIndex: number
+  ): NonNullable<Parameters<typeof createProgram>[6]> => ({
+    nodeTypes: {
+      'custom-node': (node, h) => {
+        rendererCalls += 1
+        rendererCallsByHost[hostIndex] =
+          (rendererCallsByHost[hostIndex] ?? 0) + 1
 
-          return h.div(
-            [
-              h.Class('custom-node-view'),
-              h.DataAttribute('renderer-label', node.label),
-              h.DataAttribute('revision', String(node.data?.revision ?? 0)),
-            ],
-            [
-              h.div([h.Class('custom-node-label')], [node.label]),
-              h.input([
-                h.Class('custom-node-input'),
-                h.Attribute('placeholder', node.label),
-                h.AriaLabel(`${node.label} editor`),
-              ]),
-              h.button(
-                [
-                  h.Class('custom-node-action'),
-                  h.Type('button'),
-                  h.OnClick(
-                    Graph.Message.DispatchCommand({
-                      command: {
-                        kind: 'set-node-position',
-                        nodeId: node.id,
-                        position: { x: 90, y: 160 },
-                      },
-                    })
-                  ),
-                ],
-                ['Move node']
-              ),
-            ]
-          )
-        },
+        return h.div(
+          [
+            h.Class('custom-node-view'),
+            h.DataAttribute('renderer-label', node.label),
+            h.DataAttribute('revision', String(node.data?.revision ?? 0)),
+          ],
+          [
+            h.div([h.Class('custom-node-label')], [node.label]),
+            h.div(
+              [
+                h.Class('custom-node-status'),
+                h.DataAttribute(
+                  'status',
+                  String(node.data?.status ?? 'waiting')
+                ),
+              ],
+              [String(node.data?.status ?? 'waiting')]
+            ),
+            h.div(
+              [h.Class('custom-node-detail')],
+              [String(node.data?.detail ?? 'Build is queued')]
+            ),
+            h.button(
+              [
+                h.Class('custom-node-status-control'),
+                h.Type('button'),
+                h.OnClick(
+                  Message.EditRequest({
+                    requestId: `custom-node-status-${node.id}`,
+                    transaction: {
+                      operations: [
+                        {
+                          kind: 'update-node-data',
+                          nodeId: node.id,
+                          data: {
+                            status: 'ready',
+                            detail: 'All checks passed',
+                          },
+                        },
+                      ],
+                    },
+                  })
+                ),
+              ],
+              ['Mark ready']
+            ),
+            h.div(
+              [
+                h.Class('custom-node-no-drag'),
+                h.DataAttribute('flow-nodrag', 'true'),
+              ],
+              ['No drag region']
+            ),
+            h.input([
+              h.Class('custom-node-input'),
+              h.Attribute('placeholder', node.label),
+              h.AriaLabel(`${node.label} editor`),
+            ]),
+            h.button(
+              [
+                h.Class('custom-node-action'),
+                h.Type('button'),
+                h.OnClick(
+                  Message.DispatchCommand({
+                    command: {
+                      kind: 'set-node-position',
+                      nodeId: node.id,
+                      position: { x: 90, y: 160 },
+                    },
+                  })
+                ),
+              ],
+              ['Move node']
+            ),
+          ]
+        )
       },
-      edgeTypes: {
-        'custom-edge': (edge, geometry, h) => {
-          rendererCalls += 1
+    },
+    edgeTypes: {
+      'custom-edge': (edge, geometry, h) => {
+        rendererCalls += 1
+        rendererCallsByHost[hostIndex] =
+          (rendererCallsByHost[hostIndex] ?? 0) + 1
 
-          return h.path([
-            h.Class('custom-edge-view'),
-            h.DataAttribute('renderer-label', edge.label ?? ''),
-            h.D(geometry.path),
-            h.Fill('none'),
-            h.Stroke('#d946ef'),
-            h.StrokeWidth('3'),
-            ...(geometry.markerEndId === undefined
-              ? []
-              : [h.MarkerEnd(`url(#${geometry.markerEndId})`)]),
-          ])
-        },
+        return h.path([
+          h.Class('custom-edge-view'),
+          h.DataAttribute('renderer-label', edge.label ?? ''),
+          h.D(geometry.path),
+          h.Fill('none'),
+          h.Stroke('#d946ef'),
+          h.StrokeWidth('3'),
+          ...(geometry.markerEndId === undefined
+            ? []
+            : [h.MarkerEnd(`url(#${geometry.markerEndId})`)]),
+        ])
       },
-    }
+    },
+  })
 
-  for (const id of ['renderer-first', 'renderer-second']) {
+  for (const [hostIndex, id] of [
+    'renderer-first',
+    'renderer-second',
+  ].entries()) {
     const container = document.querySelector<HTMLElement>(`#${id}`)
 
     if (container === null) {
@@ -451,21 +623,45 @@ const startRendererContract = async (): Promise<void> => {
     }
 
     const active = Runtime.embed<typeof ports, never, 'Element'>(
-      Application.createProgram(
+      createProgram(
         container,
         decoded,
         { x: 0, y: 0, zoom: 1 },
         [],
         'uncontrolled',
         'uncontrolled',
-        registry
+        registryForHost(hostIndex)
       )
     )
 
     rendererHandles.push(active)
+    collectRendererEvents(hostIndex, active)
   }
 
   await nextAnimationFrame()
+}
+
+const waitForRendererFixtureNodes = async (
+  expectedCount: number,
+  attempt = 0
+): Promise<readonly HTMLElement[]> => {
+  const nodes = [
+    ...document.querySelectorAll<HTMLElement>('.flow-foldkit-node'),
+  ]
+
+  if (nodes.length === expectedCount) {
+    return nodes
+  }
+
+  if (attempt === 8) {
+    throw new Error(
+      `Foldkit rendered ${nodes.length} of ${expectedCount} fixture nodes`
+    )
+  }
+
+  await nextAnimationFrame()
+
+  return waitForRendererFixtureNodes(expectedCount, attempt + 1)
 }
 
 const readRendererFixtureHeight = async (
@@ -509,7 +705,8 @@ const readRendererFixtureHeight = async (
 }
 
 const startRendererFixture = async (
-  input: typeof FlowDocumentSchema.Encoded
+  input: typeof FlowDocumentSchema.Encoded,
+  defaultEdgeOptions?: GraphInteractionOptions['defaultEdgeOptions']
 ): Promise<Readonly<Record<string, number>>> => {
   for (const active of rendererHandles.splice(0)) {
     active.dispose()
@@ -531,49 +728,57 @@ const startRendererFixture = async (
 
   const decoded = Effect.runSync(decodeFlowDocument(input))
 
-  const registry: NonNullable<Parameters<typeof Application.createProgram>[6]> =
-    {
-      nodeTypes: {
-        'contract-node': (node, h) => {
-          const width = node.size?.width ?? 140
-          const height = node.size?.height ?? 76
+  const interactionOptions = { ...defaultInteractionOptions }
 
-          return h.div(
-            [
-              h.Class('contract-node-view'),
-              h.Style({ width: `${width}px`, height: `${height}px` }),
-            ],
-            [node.label]
-          )
-        },
+  if (defaultEdgeOptions !== undefined) {
+    interactionOptions.defaultEdgeOptions = defaultEdgeOptions
+  }
+
+  const registry: NonNullable<Parameters<typeof createProgram>[6]> = {
+    nodeTypes: {
+      'contract-node': (node, h) => {
+        const width = node.size?.width ?? 140
+        const height = node.size?.height ?? 76
+
+        return h.div(
+          [
+            h.Class('contract-node-view'),
+            h.Style({ width: `${width}px`, height: `${height}px` }),
+          ],
+          [node.label]
+        )
       },
-      edgeTypes: {
-        'contract-edge': (_edge, geometry, h) =>
-          h.path([
-            h.Class('contract-edge-view'),
-            h.D(geometry.path),
-            h.Fill('none'),
-            h.Stroke('#d946ef'),
-            h.StrokeWidth('3'),
-            ...(geometry.markerStartId === undefined
-              ? []
-              : [h.MarkerStart(`url(#${geometry.markerStartId})`)]),
-            ...(geometry.markerEndId === undefined
-              ? []
-              : [h.MarkerEnd(`url(#${geometry.markerEndId})`)]),
-          ]),
-      },
-    }
+    },
+    edgeTypes: {
+      'contract-edge': (_edge, geometry, h) =>
+        h.path([
+          h.Class('contract-edge-view'),
+          h.D(geometry.path),
+          h.Fill('none'),
+          h.Stroke('#d946ef'),
+          h.StrokeWidth('3'),
+          ...(geometry.markerStartId === undefined
+            ? []
+            : [h.MarkerStart(`url(#${geometry.markerStartId})`)]),
+          ...(geometry.markerEndId === undefined
+            ? []
+            : [h.MarkerEnd(`url(#${geometry.markerEndId})`)]),
+        ]),
+    },
+  }
 
   const active = Runtime.embed<typeof ports, never, 'Element'>(
-    Application.createProgram(
+    createProgram(
       container,
       decoded,
       { x: 0, y: 0, zoom: 1 },
       [],
       'uncontrolled',
       'uncontrolled',
-      registry
+      registry,
+      undefined,
+      'full',
+      interactionOptions
     )
   )
 
@@ -581,9 +786,8 @@ const startRendererFixture = async (
   await nextAnimationFrame()
   await nextAnimationFrame()
 
-  const measuredNodes = await measureRendererFixtureNodes(active, [
-    ...document.querySelectorAll<HTMLElement>('.flow-foldkit-node'),
-  ])
+  const renderedNodes = await waitForRendererFixtureNodes(input.nodes.length)
+  const measuredNodes = await measureRendererFixtureNodes(active, renderedNodes)
 
   await nextAnimationFrame()
   await nextAnimationFrame()
@@ -608,9 +812,7 @@ const replaceRendererDocument = (
   const decoded = Effect.runSync(decodeFlowDocument(input))
 
   for (const active of rendererHandles) {
-    active.ports.actions.send(
-      Application.HostAction.ReplaceDocument({ document: decoded })
-    )
+    active.ports.actions.send(HostAction.ReplaceDocument({ document: decoded }))
   }
 }
 
@@ -640,7 +842,14 @@ const pendingMountedSnapshots = new Map<
   (response: EncodedSnapshotResponse) => void
 >()
 
-const mount = async (fixture: ConformanceFixture): Promise<void> => {
+let previewProbeStates: ConnectionPreviewState[] = []
+
+const mount = async (
+  fixture: ConformanceFixture,
+  selectionMode: 'full' | 'partial' = 'full',
+  interactionOptions: GraphInteractionOptions = defaultInteractionOptions,
+  previewProbe = false
+): Promise<void> => {
   handle?.dispose()
   const container = document.querySelector<HTMLElement>('#app')
 
@@ -649,22 +858,63 @@ const mount = async (fixture: ConformanceFixture): Promise<void> => {
   }
 
   const decoded = Effect.runSync(decodeFlowDocument(fixture.document))
+  previewProbeStates = []
 
-  const program = Application.createProgram(
+  const program = createProgram(
     container,
     decoded,
     { x: 0, y: 0, zoom: 1 },
     fixture.allowedConnectionTargets ?? [],
     fixture.documentMode,
-    fixture.viewportMode
+    fixture.viewportMode,
+    previewProbe
+      ? {
+          connectionPreview: (state, h) => {
+            previewProbeStates.push(state)
+
+            return h.svg(
+              [
+                h.Class('flow-foldkit-connection-preview-probe'),
+                h.DataAttribute('preview-kind', state.kind),
+                h.DataAttribute(
+                  'preview-valid',
+                  state.valid === null ? 'pending' : String(state.valid)
+                ),
+                h.DataAttribute(
+                  'candidate-target',
+                  state.candidate?.target ?? ''
+                ),
+                h.Attribute('width', '960'),
+                h.Attribute('height', '640'),
+                h.ViewBox('0 0 960 640'),
+              ],
+              [
+                h.path([
+                  h.Class('flow-foldkit-connection-preview-probe-path'),
+                  h.D(
+                    `M ${state.from.x} ${state.from.y} L ${state.to.x} ${state.to.y}`
+                  ),
+                ]),
+              ]
+            )
+          },
+        }
+      : {},
+    undefined,
+    selectionMode,
+    interactionOptions
   )
 
   handle = Runtime.embed<typeof ports, never, 'Element'>(program)
   changes = []
   mountedAcceptedStateEvents = []
+  mountedInteractionEvents = []
   unsubscribe = handle.ports.changes.subscribe((change) => changes.push(change))
   handle.ports.acceptedStates.subscribe((change) =>
     mountedAcceptedStateEvents.push(change)
+  )
+  handle.ports.interactionEvents.subscribe((events) =>
+    mountedInteractionEvents.push(...events)
   )
   handle.ports.snapshots.subscribe((response) => {
     pendingMountedSnapshots.get(response.requestId)?.(response)
@@ -698,7 +948,7 @@ const mountMeasurementDocument = async (
 
   const decoded = Effect.runSync(decodeFlowDocument(documentInput))
 
-  const program = Application.createProgram(
+  const program = createProgram(
     container,
     decoded,
     { x: 0, y: 0, zoom: 1 },
@@ -737,9 +987,7 @@ const updateMeasurementDocument = async (
   }
 
   const decoded = Effect.runSync(decodeFlowDocument(documentInput))
-  active.ports.actions.send(
-    Application.HostAction.ReplaceDocument({ document: decoded })
-  )
+  active.ports.actions.send(HostAction.ReplaceDocument({ document: decoded }))
 
   for (const node of documentInput.nodes) {
     if (!measurementGenerations.has(node.id)) {
@@ -806,7 +1054,7 @@ const refreshMeasurementNode = async (nodeId: string) => {
   const { promise, resolve } = Promise.withResolvers<MeasurementResultEncoded>()
   pendingMountedMeasurements.set(requestId, resolve)
   active.ports.actions.send(
-    Application.HostAction.MeasureNode({
+    HostAction.MeasureNode({
       requestId,
       measurement: {
         nodeId: Schema.decodeUnknownSync(NodeIdSchema)(nodeId),
@@ -840,9 +1088,7 @@ const replaceDocument = (input: typeof FlowDocumentSchema.Encoded): void => {
   }
 
   const document = Effect.runSync(decodeFlowDocument(input))
-  active.ports.actions.send(
-    Application.HostAction.ReplaceDocument({ document })
-  )
+  active.ports.actions.send(HostAction.ReplaceDocument({ document }))
 }
 
 const replaceViewport = (viewport: Viewport): void => {
@@ -852,9 +1098,7 @@ const replaceViewport = (viewport: Viewport): void => {
     throw new Error('Missing Foldkit runtime')
   }
 
-  active.ports.actions.send(
-    Application.HostAction.ReplaceViewport({ viewport })
-  )
+  active.ports.actions.send(HostAction.ReplaceViewport({ viewport }))
 }
 
 const dispose = (): void => {
@@ -916,21 +1160,44 @@ const publicDocument = {
   ],
 } satisfies typeof FlowDocumentSchema.Encoded
 
+const connectionPreviewIsolationDocument = {
+  nodes: [
+    {
+      id: 'source',
+      label: 'Source',
+      position: { x: 60, y: 80 },
+      handles: [{ id: 'out', kind: 'source', side: 'right' }],
+    },
+    {
+      id: 'target',
+      label: 'Target',
+      position: { x: 340, y: 80 },
+      handles: [{ id: 'in', kind: 'target', side: 'left' }],
+    },
+  ],
+  edges: [],
+} satisfies typeof FlowDocumentSchema.Encoded
+
 const publicProgram = (
   container: HTMLElement,
-  id: PublicProgramId
+  id: PublicProgramId,
+  input: typeof FlowDocumentSchema.Encoded = publicDocument,
+  allowedTargets: readonly string[] = [],
+  interactionOptions: GraphInteractionOptions = defaultInteractionOptions
 ): Runtime.EmbedHandle<typeof ports> => {
-  const decoded = Effect.runSync(decodeFlowDocument(publicDocument))
+  const decoded = Effect.runSync(decodeFlowDocument(input))
 
-  const program = Application.createProgram(
+  const program = createProgram(
     container,
     decoded,
     { x: 0, y: 0, zoom: 1 },
-    [],
+    allowedTargets,
     id === 'controlled' ? 'controlled' : 'uncontrolled',
     id === 'controlled' ? 'controlled' : 'uncontrolled',
     undefined,
-    { minZoom: 0.25, maxZoom: 4 }
+    { minZoom: 0.25, maxZoom: 4 },
+    'full',
+    interactionOptions
   )
 
   const active = Runtime.embed<typeof ports, never, 'Element'>(program)
@@ -938,7 +1205,7 @@ const publicProgram = (
   publicContainers.set(id, container)
   publicViewportClients.set(
     id,
-    Application.createViewportClient(
+    createViewportClient(
       active.ports,
       () => {
         const bounds = container.getBoundingClientRect()
@@ -959,6 +1226,7 @@ const publicProgram = (
   publicEventOrders.set(id, [])
   publicMeasurementEvents.set(id, [])
   publicViewportEventLog.set(id, [])
+  publicInteractionEventLog.set(id, [])
   active.ports.changes.subscribe((change) => {
     publicChangeEvents.get(id)?.push(change)
     publicEventOrders.get(id)?.push(`change:${change.kind}`)
@@ -989,11 +1257,21 @@ const publicProgram = (
   active.ports.viewportEvents.subscribe((event) => {
     publicViewportEventLog.get(id)?.push(event)
   })
+  active.ports.interactionEvents.subscribe((events) => {
+    publicInteractionEventLog.get(id)?.push(...events)
+  })
 
   return active
 }
 
 const startPublicState = async (): Promise<void> => {
+  for (const owner of publicObservers.values()) {
+    owner.dispose()
+  }
+
+  publicObservers.clear()
+  publicNodeConnectionEventLog.clear()
+
   for (const client of publicViewportClients.values()) {
     client.dispose()
   }
@@ -1010,6 +1288,7 @@ const startPublicState = async (): Promise<void> => {
   publicEventOrders.clear()
   publicMeasurementEvents.clear()
   publicViewportEventLog.clear()
+  publicInteractionEventLog.clear()
   pendingSnapshots.clear()
   pendingEdits.clear()
 
@@ -1026,8 +1305,130 @@ const startPublicState = async (): Promise<void> => {
   document.body.append(secondPublicContainer)
 
   publicProgram(container, 'uncontrolled')
-  publicProgram(secondPublicContainer, 'controlled')
+  publicProgram(secondPublicContainer, 'controlled', publicDocument, [], {
+    ...defaultInteractionOptions,
+    panOnDrag: true,
+  })
   await Promise.resolve()
+}
+
+const requestSnapshot = (
+  id: PublicProgramId,
+  query: Omit<SnapshotRequest, 'requestId'> = {}
+): Promise<EncodedSnapshotResponse> => {
+  const active = publicHandles.get(id)
+
+  if (active === undefined) {
+    throw new Error(`Missing ${id} Foldkit program`)
+  }
+
+  const requestId = `snapshot-${nextSnapshotRequestId}`
+  nextSnapshotRequestId += 1
+
+  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
+  pendingSnapshots.set(requestId, resolve)
+  active.ports.snapshotRequests.send({ requestId, ...query })
+
+  return promise
+}
+
+const startPublicObservers = async (
+  id: PublicProgramId,
+  target: HTMLElement
+): Promise<void> => {
+  publicObservers.get(id)?.dispose()
+  publicNodeConnectionStops.get(id)?.()
+  publicNodeConnectionStops.delete(id)
+  const activeHandle = publicHandles.get(id)
+
+  if (activeHandle === undefined) {
+    throw new Error(`Missing ${id} Runtime observer owner`)
+  }
+
+  const response = await requestSnapshot(id)
+
+  const initialSnapshot = Schema.decodeUnknownSync(FlowSnapshotSchema)(
+    response.snapshot
+  )
+
+  publicSelectionEventLog.set(id, [])
+  publicKeyStateLog.set(id, [])
+  publicNodeConnectionErrorLog.set(id, [])
+
+  for (const key of contractKeyStateLogs.keys()) {
+    if (key.startsWith(`${id}:`)) {
+      contractKeyStateLogs.delete(key)
+    }
+  }
+
+  for (const [key, stop] of contractKeyStops) {
+    if (key.startsWith(`${id}:`)) {
+      stop()
+      contractKeyStops.delete(key)
+    }
+  }
+
+  publicObservers.set(
+    id,
+    createFoldkitObservers(
+      activeHandle.ports.acceptedStates,
+      initialSnapshot,
+      target.ownerDocument,
+      // eslint-disable-next-line promise/prefer-await-to-callbacks -- observer failures are reported at this synchronous host boundary.
+      (error, context) => {
+        publicNodeConnectionErrorLog
+          .get(id)
+          ?.push(`${context.callback}:${error.message}`)
+      }
+    )
+  )
+}
+
+const startConnectionPreviewIsolation = async (): Promise<void> => {
+  for (const owner of publicObservers.values()) {
+    owner.dispose()
+  }
+
+  publicObservers.clear()
+
+  for (const active of publicHandles.values()) {
+    active.dispose()
+  }
+
+  publicHandles.clear()
+  publicContainers.clear()
+  pendingSnapshots.clear()
+
+  const firstContainer = document.querySelector<HTMLElement>('#app')
+
+  if (firstContainer === null) {
+    throw new Error('Missing first Foldkit preview-isolation host')
+  }
+
+  firstContainer.replaceChildren()
+  secondPublicContainer?.remove()
+  secondPublicContainer = document.createElement('div')
+  secondPublicContainer.id = 'foldkit-preview-isolation-second'
+  secondPublicContainer.style.width = '960px'
+  secondPublicContainer.style.height = '640px'
+  document.body.append(secondPublicContainer)
+  firstContainer.style.width = '960px'
+  firstContainer.style.height = '640px'
+
+  publicProgram(
+    firstContainer,
+    'uncontrolled',
+    connectionPreviewIsolationDocument,
+    ['target']
+  )
+  publicProgram(
+    secondPublicContainer,
+    'controlled',
+    connectionPreviewIsolationDocument,
+    ['target']
+  )
+  await nextAnimationFrame()
+  await nextAnimationFrame()
 }
 
 let nextMeasurementRequestId = 1
@@ -1043,7 +1444,7 @@ const refreshPublicNode = (
   id: PublicProgramId,
   nodeId: string,
   generation = 0
-): Promise<typeof Application.MeasurementResultSchema.Encoded> => {
+): Promise<typeof MeasurementResultSchema.Encoded> => {
   const active = publicHandles.get(id)
   const container = publicContainers.get(id)
 
@@ -1075,11 +1476,11 @@ const refreshPublicNode = (
   const bounds = element.getBoundingClientRect()
 
   const { promise, resolve } =
-    Promise.withResolvers<typeof Application.MeasurementResultSchema.Encoded>()
+    Promise.withResolvers<typeof MeasurementResultSchema.Encoded>()
 
   pendingMeasurements.set(requestId, { nodeId, resolve })
   active.ports.actions.send(
-    Application.HostAction.MeasureNode({
+    HostAction.MeasureNode({
       requestId,
       measurement: {
         nodeId: Schema.decodeUnknownSync(NodeIdSchema)(nodeId),
@@ -1089,26 +1490,6 @@ const refreshPublicNode = (
       },
     })
   )
-
-  return promise
-}
-
-const requestSnapshot = (
-  id: PublicProgramId,
-  query: Omit<SnapshotRequest, 'requestId'> = {}
-): Promise<EncodedSnapshotResponse> => {
-  const active = publicHandles.get(id)
-
-  if (active === undefined) {
-    throw new Error(`Missing ${id} Foldkit program`)
-  }
-
-  const requestId = `snapshot-${nextSnapshotRequestId}`
-  nextSnapshotRequestId += 1
-
-  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
-  pendingSnapshots.set(requestId, resolve)
-  active.ports.snapshotRequests.send({ requestId, ...query })
 
   return promise
 }
@@ -1133,6 +1514,24 @@ const readMountedState = (
   }))
 }
 
+const readMountedConnectionPreview = async (): Promise<
+  EncodedSnapshotResponse['connectionPreview']
+> => {
+  if (handle === undefined) {
+    throw new Error('Missing Foldkit Runtime')
+  }
+
+  const requestId = `connection-preview-${nextMountedRequestId}`
+  nextMountedRequestId += 1
+  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
+  pendingMountedSnapshots.set(requestId, resolve)
+  handle.ports.snapshotRequests.send({ requestId })
+
+  const response = await promise
+
+  return response.connectionPreview
+}
+
 const replacePublicDocument = (
   id: PublicProgramId,
   input: typeof FlowDocumentSchema.Encoded
@@ -1145,7 +1544,7 @@ const replacePublicDocument = (
 
   const nextDocument = Effect.runSync(decodeFlowDocument(input))
   active.ports.actions.send(
-    Application.HostAction.ReplaceDocument({ document: nextDocument })
+    HostAction.ReplaceDocument({ document: nextDocument })
   )
 }
 
@@ -1159,9 +1558,7 @@ const replacePublicViewport = (
     throw new Error(`Missing ${id} Foldkit program`)
   }
 
-  active.ports.actions.send(
-    Application.HostAction.ReplaceViewport({ viewport })
-  )
+  active.ports.actions.send(HostAction.ReplaceViewport({ viewport }))
 }
 
 const dispatchPublicCommand = (
@@ -1176,7 +1573,7 @@ const dispatchPublicCommand = (
 
   const decodedCommand = Schema.decodeUnknownSync(FlowCommandSchema)(command)
   active.ports.actions.send(
-    Application.HostAction.DispatchCommand({ command: decodedCommand })
+    HostAction.DispatchCommand({ command: decodedCommand })
   )
 }
 
@@ -1203,8 +1600,8 @@ let nextViewportRequestId = 1
 
 const requestPublicViewport = (
   id: PublicProgramId,
-  request: Omit<typeof Application.ViewportRequestSchema.Type, 'requestId'>
-): Promise<typeof Application.ViewportResponseSchema.Type> => {
+  request: Omit<typeof ViewportRequestSchema.Type, 'requestId'>
+): Promise<typeof ViewportResponseSchema.Type> => {
   const active = publicHandles.get(id)
 
   if (active === undefined) {
@@ -1215,7 +1612,7 @@ const requestPublicViewport = (
   nextViewportRequestId += 1
 
   const { promise, resolve } =
-    Promise.withResolvers<typeof Application.ViewportResponseSchema.Type>()
+    Promise.withResolvers<typeof ViewportResponseSchema.Type>()
 
   pendingViewport.set(requestId, resolve)
   active.ports.viewportRequests.send({ ...request, requestId })
@@ -1225,7 +1622,7 @@ const requestPublicViewport = (
 
 const requestViewportClient = (
   id: PublicProgramId,
-  request: Parameters<Application.ViewportClient['request']>[0]
+  request: Parameters<ViewportClient['request']>[0]
 ) => {
   const client = publicViewportClients.get(id)
 
@@ -1237,6 +1634,12 @@ const requestViewportClient = (
 }
 
 const disposePublicState = (): void => {
+  for (const owner of publicObservers.values()) {
+    owner.dispose()
+  }
+
+  publicObservers.clear()
+
   for (const client of publicViewportClients.values()) {
     client.dispose()
   }
@@ -1338,7 +1741,8 @@ const exercisePublicEditReentrancy = async (): Promise<{
 const exercisePublicEditDisposal = async (
   scenario: PublicEditQueuedDisposal
 ): Promise<{
-  readonly responses: readonly EditResponse[]
+  readonly responseTags: readonly string[]
+  readonly responseOrder: readonly string[]
   readonly pendingCount: number
   readonly lateNotifications: number
 }> => {
@@ -1383,7 +1787,14 @@ const exercisePublicEditDisposal = async (
   stopListening()
   stopAccepted()
 
-  return { responses, pendingCount: pendingEdits.size, lateNotifications }
+  return {
+    responseTags: responses.map((response) =>
+      'error' in response ? response.error._tag : 'success'
+    ),
+    responseOrder: responses.map((response) => response.requestId),
+    pendingCount: pendingEdits.size,
+    lateNotifications,
+  }
 }
 
 const exercisePublicReentrancy = (): Promise<readonly string[]> => {
@@ -1471,7 +1882,7 @@ const probeAfterPublicDisposal = async (id: PublicProgramId) => {
   const acceptedCount = publicStateEvents.get(id)?.length ?? 0
   const changeCount = publicChangeEvents.get(id)?.length ?? 0
   active.ports.actions.send(
-    Application.HostAction.ReplaceViewport({
+    HostAction.ReplaceViewport({
       viewport: { x: 500, y: 0, zoom: 1 },
     })
   )
@@ -1489,6 +1900,8 @@ const probeAfterPublicDisposal = async (id: PublicProgramId) => {
 
 window.__flowFoldkitTest = {
   mount,
+  connectionPreviewStates: () => previewProbeStates,
+  readConnectionPreview: readMountedConnectionPreview,
   startRendererContract,
   startRendererFixture,
   replaceRendererDocument,
@@ -1496,6 +1909,13 @@ window.__flowFoldkitTest = {
     renderCalls: rendererCalls,
     disposedPrograms: disposedRendererPrograms,
   }),
+  rendererCallCounts: () => rendererCallsByHost,
+  rendererInteractionEvents: (index) => rendererEventsByHost[index] ?? [],
+  rendererChanges: (index) => rendererChangesByHost[index] ?? [],
+  clearRendererInteractionEvents: () => {
+    rendererEventsByHost = rendererEventsByHost.map(() => [])
+    rendererChangesByHost = rendererChangesByHost.map(() => [])
+  },
   disposeRendererContract,
   mountMeasurementDocument,
   updateMeasurementDocument,
@@ -1507,10 +1927,129 @@ window.__flowFoldkitTest = {
   replaceViewport,
   changeKinds: () => changes.map((change) => change.kind),
   changes: () => changes,
+  interactionEvents: () => mountedInteractionEvents,
   dispose,
   finishDestroy,
   destroy,
   startPublicState,
+  startPublicObservers,
+  subscribePublicSelection: (id) => {
+    const owner = publicObservers.get(id)
+
+    if (owner === undefined) {
+      throw new Error(`Missing ${id} Runtime observer owner`)
+    }
+
+    owner.subscribeSelection(({ nodes, edges }) => {
+      publicSelectionEventLog
+        .get(id)
+        ?.push(
+          `${nodes.map(({ id: nodeId }) => nodeId).join(',')}|${edges.map(({ id: edgeId }) => edgeId).join(',')}`
+        )
+    })
+  },
+  publicSelectionEvents: (id) => publicSelectionEventLog.get(id) ?? [],
+  observePublicNodeConnections: (
+    id,
+    nodeId,
+    failDisconnectOnce = false,
+    filter = {}
+  ) => {
+    const owner = publicObservers.get(id)
+
+    if (owner === undefined) {
+      throw new Error(`Missing ${id} Runtime observer owner`)
+    }
+
+    publicNodeConnectionEventLog.set(id, [])
+    publicNodeConnectionErrorLog.set(id, [])
+    let shouldFailDisconnect = failDisconnectOnce
+    publicNodeConnectionStops.get(id)?.()
+    publicNodeConnectionStops.set(
+      id,
+      owner.observeNodeConnections(
+        { nodeId, ...filter },
+        {
+          onDisconnect: (connections) => {
+            publicNodeConnectionEventLog
+              .get(id)
+              ?.push(
+                `disconnect:${connections.map(({ edgeId }) => edgeId).join(',')}`
+              )
+
+            if (shouldFailDisconnect) {
+              shouldFailDisconnect = false
+              throw new Error('Foldkit observer disconnect failed')
+            }
+          },
+          onConnect: (connections) => {
+            publicNodeConnectionEventLog
+              .get(id)
+              ?.push(
+                `connect:${connections.map(({ edgeId }) => edgeId).join(',')}`
+              )
+          },
+        }
+      )
+    )
+  },
+  stopPublicNodeConnections: (id) => {
+    publicNodeConnectionStops.get(id)?.()
+    publicNodeConnectionStops.delete(id)
+  },
+  publicNodeConnectionEvents: (id) =>
+    publicNodeConnectionEventLog.get(id) ?? [],
+  publicNodeConnectionErrors: (id) =>
+    publicNodeConnectionErrorLog.get(id) ?? [],
+  observePublicKeyPress: (id, target) => {
+    const owner = publicObservers.get(id)
+
+    if (owner === undefined) {
+      throw new Error(`Missing ${id} Runtime observer owner`)
+    }
+
+    owner.observeKeyPress('x', { target }, (pressed) =>
+      publicKeyStateLog.get(id)?.push(pressed)
+    )
+  },
+  publicKeyStates: (id) => publicKeyStateLog.get(id) ?? [],
+  observeContractKeyPress: (programId, observerId, keyCode, options) => {
+    const owner = publicObservers.get(programId)
+
+    if (owner === undefined) {
+      throw new Error(`Missing ${programId} Runtime observer owner`)
+    }
+
+    const key = contractKeyObserverId(programId, observerId)
+    contractKeyStops.get(key)?.()
+    const states: boolean[] = []
+    contractKeyStateLogs.set(key, states)
+    contractKeyStops.set(
+      key,
+      owner.observeKeyPress(keyCode, options, (pressed) => states.push(pressed))
+    )
+  },
+  contractKeyStates: (programId, observerId) =>
+    contractKeyStateLogs.get(contractKeyObserverId(programId, observerId)) ??
+    [],
+  unsubscribeContractKeyPress: (programId, observerId) => {
+    const key = contractKeyObserverId(programId, observerId)
+    contractKeyStops.get(key)?.()
+    contractKeyStops.delete(key)
+  },
+  disposePublicObservers: (id) => {
+    publicNodeConnectionStops.get(id)?.()
+    publicNodeConnectionStops.delete(id)
+    publicObservers.get(id)?.dispose()
+    publicObservers.delete(id)
+
+    for (const key of contractKeyStops.keys()) {
+      if (key.startsWith(`${id}:`)) {
+        contractKeyStops.delete(key)
+      }
+    }
+  },
+  startConnectionPreviewIsolation,
   requestSnapshot,
   refreshPublicNode,
   replacePublicDocument,
@@ -1526,6 +2065,7 @@ window.__flowFoldkitTest = {
   publicEventOrder: (id) => publicEventOrders.get(id) ?? [],
   publicMeasurementResults: (id) => publicMeasurementEvents.get(id) ?? [],
   publicViewportEvents: (id) => publicViewportEventLog.get(id) ?? [],
+  publicInteractionEvents: (id) => publicInteractionEventLog.get(id) ?? [],
   readMountedState,
   mountedAcceptedStates: () => mountedAcceptedStateEvents,
   exercisePublicReentrancy,

@@ -8,8 +8,15 @@ import {
   SavedFlowDocumentSchema,
   ViewportSchema,
 } from '@flow/core'
-import type { FlowDocument, FlowEdge, FlowNode, Viewport } from '@flow/core'
-import { FlowCanvas, useFlow } from '@flow/vue'
+import type {
+  FlowConnection,
+  FlowChange,
+  FlowDocument,
+  FlowEdge,
+  FlowNode,
+  Viewport,
+} from '@flow/core'
+import { FlowCanvas, FlowTooltip, useFlow } from '@flow/vue'
 import { Effect, Schema } from 'effect'
 import { createApp, defineComponent, h, ref } from 'vue'
 import type { PropType } from 'vue'
@@ -22,6 +29,7 @@ const initial = Effect.runSync(
     nodes: [
       {
         id: 'input',
+        type: 'gesture-input',
         label: 'Input · drag me',
         position: { x: 110, y: 120 },
         handles: [{ id: 'out', kind: 'source', side: 'right' }],
@@ -228,6 +236,153 @@ const RendererEdge = defineComponent({
         'marker-start': props.markerStart,
         'marker-end': props.markerEnd,
       })
+  },
+})
+
+const TooltipNode = defineComponent({
+  // SAFETY: FlowCanvas passes schema-decoded FlowNode values to registered node renderers.
+  props: { node: { type: Object as PropType<FlowNode>, required: true } },
+  setup(props) {
+    return () =>
+      h('section', { class: 'flow-vue-tooltip-node' }, [
+        h('strong', props.node.label),
+        h('p', 'Hover or focus the help button for a description.'),
+        h(
+          FlowTooltip,
+          { text: 'This status is owned by the application.' },
+          {
+            default: () =>
+              h(
+                'button',
+                {
+                  type: 'button',
+                  'aria-describedby':
+                    'application-status-note application-status-note',
+                },
+                'Status help'
+              ),
+          }
+        ),
+        h(
+          'span',
+          {
+            id: 'application-status-note',
+            class: 'flow-vue-visually-hidden',
+          },
+          'Application status details.'
+        ),
+        h(
+          FlowTooltip,
+          { text: 'This region is part of the example graph.' },
+          {
+            default: () => h('button', { type: 'button' }, 'Region help'),
+          }
+        ),
+      ])
+  },
+})
+
+const TooltipRecipe = defineComponent({
+  setup() {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            id: 'tooltip-example',
+            type: 'tooltip-example',
+            label: 'Application status',
+            position: { x: 260, y: 170 },
+            size: { width: 280, height: 150 },
+          },
+        ],
+        edges: [],
+      })
+    )
+
+    return () =>
+      h('main', { class: 'flow-vue-tooltip-recipe' }, [
+        h('header', [
+          h('h1', 'Tooltip recipe'),
+          h('p', 'A compact tooltip stays connected to its trigger.'),
+        ]),
+        h(FlowCanvas, {
+          document,
+          documentMode: 'uncontrolled',
+          nodeTypes: { 'tooltip-example': TooltipNode },
+        }),
+      ])
+  },
+})
+
+const GestureInputNode = defineComponent({
+  // SAFETY: FlowCanvas only renders schema-decoded FlowNode values.
+  props: { node: { type: Object as PropType<FlowNode>, required: true } },
+  setup(props) {
+    const flow = useFlow()
+
+    return () =>
+      h('div', { class: 'flow-vue-gesture-node' }, [
+        h('span', { class: 'flow-vue-node-label' }, props.node.label),
+        h(
+          'span',
+          {
+            class: 'flow-vue-demo-drag-handle',
+            'data-testid': 'demo-drag-handle',
+            'data-flow-drag-handle': '',
+            role: 'button',
+            tabindex: 0,
+            'aria-label': 'Move Input with arrow keys or drag this handle',
+            onKeydown: (event: KeyboardEvent) => {
+              let delta: { readonly x: number; readonly y: number } | undefined
+
+              switch (event.key) {
+                case 'ArrowLeft': {
+                  delta = { x: -5, y: 0 }
+                  break
+                }
+
+                case 'ArrowRight': {
+                  delta = { x: 5, y: 0 }
+                  break
+                }
+
+                case 'ArrowUp': {
+                  delta = { x: 0, y: -5 }
+                  break
+                }
+
+                case 'ArrowDown': {
+                  delta = { x: 0, y: 5 }
+                  break
+                }
+
+                default: {
+                  return
+                }
+              }
+
+              if (delta === undefined) {
+                return
+              }
+
+              event.preventDefault()
+              event.stopPropagation()
+
+              const current = flow.getNode(props.node.id)
+
+              if (current !== undefined) {
+                void flow.updateNode(props.node.id, {
+                  position: {
+                    x: current.position.x + delta.x,
+                    y: current.position.y + delta.y,
+                  },
+                })
+              }
+            },
+          },
+          'Move'
+        ),
+      ])
   },
 })
 
@@ -698,6 +853,40 @@ const Demo = defineComponent({
     const scene = ref<'main' | 'remote' | 'renderer' | 'viewport'>('main')
     const viewport = ref<Viewport>({ x: 0, y: 0, zoom: 1 })
     const viewportObservation = ref('idle')
+    const resizeEnabled = ref(false)
+    const dragHandleEnabled = ref(false)
+    const touchReady = ref(false)
+    const connectionEvents = ref<string[]>([])
+    let connectionGestureActive = false
+
+    const appendConnectionEvent = (event: string): void => {
+      connectionEvents.value = [...connectionEvents.value, event].slice(-8)
+    }
+
+    const isValidConnection = (candidate: FlowConnection): boolean => {
+      const accepted = !blocked.value || candidate.target !== 'output'
+
+      if (!accepted) {
+        appendConnectionEvent(
+          `rejected:${candidate.source}→${candidate.target}`
+        )
+        connectionGestureActive = false
+      }
+
+      return accepted
+    }
+
+    const toggleResizeHandles = (): void => {
+      resizeEnabled.value = !resizeEnabled.value
+      document.value = {
+        ...document.value,
+        nodes: document.value.nodes.map((node) =>
+          node.id === 'transform'
+            ? { ...node, selected: resizeEnabled.value }
+            : node
+        ),
+      }
+    }
 
     const fitGraph = (): void => {
       const canvas =
@@ -751,7 +940,12 @@ const Demo = defineComponent({
             ? ('uncontrolled' as const)
             : ('controlled' as const),
         nodeTypes:
-          scene.value === 'renderer' ? { 'renderer-card': RendererNode } : {},
+          scene.value === 'renderer'
+            ? {
+                'gesture-input': GestureInputNode,
+                'renderer-card': RendererNode,
+              }
+            : { 'gesture-input': GestureInputNode },
         edgeTypes:
           scene.value === 'renderer'
             ? { 'renderer-custom-edge': RendererEdge }
@@ -771,129 +965,239 @@ const Demo = defineComponent({
         onViewportEnd: (_next: Viewport, status: string) => {
           viewportObservation.value = `end:${status}`
         },
-        isValidConnection: (target: string) =>
-          !blocked.value || target !== 'output',
+        isValidConnection,
+        onChange: (change: FlowChange) => {
+          if (change.kind === 'edge-add') {
+            appendConnectionEvent(
+              `accepted:${change.edge.source}→${change.edge.target}`
+            )
+            connectionGestureActive = false
+          }
+        },
       }
 
-      return h('main', [
-        h('header', [
-          h('h1', 'Flow Vue playground'),
-          h(
-            'p',
-            'Vue owns rendering and lifetime; Flow core owns graph types and transitions.'
-          ),
-        ]),
-        h('div', { class: 'flow-vue-actions' }, [
-          h(
-            'button',
-            {
-              'aria-pressed': scene.value === 'main',
-              onClick: () => {
-                scene.value = 'main'
-                document.value = main
-                viewport.value = { x: 0, y: 0, zoom: 1 }
+      return h(
+        'main',
+        {
+          class: {
+            'flow-vue-touch-ready': touchReady.value,
+            'flow-vue-drag-handle-enabled': dragHandleEnabled.value,
+          },
+          onPointerdown: (event: PointerEvent) => {
+            const { target } = event
+
+            if (
+              target instanceof Element &&
+              target.closest('[data-handle-kind="source"]') !== null
+            ) {
+              connectionGestureActive = true
+              appendConnectionEvent('started')
+            }
+          },
+          onPointerup: () => {
+            if (connectionGestureActive) {
+              connectionGestureActive = false
+              appendConnectionEvent('ended-without-connection')
+            }
+          },
+          onPointercancel: () => {
+            if (connectionGestureActive) {
+              connectionGestureActive = false
+              appendConnectionEvent('cancelled')
+            }
+          },
+          onKeydown: (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && connectionGestureActive) {
+              connectionGestureActive = false
+              appendConnectionEvent('cancelled')
+            }
+          },
+        },
+        [
+          h('header', [
+            h('h1', 'Flow Vue playground'),
+            h(
+              'p',
+              'Vue owns rendering and lifetime; Flow core owns graph types and transitions.'
+            ),
+          ]),
+          h('div', { class: 'flow-vue-actions' }, [
+            h(
+              'button',
+              {
+                'aria-pressed': scene.value === 'main',
+                onClick: () => {
+                  scene.value = 'main'
+                  document.value = main
+                  viewport.value = { x: 0, y: 0, zoom: 1 }
+                },
               },
-            },
-            'Main graph'
-          ),
-          h(
-            'button',
-            {
-              'aria-pressed': scene.value === 'remote',
-              onClick: () => {
-                scene.value = 'remote'
-                document.value = remote
-                viewport.value = { x: 0, y: 0, zoom: 1 }
+              'Main graph'
+            ),
+            h(
+              'button',
+              {
+                'aria-pressed': scene.value === 'remote',
+                onClick: () => {
+                  scene.value = 'remote'
+                  document.value = remote
+                  viewport.value = { x: 0, y: 0, zoom: 1 }
+                },
               },
-            },
-            'Distant graph'
-          ),
-          h(
-            'button',
-            {
-              'aria-pressed': scene.value === 'renderer',
-              onClick: () => {
-                scene.value = 'renderer'
-                document.value = rendererScene
-                viewport.value = { x: 0, y: 0, zoom: 1 }
+              'Distant graph'
+            ),
+            h(
+              'button',
+              {
+                'aria-pressed': scene.value === 'renderer',
+                onClick: () => {
+                  scene.value = 'renderer'
+                  document.value = rendererScene
+                  viewport.value = { x: 0, y: 0, zoom: 1 }
+                },
               },
-            },
-            'Renderer contracts'
-          ),
-          h(
-            'button',
-            {
-              'aria-pressed': scene.value === 'viewport',
-              onClick: () => {
-                scene.value = 'viewport'
-                document.value = viewportScene
-                viewport.value = { x: 0, y: 0, zoom: 1 }
+              'Renderer contracts'
+            ),
+            h(
+              'button',
+              {
+                'aria-pressed': scene.value === 'viewport',
+                onClick: () => {
+                  scene.value = 'viewport'
+                  document.value = viewportScene
+                  viewport.value = { x: 0, y: 0, zoom: 1 }
+                },
               },
-            },
-            'Viewport operations'
-          ),
-          h(
-            'button',
-            {
-              onClick: () => {
-                blocked.value = !blocked.value
+              'Viewport operations'
+            ),
+            h(
+              'button',
+              {
+                onClick: () => {
+                  blocked.value = !blocked.value
+                },
               },
-            },
-            blocked.value ? 'Allow connections' : 'Block connections'
-          ),
-          h(
-            'button',
-            { onClick: toggleHiddenEdge },
-            document.value.edges.some(
-              (edge) => edge.id === 'hidden' && edge.hidden !== true
-            )
-              ? 'Hide step edge'
-              : 'Show hidden edge'
-          ),
-          h(
-            'button',
-            { onClick: toggleValidate },
-            document.value.nodes.some(
-              (node) => node.id === 'validate' && node.hidden !== true
-            )
-              ? 'Hide Validate node'
-              : 'Show Validate node'
-          ),
-          h('button', { onClick: fitGraph }, 'Fit graph'),
-          h(
-            'button',
-            {
-              onClick: () => {
-                document.value = Effect.runSync(
-                  decodeFlowDocument({
-                    ...document.value,
-                    nodes: [
-                      ...document.value.nodes,
-                      {
-                        id: `node-${document.value.nodes.length}`,
-                        label: 'New node',
-                        position: { x: 600, y: 120 },
-                      },
-                    ],
-                  })
-                )
+              blocked.value ? 'Allow connections' : 'Block connections'
+            ),
+            h(
+              'button',
+              { onClick: toggleHiddenEdge },
+              document.value.edges.some(
+                (edge) => edge.id === 'hidden' && edge.hidden !== true
+              )
+                ? 'Hide step edge'
+                : 'Show hidden edge'
+            ),
+            h(
+              'button',
+              { onClick: toggleValidate },
+              document.value.nodes.some(
+                (node) => node.id === 'validate' && node.hidden !== true
+              )
+                ? 'Hide Validate node'
+                : 'Show Validate node'
+            ),
+            h('button', { onClick: fitGraph }, 'Fit graph'),
+            h(
+              'button',
+              {
+                onClick: () => {
+                  document.value = Effect.runSync(
+                    decodeFlowDocument({
+                      ...document.value,
+                      nodes: [
+                        ...document.value.nodes,
+                        {
+                          id: `node-${document.value.nodes.length}`,
+                          label: 'New node',
+                          position: { x: 600, y: 120 },
+                        },
+                      ],
+                    })
+                  )
+                },
               },
+              'Add node'
+            ),
+            h(
+              'button',
+              {
+                'data-testid': 'resize-control',
+                'aria-pressed': resizeEnabled.value,
+                onClick: toggleResizeHandles,
+              },
+              resizeEnabled.value
+                ? 'Disable resize controls'
+                : 'Enable resize controls'
+            ),
+            h(
+              'button',
+              {
+                'data-testid': 'drag-handle-control',
+                'aria-pressed': dragHandleEnabled.value,
+                onClick: () => {
+                  dragHandleEnabled.value = !dragHandleEnabled.value
+                },
+              },
+              dragHandleEnabled.value ? 'Hide drag handle' : 'Show drag handle'
+            ),
+            h(
+              'button',
+              {
+                'data-testid': 'touch-ready-control',
+                'aria-pressed': touchReady.value,
+                onClick: () => {
+                  touchReady.value = !touchReady.value
+                },
+              },
+              touchReady.value
+                ? 'Disable touch-ready targets'
+                : 'Enable touch-ready targets'
+            ),
+            h(
+              'button',
+              {
+                onClick: () => {
+                  connectionEvents.value = []
+                },
+              },
+              'Clear connection events'
+            ),
+          ]),
+          h(
+            'section',
+            {
+              class: 'flow-vue-connection-events',
+              'aria-label': 'Connection events',
             },
-            'Add node'
+            [
+              h('h2', 'Connection events'),
+              h(
+                'output',
+                { 'data-testid': 'connection-events', 'aria-live': 'polite' },
+                connectionEvents.value.join(' → ') || 'No connection events yet'
+              ),
+            ]
           ),
-        ]),
-        h(
-          'output',
-          { 'data-testid': 'viewport-observation', 'aria-live': 'polite' },
-          viewportObservation.value
-        ),
-        h(FlowCanvas, canvasProps, {
-          default: () =>
-            scene.value === 'viewport' ? h(ViewportControls) : h(StateTools),
-        }),
-      ])
+          h(
+            'output',
+            { 'data-testid': 'viewport-observation', 'aria-live': 'polite' },
+            viewportObservation.value
+          ),
+          h(FlowCanvas, canvasProps, {
+            default: () =>
+              scene.value === 'viewport' ? h(ViewportControls) : h(StateTools),
+          }),
+        ]
+      )
     }
   },
 })
 
-createApp(Demo).mount('#app')
+const app =
+  globalThis.location.pathname === '/ui-recipes/tooltip' ||
+  globalThis.location.pathname === '/ui-recipes/tooltip/'
+    ? TooltipRecipe
+    : Demo
+
+createApp(app).mount('#app')

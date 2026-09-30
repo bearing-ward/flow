@@ -204,7 +204,9 @@ export const createFoldkitConformanceAdapter = (
         ]
 
         const edges = [
-          ...document.querySelectorAll<HTMLElement>('[data-edge-id]'),
+          ...document.querySelectorAll<HTMLElement>(
+            '.flow-foldkit-edge[data-edge-id]'
+          ),
         ]
 
         return {

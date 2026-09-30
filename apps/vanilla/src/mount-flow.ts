@@ -1,7 +1,10 @@
 import {
   FlowAttribute,
   FlowCommandSchema,
+  HandleIdSchema,
+  NodeIdSchema,
   FlowSnapshotSchema,
+  FlowDocumentSchema,
   FlowControlModeSchema,
   FitViewPaddingSchema,
   FitViewNodeDimensionsSchema,
@@ -10,6 +13,7 @@ import {
   NodeResizeDirectionSchema,
   SnapGridSchema,
   ConnectionRadiusSchema,
+  ConnectionModeSchema,
   SelectionModeSchema,
   FlowSpan,
   ViewportLimitsSchema,
@@ -29,6 +33,16 @@ import {
   setNodeMeasurementGenerations,
   calculateNodeResize,
   createFlowSnapshot,
+  createConnectionPreviewSnapshot,
+  selectNodesData,
+  selectNodeConnections,
+  diffNodeConnections,
+  FlowHandleConnectionsQuerySchema,
+  selectHandleConnections,
+  selectFlowSelection,
+  flowSelectionEqual,
+  encodeSavedFlowSession,
+  decodeSavedFlowSession,
   beginNodeDrag,
   beginViewportPan,
   clampViewport,
@@ -48,6 +62,13 @@ import {
   flowToolbarAnchors,
   prepareFlowCommand,
   prepareFlowEdit,
+  prepareFlowDeleteCandidate,
+  finalizeFlowDeleteCandidate,
+  FlowDeleteRevisionConflict,
+  FlowDeleteInvalidCandidate,
+  FlowDeleteInProgress,
+  FlowDeleteCancelled,
+  FlowDeleteApprovalFailed,
   completeNodeDrag,
   moveViewportPan,
   movePinch,
@@ -57,7 +78,9 @@ import {
   nextConnectionEdge,
   findConnectionIssue,
   nearestConnectionTarget,
+  normalizeFlowConnection,
   reconnectFlowEdge,
+  resolveEdgeHandles,
   canReconnectEdge,
   screenToFlowPosition,
   selectionInRect,
@@ -71,6 +94,9 @@ import {
   pruneFlowMeasurements,
   viewportFlowRect,
   validateFlowConnection,
+  FlowDefaultEdgeOptionsSchema,
+  decodeFlowDefaultEdgeOptions,
+  applyDefaultEdgeOptions,
   activateFlowInteraction,
   cancelFlowInteraction,
   finishFlowInteraction,
@@ -92,9 +118,12 @@ import type {
   FlowConnection,
   FlowControlMode,
   FlowDocument,
-  FlowDocumentSchema,
   FlowEdge,
+  FlowHandleConnectionsQuery,
+  FlowDefaultEdgeOptions,
   FlowDeleteResult,
+  FlowDeleteDecision,
+  FlowDeleteLifecycle,
   FlowEditResult,
   FlowEditTransactionInput,
   FlowNode,
@@ -110,8 +139,10 @@ import type {
   FlowInternalNode,
   FlowHandle,
   ReconnectEndpoint,
+  EdgeId,
   NodeId,
   Viewport,
+  SavedFlowSession,
   ViewportBounds,
   ViewportOperationResult,
   ViewportLimits,
@@ -119,6 +150,9 @@ import type {
   NodeExtent,
   SnapGrid,
   ConnectionRadius,
+  ConnectionMode,
+  ConnectionPreviewState,
+  ConnectionPreviewSnapshot,
   MeasuredConnectionHandle,
   XYPosition,
   SelectionMode,
@@ -126,6 +160,8 @@ import type {
   FlowInteractionSessions,
   FlowInteractionOutcome,
   FlowSnapshot,
+  FlowSelection,
+  FlowNodeConnection,
   FlowStateChange,
   FlowStateChangeCause,
   FlowNodeSchema,
@@ -136,6 +172,8 @@ import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 import { createCanvasUI } from './canvas-ui.ts'
 import { createEdgeRenderer } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
+import { observeKeyPress } from './key-press-observer.ts'
+import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 
 const noActiveGestures = (): boolean => false
 
@@ -210,7 +248,13 @@ const isEdgeDataUpdater = (
 
 const flowSnapshotEquivalence = S.toEquivalence(FlowSnapshotSchema)
 
+const flowDocumentEquivalence = S.toEquivalence(FlowDocumentSchema)
+
 type KeyboardResizeKey = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
+
+const noopUnsubscribe = (): boolean => false
+
+const mountedViewportPortalElements = new WeakSet<HTMLElement>()
 
 interface ActiveKeyboardResize {
   readonly nodeId: NodeId
@@ -239,11 +283,37 @@ export const FlowMountOptionsSchema = S.Struct({
   documentMode: FlowControlModeSchema,
   nodeDragThreshold: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
   connectOnClick: S.optional(S.Boolean),
+  panOnDrag: S.optional(
+    S.Union([
+      S.Literals([true, false]),
+      S.Array(
+        S.Int.check(S.isGreaterThanOrEqualTo(0), S.isLessThanOrEqualTo(4))
+      ),
+    ])
+  ),
+  panActivationModifier: S.optional(
+    S.Literals(['shift', 'alt', 'control', 'meta', 'none'])
+  ),
+  selectionOnDrag: S.optional(S.Boolean),
+  selectNodesOnDrag: S.optional(S.Boolean),
+  selectionActivationModifier: S.optional(
+    S.Literals(['shift', 'alt', 'control', 'meta', 'none'])
+  ),
+  nodesConnectable: S.optional(S.Boolean),
+  panOnScroll: S.optional(S.Boolean),
+  panOnScrollSpeed: S.optional(S.Finite.check(S.isGreaterThan(0))),
+  panOnScrollMode: S.optional(S.Literals(['free', 'horizontal', 'vertical'])),
+  zoomOnScroll: S.optional(S.Boolean),
+  zoomOnDoubleClick: S.optional(S.Boolean),
+  zoomOnPinch: S.optional(S.Boolean),
+  keyboardActivation: S.optional(S.Boolean),
+  connectionMode: S.optional(ConnectionModeSchema),
   autoPanOnConnect: S.optional(S.Boolean),
   snapGrid: S.optional(SnapGridSchema),
   connectionRadius: S.optional(ConnectionRadiusSchema),
   nodeExtent: S.optional(NodeExtentSchema),
   renderOnlyVisible: S.optional(S.Boolean),
+  defaultEdgeOptions: S.optional(FlowDefaultEdgeOptionsSchema),
   selectionMode: S.optional(SelectionModeSchema),
   background: S.optional(CanvasBackgroundSchema),
   ui: S.optional(CanvasUISchema),
@@ -387,6 +457,111 @@ export interface ViewportObservation {
   readonly viewport: Viewport
 }
 
+export type FlowViewportLifecycleListener = (
+  observation: ViewportObservation
+) => void
+
+export interface FlowNodeDragPayload {
+  readonly nodeIds: readonly NodeId[]
+  readonly positions: readonly {
+    readonly nodeId: NodeId
+    readonly position: XYPosition
+  }[]
+}
+
+export interface FlowNodeDragStopPayload extends FlowNodeDragPayload {
+  readonly outcome: 'proposed' | 'cancelled'
+  readonly reason?: string | undefined
+}
+
+export interface FlowConnectStartPayload {
+  readonly source: NodeId
+  readonly sourceHandle: string
+  readonly inputKind: 'pointer-connect' | 'click-connect'
+}
+
+export interface FlowConnectEndPayload extends FlowConnectStartPayload {
+  readonly outcome: 'proposed' | 'rejected' | 'cancelled'
+  readonly target?: { readonly nodeId: NodeId; readonly handleId: string }
+  readonly reason?: string | undefined
+}
+
+export interface FlowReconnectStartPayload {
+  readonly edgeId: EdgeId
+  readonly endpoint: ReconnectEndpoint
+}
+
+export interface FlowReconnectEndPayload extends FlowReconnectStartPayload {
+  readonly outcome: 'proposed' | 'rejected' | 'cancelled'
+  readonly edge?: FlowEdge
+  readonly reason?: string | undefined
+}
+
+export interface FlowSelectionRectPayload {
+  readonly pointerId: number
+  readonly rect: {
+    readonly x: number
+    readonly y: number
+    readonly width: number
+    readonly height: number
+  }
+  readonly nodeIds: readonly NodeId[]
+  readonly edgeIds: readonly EdgeId[]
+}
+
+export interface FlowSelectionEndPayload extends FlowSelectionRectPayload {
+  readonly outcome: 'finished' | 'cancelled'
+  readonly reason?: string | undefined
+}
+
+export interface FlowSelectionContextMenuPayload {
+  readonly nodeIds: readonly string[]
+  readonly edgeIds: readonly string[]
+  readonly position: XYPosition
+}
+
+export interface FlowCanvasEventPayload {
+  readonly position: XYPosition
+  readonly nodeId?: string | undefined
+  readonly edgeId?: string | undefined
+}
+
+type FlowCanvasEventListener = (event: FlowCanvasEventPayload) => void
+
+type FlowCanvasEventTarget =
+  | { readonly kind: 'pane' }
+  | { readonly kind: 'node'; readonly id: string }
+  | { readonly kind: 'edge'; readonly id: string }
+
+const getFlowCanvasEventTarget = (
+  target: EventTarget | null
+): FlowCanvasEventTarget => {
+  const element = target instanceof Element ? target : null
+  const node = element?.closest<HTMLElement>('.flow-node')
+
+  if (node?.dataset.nodeId !== undefined) {
+    return { kind: 'node', id: node.dataset.nodeId }
+  }
+
+  const edge = element?.closest<SVGGElement>('.flow-edge-group')
+
+  if (edge?.dataset.edgeId !== undefined) {
+    return { kind: 'edge', id: edge.dataset.edgeId }
+  }
+
+  return { kind: 'pane' }
+}
+
+const flowCanvasEventTargetId = (
+  target: FlowCanvasEventTarget
+): string | undefined => {
+  if (target.kind === 'pane') {
+    return undefined
+  }
+
+  return target.id
+}
+
 export type FitViewOptions = typeof FitViewOptionsSchema.Type
 
 export type FlowMountOptions = typeof FlowMountOptionsSchema.Type
@@ -399,6 +574,11 @@ export type FlowConnectionCandidate = Pick<
 export type FlowConnectionValidator = (
   connection: FlowConnectionCandidate
 ) => boolean
+
+export type FlowConnectionPreviewRenderer = (
+  preview: ConnectionPreviewState | null,
+  container: SVGSVGElement
+) => void
 
 export interface FlowNodeRendererInstance {
   readonly update: (node: FlowNode) => void
@@ -513,13 +693,96 @@ export interface FlowHostOptions {
   readonly documentMode: FlowControlMode
   readonly nodeDragThreshold?: number | undefined
   readonly connectOnClick?: boolean | undefined
+  readonly panOnDrag?: boolean | readonly number[] | undefined
+  readonly panActivationModifier?:
+    | 'shift'
+    | 'alt'
+    | 'control'
+    | 'meta'
+    | 'none'
+    | undefined
+  readonly selectionOnDrag?: boolean | undefined
+  readonly selectNodesOnDrag?: boolean | undefined
+  readonly selectionActivationModifier?:
+    | 'shift'
+    | 'alt'
+    | 'control'
+    | 'meta'
+    | 'none'
+    | undefined
+  readonly nodesConnectable?: boolean | undefined
+  readonly panOnScroll?: boolean | undefined
+  readonly panOnScrollSpeed?: number | undefined
+  readonly panOnScrollMode?: 'free' | 'horizontal' | 'vertical' | undefined
+  readonly zoomOnScroll?: boolean | undefined
+  readonly zoomOnDoubleClick?: boolean | undefined
+  readonly zoomOnPinch?: boolean | undefined
+  readonly keyboardActivation?: boolean | undefined
+  readonly onMoveStart?: FlowViewportLifecycleListener | undefined
+  readonly onMove?: FlowViewportLifecycleListener | undefined
+  readonly onMoveEnd?: FlowViewportLifecycleListener | undefined
+  readonly onNodeDragStart?: ((drag: FlowNodeDragPayload) => void) | undefined
+  readonly onNodeDrag?: ((drag: FlowNodeDragPayload) => void) | undefined
+  readonly onNodeDragStop?:
+    | ((drag: FlowNodeDragStopPayload) => void)
+    | undefined
+  readonly onConnectStart?:
+    | ((connection: FlowConnectStartPayload) => void)
+    | undefined
+  readonly onConnect?:
+    | ((connection: FlowConnectionCandidate) => void)
+    | undefined
+  readonly onConnectEnd?:
+    | ((connection: FlowConnectEndPayload) => void)
+    | undefined
+  readonly onReconnectStart?:
+    | ((reconnect: FlowReconnectStartPayload) => void)
+    | undefined
+  readonly onReconnect?: ((reconnect: FlowEdge) => void) | undefined
+  readonly onReconnectEnd?:
+    | ((reconnect: FlowReconnectEndPayload) => void)
+    | undefined
+  readonly onSelectionStart?:
+    | ((selection: FlowSelectionRectPayload) => void)
+    | undefined
+  readonly onSelectionDrag?:
+    | ((selection: FlowSelectionRectPayload) => void)
+    | undefined
+  readonly onSelectionEnd?:
+    | ((selection: FlowSelectionEndPayload) => void)
+    | undefined
+  readonly onSelectionContextMenu?:
+    | ((selection: FlowSelectionContextMenuPayload) => void)
+    | undefined
+  readonly onPaneClick?: FlowCanvasEventListener | undefined
+  readonly onPaneDoubleClick?: FlowCanvasEventListener | undefined
+  readonly onPaneContextMenu?: FlowCanvasEventListener | undefined
+  readonly onPaneMouseEnter?: FlowCanvasEventListener | undefined
+  readonly onPaneMouseMove?: FlowCanvasEventListener | undefined
+  readonly onPaneMouseLeave?: FlowCanvasEventListener | undefined
+  readonly onNodeClick?: FlowCanvasEventListener | undefined
+  readonly onNodeDoubleClick?: FlowCanvasEventListener | undefined
+  readonly onNodeContextMenu?: FlowCanvasEventListener | undefined
+  readonly onNodeMouseEnter?: FlowCanvasEventListener | undefined
+  readonly onNodeMouseMove?: FlowCanvasEventListener | undefined
+  readonly onNodeMouseLeave?: FlowCanvasEventListener | undefined
+  readonly onEdgeClick?: FlowCanvasEventListener | undefined
+  readonly onEdgeDoubleClick?: FlowCanvasEventListener | undefined
+  readonly onEdgeContextMenu?: FlowCanvasEventListener | undefined
+  readonly onEdgeMouseEnter?: FlowCanvasEventListener | undefined
+  readonly onEdgeMouseMove?: FlowCanvasEventListener | undefined
+  readonly onEdgeMouseLeave?: FlowCanvasEventListener | undefined
+  readonly onError?: ((error: Error) => void) | undefined
+  readonly connectionMode?: ConnectionMode | undefined
   readonly autoPanOnConnect?: boolean | undefined
   readonly snapGrid?: SnapGrid | undefined
   readonly connectionRadius?: ConnectionRadius | undefined
   readonly isValidConnection?: FlowConnectionValidator | undefined
+  readonly connectionPreview?: FlowConnectionPreviewRenderer | undefined
   readonly nodeExtent?: NodeExtent | undefined
   readonly renderOnlyVisible?: boolean | undefined
   readonly selectionMode?: SelectionMode | undefined
+  readonly defaultEdgeOptions?: FlowDefaultEdgeOptions | undefined
   readonly background?: typeof CanvasBackgroundSchema.Type | undefined
   readonly ui?: typeof CanvasUISchema.Type | undefined
   readonly panel?: HTMLElement | undefined
@@ -549,14 +812,104 @@ export interface FlowHostOptions {
     readonly limits: ViewportLimits
   }
   readonly runEffect: <A>(effect: Effect.Effect<A>) => A
+  readonly runTelemetry?: ((effect: Effect.Effect<void>) => void) | undefined
+  readonly runPromise?:
+    | (<A>(effect: Effect.Effect<A>) => Promise<A>)
+    | undefined
 }
+
+const isActivationModifierPressed = (
+  event: Pick<PointerEvent, 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey'>,
+  modifier: 'shift' | 'alt' | 'control' | 'meta' | 'none'
+): boolean =>
+  modifier === 'none' ||
+  (modifier === 'shift' && event.shiftKey) ||
+  (modifier === 'alt' && event.altKey) ||
+  (modifier === 'control' && event.ctrlKey) ||
+  (modifier === 'meta' && event.metaKey)
+
+const isPanButtonEnabled = (
+  option: boolean | readonly number[] | undefined,
+  button: number
+): boolean =>
+  option !== false &&
+  (Array.isArray(option) ? option.includes(button) : button === 0)
+
+const isSelectionActivationEnabled = (
+  options: FlowHostOptions,
+  event: PointerEvent
+): boolean =>
+  options.selectionOnDrag !== false &&
+  options.selectNodesOnDrag !== false &&
+  isActivationModifierPressed(
+    event,
+    options.selectionActivationModifier ?? 'shift'
+  )
+
+const projectHandleConnectionEdges = (edges: readonly FlowEdge[]) =>
+  edges.map(({ id, source, target, sourceHandle, targetHandle }) => ({
+    edgeId: id,
+    source,
+    target,
+    sourceHandle,
+    targetHandle,
+  }))
 
 export interface FlowController {
   readonly overlayPortal: HTMLElement
+  /** Mount caller-owned content in graph coordinates inside this canvas viewport. */
+  readonly mountViewportPortal: (element: HTMLElement) => () => void
+  readonly getConnectionPreview: () => ConnectionPreviewSnapshot
+  readonly subscribeConnectionPreview: (
+    listener: (preview: ConnectionPreviewSnapshot) => void
+  ) => () => void
+  readonly subscribeSelection: (
+    listener: (selection: FlowSelection) => void
+  ) => () => void
+  readonly observeKeyPress: (
+    keyCode: FlowKeyCode,
+    options: FlowKeyPressOptions,
+    listener: (pressed: boolean) => void
+  ) => () => void
   readonly getSnapshot: () => FlowSnapshot
+  readonly getDocumentRevision: () => number
+  readonly getSavedSession: () => SavedFlowSession
+  readonly prepareRestore: (saved: SavedFlowSession) => Promise<FlowSnapshot>
   readonly getNodes: () => readonly FlowNode[]
   readonly getEdges: () => readonly FlowEdge[]
   readonly getNode: (id: string) => FlowNode | undefined
+  readonly getNodesData: (
+    nodeIds: readonly string[]
+  ) => ReturnType<typeof selectNodesData>
+  readonly getNodeConnections: (options: {
+    readonly nodeId: string
+    readonly type?: 'source' | 'target'
+    readonly handleId?: string | null
+  }) => ReturnType<typeof selectNodeConnections>
+  readonly observeNodeConnections: (
+    options: {
+      readonly nodeId: string
+      readonly type?: 'source' | 'target'
+      readonly handleId?: string | null
+    },
+    callbacks: {
+      readonly onConnect?: (connections: readonly FlowNodeConnection[]) => void
+      readonly onDisconnect?: (
+        connections: readonly FlowNodeConnection[]
+      ) => void
+    }
+  ) => () => void
+  /** Observe accepted changes to one directional handle query. Initial state is silent. */
+  readonly observeHandleConnections: (
+    query: FlowHandleConnectionsQuery,
+    callbacks: {
+      readonly onConnect?: (connections: readonly FlowEdge[]) => void
+      readonly onDisconnect?: (connections: readonly FlowEdge[]) => void
+    }
+  ) => () => void
+  readonly getHandleConnections: (
+    query: FlowHandleConnectionsQuery
+  ) => readonly FlowEdge[]
   readonly getInternalNode: (id: string) => FlowInternalNode | undefined
   readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
   readonly updateNodeInternals: (
@@ -564,6 +917,7 @@ export interface FlowController {
   ) => Promise<readonly NodeInternalsRefreshResult[]>
   readonly getEdge: (id: string) => FlowEdge | undefined
   readonly getViewport: () => Viewport
+  readonly getViewportLimits: () => ViewportLimits
   readonly getZoom: () => number
   readonly viewportInitialized: boolean
   readonly screenToFlowPosition: (position: XYPosition) => XYPosition
@@ -605,6 +959,7 @@ export interface FlowController {
   readonly applyEditResolved: (
     resolve: (document: FlowDocument) => FlowEditTransactionInput
   ) => Promise<FlowEditResult>
+  readonly withMutation: (mutation: () => void) => void
   readonly updateViewport: (viewport: Viewport) => void
   readonly dispatch: (command: FlowCommand) => void
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
@@ -615,16 +970,78 @@ export interface FlowController {
     listener: (event: ViewportObservation) => void
   ) => () => void
   readonly destroy: () => void
+  readonly destroyAsync: () => Promise<void>
 }
 
 export type FlowDocumentInput = typeof FlowDocumentSchema.Encoded
+
+export type FlowDeleteLifecycleOptions = FlowDeleteLifecycle & {
+  readonly signal?: AbortSignal | undefined
+}
 
 export type FlowCommandInput = typeof FlowCommandSchema.Encoded
 
 export type ViewportInput = typeof ViewportSchema.Encoded
 
 export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
+  readonly onInit?: ((controller: JavaScriptFlowController) => void) | undefined
+  readonly onMoveStart?: FlowViewportLifecycleListener | undefined
+  readonly onMove?: FlowViewportLifecycleListener | undefined
+  readonly onMoveEnd?: FlowViewportLifecycleListener | undefined
+  readonly onNodeDragStart?: ((drag: FlowNodeDragPayload) => void) | undefined
+  readonly onNodeDrag?: ((drag: FlowNodeDragPayload) => void) | undefined
+  readonly onNodeDragStop?:
+    | ((drag: FlowNodeDragStopPayload) => void)
+    | undefined
+  readonly onConnectStart?:
+    | ((connection: FlowConnectStartPayload) => void)
+    | undefined
+  readonly onConnect?:
+    | ((connection: FlowConnectionCandidate) => void)
+    | undefined
+  readonly onConnectEnd?:
+    | ((connection: FlowConnectEndPayload) => void)
+    | undefined
+  readonly onReconnectStart?:
+    | ((reconnect: FlowReconnectStartPayload) => void)
+    | undefined
+  readonly onReconnect?: ((reconnect: FlowEdge) => void) | undefined
+  readonly onReconnectEnd?:
+    | ((reconnect: FlowReconnectEndPayload) => void)
+    | undefined
+  readonly onSelectionStart?:
+    | ((selection: FlowSelectionRectPayload) => void)
+    | undefined
+  readonly onSelectionDrag?:
+    | ((selection: FlowSelectionRectPayload) => void)
+    | undefined
+  readonly onSelectionEnd?:
+    | ((selection: FlowSelectionEndPayload) => void)
+    | undefined
+  readonly onSelectionContextMenu?:
+    | ((selection: FlowSelectionContextMenuPayload) => void)
+    | undefined
+  readonly onPaneClick?: FlowCanvasEventListener | undefined
+  readonly onPaneDoubleClick?: FlowCanvasEventListener | undefined
+  readonly onPaneContextMenu?: FlowCanvasEventListener | undefined
+  readonly onPaneMouseEnter?: FlowCanvasEventListener | undefined
+  readonly onPaneMouseMove?: FlowCanvasEventListener | undefined
+  readonly onPaneMouseLeave?: FlowCanvasEventListener | undefined
+  readonly onNodeClick?: FlowCanvasEventListener | undefined
+  readonly onNodeDoubleClick?: FlowCanvasEventListener | undefined
+  readonly onNodeContextMenu?: FlowCanvasEventListener | undefined
+  readonly onNodeMouseEnter?: FlowCanvasEventListener | undefined
+  readonly onNodeMouseMove?: FlowCanvasEventListener | undefined
+  readonly onNodeMouseLeave?: FlowCanvasEventListener | undefined
+  readonly onEdgeClick?: FlowCanvasEventListener | undefined
+  readonly onEdgeDoubleClick?: FlowCanvasEventListener | undefined
+  readonly onEdgeContextMenu?: FlowCanvasEventListener | undefined
+  readonly onEdgeMouseEnter?: FlowCanvasEventListener | undefined
+  readonly onEdgeMouseMove?: FlowCanvasEventListener | undefined
+  readonly onEdgeMouseLeave?: FlowCanvasEventListener | undefined
+  readonly onError?: ((error: Error) => void) | undefined
   readonly isValidConnection?: FlowConnectionValidator | undefined
+  readonly connectionPreview?: FlowConnectionPreviewRenderer | undefined
   readonly nodeRenderers?:
     | Readonly<Record<string, FlowNodeRenderer>>
     | undefined
@@ -649,10 +1066,28 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
 
 export interface JavaScriptFlowController {
   readonly overlayPortal: HTMLElement
+  readonly mountViewportPortal: FlowController['mountViewportPortal']
+  readonly getConnectionPreview: FlowController['getConnectionPreview']
+  readonly subscribeConnectionPreview: FlowController['subscribeConnectionPreview']
+  readonly subscribeSelection: FlowController['subscribeSelection']
+  readonly observeKeyPress: FlowController['observeKeyPress']
   readonly getSnapshot: () => FlowSnapshot
+  readonly getSavedSession: () => SavedFlowSession
+  readonly prepareRestore: (saved: SavedFlowSession) => Promise<FlowSnapshot>
   readonly getNodes: () => readonly FlowNode[]
   readonly getEdges: () => readonly FlowEdge[]
   readonly getNode: (id: string) => FlowNode | undefined
+  readonly getNodesData: (
+    nodeIds: readonly string[]
+  ) => ReturnType<typeof selectNodesData>
+  readonly getNodeConnections: (options: {
+    readonly nodeId: string
+    readonly type?: 'source' | 'target'
+    readonly handleId?: string | null
+  }) => ReturnType<typeof selectNodeConnections>
+  readonly observeNodeConnections: FlowController['observeNodeConnections']
+  readonly observeHandleConnections: FlowController['observeHandleConnections']
+  readonly getHandleConnections: FlowController['getHandleConnections']
   readonly getInternalNode: (id: string) => FlowInternalNode | undefined
   readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
   readonly updateNodeInternals: (
@@ -660,6 +1095,7 @@ export interface JavaScriptFlowController {
   ) => Promise<readonly NodeInternalsRefreshResult[]>
   readonly getEdge: (id: string) => FlowEdge | undefined
   readonly getViewport: () => Viewport
+  readonly getViewportLimits: () => ViewportLimits
   readonly getZoom: () => number
   readonly viewportInitialized: boolean
   readonly screenToFlowPosition: (position: XYPosition) => XYPosition
@@ -744,10 +1180,13 @@ export interface JavaScriptFlowController {
       | ((data: NonNullable<FlowEdge['data']>) => typeof S.JsonObject.Type),
     options?: { replace?: boolean }
   ) => Promise<FlowEditResult>
-  readonly deleteElements: (input: {
-    nodeIds?: readonly string[]
-    edgeIds?: readonly string[]
-  }) => Promise<FlowDeleteResult>
+  readonly deleteElements: (
+    input: {
+      nodeIds?: readonly string[]
+      edgeIds?: readonly string[]
+    },
+    options?: FlowDeleteLifecycleOptions
+  ) => Promise<FlowDeleteResult>
   readonly updateViewport: (viewport: ViewportInput) => void
   readonly dispatch: (command: FlowCommandInput) => void
   readonly subscribe: (listener: (change: FlowChange) => void) => () => void
@@ -758,6 +1197,7 @@ export interface JavaScriptFlowController {
     listener: (event: ViewportObservation) => void
   ) => () => void
   readonly destroy: () => void
+  readonly destroyAsync: () => Promise<void>
 }
 
 export type FlowCreateOptions = FlowMountOptionsInput & {
@@ -959,6 +1399,50 @@ const isCanvasGraphTarget = (target: EventTarget | null): boolean =>
   (target.closest('.flow-node') !== null ||
     target.closest('.flow-edge-group') !== null)
 
+const isNodePointerTargetAllowed = (
+  content: HTMLElement,
+  target: EventTarget | null
+): boolean => {
+  const contentTarget =
+    target instanceof Element && content.contains(target) ? target : null
+
+  const noDragTarget = contentTarget?.closest(
+    '[data-flow-no-drag], [data-flow-nodrag], .nodrag'
+  )
+
+  if (
+    noDragTarget !== null &&
+    noDragTarget !== undefined &&
+    content.contains(noDragTarget)
+  ) {
+    return false
+  }
+
+  const hasCustomDragHandle =
+    content.querySelector('[data-flow-drag-handle]') !== null
+
+  const dragHandle = contentTarget?.closest('[data-flow-drag-handle]')
+
+  if (
+    hasCustomDragHandle &&
+    (dragHandle === null ||
+      dragHandle === undefined ||
+      !content.contains(dragHandle))
+  ) {
+    return false
+  }
+
+  const nativeControl = contentTarget?.closest(
+    'button, input, select, textarea, a[href], [contenteditable="true"]'
+  )
+
+  return (
+    nativeControl === null ||
+    nativeControl === undefined ||
+    nativeControl === dragHandle
+  )
+}
+
 const isGestureForPointer = (
   gesture: { readonly pointerId: number } | null,
   pointerId: number | undefined
@@ -1007,11 +1491,22 @@ export const createFlowHost = (
     const browser = yield* FlowBrowser
     const hostScope = yield* Scope.make('sequential')
     const { documentMode, runEffect } = options
+
+    const runTelemetryEffect =
+      options.runTelemetry ??
+      ((effect: Effect.Effect<void>): void => {
+        Effect.runFork(effect)
+      })
+
+    const runPromise =
+      options.runPromise ??
+      (<A>(effect: Effect.Effect<A>): Promise<A> => Effect.runPromise(effect))
+
     const panelParent = options.panel?.parentNode ?? undefined
     const panelNextSibling = options.panel?.nextSibling ?? null
 
     const runTelemetry = (effect: Effect.Effect<void>): void => {
-      runEffect(effect)
+      runTelemetryEffect(effect)
     }
 
     const viewportMode = options.viewport.mode
@@ -1059,7 +1554,70 @@ export const createFlowHost = (
     const viewport = globalThis.document.createElement('div')
     viewport.className = 'flow-viewport'
     viewport.dataset.testid = 'flow-viewport'
-    const edgeRenderer = createEdgeRenderer(viewport, options.edgeRenderers)
+
+    let destroyed = false
+    const viewportPortalDisposers = new Set<() => void>()
+
+    const mountViewportPortal = (element: HTMLElement): (() => void) => {
+      if (destroyed) {
+        return noopUnsubscribe
+      }
+
+      if (mountedViewportPortalElements.has(element)) {
+        throw new Error('ViewportPortalElementAlreadyMounted')
+      }
+
+      const { parentNode: parent, nextSibling } = element
+      const layer = globalThis.document.createElement('div')
+      layer.className = 'flow-viewport-portal-layer nopan nodrag nowheel'
+      layer.dataset.flowNoPan = ''
+      layer.dataset.flowNoDrag = ''
+      layer.dataset.flowNoWheel = ''
+      layer.append(element)
+      viewport.append(layer)
+      mountedViewportPortalElements.add(element)
+
+      let disposed = false
+
+      const dispose = (): void => {
+        if (disposed) {
+          return
+        }
+
+        disposed = true
+        viewportPortalDisposers.delete(dispose)
+        layer.remove()
+        element.remove()
+        mountedViewportPortalElements.delete(element)
+
+        if (
+          parent instanceof Element ||
+          parent instanceof Document ||
+          parent instanceof DocumentFragment
+        ) {
+          if (
+            (nextSibling instanceof Element ||
+              nextSibling instanceof CharacterData ||
+              nextSibling instanceof Comment) &&
+            nextSibling.parentNode === parent
+          ) {
+            nextSibling.before(element)
+          } else {
+            parent.append(element)
+          }
+        }
+      }
+
+      viewportPortalDisposers.add(dispose)
+
+      return dispose
+    }
+
+    const edgeRenderer = createEdgeRenderer(
+      viewport,
+      options.edgeRenderers,
+      options.defaultEdgeOptions
+    )
 
     let authoritativeViewport = clampViewport(
       options.viewport.initial,
@@ -1099,7 +1657,8 @@ export const createFlowHost = (
     const renderedNodePositions = new Map<NodeId, XYPosition>()
     let document = initialDocument
     let acceptedSnapshot = createFlowSnapshot(document, authoritativeViewport)
-    let destroyed = false
+    let documentRevision = 0
+    let destroyPromise: Promise<void> | undefined
 
     const findNode = (nodeId: NodeId): FlowNode | undefined =>
       document.nodes.find((node) => node.id === nodeId)
@@ -1226,9 +1785,54 @@ export const createFlowHost = (
 
     const listeners = new Set<(change: FlowChange) => void>()
     const stateListeners = new Set<(change: FlowStateChange) => void>()
+
+    const connectionPreviewListeners = new Set<
+      (preview: ConnectionPreviewSnapshot) => void
+    >()
+
+    const keyPressDisposers = new Set<() => void>()
+
     const viewportListeners = new Set<(event: ViewportObservation) => void>()
+    const callbackStartedNodeDrags = new Set<number>()
     let viewportObservationSource: ViewportObservation['source'] = 'user'
     let userViewportObservationActive = false
+
+    const reportBoundaryCallback = <A>(
+      label: string,
+      inputKind: string,
+      callback: (value: A) => void,
+      value: A
+    ): void => {
+      try {
+        // eslint-disable-next-line promise/prefer-await-to-callbacks, node/callback-return -- lifecycle callbacks are synchronous host observers.
+        callback(value)
+      } catch (error) {
+        runTelemetry(
+          Effect.logError(`${label} callback failed`).pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.documentIssue]: String(error),
+              [FlowAttribute.inputKind]: inputKind,
+            }),
+            Effect.withSpan(FlowSpan.viewportUpdate)
+          )
+        )
+
+        try {
+          options.onError?.(
+            error instanceof Error ? error : new Error(String(error))
+          )
+        } catch {
+          runTelemetry(
+            Effect.logError('Flow error callback failed').pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.documentIssue]: 'onError callback threw',
+              }),
+              Effect.withSpan(FlowSpan.viewportUpdate)
+            )
+          )
+        }
+      }
+    }
 
     const emitViewportObservation = (
       kind: ViewportObservation['kind'],
@@ -1239,6 +1843,21 @@ export const createFlowHost = (
         kind,
         source,
         viewport: structuredClone(value),
+      }
+
+      const lifecycleListener = {
+        start: options.onMoveStart,
+        change: options.onMove,
+        end: options.onMoveEnd,
+      }[kind]
+
+      if (lifecycleListener !== undefined) {
+        reportBoundaryCallback(
+          'Viewport lifecycle',
+          `viewport-${kind}`,
+          lifecycleListener,
+          event
+        )
       }
 
       const viewportListenerSnapshot = [...viewportListeners]
@@ -1315,6 +1934,12 @@ export const createFlowHost = (
         return
       }
 
+      if (
+        !flowDocumentEquivalence(acceptedSnapshot.document, current.document)
+      ) {
+        documentRevision += 1
+      }
+
       const change: FlowStateChange = Object.freeze({
         previous: acceptedSnapshot,
         current,
@@ -1378,7 +2003,7 @@ export const createFlowHost = (
       }
 
       if (mutationDepth > 0) {
-        deferredMutations.push(mutation)
+        deferredMutations.push(() => executeMutation(mutation))
 
         return
       }
@@ -1546,6 +2171,7 @@ export const createFlowHost = (
     }
 
     let activeKeyboardResize: ActiveKeyboardResize | null = null
+    let activeKeyboardNodeDrag: FlowNodeDragPayload | null = null
 
     const adoptedPosition = (node: FlowNode): XYPosition =>
       boundedNodePosition(node.id, node.position)
@@ -1693,6 +2319,7 @@ export const createFlowHost = (
     let activeClickConnection: ActiveClickConnection | null = null
     let connectionPreview: SVGSVGElement | null = null
     let connectionLine: SVGLineElement | null = null
+    let connectionPreviewState: ConnectionPreviewState | null = null
     const touchPointers = new Map<number, XYPosition>()
     let selectionOverlay: HTMLDivElement | null = null
     let selectionPointer: XYPosition | null = null
@@ -1923,7 +2550,9 @@ export const createFlowHost = (
         source,
         point: { x: clientX, y: clientY },
         candidates,
-        radius: (options.connectionRadius ?? 20) * renderedViewport.zoom,
+        // Candidate centers and the pointer are both client-space coordinates.
+        radius: options.connectionRadius ?? 20,
+        mode: options.connectionMode ?? 'strict',
       })
 
       if (nearest === undefined) {
@@ -1959,18 +2588,34 @@ export const createFlowHost = (
         (handle) => handle.id === targetElement.dataset.handleId
       )
 
-      if (targetNode === undefined || targetHandle?.kind !== 'target') {
+      if (
+        targetNode === undefined ||
+        targetHandle === undefined ||
+        (options.connectionMode !== 'loose' && targetHandle.kind !== 'target')
+      ) {
         return false
       }
 
-      const candidate: FlowConnection = {
+      const rawCandidate: FlowConnection = {
         source: source.source,
         sourceHandle: source.sourceHandle,
         target: targetNode.id,
         targetHandle: targetHandle.id,
       }
 
-      if (findConnectionIssue(document, candidate) !== undefined) {
+      const candidate = normalizeFlowConnection(
+        document,
+        rawCandidate,
+        options.connectionMode ?? 'strict'
+      )
+
+      if (
+        findConnectionIssue(
+          document,
+          rawCandidate,
+          options.connectionMode ?? 'strict'
+        ) !== undefined
+      ) {
         return false
       }
 
@@ -1979,6 +2624,179 @@ export const createFlowHost = (
       } catch {
         return false
       }
+    }
+
+    const publishConnectionPreview = (
+      preview: ConnectionPreviewState | null
+    ): void => {
+      connectionPreviewState = createConnectionPreviewSnapshot(preview)
+
+      const previewListeners = [...connectionPreviewListeners]
+
+      for (const listener of previewListeners) {
+        if (destroyed || !connectionPreviewListeners.has(listener)) {
+          continue
+        }
+
+        try {
+          listener(connectionPreviewState)
+        } catch (error) {
+          runTelemetry(
+            Effect.logWarning('Connection preview listener failed').pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.failureName]: 'ConnectionPreviewListenerError',
+                [FlowAttribute.failureMessage]:
+                  error instanceof Error ? error.message : String(error),
+              })
+            )
+          )
+        }
+      }
+
+      if (
+        connectionPreview === null ||
+        options.connectionPreview === undefined
+      ) {
+        return
+      }
+
+      try {
+        options.connectionPreview(preview, connectionPreview)
+      } catch (error) {
+        runTelemetry(
+          Effect.logWarning('Connection preview renderer failed').pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.failureName]: 'ConnectionPreviewRendererError',
+              [FlowAttribute.failureMessage]:
+                error instanceof Error ? error.message : String(error),
+            })
+          )
+        )
+      }
+    }
+
+    const updateConnectPreviewState = (
+      source: ActiveClickConnection,
+      target: HTMLElement | null,
+      position: XYPosition,
+      valid: boolean | null
+    ): void => {
+      const preview = connectionPreviewState
+
+      if (preview?.kind !== 'connect') {
+        return
+      }
+
+      const targetNode = document.nodes.find(
+        (node) => node.id === target?.dataset.nodeId
+      )
+
+      const targetHandle = targetNode?.handles?.find(
+        (handle) => handle.id === target?.dataset.handleId
+      )
+
+      const candidate =
+        targetNode === undefined || targetHandle === undefined
+          ? null
+          : normalizeFlowConnection(
+              document,
+              {
+                source: source.source,
+                sourceHandle: source.sourceHandle,
+                target: targetNode.id,
+                targetHandle: targetHandle.id,
+              },
+              options.connectionMode ?? 'strict'
+            )
+
+      publishConnectionPreview({
+        ...preview,
+        to: position,
+        candidate,
+        valid,
+      })
+    }
+
+    const acceptsPreviewCandidate = (candidate: FlowConnection): boolean => {
+      try {
+        return options.isValidConnection?.(candidate) ?? true
+      } catch {
+        return false
+      }
+    }
+
+    const updateReconnectPreviewState = (
+      active: ActiveEdgeReconnect,
+      event: PointerEvent,
+      position: XYPosition
+    ): void => {
+      const preview = connectionPreviewState
+
+      if (preview?.kind !== 'reconnect') {
+        return
+      }
+
+      const targetElement = globalThis.document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest<HTMLElement>('.flow-handle')
+
+      const node = document.nodes.find(
+        (item) => item.id === targetElement?.dataset.nodeId
+      )
+
+      const handle = node?.handles?.find(
+        (item) => item.id === targetElement?.dataset.handleId
+      )
+
+      const edge = document.edges.find((item) => item.id === active.edgeId)
+
+      const resolved =
+        edge === undefined ? undefined : resolveEdgeHandles(document, edge)
+
+      let candidate: FlowConnection | null = null
+      let valid: boolean | null = null
+
+      if (
+        node !== undefined &&
+        handle !== undefined &&
+        edge !== undefined &&
+        resolved !== undefined
+      ) {
+        candidate = {
+          source: active.endpoint === 'source' ? node.id : edge.source,
+          sourceHandle:
+            active.endpoint === 'source' ? handle.id : resolved.sourceHandle.id,
+          target: active.endpoint === 'target' ? node.id : edge.target,
+          targetHandle:
+            active.endpoint === 'target' ? handle.id : resolved.targetHandle.id,
+        }
+
+        const reconnect = runEffect(
+          Effect.result(
+            reconnectFlowEdge(
+              document,
+              active.edgeId,
+              active.endpoint,
+              node.id,
+              handle.id,
+              options.connectionMode ?? 'strict'
+            )
+          )
+        )
+
+        valid = Result.isSuccess(reconnect) && reconnect.success !== undefined
+
+        if (valid) {
+          valid = acceptsPreviewCandidate(candidate)
+        }
+      }
+
+      publishConnectionPreview({
+        ...preview,
+        to: position,
+        candidate,
+        valid,
+      })
     }
 
     const updatePointerConnectionPreview = (
@@ -2009,15 +2827,78 @@ export const createFlowHost = (
 
       connectionLine?.setAttribute('x2', String(position.x))
       connectionLine?.setAttribute('y2', String(position.y))
+
+      updateConnectPreviewState(
+        source,
+        target,
+        position,
+        target === null ? null : valid
+      )
     }
 
     const removeConnectionPreview = (): void => {
+      publishConnectionPreview(null)
       connectionPreview?.remove()
       connectionPreview = null
       connectionLine = null
     }
 
-    const showConnectionPreview = (start: XYPosition): void => {
+    const notifyConnectStart = (connection: FlowConnectStartPayload): void => {
+      if (options.onConnectStart !== undefined) {
+        reportBoundaryCallback(
+          'Connection start',
+          connection.inputKind,
+          options.onConnectStart,
+          connection
+        )
+      }
+    }
+
+    const notifyConnectEnd = (connection: FlowConnectEndPayload): void => {
+      if (options.onConnectEnd !== undefined) {
+        reportBoundaryCallback(
+          'Connection end',
+          connection.inputKind,
+          options.onConnectEnd,
+          connection
+        )
+      }
+    }
+
+    const notifyReconnectStart = (
+      reconnect: FlowReconnectStartPayload
+    ): void => {
+      if (options.onReconnectStart !== undefined) {
+        reportBoundaryCallback(
+          'Reconnection start',
+          'pointer-reconnect',
+          options.onReconnectStart,
+          reconnect
+        )
+      }
+    }
+
+    const notifyReconnectEnd = (reconnect: FlowReconnectEndPayload): void => {
+      if (options.onReconnectEnd !== undefined) {
+        reportBoundaryCallback(
+          'Reconnection end',
+          'pointer-reconnect',
+          options.onReconnectEnd,
+          reconnect
+        )
+      }
+    }
+
+    const showConnectionPreview = (
+      start: XYPosition,
+      session:
+        | { readonly kind: 'connect' }
+        | {
+            readonly kind: 'reconnect'
+            readonly edgeId: EdgeId
+            readonly endpoint: ReconnectEndpoint
+          }
+    ): void => {
       const preview = globalThis.document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -2035,10 +2916,34 @@ export const createFlowHost = (
       line.setAttribute('y1', String(start.y))
       line.setAttribute('x2', String(start.x))
       line.setAttribute('y2', String(start.y))
+
+      if (options.connectionPreview !== undefined) {
+        line.setAttribute('display', 'none')
+      }
+
       preview.append(line)
       viewport.append(preview)
       connectionPreview = preview
       connectionLine = line
+      publishConnectionPreview(
+        session.kind === 'connect'
+          ? {
+              kind: 'connect',
+              from: start,
+              to: start,
+              candidate: null,
+              valid: null,
+            }
+          : {
+              kind: 'reconnect',
+              from: start,
+              to: start,
+              candidate: null,
+              valid: null,
+              edgeId: session.edgeId,
+              endpoint: session.endpoint,
+            }
+      )
     }
 
     const clearConnection = (
@@ -2087,6 +2992,14 @@ export const createFlowHost = (
       if (reason !== 'no-target') {
         renderViewport(authoritativeViewport)
       }
+
+      notifyConnectEnd({
+        source: connection.source,
+        sourceHandle: connection.sourceHandle,
+        inputKind: 'pointer-connect',
+        outcome: 'cancelled',
+        reason,
+      })
 
       runTelemetry(
         Effect.logDebug('Cancelled connection gesture').pipe(
@@ -2164,6 +3077,14 @@ export const createFlowHost = (
         }
       }
 
+      notifyConnectEnd({
+        source: connection.source,
+        sourceHandle: connection.sourceHandle,
+        inputKind: 'click-connect',
+        outcome: 'cancelled',
+        reason,
+      })
+
       runTelemetry(
         Effect.logDebug('Cancelled click connection').pipe(
           Effect.annotateLogs({
@@ -2219,6 +3140,13 @@ export const createFlowHost = (
         [FlowAttribute.edgeEndpoint]: reconnect.endpoint,
         [FlowAttribute.cancellationReason]: reason,
       }
+
+      notifyReconnectEnd({
+        edgeId: reconnect.edgeId,
+        endpoint: reconnect.endpoint,
+        outcome: 'cancelled',
+        reason,
+      })
 
       runTelemetry(
         Effect.logDebug('Cancelled edge reconnection').pipe(
@@ -2277,10 +3205,18 @@ export const createFlowHost = (
         return
       }
 
-      showConnectionPreview({
-        x: Number(fixedAnchor.getAttribute('cx')),
-        y: Number(fixedAnchor.getAttribute('cy')),
-      })
+      showConnectionPreview(
+        {
+          x: Number(fixedAnchor.getAttribute('cx')),
+          y: Number(fixedAnchor.getAttribute('cy')),
+        },
+        {
+          kind: 'reconnect',
+          edgeId: edge.id,
+          endpoint,
+        }
+      )
+      notifyReconnectStart({ edgeId: edge.id, endpoint })
       event.preventDefault()
       event.stopPropagation()
 
@@ -2304,8 +3240,9 @@ export const createFlowHost = (
       event: PointerEvent
     ): void => {
       if (
+        options.nodesConnectable === false ||
         event.button !== 0 ||
-        handle.kind !== 'source' ||
+        (options.connectionMode !== 'loose' && handle.kind !== 'source') ||
         interactionSlots.activeConnection !== null ||
         activeClickConnection !== null ||
         interactionSlots.activeReconnection !== null ||
@@ -2329,7 +3266,12 @@ export const createFlowHost = (
 
       const start = handleCenterInFlow(handleElement)
 
-      showConnectionPreview(start)
+      showConnectionPreview(start, { kind: 'connect' })
+      notifyConnectStart({
+        source: node.id,
+        sourceHandle: handle.id,
+        inputKind: 'pointer-connect',
+      })
       connectionPointer = pointerInCanvas(event)
       connectionPointerStart = connectionPointer
       event.preventDefault()
@@ -2399,6 +3341,48 @@ export const createFlowHost = (
       }
     }
 
+    const nodeDragCallbackPayload = (
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag
+    ): FlowNodeDragPayload => {
+      const nodeIds =
+        'positions' in drag
+          ? drag.positions.map(({ nodeId }) => nodeId)
+          : [drag.nodeId]
+
+      return {
+        nodeIds,
+        positions: nodeIds.flatMap((nodeId) => {
+          const node = findNode(nodeId)
+          const position = renderedNodePositions.get(nodeId) ?? node?.position
+
+          return node === undefined || position === undefined
+            ? []
+            : [{ nodeId, position: { ...position } }]
+        }),
+      }
+    }
+
+    const notifyNodeDragStop = (
+      pointerId: number,
+      payload: FlowNodeDragPayload,
+      outcome: FlowNodeDragStopPayload['outcome'],
+      reason?: string
+    ): void => {
+      if (
+        !callbackStartedNodeDrags.delete(pointerId) ||
+        options.onNodeDragStop === undefined
+      ) {
+        return
+      }
+
+      reportBoundaryCallback(
+        'Node drag stop',
+        'node-drag',
+        options.onNodeDragStop,
+        { ...payload, outcome, reason }
+      )
+    }
+
     const updateNodeDragPreview = (
       drag: ActiveNodeDrag | ActiveNodeGroupDrag,
       point: XYPosition
@@ -2436,6 +3420,18 @@ export const createFlowHost = (
           graph,
           renderedNodePositions,
           new Set([drag.nodeId])
+        )
+      }
+
+      if (
+        callbackStartedNodeDrags.has(drag.pointerId) &&
+        options.onNodeDrag !== undefined
+      ) {
+        reportBoundaryCallback(
+          'Node drag',
+          'node-drag',
+          options.onNodeDrag,
+          nodeDragCallbackPayload(drag)
         )
       }
     }
@@ -2594,6 +3590,14 @@ export const createFlowHost = (
 
       renderGraphPositions()
       edgeRenderer.reconcile(document, renderedNodePositions)
+
+      notifyNodeDragStop(
+        drag.pointerId,
+        nodeDragCallbackPayload(drag),
+        'cancelled',
+        reason
+      )
+
       runTelemetry(
         Effect.logDebug('Cancelled node gesture').pipe(
           Effect.annotateLogs({
@@ -2967,11 +3971,13 @@ export const createFlowHost = (
       next: FlowDocument,
       previous?: FlowDocument
     ): void => {
-      if (interactionSlots.activeReconnection === null) {
+      const active = interactionSlots.activeReconnection
+
+      if (active === null) {
         return
       }
 
-      const { edgeId } = interactionSlots.activeReconnection
+      const { edgeId } = active
       const activeEdge = previous?.edges.find((edge) => edge.id === edgeId)
       const nextEdge = next.edges.find((edge) => edge.id === edgeId)
 
@@ -2981,12 +3987,35 @@ export const createFlowHost = (
         return
       }
 
+      const { endpoint } = active
+
+      const endpointNodeId =
+        endpoint === 'source' ? nextEdge.source : nextEdge.target
+
+      const endpointHandleId =
+        endpoint === 'source' ? nextEdge.sourceHandle : nextEdge.targetHandle
+
+      const endpointNode = next.nodes.find((node) => node.id === endpointNodeId)
+
+      const endpointHandleExists =
+        endpointHandleId === undefined ||
+        endpointNode?.handles?.some(
+          (handle) => handle.id === endpointHandleId && handle.kind === endpoint
+        ) === true
+
+      if (
+        endpointNode === undefined ||
+        endpointNode.hidden === true ||
+        !endpointHandleExists
+      ) {
+        cancelReconnection('handle-removed')
+
+        return
+      }
+
       if (
         nextEdge.selected !== true ||
-        !canReconnectEdge(
-          nextEdge,
-          interactionSlots.activeReconnection.endpoint
-        ) ||
+        !canReconnectEdge(nextEdge, endpoint) ||
         (activeEdge !== undefined &&
           (nextEdge.source !== activeEdge.source ||
             nextEdge.sourceHandle !== activeEdge.sourceHandle ||
@@ -3005,6 +4034,23 @@ export const createFlowHost = (
         quiet = false
       ): void {
         const nextIds = new Set(next.nodes.map((node) => node.id))
+
+        const removedNodeIds =
+          previous?.nodes
+            .filter(({ id }) => !nextIds.has(id))
+            .map(({ id }) => id) ?? []
+
+        if (
+          removedNodeIds.length > 0 &&
+          interactionSlots.activeSelectionRect !== null
+        ) {
+          // Reconciliation is invoked only after all host handlers initialize.
+          // eslint-disable-next-line no-use-before-define
+          cancelSelectionGesture(
+            'node-removed',
+            interactionSlots.activeSelectionRect.pointerId
+          )
+        }
 
         const hiddenNextIds = new Set(
           next.nodes.filter((node) => node.hidden === true).map(({ id }) => id)
@@ -3276,6 +4322,7 @@ export const createFlowHost = (
             added += 1
           } else if (!sameNode(previousNodes.get(node.id), node)) {
             const previousNode = previousNodes.get(node.id)
+
             const nextRenderer = options.nodeRenderers?.[node.type ?? 'default']
 
             const nextRendererType =
@@ -3546,11 +4593,12 @@ export const createFlowHost = (
 
           case 'edge-add': {
             if (documentMode === 'uncontrolled') {
+              const previous = document
               document = {
                 ...document,
                 edges: [...document.edges, change.edge],
               }
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              operations.reconcile(document, previous)
             }
 
             break
@@ -3852,6 +4900,17 @@ export const createFlowHost = (
             )
           )
 
+          callbackStartedNodeDrags.add(drag.pointerId)
+
+          if (options.onNodeDragStart !== undefined) {
+            reportBoundaryCallback(
+              'Node drag start',
+              'node-drag',
+              options.onNodeDragStart,
+              nodeDragCallbackPayload(drag)
+            )
+          }
+
           return true
         }
 
@@ -3980,6 +5039,7 @@ export const createFlowHost = (
           }
 
           const outcome = endSession('node-resize', event.pointerId, 'finished')
+
           interactionSlots.activeNodeResize = null
           element.classList.remove('resizing')
           delete element.dataset.resizing
@@ -4113,31 +5173,8 @@ export const createFlowHost = (
         }
 
         const startNodeDragFromPointer = (event: PointerEvent): void => {
-          const contentTarget =
-            event.target instanceof Element && content.contains(event.target)
-              ? event.target
-              : null
-
-          const noDragTarget = contentTarget?.closest('[data-flow-no-drag]')
-
-          if (
-            noDragTarget !== null &&
-            noDragTarget !== undefined &&
-            content.contains(noDragTarget)
-          ) {
+          if (isNodePointerTargetAllowed(content, event.target) === false) {
             return
-          }
-
-          if (content.querySelector('[data-flow-drag-handle]') !== null) {
-            const dragHandle = contentTarget?.closest('[data-flow-drag-handle]')
-
-            if (
-              dragHandle === null ||
-              dragHandle === undefined ||
-              !content.contains(dragHandle)
-            ) {
-              return
-            }
           }
 
           if (
@@ -4358,6 +5395,18 @@ export const createFlowHost = (
             operations.publishChange(change)
           }
 
+          notifyNodeDragStop(
+            event.pointerId,
+            {
+              nodeIds: changedPositions.map(({ nodeId }) => nodeId),
+              positions: changedPositions.map(({ nodeId, position }) => ({
+                nodeId,
+                position: { ...position },
+              })),
+            },
+            'proposed'
+          )
+
           runTelemetry(
             Effect.logDebug('Completed node drag').pipe(
               Effect.annotateLogs({
@@ -4450,8 +5499,36 @@ export const createFlowHost = (
     changePublisher.publish = (change) => operations.publishChange(change)
     reconcileVisible = () => operations.reconcile(document, document, true)
 
+    const selectionRectPayload = (
+      selection: ActiveSelectionRect,
+      screenEnd: XYPosition,
+      selected?: {
+        readonly nodeIds: readonly NodeId[]
+        readonly edgeIds: readonly EdgeId[]
+      }
+    ): FlowSelectionRectPayload => {
+      const flowEnd = screenToFlowPosition(screenEnd, renderedViewport)
+
+      return {
+        pointerId: selection.pointerId,
+        rect: {
+          x: Math.min(selection.flowStart.x, flowEnd.x),
+          y: Math.min(selection.flowStart.y, flowEnd.y),
+          width: Math.abs(selection.flowStart.x - flowEnd.x),
+          height: Math.abs(selection.flowStart.y - flowEnd.y),
+        },
+        nodeIds: selected?.nodeIds ?? [],
+        edgeIds: selected?.edgeIds ?? [],
+      }
+    }
+
     const clearSelectionRect = (
-      terminal: 'finished' | 'cancelled' = 'finished'
+      terminal: 'finished' | 'cancelled' = 'finished',
+      selected?: {
+        readonly nodeIds: readonly NodeId[]
+        readonly edgeIds: readonly EdgeId[]
+      },
+      reason = 'cancelled'
     ): FlowInteractionOutcome => {
       const selection = interactionSlots.activeSelectionRect
 
@@ -4463,6 +5540,8 @@ export const createFlowHost = (
         selection === null
           ? { kind: 'unchanged' as const, sessions: interactionSessions }
           : endSession('selection', selection.pointerId, terminal)
+
+      const screenEnd = selectionPointer ?? selection?.pointerStart
 
       if (
         selectionFrame !== null &&
@@ -4487,6 +5566,25 @@ export const createFlowHost = (
       selectionOverlay?.remove()
       selectionOverlay = null
 
+      if (selection !== null && options.onSelectionEnd !== undefined) {
+        const payload = selectionRectPayload(
+          selection,
+          screenEnd ?? selection.pointerStart,
+          selected
+        )
+
+        reportBoundaryCallback(
+          'Selection end',
+          'selection-rectangle',
+          options.onSelectionEnd,
+          {
+            ...payload,
+            outcome: terminal,
+            reason: terminal === 'cancelled' ? reason : undefined,
+          }
+        )
+      }
+
       return outcome
     }
 
@@ -4509,6 +5607,18 @@ export const createFlowHost = (
       selectionOverlay.style.top = `${Math.min(start.y, position.y)}px`
       selectionOverlay.style.width = `${Math.abs(start.x - position.x)}px`
       selectionOverlay.style.height = `${Math.abs(start.y - position.y)}px`
+
+      if (
+        options.onSelectionDrag !== undefined &&
+        interactionSlots.activeSelectionRect !== null
+      ) {
+        reportBoundaryCallback(
+          'Selection progress',
+          'selection-rectangle',
+          options.onSelectionDrag,
+          selectionRectPayload(interactionSlots.activeSelectionRect, position)
+        )
+      }
     }
 
     const tickSelectionAutoPan = (): void => {
@@ -4549,9 +5659,9 @@ export const createFlowHost = (
         renderedViewport.x !== authoritativeViewport.x ||
         renderedViewport.y !== authoritativeViewport.y
 
-      const outcome = clearSelectionRect('finished')
-
       if (Math.hypot(end.x - start.x, end.y - start.y) < 2) {
+        clearSelectionRect('finished')
+
         if (panned) {
           operations.publishChange({
             kind: 'viewport',
@@ -4585,6 +5695,11 @@ export const createFlowHost = (
         },
         options.selectionMode ?? 'full'
       )
+
+      const outcome = clearSelectionRect('finished', {
+        nodeIds: change.nodeIds,
+        edgeIds: change.edgeIds,
+      })
 
       if (
         outcome.kind === 'finished' &&
@@ -4676,7 +5791,11 @@ export const createFlowHost = (
     const onCanvasPointerDown = (event: PointerEvent): void => {
       const { target } = event
 
-      if (isCanvasUiTarget(target)) {
+      if (
+        isCanvasUiTarget(target) ||
+        (target instanceof Element &&
+          target.closest('.nopan, [data-flow-no-pan]') !== null)
+      ) {
         return
       }
 
@@ -4703,22 +5822,34 @@ export const createFlowHost = (
         return
       }
 
-      if (event.shiftKey) {
+      if (isSelectionActivationEnabled(options, event)) {
         const pointerStart = pointerInCanvas(event)
 
         if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
           return
         }
 
-        interactionSlots.activeSelectionRect = {
+        const selection: ActiveSelectionRect = {
           pointerId: event.pointerId,
           pointerStart,
           flowStart: screenToFlowPosition(pointerStart, renderedViewport),
         }
+
+        interactionSlots.activeSelectionRect = selection
         selectionOverlay = globalThis.document.createElement('div')
         selectionOverlay.className = 'flow-selection-rect'
         selectionOverlay.dataset.testid = 'flow-selection-rect'
         canvas.append(selectionOverlay)
+
+        if (options.onSelectionStart !== undefined) {
+          reportBoundaryCallback(
+            'Selection start',
+            'selection-rectangle',
+            options.onSelectionStart,
+            selectionRectPayload(selection, pointerStart)
+          )
+        }
+
         updateSelectionRect(pointerStart)
         event.preventDefault()
 
@@ -4731,6 +5862,16 @@ export const createFlowHost = (
           )
         )
 
+        return
+      }
+
+      if (
+        !isPanButtonEnabled(options.panOnDrag, event.button) ||
+        !isActivationModifierPressed(
+          event,
+          options.panActivationModifier ?? 'none'
+        )
+      ) {
         return
       }
 
@@ -4776,12 +5917,19 @@ export const createFlowHost = (
 
       if (
         target instanceof Element &&
-        target.closest('.flow-canvas-ui') !== null
+        target.closest('.flow-canvas-ui, .nopan, [data-flow-no-pan]') !== null
       ) {
         return
       }
 
-      if (interactionMode !== 'pan' || event.button !== 0) {
+      if (
+        interactionMode !== 'pan' ||
+        !isPanButtonEnabled(options.panOnDrag, event.button) ||
+        !isActivationModifierPressed(
+          event,
+          options.panActivationModifier ?? 'none'
+        )
+      ) {
         return
       }
 
@@ -4866,6 +6014,11 @@ export const createFlowHost = (
           const position = pointerInFlow(event)
           connectionLine?.setAttribute('x2', String(position.x))
           connectionLine?.setAttribute('y2', String(position.y))
+          const active = interactionSlots.activeReconnection
+
+          if (active !== null) {
+            updateReconnectPreviewState(active, event, position)
+          }
         }
 
         return true
@@ -4875,6 +6028,24 @@ export const createFlowHost = (
         const position = pointerInFlow(event)
         connectionLine?.setAttribute('x2', String(position.x))
         connectionLine?.setAttribute('y2', String(position.y))
+
+        const target = connectionTargetAt(
+          activeClickConnection,
+          event.clientX,
+          event.clientY
+        )
+
+        const valid =
+          target === null
+            ? null
+            : validConnectionTarget(activeClickConnection, target)
+
+        updateConnectPreviewState(
+          activeClickConnection,
+          target,
+          position,
+          valid
+        )
 
         return true
       }
@@ -5095,7 +6266,7 @@ export const createFlowHost = (
         return
       }
 
-      clearSelectionRect('cancelled')
+      clearSelectionRect('cancelled', undefined, reason)
       runTelemetry(
         Effect.logDebug('Cancelled selection rectangle gesture').pipe(
           Effect.annotateLogs({
@@ -5148,6 +6319,20 @@ export const createFlowHost = (
 
     const onWindowBlur = (): void => {
       cancelActiveGestures('window-blur')
+
+      if (activeKeyboardNodeDrag !== null) {
+        const payload = activeKeyboardNodeDrag
+        activeKeyboardNodeDrag = null
+
+        if (options.onNodeDragStop !== undefined) {
+          reportBoundaryCallback(
+            'Keyboard node drag stop',
+            'keyboard-node-drag',
+            options.onNodeDragStop,
+            { ...payload, outcome: 'cancelled', reason: 'window-blur' }
+          )
+        }
+      }
     }
 
     const onLostPointerCapture = (event: PointerEvent): void => {
@@ -5258,7 +6443,7 @@ export const createFlowHost = (
       targetNode: FlowNode,
       targetHandle: FlowHandle,
       inputKind: 'pointer-connect' | 'click-connect'
-    ): void => {
+    ): 'proposed' | 'rejected' => {
       const candidate: FlowConnection = {
         source: started.source,
         sourceHandle: started.sourceHandle,
@@ -5267,7 +6452,13 @@ export const createFlowHost = (
       }
 
       const result = runEffect(
-        Effect.result(validateFlowConnection(document, candidate))
+        Effect.result(
+          validateFlowConnection(
+            document,
+            candidate,
+            options.connectionMode ?? 'strict'
+          )
+        )
       )
 
       if (
@@ -5278,11 +6469,24 @@ export const createFlowHost = (
           announceConnection('Connection rejected.')
         }
 
-        return
+        return 'rejected'
       }
 
-      const edge = nextConnectionEdge(document, result.success)
+      const edge = applyDefaultEdgeOptions(
+        nextConnectionEdge(document, result.success),
+        options.defaultEdgeOptions
+      )
+
       operations.publishChange({ kind: 'edge-add', edge })
+
+      if (options.onConnect !== undefined) {
+        reportBoundaryCallback(
+          'Connection proposal',
+          inputKind,
+          options.onConnect,
+          result.success
+        )
+      }
 
       if (inputKind === 'click-connect') {
         announceConnection('Connection completed.')
@@ -5306,6 +6510,8 @@ export const createFlowHost = (
           })
         )
       )
+
+      return 'proposed'
     }
 
     const beginClickConnection = (
@@ -5323,7 +6529,12 @@ export const createFlowHost = (
         canvas.focus()
       }
 
-      showConnectionPreview(handleCenterInFlow(element))
+      showConnectionPreview(handleCenterInFlow(element), { kind: 'connect' })
+      notifyConnectStart({
+        source: node.id,
+        sourceHandle: handle.id,
+        inputKind: 'click-connect',
+      })
       runTelemetry(
         Effect.logDebug('Started click connection').pipe(
           Effect.annotateLogs({
@@ -5342,6 +6553,7 @@ export const createFlowHost = (
       )
     }
 
+    // eslint-disable-next-line complexity -- Ordered pointer/click completion must emit one terminal callback after validation.
     const finishConnection = (event: PointerEvent): void => {
       if (interactionSlots.activeConnection?.pointerId !== event.pointerId) {
         return
@@ -5380,6 +6592,14 @@ export const createFlowHost = (
         targetElement instanceof HTMLElement
       ) {
         clearConnection()
+
+        notifyConnectEnd({
+          source: started.source,
+          sourceHandle: started.sourceHandle,
+          inputKind: 'pointer-connect',
+          outcome: 'cancelled',
+          reason: 'click-connect-activation',
+        })
         beginClickConnection(targetNode, targetHandle, targetElement)
         suppressCanvasClick = true
         globalThis.setTimeout(() => {
@@ -5389,7 +6609,11 @@ export const createFlowHost = (
         return
       }
 
-      if (targetNode === undefined || targetHandle?.kind !== 'target') {
+      if (
+        targetNode === undefined ||
+        targetHandle === undefined ||
+        (options.connectionMode !== 'loose' && targetHandle.kind !== 'target')
+      ) {
         cancelConnection('no-target')
 
         if (panned) {
@@ -5403,7 +6627,22 @@ export const createFlowHost = (
       }
 
       clearConnection()
-      commitConnection(started, targetNode, targetHandle, 'pointer-connect')
+
+      const outcome = commitConnection(
+        started,
+        targetNode,
+        targetHandle,
+        'pointer-connect'
+      )
+
+      notifyConnectEnd({
+        source: started.source,
+        sourceHandle: started.sourceHandle,
+        inputKind: 'pointer-connect',
+        outcome,
+        target: { nodeId: targetNode.id, handleId: targetHandle.id },
+        reason: outcome === 'rejected' ? 'validation-rejected' : undefined,
+      })
 
       if (panned) {
         operations.publishChange({
@@ -5437,7 +6676,11 @@ export const createFlowHost = (
         (item) => item.id === handleElement?.dataset.handleId
       )
 
-      if (node === undefined || handle?.kind !== active.endpoint) {
+      if (
+        node === undefined ||
+        handle === undefined ||
+        (options.connectionMode !== 'loose' && handle.kind !== active.endpoint)
+      ) {
         cancelReconnection('invalid-target')
 
         return
@@ -5452,7 +6695,8 @@ export const createFlowHost = (
             active.edgeId,
             active.endpoint,
             node.id,
-            handle.id
+            handle.id,
+            options.connectionMode ?? 'strict'
           )
         )
       )
@@ -5460,13 +6704,41 @@ export const createFlowHost = (
       if (
         Result.isFailure(result) ||
         result.success === undefined ||
-        !acceptsCustomConnection(result.success)
+        !acceptsCustomConnection({
+          source: result.success.source,
+          sourceHandle: result.success.sourceHandle,
+          target: result.success.target,
+          targetHandle: result.success.targetHandle,
+        })
       ) {
+        notifyReconnectEnd({
+          edgeId: active.edgeId,
+          endpoint: active.endpoint,
+          outcome: 'rejected',
+          reason: 'validation-rejected',
+        })
+
         return
       }
 
       operations.publishChange({
         kind: 'edge-reconnect',
+        edge: result.success,
+      })
+
+      if (options.onReconnect !== undefined) {
+        reportBoundaryCallback(
+          'Reconnection proposal',
+          'pointer-reconnect',
+          options.onReconnect,
+          result.success
+        )
+      }
+
+      notifyReconnectEnd({
+        edgeId: active.edgeId,
+        endpoint: active.endpoint,
+        outcome: 'proposed',
         edge: result.success,
       })
 
@@ -5485,6 +6757,7 @@ export const createFlowHost = (
       )
     }
 
+    // eslint-disable-next-line complexity -- Strict and loose click-connect activation share one ordered session transition.
     const onHandleClick = (target: EventTarget | null): boolean => {
       const handleElement =
         target instanceof Element
@@ -5496,6 +6769,10 @@ export const createFlowHost = (
       }
 
       if (options.connectOnClick !== true) {
+        return true
+      }
+
+      if (options.nodesConnectable === false) {
         return true
       }
 
@@ -5511,7 +6788,20 @@ export const createFlowHost = (
         return true
       }
 
-      if (handle.kind === 'source') {
+      if (
+        activeClickConnection === null &&
+        (options.connectionMode === 'loose' || handle.kind === 'source')
+      ) {
+        beginClickConnection(node, handle, handleElement)
+
+        return true
+      }
+
+      if (
+        options.connectionMode !== 'loose' &&
+        handle.kind === 'source' &&
+        activeClickConnection !== null
+      ) {
         const sameSource =
           activeClickConnection?.source === node.id &&
           activeClickConnection.sourceHandle === handle.id
@@ -5527,10 +6817,28 @@ export const createFlowHost = (
         return true
       }
 
+      if (
+        activeClickConnection?.source === node.id &&
+        activeClickConnection.sourceHandle === handle.id
+      ) {
+        cancelClickConnection('source-changed')
+
+        return true
+      }
+
       const started = clearClickConnection()
 
       if (started !== null) {
-        commitConnection(started, node, handle, 'click-connect')
+        const outcome = commitConnection(started, node, handle, 'click-connect')
+
+        notifyConnectEnd({
+          source: started.source,
+          sourceHandle: started.sourceHandle,
+          inputKind: 'click-connect',
+          outcome,
+          target: { nodeId: node.id, handleId: handle.id },
+          reason: outcome === 'rejected' ? 'validation-rejected' : undefined,
+        })
         clickSourceElement(started)?.focus()
       }
 
@@ -5549,12 +6857,19 @@ export const createFlowHost = (
 
       if (target instanceof Element) {
         const content = target.closest<HTMLElement>('.flow-node-content')
-        const noDragTarget = target.closest('[data-flow-no-drag]')
+
+        const nativeControl = target.closest(
+          'button, input, select, textarea, a[href], [contenteditable="true"]'
+        )
+
+        const noDragTarget = target.closest(
+          '[data-flow-no-drag], [data-flow-nodrag], .nodrag'
+        )
 
         if (
           content !== null &&
-          noDragTarget !== null &&
-          content.contains(noDragTarget)
+          ((nativeControl !== null && content.contains(nativeControl)) ||
+            (noDragTarget !== null && content.contains(noDragTarget)))
         ) {
           return
         }
@@ -5672,6 +6987,10 @@ export const createFlowHost = (
       if (event.key === 'Escape' && cancelActiveGestures('escape')) {
         event.preventDefault()
 
+        return
+      }
+
+      if (options.keyboardActivation === false) {
         return
       }
 
@@ -5952,6 +7271,38 @@ export const createFlowHost = (
 
           operations.publishChange(bounded)
 
+          const dragPayload: FlowNodeDragPayload = {
+            nodeIds: bounded.positions.map(({ nodeId }) => nodeId),
+            positions: bounded.positions.map(({ nodeId, position }) => ({
+              nodeId,
+              position,
+            })),
+          }
+
+          if (activeKeyboardNodeDrag === null) {
+            activeKeyboardNodeDrag = dragPayload
+
+            if (options.onNodeDragStart !== undefined) {
+              reportBoundaryCallback(
+                'Keyboard node drag start',
+                'keyboard-node-drag',
+                options.onNodeDragStart,
+                dragPayload
+              )
+            }
+          } else {
+            activeKeyboardNodeDrag = dragPayload
+          }
+
+          if (options.onNodeDrag !== undefined) {
+            reportBoundaryCallback(
+              'Keyboard node drag progress',
+              'keyboard-node-drag',
+              options.onNodeDrag,
+              dragPayload
+            )
+          }
+
           if (node.focusable !== false) {
             runEffect(browser.focus(nodeElement))
           }
@@ -6100,14 +7451,161 @@ export const createFlowHost = (
       }
     }
 
+    const onWindowKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' && cancelActiveGestures('escape')) {
+        event.preventDefault()
+      }
+    }
+
     const onWindowKeyUp = (event: KeyboardEvent): void => {
       if (activeKeyboardResize?.key === event.key) {
         finishKeyboardResize()
       }
+
+      if (activeKeyboardNodeDrag !== null && event.key.startsWith('Arrow')) {
+        const payload = activeKeyboardNodeDrag
+        activeKeyboardNodeDrag = null
+
+        if (options.onNodeDragStop !== undefined) {
+          reportBoundaryCallback(
+            'Keyboard node drag stop',
+            'keyboard-node-drag',
+            options.onNodeDragStop,
+            { ...payload, outcome: 'proposed' }
+          )
+        }
+      }
+    }
+
+    const dispatchCanvasEvent = (
+      family:
+        | 'Click'
+        | 'DoubleClick'
+        | 'ContextMenu'
+        | 'MouseEnter'
+        | 'MouseMove'
+        | 'MouseLeave',
+      event: MouseEvent,
+      target = getFlowCanvasEventTarget(event.target)
+    ): void => {
+      const prefixByKind = { pane: 'Pane', node: 'Node', edge: 'Edge' }
+      const prefix = prefixByKind[target.kind]
+      // SAFETY: prefix and family are selected from closed unions whose combinations are declared callback fields.
+      const callbackName = `on${prefix}${family}` as keyof FlowHostOptions
+
+      // SAFETY: prefix and family are selected from closed unions whose combinations are declared callback fields.
+      const callback = options[callbackName] as
+        | FlowCanvasEventListener
+        | undefined
+
+      if (callback === undefined) {
+        return
+      }
+
+      const bounds = canvas.getBoundingClientRect()
+
+      const payload: FlowCanvasEventPayload = {
+        position: {
+          x: event.clientX - bounds.left,
+          y: event.clientY - bounds.top,
+        },
+      }
+
+      if (target.kind === 'node') {
+        Object.assign(payload, { nodeId: target.id })
+      }
+
+      if (target.kind === 'edge') {
+        Object.assign(payload, { edgeId: target.id })
+      }
+
+      reportBoundaryCallback(
+        `${target.kind} ${family.toLowerCase()}`,
+        'pointer',
+        callback,
+        payload
+      )
+    }
+
+    const onCanvasContextMenu = (event: MouseEvent): void => {
+      dispatchCanvasEvent('ContextMenu', event)
+
+      if (options.onSelectionContextMenu === undefined) {
+        return
+      }
+
+      const nodeIds = document.nodes
+        .filter((node) => node.selected === true)
+        .map((node) => node.id)
+
+      const edgeIds = document.edges
+        .filter((edge) => edge.selected === true)
+        .map((edge) => edge.id)
+
+      if (nodeIds.length === 0 && edgeIds.length === 0) {
+        return
+      }
+
+      const bounds = canvas.getBoundingClientRect()
+      event.preventDefault()
+      reportBoundaryCallback(
+        'Selection context menu',
+        'context-menu',
+        options.onSelectionContextMenu,
+        {
+          nodeIds,
+          edgeIds,
+          position: {
+            x: event.clientX - bounds.left,
+            y: event.clientY - bounds.top,
+          },
+        }
+      )
     }
 
     const onCanvasWheel = (event: WheelEvent): void => {
+      const { target } = event
+
+      if (target instanceof Element) {
+        const nativeControl = target.closest(
+          'button, input, select, textarea, a[href], [contenteditable="true"]'
+        )
+
+        const noWheelTarget = target.closest(
+          '[data-flow-no-wheel], [data-flow-nowheel], .nowheel'
+        )
+
+        if (nativeControl !== null || noWheelTarget !== null) {
+          return
+        }
+      }
+
       if (interactionSlots.activeViewportPan !== null) {
+        return
+      }
+
+      if (options.panOnScroll === true) {
+        beginUserViewportObservation()
+        event.preventDefault()
+        const speed = options.panOnScrollSpeed ?? 1
+        const mode = options.panOnScrollMode ?? 'free'
+        const deltaX = mode === 'vertical' ? 0 : event.deltaX
+        const deltaY = mode === 'horizontal' ? 0 : event.deltaY
+        operations.publishChange({
+          kind: 'viewport',
+          viewport: constrainViewport(
+            panViewport(renderedViewport, {
+              x: -deltaX * speed,
+              y: -deltaY * speed,
+            })
+          ),
+        })
+        endUserViewportObservation()
+
+        return
+      }
+
+      if (options.zoomOnScroll === false) {
         return
       }
 
@@ -6131,8 +7629,10 @@ export const createFlowHost = (
         viewportLimits
       )
 
+      beginUserViewportObservation()
       event.preventDefault()
       operations.publishChange({ kind: 'viewport', viewport: candidate })
+      endUserViewportObservation()
       runTelemetry(
         Effect.logDebug('Zoomed viewport').pipe(
           Effect.annotateLogs({
@@ -6218,7 +7718,17 @@ export const createFlowHost = (
       hostScope
     )
     yield* Scope.provide(
+      browser.listenWindow(globalThis.window, 'keydown', onWindowKeyDown),
+      hostScope
+    )
+    yield* Scope.provide(
       browser.listen(canvas, 'click', onCanvasClick),
+      hostScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'click', (event) =>
+        dispatchCanvasEvent('Click', event)
+      ),
       hostScope
     )
     yield* Scope.provide(
@@ -6229,9 +7739,50 @@ export const createFlowHost = (
       browser.listen(canvas, 'wheel', onCanvasWheel, { passive: false }),
       hostScope
     )
+    yield* Scope.provide(
+      browser.listen(canvas, 'contextmenu', onCanvasContextMenu),
+      hostScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'mousemove', (event) => {
+        dispatchCanvasEvent('MouseMove', event)
+      }),
+      hostScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'mouseover', (event) => {
+        const current = getFlowCanvasEventTarget(event.target)
+        const previous = getFlowCanvasEventTarget(event.relatedTarget)
+        const currentId = flowCanvasEventTargetId(current)
+        const previousId = flowCanvasEventTargetId(previous)
+
+        if (current.kind !== previous.kind || currentId !== previousId) {
+          dispatchCanvasEvent('MouseEnter', event, current)
+          dispatchCanvasEvent('MouseLeave', event, previous)
+        }
+      }),
+      hostScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'mouseout', (event) => {
+        if (
+          !(event.relatedTarget instanceof Node) ||
+          !canvas.contains(event.relatedTarget)
+        ) {
+          dispatchCanvasEvent('MouseLeave', event)
+        }
+      }),
+      hostScope
+    )
 
     yield* Scope.provide(
       browser.listen(canvas, 'dblclick', (event) => {
+        dispatchCanvasEvent('DoubleClick', event)
+
+        if (options.zoomOnDoubleClick === false) {
+          return
+        }
+
         if (
           event.target instanceof Element &&
           event.target.closest(
@@ -6253,10 +7804,12 @@ export const createFlowHost = (
           viewportLimits
         )
 
+        beginUserViewportObservation()
         operations.publishChange({
           kind: 'viewport',
           viewport: constrainViewport(next),
         })
+        endUserViewportObservation()
       }),
       hostScope
     )
@@ -6361,7 +7914,17 @@ export const createFlowHost = (
 
         listeners.clear()
         stateListeners.clear()
+        connectionPreviewListeners.clear()
         viewportListeners.clear()
+
+        for (const dispose of viewportPortalDisposers) {
+          try {
+            dispose()
+          } catch (error) {
+            cleanupFailures.push(error)
+          }
+        }
+
         const restorePanelFocus = canvasUIHandle.current?.captureActiveFocus()
 
         try {
@@ -6620,48 +8183,164 @@ export const createFlowHost = (
 
     const controller: FlowController = {
       overlayPortal,
-      destroy: (): void => {
+      mountViewportPortal,
+      getConnectionPreview: () => (destroyed ? null : connectionPreviewState),
+      subscribeConnectionPreview: (listener): (() => void) => {
         if (destroyed) {
-          return
+          return () => connectionPreviewListeners.delete(listener)
         }
 
-        cancelActiveDrag('host-destroyed')
-        cancelNodeResize('host-destroyed')
-        cancelKeyboardResize('host-destroyed', true)
-        cancelConnection('host-destroyed')
-        cancelClickConnection('host-destroyed')
-        cancelReconnection('host-destroyed')
-        cancelViewportPan('host-destroyed')
-        cancelPinch('host-destroyed')
-        clearSelectionRect('cancelled')
-        settleViewportOperation('disposed')
-        destroyed = true
-        stateListeners.clear()
-        viewportListeners.clear()
+        connectionPreviewListeners.add(listener)
 
-        for (const reject of pendingEditRejectors) {
-          reject(new Error('FlowControllerDisposed'))
+        return () => connectionPreviewListeners.delete(listener)
+      },
+      subscribeSelection: (listener): (() => void) => {
+        if (destroyed) {
+          return noopUnsubscribe
         }
 
-        pendingEditRejectors.clear()
-        deferredMutations.length = 0
+        let previous = selectFlowSelection(document)
 
-        for (const [nodeId, resolve] of pendingInternals) {
-          for (const settle of resolve) {
-            settle({ nodeId, status: 'disposed' })
+        const unsubscribe = controller.subscribeState(({ current }) => {
+          const next = selectFlowSelection(current.document)
+
+          if (!flowSelectionEqual(previous, next)) {
+            previous = next
+            listener(next)
           }
+        })
+
+        listener(previous)
+
+        return unsubscribe
+      },
+      observeKeyPress: (keyCode, keyOptions, listener): (() => void) => {
+        if (destroyed) {
+          listener(false)
+
+          return noopUnsubscribe
         }
 
-        pendingInternals.clear()
-        runTelemetry(
-          Scope.close(hostScope, Exit.void).pipe(
-            Effect.tap(() => Effect.logDebug('Destroyed flow host')),
-            Effect.withSpan(FlowSpan.browserLifecycleClose),
-            Effect.withSpan(FlowSpan.hostDestroy)
-          )
-        )
+        let disposed = false
+        let disposeObserver: () => void = noopUnsubscribe
+
+        const dispose = (): void => {
+          if (disposed) {
+            return
+          }
+
+          disposed = true
+          keyPressDisposers.delete(dispose)
+          disposeObserver()
+        }
+
+        keyPressDisposers.add(dispose)
+        disposeObserver = observeKeyPress(keyCode, listener, keyOptions)
+
+        return dispose
+      },
+      destroy: (): void => {
+        void controller.destroyAsync()
+      },
+      destroyAsync: (): Promise<void> => {
+        if (destroyPromise !== undefined) {
+          return destroyPromise
+        }
+
+        if (destroyed) {
+          return Promise.resolve()
+        }
+
+        const destroyCompletion = Promise.withResolvers<null>()
+        destroyPromise = (async (): Promise<void> => {
+          await destroyCompletion.promise
+        })()
+        let stateCleanupFailure: unknown
+        let stateCleanupFailed = false
+
+        try {
+          cancelActiveDrag('host-destroyed')
+          cancelNodeResize('host-destroyed')
+          cancelKeyboardResize('host-destroyed', true)
+          cancelConnection('host-destroyed')
+          cancelClickConnection('host-destroyed')
+          cancelReconnection('host-destroyed')
+          cancelViewportPan('host-destroyed')
+          cancelPinch('host-destroyed')
+          clearSelectionRect('cancelled', undefined, 'host-destroyed')
+          settleViewportOperation('disposed')
+          destroyed = true
+
+          for (const dispose of keyPressDisposers) {
+            dispose()
+          }
+
+          keyPressDisposers.clear()
+          stateListeners.clear()
+          connectionPreviewListeners.clear()
+          viewportListeners.clear()
+
+          for (const reject of pendingEditRejectors) {
+            reject(new Error('FlowControllerDisposed'))
+          }
+
+          pendingEditRejectors.clear()
+          deferredMutations.length = 0
+
+          for (const [nodeId, resolve] of pendingInternals) {
+            for (const settle of resolve) {
+              settle({ nodeId, status: 'disposed' })
+            }
+          }
+
+          pendingInternals.clear()
+        } catch (error) {
+          stateCleanupFailure = error
+          stateCleanupFailed = true
+          destroyed = true
+        }
+
+        const closeHostScope = async (): Promise<void> => {
+          try {
+            await runPromise(
+              Scope.close(hostScope, Exit.void).pipe(
+                Effect.tap(() => Effect.logDebug('Destroyed flow host')),
+                Effect.withSpan(FlowSpan.browserLifecycleClose),
+                Effect.withSpan(FlowSpan.hostDestroy)
+              )
+            )
+          } catch (error) {
+            destroyCompletion.reject(
+              stateCleanupFailed
+                ? new AggregateError(
+                    [stateCleanupFailure, error],
+                    'Flow host teardown failed'
+                  )
+                : error
+            )
+
+            return
+          }
+
+          if (stateCleanupFailed) {
+            destroyCompletion.reject(stateCleanupFailure)
+
+            return
+          }
+
+          destroyCompletion.resolve(null)
+        }
+
+        void closeHostScope()
+
+        return destroyPromise
       },
       getSnapshot: () => createFlowSnapshot(document, authoritativeViewport),
+      getDocumentRevision: () => documentRevision,
+      getSavedSession: () =>
+        encodeSavedFlowSession(document, authoritativeViewport),
+      prepareRestore: (saved) =>
+        Effect.runPromise(decodeSavedFlowSession(saved)),
       getNodes: () =>
         createFlowSnapshot(document, authoritativeViewport).document.nodes,
       getEdges: () =>
@@ -6669,6 +8348,163 @@ export const createFlowHost = (
       getNode: (id) =>
         createFlowSnapshot(document, authoritativeViewport).document.nodes.find(
           (node) => node.id === id
+        ),
+      getNodesData: (nodeIds) =>
+        selectNodesData(
+          document,
+          nodeIds.map((id) => S.decodeUnknownSync(NodeIdSchema)(id))
+        ),
+      getNodeConnections: (query) => {
+        const validatedOptions = {
+          nodeId: S.decodeUnknownSync(NodeIdSchema)(query.nodeId),
+        }
+
+        if (query.type !== undefined) {
+          Object.assign(validatedOptions, { type: query.type })
+        }
+
+        if (query.handleId !== undefined) {
+          Object.assign(validatedOptions, {
+            handleId:
+              query.handleId === null
+                ? null
+                : S.decodeUnknownSync(HandleIdSchema)(query.handleId),
+          })
+        }
+
+        return selectNodeConnections(document, validatedOptions)
+      },
+      observeNodeConnections: (query, callbacks) => {
+        let active = true
+        let previous = controller.getNodeConnections(query)
+
+        const unsubscribe = controller.subscribeState(({ current }) => {
+          if (!active) {
+            return
+          }
+
+          const validatedOptions = {
+            nodeId: S.decodeUnknownSync(NodeIdSchema)(query.nodeId),
+          }
+
+          if (query.type !== undefined) {
+            Object.assign(validatedOptions, { type: query.type })
+          }
+
+          if (query.handleId !== undefined) {
+            Object.assign(validatedOptions, {
+              handleId:
+                query.handleId === null
+                  ? null
+                  : S.decodeUnknownSync(HandleIdSchema)(query.handleId),
+            })
+          }
+
+          const next = selectNodeConnections(current.document, validatedOptions)
+
+          const delta = diffNodeConnections(previous, next)
+          previous = next
+
+          if (
+            delta.disconnected.length > 0 &&
+            callbacks.onDisconnect !== undefined
+          ) {
+            reportBoundaryCallback(
+              'Node connection observer',
+              'node-connection-disconnect',
+              callbacks.onDisconnect,
+              delta.disconnected
+            )
+          }
+
+          if (delta.connected.length > 0 && callbacks.onConnect !== undefined) {
+            reportBoundaryCallback(
+              'Node connection observer',
+              'node-connection-connect',
+              callbacks.onConnect,
+              delta.connected
+            )
+          }
+        })
+
+        return () => {
+          if (!active) {
+            return
+          }
+
+          active = false
+          unsubscribe()
+        }
+      },
+      observeHandleConnections: (query, callbacks) => {
+        const validatedQuery = S.decodeUnknownSync(
+          FlowHandleConnectionsQuerySchema
+        )(query)
+
+        let active = true
+        let previous = controller.getHandleConnections(validatedQuery)
+
+        const unsubscribe = controller.subscribeState(({ current }) => {
+          if (!active) {
+            return
+          }
+
+          const before = previous
+          const next = selectHandleConnections(current.document, validatedQuery)
+
+          const delta = diffNodeConnections(
+            projectHandleConnectionEdges(before),
+            projectHandleConnectionEdges(next)
+          )
+
+          const previousById = new Map(before.map((edge) => [edge.id, edge]))
+          const edgesById = new Map(next.map((edge) => [edge.id, edge]))
+
+          previous = next
+
+          if (
+            delta.disconnected.length > 0 &&
+            callbacks.onDisconnect !== undefined
+          ) {
+            reportBoundaryCallback(
+              'Handle connection observer',
+              'handle-connection-disconnect',
+              callbacks.onDisconnect,
+              delta.disconnected.flatMap((connection) => {
+                const edge = previousById.get(connection.edgeId)
+
+                return edge === undefined ? [] : [edge]
+              })
+            )
+          }
+
+          if (delta.connected.length > 0 && callbacks.onConnect !== undefined) {
+            reportBoundaryCallback(
+              'Handle connection observer',
+              'handle-connection-connect',
+              callbacks.onConnect,
+              delta.connected.flatMap((connection) => {
+                const edge = edgesById.get(connection.edgeId)
+
+                return edge === undefined ? [] : [edge]
+              })
+            )
+          }
+        })
+
+        return () => {
+          if (!active) {
+            return
+          }
+
+          active = false
+          unsubscribe()
+        }
+      },
+      getHandleConnections: (query) =>
+        selectHandleConnections(
+          document,
+          S.decodeUnknownSync(FlowHandleConnectionsQuerySchema)(query)
         ),
       getInternalNode: (id) => {
         const node = document.nodes.find((candidate) => candidate.id === id)
@@ -6787,6 +8623,7 @@ export const createFlowHost = (
         ),
       getViewport: () =>
         createFlowSnapshot(document, authoritativeViewport).viewport,
+      getViewportLimits: () => ({ ...viewportLimits }),
       getZoom: () => authoritativeViewport.zoom,
       get viewportInitialized() {
         return canvas.clientWidth > 0 && canvas.clientHeight > 0
@@ -7031,6 +8868,7 @@ export const createFlowHost = (
 
         return pending.promise
       },
+      withMutation: executeMutation,
       updateViewport: (nextViewport): void => {
         if (destroyed) {
           return
@@ -7106,7 +8944,7 @@ export const acquireFlowHost = (
 ) =>
   Effect.acquireRelease(
     createFlowHost(root, initialDocument, options),
-    (host) => Effect.sync(() => host.destroy())
+    (host) => Effect.promise(() => host.destroyAsync())
   )
 
 export const mountFlow = (
@@ -7114,6 +8952,13 @@ export const mountFlow = (
   input: FlowDocumentInput,
   inputOptions: FlowMountOptionsInput
 ): JavaScriptFlowController => {
+  const defaultEdgeOptions =
+    inputOptions.defaultEdgeOptions === undefined
+      ? undefined
+      : Effect.runSync(
+          decodeFlowDefaultEdgeOptions(inputOptions.defaultEdgeOptions)
+        )
+
   const options = Effect.runSync(
     S.decodeUnknownEffect(FlowMountOptionsSchema)(inputOptions)
   )
@@ -7123,7 +8968,44 @@ export const mountFlow = (
   const host = Effect.runSync(
     createFlowHost(root, document, {
       ...options,
+      defaultEdgeOptions,
+      onMoveStart: inputOptions.onMoveStart,
+      onMove: inputOptions.onMove,
+      onMoveEnd: inputOptions.onMoveEnd,
+      onNodeDragStart: inputOptions.onNodeDragStart,
+      onNodeDrag: inputOptions.onNodeDrag,
+      onNodeDragStop: inputOptions.onNodeDragStop,
+      onConnectStart: inputOptions.onConnectStart,
+      onConnect: inputOptions.onConnect,
+      onConnectEnd: inputOptions.onConnectEnd,
+      onReconnectStart: inputOptions.onReconnectStart,
+      onReconnect: inputOptions.onReconnect,
+      onReconnectEnd: inputOptions.onReconnectEnd,
+      onSelectionStart: inputOptions.onSelectionStart,
+      onSelectionDrag: inputOptions.onSelectionDrag,
+      onSelectionEnd: inputOptions.onSelectionEnd,
+      onSelectionContextMenu: inputOptions.onSelectionContextMenu,
+      onPaneClick: inputOptions.onPaneClick,
+      onPaneDoubleClick: inputOptions.onPaneDoubleClick,
+      onPaneContextMenu: inputOptions.onPaneContextMenu,
+      onPaneMouseEnter: inputOptions.onPaneMouseEnter,
+      onPaneMouseMove: inputOptions.onPaneMouseMove,
+      onPaneMouseLeave: inputOptions.onPaneMouseLeave,
+      onNodeClick: inputOptions.onNodeClick,
+      onNodeDoubleClick: inputOptions.onNodeDoubleClick,
+      onNodeContextMenu: inputOptions.onNodeContextMenu,
+      onNodeMouseEnter: inputOptions.onNodeMouseEnter,
+      onNodeMouseMove: inputOptions.onNodeMouseMove,
+      onNodeMouseLeave: inputOptions.onNodeMouseLeave,
+      onEdgeClick: inputOptions.onEdgeClick,
+      onEdgeDoubleClick: inputOptions.onEdgeDoubleClick,
+      onEdgeContextMenu: inputOptions.onEdgeContextMenu,
+      onEdgeMouseEnter: inputOptions.onEdgeMouseEnter,
+      onEdgeMouseMove: inputOptions.onEdgeMouseMove,
+      onEdgeMouseLeave: inputOptions.onEdgeMouseLeave,
+      onError: inputOptions.onError,
       isValidConnection: inputOptions.isValidConnection,
+      connectionPreview: inputOptions.connectionPreview,
       nodeRenderers: inputOptions.nodeRenderers,
       edgeRenderers: inputOptions.edgeRenderers,
       onToolbarAnchors: inputOptions.onToolbarAnchors,
@@ -7134,17 +9016,34 @@ export const mountFlow = (
     }).pipe(Effect.provide(FlowBrowserLive))
   )
 
-  return {
+  let deleteSequence = 0
+  let controllerDisposed = false
+  const pendingDeleteRejectors = new Set<(error: Error) => void>()
+
+  const controller: JavaScriptFlowController = {
     overlayPortal: host.overlayPortal,
+    mountViewportPortal: host.mountViewportPortal,
+    getConnectionPreview: host.getConnectionPreview,
+    subscribeConnectionPreview: host.subscribeConnectionPreview,
+    subscribeSelection: host.subscribeSelection,
+    observeKeyPress: host.observeKeyPress,
     getSnapshot: host.getSnapshot,
+    getSavedSession: host.getSavedSession,
+    prepareRestore: host.prepareRestore,
     getNodes: host.getNodes,
     getEdges: host.getEdges,
     getNode: host.getNode,
+    getNodesData: host.getNodesData,
+    getNodeConnections: host.getNodeConnections,
+    observeNodeConnections: host.observeNodeConnections,
+    observeHandleConnections: host.observeHandleConnections,
+    getHandleConnections: host.getHandleConnections,
     getInternalNode: host.getInternalNode,
     nodesInitialized: host.nodesInitialized,
     updateNodeInternals: host.updateNodeInternals,
     getEdge: host.getEdge,
     getViewport: host.getViewport,
+    getViewportLimits: host.getViewportLimits,
     getZoom: host.getZoom,
     get viewportInitialized() {
       return host.viewportInitialized
@@ -7222,7 +9121,24 @@ export const mountFlow = (
           S.decodeUnknownEffect(FitBoundsOptionsSchema)(fitOptions ?? {})
         )
       ),
-    destroy: host.destroy,
+    destroy: (): void => {
+      controllerDisposed = true
+
+      for (const reject of pendingDeleteRejectors) {
+        reject(new Error('FlowControllerDisposed'))
+      }
+
+      host.destroy()
+    },
+    destroyAsync: (): Promise<void> => {
+      controllerDisposed = true
+
+      for (const reject of pendingDeleteRejectors) {
+        reject(new Error('FlowControllerDisposed'))
+      }
+
+      return host.destroyAsync()
+    },
     setNodes: (nodes) =>
       isNodeUpdater(nodes)
         ? host.applyEditResolved((currentDocument) => ({
@@ -7353,16 +9269,307 @@ export const mountFlow = (
           ],
         }
       }),
-    deleteElements: async (request) => {
-      const result = await host.applyEdit({
-        operations: [
-          {
-            kind: 'delete-elements',
-            nodeIds: request.nodeIds,
-            edgeIds: request.edgeIds,
-          },
-        ],
-      })
+    // eslint-disable-next-line complexity -- one boundary owns approval, revision, lifecycle, and publication checks.
+    deleteElements: async (request, lifecycle) => {
+      deleteSequence += 1
+      const operationId = `vanilla-delete-${deleteSequence}`
+
+      if (controllerDisposed) {
+        throw new Error('FlowControllerDisposed')
+      }
+
+      if (
+        pendingDeleteRejectors.size > 0 &&
+        lifecycle?.onBeforeDelete !== undefined
+      ) {
+        throw new FlowDeleteInProgress({ operationId })
+      }
+
+      const captured = host.getSnapshot().document
+      const capturedRevision = host.getDocumentRevision()
+
+      const isCapturedRevisionCurrent = (): boolean =>
+        host.getDocumentRevision() === capturedRevision
+
+      const assertDeleteCanPublish = (
+        hooks: FlowDeleteLifecycleOptions | undefined
+      ): void => {
+        if (controllerDisposed) {
+          throw new Error('FlowControllerDisposed')
+        }
+
+        if (hooks?.signal?.aborted) {
+          throw new FlowDeleteCancelled({ operationId })
+        }
+
+        if (
+          hooks?.onBeforeDelete !== undefined &&
+          !isCapturedRevisionCurrent()
+        ) {
+          throw new FlowDeleteRevisionConflict({
+            operationId,
+            expectedRevision: capturedRevision,
+            actualRevision: host.getDocumentRevision(),
+          })
+        }
+      }
+
+      const assertDeleteNotCancelled = (
+        hooks: FlowDeleteLifecycleOptions | undefined
+      ): void => {
+        if (hooks?.signal?.aborted) {
+          throw new FlowDeleteCancelled({ operationId })
+        }
+      }
+
+      const notifyDeleteCandidate = (
+        candidate: {
+          readonly nodes: readonly FlowNode[]
+          readonly edges: readonly FlowEdge[]
+        },
+        hooks: FlowDeleteLifecycleOptions | undefined
+      ): Error | undefined => {
+        try {
+          if (candidate.edges.length > 0) {
+            hooks?.onEdgesDelete?.(candidate.edges)
+          }
+
+          assertDeleteNotCancelled(hooks)
+
+          if (candidate.nodes.length > 0) {
+            hooks?.onNodesDelete?.(candidate.nodes)
+          }
+
+          assertDeleteNotCancelled(hooks)
+          hooks?.onDelete?.(candidate)
+          assertDeleteNotCancelled(hooks)
+
+          return undefined
+        } catch (error) {
+          return error instanceof Error ? error : new Error(String(error))
+        }
+      }
+
+      const publishDeleteCandidate = (
+        candidate: {
+          readonly nodes: readonly FlowNode[]
+          readonly edges: readonly FlowEdge[]
+        },
+        hooks: FlowDeleteLifecycleOptions | undefined
+      ): Promise<FlowEditResult> => {
+        const pending = Promise.withResolvers<FlowEditResult>()
+
+        interface DeleteCallbackOutcome {
+          failure: Error | undefined
+          ready: boolean
+        }
+
+        host.withMutation(() => {
+          try {
+            assertDeleteCanPublish(hooks)
+
+            const callbackOutcome: DeleteCallbackOutcome = {
+              failure: undefined,
+              ready: false,
+            }
+
+            const result = host.applyEditResolved(() => {
+              if (callbackOutcome.failure !== undefined) {
+                throw callbackOutcome.failure
+              }
+
+              if (!callbackOutcome.ready) {
+                throw new FlowDeleteCancelled({ operationId })
+              }
+
+              assertDeleteCanPublish(hooks)
+
+              return {
+                operations: [
+                  {
+                    kind: 'delete-elements',
+                    nodeIds: candidate.nodes.map(({ id }) => id),
+                    edgeIds: candidate.edges.map(({ id }) => id),
+                  },
+                ],
+              }
+            })
+
+            callbackOutcome.failure = notifyDeleteCandidate(candidate, hooks)
+            callbackOutcome.ready = callbackOutcome.failure === undefined
+
+            const settle = async (): Promise<void> => {
+              try {
+                pending.resolve(await result)
+              } catch (error) {
+                pending.reject(error)
+              }
+            }
+
+            void settle()
+          } catch (error) {
+            pending.reject(error)
+          }
+        })
+
+        return pending.promise
+      }
+
+      const prepared = Effect.runSync(
+        prepareFlowDeleteCandidate(captured, request)
+      )
+
+      const eligible = prepared.candidate
+
+      if (eligible.nodes.length === 0 && eligible.edges.length === 0) {
+        return prepared.result.deletion
+      }
+
+      if (lifecycle?.signal?.aborted) {
+        throw new FlowDeleteCancelled({ operationId })
+      }
+
+      let decision: FlowDeleteDecision = true
+
+      if (lifecycle?.onBeforeDelete !== undefined) {
+        const pending = Promise.withResolvers<FlowDeleteResult>()
+        let settled = false
+
+        const settlePending = (
+          outcome:
+            | { readonly kind: 'rejected'; readonly error: Error }
+            | { readonly kind: 'resolved'; readonly result: FlowDeleteResult }
+        ): void => {
+          if (settled) {
+            return
+          }
+
+          settled = true
+          // eslint-disable-next-line no-use-before-define -- All settlement outcomes unregister the same approval rejector.
+          pendingDeleteRejectors.delete(rejectPending)
+          // eslint-disable-next-line no-use-before-define -- The signal listener is removed through the shared settlement path.
+          lifecycle.signal?.removeEventListener('abort', onAbort)
+
+          if (outcome.kind === 'rejected') {
+            pending.reject(outcome.error)
+          } else {
+            pending.resolve(outcome.result)
+          }
+        }
+
+        const rejectPending = (error: Error): void => {
+          settlePending({ kind: 'rejected', error })
+        }
+
+        const onAbort = (): void => {
+          rejectPending(new FlowDeleteCancelled({ operationId }))
+        }
+
+        pendingDeleteRejectors.add(rejectPending)
+        lifecycle.signal?.addEventListener('abort', onAbort, { once: true })
+        // eslint-disable-next-line complexity -- asynchronous approval is isolated from publication.
+        void (async () => {
+          try {
+            const { onBeforeDelete } = lifecycle
+
+            if (onBeforeDelete === undefined) {
+              throw new Error('FlowDeleteBeforeDeleteUnavailable')
+            }
+
+            decision = await onBeforeDelete(structuredClone(eligible))
+
+            if (settled) {
+              return
+            }
+
+            if (controllerDisposed) {
+              throw new Error('FlowControllerDisposed')
+            }
+
+            if (lifecycle.signal?.aborted) {
+              throw new FlowDeleteCancelled({ operationId })
+            }
+
+            if (!isCapturedRevisionCurrent()) {
+              throw new FlowDeleteRevisionConflict({
+                operationId,
+                expectedRevision: capturedRevision,
+                actualRevision: host.getDocumentRevision(),
+              })
+            }
+
+            const finalized = Effect.runSync(
+              finalizeFlowDeleteCandidate(
+                captured,
+                eligible,
+                decision,
+                operationId
+              )
+            )
+
+            const candidate = {
+              nodes: captured.nodes.filter(({ id }) =>
+                finalized.deletion.deletedNodeIds.includes(id)
+              ),
+              edges: captured.edges.filter(({ id }) =>
+                finalized.deletion.deletedEdgeIds.includes(id)
+              ),
+            }
+
+            if (candidate.nodes.length > 0 || candidate.edges.length > 0) {
+              const result = await publishDeleteCandidate(candidate, lifecycle)
+
+              if (settled) {
+                return
+              }
+
+              settlePending({ kind: 'resolved', result: result.deletion })
+
+              return
+            }
+
+            settlePending({
+              kind: 'resolved',
+              result: { deletedNodeIds: [], deletedEdgeIds: [] },
+            })
+          } catch (error) {
+            rejectPending(
+              error instanceof FlowDeleteInvalidCandidate ||
+                error instanceof FlowDeleteRevisionConflict ||
+                error instanceof FlowDeleteCancelled ||
+                error instanceof FlowDeleteInProgress ||
+                error instanceof FlowDeleteApprovalFailed
+                ? error
+                : new FlowDeleteApprovalFailed({
+                    operationId,
+                    reason:
+                      error instanceof Error ? error.message : String(error),
+                  })
+            )
+          }
+        })()
+
+        return pending.promise
+      }
+
+      const finalized = Effect.runSync(
+        finalizeFlowDeleteCandidate(captured, eligible, decision, operationId)
+      )
+
+      const candidate = {
+        nodes: captured.nodes.filter(({ id }) =>
+          finalized.deletion.deletedNodeIds.includes(id)
+        ),
+        edges: captured.edges.filter(({ id }) =>
+          finalized.deletion.deletedEdgeIds.includes(id)
+        ),
+      }
+
+      if (candidate.nodes.length === 0 && candidate.edges.length === 0) {
+        return finalized.deletion
+      }
+
+      const result = await publishDeleteCandidate(candidate, lifecycle)
 
       return result.deletion
     },
@@ -7390,6 +9597,20 @@ export const mountFlow = (
       )
     },
   }
+
+  try {
+    inputOptions.onInit?.(controller)
+  } catch (error) {
+    const failure = error instanceof Error ? error : new Error(String(error))
+
+    if (inputOptions.onError === undefined) {
+      throw failure
+    }
+
+    inputOptions.onError(failure)
+  }
+
+  return controller
 }
 
 /** Promise-based JavaScript entry point. Controller methods remain synchronous. */
@@ -7414,6 +9635,11 @@ export const createFlow = (
       destroy: (): void => {
         unsubscribe?.()
         controller.destroy()
+      },
+      destroyAsync: (): Promise<void> => {
+        unsubscribe?.()
+
+        return controller.destroyAsync()
       },
     }
   })

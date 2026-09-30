@@ -8,6 +8,10 @@ import {
   FlowStateChangeSchema,
   ViewportSchema,
   FlowEditErrorSchema,
+  FlowConnectionSchema,
+  ConnectionModeSchema,
+  ConnectionIssueSchema,
+  ReconnectEndpointSchema,
   NodeSizeSchema,
   XYPositionSchema,
 } from '@flow/core'
@@ -122,6 +126,95 @@ export const RendererContractFixtureSchema = Schema.Struct({
 
 export type RendererContractFixture =
   typeof RendererContractFixtureSchema.Encoded
+
+const InteractionSelectionCaseSchema = Schema.Struct({
+  mode: Schema.Literals(['full', 'partial']),
+  rect: Schema.Struct({
+    x: Schema.Number,
+    y: Schema.Number,
+    width: Schema.Number,
+    height: Schema.Number,
+  }),
+  nodeIds: Schema.Array(Schema.String),
+})
+
+const InteractionResizeCaseSchema = Schema.Struct({
+  direction: Schema.Literals([
+    'top',
+    'right',
+    'bottom',
+    'left',
+    'top-left',
+    'top-right',
+    'bottom-left',
+    'bottom-right',
+  ]),
+  delta: XYPositionSchema,
+  position: XYPositionSchema,
+  size: NodeSizeSchema,
+  childPosition: XYPositionSchema,
+})
+
+const InteractionConnectionCaseSchema = Schema.Struct({
+  id: Schema.String,
+  document: Schema.Literals(['connection', 'duplicate']),
+  mode: ConnectionModeSchema,
+  connection: FlowConnectionSchema,
+  outcome: Schema.Literals(['accepted', 'rejected']),
+  normalized: Schema.optional(FlowConnectionSchema),
+  expectedEdgeId: Schema.optional(Schema.String),
+  reason: Schema.optional(ConnectionIssueSchema),
+  eventOrder: Schema.Array(Schema.String),
+})
+
+const InteractionReconnectionCaseSchema = Schema.Struct({
+  id: Schema.String,
+  endpoint: ReconnectEndpointSchema,
+  nodeId: Schema.String,
+  handleId: Schema.String,
+  outcome: Schema.Literals(['accepted', 'rejected', 'unchanged']),
+  expectedEdge: Schema.optional(FlowEdgeSchema),
+  reason: Schema.optional(ConnectionIssueSchema),
+})
+
+const InteractionCancellationRetryCaseSchema = Schema.Struct({
+  reason: Schema.String,
+  attempt: FlowConnectionSchema,
+  retry: FlowConnectionSchema,
+  expectedRetryEdgeId: Schema.String,
+  eventOrder: Schema.Array(Schema.String),
+})
+
+export const InteractionLifecycleFixtureSchema = Schema.Struct({
+  contract: Schema.Literal('flow-interaction-lifecycle-v1'),
+  units: Schema.Literal('unscaled-local-graph-units'),
+  document: FlowDocumentSchema,
+  connectionDocument: FlowDocumentSchema,
+  duplicateDocument: FlowDocumentSchema,
+  reconnectDocument: FlowDocumentSchema,
+  connectionCases: Schema.Array(InteractionConnectionCaseSchema),
+  reconnectionCases: Schema.Array(InteractionReconnectionCaseSchema),
+  cancellationRetryCases: Schema.Array(InteractionCancellationRetryCaseSchema),
+  selectionCases: Schema.Array(InteractionSelectionCaseSchema),
+  resizeStart: Schema.Struct({
+    position: XYPositionSchema,
+    size: NodeSizeSchema,
+    minimumSize: NodeSizeSchema,
+  }),
+  resizeCases: Schema.Array(InteractionResizeCaseSchema),
+  cancellationReasons: Schema.Array(Schema.String),
+  proposalOrder: Schema.Array(
+    Schema.Literals([
+      'preview',
+      'proposal',
+      'accepted-notification',
+      'terminal-event',
+    ])
+  ),
+})
+
+export type InteractionLifecycleFixture =
+  typeof InteractionLifecycleFixtureSchema.Encoded
 
 const MeasuredGeometryCaseSchema = Schema.Struct({
   name: Schema.String,

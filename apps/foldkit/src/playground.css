@@ -1,0 +1,224 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #172033;
+  background: #f1f5f9;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+main {
+  padding: 20px;
+}
+.flow-foldkit-canvas {
+  position: relative;
+  width: min(1080px, calc(100vw - 40px));
+  height: min(620px, calc(100vh - 100px));
+  min-height: 420px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  touch-action: none;
+}
+.flow-foldkit-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  width: min(1180px, calc(100vw - 32px));
+  margin: 16px auto;
+  align-items: start;
+}
+.flow-foldkit-tools {
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+}
+.flow-foldkit-tools h1 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+.flow-foldkit-tools p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #526078;
+}
+.flow-foldkit-host {
+  min-width: 0;
+}
+.flow-foldkit-base-handle-list {
+  display: grid;
+  gap: 5px;
+  margin-block: 8px;
+}
+.flow-foldkit-base-handle {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #dbe4f0;
+  border-radius: 5px;
+  padding: 4px 7px;
+  color: #334155;
+  font-size: 11px;
+}
+.flow-labeled-handle {
+  display: inline-flex;
+  align-items: center;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: scale(var(--flow-labeled-handle-inverse-zoom, 1));
+  transform-origin: center;
+}
+.flow-foldkit-base-handle-direction {
+  color: #64748b;
+}
+.flow-foldkit-host .flow-foldkit-canvas {
+  width: 100%;
+  margin: 0;
+}
+.flow-state-tools {
+  display: grid;
+  gap: 7px;
+}
+.flow-state-tools h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.flow-state-tools label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.flow-state-tools input {
+  min-width: 0;
+  padding: 6px;
+}
+.flow-state-tools button {
+  text-align: left;
+}
+.flow-state-tools small,
+.flow-state-tools output {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .flow-foldkit-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow-foldkit-tools {
+    max-height: 42vh;
+  }
+  .flow-foldkit-canvas {
+    min-height: 52vh;
+  }
+}
+.flow-foldkit-demo-node {
+  display: grid;
+  gap: 4px;
+  color: #312e81;
+}
+.flow-foldkit-demo-node small {
+  color: #64748b;
+  font-size: 10px;
+}
+.flow-foldkit-demo-edge {
+  stroke-dasharray: 6 3;
+}
+.flow-interaction-tools {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #cbd5e1;
+}
+.flow-interaction-tools h2,
+.flow-interaction-tools p {
+  margin: 0;
+}
+.flow-interaction-tools p,
+.flow-interaction-tools output {
+  color: #526078;
+  font-size: 12px;
+}
+.flow-interaction-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.flow-interaction-controls button {
+  min-height: 36px;
+  text-align: left;
+}
+.flow-interaction-controls button[aria-pressed='true'] {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.flow-interaction-controls button:focus-visible,
+.flow-foldkit-demo-drag-handle button:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+.flow-foldkit-demo-drag-handle {
+  position: absolute;
+  z-index: 3;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+}
+.flow-foldkit-demo-drag-handle button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  background: #f8fafc;
+  color: #172033;
+}
+#app[data-interaction-mode='connection-events'] .flow-foldkit-handle {
+  box-shadow: 0 0 0 3px #60a5fa66;
+}
+#app[data-interaction-mode='resize'] .flow-foldkit-resize {
+  box-shadow: 0 0 0 3px #60a5fa66;
+}
+#app.flow-touch-ready .flow-foldkit-canvas,
+#app.flow-touch-ready .flow-foldkit-node,
+#app.flow-touch-ready .flow-foldkit-demo-drag-handle {
+  touch-action: none;
+}
+#app.flow-touch-ready .flow-foldkit-resize,
+#app.flow-touch-ready .flow-foldkit-handle {
+  width: 28px;
+  height: 28px;
+}
+#app.flow-touch-ready .flow-foldkit-handle {
+  border-color: transparent;
+  background: transparent;
+}
+#app.flow-touch-ready .flow-foldkit-handle::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  border: 1px solid white;
+  border-radius: 50%;
+  background: #2563eb;
+  content: '';
+  transform: translate(-50%, -50%);
+}

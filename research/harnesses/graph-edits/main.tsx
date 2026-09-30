@@ -30,6 +30,8 @@ const initialEdges = [
 ]
 
 interface GraphEditCapture {
+  utilities: string
+  controlledDeletion: string
   initial: string
   add: string
   setters: string
@@ -46,6 +48,8 @@ declare global {
 }
 
 const emptyCapture = (): GraphEditCapture => ({
+  utilities: '',
+  controlledDeletion: '',
   initial: '',
   add: '',
   setters: '',
@@ -56,6 +60,40 @@ const emptyCapture = (): GraphEditCapture => ({
 })
 
 const serialize = <Value,>(value: Value): string => JSON.stringify(value)
+
+const captureUtilities = () => {
+  const changes = [
+    {
+      type: 'position' as const,
+      id: 'a',
+      position: { x: 12, y: 34 },
+      positionAbsolute: { x: 100, y: 100 },
+      dragging: true,
+    },
+    { type: 'select' as const, id: 'b', selected: true },
+    { type: 'remove' as const, id: 'missing' },
+  ]
+
+  const duplicateEdge = { id: 'duplicate-ab', source: 'a', target: 'b' }
+
+  const [oldEdge] = initialEdges
+
+  return {
+    applyNodeChanges: XYFlow.applyNodeChanges(changes, initialNodes),
+    addEdgeDuplicate: XYFlow.addEdge(duplicateEdge, initialEdges),
+    reconnectEdge: XYFlow.reconnectEdge(
+      oldEdge,
+      {
+        source: 'a',
+        target: 'b',
+        sourceHandle: 'out',
+        targetHandle: 'in',
+      },
+      initialEdges,
+      { shouldReplaceId: false }
+    ),
+  }
+}
 
 const normalizeNode = (
   node: XYFlow.Node | undefined
@@ -84,6 +122,7 @@ const Probe = () => {
     }
 
     if (phase === 1) {
+      observations.current.utilities = serialize(captureUtilities())
       observations.current.initial = serialize({
         nodes: instance.getNodes().map(normalizeNode),
         edges: instance.getEdges(),
@@ -204,19 +243,99 @@ const Probe = () => {
   return <XYFlow.ReactFlow fitView />
 }
 
+const ControlledDeletionProbe = () => {
+  const instance = XYFlow.useReactFlow()
+  const events = useRef<string[]>([])
+  const started = useRef(false)
+
+  useEffect(() => {
+    if (started.current) {
+      return
+    }
+
+    started.current = true
+    void (async () => {
+      const result = await instance.deleteElements({ nodes: [{ id: 'b' }] })
+
+      window.__graphEditCapture = JSON.stringify({
+        events: events.current,
+        result: {
+          nodes: result.deletedNodes.map(({ id }) => id),
+          edges: result.deletedEdges.map(({ id }) => id),
+        },
+        owner: {
+          nodes: instance.getNodes().map(({ id }) => id),
+          edges: instance.getEdges().map(({ id }) => id),
+        },
+      })
+    })()
+  }, [instance])
+
+  return (
+    <XYFlow.ReactFlow
+      nodes={initialNodes}
+      edges={initialEdges}
+      fitView
+      onBeforeDelete={async ({ nodes, edges }) => {
+        events.current.push(
+          `before:${edges.map(({ id }) => id).join(',')}|${nodes.map(({ id }) => id).join(',')}`
+        )
+        await Promise.resolve()
+        events.current.push('approved')
+
+        return true
+      }}
+      onEdgesDelete={(edges) =>
+        events.current.push(`edges:${edges.map(({ id }) => id).join(',')}`)
+      }
+      onEdgesChange={(changes) =>
+        events.current.push(
+          `edgeChanges:${changes.map(({ type }) => type).join(',')}`
+        )
+      }
+      onNodesDelete={(nodes) =>
+        events.current.push(`nodes:${nodes.map(({ id }) => id).join(',')}`)
+      }
+      onNodesChange={(changes) =>
+        events.current.push(
+          `nodeChanges:${changes.map(({ type }) => type).join(',')}`
+        )
+      }
+      onDelete={({ nodes, edges }) =>
+        events.current.push(
+          `delete:${edges.map(({ id }) => id).join(',')}|${nodes.map(({ id }) => id).join(',')}`
+        )
+      }
+    />
+  )
+}
+
 const root = document.querySelector('#root')
 
 if (root === null) {
   throw new Error('The graph edit probe root is missing')
 }
 
+const isControlledDeletion =
+  new URLSearchParams(window.location.search).get('case') ===
+  'delete-controlled'
+
 createRoot(root).render(
-  <XYFlow.ReactFlowProvider
-    initialNodes={initialNodes}
-    initialEdges={initialEdges}
-    defaultNodes={initialNodes}
-    defaultEdges={initialEdges}
-  >
-    <Probe />
-  </XYFlow.ReactFlowProvider>
+  isControlledDeletion ? (
+    <XYFlow.ReactFlowProvider
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+    >
+      <ControlledDeletionProbe />
+    </XYFlow.ReactFlowProvider>
+  ) : (
+    <XYFlow.ReactFlowProvider
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      defaultNodes={initialNodes}
+      defaultEdges={initialEdges}
+    >
+      <Probe />
+    </XYFlow.ReactFlowProvider>
+  )
 )

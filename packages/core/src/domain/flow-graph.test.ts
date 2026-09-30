@@ -7,6 +7,7 @@ import {
   graphBounds,
   graphDescendants,
   getConnectedEdges,
+  getHandleConnections,
   getIncomers,
   getOutgoers,
   graphIncomers,
@@ -14,7 +15,7 @@ import {
   graphNodesIntersecting,
   graphOutgoers,
 } from './flow-graph.ts'
-import { NodeIdSchema } from './flow-values.ts'
+import { HandleIdSchema, NodeIdSchema } from './flow-values.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
 const nodeId = S.decodeUnknownSync(NodeIdSchema)
@@ -548,6 +549,51 @@ describe('reference-shaped graph query helpers', () => {
     expect(getConnectedEdges([selected], [])).toStrictEqual([])
 
     expect(connected.every((edge) => edges.includes(edge))).toBeTruthy()
+  })
+
+  it('queries handle connections without changing edge order or state', () => {
+    const { edges } = graphQueryFixture()
+
+    const initialHandles = edges.map(({ sourceHandle, targetHandle }) => ({
+      sourceHandle,
+      targetHandle,
+    }))
+
+    const sourceHandleId = S.decodeUnknownSync(HandleIdSchema)('out')
+    const targetHandleId = S.decodeUnknownSync(HandleIdSchema)('in')
+
+    const withHandles = edges.map((edge, index) =>
+      index < 3
+        ? {
+            ...edge,
+            sourceHandle: sourceHandleId,
+            targetHandle: targetHandleId,
+          }
+        : edge
+    )
+
+    expect(
+      getHandleConnections(
+        nodeId('source-b'),
+        sourceHandleId,
+        'source',
+        withHandles
+      ).map((edge) => edge.id)
+    ).toStrictEqual(['b-target', 'b-target-parallel'])
+    expect(
+      getHandleConnections(
+        nodeId('target'),
+        targetHandleId,
+        'target',
+        withHandles
+      ).map((edge) => edge.id)
+    ).toStrictEqual(['b-target', 'a-target', 'b-target-parallel'])
+    expect(
+      edges.map(({ sourceHandle, targetHandle }) => ({
+        sourceHandle,
+        targetHandle,
+      }))
+    ).toStrictEqual(initialHandles)
   })
 
   it('does not mutate supplied node or edge collections', () => {

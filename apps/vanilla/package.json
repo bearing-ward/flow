@@ -4,10 +4,8 @@
   "private": true,
   "files": [
     "dist/public.js",
-    "dist/public.d.ts",
-    "dist/mount-flow.d.ts",
-    "dist/flow-browser.d.ts",
-    "dist/browser-capability-error.d.ts",
+    "dist/*.d.ts",
+    "dist/ui/*.d.ts",
     "dist/style.css"
   ],
   "type": "module",

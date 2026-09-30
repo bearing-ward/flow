@@ -1,4 +1,4 @@
-import type { FlowChange } from '@flow/core'
+import type { ConnectionPreviewSnapshot, FlowChange } from '@flow/core'
 
 import type { JavaScriptFlowController } from '../src/public.ts'
 
@@ -6,6 +6,7 @@ declare global {
   var detachedCanvas: HTMLElement | undefined
   var detachedNode: HTMLElement | undefined
   var flowChanges: FlowChange[] | undefined
+  var flowPreviewNotifications: ConnectionPreviewSnapshot[] | undefined
   var flowController: JavaScriptFlowController | undefined
   var nativeActivationCounts: { button: number; link: number } | undefined
   var nativeKeyboardPrevented: string[] | undefined

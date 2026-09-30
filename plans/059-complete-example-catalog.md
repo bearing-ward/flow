@@ -13,7 +13,7 @@
 - Execution mode: Design-first program, then sequential recipe-family implementation
 - Depends on: 053-058 for dependent recipes; 060 phase A for stress budgets. Initial inventory may start immediately; 060 phase B follows this plan.
 - Planned at: `f8b73f2`, 2026-09-27
-- Status: TODO
+- Status: IN PROGRESS — WP1 acceptance registry completed and checked; recipe implementation packages remain open.
 
 ## Why this matters
 
@@ -149,3 +149,28 @@ This is a staged program, not one enormous source diff. Deliver one family at a 
 ## Common STOP conditions
 
 Stop the affected step and report the concrete gap if a required check fails twice after focused repairs, an unrelated subsystem or dependency upgrade is needed, the plan would create a second authoritative document store, or a new reference claim cannot be reproduced. Preserve completed independent work and explicit unverified cells. Do not widen scope, weaken assertions, or label unavailable evidence as success.
+
+## Execution record — WP1 example acceptance registry (2026-09-29)
+
+- WP1 inventory covers all 67 example capabilities from the dated baseline exactly once and preserves all 16 Pro flags. The registry allocates 37 entries to nodes/edges/interactions, 12 to grouping/layout, 9 to advanced integrations, and 9 to styling/stress/overview.
+- Every entry records its observable journey and result, candidate public APIs, three host route paths, deterministic reset behavior, dependency decision, reference availability/licensing/comparison state, and separate automated and manual test boundaries. API validation remains pending for all 67 entries; routes remain planned in all three hosts. These fields describe acceptance work, not implemented gallery pages.
+- Evidence audit found partial recipe/test coverage for Updating Nodes and Delete Middle Node in Vanilla, Vue, and Foldkit; the other 65 recipes have no catalog-specific tested result. All 67 upstream comparisons remain unverified. There are 59 entries with no dependency identified and 8 with a named dependency decision pending. No dependency was added.
+- The checker now requires explicit dependency-decision and automated/manual test-boundary fields, checks dependency decision consistency with its rationale, and retains negative coverage for duplicate URLs, missing host routes/tests, missing host coverage, and unsupported completion/reference claims. It still rejects complete claims without existing in-scope route/test/API/reference evidence.
+- Verification: `bun run test -- scripts/check-example-recipes.test.ts` passed (29 tests); `bun run scripts/check-example-recipes.ts` passed (67 dated examples across Vanilla, Vue, and Foldkit); `bun run plans/check-next-chunks.mjs` passed (10 plans, 200 capabilities, 8 navigation entries); `git diff --check` passed. `research/catalogs/react-flow-2026-09-26.json` and `research/artifacts/` were not modified.
+- WP1 is complete. WP2–WP6 remain open; in particular, no per-example routes are runnable yet, the 8 optional dependency decisions need design, and reference comparison/license review remains pending. This is an inventory/checker milestone, not catalog completion or parity.
+
+## Execution record — Custom Node recipe (2026-09-29)
+
+- Implemented one bounded cross-host slice for the dated `https://reactflow.dev/examples/nodes/custom-node` row. The custom node displays a title, status control, and data-driven detail; activation updates accepted node data while retaining that mounted node's identity and position.
+- Vanilla exercises public `mountFlow`, its `nodeRenderers` registry, and controller `updateNodeData`. Vue exercises `FlowCanvas.nodeTypes` with a controlled document owner that accepts and passes back the updated decoded snapshot. Foldkit exercises its typed node renderer and runtime `EditRequest`; its two canvas instances are independent, so only the activated instance updates.
+- The recipe row in `research/catalogs/example-recipes.json` now marks implementation and all three focused mounted test results as partial. Host routes remain planned because these fixtures are not navigable user-facing gallery pages. Public API source paths are recorded for this slice; upstream reference comparison and visual/API parity remain unverified.
+- Trace: `research/traces/custom-node-recipe.md`, including separate production and test paths and `Conformity and deviations`.
+- Verification: final focused reruns passed Vanilla `bun run test:browser -- custom-node-recipe.e2e.ts` (1 test) and Vue `bun run test:conformance:vue -- custom-node-recipe.e2e.ts` (1 test). The Foldkit recipe passed alone with `bun run test:conformance:foldkit -- --grep 'Custom Node recipe'` (1 test); the renderer-contract suite also passed 6/6 once. A later suite rerun passed its five existing tests but timed out on the added recipe while awaiting its initial canvas; the recipe passed in isolation after that timeout. Cause is unverified, so Foldkit suite-order stability remains open. Scoped `bun run check`, `bun run typecheck`, `bun run docs:check`, `bun run research:check-traces` (2170 citations / 56 traces), `bun run scripts/check-example-recipes.ts` (67 examples), and `git diff --check` passed. No full verify was run.
+- This completes only the bounded Custom Node implementation/test slice. WP2 and the other Plan 059 recipes remain in progress.
+
+## Execution record — Drag Handle recipe (2026-09-29)
+
+- Recorded one bounded recipe slice for `https://reactflow.dev/examples/nodes/drag-handle`. The shared `data-flow-drag-handle` and `data-flow-no-drag` contract is documented, and focused browser tests cover real mounted Vanilla, Vue, and Foldkit hosts. Vanilla verifies header movement, a nested action without movement, and scene reset; Vue verifies marked-handle movement, content suppression, normal body dragging for an unmarked node, and reload reset; Foldkit verifies content suppression, nested no-drag click/focus behavior, pointer and keyboard movement, and reload reset.
+- The registry validates the actual host entry APIs and marker contract, records the three test paths as partial, and keeps all three gallery routes planned. The trace is `research/traces/drag-handle-recipe.md`; it separates production and test paths and records conformity, intentional Foldkit keyboard affordance, and unverified upstream comparison.
+- Focused test results were supplied by the implementation executor: Vanilla `bun run test:browser -- playground.e2e.ts` passed 3/3, Vue focused Drag Handle test passed 1/1, and Foldkit focused Drag Handle test passed 1/1. Documentation review passed `bun run docs:check` (19 Markdown files); `bun run research:check-traces` verified 2,179 citations across 60 traces; `bun run scripts/check-example-recipes.ts` covered all 67 dated examples; `bun run plans/check-next-chunks.mjs` passed (10 plans, 200 capabilities, 8 navigation entries); `git diff --check` passed.
+- This closes only the bounded Drag Handle recipe slice. WP2 remains open; the broader recipe inventory, dedicated gallery routes, cross-host connected-edge assertions, and upstream comparison are not complete.

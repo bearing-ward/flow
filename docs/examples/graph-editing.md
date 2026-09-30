@@ -1,6 +1,6 @@
 # Graph editing
 
-The JavaScript controller and Vue `useFlow()` expose named edit requests for adding, replacing, updating, and deleting nodes and edges. Foldkit exposes the same schema-backed operations through its app-scoped edit request/result ports. All edits are validated against the complete candidate document before they are proposed or accepted.
+The JavaScript controller and Vue `useFlow()` expose named edit requests for adding, replacing, updating, and deleting nodes and edges. Foldkit exposes the same schema-backed operations through the package-owned typed edit request/result ports, consumed by `@flow/foldkit-demo`. All edits are validated against the complete candidate document before they are proposed or accepted.
 
 ```ts
 await controller.updateNodeData('middle', { reviewed: true })

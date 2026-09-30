@@ -1,8 +1,10 @@
+import type { FlowDefaultEdgeOptions } from '@flow/core'
 import type { Page } from '@playwright/test'
 
 import type {
   ConformanceAction,
   ConformanceAdapter,
+  ConformanceFixture,
   ConformanceDocument,
   ConformanceSnapshot,
   MeasuredGeometryAdapter,
@@ -13,17 +15,29 @@ import type {
 
 export const createVueConformanceAdapter = (
   page: Page
-): ConformanceAdapter & MeasuredGeometryAdapter => {
+): Omit<ConformanceAdapter, 'mount'> &
+  MeasuredGeometryAdapter & {
+    mount: (
+      fixture: ConformanceFixture,
+      options?: { readonly defaultEdgeOptions?: FlowDefaultEdgeOptions }
+    ) => Promise<void>
+  } => {
   let measurementDocument: ConformanceDocument | undefined
 
   return {
-    async mount(fixture) {
+    async mount(
+      fixture,
+      mountOptions?: { readonly defaultEdgeOptions?: FlowDefaultEdgeOptions }
+    ) {
       await page.goto('/test.html')
-      await page.evaluate(async (scenario) => {
-        const harnessPath = '/src/test-harness.ts'
-        await import(harnessPath)
-        window.__flowVueTest?.mount(scenario)
-      }, fixture)
+      await page.evaluate(
+        async ({ scenario, options }) => {
+          const harnessPath = '/src/test-harness.ts'
+          await import(harnessPath)
+          window.__flowVueTest?.mount(scenario, options)
+        },
+        { scenario: fixture, options: mountOptions }
+      )
     },
     async mountMeasurementDocument(document, renderOnlyVisible) {
       await page.goto('/test.html')

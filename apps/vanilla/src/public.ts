@@ -14,6 +14,21 @@ export { BrowserCapabilityError } from './browser-capability-error.ts'
 
 export { CanvasUIOptionsError } from './mount-flow.ts'
 
+export { createFlowBackground } from './background.ts'
+
+export type {
+  FlowBackgroundMount,
+  FlowBackgroundOptions,
+} from './background.ts'
+
+export { createFlowControls } from './controls.ts'
+
+export { createFlowControlButton } from './ui/control-button.ts'
+
+export type { FlowControlButtonOptions } from './ui/control-button.ts'
+
+export type { FlowControlsMount, FlowControlsOptions } from './controls.ts'
+
 export type {
   ElementSize,
   FlowBrowserService,
@@ -22,6 +37,7 @@ export type {
 
 export type {
   FlowController,
+  FlowDeleteLifecycleOptions,
   FitBoundsOptions,
   FitViewOptions,
   ViewportObservation,
@@ -40,9 +56,58 @@ export type {
 } from './mount-flow.ts'
 
 export type {
+  FlowKeyCode,
+  FlowKeyPressOptions,
+  FlowKeyPressTarget,
+} from './key-press-observer.ts'
+
+export type { FlowSelection } from '@flow/core'
+
+export type {
   Viewport,
   ViewportBounds,
   ViewportPadding,
   ViewportAnimationOptions,
   ViewportOperationResult,
 } from '@flow/core'
+
+export { createFlowBaseNode } from './base-node.ts'
+
+export type { FlowBaseNodeOptions } from './base-node.ts'
+
+export { createFlowBaseHandle } from './base-handle.ts'
+
+export { createFlowLabeledHandleLabel } from './ui/labeled-handle.ts'
+
+export type { FlowLabeledHandleOptions } from './ui/labeled-handle.ts'
+
+export { createFlowDatabaseSchema } from './ui/database-schema.ts'
+
+export { createFlowPlaceholder } from './ui/placeholder.ts'
+
+export type { FlowPlaceholderOptions } from './ui/placeholder.ts'
+
+export type {
+  DatabaseSchemaField,
+  DatabaseSchemaTable,
+} from './ui/database-schema.ts'
+
+export type { FlowBaseHandleOptions } from './base-handle.ts'
+
+export {
+  createFlowStatusIndicator,
+  updateFlowStatusIndicator,
+} from './ui/status-indicator.ts'
+
+export type {
+  FlowNodeStatus,
+  FlowStatusIndicatorOptions,
+} from './ui/status-indicator.ts'
+
+export { createFlowAppendix } from './ui/appendix.ts'
+
+export type { FlowAppendix, FlowAppendixOptions } from './ui/appendix.ts'
+
+export { createFlowTooltip } from './ui/tooltip.ts'
+
+export type { FlowTooltip, FlowTooltipOptions } from './ui/tooltip.ts'

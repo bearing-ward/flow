@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "capturedOn": "2026-09-28",
+  "baselineCatalog": "react-flow-2026-09-26.json",
+  "baselineCatalogCapturedOn": "2026-09-26",
+  "apiMemberCatalog": "api-members.json",
+  "apiMemberCatalogCapturedOn": "2026-09-28",
+  "pinnedReferenceRevision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "flowSourceRevision": "working-tree@ce9210e61a7dcb370a45b91632c19d7e017e4898",
+  "flowSourceRevisionScope": "pre-commit-working-tree-based-on-recorded-commit",
+  "proofs": [
+    {
+      "id": "interaction-lifecycle-basic-drag",
+      "subject": {
+        "kind": "example",
+        "id": "https://reactflow.dev/examples/interaction/connection-events"
+      },
+      "claim": "observation",
+      "inputKind": "pointer-drag",
+      "browser": {
+        "name": "chromium",
+        "version": "playwright-configured",
+        "device": "desktop automation"
+      },
+      "upstream": {
+        "revision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+        "test": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/xydrag/XYDrag.ts:1"
+      },
+      "hosts": {
+        "vanilla": {
+          "result": "observed",
+          "evidence": [
+            {
+              "kind": "behavior",
+              "artifact": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts"
+            },
+            {
+              "kind": "production-test",
+              "artifact": "apps/shared-e2e/interaction-lifecycle-contract.ts"
+            }
+          ]
+        },
+        "vue": {
+          "result": "observed",
+          "evidence": [
+            {
+              "kind": "behavior",
+              "artifact": "apps/vue/e2e/interaction-lifecycle.e2e.ts"
+            },
+            {
+              "kind": "production-test",
+              "artifact": "apps/shared-e2e/interaction-lifecycle-contract.ts"
+            }
+          ]
+        },
+        "foldkit": {
+          "result": "observed",
+          "evidence": [
+            {
+              "kind": "behavior",
+              "artifact": "apps/foldkit/e2e/interaction-lifecycle.e2e.ts"
+            },
+            {
+              "kind": "production-test",
+              "artifact": "apps/shared-e2e/interaction-lifecycle-contract.ts"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

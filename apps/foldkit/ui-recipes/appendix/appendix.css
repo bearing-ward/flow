@@ -1,0 +1,57 @@
+.flow-appendix-recipe {
+  display: grid;
+  gap: 12px;
+  width: min(760px, calc(100vw - 32px));
+  margin: 24px auto;
+  color: #172033;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.flow-appendix-recipe h1,
+.flow-appendix-recipe p {
+  margin: 0;
+}
+.flow-appendix-panel {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+.flow-foldkit-appendix-toggle {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  color: inherit;
+  background: white;
+  cursor: pointer;
+}
+.flow-foldkit-appendix-toggle:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+.flow-foldkit-appendix-content {
+  max-width: 60ch;
+  padding: 12px 4px 4px;
+  line-height: 1.5;
+}
+.flow-appendix-canvas-frame {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+}
+.flow-appendix-runtime-wrapper {
+  position: absolute;
+  inset: 0;
+}
+.flow-appendix-runtime {
+  width: 100%;
+  height: 100%;
+}
+.flow-appendix-canvas-frame .flow-foldkit-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+}

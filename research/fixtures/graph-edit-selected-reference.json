@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "normalization": "timestamps and renderer-measured node geometry excluded; API outputs retain array order; callback and change event order retained",
+    "capturedAt": "2026-09-29T01:50:22.429Z"
+  },
+  "cases": {
+    "applyNodeChanges": [
+      {
+        "id": "a",
+        "position": {
+          "x": 12,
+          "y": 34
+        },
+        "data": {
+          "label": "A",
+          "nested": {
+            "keep": 1
+          }
+        },
+        "dragging": true
+      },
+      {
+        "id": "b",
+        "position": {
+          "x": 100,
+          "y": 0
+        },
+        "data": {
+          "label": "B"
+        },
+        "selected": true
+      },
+      {
+        "id": "b-child",
+        "parentId": "b",
+        "position": {
+          "x": 0,
+          "y": 60
+        },
+        "data": {
+          "label": "B child"
+        }
+      },
+      {
+        "id": "c",
+        "position": {
+          "x": 200,
+          "y": 0
+        },
+        "data": {
+          "label": "C"
+        }
+      }
+    ],
+    "addEdgeDuplicate": [
+      {
+        "id": "ab",
+        "source": "a",
+        "target": "b",
+        "data": {
+          "label": "AB",
+          "nested": {
+            "keep": 1
+          }
+        }
+      },
+      {
+        "id": "bc",
+        "source": "b",
+        "target": "c"
+      },
+      {
+        "id": "child-c",
+        "source": "b-child",
+        "target": "c"
+      }
+    ],
+    "reconnectEdge": [
+      {
+        "id": "bc",
+        "source": "b",
+        "target": "c"
+      },
+      {
+        "id": "child-c",
+        "source": "b-child",
+        "target": "c"
+      },
+      {
+        "source": "a",
+        "target": "b",
+        "data": {
+          "label": "AB",
+          "nested": {
+            "keep": 1
+          }
+        },
+        "id": "ab",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      }
+    ],
+    "controlledDeletion": {
+      "events": [
+        "before:ab,bc,child-c|b,b-child",
+        "approved",
+        "edges:ab,bc,child-c",
+        "edgeChanges:remove,remove,remove",
+        "nodes:b,b-child",
+        "nodeChanges:remove,remove",
+        "delete:ab,bc,child-c|b,b-child"
+      ],
+      "result": {
+        "nodes": ["b", "b-child"],
+        "edges": ["ab", "bc", "child-c"]
+      },
+      "owner": {
+        "nodes": ["a", "b", "b-child", "c"],
+        "edges": ["ab", "bc", "child-c"]
+      }
+    }
+  }
+}

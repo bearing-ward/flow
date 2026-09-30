@@ -1,10 +1,12 @@
 # Release dry run
 
-Run `bun run release:dry-run` to build and pack `@flow/core` and `@flow/vanilla`, install the tarballs into a temporary consumer, typecheck and mount that consumer in Chromium, and print a JSON manifest. The command removes its temporary directory on success or failure. It does not publish packages, create tags, or change package visibility.
+Run `bun run release:dry-run` to build and pack `@flow/core`, `@flow/vanilla`, `@flow/vue`, and `@flow/foldkit`, inspect archive contents, run the three packed consumers, and print a JSON manifest derived from package manifests and pack output. The command removes its temporary directory on success or failure. It does not publish packages, create tags, or change package visibility.
 
-The dry run does not draft a package changelog because these private `0.0.0` packages have no release history. The manifest records the archive names and versions as input to a later reviewed release note.
+The dry run does not draft a package changelog because these private `0.0.0` packages have no release history. The manifest records all four archive names and versions as input to a later reviewed release note.
 
-The dry run asserts that `effect`, `@effect/platform-bun`, and `@effect/platform-browser` resolve to the workspace's exact `4.0.0-rc.116` pin. Foldkit 0.163.0 requires the same exact Effect and browser-platform peers. Keep the platform packages aligned when changing the Effect release.
+The package consumers assert one compatible peer resolution per adapter: Vanilla uses Effect `4.0.0-rc.116`; Vue uses Effect `4.0.0-rc.116` and Vue `3.5.43`; Foldkit uses Effect `4.0.0-rc.116`, Foldkit `0.163.0`, and `@effect/platform-browser` `4.0.0-rc.116`. Core has no browser-global import requirement in its tested non-DOM Bun entry path. The framework adapters are browser integrations; SSR import and rendering are not established by these checks. Load each adapter's exported stylesheet from the consumer's CSS pipeline: `@flow/vanilla/style.css`, `@flow/vue/style.css`, or `@flow/foldkit/style.css`. Keep the Effect platform packages aligned when changing the Effect release.
+
+The application owns host resources: call the Vanilla controller's `destroy()` when its root is retired, let Vue unmount its components with the owning app, and dispose the Foldkit Runtime through its owning application lifecycle. The consumer checks cover representative mount, update, instance-isolation, and teardown paths. They do not establish full React Flow API or example parity; consult the API correspondence and coverage catalogs for capability-specific mappings and gaps.
 
 The Flow packages remain private development packages at version `0.0.0`. This project is personal, so the dry-run manifest records Flow's own license status as `deferred`; it does not claim license clearance or approval to publish. Before public release, the maintainer must choose the package license and notices, set public package metadata, select a package version, and review the generated archives.
 

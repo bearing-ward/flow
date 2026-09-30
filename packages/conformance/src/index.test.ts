@@ -1,10 +1,22 @@
 import { readFileSync } from 'node:fs'
 
-import { Effect, Schema as S } from 'effect'
+import { Effect, Exit, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
+import {
+  findConnectionIssue,
+  normalizeFlowConnection,
+  nextConnectionEdge,
+} from '../../core/src/domain/flow-connection.schema.ts'
 import { FlowEditErrorSchema } from '../../core/src/domain/flow-edit-error.ts'
 import { prepareFlowEdit } from '../../core/src/domain/flow-edit.ts'
+import { createFlowGraph } from '../../core/src/domain/flow-graph.ts'
+import { reconnectFlowEdge } from '../../core/src/domain/flow-reconnection.schema.ts'
+import {
+  applyEdgeReconnectChange,
+  calculateNodeResize,
+} from '../../core/src/domain/flow-runtime.schema.ts'
+import { selectionInRect } from '../../core/src/domain/flow-visibility.schema.ts'
 import {
   FlowDocumentSchema,
   decodeFlowDocument,
@@ -14,6 +26,7 @@ import {
   PublicEditContractFixtureSchema,
   PublicEditQueuedDisposalSchema,
   RendererContractFixtureSchema,
+  InteractionLifecycleFixtureSchema,
   conformanceFixtures,
   validateConformanceFixtures,
   validatePublicStateContractFixtures,
@@ -33,6 +46,280 @@ const ResizeCaptureSchema = S.Struct({
 })
 
 describe('shared conformance fixtures', () => {
+  it('runs shared selection and resize cases through core production contracts', () => {
+    const fixture = S.decodeUnknownSync(InteractionLifecycleFixtureSchema)(
+      JSON.parse(
+        readFileSync('research/fixtures/interaction-lifecycle.json', 'utf-8')
+      )
+    )
+
+    const document = Effect.runSync(decodeFlowDocument(fixture.document))
+    const graph = createFlowGraph(document)
+
+    const childStart = fixture.document.nodes.find(
+      (node) => node.id === 'child'
+    )
+
+    if (childStart === undefined) {
+      throw new Error('Missing nested resize child in fixture')
+    }
+
+    for (const selectionCase of fixture.selectionCases) {
+      expect(
+        selectionInRect(
+          graph,
+          selectionCase.rect,
+          selectionCase.mode
+        ).nodeIds.map(String)
+      ).toStrictEqual(selectionCase.nodeIds)
+    }
+
+    for (const resizeCase of fixture.resizeCases) {
+      const result = calculateNodeResize({
+        direction: resizeCase.direction,
+        positionStart: fixture.resizeStart.position,
+        sizeStart: fixture.resizeStart.size,
+        delta: resizeCase.delta,
+        minimumSize: fixture.resizeStart.minimumSize,
+      })
+
+      expect(result).toMatchObject({
+        position: resizeCase.position,
+        size: resizeCase.size,
+      })
+      expect({
+        x: childStart.position.x + result.childrenPositionDelta.x,
+        y: childStart.position.y + result.childrenPositionDelta.y,
+      }).toStrictEqual(resizeCase.childPosition)
+    }
+
+    expect(fixture.cancellationReasons).toContain('pointer-cancel')
+    expect(fixture.proposalOrder).toStrictEqual([
+      'preview',
+      'proposal',
+      'accepted-notification',
+      'terminal-event',
+    ])
+  })
+
+  it('runs accepted, rejected, and loose connections through core validation', () => {
+    const fixture = S.decodeUnknownSync(InteractionLifecycleFixtureSchema)(
+      JSON.parse(
+        readFileSync('research/fixtures/interaction-lifecycle.json', 'utf-8')
+      )
+    )
+
+    const connectionDocuments = {
+      connection: Effect.runSync(
+        decodeFlowDocument(fixture.connectionDocument)
+      ),
+      duplicate: Effect.runSync(decodeFlowDocument(fixture.duplicateDocument)),
+    }
+
+    const evaluated = fixture.connectionCases.map((scenario) => {
+      const document = connectionDocuments[scenario.document]
+
+      const normalized = normalizeFlowConnection(
+        document,
+        scenario.connection,
+        scenario.mode
+      )
+
+      const reason = findConnectionIssue(
+        document,
+        scenario.connection,
+        scenario.mode
+      )
+
+      return {
+        id: scenario.id,
+        normalized,
+        outcome: reason === undefined ? 'accepted' : 'rejected',
+        reason,
+        edgeId:
+          reason === undefined
+            ? nextConnectionEdge(document, normalized).id
+            : undefined,
+        eventOrder:
+          reason === undefined
+            ? ['connectStart', 'connect', 'connectEnd']
+            : ['connectStart', 'connectEnd'],
+      }
+    })
+
+    expect(evaluated).toStrictEqual(
+      fixture.connectionCases.map((scenario) => ({
+        id: scenario.id,
+        normalized: scenario.normalized ?? scenario.connection,
+        outcome: scenario.outcome,
+        reason: scenario.reason,
+        edgeId: scenario.expectedEdgeId,
+        eventOrder: scenario.eventOrder,
+      }))
+    )
+  })
+
+  it('runs edge reconnection outcomes through the core reconnection helper', () => {
+    const fixture = S.decodeUnknownSync(InteractionLifecycleFixtureSchema)(
+      JSON.parse(
+        readFileSync('research/fixtures/interaction-lifecycle.json', 'utf-8')
+      )
+    )
+
+    const document = Effect.runSync(
+      decodeFlowDocument(fixture.reconnectDocument)
+    )
+
+    const decodedReconnectDocument = S.decodeSync(FlowDocumentSchema)(
+      fixture.reconnectDocument
+    )
+
+    const [reconnectEdge] = decodedReconnectDocument.edges
+
+    if (reconnectEdge === undefined) {
+      throw new Error('Missing starting edge in reconnection fixture')
+    }
+
+    const sourceHandle = decodedReconnectDocument.nodes
+      .find((node) => node.id === reconnectEdge.source)
+      ?.handles?.find((handle) => handle.id === reconnectEdge.sourceHandle)
+
+    const targetHandle = decodedReconnectDocument.nodes
+      .find((node) => node.id === reconnectEdge.target)
+      ?.handles?.find((handle) => handle.id === reconnectEdge.targetHandle)
+
+    if (sourceHandle === undefined || targetHandle === undefined) {
+      throw new Error('Missing original edge handles in reconnection fixture')
+    }
+
+    const evaluated = fixture.reconnectionCases.map((scenario) => {
+      const node = decodedReconnectDocument.nodes.find(
+        (candidate) => candidate.id === scenario.nodeId
+      )
+
+      const handle = node?.handles?.find(
+        (candidate) => candidate.id === scenario.handleId
+      )
+
+      if (node === undefined || handle === undefined) {
+        throw new Error(`Missing replacement handle for ${scenario.id}`)
+      }
+
+      const result = Effect.runSyncExit(
+        reconnectFlowEdge(
+          document,
+          reconnectEdge.id,
+          scenario.endpoint,
+          node.id,
+          handle.id
+        )
+      )
+
+      const replacement = Exit.isSuccess(result) ? result.value : undefined
+
+      const candidate = {
+        source: scenario.endpoint === 'source' ? node.id : reconnectEdge.source,
+        sourceHandle:
+          scenario.endpoint === 'source' ? handle.id : sourceHandle.id,
+        target: scenario.endpoint === 'target' ? node.id : reconnectEdge.target,
+        targetHandle:
+          scenario.endpoint === 'target' ? handle.id : targetHandle.id,
+      }
+
+      const validationDocument = {
+        ...document,
+        edges: document.edges.filter((edge) => edge.id !== reconnectEdge.id),
+      }
+
+      const reason = findConnectionIssue(
+        validationDocument,
+        candidate,
+        'strict'
+      )
+
+      let outcome: 'accepted' | 'rejected' | 'unchanged'
+
+      if (replacement !== undefined) {
+        outcome = 'accepted'
+      } else if (reason === undefined) {
+        outcome = 'unchanged'
+      } else {
+        outcome = 'rejected'
+      }
+
+      const applied =
+        replacement === undefined
+          ? undefined
+          : applyEdgeReconnectChange(document, {
+              kind: 'edge-reconnect',
+              edge: replacement,
+            })
+
+      return {
+        id: scenario.id,
+        outcome,
+        reason,
+        edge: replacement,
+        appliedEdge: applied?.edges.find(
+          (edge) => edge.id === reconnectEdge.id
+        ),
+      }
+    })
+
+    expect(evaluated).toStrictEqual(
+      fixture.reconnectionCases.map((scenario) => ({
+        id: scenario.id,
+        outcome: scenario.outcome,
+        reason: scenario.reason,
+        edge: scenario.expectedEdge,
+        appliedEdge: scenario.expectedEdge,
+      }))
+    )
+  })
+
+  it('declares cancellation and retry sequences in the shared fixture', () => {
+    const fixture = S.decodeUnknownSync(InteractionLifecycleFixtureSchema)(
+      JSON.parse(
+        readFileSync('research/fixtures/interaction-lifecycle.json', 'utf-8')
+      )
+    )
+
+    const document = Effect.runSync(
+      decodeFlowDocument(fixture.connectionDocument)
+    )
+
+    const retries = fixture.cancellationRetryCases.map((scenario) => {
+      const terminalIndex = Math.max(
+        scenario.eventOrder.indexOf('cancel'),
+        scenario.eventOrder.indexOf('replace')
+      )
+
+      return {
+        reason: scenario.reason,
+        attemptIssue: findConnectionIssue(document, scenario.attempt, 'strict'),
+        terminalBeforeRetry:
+          terminalIndex >= 0 &&
+          terminalIndex < scenario.eventOrder.indexOf('retry-start'),
+        retryEdgeId: nextConnectionEdge(document, scenario.retry).id,
+        staleReleaseIgnored: scenario.eventOrder.includes(
+          'stale-release-ignored'
+        ),
+      }
+    })
+
+    expect(retries).toStrictEqual(
+      fixture.cancellationRetryCases.map((scenario) => ({
+        reason: scenario.reason,
+        attemptIssue: undefined,
+        terminalBeforeRetry: true,
+        retryEdgeId: scenario.expectedRetryEdgeId,
+        staleReleaseIgnored: scenario.eventOrder.includes(
+          'stale-release-ignored'
+        ),
+      }))
+    )
+  })
+
   it('keeps the renderer contract scene schema-valid and host-neutral', () => {
     const fixture = S.decodeUnknownSync(RendererContractFixtureSchema)(
       JSON.parse(

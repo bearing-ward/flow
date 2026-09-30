@@ -17,19 +17,38 @@ Open `http://127.0.0.1:4173/`. The runnable entry point is [`apps/vanilla/src/ma
 
 A node needs a unique id, a label, and a position. An edge connects node ids. `decodeFlowDocument` checks the input against the Effect Schema and checks cross-record rules such as unique identifiers and valid edge endpoints. See the [generated schema reference](../api-reference.md#document).
 
-```ts
-import { Effect } from 'effect'
-import { decodeFlowDocument } from '@flow/core'
+The checked example below imports the public Core and Vanilla entry points and the Vanilla stylesheet. `test:consumer` typechecks this file against the packed archives; its browser fixture also loads the stylesheet and mounts the packed Vanilla package.
 
-const document = Effect.runSync(
-  decodeFlowDocument({
-    nodes: [
-      { id: 'source', label: 'Source', position: { x: 80, y: 120 } },
-      { id: 'target', label: 'Target', position: { x: 360, y: 220 } },
-    ],
-    edges: [{ id: 'source-target', source: 'source', target: 'target' }],
+```ts file=../../tests/consumer/tutorial-first-canvas.ts#L1-L29
+import { decodeFlowDocument } from '@flow/core'
+import { createFlow } from '@flow/vanilla'
+import { Effect } from 'effect'
+
+import '@flow/vanilla/style.css'
+
+export const createFirstCanvasDocument = () =>
+  Effect.runSync(
+    decodeFlowDocument({
+      nodes: [
+        { id: 'source', label: 'Source', position: { x: 80, y: 120 } },
+        { id: 'target', label: 'Target', position: { x: 360, y: 220 } },
+      ],
+      edges: [{ id: 'source-target', source: 'source', target: 'target' }],
+    })
+  )
+
+export const mountFirstCanvas = (
+  root: HTMLElement,
+  document: ReturnType<typeof createFirstCanvasDocument>
+) =>
+  createFlow(root, document, {
+    documentMode: 'uncontrolled',
+    viewport: {
+      mode: 'uncontrolled',
+      initial: { x: 0, y: 0, zoom: 1 },
+      limits: { minZoom: 0.5, maxZoom: 2 },
+    },
   })
-)
 ```
 
 The example's actual document data and custom renderers live in [`main.ts`](../../apps/vanilla/src/main.ts). Its browser checks cover rendered nodes, edge paths, selection, and connection input.

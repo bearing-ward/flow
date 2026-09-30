@@ -15,6 +15,28 @@ export default defineConfig(({ mode }) => {
     environment.OTEL_SDK_DISABLED === 'true'
 
   return {
+    plugins: [
+      {
+        name: 'flow-ui-recipes-routes',
+        configureServer(server) {
+          server.middlewares.use((request, response, next) => {
+            if (
+              request.url === '/ui-recipes/status-indicator' ||
+              request.url === '/ui-recipes/appendix'
+            ) {
+              const route = request.url.slice(1)
+              response.statusCode = 308
+              response.setHeader('Location', `/${route}/`)
+              response.end()
+
+              return
+            }
+
+            next()
+          })
+        },
+      },
+    ],
     define: {
       'import.meta.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT': JSON.stringify(
         telemetryDisabled

@@ -257,6 +257,42 @@ test('controlled Vue viewport operations report proposals without waiting for ac
   expect(
     await page.evaluate(() => window.__flowVueViewportTest?.proposals())
   ).toHaveLength(1)
+
+  const observedBeforeAcknowledgement = await page.evaluate(() => ({
+    events: window.__flowVueViewportTest?.observations(),
+    accepted: window.__flowVueViewportTest?.read().viewport,
+  }))
+
+  expect(observedBeforeAcknowledgement?.events).toEqual([
+    'start',
+    'change',
+    'end:proposed',
+  ])
+  expect(observedBeforeAcknowledgement?.accepted).toEqual({
+    x: 10,
+    y: 20,
+    zoom: 1,
+  })
+
+  await page.evaluate(async () => {
+    const api = window.__flowVueViewportTest
+    const proposal = api?.proposals()[0]
+
+    if (api === undefined || proposal === undefined) {
+      throw new Error('controlled viewport proposal is unavailable')
+    }
+
+    await api.acknowledge(proposal)
+  })
+
+  expect(
+    await page.evaluate(() => window.__flowVueViewportTest?.observations())
+  ).toEqual(['start', 'change', 'end:proposed'])
+  expect(
+    await page.evaluate(() => window.__flowVueViewportTest?.read().viewport)
+  ).toEqual(
+    await page.evaluate(() => window.__flowVueViewportTest?.proposals()[0])
+  )
 })
 
 test('Vue viewport animations settle as superseded when another operation replaces them', async ({

@@ -77,6 +77,25 @@ describe('connection radius', () => {
     ).toBe('source')
   })
 
+  it('allows either endpoint kind in loose mode but excludes the origin endpoint', () => {
+    const sourceHandle = candidate('other', 'out', 1, 0, 'source')
+    const targetHandle = candidate('target', 'in', 3, 0)
+
+    expect(
+      nearestConnectionTarget({
+        source,
+        point: { x: 0, y: 0 },
+        candidates: [
+          candidate('source', 'out', 0, 0, 'source'),
+          sourceHandle,
+          targetHandle,
+        ],
+        radius: 5,
+        mode: 'loose',
+      })
+    ).toBe(sourceHandle)
+  })
+
   it('breaks equal-distance ties by node then handle ID regardless of input order', () => {
     const choices = [
       candidate('b', 'a', 0, 1),

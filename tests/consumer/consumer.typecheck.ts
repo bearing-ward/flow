@@ -1,20 +1,52 @@
 import {
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
   decodeFlowDocument,
+  EdgeIdSchema,
+  HandleIdSchema,
+  getEdgeCenter,
+  getBezierPath,
   getConnectedEdges,
   getIncomers,
   getOutgoers,
+  getSimpleBezierPath,
+  getSmoothStepPath,
+  getStraightPath,
+  isEdge,
+  isNode,
+  reconnectEdge,
 } from '@flow/core'
 import type {
+  EdgeChange,
   FlowChange,
   FlowDocument,
   FlowEdge,
   FlowNode,
   FlowSnapshot,
   FlowStateChange,
+  NodeChange,
 } from '@flow/core'
-import { createFlow, mountFlow } from '@flow/vanilla'
-import type { JavaScriptFlowController } from '@flow/vanilla'
-import { Effect } from 'effect'
+import {
+  createFlow,
+  createFlowBaseHandle,
+  createFlowBaseNode,
+  createFlowControlButton,
+  createFlowStatusIndicator,
+  updateFlowStatusIndicator,
+  createFlowAppendix,
+  createFlowTooltip,
+  createFlowLabeledHandleLabel,
+  createFlowDatabaseSchema,
+  createFlowPlaceholder,
+  mountFlow,
+} from '@flow/vanilla'
+import type {
+  FlowBaseHandleOptions,
+  FlowBaseNodeOptions,
+  JavaScriptFlowController,
+} from '@flow/vanilla'
+import { Effect, Schema as S } from 'effect'
 
 export { FlowSnapshotSchema } from '@flow/core'
 
@@ -34,6 +66,12 @@ const viewport = {
 }
 
 const options = { documentMode: 'controlled' as const, viewport }
+
+export const packedBaseHandle: FlowBaseHandleOptions = createFlowBaseHandle({
+  id: S.decodeUnknownSync(HandleIdSchema)('consumer-handle'),
+  kind: 'source',
+  side: 'right',
+})
 
 const onChange = (_change: FlowChange): void => undefined
 
@@ -140,3 +178,158 @@ export const graphConnectedEdges: readonly FlowEdge[] = getConnectedEdges(
   [selectedNode],
   graphEdges
 )
+
+const nodeChanges: readonly NodeChange[] = [
+  { id: selectedNode.id, type: 'select', selected: true },
+  {
+    id: selectedNode.id,
+    type: 'dimensions',
+    dimensions: { width: 90, height: 50 },
+  },
+]
+
+const edgeChanges: readonly EdgeChange[] = [
+  {
+    type: 'add',
+    item: {
+      id: S.decodeUnknownSync(EdgeIdSchema)('consumer-edge'),
+      source: selectedNode.id,
+      target: selectedNode.id,
+    },
+  },
+]
+
+export const utilityConsumer = {
+  nodes: applyNodeChanges(nodeChanges, document.nodes),
+  edges: applyEdgeChanges(edgeChanges, document.edges),
+  addEdge: addEdge(
+    { source: selectedNode.id, target: selectedNode.id },
+    document.edges
+  ),
+  reconnectEdge: reconnectEdge(
+    {
+      id: S.decodeUnknownSync(EdgeIdSchema)('consumer-edge'),
+      source: selectedNode.id,
+      target: selectedNode.id,
+    },
+    { source: selectedNode.id, target: selectedNode.id },
+    [
+      {
+        id: S.decodeUnknownSync(EdgeIdSchema)('consumer-edge'),
+        source: selectedNode.id,
+        target: selectedNode.id,
+      },
+    ]
+  ),
+  predicates: [
+    isNode(selectedNode),
+    isEdge({ id: 'e', source: 'a', target: 'b' }),
+  ],
+  edgeCenter: getEdgeCenter({
+    sourceX: 0,
+    sourceY: 0,
+    targetX: 20,
+    targetY: 10,
+  }),
+  straightPath: getStraightPath({
+    sourceX: 0,
+    sourceY: 0,
+    targetX: 10,
+    targetY: 10,
+  }),
+  bezierPath: getBezierPath({
+    sourceX: 0,
+    sourceY: 0,
+    targetX: 10,
+    targetY: 10,
+  }),
+  simpleBezierPath: getSimpleBezierPath({
+    sourceX: 0,
+    sourceY: 0,
+    targetX: 10,
+    targetY: 10,
+  }),
+  smoothStepPath: getSmoothStepPath({
+    sourceX: 0,
+    sourceY: 0,
+    targetX: 10,
+    targetY: 10,
+  }),
+}
+
+const mutableCenter = getEdgeCenter({
+  sourceX: 0,
+  sourceY: 0,
+  targetX: 2,
+  targetY: 2,
+})
+
+mutableCenter[0] = 1
+
+const baseNodeOptions: FlowBaseNodeOptions = {
+  title: 'Packed node',
+  content: globalThis.document.createElement('button'),
+}
+
+const baseNode = createFlowBaseNode(globalThis.document, baseNodeOptions)
+
+export const mountPackedNodeContent = (owner: Document): (() => void) => {
+  const content = owner.createElement('div')
+  const status = createFlowStatusIndicator(owner, { status: 'waiting' })
+
+  const action = createFlowControlButton(owner, {
+    type: 'button',
+    name: 'schema-action',
+    value: 'refresh',
+    disabled: false,
+    style: { color: 'navy', '--consumer-accent': 'blue' },
+    aria: { 'aria-label': 'Refresh schema' },
+    children: [owner.createTextNode('Refresh')],
+    onClick: (event) => {
+      updateFlowStatusIndicator(
+        status,
+        'ready',
+        `Loaded with button ${event.button}`
+      )
+    },
+  })
+
+  const schema = createFlowDatabaseSchema(owner, {
+    name: 'users',
+    fields: [
+      { id: 'id', name: 'id', type: 'uuid', kind: 'source', side: 'right' },
+    ],
+  })
+
+  const label = createFlowLabeledHandleLabel(
+    { handle: packedBaseHandle, label: 'Output' },
+    owner
+  )
+
+  const appendix = createFlowAppendix(owner, {
+    id: 'packed-schema-details',
+    label: 'Details',
+    content: schema,
+    initiallyExpanded: true,
+  })
+
+  const placeholder = createFlowPlaceholder(owner, {
+    label: 'Add table',
+    onActivate: () => updateFlowStatusIndicator(status, 'waiting'),
+  })
+
+  content.append(status, action, label, appendix.element, placeholder)
+  baseNode.append(content)
+  owner.body.append(baseNode)
+
+  const tooltip = createFlowTooltip(owner, {
+    trigger: action,
+    text: 'Refresh caller-owned data',
+  })
+
+  return () => {
+    tooltip.destroy()
+    appendix.destroy()
+    baseNode.remove()
+  }
+}
