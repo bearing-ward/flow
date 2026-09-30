@@ -5,6 +5,7 @@ import { Effect, FileSystem, Path, Schema } from 'effect'
 import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
 import { createServer } from 'vite'
 
+import type { FoldkitSnapshotResult } from '../packages/foldkit/src/snapshot-client.ts'
 import { checkPackageArchive } from './package-archive'
 
 declare global {
@@ -31,6 +32,9 @@ declare global {
       readonly edit: () => Promise<string>
       readonly measure: () => Promise<string>
       readonly mountSecond: () => void
+      readonly snapshot: (
+        owner: 'first' | 'second'
+      ) => Promise<FoldkitSnapshotResult>
       readonly dispose: () => void
     }
   }
@@ -395,9 +399,59 @@ const verifyFoldkit = async (page: Page) => {
     throw new Error('Foldkit Runtime A edit leaked into Runtime B')
   }
 
+  const snapshots = await page.evaluate(() => {
+    const consumer = window.__flowFoldkitConsumer
+
+    if (consumer === undefined) {
+      throw new Error('Missing packed snapshot client')
+    }
+
+    return Promise.all([
+      consumer.snapshot('first'),
+      consumer.snapshot('second'),
+    ])
+  })
+
+  for (const [index, snapshot] of snapshots.entries()) {
+    const expectedStatus = index === 0 ? 'packed-ready' : 'waiting'
+
+    if (
+      snapshot.status !== 'succeeded' ||
+      snapshot.response.savedSession.version !== 1 ||
+      snapshot.response.snapshot.document.nodes[0]?.data?.['status'] !==
+        expectedStatus
+    ) {
+      throw new Error(
+        `Packed ordinary legacy snapshot failed for owner ${index}`
+      )
+    }
+  }
+
   await verifyPackedUI(page, 'foldkit')
 
-  await page.evaluate(() => window.__flowFoldkitConsumer?.dispose())
+  const disposed = await page.evaluate(() => {
+    const consumer = window.__flowFoldkitConsumer
+
+    if (consumer === undefined) {
+      throw new Error('Missing packed snapshot client')
+    }
+
+    const pending = consumer.snapshot('first')
+    consumer.dispose()
+
+    return Promise.all([
+      pending,
+      consumer.snapshot('first'),
+      consumer.snapshot('second'),
+    ])
+  })
+
+  if (disposed.some((result) => result.status !== 'disposed')) {
+    throw new Error(
+      'Packed snapshot client did not settle pending and later requests on disposal'
+    )
+  }
+
   await page.waitForFunction(
     () =>
       document.querySelectorAll('.flow-foldkit-node, [data-packed-ui]')

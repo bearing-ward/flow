@@ -20,6 +20,8 @@ import {
   FlowNodeDataSchema,
   ConnectionPreviewSnapshotSchema,
   SavedFlowSessionSchema,
+  SavedFlowFormatError,
+  SavedFlowFormatFailureCodeSchema,
   selectNodeConnections,
   selectNodesData,
   FlowStateChangeSchema,
@@ -211,6 +213,13 @@ export const SnapshotResponseSchema = Schema.Struct({
 
 export type SnapshotResponse = typeof SnapshotResponseSchema.Type
 
+export const LegacySnapshotFailureSchema = Schema.Struct({
+  requestId: Schema.String,
+  code: SavedFlowFormatFailureCodeSchema,
+})
+
+export type LegacySnapshotFailure = typeof LegacySnapshotFailureSchema.Encoded
+
 /** Serializable viewport requests are interpreted by the Foldkit update loop. */
 export const ViewportRequestSchema = Schema.Struct({
   requestId: Schema.String,
@@ -322,6 +331,7 @@ export const ports = {
   outbound: {
     changes: Port.outbound(FlowChangeSchema),
     snapshots: Port.outbound(SnapshotResponseSchema),
+    snapshotFailures: Port.outbound(LegacySnapshotFailureSchema),
     acceptedStates: Port.outbound(FlowStateChangeSchema),
     editResults: Port.outbound(EditResponseSchema),
     deleteApprovalRequests: Port.outbound(DeleteApprovalRequestedSchema),
@@ -680,6 +690,25 @@ const RespondSnapshot = Command.define('RespondFlowSnapshot', {
     Port.emit(ports.outbound.snapshots, response).pipe(
       Effect.as(AppMessage.SnapshotPublished())
     ),
+})
+
+const RespondSnapshotFailure = Command.define('RespondFlowSnapshotFailure', {
+  args: { failure: LegacySnapshotFailureSchema },
+  messages: [AppMessage.SnapshotPublished],
+  execute: ({ failure }) =>
+    Effect.gen(function* respondSnapshotFailure() {
+      yield* Effect.logError('Foldkit legacy snapshot format rejected').pipe(
+        Effect.annotateLogs({
+          [FlowAttribute.inputKind]: 'snapshot-request',
+          [FlowAttribute.failureName]: 'SavedFlowFormatError',
+          [FlowAttribute.failureMessage]: failure.code,
+        }),
+        Effect.withSpan(FlowSpan.controllerUpdate)
+      )
+      yield* Port.emit(ports.outbound.snapshotFailures, failure)
+
+      return AppMessage.SnapshotPublished()
+    }),
 })
 
 const RespondEdit = Command.define('RespondFlowEdit', {
@@ -1779,75 +1808,96 @@ export const update = (
         MeasureNode: () => result,
       })
     },
-    SnapshotRequest: ({ request }) => ({
-      model,
-      commands: [
-        RespondSnapshot({
-          response: {
-            requestId: request.requestId,
-            snapshot: Graph.selectSnapshot(model.graph),
-            node:
-              request.nodeId === undefined
-                ? undefined
-                : Graph.selectNode(model.graph, request.nodeId),
-            edge:
-              request.edgeId === undefined
-                ? undefined
-                : Graph.selectEdge(model.graph, request.edgeId),
-            internalNode:
-              request.nodeId === undefined
-                ? null
-                : (Graph.selectInternalNode(model.graph, request.nodeId) ??
-                  null),
-            nodesInitialized: Graph.selectNodesInitialized(model.graph, {
-              includeHidden: request.includeHiddenNodes === true,
+    SnapshotRequest: ({ request }) => {
+      let savedSession: typeof SavedFlowSessionSchema.Type
+
+      try {
+        savedSession = Schema.decodeUnknownSync(SavedFlowSessionSchema)(
+          Graph.selectSavedSession(model.graph)
+        )
+      } catch (error) {
+        if (!(error instanceof SavedFlowFormatError)) {
+          throw error
+        }
+
+        return {
+          model,
+          commands: [
+            RespondSnapshotFailure({
+              failure: { requestId: request.requestId, code: error.code },
             }),
-            nodesData: selectNodesData(
-              model.graph.document,
-              (request.nodeIds ?? []).map((id) => NodeIdSchema.make(id))
-            ),
-            nodeConnections:
-              request.connections === undefined
-                ? []
-                : (() => {
-                    const options = Schema.decodeUnknownSync(
-                      FlowNodeConnectionOptionsSchema
-                    )(request.connections)
+          ],
+        }
+      }
 
-                    const validatedOptions = {
-                      nodeId: options.nodeId,
-                    }
+      return {
+        model,
+        commands: [
+          RespondSnapshot({
+            response: {
+              requestId: request.requestId,
+              snapshot: Graph.selectSnapshot(model.graph),
+              node:
+                request.nodeId === undefined
+                  ? undefined
+                  : Graph.selectNode(model.graph, request.nodeId),
+              edge:
+                request.edgeId === undefined
+                  ? undefined
+                  : Graph.selectEdge(model.graph, request.edgeId),
+              internalNode:
+                request.nodeId === undefined
+                  ? null
+                  : (Graph.selectInternalNode(model.graph, request.nodeId) ??
+                    null),
+              nodesInitialized: Graph.selectNodesInitialized(model.graph, {
+                includeHidden: request.includeHiddenNodes === true,
+              }),
+              nodesData: selectNodesData(
+                model.graph.document,
+                (request.nodeIds ?? []).map((id) => NodeIdSchema.make(id))
+              ),
+              nodeConnections:
+                request.connections === undefined
+                  ? []
+                  : (() => {
+                      const options = Schema.decodeUnknownSync(
+                        FlowNodeConnectionOptionsSchema
+                      )(request.connections)
 
-                    if (options.type !== undefined) {
-                      Object.assign(validatedOptions, { type: options.type })
-                    }
+                      const validatedOptions = {
+                        nodeId: options.nodeId,
+                      }
 
-                    if (options.handleId !== undefined) {
-                      Object.assign(validatedOptions, {
-                        handleId: options.handleId,
-                      })
-                    }
+                      if (options.type !== undefined) {
+                        Object.assign(validatedOptions, { type: options.type })
+                      }
 
-                    return selectNodeConnections(
-                      model.graph.document,
-                      validatedOptions
-                    )
-                  })(),
-            handleConnections:
-              request.handleConnections === undefined
-                ? []
-                : Graph.selectHandleConnections(
-                    model.graph,
-                    request.handleConnections
-                  ),
-            connectionPreview: Graph.selectConnectionPreview(model.graph),
-            savedSession: Schema.decodeUnknownSync(SavedFlowSessionSchema)(
-              Graph.selectSavedSession(model.graph)
-            ),
-          },
-        }),
-      ],
-    }),
+                      if (options.handleId !== undefined) {
+                        Object.assign(validatedOptions, {
+                          handleId: options.handleId,
+                        })
+                      }
+
+                      return selectNodeConnections(
+                        model.graph.document,
+                        validatedOptions
+                      )
+                    })(),
+              handleConnections:
+                request.handleConnections === undefined
+                  ? []
+                  : Graph.selectHandleConnections(
+                      model.graph,
+                      request.handleConnections
+                    ),
+              connectionPreview: Graph.selectConnectionPreview(model.graph),
+              savedSession,
+            },
+          }),
+        ],
+      }
+    },
     EditRequest: ({ request }) =>
       graphFold(
         model,

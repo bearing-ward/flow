@@ -6,6 +6,8 @@ test('Button Handle activates its app action without dragging or changing connec
   await page.goto('/ui-recipes/button-handle/')
   const button = page.getByRole('button', { name: 'Run action' })
   const node = page.locator('.flow-node[data-node-id="button-node"]')
+  await expect(node).toHaveAttribute('data-measured-width', '190')
+  await expect(node).toHaveAttribute('data-measured-height', '100')
   const initial = await node.getAttribute('style')
   await button.focus()
   await expect(button).toBeFocused()

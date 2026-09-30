@@ -12,9 +12,15 @@ import {
   createFoldkitPlaceholder,
   createFoldkitNodeMeasurementObserver,
   createProgram,
+  createFoldkitSnapshotClient,
   HostAction,
 } from '@flow/foldkit'
-import type { FoldkitNodeMeasurementObserver, ports } from '@flow/foldkit'
+import type {
+  FoldkitNodeMeasurementObserver,
+  FoldkitSnapshotClient,
+  FoldkitSnapshotResult,
+  ports,
+} from '@flow/foldkit'
 import { Effect, Exit } from 'effect'
 
 import '@flow/foldkit/style.css'
@@ -27,6 +33,9 @@ declare global {
       readonly edit: () => Promise<string>
       readonly mountSecond: () => void
       readonly measure: () => Promise<string>
+      readonly snapshot: (
+        owner: 'first' | 'second'
+      ) => Promise<FoldkitSnapshotResult>
       readonly dispose: () => void
     }
   }
@@ -135,6 +144,10 @@ const runtimeA = Runtime.embed<typeof ports, never, 'Element'>(
   )
 )
 
+const snapshotClientA = createFoldkitSnapshotClient(runtimeA.ports)
+
+let snapshotClientB: FoldkitSnapshotClient | undefined
+
 let runtimeB:
   | ReturnType<typeof Runtime.embed<typeof ports, never, 'Element'>>
   | undefined
@@ -153,6 +166,7 @@ const mountSecondRuntime = (): void => {
       rendererRegistry
     )
   )
+  snapshotClientB = createFoldkitSnapshotClient(runtimeB.ports)
   acceptedState.dataset['secondRuntime'] = 'started'
   runtimeB.ports.interactionEvents.subscribe((event) => {
     acceptedState.dataset['secondRuntimeEvent'] = event[0]?.name ?? 'empty'
@@ -340,7 +354,20 @@ window.__flowFoldkitConsumer = {
   edit,
   mountSecond: mountSecondRuntime,
   measure,
+  snapshot: (owner) => {
+    if (owner === 'first') {
+      return snapshotClientA.request()
+    }
+
+    if (snapshotClientB === undefined) {
+      throw new Error('Second snapshot owner is not mounted')
+    }
+
+    return snapshotClientB.request()
+  },
   dispose: () => {
+    snapshotClientA.dispose()
+    snapshotClientB?.dispose()
     tooltip.destroy()
     appendix.destroy()
     uiHost.remove()

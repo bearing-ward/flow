@@ -1,5 +1,7 @@
 # Implementation plans
 
+The [2026-09-30 integration and cleanup record](integration-cleanup.md) records the approved commits, combined verification, measurement-race test repair, and recoverable archives. Plan completion statuses below retain their bounded acceptance requirements.
+
 ## Definitive project goal
 
 As clarified by the maintainer on 2026-09-26, Flow aims to match React Flow's public interfaces as closely as each supported framework permits, and to make every example, UI component, and template in the React Flow catalogs achievable in every supported framework. Plain JavaScript, Vue, and Foldkit share this destination; future supported adapters inherit it.
