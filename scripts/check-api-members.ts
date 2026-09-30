@@ -55,7 +55,7 @@ const Page = S.Struct({
   members: S.Array(Member),
 })
 
-const Catalog = S.Struct({
+export const ApiMemberCatalogSchema = S.Struct({
   capturedOn: S.NonEmptyString,
   baselineCatalog: S.NonEmptyString,
   captureCounts: S.Struct({
@@ -108,7 +108,7 @@ const localEvidencePattern =
 
 const hostNames = ['vanilla', 'vue', 'foldkit'] as const
 
-const checkEvidenceLink = (
+export const checkEvidenceLink = (
   memberId: string,
   link: string,
   files: ReadonlyMap<string, string>,
@@ -364,7 +364,7 @@ const program = Effect.gen(function* checkApiMembersEffect() {
   const path = yield* Path.Path
   const root = yield* path.fromFileUrl(new URL('..', import.meta.url))
 
-  const catalog = yield* S.decodeUnknownEffect(Catalog)(
+  const catalog = yield* S.decodeUnknownEffect(ApiMemberCatalogSchema)(
     JSON.parse(
       yield* fileSystem.readFileString(
         path.join(root, 'research/catalogs/api-members.json')

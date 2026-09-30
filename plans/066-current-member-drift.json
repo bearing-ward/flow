@@ -1,0 +1,1148 @@
+{
+  "checkedOn": "2026-09-30T02:58:27.871Z",
+  "datedCapture": "2026-09-28",
+  "pinnedRevision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "scope": "Live official page and dated anchor identity check, separate from original requirements and pinned runtime proof.",
+  "pages": [
+    {
+      "url": "https://reactflow.dev/api-reference/react-flow",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "0a3f0bad892d0a6536181e9b2de30f71e9c944bf4cae0e9a66cc62d326cd4b5d",
+      "datedAnchors": 138,
+      "retainedDatedAnchors": 138,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/react-flow-provider",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f816c4dc89ff95de1d46832367e9d6246a80e3a4a85a2a60aac9c0aee273689b",
+      "datedAnchors": 16,
+      "retainedDatedAnchors": 16,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/background",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "4a7ea12a59cba8bfa8b6b02668b1c0ff8d2d117d2a3fa550bb124c9b7a27a764",
+      "datedAnchors": 15,
+      "retainedDatedAnchors": 15,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/base-edge",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "a17d13e4f6d39987f1e69a8ff271d68683c8089bae7d5bd1cc211e968f79c75b",
+      "datedAnchors": 14,
+      "retainedDatedAnchors": 14,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/control-button",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "cd6b6fe45f3ec5a71677987b33c219b3f540026cc72eaee92f7f145172c6cd2d",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/controls",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "1f9b5e30f6303152fd72d7766c43b43ac71d8f3f20208cbe9c506baee8d9edac",
+      "datedAnchors": 16,
+      "retainedDatedAnchors": 16,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/edge-label-renderer",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "3d534f63ed3b7c747122c92d4441fad9aebec0ca28c2f4da53f37e91d3389222",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/edge-text",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "94cf9038c36f666ca51ab6187ca8b602aaedc13ad09a1fe469b306de9df46b40",
+      "datedAnchors": 9,
+      "retainedDatedAnchors": 9,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/edge-toolbar",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "0008d4512e8a7bf6b83e172845ba3edb6a500bd85249710c0aa9295a10a3e911",
+      "datedAnchors": 8,
+      "retainedDatedAnchors": 8,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/handle",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c6b6e028c33727a6693d809caf7614892aabdcfded6e6e0c52d03b3d33bbea2e",
+      "datedAnchors": 9,
+      "retainedDatedAnchors": 9,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/minimap",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "b3026f897737449c5e48635178116ef55d400816ed34ddc651d3d61028cc405a",
+      "datedAnchors": 25,
+      "retainedDatedAnchors": 25,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/node-resize-control",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "b64e3e97b95daa3cb3626bba75f592cc0e7328f68ba8d3f89758c8c823732a18",
+      "datedAnchors": 19,
+      "retainedDatedAnchors": 19,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/node-resizer",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "8c1016ff7598d5e5f2e3e14e5062cb4b6b3a0529e7c77de70b4aa9dabd03d374",
+      "datedAnchors": 21,
+      "retainedDatedAnchors": 21,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/node-toolbar",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "9293b41437af2621b2c68729c257346ecdfb6a2fea43794a5df68218afefea18",
+      "datedAnchors": 7,
+      "retainedDatedAnchors": 7,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/panel",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "2c151ec4539ab130a7663fa98005adb573c2bc4d7b028f8edd97132348ac4383",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/components/viewport-portal",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "cc2024c19464594b96e1cad8bc9fb95485c082a8b1c7f0435eba3a0c4ace539a",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-connection",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "d23b21a0f36b7cac9d1c9dbbaf5267d25a9dc69cb3535e9d0f866580f5d27eb2",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-edges",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "5e653446c7e43e774e09da0a26a063638bb35f302855f9fd8d26ee7ef902c53b",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-edges-state",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "15f555087f678a6f5cdf7331c095beac3e62b59ae4348f9fd57419afd0887e06",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-handle-connections",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "0aa15ffeb1ca294e2d9128cbef343c9828be7a3886357dba23cadaf3e946ba5a",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-internal-node",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f7e26e372fdcf9b6059b76a9ec11bd274eb08b9e77fcdea227f44ee6917af032",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-key-press",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "6059891f380184431e3c29d17aa53e3457ca13507f4ad822720bebb9b734722f",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-node-connections",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "26e37be1818b406305f57c8759742e5f255eafa425927c3a252af2d9cc1c8017",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-node-id",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "1444f0d172b7badfb1ba5b84e8c9096ea96fc0100b9904f2327974ad1174911b",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "879db452d96615b17ed08c8482f1e18cbe2aafa710909a88e7ab0caa00abc49a",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes-data",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "86d9097a86d3ebcfd5e09ef26bc6f36338f1bdc7d4522c97308d7a34e5f2330f",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes-initialized",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "ae11142d0c2dfbe9831b2d2479d99830173d31f18fde9f8e26656f49581db9c0",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-nodes-state",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "400b14c16d1c37ddfe6de338d510220d31ce5f346a74e1eee49567be91064e9d",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-on-selection-change",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "fe93935eb5599fc98ebb23035c5e2fd82dc4995088d99b41b9d81d93fb3c3ea7",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-on-viewport-change",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "db6f4c8adf373edc45c115978419a974cced837374295e21bcdb16d999637768",
+      "datedAnchors": 5,
+      "retainedDatedAnchors": 5,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-react-flow",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "b26612bcebdb8447faf0cc715a7f46895c0e0311f7339ee05f115a8843950646",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-store",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "a3470d0967030867683fbd7a07e00bf419fcfd9150af24214f5cc13fb29d807b",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-store-api",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "b5132763744ab92b65eb4db839b44ec7683b3f6794699bd492a414b8c82590c5",
+      "datedAnchors": 5,
+      "retainedDatedAnchors": 5,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-update-node-internals",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f7a0346a970a1f251662e12e657a2dd0c10f5a75937e331919562fd54b61c325",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/hooks/use-viewport",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c2960eae381534c9572ba0854188dce5f50b64cef9ab1bce2f1eaaf8b0e56204",
+      "datedAnchors": 5,
+      "retainedDatedAnchors": 5,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/align",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "dbe298ac3841233e37c37e21ed3481d5c19cd8f43c6204f11650b0770c9cf31d",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/aria-label-config",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "fa4b50ff3dcb291fcf122a51aa157a018f7d9122029f5f2be2b81ecc882b4738",
+      "datedAnchors": 13,
+      "retainedDatedAnchors": 13,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/background-variant",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "87d2c62e3f1f8c1121211efb3e383eaf37ba2925efa2b627d81bf369f261a1cc",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/color-mode",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "6cfa9f3f698c8ca5b537e5578fbe2796eb484de2e271ae0a8b1f3082a4d31407",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/connection",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "1f663099f822a323d2f9427cb4bf4cb80760ee6986347072183bdc6c1051bd03",
+      "datedAnchors": 5,
+      "retainedDatedAnchors": 5,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/connection-line-component",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "2e426b9e744f3d148eab9713d9dac2107c17ad2259baa42172e341ffa37c379b",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/connection-line-component-props",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "7f0f63c62c107d6d70305dd389fe7b184e6883ce5f8ab5e6fc20a9025f05a8c4",
+      "datedAnchors": 15,
+      "retainedDatedAnchors": 15,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/connection-line-type",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "258ec7304f949245a6b4f92dd2a1f03b2cf050a148f2fb5ac5c530494b914740",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/connection-mode",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "2599efe94db2eb4fdd49620e8b55b484c40cbbbdafcf785c20af6b270216d82a",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/connection-state",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "15124207aa6ded26a4155ca2195ae2d379f895e104b417ffed811f3287f9e624",
+      "datedAnchors": 12,
+      "retainedDatedAnchors": 12,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/coordinate-extent",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f28adf1a8da481255478e8fe5ebd4f491212841524411638630ddd75c633e44e",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/default-edge-options",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "3b9627f9237132c64c134ac791e681994317974895f6e3a62d7590306b7d0e64",
+      "datedAnchors": 24,
+      "retainedDatedAnchors": 24,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/delete-elements",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "2bb4145eb2e5ecc59497634de3f2533faefbc0705c2a24b88badf19fc76ca22a",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/edge",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "321ed8098b0e21432fec59a96bea9b8c2894d62cc6198018208f875052190ce9",
+      "datedAnchors": 35,
+      "retainedDatedAnchors": 35,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/edge-change",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "8ca6a3a7d2f9b1aef7aaa42db1628a51af36cffab4b17ed692b1fd7bf58e5df2",
+      "datedAnchors": 10,
+      "retainedDatedAnchors": 10,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/edge-marker",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "4cc33c36301396ce9924d02aeda9c55c43d12b744bf6221a099a081b57f0b7e3",
+      "datedAnchors": 8,
+      "retainedDatedAnchors": 8,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/edge-mouse-handler",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "57d3cbb0acea02165721eb3568ba90ed9151eddde141f4b25a01a38cacd30193",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/edge-props",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "004804d3d71e3b54517625175b53bbb1bcb905386db7e0f427e4f9b61c5cfd1a",
+      "datedAnchors": 29,
+      "retainedDatedAnchors": 29,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/edge-types",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "29015a6221afeb4df9769199b682af25f6c691b323335083fd8eb09af95a399d",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/fit-view-options",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "653444546f5f3770b169c9d2571c7c08c6fd4258c288f252ccaf01453b28c06f",
+      "datedAnchors": 9,
+      "retainedDatedAnchors": 9,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/handle",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "cf98d68df1282a28a67ef27472bad9e2ca40ce1201c516e9be577782f4266716",
+      "datedAnchors": 9,
+      "retainedDatedAnchors": 9,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/handle-connection",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "ed858acf3067aa9e51acb27e1ac09a1e69c759cafe7fea9fbb77ee681e45446c",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/internal-node",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "75c2cfa24e4a83ab39c7fa30b9539a246940d32bafe7513e83a2a6dfe8b46ddb",
+      "datedAnchors": 29,
+      "retainedDatedAnchors": 29,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/is-valid-connection",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c42da6656da3ac2e76c0230eaac625600c164f1d65ae498d0ec3b648d7c5816e",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/key-code",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "4244bdcebb642c970ea34edf05a4b6246b2f5412f9318a9ce9dc4b20b0bf3251",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/marker-type",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f708df36a5fee04aa4288716eb530412cf8096d9fd1fc862ab903fea01d697fa",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/mini-map-node-props",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "87d9c4072da9eff61b3bf2a550869e1f2a5b6bb3e110c920b52ad6dc2ed3f79a",
+      "datedAnchors": 15,
+      "retainedDatedAnchors": 15,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "e670afe4765440ee5ff19764d5a9283797401d4ef200ff1339f2a22bb0882d77",
+      "datedAnchors": 35,
+      "retainedDatedAnchors": 35,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-change",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "59d74cf4b79ebd06d3d58696f981acd567a4e3735f5d1726aee2302f4c672653",
+      "datedAnchors": 18,
+      "retainedDatedAnchors": 18,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-connection",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "5bdfaa2e5b23d5afd9d60d5f6a5451989a05088dc425b2550d95b6feb38cf102",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-handle",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "fb3b649928ab04eb104b0735306625d94b18e29cd207a982b4462ba0dbe574e0",
+      "datedAnchors": 7,
+      "retainedDatedAnchors": 7,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-mouse-handler",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c6c6eaca782210d2aba25bd37f4ee051f06ef35aafcdaec54fe4e076cba68bab",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-origin",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "68782e3aad54e73defa5ac15b5741922afb2bf29aae4c7477cbb70d98b1b274a",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-props",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f2335c7280e42d33be963c73f341f1b2d2efb4c1d07da1db107f9a04d025c25b",
+      "datedAnchors": 20,
+      "retainedDatedAnchors": 20,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/node-types",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "5147904f0fdcb05de55c175d38d07323cea616b5d6630006568ba9e26da892c0",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-before-delete",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "1734492524aa3be862570b31020955e33aa7c0f9b0a9c48b6a50829da4020707",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-connect",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "b2aa8c392de300d0bd61fec2a34a1010ee52de9b736ffd9b4f40dd996538c763",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-connect-end",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "4d083ad8b1e48e131cb020f96f1eead4c2c2d2fca477f88cbd9da08e092fde41",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-connect-start",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "91dd4ef46bf9dc6394a0995da0f903e6eb5e4db487f5b24974d195da793e8ff4",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-delete",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "01b35b512aa73ec29cd2853374d53ca469334fc9d7ac468be8dfc9d3ad511289",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-edges-change",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "9ea1440bcb2f5dd6ae9a814e50769076f57fb989375abeb150779ad7ac91f0bf",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-edges-delete",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "24a124a9fcd676f10816cb0e2e84b64a422c46a1d989a531ea4e299d16d9bcb1",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-error",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c023f7e21abf6140a57cb26fe4fa69b9cc3c552882ed7a4e4bb670f9a85b53d4",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-init",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f0019b4be4418f8618cba2ef697875c9b1433f9e5f80ce3654289d3225db06b3",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-move",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "1cef28ec3d4f5ea3d58d25182873873cfb53d784e656a3c4ade4b8eb58a36bb5",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-node-drag",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "b897c32ea1e02aa6c86d76d74e83fac1a22bc375c64ba672f699a814a08ca834",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-nodes-change",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "e08bf0b43870f290c54747a05e7d7fb695ab5c9515adbb265a23b1264e5ce996",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-nodes-delete",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "4f6be369ceef2596eaef929f8d532d5054f7bc59d1ff2232119e62de099f294c",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-reconnect",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "82a64735f631a86bc59194bc5354c89db9bd86e811bc2abe1de9657476f86ae5",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/on-selection-change-func",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "36d2df8bb568478e57e25adccb378ab4ba7bdc3c4797b07ee97f5ff9be12007f",
+      "datedAnchors": 1,
+      "retainedDatedAnchors": 1,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/pan-on-scroll-mode",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f575186c4444222944b2119a98211f75932c70297ecdac15e4ae62df88841e2d",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/panel-position",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "307c748a3e831e8eab21f9d0b14a7b5c21db321930de8c3594aa3136b24c1394",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/position",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "7401e5c633d13d4c58614c080bbbed4936b13f66f68f42ba4c6411a587e06f62",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/pro-options",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "46dfdb781de40d8a2ba3ca65b5e50ff49763c53a40897a0798be34a31870909a",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/react-flow-instance",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "18b8da15bd9319e48dedfe490138814dcc6ff4ca2cdc1702281c393586200fef",
+      "datedAnchors": 36,
+      "retainedDatedAnchors": 36,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/react-flow-json-object",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "69bcdd23bcb701c866f7e2e8f65d165eba942e117cd4dbfe5d521050898c9218",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/rect",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "0cf9ef625c25068ba81da0f99c68f96d31032cdcb062a825be749e50aef7b7ef",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/resize-params",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "d260ce7d6f2d28039344b11ef9b3c9938a9cbb8fe1dfcef6262efa5a787a00ea",
+      "datedAnchors": 5,
+      "retainedDatedAnchors": 5,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/selection-drag-handler",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "40c53d7ac425ac03d7a12cfe3a5b88ef1c4f2683aa26537fccd88df59fcdf558",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/selection-mode",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c866041b4d87913a0e858f790f590a604a53449fb263a8e9276efe7847f80468",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/snap-grid",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "f14681e6f756f8b65911a061bdeb6b7fc25a7c7611145fc23edb3e74455638e2",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/viewport",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "90c11ef6befeb67ee495527aad974d6b51bf0b6562632aa6b1a6291f900ffdcc",
+      "datedAnchors": 5,
+      "retainedDatedAnchors": 5,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/xy-position",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "2da165c78ad32098e79004f98baeb31b15439cd17a50984963016488f7859506",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/types/z-index-mode",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "aeccf309ca21438be75d226ae525cd29b947fc94012c4a48bd66584aaf6aea3e",
+      "datedAnchors": 0,
+      "retainedDatedAnchors": 0,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/add-edge",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "165d2bce02856440163e243dd1cd7d6a4f64aff4fc8686189fd4f60af1a1dda3",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/apply-edge-changes",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "c7ac711c24635358b78b1582bf092f4f7e5dca02067f28e8532d47abebb7d844",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/apply-node-changes",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "d23764fbf4c2476abd8a735d93f048fd290e9d287b031560171284dbd179fba0",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-bezier-path",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "61e4a378ea3374e167cec5fc7be46add9427eaddb7d0491c58d909c02a70f433",
+      "datedAnchors": 9,
+      "retainedDatedAnchors": 9,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-connected-edges",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "60415e2dbd526b0043adfe23fa114398ac6b35cf05239e9a69e9b2d55b52ea67",
+      "datedAnchors": 3,
+      "retainedDatedAnchors": 3,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-incomers",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "84dc4ca9f586285b798e8a45b961c94a23e32874441d567bf761dabe4beaa076",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-nodes-bounds",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "996c5f7e3e4620eab7ab0d34bea0fdf375dcc22515b5549f939643b0b1ea7546",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-outgoers",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "e42ca98c1ac4aca16dad28650571149e1791af1d910153ef029910daedf183fd",
+      "datedAnchors": 4,
+      "retainedDatedAnchors": 4,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "24a1af8ca7a1dd24082476502c01f0ceba7598f34daec486ada72322f57bc5da",
+      "datedAnchors": 8,
+      "retainedDatedAnchors": 8,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-smooth-step-path",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "45b038464a2e6100cbbb29581b5e55da18bc101cdde458c522e6a9f63358cb78",
+      "datedAnchors": 13,
+      "retainedDatedAnchors": 13,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-straight-path",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "19ce05541bb0ed8a0a5426f39e3607b5bf31a268ab36f369fdc0ab74473f3233",
+      "datedAnchors": 6,
+      "retainedDatedAnchors": 6,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/get-viewport-for-bounds",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "cd20f5b2f4d24ad328c1eadbafd2cf6880c68457228184b77432e71a33123770",
+      "datedAnchors": 11,
+      "retainedDatedAnchors": 11,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/is-edge",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "3c17426509932c8163367e1ca468af72b84bbe4f7e5b7298eaf71f3e45fd4852",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/is-node",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "02a28b1cb1977e85f20dfa1a24653635c0d2c488bda318d0ee34daa42a8eb309",
+      "datedAnchors": 2,
+      "retainedDatedAnchors": 2,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    },
+    {
+      "url": "https://reactflow.dev/api-reference/utils/reconnect-edge",
+      "status": "dated-anchors-retained",
+      "httpStatus": 200,
+      "sha256": "62010b650cfad2bfffd31ae1092924e5021575803a482da4188396f3361184c3",
+      "datedAnchors": 10,
+      "retainedDatedAnchors": 10,
+      "missingDatedAnchors": [],
+      "limitation": "Anchor identities only; prose/default/type changes and pinned runtime equivalence remain unverified."
+    }
+  ]
+}

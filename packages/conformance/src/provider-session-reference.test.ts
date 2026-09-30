@@ -16,6 +16,8 @@ import type { EdgeChange, NodeChange } from '@flow/core'
 import { Effect, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
+import { isFlowTraceSourcePath } from '../../../scripts/check-research-traces'
+
 const NodeSchema = S.Struct({
   id: S.String,
   type: S.optional(S.String),
@@ -59,6 +61,19 @@ const FixtureSchema = S.Struct({
     saved: GraphSchema,
     changed: GraphSchema,
     restored: GraphSchema,
+    initialization: S.Array(
+      S.Struct({
+        id: S.String,
+        phase: S.Literals(['provider-only', 'settled-controlled-child']),
+        value: S.Struct({
+          nodeIds: S.Array(S.String),
+          edgeIds: S.Array(S.String),
+          viewport: S.Struct({ x: S.Number, y: S.Number, zoom: S.Number }),
+          renderedNodeIds: S.Array(S.String),
+          renderedViewportTransform: S.NullOr(S.String),
+        }),
+      })
+    ),
   }),
 })
 
@@ -125,6 +140,17 @@ const makeChangedGraph = (fixture: typeof FixtureSchema.Type) => {
 }
 
 describe('pinned provider and session reference', () => {
+  it('keeps conformance test citations local and pinned React sources upstream', () => {
+    expect(
+      isFlowTraceSourcePath(
+        'packages/conformance/src/provider-session-reference.test.ts'
+      )
+    ).toBeTruthy()
+    expect(
+      isFlowTraceSourcePath('packages/react/src/store/initialState.ts')
+    ).toBeFalsy()
+  })
+
   it('validates the two-run pinned capture and its durable digests', () => {
     const fixture = readFixture()
 
@@ -148,6 +174,150 @@ describe('pinned provider and session reference', () => {
       edges: [],
       viewport: { x: 99, y: 101, zoom: 2 },
     })
+  })
+
+  it.each([
+    {
+      id: 'empty-fit',
+      nodeIds: [],
+      edgeIds: [],
+      viewport: { x: 400, y: 300, zoom: 2 },
+    },
+    {
+      id: 'all-unsized-fit',
+      nodeIds: ['unsized'],
+      edgeIds: [],
+      viewport: { x: 400, y: 300, zoom: 2 },
+    },
+    {
+      id: 'mixed-fit',
+      nodeIds: ['sized', 'unsized'],
+      edgeIds: [],
+      viewport: { x: 100, y: 150, zoom: 2 },
+    },
+    {
+      id: 'sized-fit',
+      nodeIds: ['sized'],
+      edgeIds: [],
+      viewport: { x: 100, y: 150, zoom: 2 },
+    },
+    {
+      id: 'initial-node-dimensions-fit',
+      nodeIds: ['initial-size'],
+      edgeIds: [],
+      viewport: { x: 100, y: 150, zoom: 2 },
+    },
+    {
+      id: 'empty-max-zoom',
+      nodeIds: [],
+      edgeIds: [],
+      viewport: { x: 400, y: 300, zoom: 1.25 },
+    },
+    {
+      id: 'minimum-zoom',
+      nodeIds: ['sized'],
+      edgeIds: [],
+      viewport: { x: -425, y: -487.5, zoom: 0.75 },
+    },
+    {
+      id: 'missing-pane-dimensions',
+      nodeIds: ['sized'],
+      edgeIds: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    },
+    {
+      id: 'fit-disabled',
+      nodeIds: ['sized'],
+      edgeIds: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    },
+    {
+      id: 'initial-fit-padding',
+      nodeIds: ['sized'],
+      edgeIds: [],
+      viewport: { x: -401, y: -100.5, zoom: 5.34 },
+    },
+    {
+      id: 'default-collection-precedence',
+      nodeIds: ['default-a', 'default-b'],
+      edgeIds: ['default-edge'],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    },
+    {
+      id: 'empty-default-collection-precedence',
+      nodeIds: [],
+      edgeIds: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    },
+  ])(
+    'records provider-only $id through public hooks without claiming Flow initialization',
+    ({ id, ...expected }) => {
+      // initialState.ts:55-82: nullish default precedence and fit even for empty filtered bounds.
+      const observation = readFixture().cases.initialization.find(
+        (candidate) =>
+          candidate.id === id && candidate.phase === 'provider-only'
+      )
+
+      expect(observation?.value).toStrictEqual({
+        ...expected,
+        renderedNodeIds: [],
+        renderedViewportTransform: null,
+      })
+    }
+  )
+
+  it('records controlled StoreUpdater and viewport output only after hooks, current public reads and rendered output settle', () => {
+    const observations = readFixture().cases.initialization
+
+    const expected = [
+      {
+        id: 'controlled-after-provider-defaults',
+        viewport: { x: 13, y: 17, zoom: 1.25 },
+        transform: 'translate(13px, 17px) scale(1.25)',
+      },
+      {
+        id: 'controlled-viewport-over-default',
+        viewport: { x: 31, y: 37, zoom: 0.75 },
+        transform: 'translate(31px, 37px) scale(0.75)',
+      },
+      {
+        id: 'child-fit-over-default-viewport',
+        viewport: { x: 100, y: 250, zoom: 2 },
+        transform: 'translate(100px, 250px) scale(2)',
+      },
+    ]
+
+    for (const { id, viewport, transform } of expected) {
+      const provider = observations.find(
+        (candidate) =>
+          candidate.id === id && candidate.phase === 'provider-only'
+      )
+
+      const child = observations.find(
+        (candidate) =>
+          candidate.id === id && candidate.phase === 'settled-controlled-child'
+      )
+
+      expect(provider?.value).toStrictEqual({
+        nodeIds: ['default-a', 'default-b'],
+        edgeIds: ['default-edge'],
+        viewport: { x: 100, y: 250, zoom: 2 },
+        renderedNodeIds: [],
+        renderedViewportTransform: null,
+      })
+      expect(child?.value).toStrictEqual({
+        nodeIds: ['controlled-a', 'controlled-b'],
+        edgeIds: ['controlled-edge'],
+        viewport,
+        renderedNodeIds: ['controlled-a', 'controlled-b'],
+        renderedViewportTransform: transform,
+      })
+    }
+
+    expect(
+      observations.filter(({ phase }) => phase === 'settled-controlled-child')
+    ).toHaveLength(3)
+    expect(observations).toHaveLength(18)
   })
 
   it('matches Flow decoded nodes and selector output to the pinned hooks', () => {

@@ -6,6 +6,7 @@ const citationPattern =
 
 export const isFlowTraceSourcePath = (relativePath: string): boolean =>
   relativePath.startsWith('packages/core/') ||
+  relativePath.startsWith('packages/conformance/') ||
   relativePath.startsWith('packages/foldkit/') ||
   relativePath.startsWith('packages/vue/') ||
   relativePath.startsWith('apps/') ||

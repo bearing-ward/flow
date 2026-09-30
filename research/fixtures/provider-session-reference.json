@@ -4,14 +4,14 @@
     "package": "@xyflow/react",
     "version": "12.11.6",
     "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
-    "capturedAt": "2026-09-29T02:29:26.215Z",
-    "normalization": "capturedAt excluded from repeated comparison; measured node geometry omitted; ordered node and edge projections retained",
     "captureRuns": 2,
-    "normalizedSha256": "2675201383a414b182d47e16b1737fc03d74c7dcc8f6c7c99935d859a50fcecb",
     "captureRunDigests": [
-      "2675201383a414b182d47e16b1737fc03d74c7dcc8f6c7c99935d859a50fcecb",
-      "2675201383a414b182d47e16b1737fc03d74c7dcc8f6c7c99935d859a50fcecb"
-    ]
+      "43dc261fec44a6d12439ca1cac80e6fd002ee6fcdc3e51f378a00c983d354a59",
+      "43dc261fec44a6d12439ca1cac80e6fd002ee6fcdc3e51f378a00c983d354a59"
+    ],
+    "normalizedSha256": "43dc261fec44a6d12439ca1cac80e6fd002ee6fcdc3e51f378a00c983d354a59",
+    "capturedAt": "2026-09-30T02:51:36.295Z",
+    "normalization": "capturedAt excluded from repeated comparison; measured node geometry omitted; ordered node and edge projections retained; provider-only and eight-frame stable settled controlled-child observations separated"
   },
   "cases": {
     "contextIds": ["a", "b"],
@@ -168,6 +168,278 @@
         "y": 17,
         "zoom": 1.25
       }
-    }
+    },
+    "initialization": [
+      {
+        "id": "empty-fit",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": [],
+          "edgeIds": [],
+          "viewport": {
+            "x": 400,
+            "y": 300,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "all-unsized-fit",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["unsized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": 400,
+            "y": 300,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "mixed-fit",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["sized", "unsized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": 100,
+            "y": 150,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "sized-fit",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["sized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": 100,
+            "y": 150,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "initial-node-dimensions-fit",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["initial-size"],
+          "edgeIds": [],
+          "viewport": {
+            "x": 100,
+            "y": 150,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "empty-max-zoom",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": [],
+          "edgeIds": [],
+          "viewport": {
+            "x": 400,
+            "y": 300,
+            "zoom": 1.25
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "minimum-zoom",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["sized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": -425,
+            "y": -487.5,
+            "zoom": 0.75
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "missing-pane-dimensions",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["sized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "fit-disabled",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["sized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "default-collection-precedence",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["default-a", "default-b"],
+          "edgeIds": ["default-edge"],
+          "viewport": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "empty-default-collection-precedence",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": [],
+          "edgeIds": [],
+          "viewport": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "initial-fit-padding",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["sized"],
+          "edgeIds": [],
+          "viewport": {
+            "x": -401,
+            "y": -100.5,
+            "zoom": 5.34
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "controlled-after-provider-defaults",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["default-a", "default-b"],
+          "edgeIds": ["default-edge"],
+          "viewport": {
+            "x": 100,
+            "y": 250,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "controlled-after-provider-defaults",
+        "phase": "settled-controlled-child",
+        "value": {
+          "nodeIds": ["controlled-a", "controlled-b"],
+          "edgeIds": ["controlled-edge"],
+          "viewport": {
+            "x": 13,
+            "y": 17,
+            "zoom": 1.25
+          },
+          "renderedNodeIds": ["controlled-a", "controlled-b"],
+          "renderedViewportTransform": "translate(13px, 17px) scale(1.25)"
+        }
+      },
+      {
+        "id": "controlled-viewport-over-default",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["default-a", "default-b"],
+          "edgeIds": ["default-edge"],
+          "viewport": {
+            "x": 100,
+            "y": 250,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "controlled-viewport-over-default",
+        "phase": "settled-controlled-child",
+        "value": {
+          "nodeIds": ["controlled-a", "controlled-b"],
+          "edgeIds": ["controlled-edge"],
+          "viewport": {
+            "x": 31,
+            "y": 37,
+            "zoom": 0.75
+          },
+          "renderedNodeIds": ["controlled-a", "controlled-b"],
+          "renderedViewportTransform": "translate(31px, 37px) scale(0.75)"
+        }
+      },
+      {
+        "id": "child-fit-over-default-viewport",
+        "phase": "provider-only",
+        "value": {
+          "nodeIds": ["default-a", "default-b"],
+          "edgeIds": ["default-edge"],
+          "viewport": {
+            "x": 100,
+            "y": 250,
+            "zoom": 2
+          },
+          "renderedNodeIds": [],
+          "renderedViewportTransform": null
+        }
+      },
+      {
+        "id": "child-fit-over-default-viewport",
+        "phase": "settled-controlled-child",
+        "value": {
+          "nodeIds": ["controlled-a", "controlled-b"],
+          "edgeIds": ["controlled-edge"],
+          "viewport": {
+            "x": 100,
+            "y": 250,
+            "zoom": 2
+          },
+          "renderedNodeIds": ["controlled-a", "controlled-b"],
+          "renderedViewportTransform": "translate(100px, 250px) scale(2)"
+        }
+      }
+    ]
   }
 }

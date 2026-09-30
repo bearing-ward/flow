@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 066 decomposition approval; architecture section 064 approval;069 integration before final acceptance; 057 accepted observation/key/connection slices; 056 interaction lifecycle baseline
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: TODO — architecture APPROVED Round2; source execution awaits 066 checked decomposition and coordinator dispatch
+- Status: BLOCKED — final review revision exhausted; browser assertion preflight fails quality
 
 ## Why this matters
 
@@ -135,6 +135,14 @@ STOP if achieving these contracts requires unchecked casts, private mutable stor
 
 ## Maintenance
 
+Coordinator scope amendment, 2026-09-29: `apps/foldkit/src/main.ts` is included at its existing Runtime composition, snapshot request/read plumbing and teardown. It must supply the actual outbound connectionPreviews port to native observers, replace local pending snapshot plumbing with the approved createFoldkitSnapshotClient, and dispose that client with the owning Runtime. This exercises the production playground composition separately from harness-only wiring. No065 candidate source is a prerequisite or authorized copy.
+
+## Concrete execution checkpoints, 2026-09-29
+
+Initial compiler scaffolding stopped on optional query signatures and incorrect Foldkit Command.define/update-result conventions. Focused review revision1 used the existing execute callback and commands-union narrowing; required typecheck passed. The coordinator inspected the new observer/client assertions and independently reran three focused files:15 tests passed. These cover native equality, owner separation, query/callback replacement, disconnect reentrancy, terminal preview cleanup, request correlation and disposal. They do not prove production Runtime or browser behavior.
+
+Required quality check then failed twice after focused repair. Its second run passed formatting but reported snapshot-client.ts52's instance-independent reporter scope and missing blank lines between Vue test-harness watcher registrations at1334/1337/1340. The executor stopped. Final focused review revision2 is authorized for those exact errors and completion of the original public/browser/reference/packed/docs/fullverify gates. Two new required failures after focused repair must STOP; no third automatic revision. No member cells or full064 acceptance are closed at this checkpoint.
+
 Revisit this child when public defaults/options/schemas, owner lifecycle or pinned/current upstream contract changes. Record capture dates and revisions independently. Evidence links require semantic review after line changes; count/checker success does not establish member behavior.
 
 ## Round1 transient notification boundary
@@ -148,3 +156,7 @@ Review source: coordinator-reported `review_057_child_plans`, Round2 FINAL, 2026
 Required next action:066 checked member decomposition and accepted prerequisite snapshot. Architecture is approved; public implementation/tests/reference/packed/full verify gates remain incomplete.069 integration remains required before final generic acceptance.
 
 This record changes planning status only. Original requirements, implementation scope and acceptance checks remain intact. No source work, third revision, browser gate or completion claim is made. Central per-contract verdict and source boundary are recorded in `plans/057-public-contract-design.md`.
+
+Final064 revision2 STOP: required check/typecheck passed after encoded whole-event ingress and spacing repair. New real-owner browser assertion preflight then failed quality at apps/vanilla/e2e/public-state.e2e.ts1462 (no-invalid-void-type on Promise.withResolvers<void>). Executor stopped without edits/retries. Production assertions, capture, conformance, packed/docs/full verification remain incomplete. The shared browser slot was unused/released. No semantic member or full064 acceptance is closed.
+
+Root independently ran mandatory `bun run verify` in the selector worktree after the final STOP. It exited1 at the same quality failure, `apps/vanilla/e2e/public-state.e2e.ts:1462` (`no-invalid-void-type`); log `/tmp/flow-064-final-verify.log`. No browser ran and no full acceptance is inferred from the earlier focused checks.

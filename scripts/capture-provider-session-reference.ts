@@ -8,6 +8,7 @@ import { Schema as S } from 'effect'
 declare global {
   interface Window {
     __providerSessionCapture?: string
+    __providerInitializationProgress?: string
   }
 }
 
@@ -119,17 +120,62 @@ const server = Bun.spawn(
 const browser = await chromium.launch({ headless: true })
 
 try {
+  const deadline = Date.now() + 30_000
+
+  const waitForServer = async (): Promise<void> => {
+    if (server.exitCode !== null) {
+      throw new Error(`Provider capture server exited (${server.exitCode})`)
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:4191')
+
+      if (response.ok) {
+        return
+      }
+    } catch {
+      // Vite has not opened its strict port yet.
+    }
+
+    if (Date.now() >= deadline) {
+      throw new Error('Provider capture server readiness timed out')
+    }
+
+    await Bun.sleep(100)
+
+    return waitForServer()
+  }
+
+  await waitForServer()
+
   const capture = async () => {
     const page = await browser.newPage()
+    page.on('pageerror', (error) =>
+      process.stderr.write(`${error.stack ?? error.message}\n`)
+    )
 
     try {
       await page.goto('http://127.0.0.1:4191', {
         waitUntil: 'domcontentloaded',
       })
-      await page.waitForFunction(
-        () => window.__providerSessionCapture !== undefined,
-        { timeout: 30_000 }
-      )
+
+      try {
+        await page.waitForFunction(
+          () => window.__providerSessionCapture !== undefined,
+          undefined,
+          { timeout: 30_000 }
+        )
+      } catch (error) {
+        const progress = await page.evaluate(
+          () => window.__providerInitializationProgress
+        )
+
+        process.stderr.write(
+          `Provider initialization progress: ${progress ?? 'not published'}\n`
+        )
+        throw error
+      }
+
       const value = await page.evaluate(() => window.__providerSessionCapture)
 
       if (value === undefined) {
@@ -175,7 +221,7 @@ try {
       normalizedSha256: captureRunDigests[0],
       capturedAt: new Date().toISOString(),
       normalization:
-        'capturedAt excluded from repeated comparison; measured node geometry omitted; ordered node and edge projections retained',
+        'capturedAt excluded from repeated comparison; measured node geometry omitted; ordered node and edge projections retained; provider-only and eight-frame stable settled controlled-child observations separated',
     },
     cases: first,
   }

@@ -9,6 +9,7 @@ if (checkout === undefined) {
 export default defineConfig({
   resolve: {
     alias: {
+      '@xyflow/react/dist/style.css': `${checkout}/packages/react/dist/style.css`,
       '@xyflow/react': `${checkout}/packages/react/dist/esm/index.js`,
       'react/jsx-runtime': `${checkout}/node_modules/react/jsx-runtime.js`,
       'react/jsx-dev-runtime': `${checkout}/node_modules/react/jsx-dev-runtime.js`,

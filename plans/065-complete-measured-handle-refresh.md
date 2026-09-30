@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 066 decomposition approval; architecture section 065 approval; 053 measured geometry baseline; 054 custom renderer baseline; 057 accepted refresh facade
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: TODO — architecture APPROVED Round2; source execution awaits 066 checked decomposition and coordinator dispatch
+- Status: BLOCKED — final revision exhausted; Foldkit pointer-up handler migration fails typecheck
 
 ## Why this matters
 
@@ -148,3 +148,19 @@ Review source: coordinator-reported `review_057_child_plans`, Round2 FINAL, 2026
 Required next action:066 checked member decomposition and accepted prerequisite snapshot. One MeasuredHandleSchema migration contract is architecture-approved; no implementation or proof of refreshed handle endpoints is claimed.
 
 This record changes planning status only. Original requirements, implementation scope and acceptance checks remain intact. No source work, third revision, browser gate or completion claim is made. Central per-contract verdict and source boundary are recorded in `plans/057-public-contract-design.md`.
+
+## Execution checkpoint and focused revision, 2026-09-29
+
+The checked 066 decomposition and independent ownership review satisfy the staged prerequisite. All 63 original measurement records remain assigned; dynamic-handle evidence targets now name the measured-geometry suites and capture-handle-refresh-reference script. Initial source migration stopped after two typecheck failures: misplaced codemod assignments were repaired, then a remaining Vanilla resize-preview call referenced the removed edgeRenderer.measureNode method. No completion or passing verification is claimed. The coordinator will dispatch a focused revision to migrate this caller into the single authority and finish the approved steps; this is revision round1, not an automatic retry.
+
+Public internal-node projection amendment: add Schema-derived readonly handles using the existing MeasuredHandleSchema. A single projection filters current generation, accepted handle identities and inherited graph visibility. Public dimensions and handles use this same projection; hidden/unmeasured nodes expose an empty handle array. Detach and freeze arrays, handle objects and offset objects before public delivery. Old generation, removed handles and hidden descendants cannot expose measurements. Persistence remains unchanged. Native handles differ structurally from React handleBounds; record the explicit semantic mapping and actual field test boundary rather than declaring raw-shape parity. Independent review identified these requirements before source resume.
+
+Independent reviewer review_070 approved the public projection amendment with stale-generation/readiness, inherited visibility, detached/frozen nested geometry and unchanged persistence tests. Revision1 passed16focused unit tests but stopped at its second typecheck failure: accidental widening of unrelated nodeIds interfaces caused getNodesData's .map error at the current Vanilla source line8357. The coordinator inspected the diff and dispatched final revision2 to restore all unrelated signatures and finish the original gates. Browser/capture/packed/full verification remain unexecuted at this checkpoint.
+
+## Final revision STOP, 2026-09-29
+
+The first typecheck in final revision2 failed at Vue disposal waiter settlement (`packages/vue/src/flow-canvas.ts:4839`) because a string was assigned where branded NodeId was required. After that focused repair, the second `bun run typecheck` failed at `packages/foldkit/src/graph.ts:3422`: a pointer-up callback calls the new geometry helper with `model`, but that callback only has serialized view input. Core, Vanilla and Vue package builds passed before the Foldkit failure. Migration must carry accepted measurement geometry through the existing typed view input; a live DOM or fabricated coordinate fallback would evade the reviewed authority contract. The executor stopped without further edits or checks.
+
+The coordinator read the focused unit assertions and independently reran both files: 16 tests passed. This verifies their bounded generation/visibility/mutation and failure-settlement assertions only. New dynamic browser fixtures/assertions are unrun; reference capture, packed consumers, docs and full local acceptance remain incomplete. No member cell closes. All partial source is preserved uncommitted in the isolated remaining-actionable worktree. Two review revision rounds are exhausted;065 and downstream067 implementation are blocked. Parent057 remains open.
+
+Coordinator final cumulative `bun run verify` exited1 at the quality gate: formatting issues in21 changed files and lint violations in the unfinished065 slice. It stopped before typecheck, browser, packed or later verifier stages. This independent result does not replace the separate recorded compiler failure, and no further repair was dispatched.

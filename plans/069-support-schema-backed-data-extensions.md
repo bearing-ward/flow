@@ -146,3 +146,88 @@ Review source: coordinator-reported `review_057_child_plans`, Round2 FINAL, 2026
 Required next action: ground a concrete synchronous codec capability or separate Effectful typed getter/read APIs with compile/runtime/service/error evidence. Arbitrary serviceful encode/decode cannot detach behind existing synchronous getters. No silent signature change, hidden Effect, JsonObject erasure or third speculative design revision.
 
 This record changes planning status only. Original requirements, implementation scope and acceptance checks remain intact. No source work, third revision, browser gate or completion claim is made. Central per-contract verdict and source boundary are recorded in `plans/057-public-contract-design.md`.
+
+## Source-grounded refinement pointers, 2026-09-29
+
+The coordinator inspected the installed exact RC and Foldkit runtime without editing product source. Effect's decodeUnknownSync accepts ConstraintDecoder with default DecodingServices never (node_modules/effect/src/Schema.ts:843,1811); service-free typing alone does not prove a codec cannot suspend. A bounded probe must separately test asynchronous service-free transformations and typed service requirements. Schema.Union preserves a const member tuple's Type/Encoded/services (node_modules/effect/src/Schema.ts:4756); TaggedUnion's registry constructor fixes the discriminator to _tag (node_modules/effect/src/Schema.ts:6276), so it cannot be silently substituted for Flow's actual type field. An alternative typed variant builder/tuple registry still needs positive/negative compiler evidence before a contract rewrite.
+
+Foldkit0.163's installed node_modules/foldkit/dist/runtime/makeElement.d.ts:14 declaration accepts a model Codec with unknown services, but node_modules/foldkit/dist/runtime/runtime.js:100-104 constructs JSON preservation parsers using decodeUnknownExit and encodeUnknownSync without the application's service Layer at that seam. Its deepFreeze explicitly leaves mutable Date/Map/class values unfrozen. A typed-data design must investigate the real preservation/render/update path as well as public getter detachment; broad schema types alone do not prove these operations work. These are local source observations, not a reproduced serviceful failure or approval of a third design. The original069 remains BLOCKED pending bounded compile/runtime probes and independent review.
+
+## Bounded installed-runtime probes, 2026-09-29
+
+The coordinator ran two inline, read-only Bun probes against installed Effect4.0.0-rc.116. A String-to-Date codec using SchemaGetter.transformEffect and Effect.sleep(1) for decode is service-free but suspends: decodeUnknownSync throws `Error: Sync adapter can only throw schema errors`, while decodeUnknownEffect/runPromise returns the correct Date. A Struct containing that codec with asynchronous encode/decode, passed through Schema.toCodecJson, also fails encodeUnknownSync and returns a Failure from decodeUnknownExit; encodeUnknownEffect/runPromise produces the expected ISO string. These are the same parser constructors used at the inspected Foldkit preservation seam, not a complete Foldkit runtime test. No compiler-inference or service-Layer claim is made. Thus a service-free schema constraint alone is demonstrably insufficient to promise synchronous cloning/getters or preservation. Further bounded compile/service/real-runtime evidence and independent architecture review are still required; no third design or source implementation is approved.
+
+Reproduce the parser-constructor probe from the exact installed workspace; it writes no files:
+
+```sh
+bun --eval '
+import { Effect, Schema as S, SchemaGetter as G, Exit } from "effect";
+const codec = S.String.pipe(S.decodeTo(S.Date, {
+  decode: G.transformEffect(value => Effect.sleep(1).pipe(Effect.as(new Date(value)))),
+  encode: G.transformEffect(value => Effect.sleep(1).pipe(Effect.as(value.toISOString())))
+}));
+const jsonCodec = S.toCodecJson(S.Struct({ data: codec }));
+let encodeFailure;
+try {
+  S.encodeUnknownSync(jsonCodec)({ data: new Date("2026-09-29T00:00:00Z") });
+} catch (error) {
+  encodeFailure = { name: error.name, message: error.message };
+}
+const decoded = S.decodeUnknownExit(jsonCodec)({ data: "2026-09-29T00:00:00.000Z" });
+const asyncEncoded = await Effect.runPromise(
+  S.encodeUnknownEffect(jsonCodec)({ data: new Date("2026-09-29T00:00:00Z") })
+);
+console.log(JSON.stringify({ encodeFailure, synchronousDecodeExit: decoded._tag, asyncEncoded }));
+if (encodeFailure === undefined || !Exit.isFailure(decoded)) process.exit(1);
+'
+```
+
+Observed exit0; synchronous decode result Failure; synchronous encode throws the error recorded above; Effectful encode returns `{ "data": "2026-09-29T00:00:00.000Z" }`. This diagnostic deliberately verifies the limitation, so exit0 is not implementation acceptance.
+
+The coordinator also ran an in-memory TypeScript5.9.3 probe: a service-free but suspending codec assigns to ConstraintDecoder<Date> and is accepted by decodeUnknownSync, while synchronous use of a serviceful codec and Effect.runSync without its Context.Service each require an expected compiler error. Result: zero diagnostics, two checked negative probes, no file writes. This confirms the static service boundary, not synchronous execution capability or a complete generic Flow factory. Reproduce:
+
+```sh
+bun --eval '
+import ts from "typescript";
+const fileName = process.cwd() + "/.069-virtual-probe.ts";
+const source = `
+import { Context, Effect, Schema, SchemaGetter } from "effect";
+const asyncCodec = Schema.String.pipe(Schema.decodeTo(Schema.Date, {
+  decode: SchemaGetter.transformEffect(value => Effect.sleep(1).pipe(Effect.as(new Date(value)))),
+  encode: SchemaGetter.transform(value => value.toISOString())
+}));
+const acceptedBySyncType: Schema.ConstraintDecoder<Date> = asyncCodec;
+Schema.decodeUnknownSync(acceptedBySyncType)("2026-09-29");
+class Prefix extends Context.Service<Prefix, {readonly value: string}>()("flow/069/probe/Prefix") {}
+const serviceful = Schema.String.pipe(Schema.decodeTo(Schema.String, {
+  decode: SchemaGetter.transformEffect(value => Effect.map(Prefix, service => service.value + value)),
+  encode: SchemaGetter.transform(value => value)
+}));
+// @ts-expect-error A serviceful decoder cannot be used at the synchronous boundary.
+Schema.decodeUnknownSync(serviceful)("x");
+const effectful = Schema.decodeUnknownEffect(serviceful)("x");
+const supplied = effectful.pipe(Effect.provideService(Prefix, {value: "prefix:"}));
+Effect.runSync(supplied);
+// @ts-expect-error The unsupplied Effect still requires Prefix.
+Effect.runSync(effectful);
+`;
+const options = {strict: true, noEmit: true, skipLibCheck: true, target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, types: ["bun"]};
+const host = ts.createCompilerHost(options);
+const getSourceFile = host.getSourceFile.bind(host);
+host.getSourceFile = (name, languageVersion, onError, shouldCreateNewSourceFile) => name === fileName ? ts.createSourceFile(name, source, languageVersion, true) : getSourceFile(name, languageVersion, onError, shouldCreateNewSourceFile);
+host.fileExists = ((original) => name => name === fileName || original(name))(host.fileExists.bind(host));
+const program = ts.createProgram([fileName], options, host);
+const diagnostics = ts.getPreEmitDiagnostics(program);
+console.log(ts.formatDiagnosticsWithColorAndContext(diagnostics, {getCurrentDirectory: () => process.cwd(), getCanonicalFileName: name => name, getNewLine: () => "\n"}));
+console.log(JSON.stringify({diagnostics: diagnostics.length, negativeProbes: 2, writes: 0}));
+if (diagnostics.length > 0) process.exit(1);
+'
+```
+
+## Additional installed-codec investigation, 2026-09-30
+
+The complete rerunnable [installed codec investigation](installed-codec-investigation.md) records correlated const-tuple inference, `toTaggedUnion("type")`, retained services, installed synchronous preservation scheduler controls and plain-container freeze limits. Root independently read the installed source, reproduced the serviceful scheduler failure (`Failure []`) and reran the complete virtual compiler probe: zero diagnostics, five checked negative probes, no emitted files. The constructor `TaggedUnion` using `_tag` does not prevent `toTaggedUnion` from supporting the actual `type` discriminator. Service-free typing still does not prove non-suspending encoding. The installed helper execution is not mounted Runtime/HMR evidence, and no third design or source implementation is approved. Plan069 remains BLOCKED.
+
+## Conformity and deviations
+
+The installed parser behavior conforms to the documented service restriction and non-schema synchronous failure boundary. Flow's proposed typed-data API and Foldkit real preservation behavior remain unverified; isolated parser and compiler probes are not production or upstream parity proof. The test boundary is the exact installed schema/parser constructors and in-memory TypeScript program; no browser, actual Flow entry or native Runtime mount ran in these probes.

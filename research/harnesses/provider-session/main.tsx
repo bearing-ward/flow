@@ -2,13 +2,30 @@ import * as XYFlow from '@xyflow/react'
 import { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { InitializationCapture } from './initialization'
+
+import '@xyflow/react/dist/style.css'
+
+let sessionCapture: object | undefined
+
+let initializationCapture: unknown
+
+const publish = () => {
+  if (sessionCapture !== undefined && initializationCapture !== undefined) {
+    window.__providerSessionCapture = JSON.stringify({
+      ...sessionCapture,
+      initialization: initializationCapture,
+    })
+  }
+}
+
 declare global {
   interface Window {
     __providerSessionCapture?: string
   }
 }
 
-const initialNodes = [
+const initialNodes: [XYFlow.Node, XYFlow.Node] = [
   {
     id: 'a',
     type: 'probe',
@@ -108,15 +125,16 @@ const Probe = () => {
         throw new Error('Missing provider/session observations')
       }
 
-      window.__providerSessionCapture = JSON.stringify({
-        contextIds: [...document.querySelectorAll('[data-node-id]')].map(
-          (el) => el.dataset.nodeId
-        ),
+      sessionCapture = {
+        contextIds: [
+          ...document.querySelectorAll<HTMLElement>('[data-node-id]'),
+        ].map((el) => el.dataset.nodeId),
         selectors: { nodes: nodes.map(normalizeNode), nodesData: data },
         saved: saved.current,
         changed: changed.current,
         restored: normalizeObject(instance.toObject()),
-      })
+      }
+      publish()
     }
   }, [data, instance, nodes, phase, viewport])
 
@@ -144,3 +162,16 @@ if (rootElement === null) {
 }
 
 createRoot(rootElement).render(<App />)
+
+const initializationRoot = document.createElement('div')
+
+document.body.append(initializationRoot)
+
+createRoot(initializationRoot).render(
+  <InitializationCapture
+    onDone={(value) => {
+      initializationCapture = value
+      publish()
+    }}
+  />
+)

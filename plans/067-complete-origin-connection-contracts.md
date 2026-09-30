@@ -12,9 +12,9 @@
 - Category: direction
 - Execution mode: Implementation after architectural contract review
 - Parent:057; parent remains IN PROGRESS
-- Depends on: 053/054/056 accepted baselines;065 measured handle contract; member decomposition phase of 066
+- Depends on: 053/054/056 accepted baselines;065 measured handle contract; member decomposition phase of 066; reviewed 070 persistence migration design before geometry, and 070 implementation before final origin save/restore acceptance
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: BLOCKED — Round2 final review: named persistence migration child and explicit parent v1 policy amendment required
+- Status: TODO — 070 migration design and explicit parent WP3 amendment approved by independent `review_070`, 2026-09-29; source execution still awaits checked 066 decomposition and 065 geometry prerequisites
 
 ## Why this matters
 
@@ -134,6 +134,10 @@ STOP if achieving these contracts requires unchecked casts, private mutable stor
 ## Maintenance
 
 Revisit this child when public defaults/options/schemas, owner lifecycle or pinned/current upstream contract changes. Record capture dates and revisions independently. Evidence links require semantic review after line changes; count/checker success does not establish member behavior.
+
+## Superseding persistence review, 2026-09-29
+
+Independent `review_070` approved the named [070 migration child](070-migrate-origin-aware-persistence.md) and explicit amendment to parent 057 WP3 after a focused revision. Legacy saved APIs/types stay literal v1; additive v2 APIs preserve origin metadata, versioned host methods/ports are explicit, and Foldkit legacy snapshot failures settle through a correlated failure client without defecting the Runtime. The frozen de36b4f reader matrix and actual three-host restored geometry remain implementation gates. This supersedes the persistence planning blocker below, not its historical findings.065, checked 066 decomposition, all connection contracts and 069 integration remain required before this child's final acceptance.
 
 ## Round1 origin and reader compatibility
 

@@ -14,6 +14,10 @@ const checks = [
     'React Flow API member inventory',
     ['bun', 'run', 'scripts/check-api-members.ts'],
   ],
+  [
+    'public member contract ownership',
+    ['bun', 'run', 'scripts/check-api-member-contracts.ts'],
+  ],
   ['catalog proof matrix', ['bun', 'run', 'scripts/check-proof-matrix.ts']],
   [
     'benchmark calibration registry',

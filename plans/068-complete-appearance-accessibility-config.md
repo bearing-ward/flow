@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 054/056 accepted rendering and input baselines; 066 decomposition phase; coordinate UI primitives with 058
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: TODO — architecture APPROVED Round2; source execution awaits 066 checked decomposition and coordinator dispatch
+- Status: BLOCKED — final source revision exhausted; second Vanilla appearance browser suite failed its edge-description assertion; no complete production/reference/packed/full acceptance
 
 ## Why this matters
 
@@ -135,6 +135,8 @@ STOP if achieving these contracts requires unchecked casts, private mutable stor
 
 ## Maintenance
 
+Coordinator scope/ownership amendment, 2026-09-29: existing Vue/Foldkit node keydown and focus handlers may wire the068 live formatter, disabled keyboard policy and focus autopan. Reuse core moveSelectedNodes/applyNodePositionsChange plus existing validation/publication and controlled acknowledgement. No second movement calculator or document authority. Broader callback member closure remains071. Pinned useMoveSelectedNodes.ts31–35 uses5px, or snapGrid per axis, multiplied by factor1/shift4 (NodeWrapper158), giving5/20px without a grid. NodeWrapper149–159 announces pre-move absolute integer coordinates; Vanilla's current path announces proposed post-move relative coordinates. That timing/coordinate difference requires capture and explicit classification, not a parity claim. Tests must distinguish proposal from accepted state, respect resolved draggable/keyboard flags and native input exclusion, cover nested selection/teardown, and prove focus-visible-only autopan through the existing viewport proposal/acceptance path without changing zoom.
+
 Revisit this child when public defaults/options/schemas, owner lifecycle or pinned/current upstream contract changes. Record capture dates and revisions independently. Evidence links require semantic review after line changes; count/checker success does not establish member behavior.
 
 ## Round1 pinned distance defaults
@@ -148,3 +150,23 @@ Review source: coordinator-reported `review_057_child_plans`, Round2 FINAL, 2026
 Required next action:066 checked field decomposition and accepted prerequisite snapshot. Architecture is approved; all global labels/theme/config implementation and production/reference gates remain required.
 
 This record changes planning status only. Original requirements, implementation scope and acceptance checks remain intact. No source work, third revision, browser gate or completion claim is made. Central per-contract verdict and source boundary are recorded in `plans/057-public-contract-design.md`.
+
+## Focused source review revision1, 2026-09-30
+
+The first required typecheck repeated failure after focused repair because the linter removed an explicit undefined argument needed by the public update boundary test (`appearance-client.test.ts:150`). Root authorized revision1: restore direct `client.update(undefined)` with a line-specific lint rationale rather than introducing a Schema decoder workaround; rerun typecheck/check and the original gates. Root independently reviewed the new config/ARIA schemas, client, application port and edge-renderer diffs and passed ten focused tests. Root also requested that edge reconciliation compute one config/z-index map per reconcile rather than recomputing it per edge. No complete source acceptance, production appearance assertion, capture or full verification is claimed at this checkpoint.
+
+Root additionally approved a bounded interactive-control mapping in existing native UI files: derive state from accepted nodesDraggable/nodesConnectable/elementsSelectable with OR, matching the pinned selector; invert all three flags together. Vue emits one optional onInteractiveChange proposal and relies on parent reactive-prop acknowledgment, with the button disabled when that callback is absent; no separate interactive prop or local configuration override. Foldkit uses the existing correlated appearance client update when available, with pending/disposed/failed outcomes preventing a fabricated toggle. Both expose showInteractive and the global interactive label. The callbackless Vue difference from pinned direct-store toggling must be classified and tested. Whole058 component acceptance remains open. Root also identified unfinished click guards applying paneClickDistance to controls/edges and missing nearest-canvas ownership in Vue; revision1 must preserve owned node/pane thresholds, existing UI/edge behavior, keyboard activation and foreign/nested owner isolation through meaningful production/reference tests.
+
+## Focused source recovery revision2 FINAL, 2026-09-30
+
+Revision1 stopped after a second required quality failure. An unsafe substring edit accidentally removed the Vue renderEdge return and roughly485lines through edge-label helpers, unmount cleanup and root pointer/render handlers (HEAD region starts4778), leaving a syntax error near5138. Root inspected the actual deletion diff and authorized the final bounded recovery: use a known verified backup or the exact unchanged HEAD region, then reapply only approved appearance/theme/ARIA/ownership/ordering additions through uniquely asserted anchors or a reviewed patch. Preserve original labels, lifecycle and pointer/keyboard/viewport handlers; inspect the complete resulting diff before continuing. Required typecheck/check and all original production/reference/packed/docs/architecture/full verification gates remain required. Historical325unit tests and earlier check/typecheck passes are not current recovered-artifact proof. A required gate failing twice after focused repair must STOP with no third review round.
+
+Root also approved an optional pure endpoint-node lookup in flowEdgeZIndex, derived once from the same current document as the config/z map. Known expected pinned numeric cases must cover both paths. Stable SVG edge ordering is in scope; actual edge-over-HTML-node interleaving remains unverified and cannot be claimed from SVGgroup style values.
+
+## Final execution STOP, 2026-09-30
+
+The recovered Vue artifact passed typecheck, quality (653 files), architecture and ten focused core/client tests before the final fixture/test additions. Root fullverify is the current whole-artifact result below. The required Vanilla appearance suite then failed three cases; a focused locator repair made node movement and disabled-policy assertions pass, but the second run still failed because its edge-description locator did not find the edge. Six cases passed and one failed. The executor stopped under the repeated-required-gate rule in final revision2. No third automatic repair is authorized; this source candidate is unaccepted and remains isolated in `appearance-accessibility/flow`. Vue/Foldkit browser, reference capture, packed consumers, docs and executor full verification did not run. Root ran mandatory `bun run verify` on the preserved final artifact:exit1 at quality, before type/build/browser stages, with current formatting/lint errors in the newly added appearance suites. Log:`/tmp/flow-068-final-verify.log`. No repair or third round followed.
+
+The inspected rendering design also leaves edge-over-HTML-node paint ordering unverified; SVG group style and stable edge-to-edge ordering do not prove it. Vanilla has the grid-based keyboard path, while Vue/Foldkit currently expose no grid configuration path and retain only 5/20 movement. Those variants, held075 native fields, reference comparisons and semantic cells remain open.
+
+Exact stopped browser command: `bun run test:browser -- appearance-config.e2e.ts`. First log:`/tmp/flow-068-vanilla-appearance-browser.log`, four passes and three failures. Focused rerun:`/tmp/flow-068-vanilla-appearance-browser-repaired.log`, six passes and one failure. Source inspection confirms the test expects `flow-edge` while actual Vanilla output exposes `flow-edge-group` at `apps/vanilla/src/edge-renderer.ts:358`; the edge exists, but computed description remains unverified. Current root fullverify reports34lint diagnostics in the new suites/fixture. No further source/test edit or retry followed STOP.

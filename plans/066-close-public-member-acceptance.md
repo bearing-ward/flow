@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 057 WP1/WP2 and accepted slices; completion phase requires 063–065 and 067–069 plus any discovered required child
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: TODO — acceptance plan APPROVED Round2; decomposition is next executable stage
+- Status: IN PROGRESS — structural decomposition phase executed and coordinator accepted the reviewed 065 subset; strict closure and remaining implementation/evidence phases are open
 
 ## Why this matters
 
@@ -126,6 +126,8 @@ STOP if achieving these contracts requires unchecked casts, private mutable stor
 
 ## Maintenance
 
+Coordinator independent full verification of the isolated approved-prerequisite snapshot, 2026-09-29: `/Users/richardmcandrews/.codex/worktrees/accepted-public-prerequisites/flow`, branch `codex/accepted-public-prerequisites`, contains the approved066 structural phase and original063 reference subset, plus planning records. It excludes stopped065 product source and the failed extended063 candidate. `bun run verify` exited0:42 unit files/329 tests, Vanilla299 passed/two existing native-pointer skips, Vue112 passed, Foldkit117 passed. Packed consumers, types, quality, architecture, docs, accounting and trace gates passed. Log: `/tmp/flow-accepted-public-prerequisites-verify.log`. This validates the bounded prerequisites only; all8,076 semantic cells remain open. The verifier regenerated calibration/SUMMARY using their generators; a post-run check found only calibration formatting, for which a bounded generated-output formatting repair is dispatched. No commits, merges, pushes or main-checkout changes occurred.
+
 Revisit this child when public defaults/options/schemas, owner lifecycle or pinned/current upstream contract changes. Record capture dates and revisions independently. Evidence links require semantic review after line changes; count/checker success does not establish member behavior.
 
 ## Independent review Round2 FINAL checkpoint
@@ -135,3 +137,33 @@ Review source: coordinator-reported `review_057_child_plans`, Round2 FINAL, 2026
 Required next action: execute checked decomposition and ownership/checker phase. Strict closure and parent completion wait for every required implementation/reference/gate, including blocked 063/067/069 refinement. Approval does not mean current member cells are closed.
 
 This record changes planning status only. Original requirements, implementation scope and acceptance checks remain intact. No source work, third revision, browser gate or completion claim is made. Central per-contract verdict and source boundary are recorded in `plans/057-public-contract-design.md`.
+
+## Initial structural-phase execution record, 2026-09-29
+
+Executed steps1–2 and only the default checker integration from step4 in the isolated cumulative `codex/remaining-actionable` worktree, starting from committed prerequisite snapshot `de36b4f64fe80d99886c0b7a9fb505258b872ac9`. The old uncommitted-prerequisite assumption is reconciled. No product source was edited by this executor. Coordinator owns plans/README.md, parent057 and central architecture records.
+
+The Schema-checked `plans/057-member-closure.json` preserves all114pages,2692members and8076host cells in868exact groups. Existing UI component work remains058; original generic/member/callback variants are retained. Primary owners are058,063,064,065,067,068,069,071,072,073,074. Required070persistence compatibility is an explicit acceptance dependency for origin groups and saved-output groups, not a replacement owner for the flat public `toObject` return shape. Origin geometry executes before070migration, then067final acceptance waits for070proof. New self-contained required children071–074 retain their architecture-review prerequisite and exhaustive assigned cells.
+
+All8076cells remain open.7396implementation-gap cells mean the inventory has no specific implementation citation sufficient for reconciliation; this is an implementation acceptance obligation, not a finding that7396features lack code.680evidence-gap cells already have implementation citations but still need exact assertion/reference review. No statuses or evidence links were promoted or replaced.2484generic remaining decisions were replaced with exact member/owner/family obligations; specific existing decisions were preserved. The historical ARIA defect was not replayed.
+
+Reproduce the queue with `bun plans/066-decompose-members.mjs --check` or `--write`. Explicit `plans/066-member-routing.json` has no fallback owner rules. New/dropped original requirements stop regeneration; existing proof/review records are copied whole, including future completed claims. `bun plans/066-decompose-members.probe.mjs` exercises original regeneration, dropped-cell rejection, new-unmapped-member rejection and completed-proof preservation in disposable copies. The generator uses the existing Bun runtime.
+
+Structural checker tests reject orphan/duplicate/missing cells and groups, gaps without executable child owners, generic decisions, wrong group membership, missing/self-referential prerequisites, wrong-host public entries, nonexistent exports, unowned proposed tests/captures, incomplete/member-mismatched proofs, documentation/fixture README references presented as executable proof, and unsupported native differences. Closed proof must cite exact implementation/test lines plus an executable `packages/conformance/src/*.test.ts` reference assertion and its exact upstream member. Semantic review of those lines remains required.
+
+Coordinator scope amendment allowed one `vitest.config.ts` hunk to include the new checker test. `scripts/verify.ts` runs default structural accounting beside the existing member inventory checker; strict closure is deliberately separate.065's reviewed subset contains5groups/63members/189cells. Its three host targets are `apps/<host>/e2e/measured-geometry.e2e.ts` and its capture target is `scripts/capture-handle-refresh-reference.ts`. Declared InternalNode initialwidth/initialheight cells belong063, not065.
+
+Actual commands/results for this phase:
+
+- `bun install --frozen-lockfile`: exit0, unchanged lockfile.
+- `bun run scripts/check-api-members.ts`: exit0,114pages/2692members.
+- `bun run scripts/check-api-member-contracts.ts`: exit0,2692members/8076cells/868owned groups;8076open cells.
+- `bun run scripts/check-api-member-contracts.ts --require-closed`: expected exit1,8076required unresolved cells. This is the required negative staging result, not closure.
+- `bun run test -- scripts/check-api-member-contracts.test.ts`:13tests pass.
+- `bun plans/066-decompose-members.mjs --check`: exit0. Four generator subprocess probes pass.
+- Scoped TypeScript command `bunx tsc --noEmit --strict --skipLibCheck --target ESNext --module Preserve --moduleResolution bundler --allowImportingTsExtensions --types bun --noUncheckedIndexedAccess --exactOptionalPropertyTypes scripts/check-api-member-contracts.ts scripts/check-api-member-contracts.test.ts scripts/check-api-members.ts`: exit0 after test-fixture narrowing repairs.
+- Scoped Oxlint/Oxfmt checks for this executor's checker/tests/config/generators pass after repairs. The initial full `bun run check` and `bun run typecheck` exposed new checker/test lint/type errors, corrected in scope. A later global check observed concurrent065product edits and remained unsuccessful; no current whole-worktree green claim is made.
+- `bun run scripts/check-react-flow-catalog.ts --upstream`: exit0,208dated entries/200capabilities; live sidebar identities retained.
+- `bun plans/066-check-current-member-drift.mjs`: exit0,114official pages fetched,0missing dated-anchor pages,0unverified pages. Hashes/date/counts are in `plans/066-current-member-drift.json`. This checks identities only; changed prose/default/type meanings and pinned runtime equivalence remain unverified. It does not modify dated evidence.
+- `git diff --check`: exit0 at the structural checkpoint.
+
+Full unit/architecture/docs/trace/consumer/browser gates and full `bun run verify` are deferred to coordinator's cumulative final verification after source children. Running them during partial065edits would test an unfinished snapshot. The separate063reference worktree's full verify is independent evidence and does not verify this cumulative checker snapshot. Parent057/066 remain IN PROGRESS; steps3 and whole-parent step4 closure are not executed.
