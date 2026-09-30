@@ -21,9 +21,10 @@ bun run dev
 bun run check
 bun run fix
 bun run verify
+bun run verify:full
 ```
 
-`bun run check` runs Ultracite Oxlint and Oxfmt checks. `bun run fix` applies supported fixes and formatting. See [tooling](docs/tooling.md) for versions and direct commands. `bun run verify` runs the complete local project gate.
+`bun run check` runs Ultracite Oxlint and Oxfmt checks. `bun run fix` applies supported fixes and formatting. `bun run verify` temporarily runs a focused development gate; add checks for the active work in `verification.config.json` or with CLI options. `bun run verify:full` retains the complete local suite. See [tooling](docs/tooling.md) for profiles, scope selection, and restoration of the full default.
 
 Open [http://127.0.0.1:4173](http://127.0.0.1:4173) after starting the development server. The source `index.html` is a Vite entry point; a `file://` URL displays launch instructions.
 

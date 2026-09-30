@@ -1,65 +1,100 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
-import { Effect } from 'effect'
+import { Effect, FileSystem, Schema as S } from 'effect'
 import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
 
-const checks = [
-  ['quality check', ['bun', 'run', 'check']],
-  ['architecture boundaries', ['bun', 'run', 'check:architecture']],
-  ['documentation', ['bun', 'run', 'docs:check']],
-  [
-    'React Flow catalog coverage',
-    ['bun', 'run', 'scripts/check-react-flow-catalog.ts'],
-  ],
-  [
-    'React Flow API member inventory',
-    ['bun', 'run', 'scripts/check-api-members.ts'],
-  ],
-  [
-    'public member contract ownership',
-    ['bun', 'run', 'scripts/check-api-member-contracts.ts'],
-  ],
-  ['catalog proof matrix', ['bun', 'run', 'scripts/check-proof-matrix.ts']],
-  [
-    'benchmark calibration registry',
-    ['bun', 'run', 'scripts/check-benchmark-calibration.ts'],
-  ],
-  [
-    'example recipe registry',
-    ['bun', 'run', 'scripts/check-example-recipes.ts'],
-  ],
-  ['research inventory', ['bun', 'run', 'research:inventory']],
-  ['research trace citations', ['bun', 'run', 'research:check-traces']],
-  ['package builds', ['bun', 'run', 'build:packages']],
-  ['typecheck', ['bun', 'run', 'typecheck']],
-  ['tests', ['bun', 'run', 'test']],
-  ['packed consumer', ['bun', 'run', 'test:consumer']],
-  ['build', ['bun', 'run', 'build']],
-  ['browser', ['bun', 'run', 'test:browser']],
-  ['Vue build', ['bun', 'run', '--cwd', 'apps/vue', 'build']],
-  ['Vue conformance', ['bun', 'run', 'test:conformance:vue']],
-  ['Foldkit build', ['bun', 'run', '--cwd', 'apps/foldkit', 'build']],
-  ['Foldkit conformance', ['bun', 'run', 'test:conformance:foldkit']],
-] as const
+import {
+  parseVerificationArguments,
+  selectVerificationChecks,
+  VerificationConfigSchema,
+} from './verification-plan.ts'
 
-const program = Effect.gen(function* program() {
+const program = Effect.gen(function* verify() {
+  const fileSystem = yield* FileSystem.FileSystem
   const process = yield* ChildProcessSpawner.ChildProcessSpawner
 
-  for (const [name, [command, ...arguments_]] of checks) {
-    yield* Effect.log(`Starting ${name}`)
+  const configText = yield* fileSystem.readFileString(
+    'verification.config.json'
+  )
+
+  const config = yield* Effect.try(() =>
+    S.decodeUnknownSync(VerificationConfigSchema)(JSON.parse(configText))
+  )
+
+  const request = yield* Effect.try(() =>
+    parseVerificationArguments(globalThis.process.argv.slice(2))
+  )
+
+  const profile = request.profile ?? config.defaultProfile
+  const checks = selectVerificationChecks(config, request)
+
+  // Validate each focused filename before running a potentially expensive command.
+  if (profile === 'focused') {
+    for (const host of ['vanilla', 'vue', 'foldkit'] as const) {
+      for (const file of new Set([
+        ...config.browserTests[host],
+        ...request.browserTests[host],
+      ])) {
+        const path = `apps/${host}/e2e/${file}`
+
+        if (!(yield* fileSystem.exists(path))) {
+          return yield* Effect.fail(
+            new Error(`Browser test does not exist: ${path}`)
+          )
+        }
+      }
+    }
+  }
+
+  yield* Effect.logInfo('Verification selection').pipe(
+    Effect.annotateLogs({
+      profile,
+      activeWork: config.activeWork,
+      checks: checks.map((check) => check.name),
+      fullSuite: profile === 'full',
+    })
+  )
+
+  if (request.list) {
+    for (const check of checks) {
+      yield* Effect.logInfo(
+        `${check.name}: ${check.command} ${check.arguments.join(' ')}`
+      )
+    }
+
+    return
+  }
+
+  const started = Date.now()
+
+  for (const check of checks) {
+    yield* Effect.logInfo(`Starting ${check.name}`)
+    const checkStarted = Date.now()
 
     const exitCode = yield* process.exitCode(
-      ChildProcess.make(command, arguments_, {
+      ChildProcess.make(check.command, check.arguments, {
         stderr: 'inherit',
         stdout: 'inherit',
       })
     )
 
     if (exitCode !== 0) {
-      return yield* Effect.die(
-        new Error(`${name} failed with exit code ${exitCode}`)
+      return yield* Effect.fail(
+        new Error(`${check.name} failed with exit code ${exitCode}`)
       )
     }
+
+    yield* Effect.logInfo(`Passed ${check.name}`).pipe(
+      Effect.annotateLogs({ elapsedMs: Date.now() - checkStarted })
+    )
   }
+
+  yield* Effect.logInfo('Verification passed').pipe(
+    Effect.annotateLogs({
+      profile,
+      fullSuite: profile === 'full',
+      elapsedMs: Date.now() - started,
+    })
+  )
 })
 
 BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))

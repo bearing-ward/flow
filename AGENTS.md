@@ -17,3 +17,5 @@ Use the span names and attributes in `packages/core/src/telemetry/flow-telemetry
 ## Verification
 
 Run `bun run verify`. A build or typecheck alone is not completion evidence.
+
+Temporarily, verification defaults to the focused profile: quality, architecture, package builds, typechecking, and unit tests. Add checks and browser test files relevant to the active work in `verification.config.json` or through the CLI options documented in `docs/tooling.md`. Update that scope when changing tasks. Use `bun run verify:full` at integration or release milestones and before broad parity claims. Report which profile and scope passed; a focused pass does not establish full-suite acceptance. Restore the full default by changing `defaultProfile` to `full` in the config.

@@ -20,6 +20,41 @@ bun run check
 bunx ultracite doctor
 ```
 
+## Verification profiles
+
+Verification temporarily defaults to a focused profile while feature work continues. Its baseline runs quality checks, architecture checks, one package build, workspace typechecking, and the unit suite. Add checks and browser files that exercise the current changes; the verifier does not infer scope from Git changes.
+
+```sh
+bun run verify
+bun run verify --vue measured-geometry.e2e.ts --check contracts
+bun run verify --vanilla advanced-gestures.e2e.ts --foldkit measured-geometry.e2e.ts
+bun run verify --list
+bun run verify:full
+```
+
+Browser options take exact filenames from the selected host's `e2e` directory. Repeat an option to select several files. The verifier rejects nonexistent files before starting checks, merges CLI selections with saved scope, and runs only hosts with selected files. Focused browser tests use one worker. Test servers remain isolated from development servers.
+
+Keep the scope for ongoing work in the root `verification.config.json`:
+
+```json
+{
+  "defaultProfile": "focused",
+  "activeWork": "Vue measured geometry",
+  "checks": ["contracts"],
+  "browserTests": {
+    "vanilla": [],
+    "vue": ["measured-geometry.e2e.ts"],
+    "foldkit": []
+  }
+}
+```
+
+Update `activeWork`, `checks`, and `browserTests` when changing tasks. `--check` accepts `docs`, `catalog`, `api-members`, `contracts`, `proof`, `calibration`, `examples`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, and `foldkit-build`. For example, public export changes should include `consumer`; research or catalog edits should include their corresponding check. These additions are explicit because the baseline alone does not cover those contracts.
+
+The full profile includes all these extra checks, all three application builds, packed consumers, and every browser suite. Use it at integration and release milestones. `--full` ignores focused browser filters and runs all suites; `--focused` overrides a full configured default. `--list` previews either profile without executing checks. Logs name the selected profile and checks and report elapsed time; record that scope when reporting acceptance.
+
+Automatic CI uses the configured default. A manual CI run can choose `focused` or `full`; a manual full run also runs the release dry run. To restore broad verification locally and in automatic CI, change `defaultProfile` to `full` in `verification.config.json`.
+
 ## Browser test servers
 
 Playwright starts a fresh Vite server for each suite and binds it to a test-only loopback port: vanilla uses `4176`, Vue uses `4177`, and Foldkit uses `4178`. Development servers keep their existing ports (`4173`, `4174`, and `4175`); for example, `bun run dev` still serves vanilla at `http://127.0.0.1:4173/`.
@@ -50,7 +85,7 @@ No absolute latency threshold is enforced. On the initial Darwin / HeadlessChrom
 
 Ultracite Doctor reports eight passing setup checks with no warnings or failures. The first repository check found 465 lint errors across 18 owned files and formatting changes in 22 files after the generated configuration was normalized. The largest groups are readable-spacing, sorted-key, curly-brace, array-type, type-assertion-comment, generator-name, and Vitest findings.
 
-`bun run verify` starts with `bun run check`, before documentation, research, build, test, and browser work. Keep this gate read-only; use targeted formatter or lint-fix commands only when the files being changed need cleanup.
+Both verification profiles start with `bun run check`. Keep the quality gate read-only; use targeted formatter or lint-fix commands only when the files being changed need cleanup.
 
 ## Anti-slop provenance
 

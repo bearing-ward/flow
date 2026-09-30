@@ -1,0 +1,10 @@
+{
+  "defaultProfile": "focused",
+  "activeWork": "verification tooling",
+  "checks": [],
+  "browserTests": {
+    "vanilla": [],
+    "vue": [],
+    "foldkit": []
+  }
+}

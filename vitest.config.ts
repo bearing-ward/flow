@@ -12,6 +12,7 @@ export default defineConfig({
       'scripts/check-benchmark-calibration.test.ts',
       'scripts/package-archive.test.ts',
       'scripts/collector-delivery-query.test.ts',
+      'scripts/verification-plan.test.ts',
     ],
   },
 })

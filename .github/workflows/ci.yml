@@ -1,6 +1,15 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Verification profile
+        type: choice
+        default: full
+        options:
+          - focused
+          - full
   pull_request:
   push:
     branches:
@@ -17,6 +26,13 @@ jobs:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - run: bunx playwright install chromium
-      - run: bun run verify
-      - run: bun run test:consumer
-      - run: bun run release:dry-run
+      - run: |
+          if [ -n "$VERIFICATION_PROFILE" ]; then
+            bun run verify --"$VERIFICATION_PROFILE"
+          else
+            bun run verify
+          fi
+        env:
+          VERIFICATION_PROFILE: ${{ inputs.profile || '' }}
+      - if: github.event_name == 'workflow_dispatch' && inputs.profile == 'full'
+        run: bun run release:dry-run

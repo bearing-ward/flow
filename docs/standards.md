@@ -11,7 +11,7 @@ This project adopts the architecture rules from HVS Template commit `275c2013b54
 5. Application entry points own application composition and demo state. Reusable framework adapters own their framework integration and lifecycle in `packages/<framework>`; adapter packages depend on core contracts, never the reverse.
 6. The pinned xyflow artifacts are evidence. They are not the architecture of the replacement.
 7. A parity claim requires a test against reference behavior or output.
-8. `bun run verify` is the complete local verification command.
+8. `bun run verify` is the required development verification command. Its temporary focused profile runs the baseline plus checks selected for the active work; `bun run verify:full` runs the complete local suite at integration and release milestones. Record the profile and test scope with results.
 9. Every researched behavior is classified as reference-conforming, intentionally different, or unverified. An intentional difference records its reason and test boundary.
 10. Effect workflows use named spans and structured logs at decode, lifecycle, semantic-change, and failure boundaries. Application composition owns OpenTelemetry export and shutdown flushing.
 
