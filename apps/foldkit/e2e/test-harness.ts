@@ -17,6 +17,7 @@ import type {
 import {
   HostAction,
   createProgram,
+  createFoldkitSnapshotClient,
   createViewportClient,
   defaultInteractionOptions,
   Message,
@@ -30,6 +31,8 @@ import type {
   InteractionEventSchema,
   EditResponse,
   FoldkitObservers,
+  FoldkitSnapshotClient,
+  FoldkitSnapshotResult,
   FlowKeyCode,
   FlowKeyPressOptions,
   GraphInteractionOptions,
@@ -38,7 +41,7 @@ import type {
   SnapshotResponseSchema,
   ViewportClient,
 } from '@flow/foldkit'
-import { Effect, Exit, Schema } from 'effect'
+import { Effect, Exit, Match, Schema } from 'effect'
 import { Runtime } from 'foldkit'
 
 import type {
@@ -152,6 +155,7 @@ interface FoldkitHarness {
     id: PublicProgramId,
     query?: Omit<SnapshotRequest, 'requestId'>
   ) => Promise<EncodedSnapshotResponse>
+  requestSnapshotResult: (id: PublicProgramId) => Promise<FoldkitSnapshotResult>
   refreshPublicNode: (
     id: PublicProgramId,
     nodeId: string,
@@ -315,16 +319,76 @@ const contractKeyObserverId = (
   observerId: string
 ): string => `${programId}:${observerId}`
 
-const pendingSnapshots = new Map<
-  string,
-  (response: EncodedSnapshotResponse) => void
+const snapshotClients = new WeakMap<
+  Runtime.EmbedHandle<typeof ports>,
+  FoldkitSnapshotClient
 >()
+
+const requestHandleSnapshot = async (
+  active: Runtime.EmbedHandle<typeof ports>,
+  query: Omit<SnapshotRequest, 'requestId'> = {}
+): Promise<EncodedSnapshotResponse> => {
+  let client = snapshotClients.get(active)
+
+  if (client === undefined) {
+    client = createFoldkitSnapshotClient(active.ports)
+    snapshotClients.set(active, client)
+  }
+
+  const result = await client.request(query)
+
+  return Match.value(result).pipe(
+    Match.when({ status: 'succeeded' }, ({ response }) => response),
+    Match.when({ status: 'failed' }, ({ reason }) => {
+      throw new Error(`Foldkit snapshot failed: ${reason}`)
+    }),
+    Match.when({ status: 'disposed' }, () => {
+      throw new Error('Foldkit snapshot owner is disposed')
+    }),
+    Match.exhaustive
+  )
+}
+
+const disposeHandle = (
+  active: Runtime.EmbedHandle<typeof ports> | undefined
+): void => {
+  if (active === undefined) {
+    return
+  }
+
+  let client = snapshotClients.get(active)
+
+  if (client === undefined) {
+    client = createFoldkitSnapshotClient(active.ports)
+    snapshotClients.set(active, client)
+  }
+
+  client.dispose()
+  active.dispose()
+}
+
+const requestSnapshotResult = (
+  id: PublicProgramId
+): Promise<FoldkitSnapshotResult> => {
+  const active = publicHandles.get(id)
+
+  if (active === undefined) {
+    throw new Error(`Missing ${id} Foldkit program`)
+  }
+
+  let client = snapshotClients.get(active)
+
+  if (client === undefined) {
+    client = createFoldkitSnapshotClient(active.ports)
+    snapshotClients.set(active, client)
+  }
+
+  return client.request()
+}
 
 const pendingEdits = new Map<string, (response: EditResponse) => void>()
 
 let nextEditRequestId = 1
-
-let nextSnapshotRequestId = 1
 
 let secondPublicContainer: HTMLElement | undefined
 
@@ -484,7 +548,7 @@ const rendererDocument = {
 
 const startRendererContract = async (): Promise<void> => {
   for (const active of rendererHandles.splice(0)) {
-    active.dispose()
+    disposeHandle(active)
   }
 
   disposedRendererPrograms = 0
@@ -670,26 +734,7 @@ const readRendererFixtureHeight = async (
   expectedHeight: number,
   attempt = 0
 ): Promise<number> => {
-  const requestId = `renderer-fixture-snapshot-${nodeId}-${attempt}`
-
-  const response =
-    Promise.withResolvers<typeof SnapshotResponseSchema.Encoded>()
-
-  const stopListening = active.ports.snapshots.subscribe((result) => {
-    if (result.requestId === requestId) {
-      response.resolve(result)
-    }
-  })
-
-  const sent = active.ports.snapshotRequests.send({ requestId, nodeId })
-
-  if (Exit.isFailure(sent)) {
-    stopListening()
-    throw new Error(`Foldkit rejected fixture snapshot for ${nodeId}`)
-  }
-
-  const snapshot = await response.promise
-  stopListening()
+  const snapshot = await requestHandleSnapshot(active, { nodeId })
 
   if (snapshot.internalNode === null) {
     throw new Error(`Foldkit omitted fixture internal node ${nodeId}`)
@@ -709,7 +754,7 @@ const startRendererFixture = async (
   defaultEdgeOptions?: GraphInteractionOptions['defaultEdgeOptions']
 ): Promise<Readonly<Record<string, number>>> => {
   for (const active of rendererHandles.splice(0)) {
-    active.dispose()
+    disposeHandle(active)
   }
 
   const host = document.querySelector<HTMLElement>('#app')
@@ -818,7 +863,7 @@ const replaceRendererDocument = (
 
 const disposeRendererContract = async (): Promise<number> => {
   for (const active of rendererHandles.splice(0)) {
-    active.dispose()
+    disposeHandle(active)
     disposedRendererPrograms += 1
   }
 
@@ -837,11 +882,6 @@ const pendingMountedMeasurements = new Map<
   (response: MeasurementResultEncoded) => void
 >()
 
-const pendingMountedSnapshots = new Map<
-  string,
-  (response: EncodedSnapshotResponse) => void
->()
-
 let previewProbeStates: ConnectionPreviewState[] = []
 
 const mount = async (
@@ -850,7 +890,7 @@ const mount = async (
   interactionOptions: GraphInteractionOptions = defaultInteractionOptions,
   previewProbe = false
 ): Promise<void> => {
-  handle?.dispose()
+  disposeHandle(handle)
   const container = document.querySelector<HTMLElement>('#app')
 
   if (container === null) {
@@ -916,10 +956,6 @@ const mount = async (
   handle.ports.interactionEvents.subscribe((events) =>
     mountedInteractionEvents.push(...events)
   )
-  handle.ports.snapshots.subscribe((response) => {
-    pendingMountedSnapshots.get(response.requestId)?.(response)
-    pendingMountedSnapshots.delete(response.requestId)
-  })
   handle.ports.measurementResults.subscribe((response) => {
     pendingMountedMeasurements.get(response.requestId)?.(response)
     pendingMountedMeasurements.delete(response.requestId)
@@ -939,7 +975,7 @@ const mountMeasurementDocument = async (
   documentInput: typeof FlowDocumentSchema.Encoded,
   _renderOnlyVisible: boolean
 ): Promise<void> => {
-  handle?.dispose()
+  disposeHandle(handle)
   const container = document.querySelector<HTMLElement>('#app')
 
   if (container === null) {
@@ -965,10 +1001,6 @@ const mountMeasurementDocument = async (
     measurementGenerations.set(node.id, measurementGeneration)
   }
 
-  handle.ports.snapshots.subscribe((response) => {
-    pendingMountedSnapshots.get(response.requestId)?.(response)
-    pendingMountedSnapshots.delete(response.requestId)
-  })
   handle.ports.measurementResults.subscribe((response) => {
     pendingMountedMeasurements.get(response.requestId)?.(response)
     pendingMountedMeasurements.delete(response.requestId)
@@ -1009,13 +1041,7 @@ const requestMountedSnapshot = (
     throw new Error('Missing Foldkit measurement runtime')
   }
 
-  const requestId = `measurement-snapshot-${nextMountedRequestId}`
-  nextMountedRequestId += 1
-  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
-  pendingMountedSnapshots.set(requestId, resolve)
-  active.ports.snapshotRequests.send({ requestId, ...query })
-
-  return promise
+  return requestHandleSnapshot(active, query)
 }
 
 const measurementInternalNode = async (
@@ -1074,7 +1100,7 @@ const refreshMeasurementNode = async (nodeId: string) => {
 }
 
 const destroyMeasurementDocument = async (): Promise<void> => {
-  handle?.dispose()
+  disposeHandle(handle)
   handle = undefined
   await nextAnimationFrame()
   await nextAnimationFrame()
@@ -1104,7 +1130,7 @@ const replaceViewport = (viewport: Viewport): void => {
 const dispose = (): void => {
   changesAtDispose = changes.length
   acceptedStatesAtDispose = mountedAcceptedStateEvents.length
-  handle?.dispose()
+  disposeHandle(handle)
   handle = undefined
 }
 
@@ -1235,10 +1261,6 @@ const publicProgram = (
     publicStateEvents.get(id)?.push(change)
     publicEventOrders.get(id)?.push(`state:${change.cause}`)
   })
-  active.ports.snapshots.subscribe((response) => {
-    pendingSnapshots.get(response.requestId)?.(response)
-    pendingSnapshots.delete(response.requestId)
-  })
   active.ports.editResults.subscribe((response) => {
     pendingEdits.get(response.requestId)?.(response)
     pendingEdits.delete(response.requestId)
@@ -1277,7 +1299,7 @@ const startPublicState = async (): Promise<void> => {
   }
 
   for (const active of publicHandles.values()) {
-    active.dispose()
+    disposeHandle(active)
   }
 
   publicHandles.clear()
@@ -1289,7 +1311,6 @@ const startPublicState = async (): Promise<void> => {
   publicMeasurementEvents.clear()
   publicViewportEventLog.clear()
   publicInteractionEventLog.clear()
-  pendingSnapshots.clear()
   pendingEdits.clear()
 
   const container = document.querySelector<HTMLElement>('#app')
@@ -1322,14 +1343,7 @@ const requestSnapshot = (
     throw new Error(`Missing ${id} Foldkit program`)
   }
 
-  const requestId = `snapshot-${nextSnapshotRequestId}`
-  nextSnapshotRequestId += 1
-
-  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
-  pendingSnapshots.set(requestId, resolve)
-  active.ports.snapshotRequests.send({ requestId, ...query })
-
-  return promise
+  return requestHandleSnapshot(active, query)
 }
 
 const startPublicObservers = async (
@@ -1392,12 +1406,11 @@ const startConnectionPreviewIsolation = async (): Promise<void> => {
   publicObservers.clear()
 
   for (const active of publicHandles.values()) {
-    active.dispose()
+    disposeHandle(active)
   }
 
   publicHandles.clear()
   publicContainers.clear()
-  pendingSnapshots.clear()
 
   const firstContainer = document.querySelector<HTMLElement>('#app')
 
@@ -1501,11 +1514,7 @@ const readMountedState = (
     throw new Error('Missing Foldkit Runtime')
   }
 
-  const requestId = `conformance-${nextMountedRequestId}`
-  nextMountedRequestId += 1
-  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
-  pendingMountedSnapshots.set(requestId, resolve)
-  handle.ports.snapshotRequests.send({ requestId, ...query })
+  const promise = requestHandleSnapshot(handle, query)
 
   return promise.then((response) => ({
     snapshot: response.snapshot,
@@ -1521,13 +1530,7 @@ const readMountedConnectionPreview = async (): Promise<
     throw new Error('Missing Foldkit Runtime')
   }
 
-  const requestId = `connection-preview-${nextMountedRequestId}`
-  nextMountedRequestId += 1
-  const { promise, resolve } = Promise.withResolvers<EncodedSnapshotResponse>()
-  pendingMountedSnapshots.set(requestId, resolve)
-  handle.ports.snapshotRequests.send({ requestId })
-
-  const response = await promise
+  const response = await requestHandleSnapshot(handle)
 
   return response.connectionPreview
 }
@@ -1665,7 +1668,7 @@ const disposePublicState = (): void => {
   pendingMeasurements.clear()
 
   for (const active of publicHandles.values()) {
-    active.dispose()
+    disposeHandle(active)
   }
 }
 
@@ -2051,6 +2054,7 @@ window.__flowFoldkitTest = {
   },
   startConnectionPreviewIsolation,
   requestSnapshot,
+  requestSnapshotResult,
   refreshPublicNode,
   replacePublicDocument,
   replacePublicViewport,

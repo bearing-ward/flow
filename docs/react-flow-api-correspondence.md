@@ -402,3 +402,7 @@ These three utilities accept already decoded Flow values and preserve the order 
 | [getConnectedEdges](https://reactflow.dev/api-reference/utils/get-connected-edges) | getConnectedEdges(nodes, edges) | Incident supplied edges in edge input order | Pinned algorithm inspected; executable reference comparison remains unverified. |
 
 Flow graph-query utility tests cover directed endpoints, parallel edges, self-loops, hidden nodes, empty collections, missing IDs, selection subsets, stable ordering, and input immutability. Graph bounds and intersection utility correspondence remain open.
+
+## Frozen legacy persistence prerequisite
+
+Plan 075 stage 1 freezes Flow's literal-v1 fields and constraints independently of future live schemas. It rejects explicitly unrepresentable origin/native semantics with an authoritative typed format code before projection. This is a Flow persistence policy, not an upstream save-format parity claim. The same Foldkit snapshot owner consumes correlated success and failure channels and settles disposal; packed probes exercise ordinary reads from two real Runtime owners. Controlled model failure inputs remain unit evidence until live native/origin schemas can accept them. Versioned round trips, all-host unsupported-format production, and the original member acceptance cells remain open.

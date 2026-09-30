@@ -1,0 +1,179 @@
+{
+  "document": {
+    "version": 1,
+    "document": {
+      "nodes": [
+        {
+          "id": "parent",
+          "label": "",
+          "position": {
+            "x": 12,
+            "y": -4
+          },
+          "type": "group",
+          "data": {
+            "nested": [true, 0, ""]
+          },
+          "zIndex": -2,
+          "size": {
+            "width": 320,
+            "height": 200
+          },
+          "handles": [
+            {
+              "id": "out",
+              "kind": "source",
+              "side": "right"
+            }
+          ],
+          "selectable": false,
+          "focusable": false,
+          "draggable": false,
+          "deletable": false,
+          "ariaLabel": "Parent",
+          "ariaDescription": "Legacy details",
+          "hidden": false
+        },
+        {
+          "id": "child",
+          "label": "Child",
+          "position": {
+            "x": 20,
+            "y": 30
+          },
+          "parentId": "parent",
+          "size": {
+            "width": 80,
+            "height": 40
+          },
+          "extent": "parent",
+          "handles": [
+            {
+              "id": "in",
+              "kind": "target",
+              "side": "left"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge",
+          "source": "parent",
+          "target": "child",
+          "type": "custom",
+          "sourceHandle": "out",
+          "targetHandle": "in",
+          "path": "smoothstep",
+          "label": "",
+          "data": {
+            "enabled": false
+          },
+          "markerStart": "arrow",
+          "markerEnd": "arrowclosed",
+          "stroke": "#123abc",
+          "strokeWidth": 2,
+          "deletable": false,
+          "selectable": false,
+          "focusable": false,
+          "reconnectable": "source",
+          "interactionWidth": 12,
+          "ariaLabel": "Legacy edge",
+          "hidden": false,
+          "zIndex": 3
+        }
+      ]
+    }
+  },
+  "session": {
+    "version": 1,
+    "document": {
+      "nodes": [
+        {
+          "id": "parent",
+          "label": "",
+          "position": {
+            "x": 12,
+            "y": -4
+          },
+          "type": "group",
+          "data": {
+            "nested": [true, 0, ""]
+          },
+          "zIndex": -2,
+          "size": {
+            "width": 320,
+            "height": 200
+          },
+          "handles": [
+            {
+              "id": "out",
+              "kind": "source",
+              "side": "right"
+            }
+          ],
+          "selectable": false,
+          "focusable": false,
+          "draggable": false,
+          "deletable": false,
+          "ariaLabel": "Parent",
+          "ariaDescription": "Legacy details",
+          "hidden": false
+        },
+        {
+          "id": "child",
+          "label": "Child",
+          "position": {
+            "x": 20,
+            "y": 30
+          },
+          "parentId": "parent",
+          "size": {
+            "width": 80,
+            "height": 40
+          },
+          "extent": "parent",
+          "handles": [
+            {
+              "id": "in",
+              "kind": "target",
+              "side": "left"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge",
+          "source": "parent",
+          "target": "child",
+          "type": "custom",
+          "sourceHandle": "out",
+          "targetHandle": "in",
+          "path": "smoothstep",
+          "label": "",
+          "data": {
+            "enabled": false
+          },
+          "markerStart": "arrow",
+          "markerEnd": "arrowclosed",
+          "stroke": "#123abc",
+          "strokeWidth": 2,
+          "deletable": false,
+          "selectable": false,
+          "focusable": false,
+          "reconnectable": "source",
+          "interactionWidth": 12,
+          "ariaLabel": "Legacy edge",
+          "hidden": false,
+          "zIndex": 3
+        }
+      ]
+    },
+    "viewport": {
+      "x": 8,
+      "y": -9,
+      "zoom": 1.5
+    }
+  }
+}

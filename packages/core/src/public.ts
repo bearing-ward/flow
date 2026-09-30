@@ -385,6 +385,13 @@ export type {
 } from './domain/flow-persistence.ts'
 
 export {
+  SavedFlowFormatError,
+  SavedFlowFormatFailureCodeSchema,
+} from './domain/flow-save-format-error.ts'
+
+export type { SavedFlowFormatFailureCode } from './domain/flow-save-format-error.ts'
+
+export {
   FlowHandleConnectionsQuerySchema,
   FlowNodeConnectionOptionsSchema,
   diffNodeConnections,

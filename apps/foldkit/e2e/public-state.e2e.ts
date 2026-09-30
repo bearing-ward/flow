@@ -4,6 +4,43 @@ import { expect, test } from '@playwright/test'
 
 import { runKeyPressObserverContract } from '../../shared-e2e/key-press-observer-contract.ts'
 
+test('Foldkit public snapshot client preserves literal-v1 reads and settles owner disposal', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+  await page.evaluate(async () => {
+    const harnessPath = '/e2e/test-harness.ts'
+    await import(harnessPath)
+    await window.__flowFoldkitTest?.startPublicState()
+  })
+
+  const ordinary = await page.evaluate(() =>
+    window.__flowFoldkitTest?.requestSnapshotResult('uncontrolled')
+  )
+
+  expect(ordinary).toMatchObject({
+    status: 'succeeded',
+    response: { savedSession: { version: 1 } },
+  })
+
+  const disposed = await page.evaluate(async () => {
+    const pending =
+      window.__flowFoldkitTest?.requestSnapshotResult('uncontrolled')
+
+    window.__flowFoldkitTest?.disposePublicState()
+
+    return {
+      pending: await pending,
+      next: await window.__flowFoldkitTest?.requestSnapshotResult(
+        'uncontrolled'
+      ),
+    }
+  })
+
+  expect(disposed.pending).toMatchObject({ status: 'disposed' })
+  expect(disposed.next).toMatchObject({ status: 'disposed' })
+})
+
 const viewportContract: {
   coordinateCases: readonly {
     hostRect: { left: number; top: number }

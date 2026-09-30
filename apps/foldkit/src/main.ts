@@ -20,6 +20,7 @@ import type {
 } from '@flow/core'
 import {
   createProgram,
+  createFoldkitSnapshotClient,
   createFoldkitBaseNode,
   createFoldkitBaseHandle,
   createFoldkitLabeledHandle,
@@ -42,7 +43,7 @@ import type {
   FlowCanvasUIMount,
   FlowMiniMapMount,
 } from '@flow/foldkit'
-import { Effect, Exit, Option, Schema } from 'effect'
+import { Effect, Exit, Match, Option, Schema } from 'effect'
 
 import '@flow/foldkit/style.css'
 import { Runtime } from 'foldkit'
@@ -552,21 +553,11 @@ const envelope = Schema.Struct({
 
 let saved: unknown
 
-let requestNumber = 0
-
 let editRequestNumber = 0
 
-const pendingSnapshots = new Map<
-  string,
-  (response: typeof SnapshotResponseSchema.Encoded) => void
->()
+const snapshotClient = createFoldkitSnapshotClient(runtime.ports)
 
 const pendingEditRequests = new Map<string, (response: EditResponse) => void>()
-
-runtime.ports.snapshots.subscribe((response) => {
-  pendingSnapshots.get(response.requestId)?.(response)
-  pendingSnapshots.delete(response.requestId)
-})
 
 runtime.ports.editResults.subscribe((response) => {
   if (runtimeDisposed) {
@@ -583,6 +574,7 @@ const disposeRuntime = (): void => {
   }
 
   runtimeDisposed = true
+  snapshotClient.dispose()
   canvasUiMount?.dispose()
   canvasUiMount = null
   miniMapMount?.dispose()
@@ -616,25 +608,19 @@ const disposeRuntime = (): void => {
 
 globalThis.addEventListener('pagehide', disposeRuntime, { once: true })
 
-const snapshot = (): Promise<typeof SnapshotResponseSchema.Encoded> => {
-  requestNumber += 1
-  const requestId = `state-${requestNumber}`
+const snapshot = async (): Promise<typeof SnapshotResponseSchema.Encoded> => {
+  const result = await snapshotClient.request({ nodeId: 'validate' })
 
-  const { promise, resolve } =
-    Promise.withResolvers<typeof SnapshotResponseSchema.Encoded>()
-
-  pendingSnapshots.set(requestId, resolve)
-
-  const sent = runtime.ports.snapshotRequests.send({
-    requestId,
-    nodeId: 'validate',
-  })
-
-  if (Exit.isFailure(sent)) {
-    throw new Error('Foldkit rejected the state snapshot request')
-  }
-
-  return promise
+  return Match.value(result).pipe(
+    Match.when({ status: 'succeeded' }, ({ response }) => response),
+    Match.when({ status: 'failed' }, ({ reason }) => {
+      throw new Error(`Foldkit snapshot failed: ${reason}`)
+    }),
+    Match.when({ status: 'disposed' }, () => {
+      throw new Error('Foldkit snapshot owner is disposed')
+    }),
+    Match.exhaustive
+  )
 }
 
 const requestEdit = (

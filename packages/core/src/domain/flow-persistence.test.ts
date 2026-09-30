@@ -1,6 +1,11 @@
-import { Effect, Schema as S } from 'effect'
-import { describe, expect, it } from 'vitest'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 
+import { Effect, Schema as S } from 'effect'
+import { describe, expect, expectTypeOf, it } from 'vitest'
+
+import * as baseline from '../../../conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.js'
 import {
   decodeSavedFlowDocument,
   decodeSavedFlowSession,
@@ -9,7 +14,11 @@ import {
   SavedFlowDocumentSchema,
   SavedFlowSessionSchema,
 } from './flow-persistence.ts'
+import type { SavedFlowDocument, SavedFlowSession } from './flow-persistence.ts'
+import { SavedFlowFormatError } from './flow-save-format-error.ts'
+import { EdgeIdSchema, NodeIdSchema } from './flow-values.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
+import type { FlowDocument } from './flow.schema.ts'
 
 describe('saved flow documents', () => {
   it('round trips declared nested graph fields while excluding selection', () => {
@@ -262,5 +271,339 @@ describe('saved flow documents', () => {
     )
 
     expect(result._tag).toBe('Failure')
+  })
+})
+
+describe('frozen de36b4f legacy persistence compatibility', () => {
+  const original = Effect.runSync(
+    decodeFlowDocument({
+      nodes: [{ id: 'node', label: '', position: { x: 1, y: -2 } }],
+      edges: [],
+    })
+  )
+
+  const viewport = { x: 3, y: -4, zoom: 1 }
+
+  it('retains exact original encoded literal-v1 types and runtime output', () => {
+    expectTypeOf<SavedFlowDocument>().toEqualTypeOf<baseline.SavedFlowDocument>()
+    expectTypeOf<SavedFlowSession>().toEqualTypeOf<baseline.SavedFlowSession>()
+    expect(encodeSavedFlowDocument(original)).toStrictEqual(
+      baseline.encodeSavedFlowDocument(original)
+    )
+    expect(encodeSavedFlowSession(original, viewport)).toStrictEqual(
+      baseline.encodeSavedFlowSession(original, viewport)
+    )
+  })
+
+  it('proves generated artifact/source integrity against the actual baseline revision', () => {
+    const directory = new URL(
+      '../../../conformance/src/fixtures/legacy-v1-persistence/',
+      import.meta.url
+    )
+
+    const provenance = S.decodeUnknownSync(
+      S.Struct({
+        revision: S.Literal('de36b4f64fe80d99886c0b7a9fb505258b872ac9'),
+        bun: S.Literal('1.3.14'),
+        effect: S.Literal('4.0.0-rc.116'),
+        typescript: S.Literal('5.9.3'),
+        sourceHashes: S.Record(S.String, S.String),
+        artifactHashes: S.Record(S.String, S.String),
+      })
+    )(JSON.parse(readFileSync(new URL('provenance.json', directory), 'utf-8')))
+
+    for (const [file, digest] of Object.entries(provenance.artifactHashes)) {
+      expect(
+        createHash('sha256')
+          .update(readFileSync(new URL(file, directory)))
+          .digest('hex')
+      ).toBe(digest)
+    }
+
+    for (const [file, digest] of Object.entries(provenance.sourceHashes)) {
+      expect(
+        createHash('sha256')
+          .update(
+            execFileSync('git', ['show', `${provenance.revision}:${file}`])
+          )
+          .digest('hex')
+      ).toBe(digest)
+    }
+
+    expect(Object.keys(provenance.artifactHashes)).toHaveLength(25)
+    execFileSync('bun', [
+      'run',
+      'scripts/capture-legacy-v1-persistence.ts',
+      '--check',
+    ])
+  })
+
+  it('matches the baseline writer on the full nested representative field projection', () => {
+    const fixture = S.decodeUnknownSync(
+      S.Struct({
+        document: SavedFlowDocumentSchema,
+        session: SavedFlowSessionSchema,
+      })
+    )(
+      JSON.parse(
+        readFileSync(
+          new URL(
+            '../../../conformance/src/fixtures/legacy-v1-persistence/representative.json',
+            import.meta.url
+          ),
+          'utf-8'
+        )
+      )
+    )
+
+    const document = Effect.runSync(
+      baseline.decodeSavedFlowDocument(fixture.document)
+    )
+
+    const withSelection = {
+      ...document,
+      nodes: document.nodes.map((node) => ({ ...node, selected: true })),
+      edges: document.edges.map((edge) => ({ ...edge, selected: true })),
+    }
+
+    expect(encodeSavedFlowDocument(withSelection)).toStrictEqual(
+      fixture.document
+    )
+    expect(
+      encodeSavedFlowSession(withSelection, fixture.session.viewport)
+    ).toStrictEqual(fixture.session)
+    expect(
+      Object.keys(
+        SavedFlowDocumentSchema.fields.document.fields.nodes.value.fields
+      )
+    ).toStrictEqual(
+      Object.keys(
+        baseline.SavedFlowDocumentSchema.fields.document.fields.nodes.value
+          .fields
+      )
+    )
+    expect(
+      Object.keys(
+        SavedFlowDocumentSchema.fields.document.fields.edges.value.fields
+      )
+    ).toStrictEqual(
+      Object.keys(
+        baseline.SavedFlowDocumentSchema.fields.document.fields.edges.value
+          .fields
+      )
+    )
+  })
+
+  it.each([
+    [
+      'document own undefined nodeOrigin',
+      { ...original, nodeOrigin: undefined },
+    ],
+    ['document explicit zero origin', { ...original, nodeOrigin: [0, 0] }],
+    [
+      'node own undefined origin',
+      {
+        ...original,
+        nodes: original.nodes.map((node) => ({ ...node, origin: undefined })),
+      },
+    ],
+    [
+      'node negative/outside origin',
+      {
+        ...original,
+        nodes: original.nodes.map((node) => ({ ...node, origin: [-0.5, 1.5] })),
+      },
+    ],
+    [
+      'both families origin precedence',
+      {
+        ...original,
+        nodeOrigin: [0, 0],
+        nodes: original.nodes.map((node) => ({ ...node, connectable: false })),
+      },
+    ],
+  ])('rejects %s before legacy projection', (_name, document) => {
+    const before = structuredClone(document)
+    expect(() => encodeSavedFlowDocument(document)).toThrow(
+      SavedFlowFormatError
+    )
+    expect(() => encodeSavedFlowSession(document, viewport)).toThrow(
+      expect.objectContaining({ code: 'origin-requires-versioned-session' })
+    )
+    expect(document).toStrictEqual(before)
+  })
+
+  const nativeVariants: readonly FlowDocument[] = [
+    ...[undefined, false, true].map((connectable) => ({
+      ...original,
+      nodes: original.nodes.map((node) => ({ ...node, connectable })),
+    })),
+    ...[undefined, '', 'custom role'].map((ariaRole) => ({
+      ...original,
+      nodes: original.nodes.map((node) => ({ ...node, ariaRole })),
+    })),
+    {
+      ...original,
+      nodes: original.nodes.map((node) => ({ ...node, ariaLabel: '' })),
+    },
+    {
+      ...original,
+      nodes: original.nodes.map((node) => ({ ...node, ariaDescription: '' })),
+    },
+    ...[undefined, '', 'link'].map((ariaRole) => ({
+      ...original,
+      edges: [
+        {
+          id: EdgeIdSchema.make('edge'),
+          source: NodeIdSchema.make('node'),
+          target: NodeIdSchema.make('node'),
+          ariaRole,
+        },
+      ],
+    })),
+    {
+      ...original,
+      edges: [
+        {
+          id: EdgeIdSchema.make('edge'),
+          source: NodeIdSchema.make('node'),
+          target: NodeIdSchema.make('node'),
+          ariaLabel: '',
+        },
+      ],
+    },
+  ]
+
+  it.each(nativeVariants)(
+    'rejects reserved native fields without changing accepted schemas',
+    (document) => {
+      expect(() => encodeSavedFlowDocument(document)).toThrow(
+        SavedFlowFormatError
+      )
+      expect(() => encodeSavedFlowSession(document, viewport)).toThrow(
+        expect.objectContaining({
+          code: 'native-fields-require-versioned-session',
+        })
+      )
+    }
+  )
+
+  it('preserves original own-undefined label/description behavior and excludes unrelated metadata', () => {
+    const document = {
+      ...original,
+      nodes: original.nodes.map((node) => ({
+        ...node,
+        ariaLabel: undefined,
+        ariaDescription: undefined,
+        selected: false,
+        measurements: { width: 4 },
+        renderer: () => 'node',
+      })),
+    }
+
+    expect(encodeSavedFlowDocument(document)).toStrictEqual(
+      baseline.encodeSavedFlowDocument(document)
+    )
+  })
+
+  it('keeps actual frozen unknown-key stripping while rejecting a v2 literal and empty old fields', () => {
+    const forged = {
+      version: 1,
+      document: {
+        ...original,
+        nodeOrigin: [0, 0],
+        nodes: original.nodes.map((node) => ({
+          ...node,
+          ariaRole: 'button',
+          connectable: false,
+          extra: true,
+        })),
+      },
+    }
+
+    expect(Effect.runSync(decodeSavedFlowDocument(forged))).toStrictEqual(
+      Effect.runSync(baseline.decodeSavedFlowDocument(forged))
+    )
+    expect(Effect.runSync(decodeSavedFlowDocument(forged))).toStrictEqual(
+      original
+    )
+
+    for (const decoder of [
+      decodeSavedFlowDocument,
+      baseline.decodeSavedFlowDocument,
+    ]) {
+      expect(
+        Effect.runSync(Effect.exit(decoder({ ...forged, version: 2 })))._tag
+      ).toBe('Failure')
+      expect(
+        Effect.runSync(
+          Effect.exit(
+            decoder({
+              version: 1,
+              document: {
+                ...original,
+                nodes: original.nodes.map((node) => ({
+                  ...node,
+                  ariaDescription: '',
+                })),
+              },
+            })
+          )
+        )._tag
+      ).toBe('Failure')
+    }
+  })
+
+  it.each([
+    { handles: [{ id: '', kind: 'source', side: 'right' }] },
+    { handles: [{ id: 'handle', kind: 'wrong', side: 'right' }] },
+    { handles: [{ id: 'handle', kind: 'source', side: 'middle' }] },
+    { size: { width: 0, height: 10 } },
+    { size: { width: 10, height: Number.POSITIVE_INFINITY } },
+    { zIndex: Number.NaN },
+    { type: '' },
+    { ariaLabel: '' },
+    { ariaDescription: '' },
+  ])('retains frozen malformed node constraints', (patch) => {
+    const input = {
+      version: 1,
+      document: {
+        ...original,
+        nodes: original.nodes.map((node) => ({ ...node, ...patch })),
+      },
+    }
+
+    expect(
+      Effect.runSync(Effect.exit(decodeSavedFlowDocument(input)))._tag
+    ).toBe('Failure')
+    expect(
+      Effect.runSync(Effect.exit(baseline.decodeSavedFlowDocument(input)))._tag
+    ).toBe('Failure')
+  })
+
+  it.each([
+    { markerStart: { type: 'arrow' } },
+    { markerEnd: 'other' },
+    { path: 'other' },
+    { reconnectable: 'other' },
+    { interactionWidth: 0 },
+    { strokeWidth: -1 },
+    { stroke: 'red' },
+    { ariaLabel: '' },
+  ])('retains frozen malformed edge constraints', (patch) => {
+    const input = {
+      version: 1,
+      document: {
+        ...original,
+        edges: [{ id: 'edge', source: 'node', target: 'node', ...patch }],
+      },
+    }
+
+    expect(
+      Effect.runSync(Effect.exit(decodeSavedFlowDocument(input)))._tag
+    ).toBe('Failure')
+    expect(
+      Effect.runSync(Effect.exit(baseline.decodeSavedFlowDocument(input)))._tag
+    ).toBe('Failure')
   })
 })

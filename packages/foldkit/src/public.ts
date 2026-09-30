@@ -5,6 +5,7 @@ export {
   ports,
   SnapshotRequestSchema,
   SnapshotResponseSchema,
+  LegacySnapshotFailureSchema,
   EditRequestSchema,
   EditResponseSchema,
   ViewportRequestSchema,
@@ -19,7 +20,20 @@ export type {
   EditResponse,
   SnapshotRequest,
   SnapshotResponse,
+  LegacySnapshotFailure,
 } from './application.ts'
+
+export {
+  createFoldkitSnapshotClient,
+  FoldkitSnapshotResultSchema,
+  SnapshotQuerySchema,
+} from './snapshot-client.ts'
+
+export type {
+  FoldkitSnapshotClient,
+  FoldkitSnapshotResult,
+  SnapshotQuery,
+} from './snapshot-client.ts'
 
 export {
   defaultInteractionOptions,

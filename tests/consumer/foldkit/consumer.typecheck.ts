@@ -1,5 +1,16 @@
-import { decodeFlowDocument } from '@flow/core'
-import type { FlowDocument } from '@flow/core'
+import {
+  decodeFlowDocument,
+  encodeSavedFlowDocument,
+  encodeSavedFlowSession,
+  SavedFlowFormatFailureCodeSchema,
+  SavedFlowFormatError,
+} from '@flow/core'
+import type {
+  FlowDocument,
+  SavedFlowDocument,
+  SavedFlowSession,
+  SavedFlowFormatFailureCode,
+} from '@flow/core'
 import {
   createFoldkitBaseNode,
   createFoldkitBaseHandle,
@@ -12,10 +23,16 @@ import {
   createFoldkitPlaceholder,
   createFoldkitNodeMeasurementObserver,
   createProgram,
+  createFoldkitSnapshotClient,
+  FoldkitSnapshotResultSchema,
+  LegacySnapshotFailureSchema,
   HostAction,
   ports,
 } from '@flow/foldkit'
-import type { FoldkitNodeMeasurementObserver } from '@flow/foldkit'
+import type {
+  FoldkitNodeMeasurementObserver,
+  FoldkitSnapshotResult,
+} from '@flow/foldkit'
 import { Effect } from 'effect'
 import { Runtime } from 'foldkit'
 
@@ -150,3 +167,64 @@ export const mountPackedNodeContent = (owner: Document): (() => void) => {
     content.remove()
   }
 }
+
+// Packed declarations must retain literal-v1 and the mandatory correlated failure port.
+const savedDocument: SavedFlowDocument = encodeSavedFlowDocument(document)
+
+const savedSession: SavedFlowSession = encodeSavedFlowSession(document, {
+  x: 0,
+  y: 0,
+  zoom: 1,
+})
+
+const documentVersion: 1 = savedDocument.version
+
+const sessionVersion: 1 = savedSession.version
+
+// @ts-expect-error A legacy writer never advertises a version-2 envelope.
+const unsupportedVersion: 2 = savedSession.version
+
+const code: SavedFlowFormatFailureCode =
+  'native-fields-require-versioned-session'
+
+const formatError = new SavedFlowFormatError({ code })
+
+const failedResult: FoldkitSnapshotResult = {
+  status: 'failed',
+  requestId: 'packed',
+  reason: code,
+}
+
+const invalidResult: FoldkitSnapshotResult = {
+  status: 'failed',
+  requestId: 'invalid',
+  reason: 'invalid-request',
+}
+
+// @ts-expect-error Failure codes are an exhaustive public contract.
+const unsupportedCode: SavedFlowFormatFailureCode = 'unknown-format'
+
+const mountSnapshotClient = (handle: Runtime.EmbedHandle<typeof ports>) =>
+  createFoldkitSnapshotClient(handle.ports)
+
+const incompletePorts = {
+  snapshots: { subscribe: () => () => null },
+  snapshotRequests: { send: () => true },
+}
+
+// @ts-expect-error The failure subscription cannot be omitted from a client owner.
+createFoldkitSnapshotClient(incompletePorts)
+
+void [
+  documentVersion,
+  sessionVersion,
+  unsupportedVersion,
+  unsupportedCode,
+  formatError,
+  failedResult,
+  invalidResult,
+  mountSnapshotClient,
+  FoldkitSnapshotResultSchema,
+  LegacySnapshotFailureSchema,
+  SavedFlowFormatFailureCodeSchema,
+]
