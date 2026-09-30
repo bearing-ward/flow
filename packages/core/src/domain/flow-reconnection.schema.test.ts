@@ -123,6 +123,27 @@ describe('edge reconnection', () => {
     ).toBe('missing-target-handle')
   })
 
+  it('allows same-kind loose reconnection while retaining edge direction', () => {
+    const replacement = Effect.runSync(
+      reconnectFlowEdge(
+        document,
+        firstEdgeId,
+        'target',
+        S.decodeSync(NodeIdSchema)('fourth'),
+        outHandle,
+        'loose'
+      )
+    )
+
+    expect(replacement).toMatchObject({
+      id: 'edge-1',
+      source: 'first',
+      sourceHandle: 'out',
+      target: 'fourth',
+      targetHandle: 'out',
+    })
+  })
+
   it('limits reconnection to the declared endpoint', () => {
     const [edge, other] = document.edges
 

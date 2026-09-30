@@ -1,3 +1,29 @@
+.flow-vue-tooltip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+.flow-vue-tooltip__content {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 9px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #172033;
+  color: white;
+  font-size: 12px;
+  line-height: 1.4;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+.flow-vue-tooltip__content[hidden] {
+  display: none;
+}
+
 .flow-vue-canvas {
   position: relative;
   width: min(1080px, calc(100vw - 40px));
@@ -13,12 +39,159 @@
   touch-action: none;
 }
 
+.flow-vue-panel {
+  position: absolute;
+  z-index: 5;
+  max-width: calc(100% - 24px);
+  pointer-events: auto;
+}
+
+.flow-vue-node-toolbar-layer {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flow-vue-node-toolbar {
+  position: absolute;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  pointer-events: auto;
+}
+
+.flow-vue-panel-top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.flow-vue-panel-top-center {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.flow-vue-panel-top-right {
+  top: 12px;
+  right: 12px;
+}
+
+.flow-vue-panel-bottom-left {
+  bottom: 12px;
+  left: 12px;
+}
+
+.flow-vue-panel-bottom-center {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.flow-vue-panel-bottom-right {
+  bottom: 12px;
+  right: 12px;
+}
+
+.flow-vue-background {
+  display: block;
+  overflow: hidden;
+}
+
+.flow-vue-controls {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 2px 7px #0f172a18;
+}
+
+.flow-vue-controls-vertical {
+  flex-direction: column;
+}
+
+.flow-vue-controls-horizontal {
+  flex-direction: row;
+}
+
+.flow-vue-controls-top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.flow-vue-controls-top-center {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.flow-vue-controls-top-right {
+  top: 10px;
+  right: 10px;
+}
+
+.flow-vue-controls-bottom-left {
+  bottom: 10px;
+  left: 10px;
+}
+
+.flow-vue-controls-bottom-center {
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.flow-vue-controls-bottom-right {
+  right: 10px;
+  bottom: 10px;
+}
+
+.flow-vue-control-button {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  cursor: pointer;
+}
+
+.flow-vue-control-button:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.flow-vue-control-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.flow-vue-control-button:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
 .flow-vue-viewport {
   position: absolute;
   inset: 0;
   transform-origin: 0 0;
   z-index: 2;
   pointer-events: none;
+}
+
+.flow-vue-viewport-portal-target,
+.flow-vue-viewport-portal {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flow-vue-viewport-portal > * {
+  pointer-events: auto;
 }
 
 .flow-vue-node {
@@ -41,6 +214,67 @@
 
 .flow-vue-node-label {
   display: block;
+}
+
+.flow-vue-selection-rect {
+  position: absolute;
+  z-index: 5;
+  border: 1px solid #2563eb;
+  background: #3b82f633;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.flow-vue-resize-handle {
+  position: absolute;
+  z-index: 3;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid white;
+  background: #2563eb;
+  touch-action: none;
+}
+
+.flow-vue-resize-top {
+  top: -5px;
+  left: 50%;
+  cursor: ns-resize;
+}
+.flow-vue-resize-right {
+  top: 50%;
+  right: -5px;
+  cursor: ew-resize;
+}
+.flow-vue-resize-bottom {
+  bottom: -5px;
+  left: 50%;
+  cursor: ns-resize;
+}
+.flow-vue-resize-left {
+  top: 50%;
+  left: -5px;
+  cursor: ew-resize;
+}
+.flow-vue-resize-top-left {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+.flow-vue-resize-top-right {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+.flow-vue-resize-bottom-right {
+  right: -5px;
+  bottom: -5px;
+  cursor: nwse-resize;
+}
+.flow-vue-resize-bottom-left {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
 }
 
 .flow-vue-handle {
@@ -76,6 +310,39 @@
   transform: translateX(-50%);
 }
 
+.flow-vue-base-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #1e293b;
+  background: #fff;
+  font:
+    500 0.75rem/1.2 system-ui,
+    sans-serif;
+}
+
+.flow-vue-base-handle-indicator {
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.flow-vue-base-handle-target .flow-vue-base-handle-indicator {
+  background: #0f766e;
+  box-shadow: 0 0 0 1px #0f766e;
+}
+
+.flow-vue-base-handle-meta {
+  color: #64748b;
+  font-weight: 400;
+}
+
 .flow-vue-edges {
   position: absolute;
   inset: 0;
@@ -98,6 +365,14 @@
   outline: none;
   stroke: #2563eb;
   stroke-dasharray: 3 3;
+}
+
+.flow-vue-edge-reconnect-anchor {
+  fill: #fff;
+  stroke: #2563eb;
+  stroke-width: 2px;
+  cursor: crosshair;
+  pointer-events: all;
 }
 
 .flow-vue-edge-labels {
@@ -125,4 +400,91 @@
   stroke: #2563eb;
   stroke-width: 2;
   pointer-events: none;
+}
+.flow-vue-minimap {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  display: block;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  cursor: crosshair;
+}
+
+.flow-vue-minimap-background {
+  fill: #f8fafc;
+}
+
+.flow-vue-minimap-node {
+  fill: #64748b;
+  stroke: #334155;
+  stroke-width: 0.75px;
+  vector-effect: non-scaling-stroke;
+}
+
+.flow-vue-minimap-viewport {
+  fill: rgb(37 99 235 / 12%);
+  stroke: #2563eb;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.flow-vue-base-node {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid #94a3b8;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: #fff;
+  color: #0f172a;
+}
+.flow-vue-base-node-title {
+  margin: 0;
+  font-size: 1rem;
+}
+.flow-vue-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #334155;
+  font:
+    600 0.875rem/1.25 system-ui,
+    sans-serif;
+}
+
+.flow-vue-status-indicator__dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  flex: none;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.flow-vue-status-indicator--waiting .flow-vue-status-indicator__dot {
+  background: #d97706;
+  animation: flow-vue-status-pulse 1.4s ease-in-out infinite;
+}
+
+.flow-vue-status-indicator--ready .flow-vue-status-indicator__dot {
+  background: #15803d;
+}
+
+.flow-vue-status-indicator--error .flow-vue-status-indicator__dot {
+  background: #b91c1c;
+}
+
+@keyframes flow-vue-status-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-vue-status-indicator__dot {
+    animation: none !important;
+  }
 }

@@ -151,6 +151,71 @@ test('Vue FlowCanvas matches shared renderer fixture semantics and measured geom
   await expect(defaultPath).not.toHaveAttribute('d', /[CQSAHV]/u)
 })
 
+test('Vue FlowCanvas projects default edge fields below stored edge fields', async ({
+  page,
+}) => {
+  const input = {
+    ...rendererContractFixture.document,
+    edges: rendererContractFixture.document.edges.map((edge) => {
+      if (edge.id === 'edge-straight') {
+        const edgeWithoutLabel = { ...edge }
+        Reflect.deleteProperty(edgeWithoutLabel, 'label')
+
+        return edgeWithoutLabel
+      }
+
+      if (edge.id === 'edge-bezier') {
+        return { ...edge, stroke: '#123456' }
+      }
+
+      return edge
+    }),
+  }
+
+  await page.goto('/test.html')
+  await page.addScriptTag({
+    type: 'module',
+    content: `import { mountSharedRendererContractFixture } from '/src/renderer-contract.ts'; mountSharedRendererContractFixture(${JSON.stringify(input)}, { label: 'Default label', stroke: '#abcdef' })`,
+  })
+
+  await expect(
+    page.locator('[data-flow-edge-label="edge-straight"]')
+  ).toHaveText('Default label')
+  await expect(page.locator('[data-flow-edge-label="edge-bezier"]')).toHaveText(
+    'Bezier'
+  )
+  await expect(
+    page.locator(
+      '[data-edge-id="edge-straight"] [data-testid="flow-edge-path"]'
+    )
+  ).toHaveAttribute('stroke', '#abcdef')
+  await expect(
+    page.locator('[data-edge-id="edge-bezier"] [data-testid="flow-edge-path"]')
+  ).toHaveAttribute('stroke', '#123456')
+
+  await page.evaluate(() =>
+    window.__flowVueRendererDefaults?.({
+      label: 'Updated default',
+      stroke: '#fedcba',
+    })
+  )
+
+  await expect(
+    page.locator('[data-flow-edge-label="edge-straight"]')
+  ).toHaveText('Updated default')
+  await expect(
+    page.locator(
+      '[data-edge-id="edge-straight"] [data-testid="flow-edge-path"]'
+    )
+  ).toHaveAttribute('stroke', '#fedcba')
+  await expect(page.locator('[data-flow-edge-label="edge-bezier"]')).toHaveText(
+    'Bezier'
+  )
+  await expect(
+    page.locator('[data-edge-id="edge-bezier"] [data-testid="flow-edge-path"]')
+  ).toHaveAttribute('stroke', '#123456')
+})
+
 test('Vue edge labels follow path geometry, custom anchors, and visibility', async ({
   page,
 }) => {

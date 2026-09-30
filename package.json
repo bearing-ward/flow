@@ -10,9 +10,9 @@
     "research:import": "bun run scripts/import-xyflow.ts",
     "research:inventory": "bun run scripts/inventory-xyflow.ts",
     "research:check-traces": "bun run scripts/check-research-traces.ts",
-    "build:packages": "bun run --cwd packages/core build && bun run --cwd apps/vanilla build:package && bun run --cwd packages/vue build && bun -e 'for (const root of [\"packages/core/dist\", \"apps/vanilla/dist\", \"packages/vue/dist\"]) for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: root })) { const file = `${root}/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=\")/g, \".js\")); }'",
-    "build:vue:packages": "bun run --cwd packages/core build && bun run --cwd packages/vue build && bun -e 'for (const root of [\"packages/core/dist\", \"packages/vue/dist\"]) for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: root })) { const file = `${root}/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=\")/g, \".js\")); }'",
-    "test:consumer": "bun run scripts/check-packed-consumer.ts",
+    "build:packages": "bun run --cwd packages/core build && bun run --cwd apps/vanilla build:package && bun run --cwd packages/vue build && bun run --cwd packages/foldkit build && bun -e 'for (const root of [\"packages/core/dist\", \"apps/vanilla/dist\", \"packages/vue/dist\", \"packages/foldkit/dist\"]) for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: root })) { const file = `${root}/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=[\\x27\\x22])/g, \".js\")); }'",
+    "build:vue:packages": "bun run --cwd packages/core build && bun run --cwd packages/vue build && bun -e 'for (const root of [\"packages/core/dist\", \"packages/vue/dist\"]) for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: root })) { const file = `${root}/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=[\\x27\\x22])/g, \".js\")); }'",
+    "test:consumer": "bun run build:packages && bun run scripts/check-packed-consumer.ts",
     "dev": "bun run build:packages && bun run --cwd apps/vanilla dev",
     "build": "bun run build:packages && bun run --cwd apps/vanilla build",
     "check:architecture": "bun run scripts/check-architecture.ts",
@@ -28,9 +28,13 @@
     "test:browser": "bun run build:packages && playwright test",
     "test:conformance:vue": "playwright test -c apps/vue/playwright.config.ts",
     "test:conformance:foldkit": "bun run build:packages && playwright test -c apps/foldkit/playwright.config.ts",
+    "test:collector": "bun run scripts/check-collector-delivery.ts",
+    "test:collector:stopped": "bun run scripts/check-collector-delivery.ts --stopped-collector",
+    "test:foldkit:hmr": "bun run build:foldkit:package && bun run scripts/check-foldkit-hmr.ts",
     "verify": "bun run scripts/verify.ts",
     "check": "ultracite check",
-    "fix": "ultracite fix"
+    "fix": "ultracite fix",
+    "build:foldkit:package": "bun run --cwd packages/core build && bun run --cwd packages/foldkit build && bun -e 'for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: \"packages/foldkit/dist\" })) { const file = `packages/foldkit/dist/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=[\\x27\\x22])/g, \".js\")); }'"
   },
   "dependencies": {
     "@effect/platform-browser": "4.0.0-rc.116",

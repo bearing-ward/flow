@@ -62,12 +62,8 @@ test('Foldkit disposal settles pending reentrant request IDs with typed failures
   )
 
   expect(result?.pendingCount).toBe(0)
-  expect(result?.responses).toHaveLength(2)
-  expect(
-    result?.responses.map((response) =>
-      'error' in response ? response.error._tag : 'success'
-    )
-  ).toEqual(['success', 'FlowEditDisposed'])
+  expect(result?.responseOrder).toEqual(['edit-1', 'edit-2'])
+  expect(result?.responseTags).toEqual(['success', 'FlowEditDisposed'])
   expect(result?.lateNotifications).toBe(
     queuedDisposal.expected.lateNotifications
   )
@@ -143,6 +139,18 @@ test('Foldkit edit requests return typed results and preserve controlled ownersh
   )
 
   expect(failure).toMatchObject({ error: { nodeId: 'visible' } })
+
+  const recoverableErrors = await page.evaluate(
+    () =>
+      window.__flowFoldkitTest?.publicInteractionEvents('uncontrolled') ?? []
+  )
+
+  expect(recoverableErrors.at(-1)).toMatchObject({
+    name: 'onError',
+    phase: 'event',
+    inputKind: 'api',
+    reason: 'DuplicateNodeId',
+  })
 
   const controlled = await page.evaluate(() =>
     window.__flowFoldkitTest?.requestPublicEdit('controlled', {

@@ -13,7 +13,7 @@
 - Execution mode: Implementation
 - Depends on: 053, 054, 055
 - Planned at: `f8b73f2`, 2026-09-27
-- Status: TODO
+- Status: DONE
 
 ## Why this matters
 
@@ -21,14 +21,9 @@ Vanilla has broader gestures than Vue and Foldkit. Portable examples need common
 
 ## Current state and exemplars
 
-Core already has drag/session/resize schemas in `packages/core/src/domain/flow-runtime.schema.ts:64-105` and transition tests in `flow-runtime.schema.test.ts`. Foldkit currently clears one session directly (`apps/foldkit/src/graph.ts:450-451`):
+At the planning baseline, core had drag/session/resize schemas in `packages/core/src/domain/flow-runtime.schema.ts:64-105`, and Foldkit cleared only the pointer session directly. Current status: Foldkit routes cancellation and lifecycle outcomes through graph messages and the application event port; see the implementation evidence below and `research/traces/shared-interaction-lifecycle.md`. Vue now validates the complete candidate rather than the baseline target-ID-only argument. The remaining host-specific gaps are listed below; they are not treated as parity.
 
-```ts
-PointerCancelled: () => ({ model: { ...model, pointerSession: null } }),
-CancelGesture: () => ({ model: { ...model, pointerSession: null } }),
-```
-
-Its scoped subscription starts around line 596. Vue currently accepts a target-ID-only validator at `packages/vue/src/flow-canvas.ts:222-224`; vanilla accepts a full connection candidate. `docs/browser-and-accessibility.md:5` records native multi-pointer and pinch cases as unverified. Existing `advanced-gestures.e2e.ts`, `gesture-options.e2e.ts`, and `validator-followups.e2e.ts` are characterization patterns, not proof of other hosts.
+The original `advanced-gestures.e2e.ts`, `gesture-options.e2e.ts`, and `validator-followups.e2e.ts` are Vanilla characterization sources, not proof of another host. New host production evidence and the separate trusted native pointer/touch boundary are recorded in the current matrix and trace.
 
 ## Architecture and evidence rules
 
@@ -114,10 +109,10 @@ Create `scripts/capture-interaction-lifecycle-reference.ts` by following the exi
 
 ## Plan-specific done criteria
 
-- [ ] All gesture families in the frozen table have explicit per-host implementation and evidence status.
-- [ ] Implemented connection, selection, drag, resize, and lifecycle paths pass shared fixtures through production APIs.
-- [ ] Cancellation never commits a preview and permits an immediate new gesture; removal/unmount never leaves capture, frames, or late notifications.
-- [ ] Native-device evidence remains separate from synthetic browser evidence.
+- [x] All gesture families in the frozen table have explicit per-host implementation and evidence status, including host-specific unsupported and unverified cells.
+- [x] Implemented connection, selection, drag, resize, and lifecycle paths pass shared fixtures through production APIs.
+- [x] Cancellation never commits a preview and permits an immediate new gesture; removal/unmount cleanup is exercised through production hosts. Trusted native capture remains separate for Plan 060.
+- [x] Native-device evidence remains separate from synthetic browser evidence.
 
 ## Plan-specific STOP conditions
 
@@ -131,13 +126,28 @@ This is several sequential implementation slices inside one capability chunk: co
 
 ## Common completion gate
 
-- [ ] Every step's targeted tests passes through production APIs, with no test-side replacement store or reducer generating the observed result.
-- [ ] `bun run check`, `bun run typecheck`, `bun run check:architecture`, `bun run docs:check`, and `bun run research:check-traces` exit 0.
-- [ ] The offline catalog checker and `bun run verify` exit 0. Record upstream drift separately.
-- [ ] `git diff --check` exits 0; `git diff --name-only` stays inside scope, including generated output only where authorized below.
-- [ ] Update only supported claims in `research/PROGRESS.md`, the API correspondence matrix, and catalog coverage. Keep implementation proof, reference proof, hosted CI, package availability, and external-device evidence separate.
-- [ ] Append commands/results and remaining limits to this plan; update its row in `plans/README.md`. A required missing result means BLOCKED or IN PROGRESS, never DONE.
+- [x] Every step's targeted tests passes through production APIs, with no test-side replacement store or reducer generating the observed result.
+- [x] `bun run check`, `bun run typecheck`, `bun run check:architecture`, `bun run docs:check`, and `bun run research:check-traces` exit 0.
+- [x] The offline catalog checker and `bun run verify` exit 0. Upstream drift is recorded separately.
+- [x] `git diff --check` exits 0; changed files stay inside plan scope, with generated output produced by its generator.
+- [x] Supported claims are recorded in `research/PROGRESS.md`, the API correspondence matrix, and catalog coverage, with implementation, reference, hosted CI, package availability, and external-device evidence kept separate.
+- [x] Commands, results, remaining host-specific limits, and status are recorded in this plan and its row in `plans/README.md`.
 
 ## Common STOP conditions
 
 Stop the affected step and report the concrete gap if a required check fails twice after focused repairs, an unrelated subsystem or dependency upgrade is needed, the plan would create a second authoritative document store, or a new reference claim cannot be reproduced. Preserve completed independent work and explicit unverified cells. Do not widen scope, weaken assertions, or label unavailable evidence as success.
+
+## Executor evidence (2026-09-28)
+
+- Prerequisite checkout: `d39f0f59f0f9b3178ee4fa6179efac3d19db1f17`, with Plans 053–055 landed. The separately authorized roadmap-checker repair is commit `5d6505b84c58e455bc4b6534b8c2611eb9b776e1`, cherry-picked as `ce9210e`; it only changes `plans/check-next-chunks.mjs`. No changes were made on main, and this worktree remains uncommitted.
+- Work package 1: the API matrix assigns gesture families to work packages and fixed host scenarios, with transient preview, proposal, acceptance, terminal, and cancellation boundaries. Vanilla invokes native host callbacks; Vue emits decoded component payloads; Foldkit serializes schema-validated lifecycle records through a typed port and excludes DOM events from its Model/messages. This is a host boundary distinction, not callback parity.
+- Work package 2: core now exports strict/loose connection mode, candidate validation/normalization, radius selection, reconnection validation, and ordered `getHandleConnections`. Vue validates a full candidate. Vue and Foldkit production suites exercise pointer and keyboard connection/reconnection, strict/loose fixtures, radius, auto-pan, custom preview renderers, controlled/uncontrolled outcomes, and dynamic handle replacement. Vanilla covers pointer/click/keyboard activation, validation, radius, auto-pan, custom preview callbacks, reconnection, and dynamic handle replacement during active reconnect. The pinned source reports target-to-target as valid before edge rendering error 008; Flow rejects that candidate because its renderer cannot produce a renderable edge. Current-site documentation drift is recorded separately.
+- Work packages 3/4: all hosts have production pointer selection and eight-direction resize cases with accepted geometry and nested child compensation. Vue and Foldkit have keyboard rectangle selection and grouped/repeated keyboard resize evidence. Shared cancellation fixture rows cover seven reasons and immediate retries through each host's production API; the full operation/reason callback-order product remains outside the bounded evidence. Reentrant edits and queued disposal remain covered by public edit suites. Native trusted capture stays unverified for Plan 060.
+- Follow-up input/lifecycle cases: Foldkit `input-ownership.e2e.ts` exercises six native controls and both no-drag marker spellings across pointer/key/wheel ownership, then verifies Escape and wheel do not terminate an active connection for all eight targets. That case exposed and fixed canvas-level Escape handling that intercepted native input; Escape cancellation now runs in an active-session document listener and leaves native controls untouched. Vue and Foldkit keyboard resize suites cover blur and owner removal/document replacement, stale-keyup suppression, and a fresh accepted keyboard resize. Foldkit `ReplaceDocument` now clears `keyboardResizeSession`.
+- Lifecycle evidence: Vanilla `gesture-options.e2e.ts` asserts drag, connection, selection, and pointer UI callback cases. Foldkit `interaction-lifecycle.e2e.ts` asserts `onInit`, connection proposal/terminal ordering for accepted and rejected cases, and selected pointer event records. Vue `activation-callbacks.e2e.ts` asserts click-connect/reconnect change → adoption → terminal ordering, drag and pointer rectangle-selection ordering for controlled/uncontrolled modes, and uncontrolled keyboard rectangle-selection change → adoption → terminal ordering. Callback outputs are not compared across hosts.
+- Bounded remainder: the unrequired native-control × every active gesture product and operation × every cancellation-reason product remain unverified. Vue has no pane double-click event; Foldkit's serialized event schema omits pane/node/edge double-click and context-menu records. Foldkit represents click connection on shared operation records tagged `inputKind: click`, without click-only lifecycle names; `ReplaceDocument` cancellation clears active reconnect sessions and suppresses stale release proposals, as covered by its retry E2E. Its `onError` record is currently scoped to edit failures. Foldkit programmatic viewport operations emit start/change/end through `viewportEvents`; that schema carries no controlled proposal/acknowledgement status, and programmatic viewport requests do not create `interactionEvents` move lifecycle records. Vanilla keyboard reconnection remains unsupported. Trusted pointer/touch capture remains reserved for Plan 060.
+- Input-option residuals: Vue has no `zoomOnPinch` prop and accepts Boolean `panOnDrag` only; Foldkit has no pinch option, button-array `panOnDrag`, `selectNodesOnDrag`, or pan/zoom activation-keycode props (its `keyboardActivation` is Boolean). Vue defaults `selectNodesOnDrag` to false to preserve existing shared conformance semantics, with explicit true coverage; Vanilla enables it unless false, so these defaults are intentionally host-specific. Vanilla declares `zoomOnPinch`, but active execution and trusted pinch behavior have not been established. Canvas-wide `nodesConnectable` exists in Vanilla only. Preserve each cell as a host-specific open boundary; fixed gesture tests do not establish option parity.
+- Work package 5: `scripts/capture-interaction-lifecycle-reference.ts` ran twice against `0a1f9575b25679f2880175de8d3eae21aedde921`; normalized outputs matched. The capture fixture and trace separate pinned observations, current-site drift, Flow production behavior, and synthetic host tests.
+- Focused host results after the final bounded follow-up: Vue `interaction-lifecycle.e2e.ts` 25/25; Foldkit `interaction-lifecycle.e2e.ts` 28/28, `input-ownership.e2e.ts` 2/2, and `renderer-contract.e2e.ts` 3/3. The idle canvas Escape assertion reflects the scoped contract; separate tests cover cancellation during an active gesture and native-control Escape ownership.
+- Final root `bun run verify` exited 0: 176 unit tests, Vanilla 261 passed / 2 existing native-device skips, Vue 74 passed, Foldkit 73 passed; quality, architecture, docs, catalog, generated research inventory, trace citations, typecheck, builds, and packed consumer passed. The Foldkit two-host isolation assertion is in `renderer-contract.e2e.ts`. The upstream catalog check passed with 208 entries / 200 capabilities; docs checked 19 Markdown files and traces verified 2,141 citations across 53 traces. `git diff --check` passed. Hosted CI and trusted device behavior were not tested.
+- Accepted evidence boundaries: each host has fixed production cases for all six native controls and documented no-drag markers across pointer, key, and wheel ownership; combinations with every control nested inside every possible active gesture remain unverified. Vue has direct ordering assertions for click-connect, reconnect, drag, pointer selection, and uncontrolled keyboard selection; the full operation × cancellation-reason callback matrix and controlled keyboard-selection acknowledgement order remain unverified. Foldkit's serial event schema omits several pane/node/edge callback kinds. Preserve native Vanilla callbacks, decoded Vue emits, and Foldkit's typed serializable port as distinct contracts. Host-specific activation gaps, Vanilla keyboard reconnection, controlled Foldkit viewport notification status, and Foldkit edit-failure-only `onError` remain explicitly documented. Synthetic touch connection and dynamic-handle reconnect are covered in all three host suites. Native trusted pointer/touch capture remains unverified for Plan 060. These bounded and host-specific gaps do not represent a cross-host parity claim.

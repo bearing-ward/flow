@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   decodeSavedFlowDocument,
+  decodeSavedFlowSession,
   encodeSavedFlowDocument,
+  encodeSavedFlowSession,
   SavedFlowDocumentSchema,
+  SavedFlowSessionSchema,
 } from './flow-persistence.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
@@ -204,5 +207,60 @@ describe('saved flow documents', () => {
         edges: [],
       },
     })
+  })
+
+  it('round trips a version 1 document and viewport session without selection', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            id: 'node',
+            label: 'Node',
+            position: { x: 1, y: 2 },
+            selected: true,
+          },
+        ],
+        edges: [],
+      })
+    )
+
+    const viewport = { x: 12, y: -4, zoom: 1.5 }
+    const saved = encodeSavedFlowSession(document, viewport)
+    const loaded = Effect.runSync(decodeSavedFlowSession(saved))
+
+    expect(S.is(SavedFlowSessionSchema)(saved)).toBeTruthy()
+    expect(saved).toStrictEqual({
+      version: 1,
+      document: {
+        nodes: [{ id: 'node', label: 'Node', position: { x: 1, y: 2 } }],
+        edges: [],
+      },
+      viewport,
+    })
+    expect({
+      viewport: loaded.viewport,
+      edges: loaded.document.edges,
+      selected: loaded.document.nodes[0]?.selected,
+      position: loaded.document.nodes[0]?.position,
+    }).toStrictEqual({
+      viewport,
+      edges: [],
+      selected: undefined,
+      position: { x: 1, y: 2 },
+    })
+  })
+
+  it('rejects invalid viewport and graph state in session decoding', () => {
+    const result = Effect.runSync(
+      Effect.exit(
+        decodeSavedFlowSession({
+          version: 1,
+          document: { nodes: [], edges: [] },
+          viewport: { x: 0, y: 0, zoom: 0 },
+        })
+      )
+    )
+
+    expect(result._tag).toBe('Failure')
   })
 })

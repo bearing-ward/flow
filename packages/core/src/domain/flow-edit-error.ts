@@ -1,6 +1,14 @@
 import { Schema } from 'effect'
 
 import {
+  FlowDeleteApprovalFailed,
+  FlowDeleteCancelled,
+  FlowDeleteInProgress,
+  FlowDeleteInvalidCandidate,
+  FlowDeleteRevisionConflict,
+} from './flow-delete-error.ts'
+import { FlowEditDisposed } from './flow-edit-disposed-error.ts'
+import {
   EdgeIdSchema,
   FlowDocumentIntegrityErrorSchema,
   NodeIdSchema,
@@ -16,13 +24,25 @@ export class ProtectedDeletionConflict extends tagged<ProtectedDeletionConflict>
   }
 ) {}
 
-export const FlowEditDisposedSchema = Schema.TaggedStruct(
-  'FlowEditDisposed',
-  {}
-)
+export {
+  FlowDeleteApprovalFailed,
+  FlowDeleteCancelled,
+  FlowDeleteInProgress,
+  FlowDeleteInvalidCandidate,
+  FlowDeleteRevisionConflict,
+} from './flow-delete-error.ts'
+
+export { FlowEditDisposed } from './flow-edit-disposed-error.ts'
+
+export const FlowEditDisposedSchema = FlowEditDisposed
 
 export const FlowEditErrorSchema = Schema.Union([
   ProtectedDeletionConflict,
+  FlowDeleteRevisionConflict,
+  FlowDeleteInvalidCandidate,
+  FlowDeleteInProgress,
+  FlowDeleteCancelled,
+  FlowDeleteApprovalFailed,
   FlowEditDisposedSchema,
   FlowDocumentIntegrityErrorSchema,
 ])

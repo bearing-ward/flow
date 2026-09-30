@@ -136,6 +136,45 @@ const source = {
 }
 
 const interactionScenes = {
+  connections: {
+    nodes: [
+      {
+        id: 'event-source',
+        label: 'Source · click to connect',
+        position: { x: 100, y: 300 },
+        size: { width: 220, height: 88 },
+        handles: [{ id: 'out', kind: 'source', side: 'right' }],
+      },
+      {
+        id: 'event-target',
+        label: 'Target · click to complete',
+        position: { x: 520, y: 300 },
+        size: { width: 220, height: 88 },
+        handles: [{ id: 'in', kind: 'target', side: 'left' }],
+      },
+    ],
+    edges: [],
+  },
+  touchReady: {
+    nodes: [
+      {
+        id: 'touch-source',
+        label: 'Touch source',
+        position: { x: 54, y: 360 },
+        size: { width: 220, height: 100 },
+        selected: true,
+        handles: [{ id: 'out', kind: 'source', side: 'right' }],
+      },
+      {
+        id: 'touch-target',
+        label: 'Touch target',
+        position: { x: 54, y: 590 },
+        size: { width: 220, height: 100 },
+        handles: [{ id: 'in', kind: 'target', side: 'left' }],
+      },
+    ],
+    edges: [],
+  },
   resize: {
     nodes: [
       {
@@ -221,6 +260,18 @@ const playgroundCopy = {
       'Distant graph: inspect the remote node pair. Viewport culling removes the main graph from the DOM until you return to it.',
     helper:
       'Only nodes near the viewport are rendered. Connect Remote input to Remote output, then choose Main graph to return. Drag near a pane edge during a connection to pan.',
+  },
+  connections: {
+    description:
+      'Connection events: connect the two nodes by dragging between handles or clicking the source and target handles in order.',
+    helper:
+      'The live status reports accepted edge changes. Repeating the same connection is rejected as a duplicate; Escape cancels an in-progress pointer connection.',
+  },
+  touchReady: {
+    description:
+      'Touch-ready scene: larger handle and resize hit areas keep common gestures reachable on a narrow screen.',
+    helper:
+      'Use touch to connect the two nodes or move them. Keyboard users can Tab to the handles and resize controls, then use arrow keys to resize.',
   },
   resize: {
     description:
@@ -376,6 +427,8 @@ const program = Effect.gen(function* program() {
 
   const sceneDocuments = {
     viewport: yield* decodeFlowDocument(interactionScenes.viewport),
+    connections: yield* decodeFlowDocument(interactionScenes.connections),
+    touchReady: yield* decodeFlowDocument(interactionScenes.touchReady),
     resize: yield* decodeFlowDocument(interactionScenes.resize),
     drag: yield* decodeFlowDocument(interactionScenes.drag),
     panels: yield* decodeFlowDocument(interactionScenes.panels),
@@ -414,6 +467,10 @@ const program = Effect.gen(function* program() {
     ],
     snapGrid: { x: 10, y: 10 },
     runEffect: runtime.runSync,
+    runTelemetry: (effect) => {
+      runtime.runFork(effect)
+    },
+    runPromise: (effect) => runtime.runPromise(effect),
     nodeRenderers: {
       'demo-card': (node: FlowNode, content: HTMLElement) => {
         const render = (next: FlowNode): void => {
@@ -478,8 +535,10 @@ const program = Effect.gen(function* program() {
     <div class="flow-demo-actions">
       <button type="button" data-action="home" aria-pressed="true" aria-current="true">Main graph</button>
       <button type="button" data-action="remote" aria-pressed="false">Distant graph</button>
+      <button type="button" data-action="connections" aria-pressed="false">Connection events</button>
       <button type="button" data-action="resize" aria-pressed="false">Nested resize</button>
       <button type="button" data-action="drag" aria-pressed="false">Custom drag handle</button>
+      <button type="button" data-action="touch-ready" aria-pressed="false">Touch-ready</button>
       <button type="button" data-action="panels" aria-pressed="false">Placed panel</button>
       <button type="button" data-action="viewport" aria-pressed="false">Viewport API scene</button>
       <button type="button" data-action="center-selected">Center selected</button>
@@ -969,6 +1028,7 @@ const program = Effect.gen(function* program() {
     statePanel.hidden = false
     panel.classList.add('flow-demo-panel-with-state-tools')
     interactionSceneActive = false
+    delete root.dataset.playgroundScene
     currentDocument = mainDocument
     host.update(currentDocument)
     host.updateViewport(
@@ -988,12 +1048,20 @@ const program = Effect.gen(function* program() {
   }
 
   const showScene = (
-    scene: 'resize' | 'drag' | 'panels' | 'viewport'
+    scene:
+      | 'connections'
+      | 'resize'
+      | 'drag'
+      | 'touchReady'
+      | 'panels'
+      | 'viewport'
   ): void => {
     interactionSceneActive = true
     statePanel.hidden = true
     panel.classList.remove('flow-demo-panel-with-state-tools')
     currentDocument = sceneDocuments[scene]
+    const activeAction = scene === 'touchReady' ? 'touch-ready' : scene
+    root.dataset.playgroundScene = activeAction
     host.update(currentDocument)
     host.updateViewport({ x: 0, y: 0, zoom: 1 })
     placedPanel.hidden = scene !== 'panels'
@@ -1004,7 +1072,7 @@ const program = Effect.gen(function* program() {
     )) {
       button.setAttribute(
         'aria-pressed',
-        String(button.dataset.action === scene)
+        String(button.dataset.action === activeAction)
       )
     }
   }
@@ -1197,11 +1265,33 @@ const program = Effect.gen(function* program() {
         break
       }
 
-      case 'resize':
-      case 'drag':
-      case 'panels':
+      case 'connections': {
+        showScene('connections')
+        break
+      }
+
+      case 'resize': {
+        showScene('resize')
+        break
+      }
+
+      case 'drag': {
+        showScene('drag')
+        break
+      }
+
+      case 'touch-ready': {
+        showScene('touchReady')
+        break
+      }
+
+      case 'panels': {
+        showScene('panels')
+        break
+      }
+
       case 'viewport': {
-        showScene(button.dataset.action)
+        showScene('viewport')
         break
       }
 
@@ -1237,6 +1327,7 @@ const program = Effect.gen(function* program() {
     currentDocument = applyDocumentChange(currentDocument, change)
 
     root.dataset.lastChange = JSON.stringify(change)
+    root.dataset.edgeCount = String(currentDocument.edges.length)
 
     if (!interactionSceneActive) {
       mainDocument = currentDocument
@@ -1254,8 +1345,7 @@ const program = Effect.gen(function* program() {
       () => {
         panel.removeEventListener('click', onPanelClick)
         unsubscribe()
-        host.destroy()
-        void runtime.dispose()
+        void host.destroyAsync().finally(() => runtime.dispose())
       },
       { once: true }
     )

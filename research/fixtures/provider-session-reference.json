@@ -1,0 +1,173 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "capturedAt": "2026-09-29T02:29:26.215Z",
+    "normalization": "capturedAt excluded from repeated comparison; measured node geometry omitted; ordered node and edge projections retained",
+    "captureRuns": 2,
+    "normalizedSha256": "2675201383a414b182d47e16b1737fc03d74c7dcc8f6c7c99935d859a50fcecb",
+    "captureRunDigests": [
+      "2675201383a414b182d47e16b1737fc03d74c7dcc8f6c7c99935d859a50fcecb",
+      "2675201383a414b182d47e16b1737fc03d74c7dcc8f6c7c99935d859a50fcecb"
+    ]
+  },
+  "cases": {
+    "contextIds": ["a", "b"],
+    "selectors": {
+      "nodes": [
+        {
+          "id": "a",
+          "type": "probe",
+          "position": {
+            "x": 10,
+            "y": 20
+          },
+          "data": {
+            "label": "A",
+            "value": 1
+          }
+        },
+        {
+          "id": "b",
+          "type": "probe",
+          "position": {
+            "x": 80,
+            "y": 20
+          },
+          "data": {
+            "label": "B",
+            "value": 2
+          }
+        }
+      ],
+      "nodesData": [
+        {
+          "id": "b",
+          "type": "probe",
+          "data": {
+            "label": "B",
+            "value": 2
+          }
+        },
+        {
+          "id": "a",
+          "type": "probe",
+          "data": {
+            "label": "A",
+            "value": 1
+          }
+        }
+      ]
+    },
+    "saved": {
+      "nodes": [
+        {
+          "id": "a",
+          "type": "probe",
+          "position": {
+            "x": 10,
+            "y": 20
+          },
+          "data": {
+            "label": "A",
+            "value": 1
+          }
+        },
+        {
+          "id": "b",
+          "type": "probe",
+          "position": {
+            "x": 80,
+            "y": 20
+          },
+          "data": {
+            "label": "B",
+            "value": 2
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "data": {
+            "label": "AB"
+          }
+        }
+      ],
+      "viewport": {
+        "x": 13,
+        "y": 17,
+        "zoom": 1.25
+      }
+    },
+    "changed": {
+      "nodes": [
+        {
+          "id": "a",
+          "type": "probe",
+          "position": {
+            "x": 10,
+            "y": 20
+          },
+          "data": {
+            "label": "A changed",
+            "value": 9
+          }
+        }
+      ],
+      "edges": [],
+      "viewport": {
+        "x": 99,
+        "y": 101,
+        "zoom": 2
+      }
+    },
+    "restored": {
+      "nodes": [
+        {
+          "id": "a",
+          "type": "probe",
+          "position": {
+            "x": 10,
+            "y": 20
+          },
+          "data": {
+            "label": "A",
+            "value": 1
+          }
+        },
+        {
+          "id": "b",
+          "type": "probe",
+          "position": {
+            "x": 80,
+            "y": 20
+          },
+          "data": {
+            "label": "B",
+            "value": 2
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "data": {
+            "label": "AB"
+          }
+        }
+      ],
+      "viewport": {
+        "x": 13,
+        "y": 17,
+        "zoom": 1.25
+      }
+    }
+  }
+}

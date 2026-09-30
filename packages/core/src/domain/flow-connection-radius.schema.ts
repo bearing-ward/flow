@@ -1,6 +1,9 @@
 import { Schema as S } from 'effect'
 
-import type { ActiveClickConnection } from './flow-connection.schema.ts'
+import type {
+  ActiveClickConnection,
+  ConnectionMode,
+} from './flow-connection.schema.ts'
 import {
   HandleIdSchema,
   NodeIdSchema,
@@ -31,18 +34,20 @@ export const nearestConnectionTarget = ({
   point,
   candidates,
   radius,
+  mode = 'strict',
 }: {
   source: ActiveClickConnection
   point: XYPosition
   candidates: readonly MeasuredConnectionHandle[]
   radius: ConnectionRadius
+  mode?: ConnectionMode | undefined
 }): MeasuredConnectionHandle | undefined => {
   let nearest: MeasuredConnectionHandle | undefined
   let nearestDistance = radius
 
   for (const candidate of candidates) {
     if (
-      candidate.kind !== 'target' ||
+      (mode === 'strict' && candidate.kind !== 'target') ||
       (candidate.nodeId === source.source &&
         candidate.handleId === source.sourceHandle)
     ) {

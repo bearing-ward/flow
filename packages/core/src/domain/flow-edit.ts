@@ -1,7 +1,18 @@
 import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
-import { ProtectedDeletionConflict } from './flow-edit-error.ts'
+import {
+  FlowDeleteCandidateSchema,
+  FlowDeleteDecisionSchema,
+} from './flow-delete.schema.ts'
+import type {
+  FlowDeleteCandidate,
+  FlowDeleteDecision,
+} from './flow-delete.schema.ts'
+import {
+  FlowDeleteInvalidCandidate,
+  ProtectedDeletionConflict,
+} from './flow-edit-error.ts'
 import type {
   FlowEditOperation,
   FlowEditResult,
@@ -279,5 +290,122 @@ export const prepareFlowEdit = (
   }).pipe(
     Effect.withSpan(FlowSpan.editPrepare, {
       attributes: { [FlowAttribute.inputKind]: 'graph-edit-transaction' },
+    })
+  )
+
+export const prepareFlowDeleteCandidate = (
+  document: FlowDocument,
+  request: {
+    readonly nodeIds?: readonly string[]
+    readonly edgeIds?: readonly string[]
+  }
+) =>
+  Effect.gen(function* prepareFlowDeleteCandidateWorkflow() {
+    const result = yield* prepareFlowEdit(document, {
+      operations: [
+        {
+          kind: 'delete-elements',
+          nodeIds: request.nodeIds,
+          edgeIds: request.edgeIds,
+        },
+      ],
+    })
+
+    const nodeIds = new Set(result.deletion.deletedNodeIds)
+
+    const edgeIds = new Set(result.deletion.deletedEdgeIds)
+
+    const candidate: FlowDeleteCandidate = {
+      nodes: document.nodes.filter(({ id }) => nodeIds.has(id)),
+      edges: document.edges.filter(({ id }) => edgeIds.has(id)),
+    }
+
+    return { candidate, result }
+  }).pipe(
+    Effect.withSpan(FlowSpan.editPrepare, {
+      attributes: { [FlowAttribute.inputKind]: 'flow-delete-candidate' },
+    })
+  )
+
+export const finalizeFlowDeleteCandidate = (
+  document: FlowDocument,
+  eligible: FlowDeleteCandidate,
+  decisionInput: FlowDeleteDecision,
+  operationId: string
+) =>
+  Effect.gen(function* finalizeFlowDeleteCandidateWorkflow() {
+    const decision = yield* S.decodeUnknownEffect(FlowDeleteDecisionSchema)(
+      decisionInput
+    )
+
+    if (decision === false) {
+      return {
+        document,
+        deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+      } satisfies FlowEditResult
+    }
+
+    const selected =
+      decision === true
+        ? eligible
+        : yield* S.decodeUnknownEffect(FlowDeleteCandidateSchema)(decision)
+
+    const eligibleNodeIds = new Set(eligible.nodes.map(({ id }) => id))
+
+    const eligibleEdgeIds = new Set(eligible.edges.map(({ id }) => id))
+
+    const selectedNodeIds = [...new Set(selected.nodes.map(({ id }) => id))]
+    const selectedEdgeIds = [...new Set(selected.edges.map(({ id }) => id))]
+
+    const widenedNodeIds = selectedNodeIds.filter(
+      (id) => !eligibleNodeIds.has(id)
+    )
+
+    const widenedEdgeIds = selectedEdgeIds.filter(
+      (id) => !eligibleEdgeIds.has(id)
+    )
+
+    if (widenedNodeIds.length > 0 || widenedEdgeIds.length > 0) {
+      return yield* Effect.fail(
+        new FlowDeleteInvalidCandidate({
+          operationId,
+          nodeIds: widenedNodeIds,
+          edgeIds: widenedEdgeIds,
+        })
+      )
+    }
+
+    const result = yield* prepareFlowEdit(document, {
+      operations: [
+        {
+          kind: 'delete-elements',
+          nodeIds: selectedNodeIds,
+          edgeIds: selectedEdgeIds,
+        },
+      ],
+    })
+
+    const unapprovedNodeIds = result.deletion.deletedNodeIds.filter(
+      (id) => !selectedNodeIds.includes(id)
+    )
+
+    const unapprovedEdgeIds = result.deletion.deletedEdgeIds.filter(
+      (id) => !selectedEdgeIds.includes(id)
+    )
+
+    if (unapprovedNodeIds.length > 0 || unapprovedEdgeIds.length > 0) {
+      return yield* Effect.fail(
+        new FlowDeleteInvalidCandidate({
+          operationId,
+          nodeIds: unapprovedNodeIds,
+          edgeIds: unapprovedEdgeIds,
+        })
+      )
+    }
+
+    return result
+  }).pipe(
+    Effect.withSpan(FlowSpan.editPrepare, {
+      attributes: { [FlowAttribute.inputKind]: 'flow-delete-finalize' },
     })
   )

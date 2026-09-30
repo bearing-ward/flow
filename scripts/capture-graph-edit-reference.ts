@@ -19,11 +19,18 @@ const fixturePath = path.resolve(
   'research/fixtures/graph-edit-reference.json'
 )
 
+const selectedFixturePath = path.resolve(
+  root,
+  'research/fixtures/graph-edit-selected-reference.json'
+)
+
 const harnessRoot = path.resolve(root, 'research/harnesses/graph-edits')
 
 const port = 4190
 
 const ReferenceCaptureSchema = S.Struct({
+  utilities: S.String,
+  controlledDeletion: S.String,
   initial: S.String,
   add: S.String,
   setters: S.String,
@@ -33,8 +40,28 @@ const ReferenceCaptureSchema = S.Struct({
   delete: S.String,
 })
 
-const decodeCase = (serialized: string): typeof S.Json.Type =>
-  S.decodeUnknownSync(S.Json)(JSON.parse(serialized))
+const UtilityCaptureSchema = S.Struct({
+  applyNodeChanges: S.Array(S.Json),
+  addEdgeDuplicate: S.Array(S.Json),
+  reconnectEdge: S.Array(S.Json),
+})
+
+const ControlledDeletionSchema = S.Struct({
+  events: S.Array(S.String),
+  result: S.Struct({ nodes: S.Array(S.String), edges: S.Array(S.String) }),
+  owner: S.Struct({ nodes: S.Array(S.String), edges: S.Array(S.String) }),
+})
+
+const NormalizedCaptureSchema = S.Struct({
+  utilities: UtilityCaptureSchema,
+  initial: S.Json,
+  add: S.Json,
+  setters: S.Json,
+  merge: S.Json,
+  replace: S.Json,
+  missing: S.Json,
+  delete: S.Json,
+})
 
 const arg = process.argv.find((value) => value.startsWith('--checkout='))
 
@@ -140,7 +167,9 @@ const server = Bun.spawn(
 const browser = await chromium.launch({ headless: true })
 
 try {
-  const captureOnce = async (): Promise<typeof S.Json.Type> => {
+  const captureOnce = async (): Promise<
+    typeof NormalizedCaptureSchema.Type
+  > => {
     const page = await browser.newPage()
 
     try {
@@ -164,15 +193,43 @@ try {
         JSON.parse(capture)
       )
 
-      return {
-        initial: decodeCase(decoded.initial),
-        add: decodeCase(decoded.add),
-        setters: decodeCase(decoded.setters),
-        merge: decodeCase(decoded.merge),
-        replace: decodeCase(decoded.replace),
-        missing: decodeCase(decoded.missing),
-        delete: decodeCase(decoded.delete),
+      return S.decodeUnknownSync(NormalizedCaptureSchema)({
+        utilities: JSON.parse(decoded.utilities),
+        initial: JSON.parse(decoded.initial),
+        add: JSON.parse(decoded.add),
+        setters: JSON.parse(decoded.setters),
+        merge: JSON.parse(decoded.merge),
+        replace: JSON.parse(decoded.replace),
+        missing: JSON.parse(decoded.missing),
+        delete: JSON.parse(decoded.delete),
+      })
+    } finally {
+      await page.close()
+    }
+  }
+
+  const captureControlledDeletionOnce = async (): Promise<
+    typeof ControlledDeletionSchema.Type
+  > => {
+    const page = await browser.newPage()
+
+    try {
+      await page.goto(`http://127.0.0.1:${port}/?case=delete-controlled`, {
+        waitUntil: 'domcontentloaded',
+      })
+      await page.waitForFunction(
+        () => window.__graphEditCapture !== undefined,
+        { timeout: 30_000 }
+      )
+      const capture = await page.evaluate(() => window.__graphEditCapture)
+
+      if (capture === undefined) {
+        throw new Error(
+          'The controlled deletion probe did not publish a capture'
+        )
       }
+
+      return S.decodeUnknownSync(ControlledDeletionSchema)(JSON.parse(capture))
     } finally {
       await page.close()
     }
@@ -180,12 +237,26 @@ try {
 
   const first = await captureOnce()
   const second = await captureOnce()
+  const firstControlledDeletion = await captureControlledDeletionOnce()
+  const secondControlledDeletion = await captureControlledDeletionOnce()
 
   assert.deepEqual(
     first,
     second,
     'normalized pinned reference captures must be stable'
   )
+  assert.deepEqual(
+    firstControlledDeletion,
+    secondControlledDeletion,
+    'normalized controlled deletion captures must be stable'
+  )
+
+  const selectedCases = {
+    applyNodeChanges: first.utilities.applyNodeChanges,
+    addEdgeDuplicate: first.utilities.addEdgeDuplicate,
+    reconnectEdge: first.utilities.reconnectEdge,
+    controlledDeletion: firstControlledDeletion,
+  }
 
   const packageInfoText = await Bun.file(
     path.resolve(checkout, 'packages/react/package.json')
@@ -208,14 +279,29 @@ try {
       version: packageVersion,
       upstreamSha: expectedSha,
       normalization:
-        'timestamps and renderer-measured node geometry excluded; API outputs retain array order',
+        'timestamps and renderer-measured node geometry excluded; API outputs retain array order; callback and change event order retained',
       capturedAt: new Date().toISOString(),
     },
-    cases: first,
+    cases: {
+      ...first,
+      controlledDeletion: firstControlledDeletion,
+    },
   }
 
   await Bun.write(fixturePath, `${JSON.stringify(fixture, null, 2)}\n`)
+  await Bun.write(
+    selectedFixturePath,
+    `${JSON.stringify(
+      {
+        metadata: fixture.metadata,
+        cases: selectedCases,
+      },
+      null,
+      2
+    )}\n`
+  )
   run(['bunx', 'oxfmt', fixturePath], root)
+  run(['bunx', 'oxfmt', selectedFixturePath], root)
   process.stdout.write(await Bun.file(fixturePath).text())
 } finally {
   await browser.close()

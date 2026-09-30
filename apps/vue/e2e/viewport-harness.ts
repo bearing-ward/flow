@@ -42,6 +42,7 @@ interface ViewportHarnessApi {
   readonly interrupt: () => void
   readonly observations: () => readonly string[]
   readonly proposals: () => readonly Viewport[]
+  readonly acknowledge: (viewport: Viewport) => Promise<void>
   readonly destroy: () => void
 }
 
@@ -161,6 +162,10 @@ export const mountViewportHarness = (
     interrupt: () => getActions().updateViewport({ x: 40, y: 50, zoom: 1.1 }),
     observations: () => observations,
     proposals: () => proposals,
+    acknowledge: async (next) => {
+      viewport.value = next
+      await nextTick()
+    },
     destroy: () => app.unmount(),
   }
 }

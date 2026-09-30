@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flow Status Indicator recipe</title>
+  </head>
+  <body>
+    <main id="app">
+      <nav aria-label="Status controls" class="flow-status-recipe-controls">
+        <button type="button" data-status-update="waiting">Waiting</button>
+        <button type="button" data-status-update="ready">Ready</button>
+        <button type="button" data-status-update="error">Error</button>
+        <button type="button" data-status-update="reset">Reset</button>
+      </nav>
+      <div id="canvas"></div>
+    </main>
+    <script type="module" src="/src/ui/status-indicator-test.ts"></script>
+  </body>
+</html>

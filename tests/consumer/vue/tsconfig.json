@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": false,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["consumer.typecheck.ts", "main.ts", "styles.d.ts"]
+}

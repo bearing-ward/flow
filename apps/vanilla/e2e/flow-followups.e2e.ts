@@ -270,8 +270,9 @@ const checkConnectionRadiusAtZoom = async (
   const source = await centerOf(page, sourceSelector)
   const valid = await centerOf(page, validSelector)
   const invalid = await centerOf(page, invalidSelector)
-  const near = { x: valid.x - 10 * zoom, y: valid.y }
-  const far = { x: valid.x - 34 * zoom, y: valid.y }
+  // Connection radius is measured in client-space CSS pixels, independent of zoom.
+  const near = { x: valid.x - 10, y: valid.y }
+  const far = { x: valid.x - 34, y: valid.y }
 
   await page.mouse.move(source.x, source.y)
   await page.mouse.down()

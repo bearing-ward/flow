@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs'
 
 import { expect, test } from '@playwright/test'
 
+import { runKeyPressObserverContract } from '../../shared-e2e/key-press-observer-contract.ts'
+
 const viewportContract: {
   coordinateCases: readonly {
     hostRect: { left: number; top: number }
@@ -29,6 +31,73 @@ const viewportContract: {
 } = JSON.parse(
   readFileSync('research/fixtures/viewport-contract.json', 'utf-8')
 )
+
+test('Foldkit Runtime snapshots expose isolated selector and saved-session projections', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+
+  const result = await page.evaluate(async () => {
+    const harnessPath = '/e2e/test-harness.ts'
+    const graphPath = '/e2e/package-saved-session.ts'
+    await import(harnessPath)
+    const harness = window.__flowFoldkitTest
+
+    if (harness === undefined) {
+      throw new Error('Foldkit test harness did not initialize')
+    }
+
+    await harness.startPublicState()
+    const graph = await import(graphPath)
+
+    const response = await harness.requestSnapshot('controlled', {
+      nodeIds: ['visible', 'missing'],
+      connections: { nodeId: 'visible', type: 'source', handleId: null },
+    })
+
+    const prepared = await graph.prepareSavedSession(response.savedSession)
+    harness.replacePublicDocument('controlled', prepared.document)
+    harness.replacePublicViewport('controlled', prepared.viewport)
+    const acknowledged = await harness.requestSnapshot('controlled')
+
+    return { response, prepared, acknowledged }
+  })
+
+  if (result === undefined) {
+    throw new Error('Foldkit Runtime snapshot response is missing')
+  }
+
+  const { response, prepared, acknowledged } = result
+
+  expect(response.nodesData).toEqual([
+    { id: 'visible', type: undefined, data: { alpha: 1, beta: 2 } },
+  ])
+  expect(response.nodeConnections).toEqual([
+    {
+      edgeId: 'visible-edge',
+      source: 'visible',
+      target: 'hidden',
+      sourceHandle: undefined,
+      targetHandle: undefined,
+    },
+  ])
+  expect(response.savedSession).toEqual({
+    version: 1,
+    document: {
+      nodes: response.snapshot.document.nodes.map(
+        ({ selected: _selected, ...node }) => node
+      ),
+      edges: response.snapshot.document.edges.map(
+        ({ selected: _selected, ...edge }) => edge
+      ),
+    },
+    viewport: response.snapshot.viewport,
+  })
+  expect(prepared.document).toEqual(response.snapshot.document)
+  expect(prepared.viewport).toEqual(response.snapshot.viewport)
+  expect(acknowledged.snapshot.document).toEqual(prepared.document)
+  expect(acknowledged.snapshot.viewport).toEqual(prepared.viewport)
+})
 
 test('Foldkit snapshot requests read complete accepted graph state', async ({
   page,
@@ -65,6 +134,10 @@ test('Foldkit snapshot requests read complete accepted graph state', async ({
     position: { x: 10, y: 15 },
   })
   expect(initial?.edge?.id).toBe('visible-edge')
+  expect(initial?.internalNode).toMatchObject({
+    node: { id: 'child' },
+    absolutePosition: { x: 310, y: 315 },
+  })
   await expect(page.locator('.flow-foldkit-node')).toHaveCount(6)
   await expect(page.locator('.flow-foldkit-edge')).toHaveCount(2)
   expect(
@@ -82,6 +155,349 @@ test('Foldkit snapshot requests read complete accepted graph state', async ({
 
   expect(missing?.node).toBeUndefined()
   expect(missing?.edge).toBeUndefined()
+  expect(missing?.internalNode).toBeNull()
+
+  const malformed = await page.evaluate(() =>
+    window.__flowFoldkitTest?.requestSnapshot('uncontrolled', {
+      nodeId: '',
+    })
+  )
+
+  expect(malformed?.node).toBeUndefined()
+  expect(malformed?.internalNode).toBeNull()
+})
+
+test('Foldkit Runtime observers track accepted selection and scoped key state', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+  await page.evaluate(async () => {
+    const harnessPath = '/e2e/test-harness.ts'
+    await import(harnessPath)
+    const harness = window.__flowFoldkitTest
+    const target = document.createElement('div')
+    target.id = 'observer-target'
+    document.body.append(target)
+
+    if (harness === undefined) {
+      throw new Error('Missing Foldkit observer harness')
+    }
+
+    await harness.startPublicState()
+    await harness.startPublicObservers('controlled', target)
+    harness.subscribePublicSelection('controlled')
+    harness.observePublicKeyPress('controlled', target)
+  })
+  await expect(page.locator('.flow-foldkit-canvas').first()).toBeVisible()
+
+  expect(
+    await page.evaluate(() =>
+      window.__flowFoldkitTest?.publicSelectionEvents('controlled')
+    )
+  ).toEqual(['|'])
+
+  const proposal = await page.evaluate(() =>
+    window.__flowFoldkitTest?.requestPublicEdit('controlled', {
+      operations: [
+        {
+          kind: 'update-node',
+          nodeId: 'visible',
+          patch: { selected: true },
+        },
+      ],
+    })
+  )
+
+  expect(proposal !== undefined && 'result' in proposal).toBe(true)
+  expect(
+    await page.evaluate(() =>
+      window.__flowFoldkitTest?.publicSelectionEvents('controlled')
+    )
+  ).toEqual(['|'])
+
+  if (proposal === undefined || !('result' in proposal)) {
+    throw new Error('Foldkit controlled edit did not return its proposal')
+  }
+
+  expect(proposal.result.document.nodes[0]?.selected).toBe(true)
+  await page.evaluate(async (document) => {
+    const harness = window.__flowFoldkitTest
+    harness?.replacePublicDocument('controlled', document)
+    await harness?.settlePublicState()
+  }, proposal.result.document)
+
+  const acceptedAfterAck = await page.evaluate(async () => {
+    const harness = window.__flowFoldkitTest
+
+    return {
+      states: harness?.publicAcceptedStates('controlled'),
+      snapshot: await harness?.requestSnapshot('controlled'),
+    }
+  })
+
+  expect(acceptedAfterAck.snapshot?.snapshot.document.nodes[0]?.selected).toBe(
+    true
+  )
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.__flowFoldkitTest?.publicSelectionEvents('controlled')
+      )
+    )
+    .toEqual(['|', 'visible|'])
+
+  const keyState = await page.evaluate(() => {
+    const target = document.querySelector<HTMLElement>('#observer-target')
+    let targetEventCount = 0
+    target?.addEventListener('keydown', () => {
+      targetEventCount += 1
+    })
+    const input = document.createElement('input')
+    const noKey = document.createElement('div')
+    noKey.className = 'nokey'
+    target?.append(input, noKey)
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'x', code: 'KeyX', bubbles: true })
+    )
+    input?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'x', code: 'KeyX', bubbles: true })
+    )
+    noKey?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'x', code: 'KeyX', bubbles: true })
+    )
+
+    const afterSuppressed = [
+      ...(window.__flowFoldkitTest?.publicKeyStates('controlled') ?? []),
+    ]
+
+    const modified = new KeyboardEvent('keydown', {
+      key: 'x',
+      code: 'KeyX',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    })
+
+    input?.dispatchEvent(modified)
+
+    const afterModified = [
+      ...(window.__flowFoldkitTest?.publicKeyStates('controlled') ?? []),
+    ]
+
+    input?.dispatchEvent(
+      new KeyboardEvent('keyup', { key: 'x', code: 'KeyX', bubbles: true })
+    )
+
+    const states = [
+      ...(window.__flowFoldkitTest?.publicKeyStates('controlled') ?? []),
+    ]
+
+    window.__flowFoldkitTest?.disposePublicObservers('controlled')
+    input?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'x', code: 'KeyX', bubbles: true })
+    )
+    input.remove()
+    noKey.remove()
+
+    return {
+      states,
+      afterSuppressed,
+      afterModified,
+      prevented: modified.defaultPrevented,
+      targetEventCount,
+    }
+  })
+
+  expect(keyState.targetEventCount).toBeGreaterThan(0)
+  expect(keyState.afterSuppressed).toEqual([false])
+  expect(keyState.afterModified).toEqual([false, true])
+  expect(keyState.states).toEqual([false, true, false])
+  expect(keyState.prevented).toBe(true)
+})
+
+test('Foldkit node connection observers report controlled accepted deltas per Runtime', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+
+  const events = await page.evaluate(async () => {
+    const harnessPath = ['', 'e2e', 'test-harness.ts'].join('/')
+    await import(harnessPath)
+    const harness = window.__flowFoldkitTest
+
+    if (harness === undefined) {
+      throw new Error('Missing Foldkit test harness')
+    }
+
+    await harness.startPublicState()
+    await harness.startPublicObservers('controlled', document.body)
+    await harness.startPublicObservers('uncontrolled', document.body)
+    harness.observePublicNodeConnections('controlled', 'visible', true)
+    harness.observePublicNodeConnections('uncontrolled', 'visible')
+
+    const initialResponse = await harness.requestSnapshot('controlled')
+    const initial = initialResponse.snapshot.document
+
+    await harness.requestPublicEdit('controlled', {
+      operations: [
+        {
+          kind: 'add-edges',
+          edges: [{ id: 'extra-edge', source: 'visible', target: 'culled' }],
+        },
+      ],
+    })
+    const afterProposal = [...harness.publicNodeConnectionEvents('controlled')]
+
+    harness.replacePublicDocument('controlled', initial)
+    await harness.settlePublicState()
+    const afterRejection = [...harness.publicNodeConnectionEvents('controlled')]
+
+    const added = {
+      ...initial,
+      edges: [
+        ...initial.edges,
+        { id: 'extra-edge', source: 'visible', target: 'culled' },
+      ],
+    }
+
+    harness.replacePublicDocument('controlled', added)
+    await harness.settlePublicState()
+    const afterAdd = [...harness.publicNodeConnectionEvents('controlled')]
+
+    const otherRuntimeAfterControlledUpdate = [
+      ...harness.publicNodeConnectionEvents('uncontrolled'),
+    ]
+
+    harness.replacePublicDocument('uncontrolled', added)
+    await harness.settlePublicState()
+
+    const otherRuntimeAfterOwnUpdate = [
+      ...harness.publicNodeConnectionEvents('uncontrolled'),
+    ]
+
+    const reconnected = {
+      ...added,
+      edges: added.edges.map((edge) =>
+        edge.id === 'extra-edge'
+          ? { ...edge, source: 'culled', target: 'visible' }
+          : edge
+      ),
+    }
+
+    harness.replacePublicDocument('controlled', reconnected)
+    await harness.settlePublicState()
+    const afterReconnect = [...harness.publicNodeConnectionEvents('controlled')]
+
+    harness.replacePublicDocument('controlled', initial)
+    await harness.settlePublicState()
+    const afterRemove = [...harness.publicNodeConnectionEvents('controlled')]
+
+    harness.disposePublicObservers('controlled')
+    harness.replacePublicDocument('controlled', added)
+    await harness.settlePublicState()
+    const afterDispose = [...harness.publicNodeConnectionEvents('controlled')]
+
+    return {
+      afterProposal,
+      afterRejection,
+      afterAdd,
+      afterReconnect,
+      afterRemove,
+      afterDispose,
+      connectionErrors: harness.publicNodeConnectionErrors('controlled'),
+      otherRuntimeAfterControlledUpdate,
+      otherRuntimeAfterOwnUpdate,
+    }
+  })
+
+  expect(events.afterProposal).toStrictEqual([])
+  expect(events.afterRejection).toStrictEqual([])
+  expect(events.afterAdd).toStrictEqual(['connect:extra-edge'])
+  expect(events.afterReconnect.slice(events.afterAdd.length)).toStrictEqual([
+    'disconnect:extra-edge',
+    'connect:extra-edge',
+  ])
+  expect(events.afterRemove.slice(events.afterReconnect.length)).toStrictEqual([
+    'disconnect:extra-edge',
+  ])
+  expect(events.connectionErrors).toStrictEqual([
+    'onDisconnect:Foldkit observer disconnect failed',
+  ])
+  expect(events.afterDispose).toStrictEqual(events.afterRemove)
+  expect(events.otherRuntimeAfterControlledUpdate).toStrictEqual([])
+  expect(events.otherRuntimeAfterOwnUpdate).toStrictEqual([
+    'connect:extra-edge',
+  ])
+})
+
+test('Foldkit Runtime key observer follows the pinned keyboard contract', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+  await page.evaluate(async () => {
+    const harnessPath = '/e2e/test-harness.ts'
+    await import(harnessPath)
+    const harness = window.__flowFoldkitTest
+
+    if (harness === undefined) {
+      throw new Error('Missing Foldkit observer harness')
+    }
+
+    await harness.startPublicState()
+    await harness.startPublicObservers('controlled', document.body)
+    Object.assign(window, {
+      __flowKeyPressContract: {
+        observe: (
+          observerId: string,
+          keyCode: string | readonly string[] | null,
+          options: {
+            readonly target?:
+              | Window
+              | Document
+              | HTMLElement
+              | ShadowRoot
+              | null
+            readonly actInsideInputWithModifier?: boolean
+            readonly preventDefault?: boolean
+          }
+        ) =>
+          harness.observeContractKeyPress(
+            'controlled',
+            observerId,
+            keyCode,
+            options
+          ),
+        states: (observerId: string) =>
+          harness.contractKeyStates('controlled', observerId),
+        unsubscribe: (observerId: string) =>
+          harness.unsubscribeContractKeyPress('controlled', observerId),
+        disposeOwner: () => harness.disposePublicObservers('controlled'),
+      },
+    })
+  })
+
+  const result = await page.evaluate(
+    runKeyPressObserverContract,
+    '__flowKeyPressContract'
+  )
+
+  expect(result.explicitTarget).toEqual([false, true, false])
+  expect(result.defaultTarget).toEqual([false, true, false])
+  expect(result.combinations).toEqual([false, true, false, true, false])
+  expect(result.codeMatch).toEqual([false, true, false])
+  expect(result.keyMatch).toEqual([false, true, false])
+  expect(result.noPreventDefault).toBe(false)
+  expect(result.modifiedInputWithoutAllowance).toEqual([false])
+  expect(result.buttonPreventDefault).toBe(false)
+  expect(result.anchorPreventDefault).toBe(false)
+  expect(result.foreignAnchorPreventDefault).toBe(false)
+  expect(result.foreignEditableSuppression).toEqual([false])
+  expect(result.blurReset).toEqual([false, true, false])
+  expect(result.contextMenuReset).toEqual([false, true, false])
+  expect(result.metaCleanup).toEqual([false, true, false])
+  expect(result.metaHeldBeforeRelease).toEqual([false, true])
+  expect(result.unsubscribe).toEqual([false, true])
+  expect(result.ownerDispose).toEqual([false, true])
 })
 
 test('Foldkit ports separate proposals from accepted updates and cancellation', async ({

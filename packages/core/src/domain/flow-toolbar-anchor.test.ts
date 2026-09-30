@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import { createFlowGraph } from './flow-graph.ts'
-import { flowToolbarAnchors } from './flow-toolbar-anchor.ts'
+import { flowToolbarAnchors, nodeToolbarAnchor } from './flow-toolbar-anchor.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
 describe('flow toolbar anchors', () => {
@@ -58,5 +58,38 @@ describe('flow toolbar anchors', () => {
       nodes: [{ id: 'b', position: { x: 275, y: 0 } }],
       edges: [],
     })
+  })
+
+  it('supports node toolbar position, alignment, and screen-space offset', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            id: 'node',
+            label: 'Node',
+            position: { x: 10, y: 20 },
+            size: { width: 100, height: 40 },
+          },
+        ],
+        edges: [],
+      })
+    )
+
+    const node = document.nodes.find(({ id }) => id === 'node')
+
+    if (node === undefined) {
+      throw new Error('Expected node is missing from decoded document')
+    }
+
+    const graph = createFlowGraph(document)
+    const viewport = { x: 5, y: 7, zoom: 2 }
+
+    expect(
+      nodeToolbarAnchor(graph, node.id, viewport, {
+        position: 'right',
+        align: 'end',
+        offset: 8,
+      })?.position
+    ).toStrictEqual({ x: 233, y: 127 })
   })
 })

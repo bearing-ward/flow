@@ -138,7 +138,26 @@ export type {
   FlowEditResult,
 } from './domain/flow-edit.schema.ts'
 
-export { prepareFlowEdit } from './domain/flow-edit.ts'
+export {
+  FlowDeleteCandidateSchema,
+  FlowDeleteDecisionSchema,
+  FlowDeleteRequestSchema,
+  FlowDeleteApprovalResponseSchema,
+} from './domain/flow-delete.schema.ts'
+
+export type {
+  FlowDeleteCandidate,
+  FlowDeleteDecision,
+  FlowBeforeDelete,
+  FlowDeleteLifecycle,
+  FlowDeleteApprovalResponse,
+} from './domain/flow-delete.schema.ts'
+
+export {
+  prepareFlowDeleteCandidate,
+  finalizeFlowDeleteCandidate,
+  prepareFlowEdit,
+} from './domain/flow-edit.ts'
 
 export {
   ViewportAnimationOptionsSchema,
@@ -185,6 +204,12 @@ export type {
 
 export {
   ProtectedDeletionConflict,
+  FlowDeleteRevisionConflict,
+  FlowDeleteInvalidCandidate,
+  FlowDeleteInProgress,
+  FlowDeleteCancelled,
+  FlowDeleteApprovalFailed,
+  FlowEditDisposed,
   FlowEditDisposedSchema,
   FlowEditErrorSchema,
 } from './domain/flow-edit-error.ts'
@@ -250,6 +275,7 @@ export {
   graphBounds,
   graphDescendants,
   getConnectedEdges,
+  getHandleConnections,
   getIncomers,
   getOutgoers,
   graphIncomers,
@@ -259,7 +285,64 @@ export {
   graphOutgoers,
 } from './domain/flow-graph.ts'
 
+export { selectFlowMiniMapProjection } from './domain/flow-minimap.ts'
+
+export type {
+  FlowMiniMapProjection,
+  FlowMiniMapSize,
+  FlowMiniMapViewport,
+} from './domain/flow-minimap.ts'
+
 export type { FlowGraphNode, FlowGraphView } from './domain/flow-graph.ts'
+
+export {
+  NodeDimensionsChangeSchema,
+  NodePositionArrayChangeSchema,
+  NodeSelectArrayChangeSchema,
+  NodeRemoveArrayChangeSchema,
+  NodeAddArrayChangeSchema,
+  NodeReplaceArrayChangeSchema,
+  NodeChangeSchema,
+  EdgeSelectArrayChangeSchema,
+  EdgeRemoveArrayChangeSchema,
+  EdgeAddArrayChangeSchema,
+  EdgeReplaceArrayChangeSchema,
+  EdgeChangeSchema,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+  reconnectEdge,
+  getFlowEdgeId,
+  getEdgeCenter,
+  isNode,
+  isEdge,
+  type ReconnectedEdge,
+} from './domain/flow-change-compatibility.ts'
+
+export {
+  getBezierPath,
+  getSimpleBezierPath,
+  getSmoothStepPath,
+  getStraightPath,
+} from './domain/flow-edge-path.ts'
+
+export type {
+  GetBezierPathParams,
+  GetSimpleBezierPathParams,
+  GetSmoothStepPathParams,
+  GetStraightPathParams,
+} from './domain/flow-edge-path.ts'
+
+export type {
+  NodeDimensionsChange,
+  NodePositionArrayChange,
+  NodeChange,
+  EdgeChange,
+  FlowConnectionInput,
+  AddEdgeOptions,
+  ReconnectEdgeOptions,
+  GeometryRect,
+} from './domain/flow-change-compatibility.ts'
 
 export {
   edgeToolbarAnchor,
@@ -267,7 +350,12 @@ export {
   nodeToolbarAnchor,
 } from './domain/flow-toolbar-anchor.ts'
 
-export type { FlowToolbarAnchor } from './domain/flow-toolbar-anchor.ts'
+export type {
+  FlowNodeToolbarAnchorOptions,
+  FlowToolbarAlign,
+  FlowToolbarAnchor,
+  FlowToolbarPosition,
+} from './domain/flow-toolbar-anchor.ts'
 
 export {
   createFlowSnapshot,
@@ -286,9 +374,37 @@ export {
   SavedFlowDocumentSchema,
   decodeSavedFlowDocument,
   encodeSavedFlowDocument,
+  SavedFlowSessionSchema,
+  decodeSavedFlowSession,
+  encodeSavedFlowSession,
 } from './domain/flow-persistence.ts'
 
-export type { SavedFlowDocument } from './domain/flow-persistence.ts'
+export type {
+  SavedFlowDocument,
+  SavedFlowSession,
+} from './domain/flow-persistence.ts'
+
+export {
+  FlowHandleConnectionsQuerySchema,
+  FlowNodeConnectionOptionsSchema,
+  diffNodeConnections,
+  FlowNodeConnectionSchema,
+  FlowNodeDataSchema,
+  flowSelectionEqual,
+  selectHandleConnections,
+  selectFlowSelection,
+  selectNodeConnections,
+  selectNodesData,
+} from './domain/flow-selectors.ts'
+
+export type {
+  FlowHandleConnectionsQuery,
+  FlowNodeConnection,
+  FlowNodeConnectionOptions,
+  FlowNodeConnectionDelta,
+  FlowNodeData,
+  FlowSelection,
+} from './domain/flow-selectors.ts'
 
 export type {
   ActiveNodeDrag,
@@ -329,10 +445,12 @@ export type {
 export {
   ActiveConnectionSchema,
   ActiveClickConnectionSchema,
+  ConnectionModeSchema,
   ConnectionIssueSchema,
   FlowConnectionSchema,
   InvalidFlowConnection,
   findConnectionIssue,
+  normalizeFlowConnection,
   nextConnectionEdge,
   validateFlowConnection,
 } from './domain/flow-connection.schema.ts'
@@ -340,9 +458,29 @@ export {
 export type {
   ActiveConnection,
   ActiveClickConnection,
+  ConnectionMode,
   ConnectionIssue,
   FlowConnection,
 } from './domain/flow-connection.schema.ts'
+
+export {
+  ConnectionPreviewSnapshotSchema,
+  ConnectionPreviewStateSchema,
+  createConnectionPreviewSnapshot,
+} from './domain/flow-connection-preview.schema.ts'
+
+export type {
+  ConnectionPreviewSnapshot,
+  ConnectionPreviewState,
+} from './domain/flow-connection-preview.schema.ts'
+
+export {
+  FlowDefaultEdgeOptionsSchema,
+  applyDefaultEdgeOptions,
+  decodeFlowDefaultEdgeOptions,
+} from './domain/flow-default-edge-options.ts'
+
+export type { FlowDefaultEdgeOptions } from './domain/flow-default-edge-options.ts'
 
 export {
   MeasuredHandleSchema,

@@ -1,11 +1,20 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { chromium } from '@playwright/test'
-import { Effect, FileSystem, Path, Schema as S } from 'effect'
+import type { Page, Locator } from '@playwright/test'
+import { Effect, FileSystem, Path, Schema } from 'effect'
 import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
 import { createServer } from 'vite'
 
+import { checkPackageArchive } from './package-archive'
+
 declare global {
   interface Window {
+    __flowPackedFitSerialization?: {
+      raw: string
+      actual: string | undefined
+      canonical: string
+    }
+    __flowPackedUI?: { dispose: () => void; exercise: () => Promise<string> }
     __flowConsumerController?: { destroy: () => void }
     __flowConsumerResult?: {
       readonly decodedNodeId: string
@@ -14,20 +23,498 @@ declare global {
       readonly updatedNodeId: string | undefined
       readonly stateNotificationCount: number
       readonly editResult: string
+      readonly utilityResult: string
+    }
+    __flowVueConsumer?: { readonly dispose: () => void }
+    __flowFoldkitConsumer?: {
+      readonly fit: () => Promise<string>
+      readonly edit: () => Promise<string>
+      readonly measure: () => Promise<string>
+      readonly mountSecond: () => void
+      readonly dispose: () => void
     }
   }
 }
 
 const rootUrl = new URL('../', import.meta.url)
 
-const fixtureFiles = [
-  'index.html',
-  'main.ts',
-  'consumer.typecheck.ts',
-  'tsconfig.json',
-] as const
+const packageNames = {
+  'packages/core': '@flow/core',
+  'apps/vanilla': '@flow/vanilla',
+  'packages/vue': '@flow/vue',
+  'packages/foldkit': '@flow/foldkit',
+} as const
 
-const program = Effect.gen(function* checkPackedConsumer() {
+type PackagePath = keyof typeof packageNames
+
+const verifyPackedMarkup = async (
+  page: Page,
+  ui: Locator,
+  host: 'vanilla' | 'vue' | 'foldkit'
+) => {
+  const content =
+    host === 'foldkit'
+      ? page.locator('.flow-foldkit-node[data-node-id="foldkit-a"]').first()
+      : ui
+
+  const text = await content.textContent()
+
+  if (
+    !text?.includes('users') ||
+    !text.includes('uuid') ||
+    !text.includes('Packed output')
+  ) {
+    throw new Error(`${host} DatabaseSchema or LabeledHandle output is missing`)
+  }
+
+  if (
+    host === 'foldkit' &&
+    ((await content.locator('[role="status"]').count()) !== 1 ||
+      (await content.locator('[data-flow-base-handle]').count()) !== 1)
+  ) {
+    throw new Error('Foldkit StatusIndicator or BaseHandle markup is missing')
+  }
+}
+
+const verifyPackedUI = async (
+  page: Page,
+  host: 'vanilla' | 'vue' | 'foldkit'
+) => {
+  const ui = page.locator('[data-packed-ui]')
+  await ui.waitFor()
+  const action = ui.locator('[data-packed-action]')
+
+  if (
+    (await action.getAttribute('name')) !== 'packed-action' ||
+    (await action.getAttribute('value')) !== 'refresh' ||
+    (await action.getAttribute('type')) !== 'button'
+  ) {
+    throw new Error(`${host} public ControlButton lost native props`)
+  }
+
+  await action.focus()
+  const tooltip = ui.locator('[role="tooltip"]')
+  await tooltip.waitFor({ state: 'visible' })
+
+  if ((await tooltip.textContent()) !== 'Packed tooltip') {
+    throw new Error(`${host} public Tooltip did not render its text`)
+  }
+
+  await action.click()
+
+  const statusText =
+    host === 'foldkit'
+      ? null
+      : await ui.locator('[role="status"]').textContent()
+
+  if (host === 'foldkit') {
+    if ((await ui.getAttribute('data-activated')) !== 'true') {
+      throw new Error('Foldkit ControlButton callback failed')
+    }
+  } else if (!statusText?.includes('Ready')) {
+    throw new Error(
+      `${host} public StatusIndicator did not update after ControlButton action`
+    )
+  }
+
+  const disclosure = ui.getByRole('button', { name: 'Details', exact: true })
+
+  if ((await disclosure.getAttribute('aria-expanded')) !== 'false') {
+    throw new Error(`${host} Appendix started expanded`)
+  }
+
+  await disclosure.click()
+
+  if ((await disclosure.getAttribute('aria-expanded')) !== 'true') {
+    throw new Error(`${host} Appendix did not expand`)
+  }
+
+  const detailsId = await disclosure.getAttribute('aria-controls')
+
+  if (detailsId === null) {
+    throw new Error(`${host} Appendix has no controlled region`)
+  }
+
+  await page.locator(`#${detailsId}`).waitFor({ state: 'visible' })
+  await ui.locator('[data-packed-placeholder]').click()
+
+  if ((await ui.getAttribute('data-added')) !== 'true') {
+    throw new Error(`${host} Placeholder callback failed`)
+  }
+
+  await verifyPackedMarkup(page, ui, host)
+}
+
+const verifyVanilla = async (page: Page) => {
+  await page.waitForFunction(() => window.__flowConsumerResult !== undefined)
+
+  await page.waitForFunction(() => window.__flowPackedUI !== undefined)
+  await verifyPackedUI(page, 'vanilla')
+  const ownership = await page.evaluate(() => window.__flowPackedUI?.exercise())
+
+  const fitSerialization = await page.evaluate(
+    () => window.__flowPackedFitSerialization
+  )
+
+  if (
+    fitSerialization !== undefined &&
+    fitSerialization.raw !== fitSerialization.actual
+  ) {
+    console.log(
+      `Vanilla fit CSS serialization: ${JSON.stringify(fitSerialization)}`
+    )
+  }
+
+  if (
+    ownership !==
+      'Before acknowledgement:After acknowledgement:Before acknowledgement:true:true:accepted:true' &&
+    ownership !==
+      'Before acknowledgement:After acknowledgement:Before acknowledgement:true:true:unchanged:true'
+  ) {
+    throw new Error(
+      `Vanilla custom renderer, controlled ownership, independent instance, measurement or fit failed: ${ownership}`
+    )
+  }
+
+  if (
+    (await page.locator('.flow-base-node').count()) !== 1 ||
+    (await page.locator('[data-handle-id="packed-output"]').count()) !== 2
+  ) {
+    throw new Error(
+      'Vanilla archive custom renderer or BaseHandle integration missing'
+    )
+  }
+
+  const shell = page.locator('.flow-base-node')
+
+  if (
+    (await shell.getAttribute('aria-label')) !== 'After acknowledgement' ||
+    (await shell.locator('h2').textContent()) !== 'After acknowledgement'
+  ) {
+    throw new Error(
+      'Vanilla custom renderer did not update rendered owner-acknowledged output'
+    )
+  }
+
+  await page.evaluate(() => window.__flowPackedUI?.dispose())
+
+  if ((await page.locator('[data-packed-ui]').count()) !== 0) {
+    throw new Error('Vanilla packed UI helpers leaked after disposal')
+  }
+
+  const result = await page.evaluate(() => {
+    const value = window.__flowConsumerResult
+
+    if (value === undefined) {
+      throw new Error('Missing Vanilla consumer result')
+    }
+
+    const canvas = document.querySelector<HTMLElement>('.flow-canvas')
+
+    if (canvas === null) {
+      throw new Error('Missing Vanilla canvas')
+    }
+
+    const canvasPosition = getComputedStyle(canvas).position
+    window.__flowConsumerController?.destroy()
+
+    return {
+      ...value,
+      canvasCountAfterDestroy: document.querySelectorAll(
+        "[data-testid='flow-canvas']"
+      ).length,
+      canvasPosition,
+    }
+  })
+
+  if (
+    result.decodedNodeId !== 'packed-node' ||
+    result.canvasCount !== 1 ||
+    result.initialSnapshotNodeId !== 'packed-node' ||
+    result.updatedNodeId !== 'packed-updated' ||
+    result.stateNotificationCount !== 1 ||
+    result.editResult !== 'A updated:3:3:2:true:edit-b:edit-edge' ||
+    result.utilityResult !==
+      'true:true:true:true:true:true:10,5,10,5:true:true:true:true' ||
+    result.canvasCountAfterDestroy !== 0 ||
+    result.canvasPosition !== 'relative'
+  ) {
+    throw new Error(
+      `Unexpected Vanilla packed result: ${JSON.stringify(result)}`
+    )
+  }
+}
+
+const verifyVue = async (page: Page) => {
+  const first = page.locator('.flow-vue-node[data-node-id="vue-first"]')
+  const second = page.locator('.flow-vue-node[data-node-id="vue-second"]')
+  await first.waitFor()
+  await second.waitFor()
+
+  if ((await page.locator('.flow-vue-canvas').count()) !== 2) {
+    throw new Error('Vue consumer did not mount two independent canvases')
+  }
+
+  if (
+    (await first.locator('[data-status="vue-first"]').textContent()) !==
+    'waiting'
+  ) {
+    throw new Error('Vue initial accepted status is missing')
+  }
+
+  if (
+    (await page
+      .locator('.flow-vue-canvas')
+      .first()
+      .evaluate((element) => getComputedStyle(element).position)) !== 'relative'
+  ) {
+    throw new Error('Vue package stylesheet was not applied')
+  }
+
+  await first.locator('[data-edit="vue-first"]').click()
+  await page.getByText('1', { exact: true }).waitFor()
+
+  if (
+    (await first.locator('[data-status="vue-first"]').textContent()) !==
+    'waiting'
+  ) {
+    throw new Error(
+      'Controlled Vue proposal mutated accepted state before acknowledgement'
+    )
+  }
+
+  await page.locator('[data-accept]').click()
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-status="vue-first"]')?.textContent ===
+      'ready'
+  )
+
+  if (
+    (await second.locator('[data-status="vue-second"]').textContent()) !==
+    'independent'
+  ) {
+    throw new Error('Vue canvas instance state leaked')
+  }
+
+  await verifyPackedUI(page, 'vue')
+
+  await first.locator('[data-fit="vue-first"]').click()
+  await page.waitForFunction(
+    () =>
+      document.querySelector<HTMLElement>('[data-fit="vue-first"]')?.dataset
+        .fitStatus === 'complete'
+  )
+  await page.evaluate(() => window.__flowVueConsumer?.dispose())
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('.flow-vue-node, [data-packed-ui]').length === 0
+  )
+}
+
+const verifyFoldkit = async (page: Page) => {
+  const first = page
+    .locator('.flow-foldkit-node[data-node-id="foldkit-a"]')
+    .first()
+
+  const canvases = page.locator('.flow-foldkit-canvas[data-flow-instance]')
+  await first.waitFor()
+  await page.evaluate(() => window.__flowFoldkitConsumer?.mountSecond())
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('.flow-foldkit-canvas[data-flow-instance]')
+        .length === 2
+  )
+
+  const secondRuntime = canvases
+    .nth(1)
+    .locator('.flow-foldkit-node[data-node-id="foldkit-a"]')
+
+  await secondRuntime.waitFor()
+
+  if ((await page.locator('.flow-foldkit-node').count()) !== 4) {
+    throw new Error(
+      'Foldkit consumer did not mount two independent Runtime instances'
+    )
+  }
+
+  if (
+    (await first.evaluate((element) => getComputedStyle(element).position)) !==
+    'absolute'
+  ) {
+    throw new Error('Foldkit package stylesheet was not applied')
+  }
+
+  await first.locator('[data-status="foldkit-a"]').waitFor()
+
+  const measurement = await page.evaluate(() =>
+    window.__flowFoldkitConsumer?.measure()
+  )
+
+  const [measurementStatus, measurementNodeId, measuredWidth, measuredHeight] =
+    String(measurement).split(':')
+
+  if (
+    measurementStatus !== 'measured' ||
+    measurementNodeId !== 'foldkit-a' ||
+    Number(measuredWidth) <= 0 ||
+    Number(measuredHeight) <= 0
+  ) {
+    throw new Error(
+      `Foldkit public measurement observer returned ${String(measurement)}`
+    )
+  }
+
+  const fitStatus = await page.evaluate(() =>
+    window.__flowFoldkitConsumer?.fit()
+  )
+
+  if (fitStatus !== 'accepted' && fitStatus !== 'unchanged') {
+    throw new Error(`Foldkit fitView returned ${String(fitStatus)}`)
+  }
+
+  const editStatus = await page.evaluate(() =>
+    window.__flowFoldkitConsumer?.edit()
+  )
+
+  if (editStatus !== 'packed-ready') {
+    throw new Error(`Foldkit public edit returned ${String(editStatus)}`)
+  }
+
+  await page.waitForFunction(
+    () =>
+      document.querySelector(
+        '.flow-foldkit-canvas[data-flow-instance] [data-status="foldkit-a"]'
+      )?.textContent === 'packed-ready'
+  )
+
+  if (
+    (await secondRuntime.locator('[data-status="foldkit-a"]').textContent()) !==
+    'waiting'
+  ) {
+    throw new Error('Foldkit Runtime A edit leaked into Runtime B')
+  }
+
+  await verifyPackedUI(page, 'foldkit')
+
+  await page.evaluate(() => window.__flowFoldkitConsumer?.dispose())
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('.flow-foldkit-node, [data-packed-ui]')
+        .length === 0
+  )
+}
+
+const verifyBrowser = (
+  consumerRoot: string,
+  host: 'vanilla' | 'vue' | 'foldkit'
+) =>
+  Effect.tryPromise({
+    try: async () => {
+      console.log(`Opening ${host} archive consumer in Chromium`)
+
+      const server = await createServer({
+        configFile: false,
+        logLevel: 'error',
+        root: consumerRoot,
+        resolve: { preserveSymlinks: false },
+        server: {
+          host: '127.0.0.1',
+          port: 0,
+          strictPort: false,
+          fs: { strict: true, allow: [consumerRoot] },
+        },
+      })
+
+      let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
+
+      try {
+        await server.listen()
+
+        const address = Schema.decodeUnknownSync(
+          Schema.Struct({ address: Schema.String, port: Schema.Number })
+        )(server.httpServer?.address())
+
+        if (address === undefined) {
+          throw new Error(
+            `${host} packed consumer server did not expose a TCP address`
+          )
+        }
+
+        console.log(`Launching Chromium for ${host} archive consumer`)
+        browser = await chromium.launch()
+        console.log(`Launched Chromium for ${host} archive consumer`)
+        const page = await browser.newPage()
+        page.setDefaultTimeout(10_000)
+        page.setDefaultNavigationTimeout(10_000)
+        const pageErrors: string[] = []
+        page.on('pageerror', (error) => pageErrors.push(error.message))
+        page.on('console', (message) => {
+          if (message.type() === 'error') {
+            pageErrors.push(message.text())
+          }
+        })
+        console.log(`Navigating to ${host} archive consumer`)
+        await page.goto(`http://127.0.0.1:${address.port}/`)
+        console.log(`Navigated to ${host} archive consumer`)
+
+        const verifyHost = {
+          vanilla: verifyVanilla,
+          vue: verifyVue,
+          foldkit: verifyFoldkit,
+        }[host]
+
+        await verifyHost(page)
+
+        if (pageErrors.length > 0) {
+          throw new Error(
+            `${host} packed browser errors: ${pageErrors.join('; ')}`
+          )
+        }
+
+        return { host, browser: 'Chromium', pageErrors }
+      } finally {
+        await browser?.close()
+        await server.close()
+      }
+    },
+    catch: (error) => error,
+  })
+
+const peerResolutionCheck = String.raw`
+import { realpathSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+const [adapter, peersJson] = process.argv.slice(1)
+const peers = JSON.parse(peersJson)
+const rootImporter = pathToFileURL(join(process.cwd(), 'package.json')).href
+const adapterImporter = pathToFileURL(join(process.cwd(), 'node_modules', adapter, 'dist/public.js')).href
+const packageMetadata = (resolvedEntry, expectedName) => {
+  let current = dirname(realpathSync(resolvedEntry))
+  while (current !== dirname(current)) {
+    try {
+      const metadata = JSON.parse(readFileSync(join(current, 'package.json'), 'utf8'))
+      if (metadata.name === expectedName) return metadata
+    } catch {}
+    current = dirname(current)
+  }
+  throw new Error('Cannot locate installed package metadata for ' + expectedName)
+}
+const seen = {}
+for (const [name, expectedVersion] of Object.entries(peers)) {
+  const rootEntry = fileURLToPath(import.meta.resolve(name, rootImporter))
+  const adapterEntry = fileURLToPath(import.meta.resolve(name, adapterImporter))
+  const rootPath = realpathSync(rootEntry)
+  const adapterPath = realpathSync(adapterEntry)
+  const metadata = packageMetadata(rootEntry, name)
+  if (rootPath !== adapterPath) throw new Error(name + ' resolves to different roots: ' + rootPath + ' vs ' + adapterPath)
+  if (metadata.version !== expectedVersion) throw new Error(name + ' resolved version ' + metadata.version + ', expected ' + expectedVersion)
+  seen[name] = { version: metadata.version, resolved: rootPath }
+}
+console.log(JSON.stringify(seen))
+`
+
+const program = Effect.gen(function* checkPackedConsumers() {
   const fileSystem = yield* FileSystem.FileSystem
   const path = yield* Path.Path
   const childProcess = yield* ChildProcessSpawner.ChildProcessSpawner
@@ -37,7 +524,7 @@ const program = Effect.gen(function* checkPackedConsumer() {
     prefix: 'flow-packed-consumer-',
   })
 
-  const packagesDirectory = path.join(temp, 'tarballs')
+  const tarballs = path.join(temp, 'tarballs')
 
   const run = (command: string, args: readonly string[], cwd: string) =>
     Effect.gen(function* runCommand() {
@@ -52,147 +539,213 @@ const program = Effect.gen(function* checkPackedConsumer() {
       if (exitCode !== 0) {
         return yield* Effect.die(
           new Error(
-            `${command} ${args.join(' ')} failed with exit code ${exitCode}`
+            `${command} ${args.join(' ')} failed in ${cwd} with exit code ${exitCode}`
           )
         )
       }
     })
 
-  const use = Effect.gen(function* useTemporaryConsumer() {
-    yield* fileSystem.makeDirectory(packagesDirectory, { recursive: true })
-    yield* fileSystem.makeDirectory(path.join(temp, 'src'), { recursive: true })
+  const pack = (source: PackagePath) =>
+    Effect.try({
+      try: () => {
+        const packageName = packageNames[source]
 
-    yield* run(
-      'bun',
-      ['pm', 'pack', '--destination', packagesDirectory],
-      path.join(root, 'packages/core')
-    )
-    yield* run(
-      'bun',
-      ['pm', 'pack', '--destination', packagesDirectory],
-      path.join(root, 'apps/vanilla')
-    )
-
-    const consumerPackage = {
-      name: 'flow-packed-consumer',
-      private: true,
-      type: 'module',
-      dependencies: {
-        '@flow/core': 'file:./tarballs/flow-core-0.0.0.tgz',
-        '@flow/vanilla': 'file:./tarballs/flow-vanilla-0.0.0.tgz',
-        effect: '4.0.0-rc.116',
-      },
-      overrides: {
-        '@flow/core': 'file:./tarballs/flow-core-0.0.0.tgz',
-      },
-    }
-
-    yield* fileSystem.writeFileString(
-      path.join(temp, 'package.json'),
-      JSON.stringify(consumerPackage, null, 2)
-    )
-
-    for (const file of fixtureFiles) {
-      const contents = yield* fileSystem.readFileString(
-        path.join(root, 'tests/consumer', file)
-      )
-
-      yield* fileSystem.writeFileString(path.join(temp, file), contents)
-    }
-
-    yield* run('bun', ['install', '--no-save', '--no-progress'], temp)
-    yield* run(
-      'bun',
-      [
-        'run',
-        path.join(root, 'node_modules/typescript/bin/tsc'),
-        '--project',
-        path.join(temp, 'tsconfig.json'),
-      ],
-      temp
-    )
-
-    yield* Effect.tryPromise({
-      try: async () => {
-        const server = await createServer({
-          configFile: false,
-          logLevel: 'error',
-          root: temp,
-          server: { host: '127.0.0.1', port: 0, strictPort: false },
-        })
-
-        let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
-
-        try {
-          await server.listen()
-          const address = server.httpServer?.address()
-
-          if (
-            address === null ||
-            address === undefined ||
-            S.is(S.String)(address)
-          ) {
-            throw new Error('Vite consumer server did not expose a TCP address')
-          }
-
-          browser = await chromium.launch()
-          const page = await browser.newPage()
-          const pageErrors: string[] = []
-          page.on('pageerror', (error) => pageErrors.push(error.message))
-          await page.goto(`http://127.0.0.1:${address.port}/`)
-          await page.waitForFunction(
-            () => window.__flowConsumerResult !== undefined
-          )
-
-          const result = await page.evaluate(() => {
-            const value = window.__flowConsumerResult
-
-            if (value === undefined) {
-              throw new Error('Missing packed consumer result')
-            }
-
-            window.__flowConsumerController?.destroy()
-
-            return {
-              ...value,
-              canvasCountAfterDestroy: document.querySelectorAll(
-                "[data-testid='flow-canvas']"
-              ).length,
-            }
-          })
-
-          if (pageErrors.length > 0) {
-            throw new Error(
-              `Packed browser page errors: ${pageErrors.join('; ')}`
-            )
-          }
-
-          if (
-            result.decodedNodeId !== 'packed-node' ||
-            result.canvasCount !== 1 ||
-            result.initialSnapshotNodeId !== 'packed-node' ||
-            result.updatedNodeId !== 'packed-updated' ||
-            result.stateNotificationCount !== 1 ||
-            result.editResult !== 'A updated:3:3:2:true:edit-b:edit-edge' ||
-            result.canvasCountAfterDestroy !== 0
-          ) {
-            throw new Error(
-              `Unexpected packed browser result: ${JSON.stringify(result)}`
-            )
-          }
-
-          return result
-        } finally {
-          await browser?.close()
-          await server.close()
+        if (packageName === undefined) {
+          throw new Error(`No package name configured for ${source}`)
         }
+
+        const packed = Bun.spawnSync(
+          ['bun', 'pm', 'pack', '--destination', tarballs, '--quiet'],
+          { cwd: path.join(root, source), stdout: 'pipe', stderr: 'pipe' }
+        )
+
+        const output = packed.stdout.toString().trim()
+
+        if (packed.exitCode !== 0 || output.length === 0) {
+          throw new Error(
+            `bun pm pack failed for ${source}: ${packed.stderr.toString()}`
+          )
+        }
+
+        const filename = output
+          .split(/[\\/\r\n]/u)
+          .findLast((segment) => segment.length > 0)
+
+        if (filename === undefined) {
+          throw new Error(`No archive filename returned for ${source}`)
+        }
+
+        checkPackageArchive(path.join(tarballs, filename), packageName)
+
+        return filename
       },
       catch: (error) => error,
     })
 
-    yield* Effect.log(
-      'Packed consumer installed, typechecked, and mounted in Chromium'
+  const checkPeers = (
+    consumerRoot: string,
+    adapter: string,
+    peers: Readonly<Record<string, string>>
+  ) =>
+    run(
+      'bun',
+      ['-e', peerResolutionCheck, adapter, JSON.stringify(peers)],
+      consumerRoot
     )
+
+  const use = Effect.gen(function* useTemporaryConsumers() {
+    yield* fileSystem.makeDirectory(tarballs, { recursive: true })
+
+    const archives = {
+      core: yield* pack('packages/core'),
+      vanilla: yield* pack('apps/vanilla'),
+      vue: yield* pack('packages/vue'),
+      foldkit: yield* pack('packages/foldkit'),
+    }
+
+    yield* Effect.log(`Packed archive metadata: ${JSON.stringify(archives)}`)
+
+    const consumers = [
+      {
+        host: 'vanilla' as const,
+        adapter: '@flow/vanilla',
+        fixture: 'tests/consumer',
+        files: [
+          'index.html',
+          'main.ts',
+          'consumer.typecheck.ts',
+          'styles.d.ts',
+          'tutorial-first-canvas.ts',
+          'tsconfig.json',
+        ],
+        peers: { effect: '4.0.0-rc.116' },
+      },
+      {
+        host: 'vue' as const,
+        adapter: '@flow/vue',
+        fixture: 'tests/consumer/vue',
+        files: [
+          'index.html',
+          'main.ts',
+          'consumer.typecheck.ts',
+          'styles.d.ts',
+          'tsconfig.json',
+        ],
+        peers: { effect: '4.0.0-rc.116', vue: '3.5.43' },
+      },
+      {
+        host: 'foldkit' as const,
+        adapter: '@flow/foldkit',
+        fixture: 'tests/consumer/foldkit',
+        files: [
+          'index.html',
+          'main.ts',
+          'consumer.typecheck.ts',
+          'styles.d.ts',
+          'tsconfig.json',
+        ],
+        peers: {
+          effect: '4.0.0-rc.116',
+          foldkit: '0.163.0',
+          '@effect/platform-browser': '4.0.0-rc.116',
+        },
+      },
+    ]
+
+    const selectedHost = Bun.env['FLOW_CONSUMER_HOST']
+
+    const selectedConsumers =
+      selectedHost === undefined
+        ? consumers
+        : consumers.filter(({ host }) => host === selectedHost)
+
+    if (selectedConsumers.length === 0) {
+      return yield* Effect.die(
+        new Error(`Unknown FLOW_CONSUMER_HOST: ${selectedHost}`)
+      )
+    }
+
+    for (const consumer of selectedConsumers) {
+      const consumerRoot = path.join(temp, 'consumers', consumer.host)
+      yield* fileSystem.makeDirectory(consumerRoot, { recursive: true })
+
+      const archivePath = (name: keyof typeof archives) =>
+        `file:../../tarballs/${archives[name]}`
+
+      const dependencies = {
+        '@flow/core': archivePath('core'),
+        [consumer.adapter]: archivePath(consumer.host),
+        effect: '4.0.0-rc.116',
+      }
+
+      if (consumer.host === 'vue') {
+        Object.assign(dependencies, { vue: '3.5.43' })
+      }
+
+      if (consumer.host === 'foldkit') {
+        Object.assign(dependencies, {
+          foldkit: '0.163.0',
+          '@effect/platform-browser': '4.0.0-rc.116',
+        })
+      }
+
+      if (
+        Object.values(dependencies).some((value) =>
+          value.startsWith('workspace:')
+        )
+      ) {
+        return yield* Effect.die(
+          new Error(
+            `${consumer.host} consumer has a workspace dependency alias`
+          )
+        )
+      }
+
+      const overrides = { '@flow/core': archivePath('core') }
+      yield* fileSystem.writeFileString(
+        path.join(consumerRoot, 'package.json'),
+        JSON.stringify(
+          {
+            name: `flow-packed-${consumer.host}-consumer`,
+            private: true,
+            type: 'module',
+            dependencies,
+            overrides,
+          },
+          null,
+          2
+        )
+      )
+
+      for (const file of consumer.files) {
+        const contents = yield* fileSystem.readFileString(
+          path.join(root, consumer.fixture, file)
+        )
+
+        yield* fileSystem.writeFileString(
+          path.join(consumerRoot, file),
+          contents
+        )
+      }
+
+      yield* run('bun', ['install', '--no-save', '--no-progress'], consumerRoot)
+      yield* run('bun', ['-e', "await import('@flow/core')"], consumerRoot)
+      yield* checkPeers(consumerRoot, consumer.adapter, consumer.peers)
+      yield* run(
+        'bun',
+        [
+          'run',
+          path.join(root, 'node_modules/typescript/bin/tsc'),
+          '--project',
+          path.join(consumerRoot, 'tsconfig.json'),
+        ],
+        consumerRoot
+      )
+      yield* verifyBrowser(consumerRoot, consumer.host)
+      yield* Effect.log(
+        `Packed ${consumer.adapter} consumer passed install, peer resolution, typecheck, styles, browser behavior, and disposal`
+      )
+    }
   })
 
   yield* Effect.ensuring(

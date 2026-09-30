@@ -53,7 +53,7 @@ Reusable framework adapters live in `packages/<framework>` and expose their supp
 
 `apps/<framework>` is the runnable example and browser integration host. It depends on the adapter workspace package and imports through its public package specifier; it does not import adapter implementation files by relative path. Keep demo data, controls, and app bootstrap in `apps/<framework>`. Enforce this boundary in `scripts/check-architecture.ts`.
 
-An app-only prototype can stay in `apps/` while it is not a supported reusable adapter. Do not treat that prototype layout as the template for a new framework package. The existing Foldkit host remains app-scoped until it is separately promoted to a reusable package.
+An app-only prototype can stay in `apps/` while it is not a supported reusable adapter. Do not treat that prototype layout as the template for a new framework package. Foldkit reusable runtime, graph, UI, and observer integration now lives in `packages/foldkit`; `apps/foldkit` remains the `@flow/foldkit-demo` application and browser integration host. Packed-consumer proof remains a separate gate.
 
 ## Research before redesign
 

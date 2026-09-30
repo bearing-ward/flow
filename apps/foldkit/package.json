@@ -1,16 +1,18 @@
 {
-  "name": "@flow/foldkit",
+  "name": "@flow/foldkit-demo",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 4175",
-    "build": "vite build && tsc --noEmit -p tsconfig.json",
+    "dev": "bun run --cwd ../.. build:foldkit:package && vite --host 127.0.0.1 --port 4175",
+    "build": "bun run --cwd ../.. build:foldkit:package && vite build && tsc --noEmit -p tsconfig.json",
     "test:conformance": "playwright test -c playwright.config.ts"
   },
   "dependencies": {
     "@effect/platform-browser": "4.0.0-rc.116",
     "@flow/core": "workspace:*",
+    "@flow/foldkit": "workspace:*",
+    "effect": "4.0.0-rc.116",
     "foldkit": "0.163.0"
   },
   "devDependencies": {

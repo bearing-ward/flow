@@ -1,0 +1,1723 @@
+{
+  "schemaVersion": 1,
+  "catalog": {
+    "source": "../react-flow-2026-09-26.json",
+    "capturedOn": "2026-09-26",
+    "capabilityCount": 19,
+    "componentCount": 17,
+    "templateCount": 2,
+    "referenceCommit": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "referenceCommitRole": "Pinned upstream source snapshot; it is not the current website contract."
+  },
+  "defaults": {
+    "assetPolicy": "Create original CSS, SVG, and native framework markup. Do not copy catalog source, styles, icons, or assets unless their license is separately verified.",
+    "implementationStatus": "not-started",
+    "referenceStatus": "unverified",
+    "testStatus": "not-run",
+    "hostExportsAreTargets": true,
+    "hostRoutesAreTargets": true,
+    "completionRule": "Change implementationStatus only when the public export and tested user outcome exist. A source listing, typecheck, screenshot, or DOM-presence assertion alone is not a user-outcome test.",
+    "sourceEvidenceBoundary": "Pinned source and dated public pages establish the compared option names and observable behavior. They do not prove Flow parity. Private Pro implementation details remain unavailable."
+  },
+  "optionContracts": {
+    "spaceAndOwnership": [
+      {
+        "option": "Panel.position",
+        "upstreamDefault": "top-left",
+        "target": "Support top-left, top-center, top-right, bottom-left, bottom-center, bottom-right. Panel is an overlay in screen space; it does not inherit viewport scale.",
+        "keyboardFocus": "Keep caller content and native focus order; no focus trap or implicit focus transfer.",
+        "lifetime": "Vanilla restores caller-owned panel DOM and prior placement on destroy. Vue/Foldkit children follow their owner framework lifecycle."
+      },
+      {
+        "option": "NodeToolbar.position / align / offset",
+        "upstreamDefault": "top / center / 10px",
+        "target": "Anchor to measured node bounds; expose all cardinal and corner positions plus start/center/end alignment. Offset is CSS screen pixels.",
+        "visibility": "Hidden for unselected nodes by default; isVisible explicitly overrides selection visibility. Multi-node nodeId anchors one toolbar to the requested group.",
+        "scale": "Toolbar remains screen-sized while following pan/zoom and node movement."
+      },
+      {
+        "option": "EdgeToolbar.x / y / alignX / alignY",
+        "upstreamDefault": "center / center",
+        "target": "Require edgeId and explicit graph anchor coordinates; support left/center/right and top/center/bottom alignment.",
+        "visibility": "Hidden for an unselected edge by default; isVisible explicitly overrides selection visibility.",
+        "scale": "Toolbar remains screen-sized while following viewport transforms."
+      },
+      {
+        "option": "ViewportPortal",
+        "upstreamDefault": "none",
+        "target": "Render caller children inside the transformed graph viewport in graph coordinates. Keep this separate from screen-space Panel, Controls, MiniMap, and toolbars.",
+        "interaction": "Do not add an event-routing layer that swallows interactive descendants; preserve canvas ownership rules.",
+        "lifetime": "Portal children are mounted and removed with their owning canvas/framework instance."
+      }
+    ],
+    "background": [
+      {
+        "option": "variant",
+        "upstreamDefault": "dots",
+        "values": ["lines", "dots", "cross"],
+        "target": "Support all three original vector patterns."
+      },
+      {
+        "option": "gap",
+        "upstreamDefault": 20,
+        "values": ["number", "[x,y]"],
+        "target": "Positive graph-space pattern spacing; two-axis tuple supported."
+      },
+      {
+        "option": "size",
+        "upstreamDefault": "1 for dots; 6 for crosses; ignored for lines",
+        "target": "Pattern radius for dots and mark size for crosses; line variant ignores it."
+      },
+      {
+        "option": "offset",
+        "upstreamDefault": 0,
+        "values": ["number", "[x,y]"],
+        "target": "Pattern origin offset in graph coordinates."
+      },
+      {
+        "option": "color / bgColor",
+        "upstreamDefault": "pattern-specific / transparent",
+        "target": "Pattern foreground and optional background fill."
+      },
+      {
+        "option": "lineWidth",
+        "upstreamDefault": 1,
+        "target": "Stroke thickness for line and cross patterns."
+      },
+      {
+        "option": "id",
+        "upstreamDefault": "generated",
+        "target": "Caller may set a unique identifier when several patterns share a canvas."
+      },
+      {
+        "option": "className / patternClassName / style",
+        "upstreamDefault": "empty",
+        "target": "Expose container class/style and pattern class separately using framework-native attribute/style types."
+      }
+    ],
+    "controls": [
+      {
+        "option": "showZoom",
+        "upstreamDefault": true,
+        "target": "Show zoom-in and zoom-out controls; use public viewport operations and respect zoom bounds."
+      },
+      {
+        "option": "showFitView / fitViewOptions",
+        "upstreamDefault": "true / host fit defaults",
+        "target": "Show fit control and forward supported fit options. A caller callback is additive when supplied; otherwise perform fit."
+      },
+      {
+        "option": "showInteractive",
+        "upstreamDefault": true,
+        "target": "Show interactivity toggle only where the host has a public interactivity contract; do not mutate private state."
+      },
+      {
+        "option": "onZoomIn / onZoomOut / onFitView",
+        "upstreamDefault": "absent",
+        "target": "Invoke caller callbacks in addition to built-in actions; callback-only replacement behavior must be recorded if host contract differs."
+      },
+      {
+        "option": "onInteractiveChange",
+        "upstreamDefault": "absent",
+        "target": "Report the resulting interactivity state after the public action."
+      },
+      {
+        "option": "position",
+        "upstreamDefault": "bottom-left",
+        "target": "Support six panel positions including top/bottom center."
+      },
+      {
+        "option": "orientation",
+        "upstreamDefault": "vertical",
+        "values": ["vertical", "horizontal"],
+        "target": "Arrange controls horizontally or vertically."
+      },
+      {
+        "option": "children",
+        "upstreamDefault": "none",
+        "target": "Allow caller-supplied control buttons while retaining host-native child lifecycle."
+      },
+      {
+        "option": "className / style / aria-label",
+        "upstreamDefault": "React Flow controls / vertical / React Flow controls",
+        "target": "Expose accessible group name and host-native styling hooks; each action button has its own accessible name and disabled state."
+      }
+    ],
+    "fitViewOptions": [
+      {
+        "option": "padding",
+        "upstreamDefault": "host fit default",
+        "target": "Forward number or per-axis/pixel padding to the public fit-view operation."
+      },
+      {
+        "option": "includeHiddenNodes",
+        "upstreamDefault": false,
+        "target": "Include hidden nodes in fit bounds only when the host public fit API supports this option."
+      },
+      {
+        "option": "minZoom / maxZoom",
+        "upstreamDefault": "host zoom bounds",
+        "target": "Constrain resulting fit zoom to the requested limits."
+      },
+      {
+        "option": "duration",
+        "upstreamDefault": 0,
+        "target": "Use the host's supported viewport animation duration; do not emulate unsupported animation options."
+      },
+      {
+        "option": "ease",
+        "upstreamDefault": "host easing",
+        "target": "Forward easing callback only where the public host API accepts it; callback remains caller-owned."
+      },
+      {
+        "option": "interpolate",
+        "upstreamDefault": "smooth",
+        "values": ["smooth", "linear"],
+        "target": "Forward interpolation mode only where the public host API accepts it."
+      },
+      {
+        "option": "nodes",
+        "upstreamDefault": "all eligible nodes",
+        "target": "Fit only requested node objects or IDs when the public host operation supports scoped fitting."
+      },
+      {
+        "option": "host support",
+        "upstreamDefault": "not established",
+        "target": "Reconcile each field against completed 057 contracts before implementation; unsupported options remain an explicit host gap, not a silently accepted no-op."
+      }
+    ],
+    "controlButton": [
+      {
+        "option": "native button attributes",
+        "upstreamDefault": "HTML button attributes",
+        "target": "Expose native type, disabled, name/value, title, class/style, and aria attributes. Preserve keyboard activation, focus-visible styling, and caller event handlers."
+      },
+      {
+        "option": "children",
+        "upstreamDefault": "caller content",
+        "target": "Render caller-provided text or icon content; default icons are original assets and are decorative when the button has an accessible name."
+      }
+    ],
+    "miniMap": [
+      {
+        "option": "nodeColor / nodeStrokeColor / nodeClassName",
+        "upstreamDefault": "#e2e2e2 / transparent / empty",
+        "target": "Accept constant values or callbacks over the public node snapshot; never read internal host Maps."
+      },
+      {
+        "option": "nodeBorderRadius / nodeStrokeWidth",
+        "upstreamDefault": "5 / 2",
+        "target": "Style each node rectangle in minimap coordinates."
+      },
+      {
+        "option": "nodeComponent",
+        "upstreamDefault": "default rectangle",
+        "target": "Allow caller SVG node rendering with the node contract fields id, x, y, width, height, borderRadius, className, color, shapeRendering, strokeColor, strokeWidth, style, selected, and onClick. Host callbacks and SVG attribute types remain framework-native."
+      },
+      {
+        "option": "bgColor",
+        "upstreamDefault": "transparent",
+        "target": "Set minimap background fill."
+      },
+      {
+        "option": "maskColor / maskStrokeColor / maskStrokeWidth",
+        "upstreamDefault": "rgba(240, 240, 240, 0.6) / transparent / 1",
+        "target": "Render the viewport mask and its outline."
+      },
+      {
+        "option": "position",
+        "upstreamDefault": "bottom-right",
+        "target": "Use the six screen-space panel positions."
+      },
+      {
+        "option": "onClick / onNodeClick",
+        "upstreamDefault": "absent",
+        "target": "Report minimap graph coordinates or the clicked public node; navigation behavior remains explicitly controlled by pannable/zoomable."
+      },
+      {
+        "option": "pannable / zoomable",
+        "upstreamDefault": "false / false",
+        "target": "When enabled, drag pans and wheel zooms using public viewport operations; wheel direction follows inversePan/zoomStep contract."
+      },
+      {
+        "option": "ariaLabel",
+        "upstreamDefault": "Mini Map",
+        "target": "Expose accessible name; null removes the name only when caller supplies an alternate accessible description."
+      },
+      {
+        "option": "inversePan / zoomStep / offsetScale",
+        "upstreamDefault": "false / 10 / 5",
+        "target": "Invert drag direction, set scroll zoom step, and pad/offset viewport bounds in minimap scale."
+      },
+      {
+        "option": "SVG attributes",
+        "upstreamDefault": "native SVG attributes",
+        "target": "Expose SVG attributes and class/style; reserve click handler semantics for minimap coordinate callbacks."
+      },
+      {
+        "option": "graph projection",
+        "upstreamDefault": "measured graph bounds",
+        "target": "Include measured nested nodes and omit hidden nodes; update with accepted graph changes and viewport changes. Fallback measurement assumptions must be documented."
+      }
+    ],
+    "nodeToolbar": [
+      {
+        "option": "nodeId",
+        "upstreamDefault": "enclosing node",
+        "target": "Accept one node ID or an array for a group toolbar."
+      },
+      {
+        "option": "isVisible",
+        "upstreamDefault": "selection-derived",
+        "target": "When true, force visible independently of selection; otherwise follow selected/visible node eligibility."
+      },
+      {
+        "option": "position / align / offset",
+        "upstreamDefault": "top / center / 10",
+        "target": "Support every Position value, Align start/center/end, and pixel offset."
+      },
+      {
+        "option": "HTML attributes / children",
+        "upstreamDefault": "native div attributes",
+        "target": "Preserve child event handling, focus order, class/style, and accessible attributes."
+      }
+    ],
+    "edgeToolbar": [
+      {
+        "option": "edgeId / x / y",
+        "upstreamDefault": "required",
+        "target": "Require a valid edge id and explicit anchor coordinates."
+      },
+      {
+        "option": "isVisible",
+        "upstreamDefault": false,
+        "target": "Force visibility independent of edge selection; otherwise follow selection and edge visibility."
+      },
+      {
+        "option": "alignX / alignY",
+        "upstreamDefault": "center / center",
+        "target": "Support left/center/right horizontal and top/center/bottom vertical alignment."
+      },
+      {
+        "option": "HTML attributes / children",
+        "upstreamDefault": "native div attributes",
+        "target": "Preserve child event handling, focus order, class/style, and accessible attributes."
+      }
+    ],
+    "panel": [
+      {
+        "option": "position",
+        "upstreamDefault": "top-left",
+        "target": "Support six screen-space positions."
+      },
+      {
+        "option": "HTML attributes / children",
+        "upstreamDefault": "native div attributes",
+        "target": "Preserve caller content, class/style, ARIA, focus order, and framework lifecycle."
+      }
+    ],
+    "resize": [
+      {
+        "option": "nodeId",
+        "upstreamDefault": "enclosing node",
+        "target": "Optional only when control is rendered inside its custom node; otherwise require a node id."
+      },
+      {
+        "option": "isVisible",
+        "upstreamDefault": true,
+        "target": "Control visibility is explicit and must also respect hidden/removed node state."
+      },
+      {
+        "option": "minWidth / minHeight / maxWidth / maxHeight",
+        "upstreamDefault": "10 / 10 / unbounded / unbounded",
+        "target": "Enforce limits through public resize/edit operations."
+      },
+      {
+        "option": "keepAspectRatio",
+        "upstreamDefault": false,
+        "target": "Constrain resize deltas to maintain initial aspect ratio."
+      },
+      {
+        "option": "autoScale",
+        "upstreamDefault": true,
+        "target": "Keep handles/lines screen-sized as viewport zoom changes when enabled; graph-scaled when disabled."
+      },
+      {
+        "option": "shouldResize",
+        "upstreamDefault": "allow",
+        "target": "Allow caller to veto each resize before committing."
+      },
+      {
+        "option": "onResizeStart / onResize / onResizeEnd",
+        "upstreamDefault": "absent",
+        "target": "Report the lifecycle with public node identity and resulting dimensions; callbacks are host-native."
+      },
+      {
+        "option": "handle color/class/style",
+        "upstreamDefault": "host theme",
+        "target": "NodeResizer exposes handleClassName/handleStyle and color."
+      },
+      {
+        "option": "line class/style",
+        "upstreamDefault": "host theme",
+        "target": "NodeResizer exposes lineClassName/lineStyle and color."
+      },
+      {
+        "option": "position / variant / resizeDirection",
+        "upstreamDefault": "all controls / handle / any",
+        "target": "NodeResizeControl supports handle or line variant, corner/edge positions, and directional constraints."
+      },
+      {
+        "option": "children / className / style",
+        "upstreamDefault": "optional children",
+        "target": "Control variant accepts caller content and native styling."
+      },
+      {
+        "option": "keyboard and focus",
+        "upstreamDefault": "host-defined",
+        "target": "Resize controls must be keyboard reachable and expose accessible names; arrow-key resize follows the host's documented keyboard contract and is tested separately from pointer drag."
+      },
+      {
+        "option": "line position",
+        "upstreamDefault": "unset",
+        "target": "For a line variant, support the documented top/right/bottom/left line positions separately from handle corner/edge positions."
+      },
+      {
+        "option": "control color / className / style / children",
+        "upstreamDefault": "host theme / empty / empty / none",
+        "target": "NodeResizeControl exposes native styling hooks and caller child content; NodeResizer keeps distinct handle and line styling options."
+      }
+    ]
+  },
+  "entries": [
+    {
+      "id": "ai-workflow-editor",
+      "title": "AI Workflow Editor",
+      "url": "https://reactflow.dev/ui/templates/ai-workflow-editor",
+      "kind": "template",
+      "referenceStatus": "catalog-listed; executable-outcome-unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original native markup and deterministic local AI-service simulation; no copied assets or live AI transport.",
+      "dependencies": [
+        "workflow-editor",
+        "devtools",
+        "node-search",
+        "zoom-slider",
+        "zoom-select",
+        "base-node",
+        "status-indicator",
+        "appendix",
+        "tooltip",
+        "database-schema",
+        "placeholder",
+        "labeled-group",
+        "base-handle",
+        "labeled-handle",
+        "button-handle",
+        "edge-button",
+        "edge-node-data",
+        "edge-animated-svg",
+        "background",
+        "controls",
+        "mini-map",
+        "panel",
+        "node-toolbar",
+        "edge-toolbar",
+        "node-resizer",
+        "node-resize-control",
+        "viewport-portal"
+      ],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/templates/ai-workflow-editor",
+        "pinnedSource": "not available as an executable Pro implementation; observe public page only",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned template recipe export)",
+          "recipePath": "apps/vanilla/src/ui/templates/ai-workflow-editor.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/ai-workflow-editor",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned template component export)",
+          "recipePath": "packages/vue/src/ui/templates/AiWorkflowEditor.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/ai-workflow-editor",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned template view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/templates/ai-workflow-editor.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/ai-workflow-editor",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Add, connect, configure, delete, save, restore, then run deterministic simulated AI success, failure, and cancellation; label simulation and keep transport app-owned."
+    },
+    {
+      "id": "workflow-editor",
+      "title": "Workflow Editor",
+      "url": "https://reactflow.dev/ui/templates/workflow-editor",
+      "kind": "template",
+      "referenceStatus": "catalog-listed; executable-outcome-unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original native markup; deterministic local workflow execution only.",
+      "dependencies": [
+        "base-node",
+        "status-indicator",
+        "appendix",
+        "tooltip",
+        "database-schema",
+        "placeholder",
+        "labeled-group",
+        "base-handle",
+        "labeled-handle",
+        "button-handle",
+        "edge-button",
+        "edge-node-data",
+        "edge-animated-svg",
+        "node-search",
+        "zoom-slider",
+        "zoom-select",
+        "devtools",
+        "background",
+        "controls",
+        "mini-map",
+        "panel",
+        "node-toolbar",
+        "edge-toolbar",
+        "node-resizer",
+        "node-resize-control",
+        "viewport-portal"
+      ],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/templates/workflow-editor",
+        "pinnedSource": "publicly observable only; no executable private template implementation",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned template recipe export)",
+          "recipePath": "apps/vanilla/src/ui/templates/workflow-editor.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/workflow-editor",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned template component export)",
+          "recipePath": "packages/vue/src/ui/templates/WorkflowEditor.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/workflow-editor",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned template view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/templates/workflow-editor.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/workflow-editor",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Add, connect, configure, delete, save and restore a workflow; run success, failure and cancellation through a deterministic example-owned simulator."
+    },
+    {
+      "id": "base-node",
+      "title": "Base Node",
+      "url": "https://reactflow.dev/ui/components/base-node",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": [],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/base-node",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowBaseNode",
+          "recipePath": "apps/vanilla/src/base-node.ts",
+          "test": "apps/vanilla/e2e/base-node-recipe.e2e.ts",
+          "route": "/ui-recipes/base-node/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Asserts caller title/content, accessible group naming, native FlowCanvas node/handle ownership, keyboard focus/activation where supported, and reload/remount teardown. Host-specific shape; no upstream parity claim."
+        },
+        "vue": {
+          "export": "@flow/vue: FlowBaseNode",
+          "recipePath": "packages/vue/src/base-node.ts",
+          "test": "apps/vue/e2e/base-node-recipe.e2e.ts",
+          "route": "/ui-recipes/base-node/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Asserts caller title/content, accessible group naming, native FlowCanvas node/handle ownership, keyboard focus/activation where supported, and reload/remount teardown. Host-specific shape; no upstream parity claim."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitBaseNode",
+          "recipePath": "packages/foldkit/src/base-node.ts",
+          "test": "apps/foldkit/e2e/base-node-recipe.e2e.ts",
+          "route": "/ui-recipes/base-node/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Asserts caller title/content, accessible group naming, native FlowCanvas node/handle ownership, keyboard focus/activation where supported, and reload/remount teardown. Host-specific shape; no upstream parity claim."
+        }
+      },
+      "requiredOutcome": "Render a caller-composed node shell with accessible title/content while the host canvas retains node and handle interaction ownership."
+    },
+    {
+      "id": "status-indicator",
+      "title": "Status Indicator",
+      "url": "https://reactflow.dev/ui/components/node-status-indicator",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original CSS/SVG and semantic status markup.",
+      "dependencies": ["base-node"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/node-status-indicator",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowStatusIndicator, updateFlowStatusIndicator",
+          "recipePath": "apps/vanilla/src/ui/status-indicator.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/status-indicator",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Exercises app-owned node status updates across waiting/ready/error, visible color and status text, role=status, reduced-motion animation suppression, reset, and reload. Vanilla package build and scoped checks passed. No pinned/current-site comparison or packed-consumer test for this recipe."
+        },
+        "vue": {
+          "export": "@flow/vue: StatusIndicator, FlowStatusSchema, FlowStatus",
+          "recipePath": "packages/vue/src/ui/status-indicator.ts",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/status-indicator",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Exercises accepted node-data updates across waiting/ready/error, accessible status names/text, waiting animation, reduced-motion suppression, reset, and reload. Vue package build and focused checks passed. Implemented as a TypeScript defineComponent under the existing build setup; no SFC plugin was added. No pinned/current-site comparison or packed-consumer test for this recipe."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitStatusIndicator, FlowNodeStatus",
+          "recipePath": "packages/foldkit/src/ui/status-indicator.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/status-indicator",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Exercises app-owned Runtime edit requests across waiting/ready/error, accessible status text, rendered colors, reduced-motion suppression, reset, and reload. Foldkit package build and scoped lint/format checks passed. The fixture keeps a sized styled wrapper around a separate Runtime mount because Runtime.embed clears attributes on its mount element. No pinned/current-site comparison or packed-consumer test for this recipe."
+        }
+      },
+      "requiredOutcome": "Change status data and observe both visual state and accessible status text; respect reduced motion."
+    },
+    {
+      "id": "appendix",
+      "title": "Appendix",
+      "url": "https://reactflow.dev/ui/components/node-appendix",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": ["base-node"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/node-appendix",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowAppendix, FlowAppendix, FlowAppendixOptions",
+          "recipePath": "apps/vanilla/src/ui/appendix.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/appendix",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path browser test passed 1/1 within the 2-test ui-recipes suite. Covers disclosure content, aria-expanded/controls, Enter/Space activation, graph viewport/node position stability, pointer gesture exclusion, and destroy/remount. App-owned content is composed through the public renderer. Upstream comparison and packed-consumer proof are unverified."
+        },
+        "vue": {
+          "export": "@flow/vue: FlowAppendix",
+          "recipePath": "packages/vue/src/ui/appendix.ts",
+          "test": "apps/vue/e2e/appendix-recipe.e2e.ts",
+          "route": "/ui-recipes/appendix",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path browser test passed 1/1; the Status Indicator ui-recipes E2E also passed 1/1. Covers accessible disclosure semantics, hidden/revealed app slot content, Enter/Space/click, unchanged node position, and reload reset. Implemented as a TypeScript defineComponent under the existing build setup. Upstream comparison and packed-consumer proof are unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitAppendix, FoldkitAppendixMount, FoldkitAppendixOptions",
+          "recipePath": "packages/foldkit/src/ui/appendix.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/appendix",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path browser test passed 1/1 within the 2-test ui-recipes suite. Covers accessible disclosure state, Enter/Space, hidden/revealed app-owned text, pointer/wheel gesture isolation, unchanged viewport, reload reset, and explicit unmount cleanup. Upstream comparison and packed-consumer proof are unverified."
+        }
+      },
+      "requiredOutcome": "Expand/collapse or update appendix content without interfering with canvas pan, keyboard navigation, or parent node actions."
+    },
+    {
+      "id": "tooltip",
+      "title": "Tooltip",
+      "url": "https://reactflow.dev/ui/components/node-tooltip",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": ["base-node"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/node-tooltip",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowTooltip, FlowTooltip, FlowTooltipOptions",
+          "recipePath": "apps/vanilla/src/ui/tooltip.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/tooltip",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path browser suite passed 3/3. Tooltip assertions cover per-trigger accessible descriptions, role/text, pointer hover/focus dismissal, movement across the tooltip surface, unchanged graph viewport/node transform, and destroy/remount. Upstream comparison and packed-consumer proof remain unverified."
+        },
+        "vue": {
+          "export": "@flow/vue: FlowTooltip",
+          "recipePath": "packages/vue/src/ui/tooltip.ts",
+          "test": "apps/vue/e2e/tooltip-recipe.e2e.ts",
+          "route": "/ui-recipes/tooltip",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Covers two distinct tooltip instances, preservation/deduplication of existing aria-describedby IDs, hidden state, hover/focus display and dismissal, native description role/text, unchanged node/canvas geometry, reload, and route teardown. Implemented as a TypeScript defineComponent under the existing build setup. Upstream comparison and packed-consumer proof remain unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitTooltip, FoldkitTooltipMount, FoldkitTooltipOptions",
+          "recipePath": "packages/foldkit/src/ui/tooltip.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/tooltip",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path browser suite passed 3/3 after adding the pointer bridge between trigger and tooltip; independent review approved the fix. Tooltip test covers focus/hover, accessible description, hidden/revealed text, pointer movement onto the tooltip, unchanged viewport, reload, and cleanup. Upstream comparison and packed-consumer proof remain unverified."
+        }
+      },
+      "requiredOutcome": "Show contextual content on keyboard focus and pointer hover, keep it available to assistive technology, and hide it deterministically on blur/leave."
+    },
+    {
+      "id": "database-schema",
+      "title": "Database Schema",
+      "url": "https://reactflow.dev/ui/components/database-schema-node",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original schema visualization and native markup.",
+      "dependencies": ["base-node", "base-handle", "labeled-handle"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/database-schema-node",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowDatabaseSchema, DatabaseSchemaField, DatabaseSchemaTable",
+          "recipePath": "apps/vanilla/src/ui/database-schema.ts",
+          "test": "apps/vanilla/e2e/database-schema-recipe.e2e.ts",
+          "route": "/ui-recipes/database-schema",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-route E2E passed 1/1. Two successive caller-owned edits replace the currently mounted schema view and actual FlowNode handles through controller.updateNode; rendered fields and native handle kind/side change together, removed handles disappear at both transitions, and public addEdges accepts a connection through the final handles. Upstream comparison, packed-consumer proof, broad schema shapes, and exhaustive screen-reader behavior remain unverified."
+        },
+        "vue": {
+          "export": "@flow/vue: DatabaseSchema, DatabaseSchemaField, DatabaseSchemaTable",
+          "recipePath": "packages/vue/src/ui/database-schema.ts",
+          "test": "apps/vue/e2e/database-schema-recipe.e2e.ts",
+          "route": "/ui-recipes/database-schema",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-route E2E passed 1/1. The public FlowCanvas editor update replaces caller-owned schema data and handles; rendered fields and native data-handle-kind/side controls update, old handles disappear, and public addEdges accepts the updated connection. Upstream comparison, packed-consumer proof, broad schema shapes, and exhaustive screen-reader behavior remain unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitDatabaseSchema, FoldkitDatabaseSchemaField, FoldkitDatabaseSchemaTable",
+          "recipePath": "packages/foldkit/src/ui/database-schema.ts",
+          "test": "apps/foldkit/e2e/database-schema-recipe.e2e.ts",
+          "route": "/ui-recipes/database-schema",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-route E2E passed 1/1. Public Runtime edit requests replace app-owned schema data and FlowNode handles; rendered fields and native handle aria-label kind, data-handle-side, and side class update, removed handles disappear, and an add-edges request is accepted after the update. Upstream comparison, packed-consumer proof, broad schema shapes, and exhaustive screen-reader behavior remain unverified."
+        }
+      },
+      "requiredOutcome": "Render caller-owned table/field data with typed input/output handles; edits to data update the visible schema and connectable handles."
+    },
+    {
+      "id": "placeholder",
+      "title": "Placeholder",
+      "url": "https://reactflow.dev/ui/components/placeholder-node",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": ["base-node"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/placeholder-node",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla createFlowPlaceholder",
+          "recipePath": "apps/vanilla/src/ui/placeholder.ts",
+          "test": "apps/vanilla/e2e/placeholder-recipe.e2e.ts",
+          "route": "/ui-recipes/placeholder",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-route E2E passed 1/1. Keyboard-activates the empty-state action, confirms one accepted/rendered focusable node and keyboard selection state, then reloads and repeats activation without a duplicate rendered node. The route's pagehide-to-controller.destroy wiring is source-inspected; explicit destroy invocation and listener-leak assertions are unverified. Upstream comparison and packaged-consumer proof remain unverified."
+        },
+        "vue": {
+          "export": "@flow/vue FlowPlaceholder",
+          "recipePath": "packages/vue/src/ui/placeholder.ts",
+          "test": "apps/vue/e2e/placeholder-recipe.e2e.ts",
+          "route": "/ui-recipes/placeholder",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-route E2E passed 1/1 before a narrow rejected-edit retry catch was added. The tested success path keyboard-activates the empty-state action, confirms one accepted/rendered focusable node and keyboard selection through the public state subscription, then reloads and confirms the empty route remount. The pagehide-to-app.unmount, subscription cleanup, and rejection retry are source-inspected; leak and rejection-path assertions are unverified. Upstream comparison and packaged-consumer proof remain unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit createFoldkitPlaceholder",
+          "recipePath": "packages/foldkit/src/ui/placeholder.ts",
+          "test": "apps/foldkit/e2e/placeholder-recipe.e2e.ts",
+          "route": "/ui-recipes/placeholder",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-route E2E passed 1/1 before a narrow rejected-send recovery branch was added. The tested success path keyboard-activates an initially empty Runtime, confirms one accepted/rendered focusable node, reloads, pointer-activates once without overlay interception, and confirms keyboard selection from an accepted Runtime snapshot. The pagehide-to-Runtime.dispose and rejection recovery paths are source-inspected; pending-request and listener-leak assertions are unverified. Upstream comparison and packaged-consumer proof remain unverified."
+        }
+      },
+      "requiredOutcome": "Activate an empty-canvas placeholder action and verify the node is created through the public edit API and becomes usable."
+    },
+    {
+      "id": "labeled-group",
+      "title": "Labeled Group",
+      "url": "https://reactflow.dev/ui/components/labeled-group-node",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": ["base-node"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/labeled-group-node",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned LabeledGroup export)",
+          "recipePath": "apps/vanilla/src/ui/labeled-group.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/labeled-group",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned LabeledGroup component export)",
+          "recipePath": "packages/vue/src/ui/LabeledGroup.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/labeled-group",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned LabeledGroup view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/labeled-group.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/labeled-group",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Create and collapse/expand a labeled parent group while child membership and world positions remain correct."
+    },
+    {
+      "id": "base-handle",
+      "title": "Base Handle",
+      "url": "https://reactflow.dev/ui/components/base-handle",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": [],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/base-handle",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowBaseHandle",
+          "recipePath": "apps/vanilla/src/base-handle.ts",
+          "test": "apps/vanilla/e2e/base-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/base-handle/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Asserts native focus, source/target kind and side semantics, accepted connection, and validator rejection. The helper returns a FlowNode handle descriptor; Vanilla FlowCanvas owns the actual button and connection lifecycle. Upstream comparison is unverified."
+        },
+        "vue": {
+          "export": "@flow/vue: FlowBaseHandle",
+          "recipePath": "packages/vue/src/base-handle.ts",
+          "test": "apps/vue/e2e/base-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/base-handle/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Asserts source/target kind and side labels, native focus, accepted keyboard connection, and strict-mode rejection. FlowCanvas owns the actual buttons and connection lifecycle. Upstream comparison is unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitBaseHandle",
+          "recipePath": "packages/foldkit/src/base-handle.ts",
+          "test": "apps/foldkit/e2e/base-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/base-handle/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production-path E2E passed 1/1. Asserts descriptive side/kind labels, native focus, accepted pointer connection, and target-kind rejection. Foldkit Runtime owns the actual button and connection lifecycle. Upstream comparison is unverified."
+        }
+      },
+      "requiredOutcome": "Compose an original public handle presentation with the host's focusable connection control, preserve side/kind semantics, and establish or reject connections through the public connection contract."
+    },
+    {
+      "id": "labeled-handle",
+      "title": "Labeled Handle",
+      "url": "https://reactflow.dev/ui/components/labeled-handle",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": ["base-handle"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/labeled-handle",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla createFlowLabeledHandleLabel",
+          "recipePath": "apps/vanilla/src/ui/labeled-handle.ts",
+          "test": "apps/vanilla/e2e/labeled-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/labeled-handle",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production E2E passes 1/1. Confirms matching aria-describedby, handle focus, label text, and 12px CSS font size. Measured rendered label height at the initial viewport and three changed wheel-zoom states; all ratios remain within 5% of 1 using the public controller viewport projection. Broader zoom/side coverage and upstream comparison remain unverified."
+        },
+        "vue": {
+          "export": "@flow/vue FlowLabeledHandle",
+          "recipePath": "packages/vue/src/ui/labeled-handle.ts",
+          "test": "apps/vue/e2e/labeled-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/labeled-handle",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production E2E passes 1/1. Confirms matching aria-describedby, handle focus, label text, and 12px CSS font size. Measures rendered label height at the initial viewport and three changed wheel-zoom states; all ratios remain within 5% of 1 using the public reactive viewport projection. Removes and restores the label while the handle remains, verifying cleanup removes only the label IDREF and preserves an unrelated description token. Broader zoom/side coverage and upstream comparison remain unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit createFoldkitLabeledHandle",
+          "recipePath": "packages/foldkit/src/ui/labeled-handle.ts",
+          "test": "apps/foldkit/e2e/labeled-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/labeled-handle",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production E2E passes 1/1. Confirms matching aria-describedby, handle focus, visible label, and 12px CSS font size. Measured rendered label height at the initial viewport and public zooms 1.25, 0.75, and 1.5; all ratios remain within 5% of 1 using accepted Runtime viewport state. Broader zoom/side coverage and upstream comparison remain unverified."
+        }
+      },
+      "requiredOutcome": "Show a label associated with its handle while preserving connection targeting, focus semantics, and screen-space text sizing."
+    },
+    {
+      "id": "button-handle",
+      "title": "Button Handle",
+      "url": "https://reactflow.dev/ui/components/button-handle",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "partial",
+      "sourcePolicy": "Original native markup and styles.",
+      "dependencies": ["base-handle", "control-button"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/button-handle",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla: createFlowControlButton, createFlowBaseHandle, and mountFlow",
+          "recipePath": "apps/vanilla/src/button-handle-test.ts",
+          "test": "apps/vanilla/e2e/button-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/button-handle/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production E2E passes 1/1. Public node renderer composes the native ControlButton factory and Base Handle descriptor. Enter, Space, and pointer activation invoke the app-owned action; a pointer-down/move/up starting on the button leaves node style and edge count unchanged and does not fire another click action. A subsequent real pointer connection from the source handle to the target creates one edge. Reference styling/options, packed-consumer coverage, and upstream comparison remain unverified."
+        },
+        "vue": {
+          "export": "@flow/vue: FlowControlButton, FlowBaseHandle, and FlowCanvas",
+          "recipePath": "apps/vue/src/button-handle-test.ts",
+          "test": "apps/vue/e2e/button-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/button-handle/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production E2E passes 1/1. The FlowCanvas node type composes the public native ControlButton and Base Handle components. Enter, Space, and pointer activation invoke the app-owned action; a pointer-down/move/up starting on the button leaves node style and edge count unchanged and does not fire another click action. A subsequent pointer connection creates one edge. Reference styling/options, packed-consumer coverage, and upstream comparison remain unverified."
+        },
+        "foldkit": {
+          "export": "@flow/foldkit: createFoldkitControlButton, createFoldkitBaseHandle, and createProgram",
+          "recipePath": "apps/foldkit/ui-recipes/button-handle/main.ts",
+          "test": "apps/foldkit/e2e/button-handle-recipe.e2e.ts",
+          "route": "/ui-recipes/button-handle/",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Focused production E2E passes 1/1. App composition inserts the public ControlButton into the Runtime node renderer and composes the Base Handle presentation; allowedConnectionTargets includes the intended button node. Enter, Space, and pointer activation invoke the app-owned action; a pointer-down/move/up starting on the button leaves node style and edge count unchanged and does not fire another click action. After reload, keyboard connection from the source to the Button Handle node creates one edge, and pointer coordinates hit the expected handle buttons. A pointer drag did not create an edge in this fixture and remains unverified. Reference styling/options, packed-consumer coverage, and upstream comparison remain unverified."
+        }
+      },
+      "requiredOutcome": "Activate the embedded button by keyboard/pointer without starting a node drag, and perform its public action."
+    },
+    {
+      "id": "edge-button",
+      "title": "Edge with Button",
+      "url": "https://reactflow.dev/ui/components/button-edge",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original SVG edge and native HTML button markup.",
+      "dependencies": ["control-button", "edge-toolbar"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/button-edge",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned EdgeButton recipe export)",
+          "recipePath": "apps/vanilla/src/ui/edge-button.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/edge-button",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned EdgeButton recipe component export)",
+          "recipePath": "packages/vue/src/ui/EdgeButton.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/edge-button",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned EdgeButton recipe view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/edge-button.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/edge-button",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Delete or act on the intended edge from its visible button while preserving edge interaction and keyboard access."
+    },
+    {
+      "id": "edge-node-data",
+      "title": "Edge with Node Data",
+      "url": "https://reactflow.dev/ui/components/data-edge",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original SVG edge and app-owned data projection.",
+      "dependencies": [],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/data-edge",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned EdgeNodeData recipe export)",
+          "recipePath": "apps/vanilla/src/ui/edge-node-data.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/edge-node-data",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned EdgeNodeData recipe component export)",
+          "recipePath": "packages/vue/src/ui/EdgeNodeData.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/edge-node-data",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned EdgeNodeData recipe view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/edge-node-data.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/edge-node-data",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Render data derived from endpoint nodes and update it after an accepted endpoint edit; no private store access."
+    },
+    {
+      "id": "edge-animated-svg",
+      "title": "Animated SVG Edge",
+      "url": "https://reactflow.dev/ui/components/animated-svg-edge",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original SVG path/animation.",
+      "dependencies": [],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/animated-svg-edge",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned AnimatedSvgEdge recipe export)",
+          "recipePath": "apps/vanilla/src/ui/animated-svg-edge.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/animated-svg-edge",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned AnimatedSvgEdge recipe component export)",
+          "recipePath": "packages/vue/src/ui/AnimatedSvgEdge.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/animated-svg-edge",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned AnimatedSvgEdge recipe view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/animated-svg-edge.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/animated-svg-edge",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Render an animated edge and verify reduced-motion mode removes or pauses motion while preserving an accessible representation."
+    },
+    {
+      "id": "node-search",
+      "title": "Node Search",
+      "url": "https://reactflow.dev/ui/components/node-search",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original searchable control markup and behavior.",
+      "dependencies": ["panel"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/node-search",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned NodeSearch export)",
+          "recipePath": "apps/vanilla/src/ui/node-search.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/node-search",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned NodeSearch component export)",
+          "recipePath": "packages/vue/src/ui/NodeSearch.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/node-search",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned NodeSearch view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/node-search.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/node-search",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Find a node by keyboard, move viewport through public APIs, expose result count and active result, and clear results on escape/selection."
+    },
+    {
+      "id": "zoom-slider",
+      "title": "Zoom Slider",
+      "url": "https://reactflow.dev/ui/components/zoom-slider",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original native range control.",
+      "dependencies": ["panel"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/zoom-slider",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned ZoomSlider export)",
+          "recipePath": "apps/vanilla/src/ui/zoom-slider.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/zoom-slider",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned ZoomSlider component export)",
+          "recipePath": "packages/vue/src/ui/ZoomSlider.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/zoom-slider",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned ZoomSlider view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/zoom-slider.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/zoom-slider",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Adjust zoom with pointer and keyboard, enforce configured bounds, and announce current zoom accessibly."
+    },
+    {
+      "id": "zoom-select",
+      "title": "Zoom Select",
+      "url": "https://reactflow.dev/ui/components/zoom-select",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original native select or accessible combobox; no copied assets.",
+      "dependencies": ["panel"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/zoom-select",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned ZoomSelect export)",
+          "recipePath": "apps/vanilla/src/ui/zoom-select.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/zoom-select",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned ZoomSelect component export)",
+          "recipePath": "packages/vue/src/ui/ZoomSelect.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/zoom-select",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned ZoomSelect view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/zoom-select.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/zoom-select",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Choose a preset or fit option with keyboard and pointer, then assert public viewport state and accessible current value."
+    },
+    {
+      "id": "devtools",
+      "title": "DevTools",
+      "url": "https://reactflow.dev/ui/components/devtools",
+      "kind": "component",
+      "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
+      "implementationStatus": "not-started",
+      "sourcePolicy": "Original inspector UI; diagnostics from public snapshots only.",
+      "dependencies": ["panel"],
+      "referenceEvidence": {
+        "datedCatalogUrl": "https://reactflow.dev/ui/components/devtools",
+        "pinnedSource": "no full UI catalog component implementation verified",
+        "status": "unverified"
+      },
+      "hosts": {
+        "vanilla": {
+          "export": "@flow/vanilla (planned DevTools export)",
+          "recipePath": "apps/vanilla/src/ui/devtools.ts",
+          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/devtools",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "vue": {
+          "export": "@flow/vue (planned DevTools component export)",
+          "recipePath": "packages/vue/src/ui/DevTools.vue",
+          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/devtools",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        },
+        "foldkit": {
+          "export": "@flow/foldkit (planned DevTools view export; not yet implemented)",
+          "recipePath": "packages/foldkit/src/ui/devtools.ts",
+          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
+          "route": "/ui-recipes/devtools",
+          "status": "not-started",
+          "evidenceStatus": "not-run",
+          "testEvidence": "planned test path; no test has been run for this recipe"
+        }
+      },
+      "requiredOutcome": "Inspect nodes, edges, selection, and viewport through public snapshots; route edits through validation and prove invalid input is reported without private Map reads or bypassing protected deletion."
+    }
+  ],
+  "builtInComponents": [
+    {
+      "id": "background",
+      "upstream": "Background",
+      "options": "optionContracts.background",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/Background/types.ts",
+      "dependencies": ["core graph viewport geometry"],
+      "screenSpace": false,
+      "zoomBehavior": "pattern remains viewport-aligned; gap and offset are graph-pattern settings",
+      "keyboard": "Decorative/non-interactive; no focus target.",
+      "focusRestoration": "not-applicable",
+      "lifetime": "canvas-scoped; remove SVG definitions and pattern on unmount",
+      "hostEvidence": {
+        "vanilla": {
+          "status": "partial",
+          "export": "@flow/vanilla: createFlowBackground from apps/vanilla/src/public.ts",
+          "implementation": "apps/vanilla/src/background.ts:createFlowBackground",
+          "test": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "tests": [
+            "public backgrounds and controls operate per host and clean up on remount",
+            "background follows real pan and wheel zoom, then unsubscribes on destroy",
+            "background preserves pinned subpixel spacing and negative remainder behavior"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "Mounts original SVG dots, lines, and crosses in separate canvas instances. E2E assertions cover rendered color, background fill, explicit id, container/pattern classes, style, scalar and tuple gap dimensions plus tuple offset, dot size, line width, and cross geometry. Real pointer pan and wheel zoom verify live alignment, including subpixel gaps and negative JS remainders. Destroy removes each SVG and unsubscribes its viewport listener; separate canvas instances are tested.",
+          "remaining": "Partial: the complete option-by-variant matrix is not tested (including line/cross sizing, all color/style combinations and invalid option boundaries)."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: createFlowBackground; composed by apps/foldkit/src/main.ts",
+          "implementation": "packages/foldkit/src/ui.ts:createFlowBackground and mountFlowCanvasUI",
+          "test": "apps/foldkit/e2e/canvas-ui-contract.e2e.ts",
+          "tests": [
+            "Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disposes cleanly"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "The E2E asserts dots, lines, and crosses render the expected SVG shapes; configured white background fill, foreground color, explicit pattern id and fill reference, offset x/y, SVG/pattern classes, and aria-hidden attribute. The composed background is mounted inside the canvas and tracks pointer pan, wheel zoom, and sampled intermediate animation frames. Removal/reinsertion and pagehide cleanup are exercised. Style option output is not claimed.",
+          "remaining": "Partial: full pattern option matrix (gap dimensions are not directly asserted; size/lineWidth, scalar inputs, and boundary values remain unproven) is unproven. The function is exported from `@flow/foldkit`; packed-consumer proof remains open."
+        },
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowBackground from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/ui.ts:FlowBackground",
+          "test": "apps/vue/e2e/canvas-ui-contract.e2e.ts",
+          "tests": [
+            "Vue controls use public viewport actions and background tracks the viewport"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "The production Vue E2E mounts dots, lines, and crosses and asserts rendered dot-pattern width/height, pattern class, dot radius, line path, cross path, and decorative aria-hidden output. Zoom-in updates the public viewport probe and changes the dot pattern transform; controls also invoke zoom-out and fit-view callbacks. Unmount removes the canvas. The test does not compare transforms with the pinned upstream implementation.",
+          "remaining": "Partial: tests do not cover the full option/style matrix, all six placements, min/max zoom disabling, toggle combinations, or custom slots. Zoom-out and fit-view callback invocation are asserted, but their viewport and pattern-transform results are not directly asserted. No remount, post-unmount API behavior, or duplicate-subscription cleanup proof is present. Transform parity with pinned upstream remains unverified."
+        }
+      }
+    },
+    {
+      "id": "control-button",
+      "upstream": "ControlButton",
+      "options": "optionContracts.controlButton",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/Controls/types.ts",
+      "dependencies": ["controls"],
+      "screenSpace": true,
+      "zoomBehavior": "fixed screen size",
+      "keyboard": "Native button activation by Enter/Space; disabled state prevents action.",
+      "focusRestoration": "preserve focus on same control after action unless it becomes disabled/removed",
+      "lifetime": "owned by controls or caller framework",
+      "hostEvidence": {
+        "vanilla": {
+          "status": "partial",
+          "export": "@flow/vanilla: createFlowControlButton from apps/vanilla/src/public.ts",
+          "implementation": "apps/vanilla/src/ui/control-button.ts:createFlowControlButton",
+          "test": "apps/vanilla/e2e/control-button.e2e.ts",
+          "tests": [
+            "public Vanilla control button preserves native attributes and events"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "Production route creates the public native button and asserts default type, name/value/title, aria-label, composed class, inline style, caller text node, focus, focus-visible outline, Enter activation, caller click callback, and disabled semantics.",
+          "remaining": "Partial: only Enter is exercised (Space remains untested); arbitrary native attributes beyond the documented fields and caller listener removal are untested. No pinned React comparison or packed-consumer proof ran."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: createFoldkitControlButton from packages/foldkit/src/public.ts",
+          "implementation": "packages/foldkit/src/ui/control-button.ts:createFoldkitControlButton",
+          "test": "apps/foldkit/e2e/control-button.e2e.ts",
+          "tests": [
+            "public Foldkit control button preserves native attributes and events"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "Production route creates the public native button and asserts default type, name/value/title, aria-label, composed class, inline style, caller text node, focus, focus-visible outline, Enter activation, caller click callback, and disabled semantics.",
+          "remaining": "Partial: only Enter is exercised (Space remains untested); arbitrary native attributes beyond the documented fields and caller listener removal are untested. No pinned React comparison or packed-consumer proof ran."
+        }
+      }
+    },
+    {
+      "id": "controls",
+      "upstream": "Controls",
+      "options": ["optionContracts.controls", "optionContracts.fitViewOptions"],
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/Controls/types.ts and packages/system/src/types/general.ts",
+      "dependencies": [
+        "panel",
+        "control-button",
+        "public viewport actions",
+        "057 per-host fit-view contract reconciliation"
+      ],
+      "screenSpace": true,
+      "zoomBehavior": "fixed screen size",
+      "keyboard": "Native buttons, accessible group label, disabled at zoom limits when action cannot progress.",
+      "focusRestoration": "retain focused child through viewport updates; do not focus canvas automatically",
+      "lifetime": "canvas-scoped; no duplicated listeners after remount",
+      "fitViewSupportStatus": "supports public fitView with padding only; other fitView options remain unsupported",
+      "hostEvidence": {
+        "vanilla": {
+          "status": "partial",
+          "export": "@flow/vanilla: createFlowControls from apps/vanilla/src/public.ts",
+          "implementation": "apps/vanilla/src/controls.ts:createFlowControls",
+          "test": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "tests": [
+            "public backgrounds and controls operate per host and clean up on remount"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "Native accessible controls operate separate public controllers; tests zoom-in max-bound disabling, fit with padding and callbacks, position/orientation, class/style, custom children, exact restoration of interleaved caller DOM/classes on destroy, unsubscribe/remount, and default controls.",
+          "remaining": "Partial: min-bound disabling and all six positions are not directly covered; showZoom/showFitView combinations, keyboard activation/focus retention and the complete custom-child option matrix remain unproven. fitView options are limited to padding."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: createFlowControls; composed by apps/foldkit/src/main.ts",
+          "implementation": "packages/foldkit/src/ui.ts:createFlowControls and mountFlowCanvasUI",
+          "test": "apps/foldkit/e2e/canvas-ui-contract.e2e.ts",
+          "tests": [
+            "Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disposes cleanly"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "Canvas-mounted native accessible zoom/fit group uses the public viewport client; browser test exercises pointer pan, wheel zoom and animated zoom, both zoom bounds and disabled states, reinsertion, pagehide disposal, and remount.",
+          "remaining": "Partial: all six positions/orientations, showZoom/showFitView combinations, callbacks, children lifecycle, and full fitView option coverage are untested. fitView currently accepts padding only. Both functions are exported from `@flow/foldkit`; packed-consumer proof remains open."
+        },
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowControls and FlowControlButton from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/ui.ts:FlowControls and FlowControlButton",
+          "test": "apps/vue/e2e/canvas-ui-contract.e2e.ts",
+          "tests": [
+            "Vue controls use public viewport actions and background tracks the viewport"
+          ],
+          "evidenceStatus": "tested",
+          "testedOutcome": "The production Vue E2E asserts the accessible controls group, bottom-center/horizontal classes, native disabled custom button, and zoom-in/zoom-out/fit callback invocation. The viewport probe observes zoom after zoom-in, and the companion Background pattern transform changes. Unmount removes the canvas.",
+          "remaining": "Partial: tests do not cover all six placements, min/max zoom disabling, showZoom/showFitView combinations, custom slots, focus retention, or fit-view options. Zoom-out/fit callback invocation is tested, but resulting viewport changes are not asserted. No remount, post-unmount API behavior, or duplicate-subscription cleanup proof is present."
+        }
+      }
+    },
+    {
+      "id": "mini-map",
+      "upstream": "MiniMap",
+      "options": "optionContracts.miniMap",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/MiniMap/types.ts",
+      "dependencies": [
+        "panel",
+        "measured nodes",
+        "accepted document",
+        "public viewport operations"
+      ],
+      "screenSpace": true,
+      "zoomBehavior": "fixed SVG viewport; graph elements projected into minimap coordinates",
+      "keyboard": "Provide an accessible name and keyboard-operable viewport navigation when navigation is enabled; click-only node callback is not treated as keyboard navigation.",
+      "focusRestoration": "retain minimap focus across graph/viewport updates",
+      "lifetime": "canvas-scoped subscriptions; dispose all pointer/wheel listeners",
+      "nodeComponentContract": "id, x, y, width, height, borderRadius, className, color?, shapeRendering, strokeColor?, strokeWidth?, style?, selected, onClick?",
+      "hostEvidence": {
+        "vanilla": {
+          "status": "partial",
+          "export": "@flow/vanilla: mountFlow via apps/vanilla/src/public.ts; opt-in mount option ui.minimap",
+          "optionSchema": "apps/vanilla/src/mount-flow.ts:273-276",
+          "implementation": "apps/vanilla/src/canvas-ui.ts:305-330,435-499",
+          "composition": "apps/vanilla/src/mount-flow.ts:2083-2117,7720-7795",
+          "styles": "apps/vanilla/src/style.css:142-161",
+          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts:56-130",
+          "measurementTest": "apps/vanilla/e2e/advanced-gestures.e2e.ts:1045-1085",
+          "evidenceStatus": "tested",
+          "tests": [
+            "optional canvas controls, minimap, background, and zoom affordances",
+            "resize refreshes toolbar and minimap while visible-node reconciliation preserves the active node"
+          ],
+          "testedOutcome": "The existing Vanilla E2Es verify the opt-in accessible SVG, rendered node rectangles, viewport rectangle, minimap click navigation, and that resizing a graph node updates its minimap rectangle while preserving the active visible node. The mount path derives graph bounds and node dimensions from the current graph, including accepted measurements, and publishes minimap navigation through the canvas viewport change path. This records bounded production-path evidence for Vanilla; no new renderer is introduced here.",
+          "remaining": "Partial: minimap size, position, colors, styles, and interaction behavior are fixed; there are no configurable node renderers, click callbacks, mask options, or minimap pan/zoom modes. Tests do not establish keyboard navigation or focus restoration, responsive resize behavior, empty/hidden-node behavior, two-Runtime isolation, performance, or equivalent pinned-reference output. No cross-host parity is claimed."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: createFlowMiniMap, composed by apps/foldkit/src/main.ts",
+          "implementation": "packages/foldkit/src/ui.ts:228-373",
+          "projection": "packages/core/src/domain/flow-minimap.ts:45-104, exported from packages/core/src/public.ts:288-294",
+          "composition": "apps/foldkit/src/main.ts:244-315,388-404; measurement acceptance in packages/foldkit/src/application.ts:923-960",
+          "styles": "packages/foldkit/src/style.css:16-42",
+          "test": "apps/foldkit/e2e/minimap.e2e.ts:10-246",
+          "unitTest": "packages/core/src/domain/flow-minimap.test.ts:8-82",
+          "observer": "packages/foldkit/src/measurement-observer.ts:16-25,85-117",
+          "evidenceStatus": "tested",
+          "tests": [
+            "Foldkit MiniMap renders per-instance projections and cleans up navigation listeners",
+            "Foldkit MiniMap updates node geometry from accepted DOM measurements"
+          ],
+          "testedOutcome": "The two focused Foldkit E2Es pass 2/2. The helper test uses two canvases, separate mocked viewport clients, and distinct instance IDs; visible-node projection, hidden-node omission, pointer/Enter/Space recenter requests, callback isolation, accessible empty state, and disposal cleanup are asserted. This establishes per-instance helper isolation only, not isolation between two Runtime instances. In the production playground, ResizeObserver/MutationObserver measures rendered node bounds, sends schema-validated MeasureNode actions, receives accepted measurement results, rebuilds the measured graph, and updates the mounted MiniMap. The second E2E toggles measured node size, observes the accepted measured result, and compares the rendered MiniMap rectangle dimensions with the projection of those measured DOM dimensions. Both hosts use the shared core selector for visible-node bounds, viewport projection, pointer-coordinate inversion, and graph-center calculation; its core tests cover nonempty and empty/all-hidden cases.",
+          "remaining": "Partial: the Foldkit helper is exported from `@flow/foldkit`; packed-consumer proof remains open. Tests do not cover an options matrix; custom colors/renderers, placement/size options, map pan/zoom, responsive resize behavior, upstream comparison, performance, and two-Runtime MiniMap isolation remain unverified. No cross-host equivalence claim is made."
+        },
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowMiniMap from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/minimap.ts:25-171",
+          "projection": "packages/vue/src/flow-canvas.ts:2471-2490",
+          "styles": "packages/vue/src/style.css:320-350",
+          "test": "apps/vue/e2e/minimap.e2e.ts:4-298",
+          "fixture": "apps/vue/src/minimap-test.ts:39-129",
+          "documentation": "docs/guides/adapters.md:9-11",
+          "evidenceStatus": "tested",
+          "tests": [
+            "Vue mini map renders visible graph geometry and recenters the canvas",
+            "Vue MiniMap projects accepted DOM measurements without editing document data",
+            "Vue mini map isolates canvas pointer, mouse, wheel, and context events",
+            "Vue mini map centers the graph with Enter",
+            "Vue mini map centers the graph with Space",
+            "Vue mini map keyboard activation preserves an active canvas selection",
+            "Vue mini map handles an empty graph accessibly"
+          ],
+          "testedOutcome": "Seven focused Vue E2Es pass 7/7. They cover visible node rectangles, hidden-node omission, the viewport mask, pointer click recentering, Enter/Space graph centering with target x/y derived from actual canvas clientWidth/clientHeight, accessible inert empty state, and a keyboard-active selection that remains visible through MiniMap Enter/Escape use. Event isolation stops pointer, mouse, wheel, context-menu, double-click, click, and MiniMap keydown propagation; the regression dispatches bubbling input events and verifies pane event count remains zero and zoom remains 1. A production-path measurement case changes a rendered node's inline dimensions, waits for FlowCanvas's accepted internal-node measurement, confirms document node size data is unchanged, and compares the rendered SVG rectangle dimensions to a fresh shared projection built from those accepted measurements (fixture projection helper: apps/vue/src/minimap-test.ts:70-98). For wheel specifically, the source stop-propagation guard plus zero pane events and unchanged zoom are asserted; there is no separate MiniMap wheel-callback counter. FlowCanvas computes one aggregate graph projection from accepted document and measured-node state with measurementRevision and provides it to FlowMiniMap, whose computed projection also tracks viewport and canvas dimensions. Current options remain fixed: 180×120 SVG, fixed colors/styles, bottom-right placement, click recentering, and Enter/Space graph centering.",
+          "remaining": "Partial: this focused measurement case proves accepted DOM measurement reaches the SVG projection in the tested Vue fixture, not every measurement lifecycle or custom renderer. Custom colors/renderers, map pan/zoom, configurable placement/size, and exhaustive styling/options remain unsupported or unverified. There is no upstream comparison or performance evidence, and no two-Runtime MiniMap isolation proof. No cross-host parity is claimed."
+        }
+      }
+    },
+    {
+      "id": "panel",
+      "upstream": "Panel",
+      "options": "optionContracts.panel",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/components/Panel/index.tsx",
+      "dependencies": [],
+      "screenSpace": true,
+      "zoomBehavior": "fixed screen size",
+      "keyboard": "No focus management beyond caller children and native order.",
+      "focusRestoration": "preserve caller DOM and focus when Vanilla moves/restores its panel",
+      "lifetime": "Vanilla restores exact caller-owned node and insertion position; framework children use owner lifecycle",
+      "hostEvidence": {
+        "vanilla": {
+          "status": "partial",
+          "export": "@flow/vanilla: mountFlow; panel and panels are caller-owned HTMLElement options",
+          "implementation": "apps/vanilla/src/mount-flow.ts:266-316,1004; apps/vanilla/src/canvas-ui.ts:334-385,568-579",
+          "styles": "apps/vanilla/src/style.css:44-60",
+          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts:409-665",
+          "evidenceStatus": "tested",
+          "tests": [
+            "placed panels preserve identity, focus, actions, and exact restoration"
+          ],
+          "testedOutcome": "The focused mounted Vanilla E2E passed 1/1. It places caller-owned elements in all six supported screen-space slots, verifies native button activation and input focus/selection preservation through document updates, and checks that destroy restores the original element, parent/sibling order, attributes, and focus state.",
+          "remaining": "Partial: this is bounded Vanilla behavior, not pinned React runtime or screenshot equivalence. Responsive overflow and exhaustive option combinations remain unverified; no cross-host parity is claimed."
+        },
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowPanel and FlowPanelPosition from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/ui.ts:177-218",
+          "styles": "packages/vue/src/style.css:16-53",
+          "test": "apps/vue/e2e/panel.e2e.ts:3-81",
+          "fixture": "apps/vue/src/panel-test.ts:56-88",
+          "documentation": "docs/public-api.md:109",
+          "evidenceStatus": "tested",
+          "testedOutcome": "FlowPanel is rendered in the FlowCanvas default slot as a screen-space div with a default group role, forwarded native id/class/style/aria-label/test attributes, and caller slot content. The browser test measures all six positions against the canvas bounds; CSS defines 12px edge insets and horizontal centering. It verifies normal browser tab order through the external position buttons, a panel input, and a panel action. The component adds no keyboard handlers; its source documentation assigns canvas keyboard ownership to FlowCanvas. The test toggles the panel VNode off/on.",
+          "remaining": "Partial: the test does not exercise shortcut suppression while a FlowCanvas keyboard session is active; keyboard ownership remains with FlowCanvas. It tests only a panel VNode toggle, not explicit app/canvas teardown. FlowPanel installs no listeners requiring component-owned teardown. No Vanilla/Foldkit coverage or cross-host parity is established; the six-position geometry is asserted at the tested viewport only."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: mountFlowPanel",
+          "implementation": "packages/foldkit/src/ui.ts:FlowPanelPosition, FlowPanelOptions, mountFlowPanel",
+          "styles": "packages/foldkit/src/style.css:.flow-foldkit-panel-*",
+          "test": "apps/foldkit/e2e/panel.e2e.ts",
+          "evidenceStatus": "tested",
+          "testedOutcome": "The focused Foldkit E2E mounts caller-owned content through mountFlowPanel on the production playground canvas. It measures top/bottom and left/right/center placement against the canvas bounds for all six positions; verifies group role, aria-label/class forwarding, canvas scoping, graph gesture-exclusion markers, and restoration of the content to its original sibling position after idempotent disposal. No keyboard handlers are added, so caller controls retain native browser behavior.",
+          "remaining": "Partial: only one viewport and fixed 12px inset are tested. Focus restoration after moving a currently focused element, dynamic updates/position changes, responsive overflow, styles/options beyond position/class/role/aria-label, and pinned React runtime comparison remain unverified. The helper is exported by `@flow/foldkit`; no cross-host parity claim is made."
+        }
+      }
+    },
+    {
+      "id": "node-toolbar",
+      "upstream": "NodeToolbar",
+      "options": "optionContracts.nodeToolbar",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/NodeToolbar/types.ts",
+      "dependencies": [
+        "measured node anchors",
+        "selection state",
+        "screen overlay portal"
+      ],
+      "screenSpace": true,
+      "zoomBehavior": "screen-sized; anchor follows node through pan/zoom",
+      "keyboard": "Caller actions retain native focus order and canvas interaction exclusions.",
+      "focusRestoration": "preserve focus while anchor updates; restore to trigger if a toolbar action removes itself",
+      "lifetime": "canvas scoped; remove listeners/observers on disposal",
+      "hostEvidence": {
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowNodeToolbar from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/node-toolbar.ts; per-canvas measured graph and target in packages/vue/src/flow-canvas.ts",
+          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:21-65",
+          "styles": "packages/vue/src/style.css:16-35",
+          "test": "apps/vue/e2e/node-toolbar.e2e.ts",
+          "fixture": "apps/vue/src/node-toolbar-test.ts",
+          "evidenceStatus": "tested",
+          "tests": [
+            "Vue FlowNodeToolbar follows measured nodes in a per-canvas screen layer"
+          ],
+          "testedOutcome": "The focused mounted Vue E2E passes 1/1. It verifies measured node positioning, pan and zoom following while toolbar dimensions remain fixed, top and right/end placement with offsets, single-selection default visibility, explicit visibility, hidden and missing node omission, Playwright child click and synthetic wheel/pointer gesture exclusion, per-canvas target ownership, and toolbar/canvas teardown.",
+          "remaining": "Partial: this Vue fixture covers the implemented prop subset and tested viewport. No pinned React runtime comparison or screenshot comparison ran. Group node IDs, the complete upstream option surface, focus restoration after self-removal, edge toolbars, Vanilla/Foldkit toolbars, narrow-screen behavior, and full host coverage remain unverified."
+        }
+      }
+    },
+    {
+      "id": "edge-toolbar",
+      "upstream": "EdgeToolbar",
+      "options": "optionContracts.edgeToolbar",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/edges.ts",
+      "dependencies": [
+        "edge anchor",
+        "selection state",
+        "screen overlay portal"
+      ],
+      "screenSpace": true,
+      "zoomBehavior": "screen-sized; anchor follows graph coordinate through pan/zoom",
+      "keyboard": "Caller actions retain native focus order and canvas interaction exclusions.",
+      "focusRestoration": "preserve focus while anchor updates; restore to trigger if action removes toolbar",
+      "lifetime": "canvas scoped; remove listeners/observers on disposal"
+    },
+    {
+      "id": "node-resizer",
+      "upstream": "NodeResizer",
+      "options": "optionContracts.resize",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/NodeResizer/types.ts",
+      "dependencies": [
+        "measured node dimensions",
+        "public resize edit",
+        "056 gesture lifecycle"
+      ],
+      "screenSpace": true,
+      "zoomBehavior": "autoScale defaults true; false allows graph-scaled handles and lines",
+      "keyboard": "Accessible focusable controls; test keyboard resize and pointer resize separately; never claim upstream keyboard parity absent reference proof.",
+      "focusRestoration": "retain active resize control through updates; restore to invoking control after completion",
+      "lifetime": "node/canvas scoped; terminate gesture and listeners on hide/remove/destroy"
+    },
+    {
+      "id": "node-resize-control",
+      "upstream": "NodeResizeControl",
+      "options": "optionContracts.resize",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/additional-components/NodeResizer/types.ts",
+      "dependencies": [
+        "measured node dimensions",
+        "public resize edit",
+        "056 gesture lifecycle"
+      ],
+      "screenSpace": true,
+      "zoomBehavior": "autoScale defaults true; variant handle or line",
+      "keyboard": "Accessible focusable directional control with explicit keyboard contract; implementation outcome must be tested.",
+      "focusRestoration": "retain active resize control through updates; restore to invoking control after completion",
+      "lifetime": "node/canvas scoped; terminate gesture and listeners on hide/remove/destroy"
+    },
+    {
+      "id": "viewport-portal",
+      "upstream": "ViewportPortal",
+      "options": "Children only; caller positions children in graph coordinates.",
+      "referenceSource": "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/components/ViewportPortal/index.tsx",
+      "dependencies": [
+        "transformed viewport container",
+        "framework child lifecycle"
+      ],
+      "screenSpace": false,
+      "zoomBehavior": "inherits the canvas graph transform and scales with pan/zoom",
+      "keyboard": "Caller-owned descendants keep native keyboard behavior; portal must not swallow input or re-route canvas events.",
+      "focusRestoration": "framework portal preserves child identity/focus; Vanilla restores focus to connected original nodes on destroy where applicable",
+      "lifetime": "canvas-scoped transformed viewport portal, distinct from screen overlay portals",
+      "hostEvidence": {
+        "vanilla": {
+          "status": "partial",
+          "export": "JavaScriptFlowController.mountViewportPortal(element): disposer; separate from the screen-space overlayPortal",
+          "implementation": "apps/vanilla/src/mount-flow.ts; apps/vanilla/src/style.css",
+          "test": "apps/vanilla/e2e/viewport-portal.e2e.ts",
+          "evidenceStatus": "tested",
+          "tests": [
+            "graph-space content follows pan and zoom",
+            "native click and Enter plus pointer-drag and wheel boundaries",
+            "multiple portals, two-controller isolation, duplicate-element rejection, idempotent disposal, and destroy restoration for attached and detached caller nodes"
+          ],
+          "testedOutcome": "The focused mounted Vanilla E2E passed 1/1. The public controller mounts caller-owned DOM under its own transformed viewport; the test checks graph-coordinate placement and scaling after a viewport update, native click and Enter, pointer drag and wheel not changing the viewport, gesture-exclusion markers, two-controller isolation, multiple mounts, rejection of same-controller and cross-controller duplicate elements, idempotent disposer calls, original parent/sibling restoration, and detached-node preservation on destroy.",
+          "remaining": "Partial: Vanilla uses an imperative DOM mount/disposer rather than framework child identity. No pinned React runtime or screenshot comparison ran, and current-site behavior remains unverified. Clipping at the canvas boundary, custom gesture-class configuration, and broader native-input combinations remain unverified."
+        },
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowViewportPortal from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/viewport-portal.ts:4-49; target and configured gesture classes in packages/vue/src/flow-canvas.ts:818,2507-2512,5246-5263",
+          "styles": "packages/vue/src/style.css:146-155",
+          "test": "apps/vue/e2e/viewport-portal.e2e.ts:3-229",
+          "fixture": "apps/vue/src/viewport-portal-test.ts:18-130",
+          "evidenceStatus": "tested",
+          "tests": [
+            "FlowViewportPortal follows the canvas transform and stays canvas-scoped"
+          ],
+          "testedOutcome": "The focused Vue production E2E passed 1/1. It mounts two FlowCanvas instances, uses custom gesture-exclusion class names on one and defaults on the other, and verifies separate target ownership, graph-coordinate placement, pan/zoom position and size changes after a public viewport update, clipping at the canvas boundary, native child click and Enter handling, native wheel delivery without viewport zoom, pointer drag without viewport movement, conditional unmount/remount, and canvas teardown.",
+          "remaining": "Partial: evidence covers the tested Vue fixture and viewport; no upstream side-by-side runtime or screenshot comparison was run. Focus restoration across an external focus change, narrow-screen behavior, and custom target styling remain unverified. The portal does not implement screen-space toolbars."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: mountFlowViewportPortal(canvas, content)",
+          "implementation": "packages/foldkit/src/ui.ts:303-401",
+          "test": "apps/foldkit/e2e/viewport-portal.e2e.ts:9-188",
+          "evidenceStatus": "tested",
+          "tests": [
+            "portal wrapper is mounted beneath the canvas viewport and inherits its CSS transform",
+            "native click/Enter and no-pan/no-drag/no-wheel boundaries",
+            "two-canvas isolation, active-content duplicate rejection, idempotent disposal, and original sibling restoration"
+          ],
+          "testedOutcome": "The focused mounted Foldkit E2E passed 1/1. It verifies wrapper containment beneath two viewport elements, one of which has an explicit translate/scale transform; confirms the playground viewport has a scale transform and that zoom changes it; exercises native click/Enter; checks pointer drag and wheel leave the viewport style unchanged; and checks canvas isolation and duplicate rejection. The test explicitly disposes the first mount twice, removes both canvases, then verifies both contents return to their original sibling order and both portal hosts are gone. The second mount therefore covers observer-driven cleanup on canvas removal.",
+          "remaining": "Partial package-owned host evidence only. The test does not assert an independently calculated screen-coordinate or bounding-box expectation for graph content. No pinned React runtime or screenshot comparison ran. The package export is not packed-consumer proof; framework child identity, clipping, responsive presentation, broader native input combinations, and current-site behavior remain unverified."
+        }
+      }
+    }
+  ],
+  "blockedComparisons": [
+    "The public Pro UI templates do not expose executable private implementation source; implement an original observable equivalent and keep full reference comparison unverified.",
+    "Upstream UI package types establish the pinned option surface but do not prove current public-site options or runtime details.",
+    "Flow option support must be reconciled against completed Plan 057 contracts before any host implementation; missing public contracts are owner-plan dependencies, never grounds for private-store reads."
+  ]
+}

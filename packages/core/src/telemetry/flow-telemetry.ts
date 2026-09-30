@@ -38,6 +38,8 @@ export const FlowAttribute = {
   changeKind: 'flow.change.kind',
   controlMode: 'flow.control.mode',
   documentIssue: 'flow.document.issue',
+  failureName: 'flow.failure.name',
+  failureMessage: 'flow.failure.message',
   edgeCount: 'flow.edge.count',
   edgeEndpoint: 'flow.edge.endpoint',
   edgeId: 'flow.edge.id',

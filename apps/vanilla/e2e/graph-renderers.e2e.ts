@@ -344,6 +344,7 @@ test('custom drag handle gates pointer movement and keeps its visual state stabl
             const dragRegion = globalThis.document.createElement('div')
             dragRegion.dataset.flowDragHandle = ''
             const handle = globalThis.document.createElement('button')
+            handle.dataset.flowDragHandle = ''
             handle.setAttribute('aria-label', 'Drag selected group')
             handle.textContent = node.data?.text ?? 'Handle'
             const nestedNoDrag = globalThis.document.createElement('button')

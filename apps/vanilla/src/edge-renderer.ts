@@ -1,5 +1,6 @@
 import {
   bezierEdgePath,
+  applyDefaultEdgeOptions,
   createFlowGraph,
   edgeAttachmentPosition,
   edgeLabelPosition,
@@ -15,6 +16,7 @@ import type {
   FlowDocument,
   FlowEdgeMarker,
   FlowNode,
+  FlowDefaultEdgeOptions,
   FlowGraphView,
   HandleId,
   MeasuredHandle,
@@ -46,7 +48,8 @@ interface EdgeElements {
 
 export const createEdgeRenderer = (
   viewport: HTMLElement,
-  renderers: Readonly<Record<string, FlowEdgeRenderer>> = {}
+  renderers: Readonly<Record<string, FlowEdgeRenderer>> = {},
+  defaultEdgeOptions?: FlowDefaultEdgeOptions
 ) => {
   nextMarkerScope += 1
   const markerScope = nextMarkerScope
@@ -182,7 +185,11 @@ export const createEdgeRenderer = (
           node.absolutePosition,
         ])
       )
-      orderedEdges = orderFlowEdges(document.edges)
+      orderedEdges = orderFlowEdges(
+        document.edges.map((edge) =>
+          applyDefaultEdgeOptions(edge, defaultEdgeOptions)
+        )
+      )
       edgeById = new Map(orderedEdges.map((edge) => [edge.id, edge]))
       incidentEdges = new Map()
 

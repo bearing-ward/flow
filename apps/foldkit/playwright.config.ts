@@ -10,7 +10,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'bun run --cwd ../.. build:packages && bun run dev -- --port 4178 --strictPort',
+      'bun run --cwd ../.. build:foldkit:package && vite --host 127.0.0.1 --port 4178 --strictPort',
     reuseExistingServer: false,
     url: 'http://127.0.0.1:4178',
   },

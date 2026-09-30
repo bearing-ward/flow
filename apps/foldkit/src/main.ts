@@ -1,35 +1,53 @@
 import {
   decodeFlowDocument,
   decodeSavedFlowDocument,
+  createFlowGraph,
   FlowEditDisposedSchema,
   getConnectedEdges,
   getIncomers,
   getOutgoers,
   NodeIdSchema,
   SavedFlowDocumentSchema,
+  FlowSnapshotSchema,
   ViewportSchema,
 } from '@flow/core'
 import type {
   FlowDocument,
+  MeasuredNode,
+  NodeId,
   Viewport,
   FlowEditTransactionSchema,
 } from '@flow/core'
-import { Effect, Exit, Schema } from 'effect'
-import { Runtime } from 'foldkit'
-
+import {
+  createProgram,
+  createFoldkitBaseNode,
+  createFoldkitBaseHandle,
+  createFoldkitLabeledHandle,
+  createViewportClient,
+  HostAction,
+  createFoldkitObservers,
+  createFoldkitNodeMeasurementObserver,
+  createFoldkitNodeInternalsRefresher,
+  createFoldkitDeleteClient,
+  createFlowMiniMap,
+  mountFlowCanvasUI,
+  defaultInteractionOptions,
+} from '@flow/foldkit'
 import type {
   EditResponse,
   ports,
   SnapshotResponseSchema,
   MeasurementResultSchema,
-} from './application.ts'
-import {
-  createProgram,
-  createViewportClient,
-  HostAction,
-} from './application.ts'
+  FoldkitHostOptions,
+  FlowCanvasUIMount,
+  FlowMiniMapMount,
+} from '@flow/foldkit'
+import { Effect, Exit, Option, Schema } from 'effect'
 
-import './style.css'
+import '@flow/foldkit/style.css'
+import { Runtime } from 'foldkit'
+
+import './playground.css'
 
 const original = Effect.runSync(
   decodeFlowDocument({
@@ -84,11 +102,11 @@ if (root === null) {
   throw new Error('Missing #app')
 }
 
-root.innerHTML = `<main class="flow-foldkit-layout"><aside class="flow-foldkit-tools"><h1>Flow Foldkit playground</h1><p>Foldkit owns the graph model; typed renderer registries customize the host view.</p><section class="flow-state-tools"><h2>State and persistence</h2><button data-state="measure-toggle">Toggle measured size and handle offset</button><output data-measurement aria-live="polite"></output><label>Node label <input aria-label="Node label" value="Validate"></label><button data-state="label">Update label</button><button data-state="hidden">Toggle hidden</button><button data-state="node-data">Update node data</button><button data-state="edge-data">Update edge data</button><button data-state="add-node">Add node</button><button data-state="remove-node">Remove added node</button><button data-state="add-protected">Add protected node</button><button data-state="protected-delete">Try protected delete</button><button data-state="reconnect-middle">Delete middle and reconnect</button><button data-state="inspect">Inspect graph</button><button data-state="save">Save snapshot</button><button data-state="change">Change graph and viewport</button><button data-state="restore" disabled>Restore snapshot</button><button data-state="reset">Reset example</button><small>Saved in this page session only. Reloading discards the snapshot.</small><output aria-live="polite"></output></section><section class="flow-viewport-tools"><h2>Viewport</h2><button data-viewport="center">Center on selected</button><button data-viewport="fit">Fit selected</button><button data-viewport="zoom">Zoom to 1.25</button><button data-viewport="convert">Show coordinate conversion</button><button data-viewport="cancel">Cancel animation</button><output data-viewport-result aria-live="polite"></output></section></aside><div class="flow-foldkit-host"></div></main>`
+root.innerHTML = `<main class="flow-foldkit-layout"><aside class="flow-foldkit-tools"><h1>Flow Foldkit playground</h1><p>Foldkit owns the graph model; typed renderer registries customize the host view.</p><section class="flow-state-tools"><h2>State and persistence</h2><button data-state="measure-toggle">Toggle measured size and handle offset</button><label>Refresh node geometry <input data-refresh-node-id aria-label="Refresh node geometry" value="validate"></label><button data-state="refresh-node">Refresh node internals</button><output data-measurement aria-live="polite"></output><label>Node label <input aria-label="Node label" value="Validate"></label><button data-state="label">Update label</button><button data-state="hidden">Toggle hidden</button><button data-state="node-data">Update node data</button><button data-state="edge-data">Update edge data</button><button data-state="add-node">Add node</button><button data-state="remove-node">Remove added node</button><button data-state="add-protected">Add protected node</button><button data-state="protected-delete">Try protected delete</button><button data-state="reconnect-middle">Delete middle and reconnect</button><button data-state="inspect">Inspect graph</button><button data-state="save">Save snapshot</button><button data-state="change">Change graph and viewport</button><button data-state="restore" disabled>Restore snapshot</button><button data-state="reset">Reset example</button><small>Saved in this page session only. Reloading discards the snapshot.</small><output aria-live="polite"></output></section><section class="flow-viewport-tools"><h2>Viewport</h2><button data-viewport="center">Center on selected</button><button data-viewport="fit">Fit selected</button><button data-viewport="zoom">Zoom to 1.25</button><button data-viewport="zoom-low">Zoom to 0.75</button><button data-viewport="zoom-high">Zoom to 1.5</button><button data-viewport="convert">Show coordinate conversion</button><button data-viewport="cancel">Cancel animation</button><output data-viewport-result aria-live="polite"></output></section></aside><div class="flow-foldkit-host"></div></main>`
 
 const canvas = root.querySelector<HTMLElement>('.flow-foldkit-host')
 
-const input = root.querySelector<HTMLInputElement>('input')
+const input = root.querySelector<HTMLInputElement>('[aria-label="Node label"]')
 
 const output = root.querySelector<HTMLOutputElement>(
   'output:not([data-measurement])'
@@ -110,15 +128,77 @@ if (
 
 canvas.id = 'flow-foldkit-runtime'
 
+const aside = root.querySelector<HTMLElement>('.flow-foldkit-tools')
+
+if (aside === null) {
+  throw new Error('Missing playground tools')
+}
+
+aside.insertAdjacentHTML(
+  'beforeend',
+  `<section class="flow-interaction-tools" aria-labelledby="interaction-heading">
+    <h2 id="interaction-heading">Interaction demos</h2>
+    <p>Choose a mode, then use pointer or keyboard input on the canvas.</p>
+    <div class="flow-interaction-controls" role="group" aria-label="Interaction demo modes">
+      <button type="button" data-demo-control="connection-events" aria-pressed="false">Connection events</button>
+      <button type="button" data-demo-control="resize" aria-pressed="false">Resize</button>
+      <button type="button" data-demo-control="drag-handle" aria-pressed="false">Drag handle</button>
+      <button type="button" data-demo-control="touch-ready" aria-pressed="false">Touch ready</button>
+    </div>
+    <output data-demo-status aria-live="polite">Choose an interaction demo.</output>
+  </section>`
+)
+
+const interactionStatus =
+  root.querySelector<HTMLOutputElement>('[data-demo-status]')
+
+if (interactionStatus === null) {
+  throw new Error('Missing interaction status output')
+}
+
 const rendererRegistry = {
   nodeTypes: {
     'demo-node': (node, h) =>
-      h.div(
-        [
-          h.Class('flow-foldkit-demo-node'),
-          h.DataAttribute('demo-renderer', 'node'),
-        ],
-        [h.strong([], [node.label]), h.small([], ['Custom node renderer'])]
+      createFoldkitBaseNode(
+        node.label,
+        h,
+        h.div(
+          [],
+          [
+            h.p([], ['Caller-owned node content.']),
+            h.button(
+              [
+                h.Type('button'),
+                h.DataAttribute('flow-no-drag', ''),
+                h.DataAttribute('demo-details', ''),
+              ],
+              ['Open details']
+            ),
+            h.div(
+              [h.Class('flow-foldkit-base-handle-list')],
+              (node.handles ?? []).flatMap((handle) => [
+                createFoldkitBaseHandle(
+                  {
+                    handle,
+                    label:
+                      handle.kind === 'source'
+                        ? 'Validated result'
+                        : 'Incoming data',
+                  },
+                  h
+                ),
+                createFoldkitLabeledHandle(
+                  {
+                    id: handle.id,
+                    label: handle.kind === 'source' ? 'Output' : 'Input',
+                    side: handle.side,
+                  },
+                  h
+                ),
+              ])
+            ),
+          ]
+        )
       ),
   },
   edgeTypes: {
@@ -146,8 +226,71 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     ['target'],
     'uncontrolled',
     'uncontrolled',
-    rendererRegistry
+    rendererRegistry,
+    undefined,
+    undefined,
+    {
+      ...defaultInteractionOptions,
+      panOnDrag: true,
+      zoomOnScroll: true,
+      selectionOnDrag: false,
+    }
   )
+)
+
+const associateLabeledHandles = (): void => {
+  const labeledHandles = globalThis.document.querySelectorAll<HTMLElement>(
+    '[data-flow-labeled-handle]'
+  )
+
+  for (let index = 0; index < labeledHandles.length; index += 1) {
+    const label = labeledHandles.item(index)
+
+    if (label === null) {
+      continue
+    }
+
+    const handleId = label.dataset.flowLabeledHandle
+
+    const button = globalThis.document.querySelector<HTMLButtonElement>(
+      `[data-handle-id="${handleId}"]`
+    )
+
+    if (button !== null) {
+      button.setAttribute('aria-describedby', label.id)
+    }
+  }
+}
+
+associateLabeledHandles()
+
+const labeledHandleObserver = new MutationObserver(associateLabeledHandles)
+
+labeledHandleObserver.observe(root, { childList: true, subtree: true })
+
+globalThis.addEventListener(
+  'pagehide',
+  () => labeledHandleObserver.disconnect(),
+  {
+    once: true,
+  }
+)
+
+/** Keep the playground's historical auto-approve behavior when hosts omit a hook. */
+const defaultBeforeDelete: FoldkitHostOptions['beforeDelete'] = () => true
+
+const hostOptions = globalThis.window?.flowFoldkitOptions
+
+const deleteClient = createFoldkitDeleteClient(
+  runtime,
+  hostOptions?.beforeDelete ?? defaultBeforeDelete,
+  hostOptions
+)
+
+const observers = createFoldkitObservers(
+  runtime.ports.acceptedStates,
+  { document: original, viewport: { x: 0, y: 0, zoom: 1 } },
+  canvas.ownerDocument
 )
 
 const viewportClient = createViewportClient(
@@ -166,6 +309,95 @@ const viewportClient = createViewportClient(
     }
   },
   { x: 0, y: 0, zoom: 1 }
+)
+
+let canvasUiMount: FlowCanvasUIMount | null = null
+
+let miniMapMount: FlowMiniMapMount | null = null
+
+const miniMapMeasurements = new Map<NodeId, MeasuredNode>()
+
+let miniMapGraph = createFlowGraph(original)
+
+let miniMapViewport: Viewport = { x: 0, y: 0, zoom: 1 }
+
+root.style.setProperty('--flow-labeled-handle-inverse-zoom', '1')
+
+const reconcileCanvasUI = (): void => {
+  if (runtimeDisposed) {
+    return
+  }
+
+  const pane = root.querySelector<HTMLElement>('.flow-foldkit-canvas')
+
+  if (pane === null) {
+    canvasUiMount?.dispose()
+    canvasUiMount = null
+    miniMapMount?.dispose()
+    miniMapMount = null
+
+    return
+  }
+
+  if (canvasUiMount?.canvas !== pane) {
+    canvasUiMount?.dispose()
+    miniMapMount?.dispose()
+    miniMapMount = null
+    miniMapMount = createFlowMiniMap(
+      pane.ownerDocument,
+      pane,
+      viewportClient,
+      miniMapGraph,
+      miniMapViewport
+    )
+    canvasUiMount = mountFlowCanvasUI(pane, viewportClient, {
+      position: 'bottom-right',
+      orientation: 'vertical',
+      fitViewOptions: { padding: 0.12 },
+      minZoom: 0.5,
+      maxZoom: 1.5,
+    })
+    canvasUiMount.element.dataset.testid = 'foldkit-public-controls'
+
+    const synchronizeViewport = async (): Promise<void> => {
+      const response = await viewportClient.getViewport()
+      canvasUiMount?.updateViewport(response.viewport)
+    }
+
+    void synchronizeViewport()
+
+    return
+  }
+
+  canvasUiMount.ensureMounted()
+}
+
+const stopCanvasUIState = runtime.ports.acceptedStates.subscribe((change) => {
+  canvasUiMount?.updateViewport(change.current.viewport)
+  root.style.setProperty(
+    '--flow-labeled-handle-inverse-zoom',
+    String(1 / change.current.viewport.zoom)
+  )
+  const snapshot = Schema.decodeUnknownSync(FlowSnapshotSchema)(change.current)
+  miniMapViewport = snapshot.viewport
+  const documentNodeIds = new Set(snapshot.document.nodes.map(({ id }) => id))
+
+  for (const nodeId of miniMapMeasurements.keys()) {
+    if (!documentNodeIds.has(nodeId)) {
+      miniMapMeasurements.delete(nodeId)
+    }
+  }
+
+  miniMapGraph = createFlowGraph(snapshot.document, miniMapMeasurements)
+  miniMapMount?.update(miniMapGraph, miniMapViewport)
+})
+
+const stopCanvasUIFrames = runtime.ports.viewportResults.subscribe(
+  (response) => {
+    miniMapViewport = response.viewport
+    canvasUiMount?.updateViewport(response.viewport)
+    miniMapMount?.update(miniMapGraph, miniMapViewport)
+  }
 )
 
 const viewportOutput = root.querySelector<HTMLOutputElement>(
@@ -196,6 +428,15 @@ for (const button of root.querySelectorAll<HTMLButtonElement>(
         JSON.stringify(
           await viewportClient.zoomTo(1.25, undefined, viewportAnimation)
         ) ?? ''
+    } else if (action === 'zoom-low' || action === 'zoom-high') {
+      result =
+        JSON.stringify(
+          await viewportClient.zoomTo(
+            action === 'zoom-low' ? 0.75 : 1.5,
+            undefined,
+            viewportAnimation
+          )
+        ) ?? ''
     } else if (action === 'convert') {
       const converted = await viewportClient.flowToScreen({ x: 480, y: 210 })
       result =
@@ -215,6 +456,8 @@ type MeasurementResult = typeof MeasurementResultSchema.Encoded
 
 let measurementRequestNumber = 0
 
+let activeMeasurementRequestId: string | undefined
+
 const pendingMeasurementRequests = new Map<
   string,
   {
@@ -224,76 +467,79 @@ const pendingMeasurementRequests = new Map<
 >()
 
 runtime.ports.measurementResults.subscribe((result) => {
+  if (result.status === 'measured' && result.internalNode !== null) {
+    const measuredNodeId = NodeIdSchema.make(result.internalNode.node.id)
+    miniMapMeasurements.set(measuredNodeId, {
+      nodeId: measuredNodeId,
+      width: result.internalNode.width,
+      height: result.internalNode.height,
+    })
+    miniMapGraph = createFlowGraph(miniMapGraph.document, miniMapMeasurements)
+    miniMapMount?.update(miniMapGraph, miniMapViewport)
+  }
+
   pendingMeasurementRequests.get(result.requestId)?.resolve(result)
   pendingMeasurementRequests.delete(result.requestId)
 })
 
-let measurementGeneration = 0
+const measurementObserver = createFoldkitNodeMeasurementObserver({
+  owner: root,
+  onMeasure: ({ requestId, measurement }) => {
+    const sent = runtime.ports.actions.send(
+      HostAction.MeasureNode({ requestId, measurement })
+    )
 
-let measurementObserved = 0
-
-const measuredElements = new WeakSet<Element>()
-
-const elementGenerations = new WeakMap<Element, number>()
-
-const measureElement = (element: Element, requestId?: string): void => {
-  if (runtimeDisposed || !(element instanceof HTMLElement)) {
-    return
-  }
-
-  const { nodeId } = element.dataset
-
-  if (nodeId === undefined) {
-    return
-  }
-
-  measurementRequestNumber += 1
-  const resolvedRequestId = requestId ?? `observer-${measurementRequestNumber}`
-
-  const bounds = element.getBoundingClientRect()
-
-  const sent = runtime.ports.actions.send(
-    HostAction.MeasureNode({
-      requestId: resolvedRequestId,
-      measurement: {
-        nodeId: NodeIdSchema.make(nodeId),
-        width: bounds.width,
-        height: bounds.height,
-        generation: elementGenerations.get(element) ?? measurementGeneration,
-      },
-    })
-  )
-
-  if (Exit.isFailure(sent)) {
-    throw new Error('Foldkit rejected a node measurement')
-  }
-
-  measurementObserved += 1
-}
-
-const resizeObserver = new ResizeObserver((entries) => {
-  for (const entry of entries) {
-    measureElement(entry.target)
-  }
-})
-
-const mutationObserver = new MutationObserver(() => {
-  for (const element of root.querySelectorAll<HTMLElement>('[data-node-id]')) {
-    if (!measuredElements.has(element)) {
-      measuredElements.add(element)
-      measurementGeneration += 1
-      elementGenerations.set(element, measurementGeneration)
-      resizeObserver.observe(element)
-      measureElement(element)
+    if (Exit.isFailure(sent)) {
+      throw new Error('Foldkit rejected a node measurement')
     }
-  }
+  },
+  onMutations: reconcileCanvasUI,
 })
 
-mutationObserver.observe(root, { childList: true, subtree: true })
+const nodeInternalsRefresher = createFoldkitNodeInternalsRefresher({
+  resolveElement: (nodeId) =>
+    [...root.querySelectorAll<HTMLElement>('[data-node-id]')].find(
+      (element) => element.dataset.nodeId === nodeId
+    ),
+  measure: (element) => {
+    if (activeMeasurementRequestId === undefined) {
+      return false
+    }
+
+    return measurementObserver.measure(element, activeMeasurementRequestId)
+  },
+})
 
 const nextAnimationFrame = (): Promise<undefined> => {
   const { promise, resolve } = Promise.withResolvers<undefined>()
   requestAnimationFrame(() => resolve())
+
+  return promise
+}
+
+const refreshNodeInternals = (
+  nodeId: NodeId
+): Promise<
+  MeasurementResult | { readonly status: 'missing' | 'disposed' | 'failed' }
+> => {
+  measurementRequestNumber += 1
+  const requestId = `refresh-${measurementRequestNumber}`
+  const { promise, resolve } = Promise.withResolvers<MeasurementResult>()
+  pendingMeasurementRequests.set(requestId, { nodeId, resolve })
+  let request: ReturnType<typeof nodeInternalsRefresher.refresh>
+
+  try {
+    activeMeasurementRequestId = requestId
+    request = nodeInternalsRefresher.refresh(nodeId)
+  } finally {
+    activeMeasurementRequestId = undefined
+  }
+
+  if (request.status !== 'requested') {
+    pendingMeasurementRequests.delete(requestId)
+
+    return Promise.resolve({ status: request.status })
+  }
 
   return promise
 }
@@ -337,9 +583,16 @@ const disposeRuntime = (): void => {
   }
 
   runtimeDisposed = true
+  canvasUiMount?.dispose()
+  canvasUiMount = null
+  miniMapMount?.dispose()
+  miniMapMount = null
+  stopCanvasUIState()
+  stopCanvasUIFrames()
+  observers.dispose()
   viewportClient.dispose()
-  mutationObserver.disconnect()
-  resizeObserver.disconnect()
+  measurementObserver.dispose()
+  nodeInternalsRefresher.dispose()
 
   for (const [requestId, pending] of pendingMeasurementRequests) {
     pending.resolve({
@@ -358,7 +611,7 @@ const disposeRuntime = (): void => {
   }
 
   pendingEditRequests.clear()
-  runtime.dispose()
+  deleteClient.dispose()
 }
 
 globalThis.addEventListener('pagehide', disposeRuntime, { once: true })
@@ -427,6 +680,156 @@ const setStatus = (message: string): void => {
   output.textContent = message
 }
 
+const interactionModes = [
+  'connection-events',
+  'resize',
+  'drag-handle',
+  'touch-ready',
+] as const
+
+type InteractionMode = (typeof interactionModes)[number]
+
+let interactionMode: InteractionMode | null = null
+
+const moveNodeFromKeyboard = async (event: KeyboardEvent): Promise<void> => {
+  const delta = {
+    ArrowUp: { x: 0, y: -16 },
+    ArrowRight: { x: 16, y: 0 },
+    ArrowDown: { x: 0, y: 16 },
+    ArrowLeft: { x: -16, y: 0 },
+  }[event.key]
+
+  if (delta === undefined) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  const current = await snapshot()
+  const document = Effect.runSync(decodeFlowDocument(current.snapshot.document))
+  const node = document.nodes.find(({ id }) => id === 'validate')
+
+  if (node === undefined) {
+    return
+  }
+
+  const result = await requestEdit({
+    operations: [
+      {
+        kind: 'update-node',
+        nodeId: 'validate',
+        patch: {
+          position: {
+            x: node.position.x + delta.x,
+            y: node.position.y + delta.y,
+          },
+        },
+      },
+    ],
+  })
+
+  setStatus(
+    'result' in result
+      ? `Moved Validate with the keyboard to ${node.position.x + delta.x}, ${node.position.y + delta.y}`
+      : result.error._tag
+  )
+}
+
+const syncDragHandle = (enabled: boolean): void => {
+  const node = root.querySelector<HTMLElement>('[data-node-id="validate"]')
+
+  if (node === null) {
+    return
+  }
+
+  const existing = node.querySelector<HTMLElement>('[data-demo-drag-handle]')
+
+  if (!enabled) {
+    existing?.remove()
+
+    return
+  }
+
+  if (existing !== null) {
+    return
+  }
+
+  const handle = document.createElement('div')
+  handle.className = 'flow-foldkit-demo-drag-handle'
+  handle.dataset.demoDragHandle = 'true'
+  handle.dataset.flowDragHandle = ''
+  const keyboardControl = document.createElement('button')
+  keyboardControl.type = 'button'
+  keyboardControl.dataset.flowNoDrag = ''
+  keyboardControl.setAttribute('aria-label', 'Drag Validate node')
+  keyboardControl.title = 'Use arrow keys to move Validate'
+  keyboardControl.textContent = '↕'
+  keyboardControl.addEventListener('keydown', async (event) => {
+    await moveNodeFromKeyboard(event)
+  })
+  handle.append(keyboardControl)
+  node.append(handle)
+}
+
+const interactionInstructions: Record<InteractionMode, string> = {
+  'connection-events':
+    'Drag Source’s output handle to a target handle. Connection changes appear here.',
+  resize:
+    'Use any of Validate’s eight resize handles. Resize proposals update the graph state.',
+  'drag-handle':
+    'Drag the Validate handle, or focus it and use the arrow keys to move the node.',
+  'touch-ready':
+    'Touch input is enabled with larger graph targets and browser gestures disabled on the canvas.',
+}
+
+const setInteractionMode = (mode: InteractionMode | null): void => {
+  interactionMode = mode
+  root.dataset.interactionMode = mode ?? ''
+  root.classList.toggle('flow-touch-ready', mode === 'touch-ready')
+  syncDragHandle(mode === 'drag-handle')
+
+  for (const button of root.querySelectorAll<HTMLButtonElement>(
+    '[data-demo-control]'
+  )) {
+    button.setAttribute(
+      'aria-pressed',
+      String(button.dataset.demoControl === mode)
+    )
+  }
+
+  interactionStatus.textContent =
+    mode === null
+      ? 'Choose an interaction demo.'
+      : interactionInstructions[mode]
+}
+
+const bindInteractionControl = (button: HTMLButtonElement): void => {
+  button.addEventListener('click', () => {
+    const mode = interactionModes.find(
+      (candidate) => candidate === button.dataset.demoControl
+    )
+
+    if (mode === undefined) {
+      return
+    }
+
+    setInteractionMode(interactionMode === mode ? null : mode)
+  })
+}
+
+for (const button of root.querySelectorAll<HTMLButtonElement>(
+  '[data-demo-control]'
+)) {
+  bindInteractionControl(button)
+}
+
+runtime.ports.changes.subscribe((change) => {
+  if (interactionMode === 'connection-events') {
+    interactionStatus.textContent = `Connection event: ${change.kind}`
+  }
+})
+
 const handleAdditionalGraphEdit = async (state: string): Promise<boolean> => {
   switch (state) {
     case 'node-data': {
@@ -468,8 +871,9 @@ const handleAdditionalGraphEdit = async (state: string): Promise<boolean> => {
     }
 
     case 'protected-delete': {
-      const result = await requestEdit({
-        operations: [{ kind: 'delete-elements', nodeIds: ['protected-node'] }],
+      const result = await deleteClient.deleteElements({
+        nodeIds: [NodeIdSchema.make('protected-node')],
+        edgeIds: [],
       })
 
       setStatus(
@@ -578,10 +982,9 @@ const handleGraphEdit = async (
     }
 
     case 'remove-node': {
-      const result = await requestEdit({
-        operations: [
-          { kind: 'delete-elements', nodeIds: ['playground-edit-node'] },
-        ],
+      const result = await deleteClient.deleteElements({
+        nodeIds: [NodeIdSchema.make('playground-edit-node')],
+        edgeIds: [],
       })
 
       setStatus(
@@ -654,25 +1057,55 @@ const toggleMeasuredGeometry = async (): Promise<void> => {
   node.style.width = node.style.width === '150px' ? '220px' : '150px'
   node.style.height = node.style.height === '44px' ? '96px' : '44px'
   handle.style.top = handle.style.top === '70%' ? '30%' : '70%'
-  measurementRequestNumber += 1
-  const requestId = `refresh-${measurementRequestNumber}`
-
-  const { promise: measurementResult, resolve } =
-    Promise.withResolvers<MeasurementResult>()
-
-  pendingMeasurementRequests.set(requestId, {
-    nodeId: 'validate',
-    resolve,
-  })
-
-  measureElement(node, requestId)
-
-  const result = await measurementResult
+  const result = await refreshNodeInternals(NodeIdSchema.make('validate'))
   await nextAnimationFrame()
   setStatus(
-    `Measurement ${result.status}; readiness=${String(result.nodesInitialized)}; observer deliveries=${measurementObserved}`
+    `Measurement ${result.status}; readiness=${String('nodesInitialized' in result ? result.nodesInitialized : false)}; observer deliveries=${measurementObserver.count()}`
   )
 }
+
+const handleNodeInternalsRefresh = async (): Promise<void> => {
+  const nodeIdInput = root.querySelector<HTMLInputElement>(
+    '[data-refresh-node-id]'
+  )
+
+  const nodeId = Option.getOrUndefined(
+    Schema.decodeUnknownOption(NodeIdSchema)(nodeIdInput?.value)
+  )
+
+  if (nodeId === undefined) {
+    setStatus('Measurement invalid-node-id')
+
+    return
+  }
+
+  const result = await refreshNodeInternals(nodeId)
+  setStatus(
+    result.status === 'measured' && result.internalNode !== null
+      ? `Measurement measured ${result.internalNode.width}x${result.internalNode.height}`
+      : `Measurement ${result.status}`
+  )
+}
+
+tools.addEventListener(
+  'click',
+  (event) => {
+    const button =
+      event.target instanceof HTMLElement
+        ? event.target.closest<HTMLButtonElement>(
+            'button[data-state="refresh-node"]'
+          )
+        : null
+
+    if (button === null) {
+      return
+    }
+
+    event.stopImmediatePropagation()
+    void handleNodeInternalsRefresh()
+  },
+  { capture: true }
+)
 
 tools.addEventListener('click', async (event) => {
   const button =

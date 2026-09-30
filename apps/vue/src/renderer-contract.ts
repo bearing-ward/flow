@@ -316,21 +316,47 @@ export const mountRendererContract = (): void => {
 }
 
 export const mountSharedRendererContractFixture = (
-  input: RendererDocumentInput
+  input: RendererDocumentInput,
+  defaultEdgeOptions?: { readonly label?: string; readonly stroke?: string }
 ): void => {
   const fixtureDocument = Effect.runSync(decodeFlowDocument(input))
 
   const app = createApp(
     defineComponent({
-      setup: () => () =>
-        h(FlowCanvas, {
-          document: fixtureDocument,
-          defaultViewport: { x: 0, y: 0, zoom: 1 },
-          nodeTypes: { 'contract-node': ContractFixtureNode },
-          edgeTypes: { 'contract-edge': RegisteredEdge },
-        }),
+      setup() {
+        const currentDefaults = ref(defaultEdgeOptions)
+
+        window.__flowVueRendererDefaults = (next) => {
+          currentDefaults.value = next
+        }
+
+        return () => {
+          const props = {
+            document: fixtureDocument,
+            defaultViewport: { x: 0, y: 0, zoom: 1 },
+            nodeTypes: { 'contract-node': ContractFixtureNode },
+            edgeTypes: { 'contract-edge': RegisteredEdge },
+          }
+
+          if (currentDefaults.value !== undefined) {
+            Object.assign(props, {
+              defaultEdgeOptions: currentDefaults.value,
+            })
+          }
+
+          return h(FlowCanvas, props)
+        }
+      },
     })
   )
 
   app.mount('#app')
+}
+
+declare global {
+  interface Window {
+    __flowVueRendererDefaults?: (
+      next: { readonly label?: string; readonly stroke?: string } | undefined
+    ) => void
+  }
 }

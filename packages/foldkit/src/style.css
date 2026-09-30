@@ -1,0 +1,367 @@
+.flow-foldkit-minimap {
+  position: absolute;
+  z-index: 15;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  touch-action: none;
+}
+.flow-foldkit-control-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+.flow-foldkit-minimap-background {
+  fill: #f8fafc;
+}
+.flow-foldkit-minimap-node {
+  fill: #94a3b8;
+  stroke: #475569;
+  stroke-width: 0.5;
+}
+.flow-foldkit-minimap-viewport {
+  fill: rgb(59 130 246 / 12%);
+  stroke: #2563eb;
+  stroke-width: 1;
+  pointer-events: none;
+}
+.flow-foldkit-controls {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffffed;
+  box-shadow: 0 2px 8px #0f172a1a;
+}
+.flow-foldkit-controls[data-position^='bottom'] {
+  bottom: 12px;
+}
+.flow-foldkit-controls[data-position^='top'] {
+  top: 12px;
+}
+.flow-foldkit-controls[data-position$='left'] {
+  left: 12px;
+}
+.flow-foldkit-controls[data-position$='right'] {
+  right: 12px;
+}
+.flow-foldkit-controls[data-position$='center'] {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-controls[data-orientation='vertical'] {
+  flex-direction: column;
+}
+.flow-foldkit-controls button {
+  min-width: 32px;
+  min-height: 32px;
+}
+.flow-foldkit-controls button:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+.flow-foldkit-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.flow-foldkit-panel {
+  position: absolute;
+  z-index: 18;
+  max-width: calc(100% - 24px);
+  pointer-events: auto;
+}
+.flow-foldkit-panel-top-left {
+  top: 12px;
+  left: 12px;
+}
+.flow-foldkit-panel-top-center {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-panel-top-right {
+  top: 12px;
+  right: 12px;
+}
+.flow-foldkit-panel-bottom-left {
+  bottom: 12px;
+  left: 12px;
+}
+.flow-foldkit-panel-bottom-center {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-panel-bottom-right {
+  bottom: 12px;
+  right: 12px;
+}
+.flow-foldkit-viewport {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-origin: 0 0;
+}
+.flow-foldkit-background-overlay {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.flow-foldkit-selection-rect {
+  position: absolute;
+  z-index: 10;
+  border: 1px solid #2563eb;
+  background: #3b82f633;
+  pointer-events: none;
+}
+.flow-foldkit-node {
+  position: absolute;
+  width: 150px;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid #7b8ba5;
+  border-radius: 7px;
+  background: white;
+  box-shadow: 0 2px 7px #0f172a18;
+  cursor: grab;
+  touch-action: none;
+}
+.flow-foldkit-resize {
+  position: absolute;
+  z-index: 2;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid white;
+  border-radius: 50%;
+  background: #2563eb;
+}
+.flow-foldkit-select-node {
+  position: absolute;
+  z-index: 3;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: white;
+}
+.flow-foldkit-resize-top {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-resize-right {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+}
+.flow-foldkit-resize-bottom {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-resize-left {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+}
+.flow-foldkit-resize-top-left {
+  top: -5px;
+  left: -5px;
+}
+.flow-foldkit-resize-top-right {
+  top: -5px;
+  right: -5px;
+}
+.flow-foldkit-resize-bottom-right {
+  right: -5px;
+  bottom: -5px;
+}
+.flow-foldkit-resize-bottom-left {
+  bottom: -5px;
+  left: -5px;
+}
+.flow-foldkit-handle {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 1px solid white;
+  border-radius: 50%;
+  background: #2563eb;
+  transform: translateY(-50%);
+}
+.flow-foldkit-handle-left {
+  left: -6px;
+}
+.flow-foldkit-handle-right {
+  right: -6px;
+}
+.flow-foldkit-handle-top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-handle-bottom {
+  top: auto;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.flow-foldkit-edge {
+  position: absolute;
+  pointer-events: none;
+  color: #526078;
+}
+.flow-foldkit-edge svg {
+  position: absolute;
+  overflow: visible;
+}
+.flow-foldkit-edge .flow-foldkit-edge-path {
+  stroke: #64748b;
+  stroke-width: 2;
+}
+.flow-foldkit-edge .flow-foldkit-edge-hit-target {
+  stroke: transparent;
+  stroke-width: 16px;
+  pointer-events: stroke;
+}
+.flow-foldkit-edge-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.flow-foldkit-edge-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: white;
+  color: #334155;
+  font-size: 12px;
+  pointer-events: none;
+}
+.flow-foldkit-reconnect-handle {
+  position: absolute;
+  z-index: 1001;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: crosshair;
+}
+
+.flow-foldkit-base-node {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid #94a3b8;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: #fff;
+  color: #0f172a;
+}
+.flow-foldkit-base-node-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.flow-foldkit-status-indicator {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+.flow-foldkit-status-indicator-mark {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.flow-foldkit-tooltip-anchor {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  vertical-align: middle;
+}
+.flow-foldkit-tooltip {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: min(240px, 70vw);
+  border-radius: 5px;
+  padding: 6px 8px;
+  background: #172033;
+  color: white;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+.flow-foldkit-tooltip::after {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: 8px;
+  content: '';
+}
+.flow-foldkit-tooltip[hidden] {
+  display: none;
+}
+.flow-foldkit-status-indicator[data-flow-status='waiting']
+  .flow-foldkit-status-indicator-mark {
+  animation: flow-status-pulse 1.2s ease-in-out infinite alternate;
+}
+.flow-foldkit-status-indicator[data-flow-status='ready'] {
+  background: #dcfce7;
+  color: #166534;
+}
+.flow-foldkit-status-indicator[data-flow-status='ready']
+  .flow-foldkit-status-indicator-mark {
+  color: #16a34a;
+}
+.flow-foldkit-status-indicator[data-flow-status='error'] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.flow-foldkit-status-indicator[data-flow-status='error']
+  .flow-foldkit-status-indicator-mark {
+  color: #dc2626;
+}
+@keyframes flow-status-pulse {
+  to {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-foldkit-status-indicator-mark {
+    animation: none !important;
+  }
+}

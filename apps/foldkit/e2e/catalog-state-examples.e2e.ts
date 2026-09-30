@@ -8,7 +8,7 @@ test('Foldkit playground demonstrates typed state ports and session restore', as
   await expect(
     page.locator('.flow-foldkit-node[data-node-id="validate"]')
   ).toBeVisible()
-  await expect(page.locator('.flow-foldkit-demo-node')).toHaveCount(1)
+  await expect(page.locator('[data-flow-base-node]')).toHaveCount(1)
   await expect(page.locator('.flow-foldkit-demo-edge')).toHaveCount(1)
   await expect(
     page.locator('.flow-foldkit-edge-label[data-label-owner="host-overlay"]')

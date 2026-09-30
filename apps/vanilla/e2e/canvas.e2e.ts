@@ -1707,6 +1707,9 @@ playwrightTest(
         createFlowHost(root, initialDocument, {
           documentMode: 'uncontrolled',
           runEffect: runtime.runSync,
+          runTelemetry: (effect) => {
+            runtime.runFork(effect)
+          },
           viewport: {
             initial: { x: 0, y: 0, zoom: 1 },
             limits: { maxZoom: 2, minZoom: 0.5 },
@@ -1724,7 +1727,7 @@ playwrightTest(
           ],
         })
       )
-      host.destroy()
+      await host.destroyAsync()
       await runtime.dispose()
     }, coreModulePath)
 

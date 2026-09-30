@@ -1,0 +1,26 @@
+.flow-foldkit-placeholder-page {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.flow-foldkit-placeholder-canvas {
+  position: relative;
+  width: min(900px, calc(100vw - 32px));
+  height: 560px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+.flow-foldkit-placeholder-empty {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  left: 16px;
+}
+
+.flow-foldkit-placeholder-runtime {
+  position: absolute;
+  inset: 0;
+}

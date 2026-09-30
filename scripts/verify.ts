@@ -10,6 +10,19 @@ const checks = [
     'React Flow catalog coverage',
     ['bun', 'run', 'scripts/check-react-flow-catalog.ts'],
   ],
+  [
+    'React Flow API member inventory',
+    ['bun', 'run', 'scripts/check-api-members.ts'],
+  ],
+  ['catalog proof matrix', ['bun', 'run', 'scripts/check-proof-matrix.ts']],
+  [
+    'benchmark calibration registry',
+    ['bun', 'run', 'scripts/check-benchmark-calibration.ts'],
+  ],
+  [
+    'example recipe registry',
+    ['bun', 'run', 'scripts/check-example-recipes.ts'],
+  ],
   ['research inventory', ['bun', 'run', 'research:inventory']],
   ['research trace citations', ['bun', 'run', 'research:check-traces']],
   ['package builds', ['bun', 'run', 'build:packages']],

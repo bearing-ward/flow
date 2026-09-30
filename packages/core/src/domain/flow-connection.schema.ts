@@ -19,6 +19,10 @@ export const ActiveClickConnectionSchema = S.Struct({
 
 export type ActiveClickConnection = typeof ActiveClickConnectionSchema.Type
 
+export const ConnectionModeSchema = S.Literals(['strict', 'loose'])
+
+export type ConnectionMode = typeof ConnectionModeSchema.Type
+
 export const FlowConnectionSchema = S.Struct({
   source: NodeIdSchema,
   sourceHandle: HandleIdSchema,
@@ -34,6 +38,8 @@ export const ConnectionIssueSchema = S.Literals([
   'missing-source-handle',
   'missing-target-handle',
   'duplicate-connection',
+  'same-handle',
+  'unsupported-handle-combination',
 ])
 
 export type ConnectionIssue = typeof ConnectionIssueSchema.Type
@@ -51,47 +57,96 @@ export class InvalidFlowConnection extends tagged<InvalidFlowConnection>()(
   }
 ) {}
 
+/** Canonicalize loose target-origin gestures to Flow's directed edge shape. */
+export const normalizeFlowConnection = (
+  document: FlowDocument,
+  connection: FlowConnection,
+  mode: ConnectionMode = 'strict'
+): FlowConnection => {
+  if (mode !== 'loose') {
+    return connection
+  }
+
+  const source = document.nodes.find((node) => node.id === connection.source)
+
+  const sourceHandle = source?.handles?.find(
+    (handle) => handle.id === connection.sourceHandle
+  )
+
+  if (sourceHandle?.kind !== 'target') {
+    return connection
+  }
+
+  return {
+    source: connection.target,
+    sourceHandle: connection.targetHandle,
+    target: connection.source,
+    targetHandle: connection.sourceHandle,
+  }
+}
+
 export const findConnectionIssue = (
   document: FlowDocument,
-  connection: FlowConnection
+  connection: FlowConnection,
+  mode: ConnectionMode = 'strict'
 ): ConnectionIssue | undefined => {
-  const source = document.nodes.find((node) => node.id === connection.source)
+  const normalized = normalizeFlowConnection(document, connection, mode)
+  const source = document.nodes.find((node) => node.id === normalized.source)
 
   if (source === undefined) {
     return 'missing-source-node'
   }
 
-  const target = document.nodes.find((node) => node.id === connection.target)
+  const target = document.nodes.find((node) => node.id === normalized.target)
 
   if (target === undefined) {
     return 'missing-target-node'
   }
 
+  const sourceHandle = source.handles?.find(
+    (handle) => handle.id === normalized.sourceHandle
+  )
+
   if (
-    !source.handles?.some(
-      (handle) =>
-        handle.id === connection.sourceHandle && handle.kind === 'source'
-    )
+    sourceHandle === undefined ||
+    (mode === 'strict' && sourceHandle.kind !== 'source')
   ) {
     return 'missing-source-handle'
   }
 
+  const targetHandle = target.handles?.find(
+    (handle) => handle.id === normalized.targetHandle
+  )
+
   if (
-    !target.handles?.some(
-      (handle) =>
-        handle.id === connection.targetHandle && handle.kind === 'target'
-    )
+    targetHandle === undefined ||
+    (mode === 'strict' && targetHandle.kind !== 'target')
   ) {
     return 'missing-target-handle'
   }
 
   if (
+    normalized.source === normalized.target &&
+    normalized.sourceHandle === normalized.targetHandle
+  ) {
+    return 'same-handle'
+  }
+
+  if (
+    mode === 'loose' &&
+    sourceHandle.kind === 'target' &&
+    targetHandle.kind === 'target'
+  ) {
+    return 'unsupported-handle-combination'
+  }
+
+  if (
     document.edges.some(
       (edge) =>
-        edge.source === connection.source &&
-        edge.sourceHandle === connection.sourceHandle &&
-        edge.target === connection.target &&
-        edge.targetHandle === connection.targetHandle
+        edge.source === normalized.source &&
+        edge.sourceHandle === normalized.sourceHandle &&
+        edge.target === normalized.target &&
+        edge.targetHandle === normalized.targetHandle
     )
   ) {
     return 'duplicate-connection'
@@ -100,21 +155,23 @@ export const findConnectionIssue = (
 
 export const validateFlowConnection = (
   document: FlowDocument,
-  connection: FlowConnection
+  connection: FlowConnection,
+  mode: ConnectionMode = 'strict'
 ): Effect.Effect<FlowConnection, InvalidFlowConnection> =>
   Effect.gen(function* validateConnection() {
-    const reason = findConnectionIssue(document, connection)
+    const normalized = normalizeFlowConnection(document, connection, mode)
+    const reason = findConnectionIssue(document, connection, mode)
 
     if (reason === undefined) {
-      return connection
+      return normalized
     }
 
     const attributes = {
       [FlowAttribute.connectionIssue]: reason,
-      [FlowAttribute.nodeId]: connection.source,
-      [FlowAttribute.handleId]: connection.sourceHandle,
-      [FlowAttribute.connectionTargetNodeId]: connection.target,
-      [FlowAttribute.connectionTargetHandleId]: connection.targetHandle,
+      [FlowAttribute.nodeId]: normalized.source,
+      [FlowAttribute.handleId]: normalized.sourceHandle,
+      [FlowAttribute.connectionTargetNodeId]: normalized.target,
+      [FlowAttribute.connectionTargetHandleId]: normalized.targetHandle,
     }
 
     yield* Effect.annotateCurrentSpan(attributes)
@@ -122,7 +179,7 @@ export const validateFlowConnection = (
       Effect.annotateLogs(attributes)
     )
 
-    return yield* new InvalidFlowConnection({ ...connection, reason })
+    return yield* new InvalidFlowConnection({ ...normalized, reason })
   }).pipe(Effect.withSpan(FlowSpan.connectionValidate))
 
 export const nextConnectionEdge = (

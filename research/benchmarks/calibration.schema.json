@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flow.local/schemas/performance-calibration-v1.json",
+  "title": "Flow performance calibration registry",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "capturedOn",
+    "baselineSourceRevision",
+    "reference",
+    "policy",
+    "hosts",
+    "workloads",
+    "runs"
+  ],
+  "properties": {
+    "$schema": { "const": "./calibration.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "capturedOn": { "$ref": "#/$defs/date" },
+    "baselineSourceRevision": { "$ref": "#/$defs/sourceRevision" },
+    "reference": {
+      "type": "object",
+      "required": ["existingVanillaWorkload", "hostWorkloadBoundary"],
+      "properties": {
+        "existingVanillaWorkload": { "type": "string", "minLength": 1 },
+        "hostWorkloadBoundary": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "minimumIndependentRunsPerHostWorkload",
+        "minimumWarmupSamplesPerRun",
+        "minimumTimedSamplesPerRun",
+        "timingBudgetStatus",
+        "timingBudgets"
+      ],
+      "properties": {
+        "minimumIndependentRunsPerHostWorkload": {
+          "type": "integer",
+          "minimum": 3
+        },
+        "minimumWarmupSamplesPerRun": { "type": "integer", "minimum": 1 },
+        "minimumTimedSamplesPerRun": { "type": "integer", "minimum": 20 },
+        "timingBudgetStatus": {
+          "enum": ["pending-calibration", "pending-budget-review", "approved"]
+        },
+        "timingBudgets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/budget" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "hosts": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": { "enum": ["vanilla", "vue", "foldkit"] }
+    },
+    "workloads": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/workload" }
+    },
+    "runs": { "type": "array", "items": { "$ref": "#/$defs/run" } }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "policy": {
+            "properties": {
+              "timingBudgetStatus": { "const": "pending-calibration" }
+            },
+            "required": ["timingBudgetStatus"]
+          }
+        },
+        "required": ["policy"]
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "properties": { "timingBudgets": { "maxItems": 0 } }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "policy": {
+            "properties": { "timingBudgets": { "minItems": 1 } }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "sourceRevision": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|working-tree@[0-9a-f]{40})$"
+    },
+    "host": { "enum": ["vanilla", "vue", "foldkit"] },
+    "coverage": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["status", "cullingMode", "minimapMode"],
+          "properties": {
+            "status": { "const": "required" },
+            "cullingMode": { "enum": ["enabled", "disabled"] },
+            "minimapMode": { "enum": ["enabled", "disabled", "unavailable"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["status", "reason"],
+          "properties": {
+            "status": { "const": "not-applicable" },
+            "reason": { "type": "string", "minLength": 16 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "workload": {
+      "type": "object",
+      "required": [
+        "id",
+        "operation",
+        "nodeCount",
+        "edgeCount",
+        "inputLatencyDefinition",
+        "hostCoverage"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "operation": {
+          "enum": [
+            "synchronousDocumentReplacement",
+            "syntheticPointerMoveToNextAnimationFrame"
+          ]
+        },
+        "nodeCount": { "type": "integer", "minimum": 1 },
+        "edgeCount": { "type": "integer", "minimum": 0 },
+        "inputLatencyDefinition": { "type": "string", "minLength": 32 },
+        "hostCoverage": {
+          "type": "object",
+          "required": ["vanilla", "vue", "foldkit"],
+          "properties": {
+            "vanilla": { "$ref": "#/$defs/coverage" },
+            "vue": { "$ref": "#/$defs/coverage" },
+            "foldkit": { "$ref": "#/$defs/coverage" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": ["browser", "os", "runtime", "hardware", "viewport"],
+      "properties": {
+        "browser": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "os": {
+          "type": "object",
+          "required": ["name", "release", "architecture"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "release": { "type": "string", "minLength": 1 },
+            "architecture": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "runtime": {
+          "type": "object",
+          "required": ["node", "bun", "playwright"],
+          "properties": {
+            "node": { "type": "string", "minLength": 1 },
+            "bun": { "type": "string", "minLength": 1 },
+            "playwright": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "hardware": {
+          "type": "object",
+          "required": ["cpuModel", "logicalCpuCount", "totalMemoryBytes"],
+          "properties": {
+            "cpuModel": { "type": "string", "minLength": 1 },
+            "logicalCpuCount": { "type": "integer", "minimum": 1 },
+            "totalMemoryBytes": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "viewport": {
+          "type": "object",
+          "required": ["width", "height", "deviceScaleFactor"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "deviceScaleFactor": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "measurement": {
+      "type": "object",
+      "required": [
+        "workloadId",
+        "operation",
+        "nodeCount",
+        "edgeCount",
+        "cullingMode",
+        "minimapMode",
+        "warmupCount",
+        "samplesMs",
+        "medianMs",
+        "p95Ms",
+        "inputLatencyDefinition",
+        "teardown"
+      ],
+      "properties": {
+        "workloadId": { "type": "string", "minLength": 1 },
+        "operation": {
+          "enum": [
+            "synchronousDocumentReplacement",
+            "syntheticPointerMoveToNextAnimationFrame"
+          ]
+        },
+        "nodeCount": { "type": "integer", "minimum": 1 },
+        "edgeCount": { "type": "integer", "minimum": 0 },
+        "cullingMode": { "enum": ["enabled", "disabled"] },
+        "minimapMode": { "enum": ["enabled", "disabled", "unavailable"] },
+        "warmupCount": { "type": "integer", "minimum": 5 },
+        "samplesMs": {
+          "type": "array",
+          "minItems": 20,
+          "items": { "type": "number", "minimum": 0 }
+        },
+        "medianMs": { "type": "number", "minimum": 0 },
+        "p95Ms": { "type": "number", "minimum": 0 },
+        "inputLatencyDefinition": { "type": "string", "minLength": 32 },
+        "teardown": {
+          "type": "object",
+          "required": [
+            "retainedResourceScope",
+            "domDescendants",
+            "nodeElements",
+            "edgeElements",
+            "minimapElements"
+          ],
+          "properties": {
+            "retainedResourceScope": {
+              "const": "observable-dom-only; active listener/frame handles are not introspectable"
+            },
+            "domDescendants": { "type": "integer", "minimum": 0 },
+            "nodeElements": { "type": "integer", "minimum": 0 },
+            "edgeElements": { "type": "integer", "minimum": 0 },
+            "minimapElements": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "runId",
+        "host",
+        "command",
+        "sourceRevision",
+        "sourceTreeState",
+        "environment",
+        "measurements"
+      ],
+      "properties": {
+        "runId": { "type": "string", "format": "uuid" },
+        "host": { "$ref": "#/$defs/host" },
+        "command": { "type": "string", "minLength": 16 },
+        "sourceRevision": { "$ref": "#/$defs/sourceRevision" },
+        "sourceTreeState": { "enum": ["clean", "dirty"] },
+        "environment": { "$ref": "#/$defs/environment" },
+        "measurements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/measurement" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "required": ["host", "workloadId", "medianMs", "p95Ms", "basisRunIds"],
+      "properties": {
+        "host": { "$ref": "#/$defs/host" },
+        "workloadId": { "type": "string", "minLength": 1 },
+        "medianMs": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Maximum per-run median for this host and workload. Every recorded run is checked against it."
+        },
+        "p95Ms": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Maximum per-run p95 for this host and workload. Every recorded run is checked against it."
+        },
+        "basisRunIds": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": { "type": "string", "format": "uuid" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

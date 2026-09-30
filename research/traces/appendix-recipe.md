@@ -1,0 +1,19 @@
+# Appendix recipe trace
+
+## Production paths
+
+- **Vanilla:** `createFlowAppendix`, `FlowAppendix`, and `FlowAppendixOptions` are exported from the Vanilla package entry (`apps/vanilla/src/public.ts:88-90`). The helper creates an app-content disclosure with a native button, `aria-expanded`, `aria-controls`, hidden content, and a `data-flow-no-drag` marker; `destroy()` removes its click listener and element (`apps/vanilla/src/ui/appendix.ts:1-64`). The production fixture composes it inside the caller's node renderer, mounts the node with `mountFlow`, and destroys/remounts the controller through an application button (`apps/vanilla/src/ui/appendix-test.ts:13-39,42-76`).
+- **Vue:** `FlowAppendix` is exported from `packages/vue/src/public.ts:55` and implemented as a native Vue `defineComponent` (`packages/vue/src/ui/appendix.ts:1-49`). It provides reactive disclosure state, a native trigger with `aria-expanded`/`aria-controls`, a labeled region, and a `data-flow-no-drag` marker; caller slot content stays app-owned. The fixture places it in a custom FlowCanvas node renderer, decodes the initial graph, mounts the Vue app, and unmounts on pagehide (`apps/vue/src/appendix-test.ts:11-59`).
+- **Foldkit:** `createFoldkitAppendix` and its mount/options types are exported from `packages/foldkit/src/public.ts:103-108`. The helper mounts native disclosure DOM into a caller container, synchronizes `aria-expanded` with hidden content, marks the section/button as no-pan/no-drag/no-wheel, stops the relevant events at the trigger, and removes listeners/content on idempotent destroy (`packages/foldkit/src/ui/appendix.ts:1-82`). The production fixture composes the appendix beside the Runtime canvas, keeps the Runtime mount inside a separate wrapper, and handles a custom unmount event by destroying both objects and clearing the route (`apps/foldkit/ui-recipes/appendix/main.ts:20-43,58-90`).
+
+## Production test paths
+
+- Vanilla `apps/vanilla/e2e/ui-recipes.e2e.ts:3-80` passed 1/1 for Appendix within the 2-test suite. It checks hidden/revealed content, `aria-expanded`, Enter/Space, unchanged graph viewport and node transform, pointer gesture exclusion, and a fresh collapsed disclosure after explicit controller destroy/remount.
+- Vue `apps/vue/e2e/appendix-recipe.e2e.ts:3-41` passed 1/1; the separate `apps/vue/e2e/ui-recipes.e2e.ts` Status Indicator test passed 1/1. The Appendix case checks trigger/region semantics, hidden/revealed slot content, Enter/Space/click, stable node coordinates, reload reset, and retained node identity.
+- Foldkit `apps/foldkit/e2e/ui-recipes.e2e.ts:40-96` passed 1/1 for Appendix within the 2-test suite. It checks disclosure semantics, Enter/Space, hidden/revealed content, unchanged viewport after wheel and keyboard activation, reload reset, and explicit app/runtime unmount cleanup.
+
+## Conformity and deviations
+
+- **Conforming within this bounded outcome:** Each host exposes a keyboard-operable disclosure for app-owned node details; its state is reflected in `aria-expanded`, and focused production tests assert content visibility and interaction with the canvas boundary. Evidence is limited to the local Flow fixtures and assertions listed above.
+- **Intentionally different:** Vanilla uses an imperative DOM helper and caller-owned `Node`; Vue uses a native reactive component and default slot; Foldkit mounts native DOM into a caller-owned element and returns an explicit destroy handle. These preserve each host's rendering and lifecycle model.
+- **Unverified:** No pinned React runtime or current website comparison was run. Upstream markup, styling, option behavior, and broader parity are unverified. Packed-consumer proof, additional accessibility combinations, and exhaustive pointer/keyboard interactions remain unverified. The test boundary is the three focused local production routes above; Vanilla/Vue/Foldkit do not establish cross-host equivalence beyond the specifically asserted outcomes.

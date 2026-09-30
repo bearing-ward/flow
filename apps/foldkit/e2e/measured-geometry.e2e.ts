@@ -20,6 +20,91 @@ test('Foldkit production APIs satisfy the shared measured-geometry cases', async
   await assertSharedMeasurementContract(createFoldkitConformanceAdapter(page))
 })
 
+test('Foldkit refreshes measured node bounds by ID through its production Runtime', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const node = page.locator('[data-node-id="validate"]')
+  const handle = node.locator('[data-handle-id="out"]')
+
+  const edgePath = page.locator(
+    '[data-edge-id="validate-target"] .flow-foldkit-edge-path'
+  )
+
+  await expect(node).toBeVisible()
+  await expect(edgePath).toBeVisible()
+  const beforeHandle = await handle.boundingBox()
+
+  const inspection = page.locator(
+    '.flow-state-tools output:not([data-measurement])'
+  )
+
+  await page.getByRole('button', { name: 'Inspect graph' }).click()
+  await expect(inspection).toContainText('"nodes":3')
+  const beforeGraphSnapshot = await inspection.textContent()
+
+  const beforePath = await edgePath.getAttribute('d')
+  await page.evaluate(() => {
+    const nodeElement = document.querySelector<HTMLElement>(
+      '[data-node-id="validate"]'
+    )
+
+    const handleElement = nodeElement?.querySelector<HTMLElement>(
+      '[data-handle-id="out"]'
+    )
+
+    if (
+      nodeElement === null ||
+      handleElement === null ||
+      handleElement === undefined
+    ) {
+      throw new Error('Missing node or handle to mutate')
+    }
+
+    nodeElement.style.width = '220px'
+    nodeElement.style.height = '96px'
+    handleElement.style.top = '30%'
+  })
+
+  await page.getByLabel('Refresh node geometry').fill('validate')
+  await page.getByRole('button', { name: 'Refresh node internals' }).click()
+
+  const status = page.locator(
+    '.flow-state-tools output:not([data-measurement])'
+  )
+
+  await expect(status).toContainText('Measurement measured 220x96')
+  await expect.poll(() => edgePath.getAttribute('d')).not.toBe(beforePath)
+
+  const measuredHandle = await handle.boundingBox()
+  expect(measuredHandle?.y).not.toBe(beforeHandle?.y)
+
+  await page.getByRole('button', { name: 'Inspect graph' }).click()
+  await expect(inspection).toContainText('"nodes":3')
+  expect(await inspection.textContent()).toBe(beforeGraphSnapshot)
+})
+
+test('Foldkit node internals refresh reports missing IDs and disposal', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  const status = page.locator(
+    '.flow-state-tools output:not([data-measurement])'
+  )
+
+  await page.getByLabel('Refresh node geometry').fill('not-mounted')
+  await page.getByRole('button', { name: 'Refresh node internals' }).click()
+  await expect(status).toHaveText('Measurement missing')
+
+  await page.evaluate(() => {
+    window.dispatchEvent(new PageTransitionEvent('pagehide'))
+  })
+  await page.getByLabel('Refresh node geometry').fill('validate')
+  await page.getByRole('button', { name: 'Refresh node internals' }).click()
+  await expect(status).toHaveText('Measurement disposed')
+})
+
 test('Foldkit observes measured node bounds and explicit handle relocation', async ({
   page,
 }) => {

@@ -37,6 +37,61 @@ test('Foldkit typed renderer registries preserve geometry, identity, handles and
   const input = page.locator('.custom-node-input').first()
   await input.fill('Native input works')
   await expect(input).toHaveValue('Native input works')
+
+  const noDrag = page.locator('.custom-node-no-drag').first()
+
+  const customNode = page
+    .locator('.flow-foldkit-node[data-node-id="renderer-custom"]')
+    .first()
+
+  /* eslint-disable no-await-in-loop -- Exercise each host-owned input target serially on one node. */
+  for (const target of [input, noDrag]) {
+    const bounds = await target.boundingBox()
+
+    if (bounds === null) {
+      throw new Error('Missing nested input/no-drag geometry')
+    }
+
+    const eventOwnership = await target.evaluate((element) => {
+      const key = element.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'ArrowRight',
+        })
+      )
+
+      const wheel = element.dispatchEvent(
+        new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          deltaY: 80,
+        })
+      )
+
+      return { keyNotPrevented: key, wheelNotPrevented: wheel }
+    })
+
+    expect(eventOwnership).toEqual({
+      keyNotPrevented: true,
+      wheelNotPrevented: true,
+    })
+
+    await page.mouse.move(
+      bounds.x + bounds.width / 2,
+      bounds.y + bounds.height / 2
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      bounds.x + bounds.width + 40,
+      bounds.y + bounds.height / 2
+    )
+    await page.mouse.up()
+    await expect(customNode).toHaveAttribute('style', /top: 70px/u)
+    await expect(customNode).toHaveAttribute('style', /left: 50px/u)
+  }
+  /* eslint-enable no-await-in-loop */
+
   await page.locator('.custom-node-action').first().click()
   await expect(input).toHaveValue('Native input works')
   await expect(
@@ -115,7 +170,7 @@ test('Foldkit typed renderer registries preserve geometry, identity, handles and
     parent: 'flow-foldkit-edge-labels',
   })
   expect(initial.hitTarget).toBe('button')
-  expect(initial.keyPrevented).toBe(true)
+  expect(initial.keyPrevented).toBe(false)
 
   const update = await page.evaluate(() => {
     const documentInput = {
@@ -369,6 +424,99 @@ test('Foldkit typed renderer registries preserve geometry, identity, handles and
   })
 })
 
+test('Foldkit active gesture stays inside its host when two programs are mounted', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+  await page.evaluate(async () => {
+    const harnessPath = '/e2e/test-harness.ts'
+    await import(harnessPath)
+    await window.__flowFoldkitTest?.startRendererContract()
+    window.__flowFoldkitTest?.clearRendererInteractionEvents()
+  })
+
+  const firstNode = page
+    .locator('.flow-foldkit-node[data-node-id="renderer-custom"]')
+    .nth(0)
+
+  const firstLabel = firstNode.locator('.custom-node-label')
+
+  const firstBefore = await firstNode.getAttribute('style')
+
+  const secondNode = page
+    .locator('.flow-foldkit-node[data-node-id="renderer-custom"]')
+    .nth(1)
+
+  const secondBefore = await secondNode.getAttribute('style')
+
+  const secondViewportBefore = await page
+    .locator('.flow-foldkit-viewport')
+    .nth(1)
+    .getAttribute('style')
+
+  const renderCountsBefore = await page.evaluate(
+    () => window.__flowFoldkitTest?.rendererCallCounts() ?? []
+  )
+
+  const labelBounds = await firstLabel.boundingBox()
+
+  if (labelBounds === null) {
+    throw new Error('Missing first host node label bounds')
+  }
+
+  await page.mouse.move(
+    labelBounds.x + labelBounds.width / 2,
+    labelBounds.y + labelBounds.height / 2
+  )
+  await page.mouse.down()
+  await page.mouse.move(
+    labelBounds.x + labelBounds.width / 2 + 60,
+    labelBounds.y + labelBounds.height / 2 + 30
+  )
+  await page.mouse.up()
+
+  await expect.poll(() => firstNode.getAttribute('style')).not.toBe(firstBefore)
+
+  const firstEvents = await page.evaluate(
+    () => window.__flowFoldkitTest?.rendererInteractionEvents(0) ?? []
+  )
+
+  const secondEvents = await page.evaluate(
+    () => window.__flowFoldkitTest?.rendererInteractionEvents(1) ?? []
+  )
+
+  const firstChanges = await page.evaluate(
+    () => window.__flowFoldkitTest?.rendererChanges(0) ?? []
+  )
+
+  const secondChanges = await page.evaluate(
+    () => window.__flowFoldkitTest?.rendererChanges(1) ?? []
+  )
+
+  const secondAfter = await secondNode.getAttribute('style')
+
+  const secondViewportAfter = await page
+    .locator('.flow-foldkit-viewport')
+    .nth(1)
+    .getAttribute('style')
+
+  const renderCountsAfter = await page.evaluate(
+    () => window.__flowFoldkitTest?.rendererCallCounts() ?? []
+  )
+
+  expect(firstEvents.map(({ name }) => name)).toContain('onNodeDragStart')
+  expect(firstEvents.map(({ name }) => name)).toContain('onNodeDragStop')
+  expect(firstChanges.map(({ kind }) => kind)).toContain('node-position')
+  expect(secondEvents).toEqual([])
+  expect(secondChanges).toEqual([])
+  expect(secondAfter).toBe(secondBefore)
+  expect(secondViewportAfter).toBe(secondViewportBefore)
+  expect(renderCountsAfter[0]).toBeGreaterThan(renderCountsBefore[0] ?? 0)
+  expect(renderCountsAfter[1]).toBe(renderCountsBefore[1])
+
+  await page.evaluate(() => window.__flowFoldkitTest?.disposeRendererContract())
+})
+
 test('Foldkit SVG edge hit targets activate with Enter and Space', async ({
   page,
 }) => {
@@ -562,4 +710,96 @@ test('Foldkit runtime output matches the shared renderer contract fixture', asyn
     .getAttribute('d')
 
   expect(defaultPath).toMatch(/^M[^L]*L[^L]*$/u)
+})
+
+test('Foldkit Runtime projects default edge fields below stored edge fields', async ({
+  page,
+}) => {
+  const input = {
+    ...rendererContractFixture.document,
+    edges: rendererContractFixture.document.edges.map((edge) => {
+      if (edge.id === 'edge-straight') {
+        const edgeWithoutLabel = { ...edge }
+        Reflect.deleteProperty(edgeWithoutLabel, 'label')
+
+        return edgeWithoutLabel
+      }
+
+      if (edge.id === 'edge-bezier') {
+        return { ...edge, stroke: '#123456' }
+      }
+
+      return edge
+    }),
+  }
+
+  await page.goto('/test.html')
+  await page.evaluate(
+    async ({ documentInput }) => {
+      const harnessPath = '/e2e/test-harness.ts'
+      await import(harnessPath)
+      await window.__flowFoldkitTest?.startRendererFixture(documentInput, {
+        label: 'Default label',
+        stroke: '#abcdef',
+      })
+    },
+    { documentInput: input }
+  )
+
+  await expect(
+    page.locator('.flow-foldkit-edge-label[data-edge-id="edge-straight"]')
+  ).toHaveText('Default label')
+  await expect(
+    page.locator('.flow-foldkit-edge-label[data-edge-id="edge-bezier"]')
+  ).toHaveText('Bezier')
+  await expect(
+    page.locator(
+      '.flow-foldkit-edge[data-edge-id="edge-straight"] .flow-foldkit-edge-path'
+    )
+  ).toHaveAttribute('stroke', '#abcdef')
+  await expect(
+    page.locator(
+      '.flow-foldkit-edge[data-edge-id="edge-bezier"] .flow-foldkit-edge-path'
+    )
+  ).toHaveAttribute('stroke', '#123456')
+})
+
+test('Custom Node recipe updates displayed status and accepted data in place', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+  await page.evaluate(async () => {
+    const harnessPath = '/e2e/test-harness.ts'
+    await import(harnessPath)
+    await window.__flowFoldkitTest?.startRendererContract()
+  })
+
+  const nodes = page.locator(
+    '.flow-foldkit-node[data-node-id="renderer-custom"]'
+  )
+
+  const initialPosition = await nodes.first().getAttribute('style')
+  const firstCard = page.locator('.custom-node-view').first()
+  const originalCard = await firstCard.evaluate((element) => element)
+
+  await expect(firstCard.locator('.custom-node-label')).toHaveText(
+    'Custom node'
+  )
+  await expect(firstCard.locator('.custom-node-status')).toHaveText('waiting')
+  await expect(firstCard.locator('.custom-node-detail')).toHaveText(
+    'Build is queued'
+  )
+  await firstCard.locator('.custom-node-status-control').click()
+
+  await expect(firstCard.locator('.custom-node-status')).toHaveText('ready')
+  await expect(firstCard.locator('.custom-node-status')).toHaveAttribute(
+    'data-status',
+    'ready'
+  )
+  await expect(firstCard.locator('.custom-node-detail')).toHaveText(
+    'All checks passed'
+  )
+  await expect(page.locator('.custom-node-status').last()).toHaveText('waiting')
+  expect(await nodes.first().getAttribute('style')).toBe(initialPosition)
+  expect(await firstCard.evaluate((element) => element)).toBe(originalCard)
 })

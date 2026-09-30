@@ -1,0 +1,195 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "browser": "Chromium 151.0.7922.34",
+    "normalization": "fixed utility inputs and ids; timestamps, DOM geometry, and generated data excluded; callback order and array order retained",
+    "capturedAt": "2026-09-29T09:53:45.758Z"
+  },
+  "cases": {
+    "utilities": {
+      "applyNodeChanges": [
+        {
+          "id": "a",
+          "position": {
+            "x": 9,
+            "y": 8
+          },
+          "data": {
+            "label": "A"
+          },
+          "selected": true,
+          "dragging": true
+        },
+        {
+          "id": "d",
+          "position": {
+            "x": 7,
+            "y": 8
+          },
+          "data": {
+            "label": "D"
+          }
+        },
+        {
+          "id": "b",
+          "position": {
+            "x": 3,
+            "y": 4
+          },
+          "data": {
+            "label": "B"
+          },
+          "measured": {
+            "width": 80,
+            "height": 40
+          },
+          "width": 80,
+          "height": 40,
+          "resizing": false
+        }
+      ],
+      "applyEdgeChanges": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "sourceHandle": "out",
+          "targetHandle": null,
+          "selected": true
+        },
+        {
+          "id": "cd",
+          "source": "c",
+          "target": "d"
+        }
+      ],
+      "inputsUnchanged": {
+        "nodes": [
+          {
+            "id": "a",
+            "position": {
+              "x": 1,
+              "y": 2
+            },
+            "data": {
+              "label": "A"
+            }
+          },
+          {
+            "id": "b",
+            "position": {
+              "x": 3,
+              "y": 4
+            },
+            "data": {
+              "label": "B"
+            }
+          },
+          {
+            "id": "c",
+            "position": {
+              "x": 5,
+              "y": 6
+            },
+            "data": {
+              "label": "C"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "ab",
+            "source": "a",
+            "target": "b",
+            "sourceHandle": "out",
+            "targetHandle": null
+          },
+          {
+            "id": "bc",
+            "source": "b",
+            "target": "c"
+          }
+        ]
+      },
+      "addEdge": [
+        {
+          "id": "ab",
+          "source": "a",
+          "target": "b",
+          "sourceHandle": "out",
+          "targetHandle": null
+        },
+        {
+          "id": "bc",
+          "source": "b",
+          "target": "c"
+        },
+        {
+          "id": "ac",
+          "source": "a",
+          "target": "c"
+        }
+      ],
+      "duplicateAddReturnsSameArray": true,
+      "reconnectEdge": [
+        {
+          "id": "bc",
+          "source": "b",
+          "target": "c"
+        },
+        {
+          "source": "b",
+          "target": "c",
+          "sourceHandle": "other",
+          "targetHandle": null,
+          "id": "ab"
+        }
+      ],
+      "missingReconnectReturnsSameArray": true,
+      "typePredicates": {
+        "node": true,
+        "edge": true,
+        "null": {
+          "node": false,
+          "edge": false
+        }
+      }
+    },
+    "deletion": {
+      "events": [
+        {
+          "type": "before:start",
+          "nodes": ["b"],
+          "edges": ["ab"]
+        },
+        {
+          "type": "before:resolved"
+        },
+        {
+          "type": "edges",
+          "beforeCompleted": true,
+          "ids": ["ab"]
+        },
+        {
+          "type": "nodes",
+          "beforeCompleted": true,
+          "ids": ["b"]
+        },
+        {
+          "type": "delete",
+          "beforeCompleted": true,
+          "nodes": ["b"],
+          "edges": ["ab"]
+        }
+      ],
+      "result": {
+        "nodes": ["b"],
+        "edges": ["ab"]
+      }
+    }
+  },
+  "repeatedCaptureMatches": true
+}
