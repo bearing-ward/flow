@@ -101,7 +101,7 @@ export const createFoldkitConformanceAdapter = (
           : {
               ...result,
               status:
-                result.status === 'measured' ? 'refreshed' : result.status,
+                result.status === 'measured' ? 'requested' : result.status,
             }
       }, nodeId)
     },

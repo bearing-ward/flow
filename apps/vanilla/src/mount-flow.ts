@@ -58,6 +58,8 @@ import {
   createFlowGraph,
   emptyFlowMeasurementState,
   getFlowInternalNode,
+  getFlowMeasuredNodes,
+  inferHandleMeasurement,
   graphBounds,
   flowToolbarAnchors,
   prepareFlowCommand,
@@ -134,6 +136,7 @@ import type {
   NodeResizeDirection,
   MeasuredNode,
   FlowMeasurementState,
+  NodeInternalsRefreshResult as CoreNodeInternalsRefreshResult,
   NodeMeasurementGeneration,
   NodeMeasurementInput,
   FlowInternalNode,
@@ -170,7 +173,7 @@ import type {
 import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 
 import { createCanvasUI } from './canvas-ui.ts'
-import { createEdgeRenderer } from './edge-renderer.ts'
+import { createEdgeRenderer, measureNodeHandles } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
@@ -913,7 +916,7 @@ export interface FlowController {
   readonly getInternalNode: (id: string) => FlowInternalNode | undefined
   readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
   readonly updateNodeInternals: (
-    nodeIds: readonly string[]
+    nodeIds: string | readonly string[]
   ) => Promise<readonly NodeInternalsRefreshResult[]>
   readonly getEdge: (id: string) => FlowEdge | undefined
   readonly getViewport: () => Viewport
@@ -1091,7 +1094,7 @@ export interface JavaScriptFlowController {
   readonly getInternalNode: (id: string) => FlowInternalNode | undefined
   readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
   readonly updateNodeInternals: (
-    nodeIds: readonly string[]
+    nodeIds: string | readonly string[]
   ) => Promise<readonly NodeInternalsRefreshResult[]>
   readonly getEdge: (id: string) => FlowEdge | undefined
   readonly getViewport: () => Viewport
@@ -1214,12 +1217,7 @@ interface NodeEntry {
   renderer: FlowNodeRendererInstance | undefined
 }
 
-export type NodeInternalsRefreshResult =
-  | { readonly nodeId: string; readonly status: 'refreshed' }
-  | {
-      readonly nodeId: string
-      readonly status: 'missing' | 'unrendered' | 'disposed'
-    }
+export type NodeInternalsRefreshResult = CoreNodeInternalsRefreshResult
 
 const dragAnchorId = (drag: ActiveNodeDrag | ActiveNodeGroupDrag): NodeId =>
   'nodeId' in drag ? drag.nodeId : drag.anchorNodeId
@@ -1312,6 +1310,16 @@ const renderDefaultNodeContents = (
   label.textContent = node.label
   content.replaceChildren(label)
 }
+
+const measurementFailure = (cause: unknown, nodeId: string) =>
+  Effect.logError('Flow measurement refresh failed', cause).pipe(
+    Effect.annotateLogs({
+      [FlowAttribute.failureName]:
+        cause instanceof Error ? cause.name : 'Unknown',
+      [FlowAttribute.nodeId]: nodeId,
+    }),
+    Effect.withSpan(FlowSpan.geometryMeasure)
+  )
 
 const renderNodeHandles = (handles: HTMLElement, node: FlowNode): void => {
   handles.replaceChildren()
@@ -1613,10 +1621,16 @@ export const createFlowHost = (
       return dispose
     }
 
+    let document = initialDocument
+    let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
+
+    let measurements: ReadonlyMap<NodeId, MeasuredNode> = new Map()
+
     const edgeRenderer = createEdgeRenderer(
       viewport,
       options.edgeRenderers,
-      options.defaultEdgeOptions
+      options.defaultEdgeOptions,
+      () => measurements
     )
 
     let authoritativeViewport = clampViewport(
@@ -1628,8 +1642,6 @@ export const createFlowHost = (
     applyViewport(viewport, renderedViewport)
 
     const entries = new Map<NodeId, NodeEntry>()
-    const measurements = new Map<NodeId, MeasuredNode>()
-    let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
     let nextMeasurementGeneration = -1
 
     const pendingMeasurementGenerations = new Map<
@@ -1643,6 +1655,10 @@ export const createFlowHost = (
         nodeId,
         generation: nextMeasurementGeneration,
       })
+      measurementState = setNodeMeasurementGenerations(measurementState, [
+        { nodeId, generation: nextMeasurementGeneration },
+      ])
+      measurements = getFlowMeasuredNodes(document, measurementState)
 
       return nextMeasurementGeneration
     }
@@ -1655,7 +1671,47 @@ export const createFlowHost = (
     >()
 
     const renderedNodePositions = new Map<NodeId, XYPosition>()
-    let document = initialDocument
+
+    const acceptMeasurement = (
+      nodeId: NodeId,
+      size: {
+        readonly width: number
+        readonly height: number
+        readonly nodeId?: NodeId
+      }
+    ): void => {
+      const node = document.nodes.find(({ id }) => id === nodeId)
+      const entry = entries.get(nodeId)
+
+      const generation =
+        entry?.generation ??
+        pendingMeasurementGenerations.get(nodeId)?.generation
+
+      if (node === undefined || generation === undefined) {
+        return
+      }
+
+      measurementState = applyNodeMeasurements(document, measurementState, [
+        {
+          nodeId,
+          generation,
+          ...size,
+          handles:
+            entry === undefined
+              ? []
+              : measureNodeHandles(node, entry.element, renderedViewport.zoom),
+        },
+      ])
+      measurements = getFlowMeasuredNodes(document, measurementState)
+    }
+
+    const recordNodeMeasurement = (
+      node: FlowNode,
+      element: HTMLElement
+    ): void => {
+      acceptMeasurement(node.id, browser.measure(element))
+    }
+
     let acceptedSnapshot = createFlowSnapshot(document, authoritativeViewport)
     let documentRevision = 0
     let destroyPromise: Promise<void> | undefined
@@ -2363,9 +2419,9 @@ export const createFlowHost = (
           element.style.visibility = 'visible'
 
           if (node !== undefined) {
-            measurements.set(node.id, { nodeId: node.id, ...measurement })
             acceptedMeasurements.push({
               generation: currentEntry.generation,
+              handles: measureNodeHandles(node, element, renderedViewport.zoom),
               nodeId: node.id,
               ...measurement,
             })
@@ -2384,18 +2440,9 @@ export const createFlowHost = (
               )
             )
 
-            for (const resolve of pendingInternals.get(node.id) ?? []) {
-              resolve({ nodeId: node.id, status: 'refreshed' })
-            }
-
-            pendingInternals.delete(node.id)
-
             if (!isDraggingNode(node.id)) {
               restoreAdoptedPosition(node)
-              renderGraphPositions()
             }
-
-            edgeRenderer.measureNode(node, element, renderedViewport.zoom)
           }
         }
 
@@ -2405,6 +2452,8 @@ export const createFlowHost = (
             measurementState,
             acceptedMeasurements
           )
+          measurements = getFlowMeasuredNodes(document, measurementState)
+          renderGraphPositions()
         }
 
         if (options.renderOnlyVisible === true) {
@@ -2484,17 +2533,46 @@ export const createFlowHost = (
           !hasSelectedAncestor(candidate)
       )
 
-    const handleCenterInFlow = (element: HTMLElement): XYPosition => {
-      const bounds = element.getBoundingClientRect()
-      const canvasBounds = canvas.getBoundingClientRect()
-
-      return screenToFlowPosition(
-        {
-          x: bounds.left + bounds.width / 2 - canvasBounds.left,
-          y: bounds.top + bounds.height / 2 - canvasBounds.top,
-        },
-        renderedViewport
+    const handleCenterInFlow = (
+      element: HTMLElement,
+      graph = graphFor()
+    ): XYPosition => {
+      const node = document.nodes.find(
+        ({ id }) => id === element.dataset.nodeId
       )
+
+      const graphNode =
+        node === undefined ? undefined : graph.nodes.get(node.id)
+
+      const measured =
+        node === undefined
+          ? undefined
+          : measurements
+              .get(node.id)
+              ?.handles?.find(
+                ({ handleId }) => handleId === element.dataset.handleId
+              )
+
+      const handle = node?.handles?.find(
+        ({ id }) => id === element.dataset.handleId
+      )
+
+      if (
+        graphNode === undefined ||
+        node === undefined ||
+        handle === undefined
+      ) {
+        throw new Error('Connection handle has no accepted owner')
+      }
+
+      const geometry =
+        measured ??
+        inferHandleMeasurement(node.id, handle, graphNode.dimensions)
+
+      return {
+        x: graphNode.absolutePosition.x + geometry.offset.x,
+        y: graphNode.absolutePosition.y + geometry.offset.y,
+      }
     }
 
     const connectionTargetAt = (
@@ -2506,7 +2584,7 @@ export const createFlowHost = (
         .elementFromPoint(clientX, clientY)
         ?.closest<HTMLElement>('.flow-handle')
 
-      if (direct instanceof HTMLElement) {
+      if (direct instanceof HTMLElement && viewport.contains(direct)) {
         return direct
       }
 
@@ -2514,6 +2592,7 @@ export const createFlowHost = (
         ...viewport.querySelectorAll<HTMLElement>('.flow-handle'),
       ]
 
+      const graph = graphFor()
       const candidates: MeasuredConnectionHandle[] = []
 
       for (const element of elements) {
@@ -2533,15 +2612,36 @@ export const createFlowHost = (
           continue
         }
 
-        const bounds = element.getBoundingClientRect()
+        const measured = measurements
+          .get(node.id)
+          ?.handles?.find(({ handleId }) => handleId === handle.id)
+
+        const graphNode = graph.nodes.get(node.id)
+
+        if (
+          measured === undefined ||
+          graphNode === undefined ||
+          graphNode.hidden
+        ) {
+          continue
+        }
+
+        const center = handleCenterInFlow(element, graph)
+        const canvasBounds = canvas.getBoundingClientRect()
 
         candidates.push({
           nodeId: node.id,
           handleId: handle.id,
           kind: handle.kind,
           center: {
-            x: bounds.left + bounds.width / 2,
-            y: bounds.top + bounds.height / 2,
+            x:
+              canvasBounds.left +
+              renderedViewport.x +
+              center.x * renderedViewport.zoom,
+            y:
+              canvasBounds.top +
+              renderedViewport.y +
+              center.y * renderedViewport.zoom,
           },
         })
       }
@@ -3641,7 +3741,7 @@ export const createFlowHost = (
           applyDeclaredNodeSize(entry.element, node)
         }
 
-        measurements.set(resize.nodeId, {
+        acceptMeasurement(resize.nodeId, {
           nodeId: resize.nodeId,
           ...resize.sizeStart,
         })
@@ -3654,7 +3754,7 @@ export const createFlowHost = (
         }
 
         if (node !== undefined) {
-          edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom)
+          recordNodeMeasurement(node, entry.element)
         }
 
         for (const pointerId of pointerIdsFromOutcome(outcome, [
@@ -3768,8 +3868,8 @@ export const createFlowHost = (
         delete entry.element.dataset.resizing
         applyDeclaredNodeSize(entry.element, node)
         const measured = browser.measure(entry.element)
-        measurements.set(node.id, { nodeId: node.id, ...measured })
-        edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom)
+        acceptMeasurement(node.id, { nodeId: node.id, ...measured })
+        recordNodeMeasurement(node, entry.element)
       }
 
       const graph = renderGraphPositions()
@@ -3802,14 +3902,14 @@ export const createFlowHost = (
       entry.element.style.width = `${resize.change.size.width}px`
       entry.element.style.height = `${resize.change.size.height}px`
       entry.element.style.boxSizing = 'border-box'
-      measurements.set(resize.nodeId, {
+      acceptMeasurement(resize.nodeId, {
         nodeId: resize.nodeId,
         ...resize.change.size,
       })
       const node = findNode(resize.nodeId)
 
       if (node !== undefined) {
-        edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom)
+        recordNodeMeasurement(node, entry.element)
       }
 
       const graph = renderGraphPositions()
@@ -4295,9 +4395,7 @@ export const createFlowHost = (
           entries.delete(nodeId)
 
           if (!nextIds.has(nodeId) || hiddenNextIds.has(nodeId)) {
-            edgeRenderer.forgetNode(nodeId)
             renderedNodePositions.delete(nodeId)
-            measurements.delete(nodeId)
           }
 
           removed += 1
@@ -4305,6 +4403,7 @@ export const createFlowHost = (
 
         if (removed > 0) {
           measurementState = pruneFlowMeasurements(next, measurementState)
+          measurements = getFlowMeasuredNodes(next, measurementState)
         }
 
         for (const graphNode of graph.orderedNodes) {
@@ -4371,7 +4470,7 @@ export const createFlowHost = (
           }
 
           if (entry.element.dataset.measuredWidth !== undefined) {
-            edgeRenderer.measureNode(node, entry.element, renderedViewport.zoom)
+            recordNodeMeasurement(node, entry.element)
           }
         }
 
@@ -4433,6 +4532,7 @@ export const createFlowHost = (
           measurementState = setNodeMeasurementGenerations(measurementState, [
             ...pendingMeasurementGenerations.values(),
           ])
+          measurements = getFlowMeasuredNodes(next, measurementState)
           pendingMeasurementGenerations.clear()
         }
 
@@ -4532,12 +4632,8 @@ export const createFlowHost = (
               if (node !== undefined && entry !== undefined) {
                 applyDeclaredNodeSize(entry.element, node)
                 const m = browser.measure(entry.element)
-                measurements.set(node.id, { nodeId: node.id, ...m })
-                edgeRenderer.measureNode(
-                  node,
-                  entry.element,
-                  renderedViewport.zoom
-                )
+                acceptMeasurement(node.id, { nodeId: node.id, ...m })
+                recordNodeMeasurement(node, entry.element)
               }
 
               renderGraphPositions()
@@ -4565,12 +4661,8 @@ export const createFlowHost = (
               if (node !== undefined && entry !== undefined) {
                 applyDeclaredNodeSize(entry.element, node)
                 const measurement = browser.measure(entry.element)
-                measurements.set(node.id, { nodeId: node.id, ...measurement })
-                edgeRenderer.measureNode(
-                  node,
-                  entry.element,
-                  renderedViewport.zoom
-                )
+                acceptMeasurement(node.id, { nodeId: node.id, ...measurement })
+                recordNodeMeasurement(node, entry.element)
               }
 
               edgeRenderer.reconcile(document, renderedNodePositions)
@@ -5003,12 +5095,8 @@ export const createFlowHost = (
           element.style.height = `${change.size.height}px`
           element.style.boxSizing = 'border-box'
           element.dataset.resizing = 'true'
-          measurements.set(node.id, { nodeId: node.id, ...change.size })
-          edgeRenderer.measureNode(
-            findNode(node.id) ?? node,
-            element,
-            renderedViewport.zoom
-          )
+          acceptMeasurement(node.id, { nodeId: node.id, ...change.size })
+          recordNodeMeasurement(findNode(node.id) ?? node, element)
           const graph = renderGraphPositions()
           edgeRenderer.reconcile(document, renderedNodePositions, graph)
 
@@ -8518,101 +8606,134 @@ export const createFlowHost = (
           ...readinessOptions,
           mountedNodeIds: new Set(entries.keys()),
         }),
-      updateNodeInternals: (nodeIds) => {
+      updateNodeInternals: (requestedIds) => {
+        const nodeIds = [
+          ...new Set(
+            S.decodeUnknownSync(S.Array(NodeIdSchema))(
+              Array.isArray(requestedIds) ? requestedIds : [requestedIds]
+            )
+          ),
+        ]
+
         if (destroyed) {
           return Promise.resolve(
             nodeIds.map((nodeId) => ({ nodeId, status: 'disposed' as const }))
           )
         }
 
-        const requests = nodeIds.map((rawId) => {
-          const node = document.nodes.find(
-            (candidate) => candidate.id === rawId
-          )
+        const requests = nodeIds.map((nodeId) => {
+          const { promise, resolve } =
+            Promise.withResolvers<NodeInternalsRefreshResult>()
 
-          if (node === undefined) {
-            return Promise.resolve({
-              nodeId: rawId,
-              status: 'missing' as const,
-            })
-          }
+          const waiters = pendingInternals.get(nodeId) ?? []
+          waiters.push(resolve)
+          pendingInternals.set(nodeId, waiters)
 
-          if (!entries.has(node.id)) {
-            return Promise.resolve({
-              nodeId: rawId,
-              status: 'unrendered' as const,
-            })
-          }
-
-          const pending = Promise.withResolvers<NodeInternalsRefreshResult>()
-          const waiters = pendingInternals.get(node.id) ?? []
-          waiters.push(pending.resolve)
-          pendingInternals.set(node.id, waiters)
-
-          return pending.promise
+          return promise
         })
+
+        const failQueued = (cause: unknown): void => {
+          refreshFramePending = false
+          runTelemetry(measurementFailure(cause, 'batch'))
+
+          for (const [nodeId, waiters] of pendingInternals) {
+            for (const settle of waiters) {
+              settle({ nodeId: NodeIdSchema.make(nodeId), status: 'failed' })
+            }
+          }
+
+          pendingInternals.clear()
+        }
+
+        const flush = (): void => {
+          refreshFramePending = false
+          const batch = [...pendingInternals]
+          pendingInternals.clear()
+          const samples: NodeMeasurementInput[] = []
+          const results: NodeInternalsRefreshResult[] = []
+
+          for (const [nodeId] of batch) {
+            let status: NodeInternalsRefreshResult['status'] = 'disposed'
+
+            try {
+              const node = document.nodes.find(({ id }) => id === nodeId)
+              const element = entries.get(nodeId)?.element
+              const generation = entries.get(nodeId)?.generation
+
+              if (!destroyed) {
+                if (node === undefined) {
+                  status = 'missing'
+                } else if (
+                  element === undefined ||
+                  !element.isConnected ||
+                  generation === undefined
+                ) {
+                  status = 'failed'
+                } else {
+                  const size = browser.measure(element)
+                  samples.push({
+                    nodeId: node.id,
+                    generation,
+                    ...size,
+                    handles: measureNodeHandles(
+                      node,
+                      element,
+                      renderedViewport.zoom
+                    ),
+                  })
+                  status = 'requested'
+                }
+              }
+            } catch (error) {
+              status = 'failed'
+              runTelemetry(measurementFailure(error, nodeId))
+            }
+
+            results.push({ nodeId: NodeIdSchema.make(nodeId), status })
+          }
+
+          let projectionFailed = false
+
+          try {
+            if (!destroyed && samples.length > 0) {
+              measurementState = applyNodeMeasurements(
+                document,
+                measurementState,
+                samples
+              )
+              measurements = getFlowMeasuredNodes(document, measurementState)
+              renderGraphPositions()
+              edgeRenderer.reconcile(document, renderedNodePositions)
+            }
+          } catch (error) {
+            runTelemetry(measurementFailure(error, 'batch'))
+            projectionFailed = true
+          }
+
+          for (const result of results) {
+            const waiters =
+              batch.find(([nodeId]) => nodeId === result.nodeId)?.[1] ?? []
+
+            for (const settle of waiters) {
+              settle(
+                projectionFailed && result.status === 'requested'
+                  ? { ...result, status: 'failed' }
+                  : result
+              )
+            }
+          }
+        }
 
         if (!refreshFramePending && pendingInternals.size > 0) {
           refreshFramePending = true
-          runEffect(
-            Scope.provide(
-              browser.requestAnimationFrame(() => {
-                refreshFramePending = false
-                const acceptedMeasurements: NodeMeasurementInput[] = []
 
-                for (const [nodeId, resolve] of pendingInternals) {
-                  const node = document.nodes.find(
-                    (candidate) => candidate.id === nodeId
-                  )
-
-                  const entry = entries.get(nodeId)
-
-                  if (node === undefined) {
-                    for (const settle of resolve) {
-                      settle({ nodeId, status: 'missing' })
-                    }
-                  } else if (
-                    entry === undefined ||
-                    !entry.element.isConnected
-                  ) {
-                    for (const settle of resolve) {
-                      settle({ nodeId, status: 'unrendered' })
-                    }
-                  } else {
-                    const measurement = browser.measure(entry.element)
-                    measurements.set(nodeId, { nodeId, ...measurement })
-                    acceptedMeasurements.push({
-                      nodeId,
-                      generation: entry.generation,
-                      ...measurement,
-                    })
-                    edgeRenderer.measureNode(
-                      node,
-                      entry.element,
-                      renderedViewport.zoom
-                    )
-
-                    for (const settle of resolve) {
-                      settle({ nodeId, status: 'refreshed' })
-                    }
-                  }
-                }
-
-                if (acceptedMeasurements.length > 0) {
-                  measurementState = applyNodeMeasurements(
-                    document,
-                    measurementState,
-                    acceptedMeasurements
-                  )
-                }
-
-                pendingInternals.clear()
-                renderGraphPositions()
-                edgeRenderer.reconcile(document, renderedNodePositions)
-              }),
-              hostScope
+          try {
+            runEffect(
+              Scope.provide(browser.requestAnimationFrame(flush), hostScope)
             )
-          )
+          } catch (error) {
+            failQueued(error)
+          }
         }
 
         return Promise.all(requests)

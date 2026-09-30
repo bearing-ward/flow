@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 066 decomposition approval; architecture section 065 approval; 053 measured geometry baseline; 054 custom renderer baseline; 057 accepted refresh facade
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: BLOCKED — final revision exhausted; Foldkit pointer-up handler migration fails typecheck
+- Status: IN PROGRESS — measured-handle source independently approved through Plan 076; original member reconciliation remains open
 
 ## Why this matters
 
@@ -164,3 +164,11 @@ The first typecheck in final revision2 failed at Vue disposal waiter settlement 
 The coordinator read the focused unit assertions and independently reran both files: 16 tests passed. This verifies their bounded generation/visibility/mutation and failure-settlement assertions only. New dynamic browser fixtures/assertions are unrun; reference capture, packed consumers, docs and full local acceptance remain incomplete. No member cell closes. All partial source is preserved uncommitted in the isolated remaining-actionable worktree. Two review revision rounds are exhausted;065 and downstream067 implementation are blocked. Parent057 remains open.
 
 Coordinator final cumulative `bun run verify` exited1 at the quality gate: formatting issues in21 changed files and lint violations in the unfinished065 slice. It stopped before typecheck, browser, packed or later verifier stages. This independent result does not replace the separate recorded compiler failure, and no further repair was dispatched.
+
+## Authorized resumption and bounded source acceptance, 2026-09-30
+
+The maintainer selected the remaining snapshot callers and measured-handle refresh for execution through Plan 076 against accepted baseline `2128b9e`. The old exhausted revision record above remains historical. The isolated candidate carries accepted measurement state through typed Foldkit pointer input, uses one generation-scoped geometry authority across all three hosts, and exposes detached frozen measured handle output without changing saved-v1 data.
+
+Primary independently ran the saved focused `bun run verify` in `/Users/richardmcandrews/.codex/worktrees/snapshot-and-handle-refresh/flow`: exit0, `/tmp/flow-076-review-verify.log`,409 unit tests across46 files,43 selected browser tests and all three packed consumers. Quality,architecture,builds,TypeScript,docs,catalog,member inventory,structural ownership and traces passed. Primary also generated API docs and reproduced the clean pinned reference capture with two matching samples. All-host actual public geometry and SVG endpoints are compared against that reference under an explicitly equivalent caller layout. Native-layout cases cover zoom0.5/2,nested offsets,controlled stability,addition/removal,real pointer candidate/commit and disposal.
+
+Verdict: APPROVE the bounded implementation and evidence. It remains uncommitted in the isolated worktree. This does not close the original member reconciliation, the8076 semantic cells,parents057/066/075,React hook scheduling,full-suite/native-device/CI or collector-delivery acceptance. The previous compiler/browser/packed blockers are resolved for this candidate. Plan076 records the complete execution and reviewer evidence.

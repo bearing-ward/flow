@@ -7,6 +7,7 @@ import {
   HostAction,
   createProgram,
   createFoldkitDeleteClient,
+  createFoldkitSnapshotClient,
 } from '@flow/foldkit'
 import type {
   SnapshotResponseSchema,
@@ -16,9 +17,11 @@ import type {
   DeleteResultSchema,
   EditResponse,
   FoldkitDeleteClient,
+  FoldkitSnapshotClient,
+  FoldkitSnapshotResult,
   ports,
 } from '@flow/foldkit'
-import { Exit, Schema } from 'effect'
+import { Exit, Match, Schema } from 'effect'
 import { Runtime } from 'foldkit'
 
 interface DeleteHarness {
@@ -39,6 +42,7 @@ interface DeleteHarness {
   readonly snapshot: (
     requestId: string
   ) => Promise<typeof SnapshotResponseSchema.Encoded>
+  readonly snapshotOutcome: () => Promise<FoldkitSnapshotResult>
   readonly probeHostAction: () => void
   readonly approvalWinsCancellationRace: () => Promise<
     typeof DeleteResultSchema.Encoded
@@ -88,6 +92,8 @@ declare global {
 }
 
 let active: Runtime.EmbedHandle<typeof ports> | undefined
+
+let snapshotClient: FoldkitSnapshotClient | undefined
 
 let raceClient: FoldkitDeleteClient | undefined
 
@@ -174,11 +180,6 @@ const arrivedResults = new Map<string, ApprovalResult>()
 
 const editWaiters = new Map<string, (response: EditResponse) => void>()
 
-const snapshotWaiters = new Map<
-  string,
-  (response: typeof SnapshotResponseSchema.Encoded) => void
->()
-
 const changes: unknown[] = []
 
 const acceptedStates: unknown[] = []
@@ -195,6 +196,7 @@ const waitNextFrame = () => {
 
 const harness: DeleteHarness = {
   start: async (documentMode = 'uncontrolled') => {
+    harness.dispose()
     window.addEventListener('error', (event) => {
       diagnostics.push(`window-error:${event.message}`)
     })
@@ -278,14 +280,7 @@ const harness: DeleteHarness = {
         resolve(response)
       }
     })
-    active.ports.snapshots.subscribe((response) => {
-      const resolve = snapshotWaiters.get(response.requestId)
-
-      if (resolve !== undefined) {
-        snapshotWaiters.delete(response.requestId)
-        resolve(response)
-      }
-    })
+    snapshotClient = createFoldkitSnapshotClient(active.ports)
     active.ports.changes.subscribe((change) => changes.push(change))
     active.ports.acceptedStates.subscribe((change) =>
       acceptedStates.push(change)
@@ -391,18 +386,33 @@ const harness: DeleteHarness = {
 
     return promise
   },
-  snapshot: (requestId) => {
-    if (active === undefined) {
+  snapshot: async (requestId) => {
+    if (snapshotClient === undefined) {
       throw new Error('Delete runtime is not started')
     }
 
-    const { promise, resolve } =
-      Promise.withResolvers<typeof SnapshotResponseSchema.Encoded>()
+    const result = await snapshotClient.request()
 
-    snapshotWaiters.set(requestId, resolve)
-    active.ports.snapshotRequests.send({ requestId })
+    return Match.value(result).pipe(
+      Match.when({ status: 'succeeded' }, ({ response }) => ({
+        ...response,
+        requestId,
+      })),
+      Match.when({ status: 'failed' }, ({ reason }) => {
+        throw new Error(`Foldkit snapshot failed: ${reason}`)
+      }),
+      Match.when({ status: 'disposed' }, () => {
+        throw new Error('Foldkit snapshot owner is disposed')
+      }),
+      Match.exhaustive
+    )
+  },
+  snapshotOutcome: () => {
+    if (snapshotClient === undefined) {
+      throw new Error('Delete runtime is not started')
+    }
 
-    return promise
+    return snapshotClient.request()
   },
   probeHostAction: () => {
     if (active === undefined) {
@@ -736,6 +746,10 @@ const harness: DeleteHarness = {
     }
   },
   dispose: () => {
+    snapshotClient?.dispose()
+    publicClient?.dispose()
+    publicClient = undefined
+
     if (raceClient === undefined) {
       active?.dispose()
     } else {

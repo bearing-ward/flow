@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 
+import { assertDynamicHandleRefresh } from '../../shared-e2e/handle-refresh-contract.ts'
 import { assertSharedMeasurementContract } from '../../shared-e2e/measured-geometry-contract.ts'
 import { createFoldkitConformanceAdapter } from './conformance.ts'
 
@@ -336,4 +337,59 @@ test('Foldkit typed geometry query and refresh settle when its Runtime is dispos
 
   expect(disposed.result.status).toBe('disposed')
   expect(disposed.afterCount).toBe(disposed.beforeCount)
+})
+
+for (const zoom of [0.5, 2]) {
+  for (const controlled of [false, true]) {
+    test(`foldkit dynamic handle refresh at zoom ${zoom}, controlled ${
+      controlled
+    }`, async ({ page }) => {
+      await assertDynamicHandleRefresh(page, 'foldkit', zoom, controlled, false)
+    })
+  }
+}
+
+test('Foldkit main wrapper settles both overlapping same-node refresh callers', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(
+    page.locator('[data-testid="flow-node"][data-node-id="validate"]')
+  ).toBeVisible()
+  await page.evaluate(() => {
+    const output = document.querySelector<HTMLOutputElement>(
+      '.flow-state-tools output:not([data-measurement])'
+    )
+
+    const button = document.querySelector<HTMLButtonElement>(
+      '[data-state="refresh-node"]'
+    )
+
+    if (output === null || button === null) {
+      throw new Error('Missing main wrapper refresh controls')
+    }
+
+    const observer = new MutationObserver((records) => {
+      const count = Number(output.dataset.settled ?? '0')
+      output.dataset.settled = String(
+        count + records.filter(({ type }) => type === 'childList').length
+      )
+    })
+
+    observer.observe(output, { childList: true })
+    button.click()
+    button.click()
+  })
+  await expect(
+    page.locator('.flow-state-tools output:not([data-measurement])')
+  ).toHaveAttribute('data-settled', '2')
+  await expect(
+    page.locator('.flow-state-tools output:not([data-measurement])')
+  ).toContainText('Measurement measured')
+})
+
+test('foldkit actual public geometry and SVG endpoints match pinned equivalent handle layout', async ({
+  page,
+}) => {
+  await assertDynamicHandleRefresh(page, 'foldkit', 1, false, true)
 })

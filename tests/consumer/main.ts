@@ -376,7 +376,23 @@ window.__flowPackedUI = {
     const before = controlled.getNode('custom')?.label
     controlled.update(proposal.document)
     const after = controlled.getNode('custom')?.label
-    await controlled.updateNodeInternals(['custom'])
+
+    const refresh = await controlled.updateNodeInternals([
+      'custom',
+      'custom',
+      'absent',
+    ])
+
+    if (
+      JSON.stringify(refresh) !==
+      JSON.stringify([
+        { nodeId: 'custom', status: 'requested' },
+        { nodeId: 'absent', status: 'missing' },
+      ])
+    ) {
+      throw new Error('Packed Vanilla ordered batch refresh failed')
+    }
+
     const internal = controlled.getInternalNode('custom')
     const beforeFit = controlled.getViewport()
     const fit = await controlled.fitView({ duration: 0 })

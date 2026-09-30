@@ -26674,13 +26674,13 @@
           "kind": "hook-behavior",
           "inventorySource": "pinned-declaration",
           "description": "React hook — Requests remeasurement/handle-position refresh after dynamic node/handle changes.",
-          "remainingDecision": "All three hosts have node-ID refresh paths with production geometry tests. React callback batching, animation-frame scheduling, arbitrary handle-center refresh, and framework lifecycle parity remain unverified.",
+          "remainingDecision": "Plan 076 adds ordered multi-ID frame-coalesced measured-handle refresh, removal/disposal and exact public geometry/SVG reference comparisons in all three hosts. React hook subscription/native scheduler equality and original semantic member closure remain open pending independent reconciliation.",
           "ownerPlan": "057",
           "upstreamAnchor": "#signature",
           "hosts": {
             "vanilla": {
               "status": "partial",
-              "equivalent": "The controller accepts node IDs, resolves mounted entries, requests measurement, and returns missing/unrendered/disposed outcomes. Its request boundary is controller-owned and does not reproduce React hook scheduling or handle-center measurements.",
+              "equivalent": "Bounded vanilla public multi-ID refresh deduplicates in order, coalesces overlapping frame requests, settles missing/failed/disposed IDs and renders endpoints from current-generation measurements. Plan 076 compares actual public geometry/SVG endpoints to pinned equivalent caller layout; native CSS geometry uses actual DOM centers. React hook/raw return shape remain distinct.",
               "evidence": [
                 {
                   "kind": "implementation",
@@ -26706,7 +26706,7 @@
             },
             "vue": {
               "status": "partial",
-              "equivalent": "The canvas-local useFlow editor refresh accepts node IDs, resolves mounted elements, and returns per-ID refreshed/missing/unrendered/disposed outcomes. Vue uses its own nextTick path; React callback identity and RAF batching are not claimed.",
+              "equivalent": "Bounded vue public multi-ID refresh deduplicates in order, coalesces overlapping frame requests, settles missing/failed/disposed IDs and renders endpoints from current-generation measurements. Plan 076 compares actual public geometry/SVG endpoints to pinned equivalent caller layout; native CSS geometry uses actual DOM centers. React hook/raw return shape remain distinct.",
               "evidence": [
                 {
                   "kind": "implementation",
@@ -26736,7 +26736,7 @@
             },
             "foldkit": {
               "status": "partial",
-              "equivalent": "The public app-scoped createFoldkitNodeInternalsRefresher.refresh(nodeId) delegates element resolution and measurement to host callbacks; the app owns internal request correlation, DOM lookup, and scheduling, and the measurement observer dispatches typed HostAction.MeasureNode. It reports requested/missing/disposed/failed. Production E2E proves measured dimensions and edge path movement without changing the graph/viewport snapshot, plus missing ID and disposal. Current measurement schema carries node bounds only; arbitrary DOM handle centers, React RAF batching, and hook lifecycle parity are not implemented.",
+              "equivalent": "Bounded foldkit public multi-ID refresh deduplicates in order, coalesces overlapping frame requests, settles missing/failed/disposed IDs and renders endpoints from current-generation measurements. Plan 076 compares actual public geometry/SVG endpoints to pinned equivalent caller layout; native CSS geometry uses actual DOM centers. React hook/raw return shape remain distinct.",
               "evidence": [
                 {
                   "kind": "implementation",

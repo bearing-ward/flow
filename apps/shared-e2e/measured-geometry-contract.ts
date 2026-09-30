@@ -54,7 +54,7 @@ const assertNested = async (
   }
 
   const result = await adapter.resizeAndRefresh('child', size)
-  expect(result.status).toBe('refreshed')
+  expect(result.status).toBe('requested')
   expect(result.width).not.toBeNull()
   expect(result.height).not.toBeNull()
   closeSize({ width: result.width ?? -1, height: result.height ?? -1 }, size)
@@ -86,7 +86,7 @@ const assertZeroSize = async (
   }
 
   const result = await adapter.resizeAndRefresh('zero', size)
-  expect(result.status).toBe('refreshed')
+  expect(result.status).toBe('requested')
   closeSize({ width: result.width ?? -1, height: result.height ?? -1 }, size)
   const internal = await adapter.internalNode('zero')
   expect(internal?.measurementStatus).toBe('measured')
@@ -127,7 +127,7 @@ const assertReplacement = async (
   await adapter.removeAndReadd(nodeId)
   const result = await adapter.resizeAndRefresh(nodeId, dimensions)
 
-  expect(result.status).toBe('refreshed')
+  expect(result.status).toBe('requested')
   closeSize(
     { width: result.width ?? -1, height: result.height ?? -1 },
     dimensions

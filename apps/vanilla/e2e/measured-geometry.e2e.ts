@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 
+import { assertDynamicHandleRefresh } from '../../shared-e2e/handle-refresh-contract.ts'
 import { assertSharedMeasurementContract } from '../../shared-e2e/measured-geometry-contract.ts'
 import type { JavaScriptFlowController } from '../src/public.ts'
 import { createVanillaConformanceAdapter } from './controller-conformance.ts'
@@ -91,7 +92,7 @@ test('vanilla exposes refreshed measured geometry outside document notifications
   expect(result.initial?.width).toBeCloseTo(result.initialRect.width)
   expect(result.initial?.height).toBeCloseTo(result.initialRect.height)
   expect(result.refresh).toEqual([
-    { nodeId: 'child', status: 'refreshed' },
+    { nodeId: 'child', status: 'requested' },
     { nodeId: 'absent', status: 'missing' },
   ])
   expect(result.refreshed?.width).toBeCloseTo(result.refreshedRect.width)
@@ -247,12 +248,12 @@ test('vanilla measurements use graph units at multiple zooms and stay canvas-loc
   })
 
   expect(result.zooms).toEqual([0.5, 2])
-  expect(result.firstRefresh[0]?.status).toBe('refreshed')
-  expect(result.secondRefresh[0]?.status).toBe('refreshed')
+  expect(result.firstRefresh[0]?.status).toBe('requested')
+  expect(result.secondRefresh[0]?.status).toBe('requested')
   expect(result.graphMeasurements).toEqual([120, 120])
   expect(result.cssMeasurements[0]).toBeCloseTo(120)
   expect(result.cssMeasurements[1]).toBeCloseTo(120)
-  expect(result.isolatedRefresh[0]?.status).toBe('refreshed')
+  expect(result.isolatedRefresh[0]?.status).toBe('requested')
   expect(result.isolatedMeasurements).toEqual([180, 120])
   expect(result.savedAfter).toEqual(result.savedBefore)
   expect(result.queuedResult).toEqual([
@@ -266,3 +267,19 @@ declare global {
     __measuredGeometryControllers?: JavaScriptFlowController[]
   }
 }
+
+for (const zoom of [0.5, 2]) {
+  for (const controlled of [false, true]) {
+    test(`vanilla dynamic handle refresh at zoom ${zoom}, controlled ${
+      controlled
+    }`, async ({ page }) => {
+      await assertDynamicHandleRefresh(page, 'vanilla', zoom, controlled, false)
+    })
+  }
+}
+
+test('vanilla actual public geometry and SVG endpoints match pinned equivalent handle layout', async ({
+  page,
+}) => {
+  await assertDynamicHandleRefresh(page, 'vanilla', 1, false, true)
+})

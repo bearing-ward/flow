@@ -1,4 +1,4 @@
-import { Schema as S } from 'effect'
+import { Match, Schema as S } from 'effect'
 
 import { stepEdgeLabelPosition } from './flow-step-edge.schema.ts'
 import {
@@ -24,6 +24,30 @@ export const MeasuredHandleSchema = S.Struct({
 })
 
 export type MeasuredHandle = typeof MeasuredHandleSchema.Type
+
+/** Side-derived geometry remains available before a native handle is measured. */
+export const inferHandleMeasurement = (
+  nodeId: MeasuredHandle['nodeId'],
+  handle: FlowHandle,
+  dimensions: { readonly width: number; readonly height: number }
+): MeasuredHandle => ({
+  nodeId,
+  handleId: handle.id,
+  offset: {
+    x: Match.value(handle.side).pipe(
+      Match.when('left', () => 0),
+      Match.when('right', () => dimensions.width),
+      Match.orElse(() => dimensions.width / 2)
+    ),
+    y: Match.value(handle.side).pipe(
+      Match.when('top', () => 0),
+      Match.when('bottom', () => dimensions.height),
+      Match.orElse(() => dimensions.height / 2)
+    ),
+  },
+  width: 11,
+  height: 11,
+})
 
 const selectHandle = (
   node: FlowNode,

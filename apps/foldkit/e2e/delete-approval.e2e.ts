@@ -867,3 +867,44 @@ test('Foldkit playground uses the configured host approval callback', async ({
     'foldkit-delete-1',
   ])
 })
+
+test('Foldkit snapshot owner settles pending disposal and isolates a restarted Runtime', async ({
+  page,
+}) => {
+  await page.goto('/test.html')
+  await page.evaluate(async () => {
+    const harnessPath = '/e2e/delete-approval-harness.ts'
+    await import(harnessPath)
+    await window.__flowFoldkitDeleteHarness?.start()
+  })
+
+  const result = await page.evaluate(async () => {
+    const harness = window.__flowFoldkitDeleteHarness
+
+    if (harness === undefined) {
+      throw new Error('Delete harness did not start')
+    }
+
+    const pending = harness.snapshotOutcome()
+    harness.dispose()
+    const disposed = await pending
+    await harness.start()
+    const fresh = await harness.snapshotOutcome()
+    harness.dispose()
+
+    return { disposed, fresh }
+  })
+
+  expect(result.disposed.status).toBe('disposed')
+  expect(result.fresh.status).toBe('succeeded')
+
+  if (
+    result.fresh.status !== 'succeeded' ||
+    result.disposed.status !== 'disposed'
+  ) {
+    throw new Error('Expected disposed old owner and successful new owner')
+  }
+
+  expect(result.fresh.response.requestId).not.toBe(result.disposed.requestId)
+  expect(result.fresh.response.snapshot.document.nodes).toHaveLength(5)
+})

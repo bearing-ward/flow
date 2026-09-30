@@ -12,6 +12,7 @@ import type {
   FlowNode,
   FlowHandleConnectionsQuery,
   FlowInternalNode,
+  NodeInternalsRefreshResult,
   FlowNodeSchema,
   FlowSnapshot,
   ConnectionPreviewSnapshot,
@@ -206,12 +207,9 @@ export interface FlowEditor {
   readonly publish: (change: FlowChange) => void
   readonly getInternalNode: (id: string) => FlowInternalNode | undefined
   readonly nodesInitialized: (options?: { includeHidden?: boolean }) => boolean
-  readonly updateNodeInternals: (nodeIds: readonly string[]) => Promise<
-    readonly {
-      readonly nodeId: string
-      readonly status: 'refreshed' | 'missing' | 'unrendered' | 'disposed'
-    }[]
-  >
+  readonly updateNodeInternals: (
+    nodeIds: string | readonly string[]
+  ) => Promise<readonly NodeInternalsRefreshResult[]>
 }
 
 export type FlowDeleteLifecycleOptions = FlowDeleteLifecycle & {

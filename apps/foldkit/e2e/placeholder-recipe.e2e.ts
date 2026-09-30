@@ -36,3 +36,46 @@ test('Foldkit Placeholder adds one accepted, keyboard-usable node and remounts c
   ).toBeVisible()
   await expect(page.locator('[data-testid="flow-node"]')).toHaveCount(0)
 })
+
+test('Foldkit Placeholder ignores pending snapshot and edit replies after pagehide', async ({
+  page,
+}) => {
+  await page.goto('/ui-recipes/placeholder/')
+  await page.getByRole('button', { name: 'Add your first node' }).click()
+  await expect(page.locator('output')).toHaveText('accepted:1')
+  await page.evaluate(() => {
+    const control = document.querySelector<HTMLButtonElement>(
+      '[data-check-selection]'
+    )
+
+    if (control === null) {
+      throw new Error('Missing selection control')
+    }
+
+    control.click()
+    window.dispatchEvent(new PageTransitionEvent('pagehide'))
+  })
+  await expect(page.locator('output')).toHaveText('accepted:1')
+  await page.getByRole('button', { name: 'Check keyboard selection' }).click()
+  await expect(page.locator('output')).toHaveText('accepted:1')
+  await page.reload()
+  await expect(
+    page.getByRole('button', { name: 'Add your first node' })
+  ).toBeVisible()
+  await page.evaluate(() => {
+    const control = document.querySelector<HTMLButtonElement>(
+      '.flow-foldkit-placeholder'
+    )
+
+    if (control === null) {
+      throw new Error('Missing Placeholder action')
+    }
+
+    control.click()
+    window.dispatchEvent(new PageTransitionEvent('pagehide'))
+  })
+  await expect(page.locator('output')).toHaveText('')
+  await page.reload()
+  await page.getByRole('button', { name: 'Add your first node' }).click()
+  await expect(page.locator('output')).toHaveText('accepted:1')
+})

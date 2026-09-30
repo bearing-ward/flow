@@ -1,0 +1,117 @@
+{
+  "metadata": {
+    "framework": "React",
+    "package": "@xyflow/react",
+    "version": "12.11.6",
+    "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+    "browser": "Chromium 151.0.7922.34",
+    "normalization": "captured node-local handleBounds top-left to center; accepted parent-local positions and SVG graph coordinates; caller-specified 10px borderless handles; timestamps excluded",
+    "capturedAt": "2026-09-30T13:27:27.193Z",
+    "captureRuns": 2
+  },
+  "cases": {
+    "initial": {
+      "source": {
+        "absolutePosition": {
+          "x": 50,
+          "y": 70
+        },
+        "width": 120,
+        "height": 80,
+        "center": {
+          "x": 120,
+          "y": 40
+        }
+      },
+      "target": {
+        "absolutePosition": {
+          "x": 350,
+          "y": 110
+        },
+        "width": 120,
+        "height": 80,
+        "center": {
+          "x": 0,
+          "y": 40
+        }
+      },
+      "endpoints": {
+        "start": {
+          "x": 175,
+          "y": 110
+        },
+        "end": {
+          "x": 345,
+          "y": 150
+        }
+      }
+    },
+    "moved": {
+      "source": {
+        "absolutePosition": {
+          "x": 50,
+          "y": 70
+        },
+        "width": 120,
+        "height": 80,
+        "center": {
+          "x": 120,
+          "y": 20
+        }
+      },
+      "target": {
+        "absolutePosition": {
+          "x": 350,
+          "y": 110
+        },
+        "width": 120,
+        "height": 80,
+        "center": {
+          "x": 0,
+          "y": 60
+        }
+      },
+      "endpoints": {
+        "start": {
+          "x": 175,
+          "y": 90
+        },
+        "end": {
+          "x": 345,
+          "y": 170
+        }
+      }
+    },
+    "added": ["in", "added"],
+    "removed": ["in"],
+    "nodePositions": [
+      {
+        "id": "parent",
+        "position": {
+          "x": 30,
+          "y": 40
+        }
+      },
+      {
+        "id": "source",
+        "position": {
+          "x": 20,
+          "y": 30
+        }
+      },
+      {
+        "id": "target",
+        "position": {
+          "x": 350,
+          "y": 110
+        }
+      }
+    ],
+    "viewport": {
+      "x": 10,
+      "y": 20,
+      "zoom": 1
+    }
+  },
+  "repeatedCaptureMatches": true
+}

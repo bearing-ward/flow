@@ -185,6 +185,8 @@ export {
   MeasuredNodeGenerationSchema,
   NodeMeasurementGenerationSchema,
   NodeMeasurementInputSchema,
+  getFlowMeasuredNodes,
+  NodeInternalsRefreshResultSchema,
   applyNodeMeasurements,
   applyNodeMeasurement,
   areFlowNodesInitialized,
@@ -493,6 +495,7 @@ export {
   MeasuredHandleSchema,
   bezierEdgePath,
   edgeAttachmentPosition,
+  inferHandleMeasurement,
   edgeLabelPosition,
   resolveEdgeHandles,
   straightEdgePath,
@@ -534,3 +537,5 @@ export type {
   FlowRect,
   SelectionMode,
 } from './domain/flow-visibility.schema.ts'
+
+export type { NodeInternalsRefreshResult } from './domain/flow-measurement.schema.ts'

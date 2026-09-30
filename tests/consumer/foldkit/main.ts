@@ -1,4 +1,4 @@
-import { decodeFlowDocument } from '@flow/core'
+import { decodeFlowDocument, NodeIdSchema } from '@flow/core'
 import type { FlowDocument } from '@flow/core'
 import {
   createFoldkitBaseNode,
@@ -11,6 +11,7 @@ import {
   createFoldkitAppendix,
   createFoldkitPlaceholder,
   createFoldkitNodeMeasurementObserver,
+  createFoldkitNodeInternalsRefresher,
   createProgram,
   createFoldkitSnapshotClient,
   HostAction,
@@ -253,7 +254,7 @@ const edit = (): Promise<string> => {
   return promise
 }
 
-const measure = (): Promise<string> => {
+const measure = async (): Promise<string> => {
   const canvas = document.querySelector<HTMLElement>(
     '.flow-foldkit-canvas[data-flow-instance]'
   )
@@ -266,9 +267,7 @@ const measure = (): Promise<string> => {
     node === null ||
     node === undefined
   ) {
-    return Promise.reject(
-      new Error('Foldkit consumer cannot find the rendered node to measure')
-    )
+    throw new Error('Foldkit consumer cannot find the rendered node to measure')
   }
 
   measurementObserver = createFoldkitNodeMeasurementObserver({
@@ -304,7 +303,29 @@ const measure = (): Promise<string> => {
     reject(new Error('Foldkit consumer measurement timed out'))
   }, 5000)
 
-  measurementObserver?.measure(node, requestId)
+  const refresher = createFoldkitNodeInternalsRefresher({
+    resolveElement: (id) => (id === 'foldkit-a' ? node : undefined),
+    measure: (element) =>
+      measurementObserver?.measure(element, requestId) ?? false,
+  })
+
+  const results = await refresher.refresh([
+    NodeIdSchema.make('foldkit-a'),
+    NodeIdSchema.make('foldkit-a'),
+    NodeIdSchema.make('absent'),
+  ])
+
+  refresher.dispose()
+
+  if (
+    JSON.stringify(results) !==
+    JSON.stringify([
+      { nodeId: 'foldkit-a', status: 'requested' },
+      { nodeId: 'absent', status: 'missing' },
+    ])
+  ) {
+    throw new Error('Packed Foldkit ordered batch refresh failed')
+  }
 
   return promise.finally(() => window.clearTimeout(timeout))
 }

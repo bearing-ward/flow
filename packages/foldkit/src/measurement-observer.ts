@@ -1,4 +1,9 @@
-import { NodeIdSchema } from '@flow/core'
+import {
+  NodeIdSchema,
+  HandleIdSchema,
+  FlowAttribute,
+  FlowSpan,
+} from '@flow/core'
 import type { NodeMeasurementInput } from '@flow/core'
 import { Effect } from 'effect'
 
@@ -15,6 +20,7 @@ export interface FoldkitNodeMeasurementObserver {
 
 export interface FoldkitNodeMeasurementObserverOptions {
   readonly owner: HTMLElement
+  readonly zoom?: () => number
   readonly onMeasure: (request: FoldkitNodeMeasurementRequest) => void
   readonly onMutations?: () => void
   readonly selector?: string
@@ -38,7 +44,7 @@ export const createFoldkitNodeMeasurementObserver = (
   let disposed = false
   const observedElements = new WeakSet<Element>()
   const elementGenerations = new WeakMap<Element, number>()
-  const selector = options.selector ?? '[data-node-id]'
+  const selector = options.selector ?? '[data-testid="flow-node"]'
 
   const reportError = (cause: Error): void => {
     if (options.onError !== undefined) {
@@ -48,12 +54,22 @@ export const createFoldkitNodeMeasurementObserver = (
     }
 
     Effect.runFork(
-      Effect.logError('Foldkit node measurement observer failed', cause)
+      Effect.logError('Foldkit node measurement observer failed', cause).pipe(
+        Effect.annotateLogs({
+          [FlowAttribute.failureName]: cause.name,
+          [FlowAttribute.nodeId]: 'observer',
+        }),
+        Effect.withSpan(FlowSpan.geometryMeasure)
+      )
     )
   }
 
   const measure = (element: Element, requestId?: string): boolean => {
-    if (disposed || !(element instanceof view.HTMLElement)) {
+    if (
+      disposed ||
+      !owner.contains(element) ||
+      !(element instanceof view.HTMLElement)
+    ) {
       return false
     }
 
@@ -64,15 +80,51 @@ export const createFoldkitNodeMeasurementObserver = (
     }
 
     requestNumber += 1
-    const bounds = element.getBoundingClientRect()
 
     try {
+      const bounds = element.getBoundingClientRect()
+      const zoom = options.zoom?.() ?? 1
+
+      const handles = [
+        ...element.querySelectorAll<HTMLElement>('[data-handle-id]'),
+      ].flatMap((handleElement) => {
+        const { handleId } = handleElement.dataset
+
+        if (
+          handleId === undefined ||
+          handleElement.closest('[data-testid="flow-node"]') !== element ||
+          handleElement.getClientRects().length === 0
+        ) {
+          return []
+        }
+
+        const handle = handleElement.getBoundingClientRect()
+
+        return [
+          {
+            nodeId: NodeIdSchema.make(nodeId),
+            handleId: HandleIdSchema.make(handleId),
+            offset: {
+              x: (handle.left + handle.width / 2 - bounds.left) / zoom,
+              y: (handle.top + handle.height / 2 - bounds.top) / zoom,
+            },
+            width: handle.width / zoom,
+            height: handle.height / zoom,
+          },
+        ]
+      })
+
+      const uniqueHandles = [
+        ...new Map(handles.map((handle) => [handle.handleId, handle])).values(),
+      ]
+
       options.onMeasure({
         requestId: requestId ?? `observer-${requestNumber}`,
         measurement: {
           nodeId: NodeIdSchema.make(nodeId),
-          width: bounds.width,
-          height: bounds.height,
+          width: bounds.width / zoom,
+          height: bounds.height / zoom,
+          handles: uniqueHandles,
           generation: elementGenerations.get(element) ?? generation,
         },
       })

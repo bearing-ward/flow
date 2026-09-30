@@ -3,6 +3,7 @@ import {
   applyDefaultEdgeOptions,
   createFlowGraph,
   edgeAttachmentPosition,
+  inferHandleMeasurement,
   edgeLabelPosition,
   orderFlowEdges,
   resolveEdgeHandles,
@@ -20,6 +21,7 @@ import type {
   FlowGraphView,
   HandleId,
   MeasuredHandle,
+  MeasuredNode,
   NodeId,
   XYPosition,
 } from '@flow/core'
@@ -29,6 +31,46 @@ import type {
   FlowEdgeRenderer,
   FlowEdgeRendererInstance,
 } from './mount-flow.ts'
+
+export const measureNodeHandles = (
+  node: FlowNode,
+  element: HTMLElement,
+  zoom: number
+): readonly MeasuredHandle[] => {
+  const nodeBounds = element.getBoundingClientRect()
+  const handles = new Map<HandleId, MeasuredHandle>()
+
+  for (const handleElement of element.querySelectorAll<HTMLElement>(
+    '.flow-handle'
+  )) {
+    const handle = node.handles?.find(
+      (candidate) => candidate.id === handleElement.dataset.handleId
+    )
+
+    if (
+      handle === undefined ||
+      handleElement.closest('[data-testid="flow-node"]') !== element ||
+      handleElement.getClientRects().length === 0
+    ) {
+      continue
+    }
+
+    const bounds = handleElement.getBoundingClientRect()
+
+    handles.set(handle.id, {
+      nodeId: node.id,
+      handleId: handle.id,
+      offset: {
+        x: (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom,
+        y: (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom,
+      },
+      width: bounds.width / zoom,
+      height: bounds.height / zoom,
+    })
+  }
+
+  return [...handles.values()]
+}
 
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
@@ -48,8 +90,9 @@ interface EdgeElements {
 
 export const createEdgeRenderer = (
   viewport: HTMLElement,
-  renderers: Readonly<Record<string, FlowEdgeRenderer>> = {},
-  defaultEdgeOptions?: FlowDefaultEdgeOptions
+  renderers: Readonly<Record<string, FlowEdgeRenderer>> | undefined,
+  defaultEdgeOptions: FlowDefaultEdgeOptions | undefined,
+  readMeasurements: () => ReadonlyMap<NodeId, MeasuredNode>
 ) => {
   nextMarkerScope += 1
   const markerScope = nextMarkerScope
@@ -70,7 +113,6 @@ export const createEdgeRenderer = (
   viewport.append(anchorLayer)
   viewport.append(labelLayer)
 
-  const measurements = new Map<NodeId, Map<HandleId, MeasuredHandle>>()
   const edges = new Map<EdgeId, EdgeElements>()
   const labels = new Map<EdgeId, HTMLDivElement>()
 
@@ -120,42 +162,6 @@ export const createEdgeRenderer = (
     }
 
     return id
-  }
-
-  const measureNode = (
-    node: FlowNode,
-    element: HTMLElement,
-    zoom: number
-  ): void => {
-    const nodeBounds = element.getBoundingClientRect()
-    const handles = new Map<HandleId, MeasuredHandle>()
-
-    for (const handleElement of element.querySelectorAll<HTMLElement>(
-      '.flow-handle'
-    )) {
-      const handle = node.handles?.find(
-        (candidate) => candidate.id === handleElement.dataset.handleId
-      )
-
-      if (handle === undefined) {
-        continue
-      }
-
-      const bounds = handleElement.getBoundingClientRect()
-
-      handles.set(handle.id, {
-        nodeId: node.id,
-        handleId: handle.id,
-        offset: {
-          x: (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom,
-          y: (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom,
-        },
-        width: bounds.width / zoom,
-        height: bounds.height / zoom,
-      })
-    }
-
-    measurements.set(node.id, handles)
   }
 
   // Reconciliation covers element reuse, visibility, path variants, and SVG decorations.
@@ -209,6 +215,8 @@ export const createEdgeRenderer = (
             (edge) => onlyEdges.has(edge.id) && edgeById.has(edge.id)
           )
 
+    const measurements = readMeasurements()
+
     for (const edge of edgesToPaint) {
       if (
         edge.hidden === true ||
@@ -233,15 +241,33 @@ export const createEdgeRenderer = (
       }
 
       const sourceMeasured = resolved
-        ? measurements
+        ? (measurements
             .get(resolved.sourceNode.id)
-            ?.get(resolved.sourceHandle.id)
+            ?.handles?.find(
+              ({ handleId }) => handleId === resolved.sourceHandle.id
+            ) ??
+          (sourceGraphNode === undefined
+            ? undefined
+            : inferHandleMeasurement(
+                resolved.sourceNode.id,
+                resolved.sourceHandle,
+                sourceGraphNode.dimensions
+              )))
         : undefined
 
       const targetMeasured = resolved
-        ? measurements
+        ? (measurements
             .get(resolved.targetNode.id)
-            ?.get(resolved.targetHandle.id)
+            ?.handles?.find(
+              ({ handleId }) => handleId === resolved.targetHandle.id
+            ) ??
+          (targetGraphNode === undefined
+            ? undefined
+            : inferHandleMeasurement(
+                resolved.targetNode.id,
+                resolved.targetHandle,
+                targetGraphNode.dimensions
+              )))
         : undefined
 
       if (
@@ -301,7 +327,7 @@ export const createEdgeRenderer = (
       }
 
       const registeredRenderer =
-        edge.type === undefined ? undefined : renderers[edge.type]
+        edge.type === undefined ? undefined : renderers?.[edge.type]
 
       const endpoints = {
         source,
@@ -616,14 +642,9 @@ export const createEdgeRenderer = (
     setVisibleEdges: (edgeIds: ReadonlySet<EdgeId> | null): void => {
       visibleEdgeIds = edgeIds
     },
-    measureNode,
-    forgetNode: (nodeId: NodeId): void => {
-      measurements.delete(nodeId)
-    },
     reconcile,
     updatePositions,
     destroy: (): void => {
-      measurements.clear()
       previousPositions.clear()
 
       for (const { renderer } of customRenderers.values()) {

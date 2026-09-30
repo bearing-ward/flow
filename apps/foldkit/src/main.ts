@@ -457,8 +457,6 @@ type MeasurementResult = typeof MeasurementResultSchema.Encoded
 
 let measurementRequestNumber = 0
 
-let activeMeasurementRequestId: string | undefined
-
 const pendingMeasurementRequests = new Map<
   string,
   {
@@ -479,12 +477,21 @@ runtime.ports.measurementResults.subscribe((result) => {
     miniMapMount?.update(miniMapGraph, miniMapViewport)
   }
 
-  pendingMeasurementRequests.get(result.requestId)?.resolve(result)
-  pendingMeasurementRequests.delete(result.requestId)
+  const owner = pendingMeasurementRequests.get(result.requestId)
+
+  if (owner !== undefined) {
+    for (const [requestId, pending] of pendingMeasurementRequests) {
+      if (pending.nodeId === owner.nodeId) {
+        pendingMeasurementRequests.delete(requestId)
+        pending.resolve({ ...result, requestId })
+      }
+    }
+  }
 })
 
 const measurementObserver = createFoldkitNodeMeasurementObserver({
   owner: root,
+  zoom: () => miniMapViewport.zoom,
   onMeasure: ({ requestId, measurement }) => {
     const sent = runtime.ports.actions.send(
       HostAction.MeasureNode({ requestId, measurement })
@@ -502,12 +509,12 @@ const nodeInternalsRefresher = createFoldkitNodeInternalsRefresher({
     [...root.querySelectorAll<HTMLElement>('[data-node-id]')].find(
       (element) => element.dataset.nodeId === nodeId
     ),
-  measure: (element) => {
-    if (activeMeasurementRequestId === undefined) {
-      return false
-    }
+  measure: (element, nodeId) => {
+    const request = [...pendingMeasurementRequests].find(
+      ([, pending]) => pending.nodeId === nodeId
+    )
 
-    return measurementObserver.measure(element, activeMeasurementRequestId)
+    return measurementObserver.measure(element, request?.[0])
   },
 })
 
@@ -518,7 +525,7 @@ const nextAnimationFrame = (): Promise<undefined> => {
   return promise
 }
 
-const refreshNodeInternals = (
+const refreshNodeInternals = async (
   nodeId: NodeId
 ): Promise<
   MeasurementResult | { readonly status: 'missing' | 'disposed' | 'failed' }
@@ -527,19 +534,16 @@ const refreshNodeInternals = (
   const requestId = `refresh-${measurementRequestNumber}`
   const { promise, resolve } = Promise.withResolvers<MeasurementResult>()
   pendingMeasurementRequests.set(requestId, { nodeId, resolve })
-  let request: ReturnType<typeof nodeInternalsRefresher.refresh>
+  const [request] = await nodeInternalsRefresher.refresh(nodeId)
 
-  try {
-    activeMeasurementRequestId = requestId
-    request = nodeInternalsRefresher.refresh(nodeId)
-  } finally {
-    activeMeasurementRequestId = undefined
+  if (request === undefined) {
+    throw new Error('Missing requested measurement result')
   }
 
   if (request.status !== 'requested') {
     pendingMeasurementRequests.delete(requestId)
 
-    return Promise.resolve({ status: request.status })
+    return { status: request.status }
   }
 
   return promise

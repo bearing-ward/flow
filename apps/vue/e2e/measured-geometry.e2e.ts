@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { Schema as S } from 'effect'
 
+import { assertDynamicHandleRefresh } from '../../shared-e2e/handle-refresh-contract.ts'
 import { assertSharedMeasurementContract } from '../../shared-e2e/measured-geometry-contract.ts'
 import { createVueConformanceAdapter } from './conformance.ts'
 
@@ -65,7 +66,7 @@ test('Vue demo toggles measured size and refreshes internal geometry', async ({
   )
 
   expect(geometry.results).toEqual([
-    { nodeId: 'validate', status: 'refreshed' },
+    { nodeId: 'validate', status: 'requested' },
   ])
   expect(geometry.status).toBe('measured')
   expect(geometry.width).toBeCloseTo(result.width)
@@ -100,4 +101,20 @@ test('Vue settles a queued measurement refresh as disposed on unmount', async ({
   })
 
   expect(result).toEqual({ nodeId: 'queued', status: 'disposed' })
+})
+
+for (const zoom of [0.5, 2]) {
+  for (const controlled of [false, true]) {
+    test(`vue dynamic handle refresh at zoom ${zoom}, controlled ${
+      controlled
+    }`, async ({ page }) => {
+      await assertDynamicHandleRefresh(page, 'vue', zoom, controlled, false)
+    })
+  }
+}
+
+test('vue actual public geometry and SVG endpoints match pinned equivalent handle layout', async ({
+  page,
+}) => {
+  await assertDynamicHandleRefresh(page, 'vue', 1, false, true)
 })

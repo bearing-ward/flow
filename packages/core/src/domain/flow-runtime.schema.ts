@@ -1,6 +1,7 @@
 import { Effect, Schema as S } from 'effect'
 
 import { ActiveConnectionSchema } from './flow-connection.schema.ts'
+import { MeasuredHandleSchema } from './flow-edge.schema.ts'
 import {
   FlowEditTransactionSchema,
   FlowDeleteResultSchema,
@@ -54,6 +55,7 @@ export const ViewportLimitsSchema = S.Struct({
 export type ViewportLimits = typeof ViewportLimitsSchema.Type
 
 export const MeasuredNodeSchema = S.Struct({
+  handles: S.optional(S.Array(MeasuredHandleSchema)),
   height: S.Finite.check(S.isGreaterThanOrEqualTo(0)),
   nodeId: NodeIdSchema,
   width: S.Finite.check(S.isGreaterThanOrEqualTo(0)),

@@ -1,10 +1,11 @@
-import { decodeFlowDocument } from '@flow/core'
+import { decodeFlowDocument, FlowEditDisposedSchema } from '@flow/core'
 import {
   createFoldkitPlaceholder,
+  createFoldkitSnapshotClient,
   createProgram,
   defaultInteractionOptions,
 } from '@flow/foldkit'
-import type { EditResponse, SnapshotResponse, ports } from '@flow/foldkit'
+import type { EditResponse, ports } from '@flow/foldkit'
 import { Effect, Exit } from 'effect'
 import { Runtime } from 'foldkit'
 
@@ -62,11 +63,11 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
 
 let requestNumber = 0
 
-let snapshotNumber = 0
+const snapshotClient = createFoldkitSnapshotClient(runtime.ports)
+
+let disposed = false
 
 const pending = new Map<string, (response: EditResponse) => void>()
-
-const pendingSnapshots = new Map<string, (response: SnapshotResponse) => void>()
 
 let activating = false
 
@@ -84,18 +85,13 @@ const action = createFoldkitPlaceholder(document, {
 
 emptyState.append(action)
 
-runtime.ports.snapshots.subscribe((response) => {
-  pendingSnapshots.get(response.requestId)?.(response)
-  pendingSnapshots.delete(response.requestId)
-})
-
-runtime.ports.editResults.subscribe((response) => {
+const stopEdits = runtime.ports.editResults.subscribe((response) => {
   pending.get(response.requestId)?.(response)
   pending.delete(response.requestId)
 })
 
 handlers.activate = async (): Promise<void> => {
-  if (activating) {
+  if (activating || disposed) {
     return
   }
 
@@ -135,6 +131,10 @@ handlers.activate = async (): Promise<void> => {
 
   const response = await promise
 
+  if (disposed) {
+    return
+  }
+
   if ('result' in response) {
     emptyState.replaceChildren()
     output.value = `accepted:${response.result.document.nodes.length}`
@@ -146,25 +146,52 @@ handlers.activate = async (): Promise<void> => {
 }
 
 checkSelection.addEventListener('click', async () => {
-  snapshotNumber += 1
-  const requestId = `placeholder-snapshot-${snapshotNumber}`
-  const { promise, resolve } = Promise.withResolvers<SnapshotResponse>()
-  pendingSnapshots.set(requestId, resolve)
-
-  const sent = runtime.ports.snapshotRequests.send({
-    requestId,
-    nodeId: 'placeholder-created',
-  })
-
-  if (Exit.isFailure(sent)) {
-    pendingSnapshots.delete(requestId)
-    throw new Error('Foldkit rejected Placeholder snapshot request')
+  if (disposed) {
+    return
   }
 
-  const response = await promise
-  output.value = `selected:${response.node?.selected === true}`
+  const result = await snapshotClient.request({ nodeId: 'placeholder-created' })
+
+  if (disposed) {
+    return
+  }
+
+  switch (result.status) {
+    case 'succeeded': {
+      output.value = `selected:${result.response.node?.selected === true}`
+      break
+    }
+
+    case 'failed': {
+      output.value = `snapshot-failed:${result.reason}`
+      break
+    }
+
+    case 'disposed': {
+      output.value = 'snapshot-disposed'
+      break
+    }
+
+    default: {
+      const exhaustive: never = result
+      throw new Error(`Unexpected snapshot outcome: ${String(exhaustive)}`)
+    }
+  }
 })
 
-globalThis.addEventListener('pagehide', () => runtime.dispose(), {
-  once: true,
-})
+globalThis.addEventListener(
+  'pagehide',
+  () => {
+    disposed = true
+    snapshotClient.dispose()
+    stopEdits()
+
+    for (const [requestId, resolve] of pending) {
+      resolve({ requestId, error: FlowEditDisposedSchema.make({}) })
+    }
+
+    pending.clear()
+    runtime.dispose()
+  },
+  { once: true }
+)

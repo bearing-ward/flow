@@ -1,7 +1,8 @@
-import { Schema as S } from 'effect'
+import { Effect, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import {
+  NodeMeasurementInputSchema,
   advanceNodeMeasurementGeneration,
   applyNodeMeasurements,
   applyNodeMeasurement,
@@ -10,6 +11,10 @@ import {
   getFlowInternalNode,
   pruneFlowMeasurements,
 } from './flow-measurement.schema.ts'
+import {
+  encodeSavedFlowSession,
+  decodeSavedFlowSession,
+} from './flow-persistence.ts'
 import { FlowDocumentSchema, NodeIdSchema } from './flow.schema.ts'
 import type { FlowDocument } from './flow.schema.ts'
 
@@ -51,6 +56,7 @@ describe('flow measurement state', () => {
 
     expect(initial.nodes).toStrictEqual([])
     expect(measured.nodes[0]?.measurement).toStrictEqual({
+      handles: [],
       height: 0,
       nodeId: id('parent'),
       width: 0,
@@ -191,5 +197,198 @@ describe('flow measurement state', () => {
         })
       ).toThrow('Expected')
     }
+  })
+})
+
+describe('generation-scoped measured handles', () => {
+  const graph = S.decodeUnknownSync(FlowDocumentSchema)({
+    nodes: [
+      { id: 'parent', label: 'Parent', position: { x: 20, y: 30 } },
+      {
+        id: 'child',
+        label: 'Child',
+        parentId: 'parent',
+        position: { x: 10, y: 12 },
+        handles: [{ id: 'out', kind: 'source', side: 'right' }],
+      },
+    ],
+    edges: [],
+  })
+
+  const sample = S.decodeUnknownSync(NodeMeasurementInputSchema)({
+    generation: 0,
+    nodeId: 'child',
+    width: 100,
+    height: 50,
+    handles: [
+      {
+        nodeId: 'child',
+        handleId: 'out',
+        offset: { x: 100, y: 15 },
+        width: 10,
+        height: 12,
+      },
+    ],
+  })
+
+  it('invalidates bounds, handles and readiness together on generation replacement', () => {
+    const measured = applyNodeMeasurement(
+      graph,
+      emptyFlowMeasurementState(),
+      sample
+    )
+
+    const replaced = advanceNodeMeasurementGeneration(measured, id('child'))
+    expect(
+      getFlowInternalNode(graph, measured, id('child'))?.handles
+    ).toHaveLength(1)
+    expect(getFlowInternalNode(graph, replaced, id('child'))).toMatchObject({
+      handles: [],
+      measurementStatus: 'unmeasured',
+    })
+    expect(
+      areFlowNodesInitialized(graph, replaced, {
+        mountedNodeIds: new Set([id('child')]),
+      })
+    ).toBeFalsy()
+    expect(applyNodeMeasurement(graph, replaced, sample).revision).toBe(
+      replaced.revision
+    )
+  })
+
+  it('replaces same-size handle geometry atomically and removes undeclared handles', () => {
+    const before = applyNodeMeasurement(
+      graph,
+      emptyFlowMeasurementState(),
+      sample
+    )
+
+    const after = applyNodeMeasurement(graph, before, {
+      ...sample,
+      handles: [],
+    })
+
+    expect(after.revision).toBe(before.revision + 1)
+    expect(
+      getFlowInternalNode(graph, after, id('child'))?.handles
+    ).toStrictEqual([])
+
+    const withoutHandle = {
+      ...graph,
+      nodes: graph.nodes.map((node) => ({ ...node, handles: [] })),
+    }
+
+    expect(
+      getFlowInternalNode(withoutHandle, before, id('child'))?.handles
+    ).toStrictEqual([])
+  })
+
+  it('detaches and freezes nested public handle geometry', () => {
+    const state = applyNodeMeasurement(
+      graph,
+      emptyFlowMeasurementState(),
+      sample
+    )
+
+    const value = getFlowInternalNode(graph, state, id('child'))
+    const original = state.nodes[0]?.measurement.handles?.[0]
+
+    if (value?.handles[0] === undefined || original === undefined) {
+      throw new Error('Missing measured handle')
+    }
+
+    expect({
+      absolute: value.absolutePosition,
+      arrayFrozen: Object.isFrozen(value.handles),
+      handleFrozen: Object.isFrozen(value.handles[0]),
+      offsetFrozen: Object.isFrozen(value.handles[0].offset),
+      handleDetached: value.handles[0] !== original,
+      offsetDetached: value.handles[0].offset !== original.offset,
+    }).toStrictEqual({
+      absolute: { x: 30, y: 42 },
+      arrayFrozen: true,
+      handleFrozen: true,
+      offsetFrozen: true,
+      handleDetached: true,
+      offsetDetached: true,
+    })
+    expect(Reflect.set(value.handles[0].offset, 'x', 999)).toBeFalsy()
+    expect(original.offset.x).toBe(100)
+  })
+
+  it('filters inherited visibility and same-ID kind or side replacements', () => {
+    const state = applyNodeMeasurement(
+      graph,
+      emptyFlowMeasurementState(),
+      sample
+    )
+
+    const hidden = {
+      ...graph,
+      nodes: graph.nodes.map((node) =>
+        node.id === id('parent') ? { ...node, hidden: true } : node
+      ),
+    }
+
+    expect(getFlowInternalNode(hidden, state, id('child'))).toMatchObject({
+      handles: [],
+      measurementStatus: 'hidden',
+    })
+    expect(
+      getFlowInternalNode({ ...graph, nodes: [] }, state, id('child'))
+    ).toBeUndefined()
+
+    for (const declaration of [
+      { id: 'out', kind: 'target', side: 'right' },
+      { id: 'out', kind: 'source', side: 'left' },
+    ]) {
+      const replaced = S.decodeUnknownSync(FlowDocumentSchema)({
+        ...graph,
+        nodes: graph.nodes.map((node) =>
+          node.id === id('child') ? { ...node, handles: [declaration] } : node
+        ),
+      })
+
+      expect(
+        getFlowInternalNode(replaced, state, id('child'))?.handles
+      ).toStrictEqual([])
+    }
+  })
+
+  it('keeps transient handles outside the unchanged saved-v1 contract', () => {
+    const state = applyNodeMeasurement(
+      graph,
+      emptyFlowMeasurementState(),
+      sample
+    )
+
+    const viewport = { x: 10, y: 20, zoom: 2 }
+    const savedBefore = encodeSavedFlowSession(graph, viewport)
+    const moved = applyNodeMeasurement(graph, state, { ...sample, handles: [] })
+
+    expect(moved.revision).toBeGreaterThan(state.revision)
+    expect(encodeSavedFlowSession(graph, viewport)).toStrictEqual(savedBefore)
+    expect(
+      Effect.runSync(decodeSavedFlowSession(savedBefore)).viewport
+    ).toStrictEqual(viewport)
+    expect(JSON.stringify(savedBefore)).not.toContain('offset')
+    expect(S.encodeSync(FlowDocumentSchema)(graph)).not.toHaveProperty(
+      'measurements'
+    )
+  })
+
+  it('rejects nonfinite or negative measured geometry at the schema boundary', () => {
+    expect(() =>
+      S.decodeUnknownSync(NodeMeasurementInputSchema)({
+        ...sample,
+        handles: [{ ...sample.handles?.[0], width: -1 }],
+      })
+    ).toThrow('Expected')
+    expect(() =>
+      S.decodeUnknownSync(NodeMeasurementInputSchema)({
+        ...sample,
+        height: Number.NaN,
+      })
+    ).toThrow('Expected')
   })
 })

@@ -20,6 +20,8 @@ import {
   applyNodeMeasurement,
   pruneFlowMeasurements,
   getFlowInternalNode,
+  getFlowMeasuredNodes,
+  inferHandleMeasurement,
   areFlowNodesInitialized,
   edgeAttachmentPosition,
   edgeLabelPosition,
@@ -74,6 +76,8 @@ import type {
   FlowNode,
   Viewport as CoreViewport,
   FlowGraphNode,
+  MeasuredNode,
+  MeasuredHandle,
   FlowInternalNode,
   FlowEdgePath,
   FlowHandleConnectionsQuerySchema,
@@ -531,8 +535,11 @@ export const selectInternalNode = (
     : getFlowInternalNode(model.document, model.measurements, nodeId)
 }
 
-const selectMountedNodeIds = (model: Model): ReadonlySet<NodeId> => {
-  const graph = createFlowGraph(model.document)
+const selectMountedNodeIds = (
+  model: Model,
+  measurements = getFlowMeasuredNodes(model.document, model.measurements),
+  graph = createFlowGraph(model.document, measurements)
+): ReadonlySet<NodeId> => {
   const { zoom } = model.viewport
 
   return new Set(
@@ -547,9 +554,7 @@ const selectMountedNodeIds = (model: Model): ReadonlySet<NodeId> => {
       const left = x * zoom + model.viewport.x
       const top = y * zoom + model.viewport.y
 
-      const measured = model.measurements.nodes.find(
-        ({ measurement }) => measurement.nodeId === node.id
-      )?.measurement
+      const measured = measurements.get(node.id)
 
       const width = measured?.width ?? node.size?.width ?? 150
       const height = measured?.height ?? node.size?.height ?? 44
@@ -914,7 +919,10 @@ const finishNodeDrag = (
     return { model: cleared }
   }
 
-  const graph = createFlowGraph(model.document)
+  const graph = createFlowGraph(
+    model.document,
+    getFlowMeasuredNodes(model.document, model.measurements)
+  )
 
   const absoluteOrigin =
     graph.nodes.get(node.id)?.absolutePosition ?? node.position
@@ -1548,15 +1556,18 @@ export const update = (
         return noChange(model)
       }
 
-      const measured = model.measurements.nodes.find(
-        ({ measurement }) => measurement.nodeId === node.id
-      )?.measurement
+      const measured = getFlowMeasuredNodes(
+        model.document,
+        model.measurements
+      ).get(node.id)
 
       const size = measured ?? node.size ?? { width: 150, height: 44 }
 
       const position =
-        createFlowGraph(model.document).nodes.get(node.id)?.absolutePosition ??
-        node.position
+        createFlowGraph(
+          model.document,
+          getFlowMeasuredNodes(model.document, model.measurements)
+        ).nodes.get(node.id)?.absolutePosition ?? node.position
 
       return {
         model: {
@@ -1649,7 +1660,10 @@ export const update = (
         }
 
         const change = selectionInRect(
-          createFlowGraph(model.document),
+          createFlowGraph(
+            model.document,
+            getFlowMeasuredNodes(model.document, model.measurements)
+          ),
           {
             x: Math.min(gesture.startX, released.flowX),
             y: Math.min(gesture.startY, released.flowY),
@@ -1864,11 +1878,15 @@ export const update = (
           return noChange(model)
         }
 
-        const graphNode = createFlowGraph(model.document).nodes.get(nodeId)
+        const graphNode = createFlowGraph(
+          model.document,
+          getFlowMeasuredNodes(model.document, model.measurements)
+        ).nodes.get(nodeId)
 
-        const measured = model.measurements.nodes.find(
-          ({ measurement }) => measurement.nodeId === nodeId
-        )?.measurement
+        const measured = getFlowMeasuredNodes(
+          model.document,
+          model.measurements
+        ).get(nodeId)
 
         const size = measured ?? node.size ?? { width: 150, height: 44 }
 
@@ -1959,7 +1977,10 @@ export const update = (
       const dy = gesture.currentY - gesture.startY
 
       const change = selectionInRect(
-        createFlowGraph(model.document),
+        createFlowGraph(
+          model.document,
+          getFlowMeasuredNodes(model.document, model.measurements)
+        ),
         {
           x: Math.min(gesture.startX, gesture.currentX),
           y: Math.min(gesture.startY, gesture.currentY),
@@ -2035,9 +2056,10 @@ export const update = (
         return { model: cleared }
       }
 
-      const measured = model.measurements.nodes.find(
-        ({ measurement }) => measurement.nodeId === node.id
-      )?.measurement
+      const measured = getFlowMeasuredNodes(
+        model.document,
+        model.measurements
+      ).get(node.id)
 
       const size = measured ?? node.size ?? { width: 150, height: 44 }
       const { position } = node
@@ -2306,18 +2328,35 @@ export type FoldkitConnectionPreviewRenderer = (
 ) => FoldHtml.Html
 
 const flowPointForElement = (
-  element: Element,
-  viewport: CoreViewport,
-  canvas: HTMLElement
+  element: HTMLElement,
+  graph: ReturnType<typeof createFlowGraph>,
+  measurements: ReadonlyMap<NodeId, MeasuredNode>
 ) => {
-  const rect = element.getBoundingClientRect()
+  const nodeId = element.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
 
-  return flowPoint(
-    rect.left + rect.width / 2,
-    rect.top + rect.height / 2,
-    viewport,
-    canvas
+  const decodedNodeId = Option.getOrUndefined(
+    Schema.decodeUnknownOption(NodeIdSchema)(nodeId)
   )
+
+  const graphNode =
+    decodedNodeId === undefined ? undefined : graph.nodes.get(decodedNodeId)
+
+  const handle = graphNode?.node.handles?.find(
+    ({ id }) => id === element.dataset.handleId
+  )
+
+  if (graphNode !== undefined && !graphNode.hidden && handle !== undefined) {
+    const measured =
+      measurements
+        .get(graphNode.id)
+        ?.handles?.find(({ handleId }) => handleId === handle.id) ??
+      inferHandleMeasurement(graphNode.id, handle, graphNode.dimensions)
+
+    return {
+      x: graphNode.absolutePosition.x + measured.offset.x,
+      y: graphNode.absolutePosition.y + measured.offset.y,
+    }
+  }
 }
 
 const handleElement = (
@@ -2328,6 +2367,145 @@ const handleElement = (
   canvas?.querySelector<HTMLElement>(
     `[data-node-id="${CSS.escape(nodeId)}"] [data-handle-id="${CSS.escape(handleId)}"]`
   )
+
+const defaultHandleSide = (kind: FlowHandle['kind']): FlowHandle['side'] =>
+  kind === 'source' ? 'right' : 'left'
+
+const handleOffset = (
+  side: FlowHandle['side'],
+  size: { readonly width: number; readonly height: number }
+) => {
+  let x = size.width / 2
+  let y = size.height / 2
+
+  switch (side) {
+    case 'left': {
+      x = 0
+      break
+    }
+
+    case 'right': {
+      x = size.width
+      break
+    }
+
+    case 'top': {
+      y = 0
+      break
+    }
+
+    case 'bottom': {
+      y = size.height
+      break
+    }
+
+    default: {
+      break
+    }
+  }
+
+  return { x, y }
+}
+
+const edgePoint = (
+  nodeId: NodeId,
+  handleId: string,
+  position: { readonly x: number; readonly y: number },
+  size: { readonly width: number; readonly height: number },
+  side: FlowHandle['side'],
+  measured?: MeasuredHandle
+) =>
+  edgeAttachmentPosition(
+    position,
+    { id: HandleIdSchema.make(handleId), kind: 'source', side },
+    measured ?? {
+      nodeId,
+      handleId: HandleIdSchema.make(handleId),
+      offset: handleOffset(side, size),
+      width: 11,
+      height: 11,
+    }
+  )
+
+// oxlint-disable-next-line complexity
+const calculateEdgeGeometry = (
+  document: FlowDocument,
+  measurements: ReadonlyMap<NodeId, MeasuredNode>,
+  edge: FlowEdge,
+  source: FlowGraphNode,
+  target: FlowGraphNode,
+  markerScope: string
+) => {
+  const resolved = resolveEdgeHandles(document, edge)
+  const sourceHandle = resolved?.sourceHandle
+  const targetHandle = resolved?.targetHandle
+  const sourceSide = sourceHandle?.side ?? defaultHandleSide('source')
+  const targetSide = targetHandle?.side ?? defaultHandleSide('target')
+
+  const sourceSize = measurements.get(source.node.id) ??
+    source.node.size ?? { width: 150, height: 44 }
+
+  const targetSize = measurements.get(target.node.id) ??
+    target.node.size ?? { width: 150, height: 44 }
+
+  const start = edgePoint(
+    source.node.id,
+    sourceHandle?.id ?? `${edge.id}-source`,
+    source.absolutePosition,
+    sourceSize,
+    sourceSide,
+    measurements
+      .get(source.node.id)
+      ?.handles?.find(({ handleId }) => handleId === sourceHandle?.id)
+  )
+
+  const end = edgePoint(
+    target.node.id,
+    targetHandle?.id ?? `${edge.id}-target`,
+    target.absolutePosition,
+    targetSize,
+    targetSide,
+    measurements
+      .get(target.node.id)
+      ?.handles?.find(({ handleId }) => handleId === targetHandle?.id)
+  )
+
+  const pathType: FlowEdgePath = edge.path ?? 'straight'
+
+  const path = {
+    straight: () => straightEdgePath(start, end),
+    bezier: () => bezierEdgePath(start, end, sourceSide, targetSide),
+    step: () => stepEdgePath(start, end, sourceSide, targetSide),
+    smoothstep: () => smoothStepEdgePath(start, end, sourceSide, targetSide),
+    simplebezier: () =>
+      simpleBezierEdgePath(start, end, sourceSide, targetSide),
+  }[pathType]()
+
+  const markerStartId =
+    edge.markerStart === undefined
+      ? undefined
+      : `${markerScope}-${edge.id}-start`
+
+  const markerEndId =
+    edge.markerEnd === undefined ? undefined : `${markerScope}-${edge.id}-end`
+
+  const geometry: FoldkitEdgeGeometry = {
+    path,
+    start,
+    end,
+    labelPosition: edgeLabelPosition(
+      start,
+      end,
+      pathType,
+      sourceSide,
+      targetSide
+    ),
+    markerStartId,
+    markerEndId,
+  }
+
+  return { geometry, markerStartId, markerEndId }
+}
 
 // oxlint-disable-next-line complexity
 const connectionPreviewState = (
@@ -2363,10 +2541,46 @@ const connectionPreviewState = (
           `.flow-foldkit-reconnect-handle[data-edge-id="${CSS.escape(session.edgeId)}"][data-edge-endpoint="${session.endpoint}"]`
         )
 
-  const from =
-    fromElement === null || fromElement === undefined
-      ? { x: session.currentX, y: session.currentY }
-      : flowPointForElement(fromElement, model.viewport, canvas)
+  const measurements = getFlowMeasuredNodes(model.document, model.measurements)
+  const graph = createFlowGraph(model.document, measurements)
+
+  const reconnectEdge =
+    session.kind === 'reconnection'
+      ? model.document.edges.find(({ id }) => id === session.edgeId)
+      : undefined
+
+  const reconnectSource =
+    reconnectEdge === undefined
+      ? undefined
+      : graph.nodes.get(reconnectEdge.source)
+
+  const reconnectTarget =
+    reconnectEdge === undefined
+      ? undefined
+      : graph.nodes.get(reconnectEdge.target)
+
+  const reconnectGeometry =
+    reconnectEdge === undefined ||
+    reconnectSource === undefined ||
+    reconnectTarget === undefined
+      ? undefined
+      : calculateEdgeGeometry(
+          model.document,
+          measurements,
+          reconnectEdge,
+          reconnectSource,
+          reconnectTarget,
+          'preview'
+        ).geometry
+
+  let from = to
+
+  if (session.kind === 'reconnection') {
+    from =
+      reconnectGeometry?.[session.endpoint === 'source' ? 'start' : 'end'] ?? to
+  } else if (fromElement !== null && fromElement !== undefined) {
+    from = flowPointForElement(fromElement, graph, measurements) ?? to
+  }
 
   const candidates = [
     ...canvas.querySelectorAll<HTMLElement>('[data-handle-id]'),
@@ -2399,14 +2613,18 @@ const connectionPreviewState = (
       Schema.decodeUnknownOption(HandleIdSchema)(handleId)
     )
 
-    return decodedNodeId === null || decodedHandleId === null
+    const center = flowPointForElement(element, graph, measurements)
+
+    return decodedNodeId === null ||
+      decodedHandleId === null ||
+      center === undefined
       ? []
       : [
           {
             nodeId: decodedNodeId,
             handleId: decodedHandleId,
             kind: handle.kind,
-            center: flowPointForElement(element, model.viewport, canvas),
+            center,
           },
         ]
   })
@@ -2539,140 +2757,6 @@ export const selectConnectionPreview = (
   model: Model
 ): ConnectionPreviewSnapshot =>
   createConnectionPreviewSnapshot(connectionPreviewState(model))
-
-const defaultHandleSide = (kind: FlowHandle['kind']): FlowHandle['side'] =>
-  kind === 'source' ? 'right' : 'left'
-
-const handleOffset = (
-  side: FlowHandle['side'],
-  size: { readonly width: number; readonly height: number }
-) => {
-  let x = size.width / 2
-  let y = size.height / 2
-
-  switch (side) {
-    case 'left': {
-      x = 0
-      break
-    }
-
-    case 'right': {
-      x = size.width
-      break
-    }
-
-    case 'top': {
-      y = 0
-      break
-    }
-
-    case 'bottom': {
-      y = size.height
-      break
-    }
-
-    default: {
-      break
-    }
-  }
-
-  return { x, y }
-}
-
-const edgePoint = (
-  nodeId: NodeId,
-  handleId: string,
-  position: { readonly x: number; readonly y: number },
-  size: { readonly width: number; readonly height: number },
-  side: FlowHandle['side']
-) =>
-  edgeAttachmentPosition(
-    position,
-    { id: HandleIdSchema.make(handleId), kind: 'source', side },
-    {
-      nodeId,
-      handleId: HandleIdSchema.make(handleId),
-      offset: handleOffset(side, size),
-      width: 11,
-      height: 11,
-    }
-  )
-
-const calculateEdgeGeometry = (
-  model: Model,
-  edge: FlowEdge,
-  source: FlowGraphNode,
-  target: FlowGraphNode,
-  markerScope: string
-) => {
-  const resolved = resolveEdgeHandles(model.document, edge)
-  const sourceHandle = resolved?.sourceHandle
-  const targetHandle = resolved?.targetHandle
-  const sourceSide = sourceHandle?.side ?? defaultHandleSide('source')
-  const targetSide = targetHandle?.side ?? defaultHandleSide('target')
-
-  const sourceSize = model.measurements.nodes.find(
-    ({ measurement }) => measurement.nodeId === source.node.id
-  )?.measurement ??
-    source.node.size ?? { width: 150, height: 44 }
-
-  const targetSize = model.measurements.nodes.find(
-    ({ measurement }) => measurement.nodeId === target.node.id
-  )?.measurement ??
-    target.node.size ?? { width: 150, height: 44 }
-
-  const start = edgePoint(
-    source.node.id,
-    sourceHandle?.id ?? `${edge.id}-source`,
-    source.absolutePosition,
-    sourceSize,
-    sourceSide
-  )
-
-  const end = edgePoint(
-    target.node.id,
-    targetHandle?.id ?? `${edge.id}-target`,
-    target.absolutePosition,
-    targetSize,
-    targetSide
-  )
-
-  const pathType: FlowEdgePath = edge.path ?? 'straight'
-
-  const path = {
-    straight: () => straightEdgePath(start, end),
-    bezier: () => bezierEdgePath(start, end, sourceSide, targetSide),
-    step: () => stepEdgePath(start, end, sourceSide, targetSide),
-    smoothstep: () => smoothStepEdgePath(start, end, sourceSide, targetSide),
-    simplebezier: () =>
-      simpleBezierEdgePath(start, end, sourceSide, targetSide),
-  }[pathType]()
-
-  const markerStartId =
-    edge.markerStart === undefined
-      ? undefined
-      : `${markerScope}-${edge.id}-start`
-
-  const markerEndId =
-    edge.markerEnd === undefined ? undefined : `${markerScope}-${edge.id}-end`
-
-  const geometry: FoldkitEdgeGeometry = {
-    path,
-    start,
-    end,
-    labelPosition: edgeLabelPosition(
-      start,
-      end,
-      pathType,
-      sourceSide,
-      targetSide
-    ),
-    markerStartId,
-    markerEndId,
-  }
-
-  return { geometry, markerStartId, markerEndId }
-}
 
 const markerDefinition = (
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
@@ -2840,8 +2924,13 @@ const graphView = (
   markerScope = 'flow-foldkit'
 ) =>
   Submodel.defineView<Model, GraphMessageData>((model, h) => {
-    const graph = createFlowGraph(model.document)
-    const mountedNodeIds = selectMountedNodeIds(model)
+    const measurements = getFlowMeasuredNodes(
+      model.document,
+      model.measurements
+    )
+
+    const graph = createFlowGraph(model.document, measurements)
+    const mountedNodeIds = selectMountedNodeIds(model, measurements, graph)
 
     const nodes = graph.orderedNodes
       .map(({ node }) => node)
@@ -2851,9 +2940,7 @@ const graphView = (
         const position =
           graph.nodes.get(node.id)?.absolutePosition ?? node.position
 
-        const measured = model.measurements.nodes.find(
-          ({ measurement }) => measurement.nodeId === node.id
-        )?.measurement
+        const measured = measurements.get(node.id)
 
         const size = measured ?? node.size
 
@@ -3065,7 +3152,8 @@ const graphView = (
         }
 
         const edgeGeometry = calculateEdgeGeometry(
-          model,
+          model.document,
+          measurements,
           edge,
           source,
           target,
@@ -3300,6 +3388,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
       gestureActive: Schema.Boolean,
       viewport: ViewportSchema,
       document: FlowDocumentSchema,
+      measurements: FlowMeasurementStateSchema,
       pointerSession: Schema.NullOr(PointerSessionSchema),
       connectionMode: ConnectionModeSchema,
       connectionRadius: ConnectionRadiusSchema,
@@ -3312,6 +3401,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
         gestureActive: model.gestureSession !== null,
         viewport: model.viewport,
         document: model.document,
+        measurements: model.measurements,
         pointerSession: model.pointerSession,
         connectionMode: model.connectionMode,
         connectionRadius: model.connectionRadius,
@@ -3323,6 +3413,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
         gestureActive,
         viewport,
         document: flowDocument,
+        measurements: measurementState,
         pointerSession,
         connectionMode,
         connectionRadius,
@@ -3332,6 +3423,13 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
         if (!active) {
           return Stream.empty
         }
+
+        const measurements = getFlowMeasuredNodes(
+          flowDocument,
+          measurementState
+        )
+
+        const graph = createFlowGraph(flowDocument, measurements)
 
         const events: Stream.Stream<GraphMessageData>[] = [
           Subscription.fromEvent({
@@ -3409,8 +3507,6 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                     return []
                   }
 
-                  const rect = element.getBoundingClientRect()
-
                   const decodedNodeId = Option.getOrNull(
                     Schema.decodeUnknownOption(NodeIdSchema)(targetNodeId)
                   )
@@ -3419,7 +3515,17 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                     Schema.decodeUnknownOption(HandleIdSchema)(targetHandleId)
                   )
 
-                  if (decodedNodeId === null || decodedHandleId === null) {
+                  const center = flowPointForElement(
+                    element,
+                    graph,
+                    measurements
+                  )
+
+                  if (
+                    decodedNodeId === null ||
+                    decodedHandleId === null ||
+                    center === undefined
+                  ) {
                     return []
                   }
 
@@ -3428,20 +3534,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                       nodeId: decodedNodeId,
                       handleId: decodedHandleId,
                       kind: targetHandle.kind,
-                      center: {
-                        x:
-                          (rect.left +
-                            rect.width / 2 -
-                            (bounds?.left ?? 0) -
-                            viewport.x) /
-                          viewport.zoom,
-                        y:
-                          (rect.top +
-                            rect.height / 2 -
-                            (bounds?.top ?? 0) -
-                            viewport.y) /
-                          viewport.zoom,
-                      },
+                      center,
                     },
                   ]
                 })

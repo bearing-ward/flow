@@ -14,6 +14,7 @@ import {
   fitViewportToNodes,
   emptyFlowMeasurementState,
   getFlowInternalNode,
+  getFlowMeasuredNodes,
   getViewportForBounds,
   interpolateViewport,
   FlowSnapshotSchema,
@@ -121,10 +122,14 @@ import { FlowViewportPortalContextKey } from './viewport-portal.ts'
 const recordFlowTelemetry = (
   message: string,
   span: string,
-  attributes: Readonly<Record<string, string | number | boolean>>
+  attributes: Readonly<Record<string, string | number | boolean>>,
+  cause?: unknown
 ): void => {
   Effect.runSync(
-    Effect.logDebug(message).pipe(
+    (cause === undefined
+      ? Effect.logDebug(message)
+      : Effect.logError(message, cause)
+    ).pipe(
       Effect.annotateLogs(attributes),
       Effect.withSpan(span, { attributes })
     )
@@ -1020,7 +1025,17 @@ export const FlowCanvas = defineComponent({
       return dispose
     }
 
-    const graph = computed(() => createFlowGraph(activeDocument.value))
+    let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
+    const measurementRevision = shallowRef(0)
+
+    const graph = computed(() => {
+      void measurementRevision.value
+
+      return createFlowGraph(
+        activeDocument.value,
+        getFlowMeasuredNodes(activeDocument.value, measurementState)
+      )
+    })
 
     const connectionMode = computed(() =>
       S.decodeUnknownSync(ConnectionModeSchema)(props.connectionMode)
@@ -1035,13 +1050,28 @@ export const FlowCanvas = defineComponent({
     const canvasWidth = shallowRef(960)
     const canvasHeight = shallowRef(640)
 
-    const measuredHandles = shallowRef<
-      ReadonlyMap<string, ReadonlyMap<string, MeasuredHandle>>
-    >(new Map())
-
     const nodeElements = new Map<string, HTMLElement>()
-    let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
-    const measurementRevision = shallowRef(0)
+
+    const measuredHandles = computed<
+      ReadonlyMap<string, ReadonlyMap<string, MeasuredHandle>>
+    >(() => {
+      void measurementRevision.value
+
+      return new Map(
+        [...getFlowMeasuredNodes(activeDocument.value, measurementState)].map(
+          ([nodeId, measured]) => [
+            nodeId,
+            new Map(
+              (measured.handles ?? []).map((handle) => [
+                handle.handleId,
+                handle,
+              ])
+            ),
+          ]
+        )
+      )
+    })
+
     const nodeGenerations = new Map<string, number>()
     const pendingGenerations = new Map<string, NodeMeasurementGeneration>()
     let nextNodeGeneration = 0
@@ -1082,7 +1112,10 @@ export const FlowCanvas = defineComponent({
       })
     }
 
-    const measureNodeHandles = (node: FlowNode, element: HTMLElement): void => {
+    const collectNodeHandles = (
+      node: FlowNode,
+      element: HTMLElement
+    ): readonly MeasuredHandle[] => {
       const nodeBounds = element.getBoundingClientRect()
       const { zoom } = activeViewport.value
       const measurements: [string, MeasuredHandle][] = []
@@ -1094,7 +1127,11 @@ export const FlowCanvas = defineComponent({
           (candidate) => candidate.id === handleElement.dataset.handleId
         )
 
-        if (handle === undefined) {
+        if (
+          handle === undefined ||
+          handleElement.closest('[data-testid="flow-node"]') !== element ||
+          handleElement.getClientRects().length === 0
+        ) {
           continue
         }
 
@@ -1114,31 +1151,41 @@ export const FlowCanvas = defineComponent({
         ])
       }
 
-      const handles = new Map(measurements)
+      return [...new Map(measurements).values()]
+    }
 
-      const previous = measuredHandles.value.get(node.id)
+    const measureNodeHandles = (node: FlowNode, element: HTMLElement): void => {
+      const generation = nodeGenerations.get(node.id)
 
-      const unchanged =
-        previous?.size === handles.size &&
-        [...handles].every(([id, next]) => {
-          const old = previous.get(id)
+      if (
+        generation === undefined ||
+        stateDisposed ||
+        nodeElements.get(node.id) !== element
+      ) {
+        return
+      }
 
-          return (
-            old !== undefined &&
-            old.offset.x === next.offset.x &&
-            old.offset.y === next.offset.y &&
-            old.width === next.width &&
-            old.height === next.height
-          )
-        })
+      measurementState = setNodeMeasurementGenerations(measurementState, [
+        { nodeId: node.id, generation },
+      ])
+      const bounds = element.getBoundingClientRect()
+      const previousRevision = measurementState.revision
+      measurementState = applyNodeMeasurements(
+        activeDocument.value,
+        measurementState,
+        [
+          {
+            nodeId: node.id,
+            generation,
+            width: bounds.width / activeViewport.value.zoom,
+            height: bounds.height / activeViewport.value.zoom,
+            handles: collectNodeHandles(node, element),
+          },
+        ]
+      )
 
-      if (!unchanged) {
-        const next = new Map([
-          ...measuredHandles.value,
-          [node.id, handles] as const,
-        ])
-
-        measuredHandles.value = next
+      if (measurementState.revision !== previousRevision) {
+        measurementRevision.value += 1
       }
     }
 
@@ -1180,20 +1227,24 @@ export const FlowCanvas = defineComponent({
           measurements.push({
             nodeId: node.id,
             generation,
+            handles: collectNodeHandles(node, currentElement),
             width: bounds.width / activeViewport.value.zoom,
             height: bounds.height / activeViewport.value.zoom,
           })
-          measureNodeHandles(node, entry.target)
         }
       }
 
       if (measurements.length > 0) {
+        const previousRevision = measurementState.revision
         measurementState = applyNodeMeasurements(
           document,
           measurementState,
           measurements
         )
-        measurementRevision.value += 1
+
+        if (measurementState.revision !== previousRevision) {
+          measurementRevision.value += 1
+        }
       }
     })
 
@@ -1260,6 +1311,10 @@ export const FlowCanvas = defineComponent({
 
       const callback = (element: Element | ComponentPublicInstance | null) => {
         if (element instanceof HTMLElement) {
+          if (nodeElements.get(node.id) === element) {
+            return
+          }
+
           const generation = nextNodeGeneration
           nextNodeGeneration += 1
           nodeGenerations.set(node.id, generation)
@@ -1284,11 +1339,13 @@ export const FlowCanvas = defineComponent({
           nodeElements.delete(node.id)
         }
 
-        if (measuredHandles.value.has(node.id)) {
-          const next = new Map(measuredHandles.value)
-          next.delete(node.id)
-          measuredHandles.value = next
-        }
+        const generation = nextNodeGeneration
+        nextNodeGeneration += 1
+        nodeGenerations.delete(node.id)
+        measurementState = setNodeMeasurementGenerations(measurementState, [
+          { nodeId: node.id, generation },
+        ])
+        measurementRevision.value += 1
       }
 
       nodeRefCallbacks.set(node.id, callback)
@@ -2425,7 +2482,15 @@ export const FlowCanvas = defineComponent({
               .map((node) => node.id)
           ),
         }),
-      updateNodeInternals: (nodeIds) => {
+      updateNodeInternals: (requestedIds) => {
+        const nodeIds = [
+          ...new Set(
+            S.decodeUnknownSync(S.Array(NodeIdSchema))(
+              Array.isArray(requestedIds) ? requestedIds : [requestedIds]
+            )
+          ),
+        ]
+
         if (stateDisposed) {
           return Promise.resolve(
             nodeIds.map((nodeId) => ({ nodeId, status: 'disposed' as const }))
@@ -2433,92 +2498,146 @@ export const FlowCanvas = defineComponent({
         }
 
         const requests = nodeIds.map((nodeId) => {
-          const node = activeDocument.value.nodes.find(
-            (candidate) => candidate.id === nodeId
-          )
-
-          if (node === undefined) {
-            return Promise.resolve({ nodeId, status: 'missing' as const })
-          }
-
-          if (!nodeElements.has(node.id)) {
-            return Promise.resolve({ nodeId, status: 'unrendered' as const })
-          }
-
-          const pending =
+          const { promise, resolve } =
             Promise.withResolvers<
               Awaited<ReturnType<FlowEditor['updateNodeInternals']>>[number]
             >()
 
-          const waiters = pendingInternals.get(node.id) ?? []
-          waiters.push(pending.resolve)
-          pendingInternals.set(node.id, waiters)
+          const waiters = pendingInternals.get(nodeId) ?? []
+          waiters.push(resolve)
+          pendingInternals.set(nodeId, waiters)
 
-          return pending.promise
+          return promise
         })
 
-        if (!refreshScheduled && pendingInternals.size > 0) {
-          refreshScheduled = true
-          void nextTick(() => {
-            refreshScheduled = false
-            const document = activeDocument.value
-            const measurements: NodeMeasurementInput[] = []
+        const failQueued = (cause: unknown): void => {
+          refreshScheduled = false
+          recordFlowTelemetry(
+            'Vue measurement refresh failed',
+            FlowSpan.geometryMeasure,
+            {
+              [FlowAttribute.failureName]:
+                cause instanceof Error ? cause.name : 'Unknown',
+              [FlowAttribute.nodeId]: 'batch',
+            },
+            cause
+          )
 
-            for (const [nodeId, settle] of pendingInternals) {
+          for (const [nodeId, waiters] of pendingInternals) {
+            for (const settle of waiters) {
+              settle({ nodeId: NodeIdSchema.make(nodeId), status: 'failed' })
+            }
+          }
+
+          pendingInternals.clear()
+        }
+
+        const flush = (): void => {
+          refreshScheduled = false
+          const batch = [...pendingInternals]
+          pendingInternals.clear()
+          const samples: NodeMeasurementInput[] = []
+
+          const results: Awaited<
+            ReturnType<FlowEditor['updateNodeInternals']>
+          >[number][] = []
+
+          for (const [nodeId] of batch) {
+            let status: Awaited<
+              ReturnType<FlowEditor['updateNodeInternals']>
+            >[number]['status'] = 'disposed'
+
+            try {
               const node = activeNodesById.get(nodeId)
-
               const element = nodeElements.get(nodeId)
+              const generation = nodeGenerations.get(nodeId)
 
-              if (stateDisposed) {
-                for (const resolve of settle) {
-                  resolve({ nodeId, status: 'disposed' })
-                }
-              } else if (node === undefined) {
-                for (const resolve of settle) {
-                  resolve({ nodeId, status: 'missing' })
-                }
-              } else if (element === undefined || !element.isConnected) {
-                for (const resolve of settle) {
-                  resolve({ nodeId, status: 'unrendered' })
-                }
-              } else {
-                const bounds = element.getBoundingClientRect()
+              if (!stateDisposed) {
+                if (node === undefined) {
+                  status = 'missing'
+                } else if (
+                  element === undefined ||
+                  !element.isConnected ||
+                  generation === undefined
+                ) {
+                  status = 'failed'
+                } else {
+                  const bounds = element.getBoundingClientRect()
 
-                const generation = nodeGenerations.get(node.id)
-
-                if (generation === undefined) {
-                  for (const resolve of settle) {
-                    resolve({ nodeId, status: 'unrendered' })
+                  const size = {
+                    width: bounds.width / activeViewport.value.zoom,
+                    height: bounds.height / activeViewport.value.zoom,
                   }
 
-                  continue
-                }
-
-                measurements.push({
-                  nodeId: node.id,
-                  generation,
-                  width: bounds.width / activeViewport.value.zoom,
-                  height: bounds.height / activeViewport.value.zoom,
-                })
-                measureNodeHandles(node, element)
-
-                for (const resolve of settle) {
-                  resolve({ nodeId, status: 'refreshed' })
+                  samples.push({
+                    nodeId: node.id,
+                    generation,
+                    ...size,
+                    handles: collectNodeHandles(node, element),
+                  })
+                  status = 'requested'
                 }
               }
+            } catch (error) {
+              status = 'failed'
+              recordFlowTelemetry(
+                'Vue measurement refresh failed',
+                FlowSpan.geometryMeasure,
+                {
+                  [FlowAttribute.failureName]:
+                    error instanceof Error ? error.name : 'Unknown',
+                }
+              )
             }
 
-            if (!stateDisposed && measurements.length > 0) {
+            results.push({ nodeId: NodeIdSchema.make(nodeId), status })
+          }
+
+          let projectionFailed = false
+
+          try {
+            if (!stateDisposed && samples.length > 0) {
               measurementState = applyNodeMeasurements(
-                document,
+                activeDocument.value,
                 measurementState,
-                measurements
+                samples
               )
               measurementRevision.value += 1
             }
+          } catch (error) {
+            recordFlowTelemetry(
+              'Vue measurement refresh failed',
+              FlowSpan.geometryMeasure,
+              {
+                [FlowAttribute.failureName]:
+                  error instanceof Error ? error.name : 'Unknown',
+              }
+            )
+            projectionFailed = true
+          }
 
-            pendingInternals.clear()
-          })
+          for (const result of results) {
+            const waiters =
+              batch.find(([nodeId]) => nodeId === result.nodeId)?.[1] ?? []
+
+            for (const settle of waiters) {
+              settle(
+                projectionFailed && result.status === 'requested'
+                  ? { ...result, status: 'failed' }
+                  : result
+              )
+            }
+          }
+        }
+
+        if (!refreshScheduled && pendingInternals.size > 0) {
+          refreshScheduled = true
+
+          try {
+            requestAnimationFrame(flush)
+          } catch (error) {
+            failQueued(error)
+          }
         }
 
         return Promise.all(requests)
@@ -4876,7 +4995,7 @@ export const FlowCanvas = defineComponent({
 
       for (const [nodeId, resolve] of pendingInternals) {
         for (const settle of resolve) {
-          settle({ nodeId, status: 'disposed' })
+          settle({ nodeId: NodeIdSchema.make(nodeId), status: 'disposed' })
         }
       }
 

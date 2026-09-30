@@ -1,10 +1,21 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "verification tooling",
-  "checks": [],
+  "activeWork": "Foldkit snapshot callers and measured-handle refresh",
+  "checks": [
+    "docs",
+    "catalog",
+    "api-members",
+    "contracts",
+    "traces",
+    "consumer"
+  ],
   "browserTests": {
-    "vanilla": [],
-    "vue": [],
-    "foldkit": []
+    "vanilla": ["measured-geometry.e2e.ts"],
+    "vue": ["measured-geometry.e2e.ts"],
+    "foldkit": [
+      "delete-approval.e2e.ts",
+      "placeholder-recipe.e2e.ts",
+      "measured-geometry.e2e.ts"
+    ]
   }
 }

@@ -166,6 +166,23 @@ const NodeView = defineComponent({
                 'data-fit': props.node.id,
                 onClick: async (event: MouseEvent) => {
                   const button = event.currentTarget
+
+                  const refreshed = await flow.updateNodeInternals([
+                    props.node.id,
+                    props.node.id,
+                    'absent',
+                  ])
+
+                  if (
+                    JSON.stringify(refreshed) !==
+                    JSON.stringify([
+                      { nodeId: props.node.id, status: 'requested' },
+                      { nodeId: 'absent', status: 'missing' },
+                    ])
+                  ) {
+                    throw new Error('Packed Vue ordered batch refresh failed')
+                  }
+
                   await flow.fitView({ duration: 0 })
 
                   if (button instanceof HTMLButtonElement) {
