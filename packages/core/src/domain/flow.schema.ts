@@ -1,4 +1,10 @@
-import { Effect, Match, Schema as S } from 'effect'
+import {
+  Effect,
+  Match,
+  Schema as S,
+  SchemaParser,
+  SchemaTransformation,
+} from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { DuplicateEdgeId } from './duplicate-edge-id.ts'
@@ -100,6 +106,86 @@ export type FlowEdgePath = typeof FlowEdgePathSchema.Type
 export const FlowEdgeMarkerSchema = S.Literals(['arrow', 'arrowclosed'])
 
 export type FlowEdgeMarker = typeof FlowEdgeMarkerSchema.Type
+
+const markerConfiguration = S.Struct({
+  type: FlowEdgeMarkerSchema,
+  color: S.optional(S.NullOr(S.String)),
+  width: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  height: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  markerUnits: S.optional(S.String),
+  orient: S.optional(S.String),
+  strokeWidth: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  colorPresence: S.optionalKey(S.Never),
+})
+
+const markerConfigurationWire = S.Struct({
+  ...markerConfiguration.fields,
+  colorPresence: S.optionalKey(S.Literal('explicit-undefined')),
+}).check(
+  S.makeFilter(
+    (value) =>
+      !Object.hasOwn(value, 'colorPresence') ||
+      !Object.hasOwn(value, 'color') ||
+      'Marker color flag/value conflict'
+  )
+)
+
+export const FlowEdgeMarkerConfigurationSchema = S.declareConstructor<
+  typeof markerConfiguration.Type,
+  typeof markerConfiguration.Encoded
+>()(
+  [markerConfiguration],
+  ([configuration]) =>
+    (input, _ast, options) =>
+      SchemaParser.decodeUnknownEffect(configuration)(input, options),
+  {
+    toEquivalence: ([equivalence]) => equivalence,
+    toCodecJson: () =>
+      S.link<typeof markerConfiguration.Type>()(
+        markerConfigurationWire,
+        SchemaTransformation.transformEffect({
+          decode: (value, options) => {
+            const { colorPresence, ...rest } = value
+
+            return SchemaParser.decodeUnknownEffect(markerConfiguration)(
+              colorPresence === 'explicit-undefined'
+                ? { ...rest, color: undefined }
+                : rest,
+              options
+            )
+          },
+          encode: (value, options) => {
+            const { color, colorPresence: _reserved, ...rest } = value
+
+            let projected: typeof markerConfigurationWire.Type
+
+            if (!Object.hasOwn(value, 'color')) {
+              projected = rest
+            } else if (color === undefined) {
+              projected = { ...rest, colorPresence: 'explicit-undefined' }
+            } else {
+              projected = { ...rest, color }
+            }
+
+            return SchemaParser.decodeUnknownEffect(markerConfigurationWire)(
+              projected,
+              options
+            )
+          },
+        })
+      ),
+  }
+)
+
+export type FlowEdgeMarkerConfiguration =
+  typeof FlowEdgeMarkerConfigurationSchema.Type
+
+export const FlowEdgeMarkerValueSchema = S.Union([
+  S.String,
+  FlowEdgeMarkerConfigurationSchema,
+])
+
+export type FlowEdgeMarkerValue = typeof FlowEdgeMarkerValueSchema.Type
 
 export const FlowEdgeReconnectableSchema = S.Union([
   S.Boolean,

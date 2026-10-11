@@ -841,6 +841,8 @@ const program = Effect.gen(function* checkPackedConsumers() {
         'typed-data-factory.runtime.ts',
         'typed-flow-actor.types.ts',
         'typed-flow-actor.runtime.ts',
+        'marker-configuration.types.ts',
+        'marker-configuration.runtime.ts',
       ]) {
         const contents = yield* fileSystem.readFileString(
           path.join(root, 'tests/consumer', file)
@@ -857,6 +859,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
       yield* checkPeers(consumerRoot, consumer.adapter, consumer.peers)
       yield* run('bun', ['typed-data-factory.runtime.ts'], consumerRoot)
       yield* run('bun', ['typed-flow-actor.runtime.ts'], consumerRoot)
+      yield* run('bun', ['marker-configuration.runtime.ts'], consumerRoot)
       yield* run(
         'bun',
         [

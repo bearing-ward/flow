@@ -321,3 +321,45 @@ Closing the construction scope forbids acceptance, settles still-pending calls w
 The production path is the public actor export through owned capture and preparation, mandatory checkpoint staging, one core acceptance writer and independent observer and activation workers. Owned units call that same source entry; packed fixtures import installed `@flow/core` exports. Existing concrete browser and versioned-persistence suites are separate regression boundaries.
 
 Typed core ownership, Schema-derived values, service composition and ordered graph integrity follow the core architecture. Effectful methods, trusted capture and isolation, revision conflicts without replay, initial observation and separate core acceptance and activation are intentional policies. Native typed transitions, renderer and framework lifecycle, typed persistence, pinned library parity, original generic members, full integration, CI, devices and collector delivery remain unverified.
+
+## Standalone marker configuration schemas
+
+`FlowEdgeMarkerConfigurationSchema` and its derived `FlowEdgeMarkerConfiguration` type validate a standalone configuration. `FlowEdgeMarkerValueSchema` and derived `FlowEdgeMarkerValue` accept that configuration or any string, including an empty logical reference. This foundation adds exactly those four public names. Existing graph edges, default edge options, typed factory edges and all hosts still accept only the existing `arrow` and `arrowclosed` marker literals, or optional undefined. They reject configuration objects, arbitrary references, empty strings and null. Live marker rendering and persistence integration remain pending.
+
+Configuration requires `type: 'arrow' | 'arrowclosed'`. Optional `color` accepts strings, null and own undefined. Optional `width`, `height` and `strokeWidth` accept finite nonnegative numbers, including zero. Optional `markerUnits` and `orient` accept any string, including empty and nonstandard strings. Ordinary null in those five nonnullable fields fails. Decoding injects no defaults, preserves optional own undefined and strips unrelated unknown keys. Live `colorPresence` is reserved and rejected even when its value is undefined.
+
+The configuration is a validating Declaration, so it has no public Struct `fields` or `mapFields` methods. Callers may compose it inside their own genuine Structs. Both new schemas have identical ordinary Type and Encoded contracts and require no decoding or encoding services. Their canonical JSON codecs retain the live Type, have public Encoded `Schema.Json`, and likewise require no services.
+
+```ts
+import { FlowEdgeMarkerConfigurationSchema } from '@flow/core'
+import { Schema } from 'effect'
+
+const live = Schema.decodeUnknownSync(FlowEdgeMarkerConfigurationSchema)({
+  type: 'arrow',
+  color: undefined,
+  width: undefined,
+  orient: '',
+})
+const jsonCodec = Schema.toCodecJson(FlowEdgeMarkerConfigurationSchema)
+const wire = Schema.encodeUnknownSync(jsonCodec)(live)
+// wire is { type: 'arrow', colorPresence: 'explicit-undefined', width: null, orient: '' }
+const restored = Schema.decodeUnknownSync(jsonCodec)(
+  JSON.parse(JSON.stringify(wire))
+)
+// restored owns color and width, each with value undefined; orient remains empty.
+```
+
+Ordinary decode and encode preserve live fields without wire flags or null sentinels. Canonical JSON encodes each own undefined nonnullable field, `width`, `height`, `strokeWidth`, `markerUnits` and `orient`, as an own null field. JSON decoding restores that null to own undefined. Field absence stays absent. Raw own undefined passed directly to JSON decoding fails because undefined is not a JSON value. JSON encoding still rejects invalid live null, negative or nonfinite numeric fields and invalid string fields.
+
+Color needs its own flag because actual color null is valid:
+
+| Live color | Canonical JSON | Restored live color |
+| --- | --- | --- |
+| Absent | Neither color nor colorPresence | Absent |
+| Own undefined | colorPresence explicit-undefined, no color | Own undefined |
+| Own null | color null, no flag | Own null |
+| Empty or other string | Exact color, no flag | Exact color |
+
+Wire flag-only explicit-undefined succeeds. A wrong or undefined flag fails. Flag plus any own color fails. Valid JSON null or string color conflicts contain `Marker color flag/value conflict`. Raw undefined or another invalid color fails during structural parsing before that filter; its formatter text is not a stable contract. High-level Schema operations fail with `Schema.SchemaError`; internal SchemaParser and checked transformation operations fail with `SchemaIssue.Issue`. Invalid synchronous operations do not suspend, defect or fall back to a valid configuration.
+
+A caller-owned optional value field can use canonical JSON null for outer own undefined because direct live marker null is invalid. That recursive composition preserves each nested configuration's five field sentinels and separate color flag. It does not establish preservation through Flow documents, Application.Model, Runtime, ports, saved formats, HMR or native renderers. All original marker/MiniMap parity members remain open.

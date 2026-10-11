@@ -17,6 +17,8 @@
     "typed-data-factory.types.ts",
     "typed-data-factory.runtime.ts",
     "typed-flow-actor.types.ts",
-    "typed-flow-actor.runtime.ts"
+    "typed-flow-actor.runtime.ts",
+    "marker-configuration.types.ts",
+    "marker-configuration.runtime.ts"
   ]
 }
