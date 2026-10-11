@@ -20,6 +20,10 @@ All original checkouts are preserved as Git snapshots with refs under `codex/arc
 
 The default verifier is restored to `full`. Current verification and integration results are recorded in [the integration record](integration-cleanup-2026-10-11.md). Broad parity and the remaining parent-plan contracts stay open.
 
+## Feature-only parity continuation, 2026-10-11
+
+The maintainer invoked p3-mode and suspended testing except for current feature implementation. [Plan 098](098-implement-connection-drag-threshold.md) resumes connection drag activation from integrated main. Its feature tests proceed with the implementation. Broad verifiers and calibration are deferred until final reconciliation. The current brief and decision trail are in `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`.
+
 ## Planning history
 
 ### Temporary verification policy (2026-09-30)

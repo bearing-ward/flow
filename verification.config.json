@@ -1,35 +1,10 @@
 {
-  "defaultProfile": "full",
-  "activeWork": "Integrate approved origin persistence, typed core foundations, path helpers, marker schemas and nested resize fixes",
-  "checks": [
-    "docs",
-    "catalog",
-    "api-members",
-    "contracts",
-    "traces",
-    "consumer",
-    "calibration"
-  ],
+  "defaultProfile": "focused",
+  "activeWork": "Feature-only connection drag threshold implementation; broad tests and calibration deferred by user",
+  "checks": [],
   "browserTests": {
-    "vanilla": [
-      "nested-resize-containment.e2e.ts",
-      "advanced-gestures.e2e.ts",
-      "interaction-lifecycle.e2e.ts",
-      "measured-geometry.e2e.ts",
-      "versioned-persistence.e2e.ts"
-    ],
-    "vue": [
-      "nested-resize-containment.e2e.ts",
-      "interaction-lifecycle.e2e.ts",
-      "measured-geometry.e2e.ts",
-      "versioned-persistence.e2e.ts"
-    ],
-    "foldkit": [
-      "nested-resize-containment.e2e.ts",
-      "interaction-lifecycle.e2e.ts",
-      "measured-geometry.e2e.ts",
-      "resize-measurement-lifecycle.e2e.ts",
-      "versioned-persistence.e2e.ts"
-    ]
+    "vanilla": ["connection-threshold.e2e.ts"],
+    "vue": ["connection-threshold.e2e.ts"],
+    "foldkit": ["connection-threshold.e2e.ts"]
   }
 }
