@@ -1,5 +1,6 @@
 import { Schema as S } from 'effect'
 
+import type { GetStraightPathParams } from './flow-edge-path.ts'
 import { EdgeIdSchema, NodeIdSchema } from './flow-values.ts'
 import type { EdgeId, NodeId } from './flow-values.ts'
 import { FlowEdgeSchema, FlowNodeSchema } from './flow.schema.ts'
@@ -465,17 +466,16 @@ export interface GeometryRect {
   readonly height: number
 }
 
+const EdgeCenterResultSchema = S.mutable(
+  S.Tuple([S.Number, S.Number, S.Number, S.Number])
+)
+
 export const getEdgeCenter = ({
   sourceX,
   sourceY,
   targetX,
   targetY,
-}: {
-  readonly sourceX: number
-  readonly sourceY: number
-  readonly targetX: number
-  readonly targetY: number
-}): [number, number, number, number] => {
+}: GetStraightPathParams): typeof EdgeCenterResultSchema.Type => {
   const xOffset = Math.abs(targetX - sourceX) / 2
   const yOffset = Math.abs(targetY - sourceY) / 2
 

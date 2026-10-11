@@ -326,3 +326,28 @@ describe('edge collection utilities', () => {
     expect(generated[0]?.id).toBe('custom-edge-id')
   })
 })
+
+describe('pure getEdgeCenter companion', () => {
+  it('keeps four mutable numbers and fresh output for caller graph coordinates', () => {
+    const input = Object.freeze({
+      sourceX: 12,
+      sourceY: -4,
+      targetX: -8,
+      targetY: 16,
+    })
+
+    const first = getEdgeCenter(input)
+    const second = getEdgeCenter(input)
+    expect(first).toStrictEqual([2, 6, 10, 10])
+    expect(first).not.toBe(second)
+    first[0] = 99
+
+    expect(getEdgeCenter(input)).toStrictEqual(second)
+    expect(input).toStrictEqual({
+      sourceX: 12,
+      sourceY: -4,
+      targetX: -8,
+      targetY: 16,
+    })
+  })
+})

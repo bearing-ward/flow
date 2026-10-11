@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { chromium } from '@playwright/test'
 import type { Page, Locator } from '@playwright/test'
@@ -6,10 +8,12 @@ import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
 import { createServer } from 'vite'
 
 import type { FoldkitSnapshotResult } from '../packages/foldkit/src/snapshot-client.ts'
+import { FixtureSchema } from '../research/harnesses/path-helper/cases.ts'
 import { checkPackageArchive } from './package-archive'
 
 declare global {
   interface Window {
+    __flowPathHelperTuples?: string
     __flowPackedFitSerialization?: {
       raw: string
       actual: string | undefined
@@ -149,7 +153,54 @@ const verifyPackedUI = async (
   await verifyPackedMarkup(page, ui, host)
 }
 
+const verifyPurePathHelpers = async (page: Page): Promise<void> => {
+  await page.waitForFunction(() => window.__flowPathHelperTuples !== undefined)
+
+  const fixture = Schema.decodeUnknownSync(FixtureSchema)(
+    JSON.parse(
+      readFileSync(
+        new URL(
+          '../research/fixtures/path-helper-reference.json',
+          import.meta.url
+        ),
+        'utf-8'
+      )
+    )
+  )
+
+  const expected = fixture.cases
+    .filter(({ descriptor }) => descriptor.domain === 'numeric')
+    .map(({ descriptor, outcome }) => {
+      if (outcome.kind !== 'return') {
+        throw new Error(`Unexpected numeric reference throw ${descriptor.id}`)
+      }
+
+      return {
+        id: descriptor.id,
+        tuple: outcome.tuple.map((value) =>
+          value.tag === 'finite' || value.tag === 'string'
+            ? value.value
+            : { tag: value.tag }
+        ),
+      }
+    })
+
+  const actual = await page.evaluate(() => window.__flowPathHelperTuples)
+
+  if (actual !== JSON.stringify(expected)) {
+    throw new Error(
+      'Installed pure helper tuples differ from the genuine pinned full tuples'
+    )
+  }
+
+  process.stdout.write(
+    `Verified ${expected.length} installed pure helper full tuples\n`
+  )
+}
+
 const verifyVanilla = async (page: Page) => {
+  await verifyPurePathHelpers(page)
+
   await page.waitForFunction(() => window.__flowConsumerResult !== undefined)
 
   await page.waitForFunction(() => window.__flowPackedUI !== undefined)
@@ -238,8 +289,7 @@ const verifyVanilla = async (page: Page) => {
     result.updatedNodeId !== 'packed-updated' ||
     result.stateNotificationCount !== 1 ||
     result.editResult !== 'A updated:3:3:2:true:edit-b:edit-edge' ||
-    result.utilityResult !==
-      'true:true:true:true:true:true:10,5,10,5:true:true:true:true' ||
+    result.utilityResult !== 'true:true:true:true:true:true:10,5,10,5' ||
     result.canvasCountAfterDestroy !== 0 ||
     result.canvasPosition !== 'relative'
   ) {
@@ -250,6 +300,8 @@ const verifyVanilla = async (page: Page) => {
 }
 
 const verifyVue = async (page: Page) => {
+  await verifyPurePathHelpers(page)
+
   const first = page.locator('.flow-vue-node[data-node-id="vue-first"]')
   const second = page.locator('.flow-vue-node[data-node-id="vue-second"]')
   await first.waitFor()
@@ -317,6 +369,8 @@ const verifyVue = async (page: Page) => {
 }
 
 const verifyFoldkit = async (page: Page) => {
+  await verifyPurePathHelpers(page)
+
   const first = page
     .locator('.flow-foldkit-node[data-node-id="foldkit-a"]')
     .first()

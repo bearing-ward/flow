@@ -121,19 +121,115 @@ const safePath = (value: string): boolean =>
 
 type OriginalCells = ReadonlyMap<string, { reference: string }>
 
+const purePathTargets = [
+  {
+    page: 'https://reactflow.dev/api-reference/utils/get-bezier-path',
+    helper: 'getBezierPath',
+    members: [
+      '0curvature',
+      '0sourceposition',
+      '0sourcex',
+      '0sourcey',
+      '0targetposition',
+      '0targetx',
+      '0targety',
+      'getBezierPath',
+    ],
+  },
+  {
+    page: 'https://reactflow.dev/api-reference/utils/get-simple-bezier-path',
+    helper: 'getSimpleBezierPath',
+    members: [
+      '0sourceposition',
+      '0sourcex',
+      '0sourcey',
+      '0targetposition',
+      '0targetx',
+      '0targety',
+      'getSimpleBezierPath',
+    ],
+  },
+  {
+    page: 'https://reactflow.dev/api-reference/utils/get-smooth-step-path',
+    helper: 'getSmoothStepPath',
+    members: [
+      '0borderradius',
+      '0centerx',
+      '0centery',
+      '0offset',
+      '0sourceposition',
+      '0sourcex',
+      '0sourcey',
+      '0stepposition',
+      '0targetposition',
+      '0targetx',
+      '0targety',
+      'getSmoothStepPath',
+    ],
+  },
+  {
+    page: 'https://reactflow.dev/api-reference/utils/get-straight-path',
+    helper: 'getStraightPath',
+    members: [
+      '0sourcex',
+      '0sourcey',
+      '0targetx',
+      '0targety',
+      'getStraightPath',
+    ],
+  },
+]
+
+const purePathTarget = (group: typeof Group.Type) => {
+  const [member] = group.members
+
+  if (
+    group.ownerPlan !== '072' ||
+    group.members.length !== 1 ||
+    member === undefined
+  ) {
+    return
+  }
+
+  return purePathTargets.find(
+    (target) =>
+      target.page === group.page &&
+      target.members.includes(member) &&
+      group.id === `utils/${target.page.split('/').at(-1)}::072::${member}`
+  )
+}
+
+const matchesPurePathTarget = (
+  target: typeof Target.Type,
+  helper: string,
+  member: string | undefined
+): boolean =>
+  target.exportName === helper &&
+  target.operation === member &&
+  target.productionTest === 'packages/core/src/domain/flow-edge-path.test.ts' &&
+  target.capture === 'scripts/capture-path-helper-reference.ts'
+
 const checkTargets = (
   group: typeof Group.Type,
   plan: string | undefined,
   files: ReadonlyMap<string, string>,
   failures: string[]
 ): void => {
+  const pureTarget = purePathTarget(group)
+  const [member] = group.members
+
   for (const host of hosts) {
     const target = group.targets[host]
     const entry = files.get(target.publicEntry)
 
     if (
       !safePath(target.publicEntry) ||
-      target.publicEntry !== publicEntries[host] ||
+      target.publicEntry !==
+        (pureTarget === undefined
+          ? publicEntries[host]
+          : 'packages/core/src/public.ts') ||
+      (pureTarget !== undefined &&
+        !matchesPurePathTarget(target, pureTarget.helper, member)) ||
       entry === undefined ||
       !exportsName(entry, target.exportName) ||
       placeholder.test(target.operation)

@@ -1,54 +1,51 @@
+import { Schema as S } from 'effect'
+
+import { FlowHandleSchema } from './flow.schema.ts'
 import type { FlowHandle, XYPosition } from './flow.schema.ts'
 
 type Position = FlowHandle['side']
 
-export interface GetStraightPathParams {
-  readonly sourceX: number
-  readonly sourceY: number
-  readonly targetX: number
-  readonly targetY: number
-}
+const GetStraightPathParamsSchema = S.Struct({
+  sourceX: S.Number,
+  sourceY: S.Number,
+  targetX: S.Number,
+  targetY: S.Number,
+})
 
-export interface GetBezierPathParams {
-  readonly sourceX: number
-  readonly sourceY: number
-  readonly sourcePosition?: Position
-  readonly targetX: number
-  readonly targetY: number
-  readonly targetPosition?: Position
-  readonly curvature?: number
-}
+export type GetStraightPathParams = typeof GetStraightPathParamsSchema.Type
 
-export interface GetSimpleBezierPathParams {
-  readonly sourceX: number
-  readonly sourceY: number
-  readonly sourcePosition?: Position
-  readonly targetX: number
-  readonly targetY: number
-  readonly targetPosition?: Position
-}
+const GetSimpleBezierPathParamsSchema = S.Struct({
+  ...GetStraightPathParamsSchema.fields,
+  sourcePosition: S.optionalKey(FlowHandleSchema.fields.side),
+  targetPosition: S.optionalKey(FlowHandleSchema.fields.side),
+})
 
-export interface GetSmoothStepPathParams {
-  readonly sourceX: number
-  readonly sourceY: number
-  readonly sourcePosition?: Position
-  readonly targetX: number
-  readonly targetY: number
-  readonly targetPosition?: Position
-  readonly borderRadius?: number
-  readonly centerX?: number
-  readonly centerY?: number
-  readonly offset?: number
-  readonly stepPosition?: number
-}
+export type GetSimpleBezierPathParams =
+  typeof GetSimpleBezierPathParamsSchema.Type
 
-type EdgePath = [
-  path: string,
-  labelX: number,
-  labelY: number,
-  offsetX: number,
-  offsetY: number,
-]
+const GetBezierPathParamsSchema = S.Struct({
+  ...GetSimpleBezierPathParamsSchema.fields,
+  curvature: S.optionalKey(S.Number),
+})
+
+export type GetBezierPathParams = typeof GetBezierPathParamsSchema.Type
+
+const GetSmoothStepPathParamsSchema = S.Struct({
+  ...GetSimpleBezierPathParamsSchema.fields,
+  borderRadius: S.optionalKey(S.Number),
+  centerX: S.optionalKey(S.Number),
+  centerY: S.optionalKey(S.Number),
+  offset: S.optionalKey(S.Number),
+  stepPosition: S.optionalKey(S.Number),
+})
+
+export type GetSmoothStepPathParams = typeof GetSmoothStepPathParamsSchema.Type
+
+const EdgePathSchema = S.mutable(
+  S.Tuple([S.String, S.Number, S.Number, S.Number, S.Number])
+)
+
+type EdgePath = typeof EdgePathSchema.Type
 
 const edgeCenter = ({
   sourceX,
@@ -415,7 +412,7 @@ const gapAdjustments = (
 
   const difference = Math.abs(source[axis] - target[axis])
 
-  if (difference > offset) {
+  if (!(difference <= offset)) {
     return { sourceAdjustment, targetAdjustment }
   }
 
