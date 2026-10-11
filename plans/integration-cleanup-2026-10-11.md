@@ -12,11 +12,17 @@ Historical planning and review Markdown is retained in the repository and format
 
 ## Verification
 
-Combined focused and full local verification are in progress. The full default is restored in `verification.config.json`. Final gate counts, failures and source revision will be added before merge.
+Combined focused verification passed 2,126 unit tests, all three actual packed consumers and 255 selected browser tests with two existing skips. The full verifier then found one Foldkit app build error: the shared resize fixture referred directly to Vue's Window declaration. Host-specific preview settlement now lives in each owning browser fixture, preserving the original assertions.
+
+A subsequent full run was interrupted before completion. Its orphaned browser tree was stopped, and the complete command was restarted under a durable local supervisor. The resumed `bun run verify:full` exited 0 on `2188e3880e762bacd99d52f55c048e0f3fb3024f`. It passed 2,126 units across 55 files; Vanilla 311, Vue 132 and Foldkit 147 browser tests; 2 existing skips; all three packed consumers; all app/package builds; types, quality, architecture, docs, inventories, ownership and trace checks. The full default remains enabled.
+
+Raw logs and terminal exit receipts are in the external archive. Calibration retains every original decoded record and appends exactly three host observations. Timing budgets remain pending. Final documentation and generated output changes receive quality, documentation, trace and diff checks before merge.
 
 ## Cleanup
 
-Original source branches and ignored evidence are preserved before checkout removal. Final worktree and branch cleanup accounting will be recorded after the integration passes.
+All 25 original secondary checkouts were removed after their exact source audit and verified sibling archives. All 26 snapshot refs and complete history are preserved in `outstanding-work.bundle`; its verification requires no prerequisite commit. Original ignored evidence and complete sibling evidence are retained in compressed archives. Temporary snapshot refs and the four empty feature branches were removed from the live branch list.
+
+The final merge uses a fast-forward into main after verifying that its dirty source still exactly matches the preserved snapshot. Temporary probes and large diagnostic manifests are removed from the live checkout after preservation. The integration worktree and its branch are removed after merge, leaving one clean main checkout. These cleanup steps preserve all unfinished candidate work without asserting source acceptance.
 
 ## Conformity and deviations
 
