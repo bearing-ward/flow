@@ -1,0 +1,11 @@
+# Live connection options primary design revision review
+
+2026-10-02. APPROVE revised Plan091583b914a1fd7e2ef946fcf44daefd605ed774d830bb8179084edaabe63f180f7 and design9b2be8b638117ed47d4f33bf18e9463922272d0d2f276cc0d66bc69ab5dd983a subject to fresh independent residual review before execution. Root read the first cold REVISE28bab168856a6c4125668982fdc5ddc5bf7c296ebedc7ed7903ee1e9cf59c531, actual @flow/vanilla package/export/installedfixtures and complete revised delta. Prior primary reviewe05c1a8a6d146cadc388984cea16e5a25136d91c73d9adb70800967f4dd66f60 incorrectly repeated the no-packaged-Vanilla premise; that part is withdrawn and this corrected proof boundary supersedes it. All first inputs/review remain byte-identical in explicit copies.
+
+Vanilla actually ships dist/public.js and public.d.ts via @flow/vanilla exports. Revision requires BOTH exported FlowController and JavaScriptFlowController exact archive signatures, unknown-input acceptance and authoritative result/snapshot types. Runtime runner exercises its actual exposed archived controller before protected existing destruction, preserves same owner/document/oldassertions and restores strict/empty options. Core common probes, archived controller methods and local activepreview native fixtures are now separate required claims. Scope stays within alreadylisted consumer.typecheck.ts/runner; protected consumer main remains unchanged, any needed exposure expansion STOPs for exact amendment. Full original input/lifecycle/domain/result/cancellation and twoowner/twoclient/rawdisposal gap contracts unchanged.
+
+Moving086 NEW coreconnection-options path and broader VueCSSdomain still collisionSTOP: no unaccepted overlay or silentcanonicalauthority replacement; integration requires accepted086 plus root/cold reviewed exact assembly/domain amendment. Alloriginal cells/full/native/library parity remainOPEN. No source/gates/executor ran under this design revision review.
+
+## Conformity and deviations
+
+Conforming required installed boundary uses actual package exports and real archived controller. Native/local tests retain separate gesture/render evidence. StringCSS and explicit auxiliary-close-beforeRuntime are bounded adaptations, rawdispose bypass/custom/fullCSS remainunverified. Design approval does not accept source, hosted/native/full/collector or memberclosure.

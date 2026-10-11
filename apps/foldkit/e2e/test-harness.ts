@@ -19,7 +19,6 @@ import type {
 import {
   HostAction,
   createProgram,
-  createFoldkitNodeMeasurementObserver,
   createFoldkitSnapshotClient,
   createViewportClient,
   defaultInteractionOptions,

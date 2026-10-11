@@ -1,0 +1,13 @@
+# Primary callback and field matrix semantic design review
+
+2026-10-02. APPROVE the reviewed design decomposition after full independent first/second/residual reviews and primary source vetting. This grants no source child/public API and no member closure. All1533originalcells remainOPEN.
+
+Primary personally read the full first2d698855 and second498e1464 reviews, vetted cited pinned/native defaults/attributes/roles/key lifetimes, complete revision/proposal, changed generator classification and exact generic records/cell variants, then read and rehashed final residual0ecd9342e6523c796c782ff86a2d4f5268d2f23d630bd621a5b4cb29ec69015b in full. Current receipt29b9125c2b4cb2270b7276f08800e079e94e34e961ca352d21d3a8f54e51c8ec, generator4dad6e05c2aa3280917df342ae3f604468b982ef7e73c14378b8be8d92b4afcc,071cf4ffc13a4c7abb13be043bbce67933855706320e65160ede706bc42e3709340 and07447921b4865e7c12e1422178871613d7a7e74ea25e308b277d6f96e7a20fd7e14 retain exact identities/lineage. Primary read-only --check actually passed18assignment regressions. Cold independently parsed complete JSONs and matched509nongenericrecords/1527cells and allchild/APIallowlists to preserved secondpacket. This is stronger design preservation evidence, never product parity.
+
+Seven original corrections cover callback/measurement ancestry, full tuple/branch/optional precision, roles/void/cancellation, DOM exclusions/false/presence/handler spread, deletion default, pinned/native difference separation and separate API prerequisite authority. Final bounded residual corrects NodeData/EdgeData typeparameters to type-only/compiler bounds/defaults, linking all60lifecycle dimensions to actual node.data/edge.data. No invented runtimeproperties or JSONrestriction on arbitrary decoded values/isolation. Alloriginal217/294members,651/882cells and required dependencies remainpreserved. Firstarchivec7e791f0 and second15e7b7fe plus bothREVISEreviews remainunchanged.
+
+Next is a separately numbered public-option API design with complete actual names/result/error/schema/scope and cold approval before source. Marker090 remains a separate additive foundation. Original native differences, typed host adaptation, complete fields/callback/reference/runtime proofs and parent acceptance remainopen.
+
+## Conformity and deviations
+
+Conforming at design boundary: source-backed role/default/ownership distinctions and exact original accounting. Proposed native events/presentation/subtype/visibility/integrity/key behavior retain unapproved difference candidates until genuine paired/native proof. No source, compiler/browser/focused/full/CI/device/collector/member acceptance follows.

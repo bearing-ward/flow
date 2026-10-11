@@ -1,0 +1,17 @@
+# Primary graph query utility design review
+
+2026-10-02. APPROVE DESIGN for complete revised Plan092, SHA256 `1d409e895b7ea113eb336bc41ffaaff373465d5f6bf1aaea5e0f320e4015ff6c`. Execution is authorized in a separate isolated managed checkout with a sole executor. Shared consumer/browser/verification gates must wait for the coordinator's explicit lease. No cell closes at this design boundary.
+
+The sole source input is accepted087 at `/Users/richardmcandrews/.codex/worktrees/typed-data-factory/flow`, freeze `2dee299d28a1b96442e3134cd4b46c380dd3dd2caeef9f28bcb46c7e96d90917`. Main HEAD remains `841be137e253cf19c665269eaaa79edc19abf3c3`. I personally read the actual three helpers, their protected algorithms/tests/public exports, installed consumer controls, pinned graph functions and the eleven original catalog rows. Current concrete result annotations erase custom payload types. The accepted factory provides Date/private-class variants; the pure query needs no decoder or isolated actor authority. Full1492source/122evidence rehashes remain exact, most recently in the primary090 final integrity receipt which also includes this selected input.
+
+I confirmed both first cold findings and revised the packet. Neighbor selected-node arguments now use N or Schema-derived ID-only input, with fresh full literals and inferred/explicit probes required. All three helpers must exercise zero, one and two explicit generic arguments. One explicit N defaults E to FlowEdge and cannot claim inferred custom edge preservation. Mutable actual results are positive controls; readonly element assignment through actual returned variants replaces the unrelated array-assignability negative. The amended capture also hashes tracked source after both processes.
+
+The complete independent revision review approves the same packet, `graph-query-utility-independent-design-revision-review.md`, SHA256 `a25a3174767e83631725767e74de11eb614df5232e8917bd1dc418c896d7a27b`. Its before/after all1492/122 rehashes have zero mismatch. The original draft `5e482c5a95ca39844a7d11d67e614e81738e39ff4137de38eaca7e1f816671ce` and first REVISE report `71392816865fe7b0e4d6d199954738d59675a59bc3daabe7e5e42567951cd3f9` remain immutable.
+
+Only the three signatures may change production behavior at the type level. Existing algorithms remain byte-identical. The fixed checker exception and removal069 are authorized solely for the exact eleven original groups identified in the packet. All thirty-three cells remain open until root approves particular actual unit, pinned reference, installed and compiler evidence. All other original identities, dependencies and decisions remain protected. No native module escape, borrowed moving source, fake oracle or annotation-only compiler negative qualifies.
+
+## Conformity and deviations
+
+Proposed conformity is ordered endpoint filtering, input multiplicity, original element identity, fresh mutable arrays, selected-node union and reference generic-default mechanics. Pure utility aliases are intentional; they do not satisfy actor isolation. Readonly inputs, branded nonempty IDs and minimal Schema-derived arguments are explicit Flow differences. Real compiler and runtime results are still unverified.
+
+Actual source acceptance, all11/33closure, whole069/072, cumulative088/native integration, full-suite/release/CI/device/performance/collector claims remain separate. No commit, merge, publication or cleanup is authorized by this review.

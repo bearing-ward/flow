@@ -1,0 +1,15 @@
+# Typed actor snapshot inference primary design review
+
+2026-10-02. APPROVE the revised bounded amendment and authorize the existing sole089 executor to resume in its existing isolated checkout. Candidate source is not accepted. Original STOP and first fragile diagnostic inventory remain preserved.
+
+Primary fully read the first REVISE, full revision amendment and268-line probe, manifest and final cold APPROVE. Rehashed all14 original and9 revision artifacts with zero mismatches, then independently reran an identical probe under a new primary output stem. Exit0; actual virtual actor diagnostics0; all14 exposed negatives have exactly one intended code/span/message; runtime Schema assertions64 with zero document transforms and actualActorRuntime=false. Primary compiler JSON and command log match authored bytes (9f167846828792167ee7d34fb0793e76601a1f0dbd39e65d99a239fa1baef77f and dbbc856d82e1fdd495f37522a22f5e081fc446d12df4f88930441a34ad8cd519). N07 rejects only count in dated payload and N14 only string Date; unsuppressed branded-ID/valid data and environment controls compile. The prior negative-inventory claim is rejected, not retroactively repaired.
+
+Exact revision amendment3c69fad2ff596ea07c5a72f8f512935b7995233cb3725c23a177587eb89fbbe0; probe c333fb735193e0333b335161eaf7d46a06348cf07324b1802c18def3dc24ef96; freeze2312ffe8c8aa62ecc08e4b6e20051d7ebf06c35a64db7b9ffb85020c6e0d6bc3; final cold1667cb8c12125109db7ec780fc148f6a218eb7c568be060715b07d32c2bd6df2. All1503 stopped source files/nine evidence entries were independently rehashed with zero drift before authorization.
+
+Authorize only document:S.Union([S.toType(document)]) inside the existing snapshot Struct and removal of the unused FlowTypedCommitResult import. Keep the inferred alias, full ConstraintCodec domain, nested schema semantics and exact independent service channels. Singleton outer metadata is explicitly disclosed: fields.document is a Union and members[0].schema retains C. Original finite checkpoint, input isolation, CAS, observer, cancellation, terminal lease and cleanup requirements remain unchanged.
+
+Resume the original full089 owned implementation/test matrix with meaningful required/mutable/default graph regression controls. All real actor units/races, actual declaration build, minimum18 installed compiler negatives, three genuine installed runtime/type/browser contexts and focused gate remain mandatory. The14 diagnostic controls supplement those criteria. No source-scope expansion, compiler/dependency policy change, cast, narrowed bound, alternate authority or weakened test is authorized. Shared gates wait for the root lease currently held by086; isolated local work may proceed. No commit/merge/push/member closure.
+
+## Conformity and deviations
+
+Conforming amended representation derives exact decoded snapshot Type/Encoded and readonly required container keys from one Schema. Resetting only outer key metadata is an intentional new API representation choice. Actual actor runtime/ownership/races, declaration and installed-artifact acceptance, native Model/HMR, full integration and all300 original069 cells remain unverified/open.

@@ -2,6 +2,8 @@
 
 ## Status and authorization
 
+Execution status BLOCKED on2026-10-01. Two focused quality repairs exhausted; final check still fails require-readable-spacing at flow-edit.test.ts:428. No third repair or dependent gate advancement is authorized. Exact isolated source fix remains unaccepted, with its logs and final inventory preserved. Historical design approval and dispatched9d88ad57 plan identity remain below; stop does not alter083's separate frozen budget.
+
 Priority P1, effort S, risk MED. Planned at main841be137e253cf19c665269eaaa79edc19abf3c3 on2026-10-01. Depends only on accepted082. Architecture review pending. The user's Resolve blockers request authorizes execution of this newly diagnosed core defect in a separate isolated checkout after design review. Primary edits only plans/. No commits, merges, pushes, publication or cleanup. This is a narrow core repair, not a third083 quality repair or resumption of its stopped host candidate.
 
 083 remains frozen and unaccepted after its permitted quality repairs. Its native lifetime and preservation proof remain separate. Do not import any083 source or continue its browser/check sequence. The accepted082 prerequisite is a frozen117-path composition with116 hashed outputs plus its provenance record, not main source acceptance or final081 activation.

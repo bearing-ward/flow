@@ -1,0 +1,9 @@
+# 095 recording number primary design approval
+
+2026-10-02. ROOT fully read independent approval5078e2b1e41eb7fdcf779fb4b62fbec0e13bb7e4c455adf342ff6c363420f2ce and approves exact test-only amendment2037b92b055d7958e0f26f666ef05b9afc63c3b8822b9a39e4eb443b6da83c65 alongside complete original payload/promotion proposal, complete native recording revision, actual Foldkit handle-path amendment and combined primary approval19d2d5c97d13662094039209b4154db4d32b297c3e4b93d423c92e94105e31c6. Signed-zero tagging and explicit unsupported array-property rejection resolve the finite DTO transport precision issue without changing graph policy or public types. No source was edited. No formal SOURCE round, native/reference result or cell closure follows.
+
+SAME095 LOCAL_ONLY resume is authorized through a separate full-packet relay: complete1516source9540evidence revalidation and separately named preservation snapshot BEFORE edits; exact scoped test/harness/codec/capture-source changes and all historical body audits/gates unchanged. Strict genuine reference test stays candidate and remains unrun until acquisition; explicit independent unit files only before lease.091 owns shared verification. No production/public API/type/Model/dependency/compiler/policy change, shared reference/browser/archive/HMR/verifier/installer/listener operation, Git or source/member acceptance. STOP on actual path/API/contract/unsupported payload failure with retained evidence.
+
+## Conformity and deviations
+
+Supported finite native DTO recording preserves signed zero and ownproperty distinctions as specified. Arrays with unsupported extra own properties are an explicitly rejected evidence boundary; actual accepted graph semantics are unchanged. Real implemented codec/native callbacks/reference captures and all513cells remain unverified.

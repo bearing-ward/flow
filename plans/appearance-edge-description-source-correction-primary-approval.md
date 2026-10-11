@@ -1,0 +1,17 @@
+# 096 edge description correction primary approval
+
+APPROVE and release the exact two-expression correction to the SAME096 executor, 2026-10-02. Main baseline841be137e253cf19c665269eaaa79edc19abf3c3. Controlling proposal c99793daa25e80f8a310e54866d8025e6882850724e3fe2749a24fbd58ad9254 and fresh cold review08c36329c28c76ce3153c5bacf4a75591bd5464eae0ad0a131e44f68609255ce were fully read and independently hashed by root. Cold source findings match root's actual accepted087 schema, candidate renderers and immutable pinned built-in description path reads. Root previously verified all1498 current and1498 copied sources plus3302 evidence files with zero mismatches, receiptbc76d59062f1d4c69281ca213c953265c7fe4dc5fa63d993b0b4720499b701b4.
+
+## Exact release
+
+Preserve and revalidate STOPa27d98228621783b76520aae94516d6ad0fd3b80d1fd7505a2cd2cf734bf1909 and complete inventories first. In the existing isolated096 checkout replace only Vanilla's unsupported `edge.ariaDescription ?? config.ariaLabelConfig['edge.a11yDescription.default']` with `config.ariaLabelConfig['edge.a11yDescription.default']`, and Vue's unsupported `edge.ariaDescription ?? appearance.value.ariaLabelConfig['edge.a11yDescription.default']` with `appearance.value.ariaLabelConfig['edge.a11yDescription.default']`. Preserve full before/after bodies and exact diff. No other immediate production correction is released.
+
+Accepted FlowEdge at packages/core/src/domain/flow.schema.ts115–141 has no ariaDescription; node-specific description84 remains supported. Pinned EdgeWrapper207–214 and A11yDescriptions37–48 use the global built-in description. Existing Foldkit global-only graph2972–2976 remains unchanged. Keep attributes, roles, focusability, handlers, labels, geometry, authority, empty string values and all nodes unchanged. No new schema/API/persistence field, cast, guard, suppression or truthiness fallback.
+
+Then continue the original approved LOCAL native assembly and proof-source preparation. Run actual complete package typecheck, quality, relevant meaningful units and architecture; preserve every failed attempt. A further substantive API/source mismatch stops for a new reviewed decision. Preserve all21 original browser bodies and computed-description assertions. Prepare canonical/custom/empty/complete replacement/invalid-recovery proofs through real public hosts without accepted graph events. No additional child.
+
+All original096 design, pause/crash/disposal route, lifetime and response honesty, accepted Model defaults, Schema-derived types, observation policy, constructor and JSON guard approvals remain authoritative. Shared reference compilation/capture, browsers, servers, ports, archives, focused/full/release gates remain withheld until explicit root lease. No source acceptance, commit, merge, push or ledger promotion. This pre-freeze design correction does not reset original068 revision history or consume a final SOURCE acceptance round.
+
+## Conformity and deviations
+
+The global built-in edge description authority conforms to the inspected accepted and pinned contracts. Existing direct aria-description native output versus the pinned shared aria-describedby mechanism is intentionally different and unchanged. Compiler success, actual computed accessible descriptions, paused/crashed/disposed processing and output, installed archives, focused/full/CI/device/AT/collector and all189cells remain unverified. Final complete SOURCE review remains required.

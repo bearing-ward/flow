@@ -1,0 +1,17 @@
+# Primary nested configuration preflight review
+
+2026-10-02. Decision: **PASS at the primitive/compiler boundary; architectural and source execution approval remain pending cold review.**
+
+Primary read the complete 33,268-byte alternative probe, complete results report and manifest. Rehashed every listed artifact: zero mismatches. Independently reran the exact strict, exact-optional, no-unchecked-index no-emit compiler command: exit0. Independently ran the full probe: exit0, 3,124 assertions,25 groups,16 consumed negative type probes, zero failures. The primary runtime output is byte-identical to the frozen final runtime output, SHA256 `2e76fde02b890a573d3faf58493bf20cdbb9b48fdba0a849201fd0eb123218e8`, saved as `plans/marker-minimap-nested-config-primary-runtime.json`.
+
+Inputs: alternative probe `e54e493d76f1d17a76709a47fa61da8af39cffffeab54b98753ef83071b4231c`; report `f32280669e36255fd4cf312524634b55840ee900e55302f9fe16d07e9f46db2d`; manifest `df371fab1a5eb463666f64aff58121579f18f64b65d811afbd37985b086ae17c`. Accepted085 freeze `7b3b11860cdfa36bf297883259e9cd1dd87b2d1f25be59519fde7566b6f4cfef` and all128 source inputs passed the probe's real hash checks. Original whole-edge preflight and continuation design remain preserved.
+
+The narrow alternative addresses the actual failure: one validating configuration Declaration delegates its parser and equivalence to the canonical configuration Struct and supplies checked JSON getters. Actual derivation recurses through the String|configuration union into genuine Edge/defaults Structs. Whole-edge/default wrappers are absent. Standalone Edge/defaults preserve endpoint own-key and nested color own-key distinctions, including undefined versus null. Canonical outer undefined uses the installed null sentinel; explicit saved/patch endpoint flags remain a separate product boundary.
+
+The bare configuration Struct remains demonstrably lossy and should remain internal if the newly proposed public configuration Schema promises this JSON round trip. Exporting the validating Declaration under a new schema name requires explicit architectural approval. It does not fabricate Struct methods, and the existing literal kind schema and public Edge Struct capabilities must remain unchanged. Compiler negatives reject invented Declaration fields/mapFields, metadata leakage and wrong object fields; runtime negatives require typed synchronous failures rather than defects or suspension substitutes.
+
+The complete widened Model/animation/approval/query/edit/change shapes are source-composed synthetic parser fixtures. The actual application Model baseline remains unchanged and separate. No actual widened native Runtime, preservation/reload, ports, saved client, patch merge, revision, registry, SVG output, member or integration acceptance follows. Source packet scope and final architecture still require cold review before a separate executor starts.
+
+## Conformity and deviations
+
+Conforming at the reproduced primitive boundary: canonical field/parser authority, derived types, presence-aware equality, checked JSON inversion and retained genuine Edge/defaults Struct operations. Proposed public configuration exposure remains awaiting review. Product native rendering, persistence/version compatibility, all101 original073 members/303 cells, and dependent068/074/069/086 work remain unverified. No source, dependencies, imported evidence or member records changed.

@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 057 concrete public schemas; 066 decomposition phase; integrate resulting types into 063/064/067 before their final closure
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: BLOCKED — Round2 final review: synchronous codec capability versus Effectful typed getter APIs unresolved
+- Status: IN PROGRESS — the separate Effectful API, trusted isolation capability and Foldkit projection design are independently approved; product implementation and original member acceptance remain pending
 
 ## Why this matters
 
@@ -231,3 +231,7 @@ The complete rerunnable [installed codec investigation](installed-codec-investig
 ## Conformity and deviations
 
 The installed parser behavior conforms to the documented service restriction and non-schema synchronous failure boundary. Flow's proposed typed-data API and Foldkit real preservation behavior remain unverified; isolated parser and compiler probes are not production or upstream parity proof. The test boundary is the exact installed schema/parser constructors and in-memory TypeScript program; no browser, actual Flow entry or native Runtime mount ran in these probes.
+
+## Superseding design acceptance, 2026-09-30
+
+The historical synchronous-codec blocker is resolved by the separate Effectful boundary in [the codec design](codec-boundary-design.md). Primary independently reviewed the complete design and runtime probe, required encoder isolation, then reproduced the amended 13-negative compiler probe, complete harness typecheck and mounted Foldkit/Vite browser probe. See [the primary review](codec-boundary-primary-design-review.md). This approves architecture only. Full Flow graph transactions, serialized writers, projection acknowledgement, lifecycle and original generic-member acceptance require source execution and their own proofs. The scalar prototype commits before checking projection delivery and is not an implementation template for transaction ordering. Earlier BLOCKED notes remain historical evidence, superseded only for this concrete design decision.

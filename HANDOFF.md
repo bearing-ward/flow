@@ -4,6 +4,8 @@ Use [project progress](research/PROGRESS.md) for current status and open work, t
 
 The former handoff is preserved as a [dated archive](docs/archive/HANDOFF-2026-09-23.md). It is not a current project status source.
 
+The resize records below describe historical isolated work. Commit, merge and cleanup were explicitly authorized on 2026-10-11. Current integration status is in [the plan index](plans/README.md) and [the integration record](plans/integration-cleanup-2026-10-11.md).
+
 ## Resize measurement repair sketch, 2026-10-08
 
 This isolated worktree extends the existing 20-file candidate. Main is read-only. Baseline source copies, hashes, and patches are in `/Users/richardmcandrews/.codex/recovery/flow-resize-20261008/fix-review/`. No commits, pushes, merges, or delegates are authorized.

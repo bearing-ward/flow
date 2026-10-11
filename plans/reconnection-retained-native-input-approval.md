@@ -1,0 +1,18 @@
+# 086/093 retained native test input correction
+
+Primary bounded test-input approval, baseline `841be137e253cf19c665269eaaa79edc19abf3c3`. Same sole086 executor and shared lease. This changes no product policy or formal source acceptance count.
+
+The first complete Vanilla canvas/interaction gate completed exit1 with167pass/4fail/0skip, errors empty, logSHA `0545bc7643179841db5091910f7ee95e7ce5cba5817207b77c04ae0c4670489c`. Its full log, 248 raw attachments, old source and artifacts are preserved in `resume-093-vanilla-complete-native-first-preserved`. Retain this failed gate, every original assertion and raw fixture. Wait for the current independently running native gate to finish before editing or rerunning these files.
+
+Root inspected candidate `apps/vanilla/e2e/canvas.e2e.ts:129-164` and `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:310-405,1366-1460`. Three positive reconnection tests use a helper that requires visible preview immediately after down, before its real destination move. The approved093 positive threshold intentionally leaves that down pending. The fourth cancellation row dispatches a synthetic lostpointercapture while the actual canvas still owns capture; the approved current-owner guard correctly excludes that event from real capture-loss cancellation.
+
+Only the following test input changes are authorized:
+
+1. In the existing Vanilla `dragEdgeEndpoint` helper, keep the same trusted mouse positioning/down, same destination coordinates/move and mouseup. Immediately after down assert the preview count is zero for these positive-default-threshold scenarios. After the existing real destination move, run the original visible-preview assertion, then the original mouseup and zero-preview assertion. Do not add an intermediate move, change coordinates/threshold/options, force activation, alter old metadata/proposal/acceptance expectations, drop the visible assertion or disable a test. If a helper caller actually uses threshold0, STOP and report that caller rather than impose the positive-down assertion there.
+2. In the existing `cancelGesture` capture-loss branch, extend its already working actual unique-owner release path from `gesture === 'connection'` to connection OR reconnection, still only when reason is capture-loss. Preserve real hasPointerCapture owner enumeration, unique-owner assertion, retained owner identity, releasePointerCapture, ordinary movement flush, observed isTrusted loss with matching pointer/target and capture=false, and the existing data receipt assertion. Keep the synthetic pointer-cancel path and other gesture branches unchanged. Preserve every old cancellation/late/retry row and assertion.
+
+Keep all new24 activation,16 cancellation,52 participant and4 disposal/owner controls perhost,12 Vue reactive controls and original invalid-document error units. The distinct protected keyboard/native one-move body is untouched. Save before/after complete old helper bodies and exact diff with only these changes. Run quality/types plus the full real applicable native files serially, then all original final archives/legacy/focused/full/release gates. Actual product failures or another old input assumption outside these exact helpers must stop for their own diagnosis.
+
+## Conformity and deviations
+
+Preview activation after positive threshold crossing conforms to the093 reference contract. The corrected old positive input still proves its original active preview and final result, while also proving pending-down silence. Capture-loss now uses actual native ownership instead of an ineffective dispatched notification. Browser-generated events establish the browser test boundary; device/OS and final source/full parity remain unverified.

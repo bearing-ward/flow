@@ -14,7 +14,7 @@
 - Parent:057; parent remains IN PROGRESS
 - Depends on: 053/054/056 accepted baselines;065 measured handle contract; member decomposition phase of 066; reviewed 070 persistence migration design before geometry, and 070 implementation before final origin save/restore acceptance
 - Planned at: `ce9210e61a7dcb370a45b91632c19d7e017e4898`,2026-09-29; current uncommitted snapshot is required
-- Status: TODO — 070 migration design and explicit parent WP3 amendment approved by independent `review_070`, 2026-09-29; source execution still awaits checked 066 decomposition and 065 geometry prerequisites
+- Status: IN PROGRESS — geometry prerequisite/decomposition satisfied and directed core/complete070 source accepted through082;081/083 native host integration BLOCKED;084 origin-edit repair unaccepted;070 rendered/host/generic final acceptance pending
 
 ## Why this matters
 
@@ -154,3 +154,7 @@ This record changes planning status only. Original requirements, implementation 
 ## Geometry prerequisite reconciliation, 2026-09-30
 
 Plan 076's accepted measured-handle authority is committed on main at `77a725e`. Plan 065 reconciliation reproduced the focused gate, including all three measured-geometry browser suites and packed consumers. The historical source blocker on 065 geometry is resolved. Future authorized origin source execution consumes the committed current-generation projection; it must not recover the old stopped candidate or introduce another geometry authority. Original 065 member closure remains open and does not establish origin behavior. Final 067 acceptance still requires its own origin/connection assertions, reviewed 070 persistence migration and applicable 069 type integration. This bookkeeping update authorizes no source execution.
+
+## Authorized staged execution, 2026-09-30
+
+User authorized all recommended next steps. Primary reviewed origin core semantics;079 retains exact finite tuple guard migrations but stopped at a reproduced baseline measurement-readiness test race.080 assembles those source prerequisites with native077 and explicitly repairs that single browser test precondition; source acceptance follows its green verifier.078 approved directed named-handle core executes independently with frozen legacy guards in the same slice.070 additive host/client migration precedes origin/same-kind activation. A separate isolated executor builds the pinned public origin/connection reference capture under this plan, retaining all still-unverified variants and original069/074 dependencies. No parent closure or source merge is implied.

@@ -1,0 +1,7 @@
+# Foldkit proposal outcome expectation approval
+
+Bounded new-test correction reviewed2026-10-02. Actual `packages/foldkit/src/application.ts:1848-1859` copies terminalEvent into the reconnection proposal and retains its outcome. The newly added observation mapper `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:5078-5088` appends an existing outcome for EVERY event. Thus a healthy uncontrolled reconnection appears as `onReconnect:accepted`. Root read actual producer/event mapper, complete final equality assertion and raw second failure, which differs only at this newly expected string.
+
+Authorize changing ONLY the new final threshold-matrix expected `onReconnect` to `onReconnect:accepted`. Preserve both preview events, start/end labels/order/count, full callback payloads, exact full accepted edge/opposite metadata, unchangedviewport, previewnull, physicalcapturefalse, singlechange and six-frame receipts. No production/event mapper/old test change, outcome normalization or timeout adjustment. Preserve second8failures and preedit source before editing; re-run same8cases. First failures remainimmutabletoo.
+
+Second raw log SHA256392a48ca74b445e4eb7f058c482101b92d881205b0a9968ad05670cb95605a05; preeditnewtest SHA256208dd1e002602bbf68d755362486c7e8578e38492d2bd7bb2c75fae5b68bb27e. This is a mechanical new-test naming correction, not a source API policy or formal SOURCE acceptance. All093other matrices/fresh combined gates/coldreview remainrequired.

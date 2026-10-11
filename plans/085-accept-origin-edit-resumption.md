@@ -49,3 +49,7 @@ User continuation supersedes the earlier operational stop for these mechanical f
 ## Conformity and deviations
 
 Conforming repair retains the existing authoritative Schema, Effect validation/observability, atomic edit/delete rules and structural sharing. Core and actual packet units provide origin-edit evidence; mounted existing edit/persistence and packed checks guard consumers. Native origin geometry, observer faults, genuine HMR, full integration, generic/appearance/callback/member closure, CI/devices/collector and broad library parity remain separate requirements for subsequent work.
+
+## Accepted resumption result
+
+2026-10-02: DONE for this narrow scope. Primary and independent source reviews APPROVE frozen candidate7b3b11860cdfa36bf297883259e9cd1dd87b2d1f25be59519fde7566b6f4cfef. Primary independently reproduced saved focused verification (754units/50files,54selected browsers,3packed consumers, quality/docs/contracts), exit0/fullSuite=false, with all1477 frozen candidate hashes unchanged. Original dispatched plan SHA c1f702f785e834da6974d847a9653c1630c7f26539c6d360049c7891cc5a1055 remains recorded in the frozen candidate; this main-only status appendix is subsequent evidence. See primary/source review records for exact hashes/logs.084's origin-edit requirement accepted through085; native integration and whole-library parity remain open.

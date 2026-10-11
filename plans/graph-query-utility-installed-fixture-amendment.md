@@ -1,0 +1,17 @@
+# Graph query installed fixture layout amendment
+
+2026-10-02. This authorizes a bounded packaging layout correction for approved Plan092. It preserves one authoritative cases contract shared by actual upstream capture, conformance and installed runtime. No query algorithm, public API, peer/compiler policy or member identity changes.
+
+The common runtime must use ordinary source-relative imports of `../../research/harnesses/graph-query/cases.ts` and `../../research/fixtures/graph-query-reference.json`. In each real archive consumer, copy the two new common fixtures byte-for-byte into `tests/consumer/graph-query.types.ts` and `tests/consumer/graph-query.runtime.ts`. Copy the one canonical case module byte-for-byte into `research/harnesses/graph-query/cases.ts`, and the actual captured JSON byte-for-byte into `research/fixtures/graph-query-reference.json`. All four destinations belong to that consumer's disposable directory. Create only the needed owned directories. Source filenames and imports stay identical between workspace and archive; no duplicated schema, workspace alias, bundling rewrite or handcrafted expected data.
+
+The already approved three consumer tsconfig additions name the two nested new fixture destinations, rather than flat root filenames. The runtime imports the case module, so normal compiler traversal checks it without changing compilerOptions or adding a policy exception. Invoke the new runtime at its nested destination. Preserve the existing copy loop and every old common fixture path, factory invocation, archive install, peer, browser, style and cleanup step. Add only these four precise owned copies, the nested two include entries and new runtime invocation. Actual @flow/core resolution must reach the installed archive through the consumer's node_modules. Save copied-byte receipts for all four artifacts in each context.
+
+The copied parent072 appendix is coordinator-approved text below. Append only this bounded paragraph; preserve every original parent byte:
+
+> Plan092 bounded pure-query child is authorized against accepted087. It covers only the eleven original get-connected-edges/get-incomers/get-outgoers argument/helper groups listed in its approved packet. Schema-derived generic passthrough, one/two generic-default mechanics, readonly input/mutable fresh result behavior and genuine pinned/installed identity-order proof are required. The exact eleven fixed core-target exceptions and removal069 prerequisite are design-approved only for these groups. All thirty-three cells remain open until root reviews particular actual source/unit/reference/installed/compiler proof. All other072 obligations, dependencies and identities remain unchanged. Whole072/native/actor/full-suite acceptance is separate.
+
+The original Plan092/primary/cold approval hashes remain immutable. Copy/hash this amendment into owned inputs before the layout change. It extends only the plan's operational copy allowance to the required canonical case/fixture files; it grants no source or cell acceptance. Root and later fresh SOURCE review must inspect the complete installed runner delta and all copied bytes.
+
+## Conformity and deviations
+
+One actual case contract and actual capture are reused without reimplementation. Archive directory layout intentionally matches source-relative imports. This is an operational packaging correction, with three actual installed contexts and focused verification still required.

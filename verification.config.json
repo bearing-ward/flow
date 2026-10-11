@@ -1,16 +1,35 @@
 {
-  "defaultProfile": "focused",
-  "activeWork": "Plan 082 and 085 promotion rehearsal with Vue calibration capture",
-  "checks": ["docs", "contracts", "calibration", "consumer"],
+  "defaultProfile": "full",
+  "activeWork": "Integrate approved origin persistence, typed core foundations, path helpers, marker schemas and nested resize fixes",
+  "checks": [
+    "docs",
+    "catalog",
+    "api-members",
+    "contracts",
+    "traces",
+    "consumer",
+    "calibration"
+  ],
   "browserTests": {
-    "vanilla": ["public-edits.e2e.ts", "versioned-persistence.e2e.ts"],
-    "vue": [
-      "public-edits.e2e.ts",
-      "versioned-persistence.e2e.ts",
-      "minimap.e2e.ts",
-      "node-toolbar.e2e.ts",
-      "performance-calibration.e2e.ts"
+    "vanilla": [
+      "nested-resize-containment.e2e.ts",
+      "advanced-gestures.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
+      "measured-geometry.e2e.ts",
+      "versioned-persistence.e2e.ts"
     ],
-    "foldkit": ["public-edits.e2e.ts", "versioned-persistence.e2e.ts"]
+    "vue": [
+      "nested-resize-containment.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
+      "measured-geometry.e2e.ts",
+      "versioned-persistence.e2e.ts"
+    ],
+    "foldkit": [
+      "nested-resize-containment.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
+      "measured-geometry.e2e.ts",
+      "resize-measurement-lifecycle.e2e.ts",
+      "versioned-persistence.e2e.ts"
+    ]
   }
 }

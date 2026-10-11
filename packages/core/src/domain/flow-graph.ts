@@ -1,5 +1,5 @@
-import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { NodeExtent } from './flow-node-extent.schema.ts'
+import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import type { HandleId } from './flow-values.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
@@ -364,6 +364,7 @@ export const graphResizeChildExtent = (
       child.dimensions,
       resolveNodeOrigin(child.node, graph.document)
     )
+
     const minX = parentPosition.x + childPosition.x
     const minY = parentPosition.y + childPosition.y
     const maxX = minX + child.dimensions.width

@@ -1,0 +1,25 @@
+# Existing Foldkit creation-option test boundary for086
+
+2026-10-02. Primary approves this exact assertion/documentation boundary, no new production scope. This supplements086's mode-toggle/style-removal rows with the actual currently supported native API. It does not accept original live-update member parity.
+
+Root personally read candidate `packages/foldkit/src/application.ts:2657-2738`: createProgram eagerly decodes/snapshots connection options, separately snapshots native line/container styles, and closes nativeRenderers into Graph.makeView. These are construction inputs. Graph subscriptions read Model.connectionMode for each pointer stream at `packages/foldkit/src/graph.ts:4409-4425`; no public option replacement path was found in current HostAction/Graph Message schemas. Caller bag mutation after creation is explicitly rejected as an update mechanism by the already required snapshot tests. No private Model setter or invented HostAction is authorized under086.
+
+Retain same-owner accepted document/handle declaration replacement and explicit-ID reorder native proofs, using actual current observer measurement and public accepted handle-ID snapshots. nodesInitialized alone can still reflect old declared handle measurements; wait for exact current physical handles without predicted tokens/fake geometry.
+
+For existing Foldkit mode behavior, run separate genuine strict and loose Runtime controls with otherwise matching geometry/declarations/thresholds, and retained creation-snapshot/HMR proofs. They establish each supported creation mode and preservation, not live mode toggle on an already mounted owner. Vue retains actual reactive prop updates. Vanilla is subject to the verified construction-only boundary below. State this native difference explicitly in execution/trace mappings; never say fresh remount proves a live toggle.
+
+For Foldkit styles, require actual styled preview stroke/containeropacity, no serialized native style, actual Escape and owner disposal remove styled DOM/resources, and a genuinely new unstyled control has absent style. This proves lifecycle teardown and creation-time omission, not live clearing of a style option. Vue retains real reactive style-removal checks. Vanilla is subject to the verified construction-only boundary below. Keep distinct cancellation/disposal/healthy-control observations; do not replace existing render assertions with mount success or a projection count.
+
+The pending-threshold test must assert zero connection start/preview/autopan while under threshold, using actual connection-specific lifecycle tags. Other unrelated pointer lifecycle events do not imply connection promotion. Preserve actual above-threshold start and cancellation/terminal observations. A filter must select canonical observed connection events, not discard unexpected connection starts or silence failure logs.
+
+Original library live-mode/style-update acceptance remains open under the owning067/071/072/074 exact matrix. Record this missing supported path in the continuation backlog and design a native public option-update capability before closing those original cells. Existing creation-only policy may be a bounded current adapter difference, but the user's continuation seeks closer parity. No066/whole067/native-live-update cell promotion follows from this test boundary. All086 gates/source/independent reproduction requirements stay mandatory; no new skip/timeout/tolerance/production API is authorized.
+
+Conformity and deviations: supported constructor, preserved-state and resource teardown paths are actual native tests. Live property updates in reference/Vue and fresh host/program creation in Vanilla/Foldkit are distinct observables. Full option-update parity remains unverified and is actionable subsequent backlog work.
+
+## Verified Vanilla construction-only boundary
+
+The primary reviewer directly read native086 `apps/vanilla/src/mount-flow.ts:1643-1666`, where createFlowHost resolves connection options and snapshots both style records once. Its existing public signatures at lines1006 and1189 accept only document updates. Controller.update at line9463 replaces/reconciles the document; the JavaScript facade at line10277 also accepts only document input. No public live mode/style replacement path is present.
+
+Apply the same assertions-only boundary to Vanilla: separate genuine strict/loose hosts, retained constructor-input isolation, real styled preview plus Escape/disposal teardown and a fresh unstyled host. Preserve every same-owner document/handle replacement/reorder proof through the actual observer. Do not invent an options setter or claim fresh creation proves live replacement. This corrects the earlier unverified assumption that Vanilla supported live option replacement.
+
+Vanilla and Foldkit live connection-option/style replacement remains an actionable original-member gap under067/071/072/074. Vue reactive prop updates remain required. No source API addition, skipped test, or broader parity classification is authorized by this boundary.

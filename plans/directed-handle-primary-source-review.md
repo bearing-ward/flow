@@ -13,3 +13,7 @@ Approval is limited to core. Host gesture/callback/DOM migration, actual noncano
 ## Conformity and deviations
 
 **Verified core behavior:** directed identity/default resolution and independent frozen-v1 compatibility. **Approved intentional differences:** named physical identity controls stored geometry across capability kinds; nullable requests persist the selected named ID. **Unverified:** actual host rendering/callbacks, versioned restoration, native/generic/unnamed correspondence, CI/device/collector delivery and complete parent acceptance.
+
+## Later mixed-error compatibility finding, 2026-09-30
+
+The complete070 review exposed a gap in the earlier single-issue legacy tests. A noncanonical source handle combined with a missing target must yield the frozen MissingEdgeEndpoint first; the kind precheck instead yields MissingEdgeHandle. Primary reproduced frozen/current/additive outcomes. Other global integrity and per-edge ordering combinations need the same exact oracle matrix. The earlier compatibility statement is therefore bounded to tested single-issue cases; it does not establish complete frozen error precedence. The original078 candidate remains frozen. Plan082 owns one shared ordered legacy policy and the mixed-error matrix before combined070 source acceptance and081 activation. No earlier passing gate is represented as evidence for this newly discovered boundary.

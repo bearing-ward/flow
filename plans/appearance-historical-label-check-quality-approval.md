@@ -1,0 +1,21 @@
+# 096 historical label checks and fixture quality approval
+
+2026-10-02, main841be137, SAME096 LOCAL_ONLY executor. This is a bounded test-fixture correction, held until root independently verifies the complete new STOP freeze. Root read all three current appearance-config.e2e.ts files in full, the complete resume-3/quality-1.log, and the new Foldkit frame/pending-disposal fixture and Vanilla mount configuration. Preserve the failed quality log23f5cde95968ae4ef7b5ac09ad9a7bd55a3c30685f736087039e50fe3b6e0614 and complete failed source/evidence before edits.
+
+## Historical tests
+
+The three historical global-label tests have the same three independent read-only assertions for Farther, Frame graph and Interact after the already awaited relabel action. None changes browser state or supplies input to the next assertion. Replace only that loop with an awaited Promise.all over the same ordered labels, mapping each label to the same exact expect(first.getByRole('button', { name: label, exact: true })).toBeVisible() assertion. Keep the surrounding relabel action and all other original locators, assertions, literal values and action order. Do not parallelize actions or any state-dependent sequence. No lint directive or rule exclusion.
+
+Blank-line insertion and canonical formatting are allowed in the three complete historical files. Preserve their pre-edit full bytes and original21 body receipt. Add an audit that compares TypeScript syntax tokens while ignoring only formatter trivia and optional trailing commas, with an explicit narrowly checked exception for exactly these three loop-to-Promise.all substitutions. Independently verify the unchanged ordered label literals, exact locator/visibility expression and all other body tokens, not only test titles or substring counts. All original21 cases and all additive cases remain required. The approved Vanilla edge-group locator remains the sole prior locator adaptation. This mechanical amendment replaces byte equality only where formatting or these three explicitly approved loops make it impossible; it does not relax behavior or coverage.
+
+## New fixture quality
+
+Complete the original LOCAL proof-source assembly using the existing approved architecture. Preserve full before/after diffs. Repair formatting and spacing normally. Construct the Vanilla optional snap configuration through the existing typed configuration and a conditional assignment, retaining snap presence and exact12/8 values without widening the public API.
+
+The new six-frame Foldkit observer must still sample six distinct real requestAnimationFrame callbacks in order. Use an Effect-native callback bridge with cancellation of its own frame request, and a sequential Effect workflow, avoiding a handwritten Promise or lint suppression. Keep each observation after its actual frame callback, the exact six indices and full measured/native result fields. Dataset substitutions must refer to the same actual DOM elements and preserve null when absent. Replacing the new pending.then handler with an async helper that awaits the same real pending promise is allowed; the actual appearance.update must start before closeFirst, and history must receive its actual settled result, responses and accepted count. No invented result or acknowledgement. Mechanical undefined/default syntax corrections must preserve the same actual devtools ownership teardown.
+
+No production, request schema, public type, dependency, compiler, quality-rule configuration or original test expectation changes are approved. A requirement beyond these fixture corrections stops for separate review. After release, rerun complete types, quality, relevant units and architecture, then finish original LOCAL proof-source assembly. Shared reference, actual native execution, installed archives, focused/full verification, SOURCE acceptance and cell promotion remain withheld pending the existing root lease.
+
+## Conformity and deviations
+
+The label assertions retain the same actual public accessible names and visible output. Concurrency changes only independent observation scheduling. New frame observations must retain sequential real browser frames. This correction supplies no native appearance parity, source acceptance or parent-plan closure.

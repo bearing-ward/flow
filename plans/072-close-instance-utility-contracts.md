@@ -14,6 +14,16 @@
 
 The original public inventory retains 1003 assigned member records in 196 exact groups for this child, across all three hosts. Existing page-level similarities and passing cases leave named argument/result/default variants open. This child closes those original requirements through actual public paths or independently reviewed native differences. A working implementation still needs member-specific assertions and executable pinned-reference evidence.
 
+## Bounded pure-helper child088, 2026-10-02
+
+Primary and independent design review approve only the exact32 singleton groups on the four dated utility pages get-bezier-path, get-simple-bezier-path, get-smooth-step-path and get-straight-path, all existing owner072. The complete unchanged member allowlist and96 host-cell identities are in `plans/path-helper-parity-design.md`; no getStepPath or additional getEdgeCenter identity is invented. Whole072 remains TODO and its existing dependencies remain for all other groups.
+
+For these32 only, the actual public entry is `packages/core/src/public.ts` with the matching existing getBezierPath/getSimpleBezierPath/getSmoothStepPath/getStraightPath export. Three installed host contexts exercise the same pure core API. Owning production test is `packages/core/src/domain/flow-edge-path.test.ts`; reference capture is NEW `scripts/capture-path-helper-reference.ts`, using NEW `research/harnesses/path-helper/cases.ts` and `research/harnesses/path-helper/main.ts`; fixture is NEW `research/fixtures/path-helper-reference.json`, with NEW `packages/conformance/src/path-helper-reference.test.ts`. This appendix explicitly owns those bounded child paths for target validation. No host renderer or generic data lifecycle is in that pure call path.
+
+Only the32 groups' targets/obligations and their sole069 prerequisite are amended under the exact fixed URL/member/groupID/owner072/helper/core-path checker exception. Numeric coordinates/options and synchronous string/number tuples have no generic data/callback/Model requirement; remove069 ONLY from these32. Preserve all other dependencies, original identities/counts/catalog/raw evidence, all other group/cell fields and accepted06518implemented/171differences. Checker validity is not semantic proof. Each96cell still requires particular real source/unit/two-process upstream/installed assertion and primary approval before transition.
+
+Raw pure math retains the existing number domain, defaults, synchronous returns, readonly arguments and mutable tuples. Schema-derived types preserve both actual compiler modes without per-call guards or a new failure API. The known same-side NaN predicate discrepancy is conditionally repairable only after actual unmodified Flow/genuine pinned full-tuple reproduction and primary review, exactly as revised088 requires. Whole072/057/066 remains open; source execution is isolated and uncommitted, with final focused gate and independent source review. Original072's unrelated source authorization is unchanged.
+
 ## Current state
 
 `packages/core/src/domain/flow-change-compatibility.ts:10`

@@ -1,0 +1,13 @@
+# Native086 retained owner composition checkpoint
+
+2026-10-02. Primary authorizes a diagnosed mechanical harness correction within already approved test-harness.ts scope. No new product change or radius repair.
+
+The actual retained second gate failed31cases/55passed; log3db5fed65994b43272ac12fef4a8ee6239746a0eb12d70e759a8de93439c2916 remains preserved. Primary initially inspected graph.ts alone and incorrectly concluded flow-foldkit-root did not exist. Actual application.ts2626 renders it. The deeper actual owned-dom-diagnostic.json shows zero canvases immediately after startPublicState; after actual rendering, two root/canvases exist and the passed #app/#foldkit-second-public-state elements have been replaced. Captured publicContainers therefore point at disconnected hosts. A global fallback hid this ownership loss. Primary read the complete diagnostic and actual publicProgram1414/startPublicState1507 and origin-fixture109–124/180–193 persistent-owner composition.
+
+Approve harness-only generic mount/publicProgram composition: keep captured outer owner hosts persistent, create stable-ID concrete owned inner mounts passed to createProgram/Runtime.embed, wait for owner-contained actual canvas/instance and real public read/frame readiness before observer/measurement/viewport work. Scope remains existing apps/foldkit/e2e/test-harness.ts; explicit mountMeasurementDocument stays separate. No privateModel, fake identity, global fallback, foreign owner borrowing, core/port/observer/product edit, removed assertions or timing waiver. Retain true cleanup/lease/owner scope, exact public tests and original failures. Actual native rerun and source acceptance remain mandatory.
+
+Independent targeted reconnect stacking34/34 and genuine three installed consumers passed previously; logb749b2b8c89ab7abf96151314fd6b4835ac885dc8f4838a051d55dfe697773df and4866f2eb3a34c196a498197563e382eed2fdbc379793ab314ab63ef0f65eeeb5 were independently rehashed. Source setup-only origincontracta3a3938264180c07f92b2bbf83180d3ca7d1830b3b3deae0d53adde42282edc8 was inspected at real direct-document/translatedviewport/completepreview/acceptedidentities/paint/nativeclick-selection boundaries. These passes do not erase retained failures. Passing PNG attachments may be added without changing assertions. Size growth and radius remain diagnostic.
+
+## Conformity and deviations
+
+Conforming repair target: actual native owner identity remains connected across inner Runtime replacement and real owned rendering precedes native resources. Earlier graph-only selector inference was incorrect and is retained here as a lead corrected by actual DOM evidence. Source/native retained/full/HMR/release acceptance, library members and collector delivery remain unverified.

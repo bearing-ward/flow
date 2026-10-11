@@ -1,0 +1,17 @@
+# 094 primary local checkpoint
+
+Baseline `841be137e253cf19c665269eaaa79edc19abf3c3`; candidate freeze `bcc49266edb0cf1329fa4d6dbfa3b3b98323dbe6f124c5ee2cb2acd3f147e8d9`. This is a local evidence review, not SOURCE approval or a shared lease grant.
+
+Root independently rehashed all 1,498 source/record files, 135 evidence files and 116 built artifacts without mismatches; the exact audit is `typed-change-utilities-primary-local-ready-integrity.json`. The 1,487 unchanged accepted087 paths remain protected. The eleven selected changes are separately recorded in the freeze. Comparing public exports against accepted087, rather than Git HEAD, shows only the two new result type exports. The reference caller delta contains only their import and the two approved output parameter annotations.
+
+Root read the final complete positive and negative compiler fixtures, complete new unit file, utility trace, changed public API and progress blocks, final execution/provenance records, production mapping/builders and compiler checker. The independent ordering oracle scans changes per item rather than using the production per-ID queue; it covers all 135 node and 30 edge sequences. Other units inspect nested Date/private-class identity and mutation aliases, decoded payloads without repeated codec calls, ordinary shell losses, indexed aliases, concrete optional-index/pure splice differences and actual public exports.
+
+The actual final logs establish 20 focused tests in three files and 773 tests in 52 files, quality/typecheck/architecture exit 0, and exactly 44 root plus 41 strict-consumer diagnostics with seven complete private-builder bodies and no new type escapes/exported builders. Consumer resolution uses the candidate-local built declarations and does not establish an archive install. The original full-unit timeout was in the unchanged legacy persistence source-integrity test; the exact unchanged sequential full-unit command subsequently passed. Neither failure is deleted or called a pass.
+
+Compiler attempt001 could not resolve the new root-level fixture's public package import. Its complete source/diagnostics were frozen before adding the ignored candidate-local package link. Attempt002 resolved imports and exposed a mistaken expected-failure marker: `readonly (typeof Edges.Type)[] = [timed, weighted]` is a valid inventory. The declaration remains in the final fixture without that marker. The added concrete template lookup is a real, separately identified negative, not proof that the valid inventory should fail. Both failed attempts and original inventories remain preserved. Root inspected this exact correction and all final negative declarations; it does not conceal an approved production contract failure.
+
+No shared reference, archive, native, focused/full/release or final independent SOURCE gates ran. Steps 6–9 must run under a future explicit lease and produce a new final freeze. All twelve original identities and 36 host cells remain OPEN. This checkpoint neither integrates source nor permits commit, merge, push or publication.
+
+## Conformity and deviations
+
+The reviewed local utility behavior and declarations conform to the approved bounded contract. Ordinary outer records, conservative index widening, preserved concrete decoder/pure-index mismatch and unsupported outer prototypes/refinements are intentional documented limits. Fresh actual-built reference, installed archives, focused/full integration and broader native/API parity remain unverified.

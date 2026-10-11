@@ -1,0 +1,23 @@
+# Primary review of edit-origin preservation
+
+Status: architecture APPROVED, source BLOCKED after required-quality repair2. Main841be137e253cf19c665269eaaa79edc19abf3c3. Exact dispatched084 plan SHA2569d88ad5738b55eb66e6f40c93d0073a1cd965cec49683ba0b3300dda38a68622. Cold design record SHA2568077d771ee9436384a628e5568f7178ce4a27b43f6b9be14e9e14cbb2c34d8a7. Primary personally read the approved plan, independent record and cited production source/tests/Schema consumers.
+
+Final independent source verdict is also BLOCK/STOPPED, recorded in `plans/edit-origin-preservation-independent-source-review.md`, SHA2567ae4e0448860e1f80e13f3cb8b7da01c1186dd398fc312776fda52c923dbe108. Primary read the complete report and agrees with its exact evidence boundary. It identifies no additional functional defect in the narrow patch and does not waive mandatory quality/focused gates. The frozen source must remain unaccepted.
+
+Primary independently reproduced all three losses with read-only Effect execution against accepted082: input origin[.25,.5] stays unchanged, while an actual prepared label edit, prepared deletion and FlowEditResultSchema encoding each omit nodeOrigin. This verifies a real core and result-contract bug before HMR. Runtime timing is a separate unresolved083 cause.
+
+Approve exactly the two spreads preserving document metadata, reuse of authoritative FlowDocumentSchema for edit results, meaningful core regressions and actual existing Foldkit edit/delete packet-schema units. Unchanged mapped node/edge reference preservation, integrity/deletion policies and existing spans remain requirements. No adapter metadata restoration or lifetime fixes enter this slice.
+
+The executor assembles accepted082 only in a separate detached checkout. Primary and cold source reviewer must inspect final diff/assertions/inventory and independently reproduce saved focused verify before source approval.083 stays BLOCKED at its exact frozen171-path candidate. This source fix does not reset any exhausted083 quality budget, establish genuine HMR, or close full integration.
+
+## Conformity and deviations
+
+Final primary reproduction: actual frozen core/application targeted tests pass63/2files, exit0, log `/tmp/flow-084-primary-targeted-tests.log`. Primary read the full final production/test diff against accepted082; original eight core and all original application tests remain unchanged. New units exercise actual edit/delete helper and exact production packet Schemas, retaining origin/identity/immutability and failure behavior. A preliminary invalid-table concern was withdrawn after primary and cold reviewer inspected installed Vitest5: mixed tables including null pass raw arrays intact. No test relaxation resulted.
+
+Final independent quality check exit1, `/tmp/flow-084-primary-quality.log`. It reproduces core test:428 spacing and additionally reports formatting errors in final owned execution.md/provenance.json written after the earlier repair2 check. The historical repair2 log had only one error; the final candidate has these three issues. No further repair is authorized. Saved focused verify failed at quality before later gates, so existing browser/packed/full acceptance remains absent.
+
+Exact candidate `/Users/richardmcandrews/.codex/worktrees/edit-origin-preservation/flow`. Final-freeze.json in sibling evidence directory SHA256109a4474797b0d34ebd6bac7c5773a25a8a0c423c13ce0e8c8e9d3b531b4a692; source-delta.patch550d58810042c1a63570e2bf7a7848d723030031d2f832a147c4267880f0db66; provenance5dbfb1a90c589cde9042580d3e5093dd63bddf712f58bbc14d6ba3ffb9ea1378. Primary rehashed all124 actual paths, including provenance: zero mismatches, no missing/extra paths. Primary independently observed all strict ports free and diff-check exit0. Source is BLOCKED, not accepted. All work remains isolated and main product source unchanged.
+
+Primary inspected the second repair log: format passes749 files, but core flow-edit.test.ts:428 needs a blank line before its untouched-reference assertion. This is the exact sole quality error reported in that final log. The executor stopped as instructed. Earlier targeted36 tests passed before the subsequent quality-driven test split, so that checkpoint does not establish the final test shape. Root reproduction and complete final inventory are pending. Neither saved focused verification nor browsers nor packed consumers passed for084. No third repair or another budget reset is authorized.
+
+Conforming design preserves one Schema authority and existing Effect transaction/observability ownership. Source verification and mounted consumer regression acceptance remain pending. Full integration, native-origin rendering, CI/devices/collector and broad parity remain unverified.
