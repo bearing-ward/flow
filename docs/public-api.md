@@ -182,3 +182,136 @@ The native internal-node contract has required numeric `width`/`height`, `measur
 Each measured handle has required nonempty `handleId`, `nodeId`, numeric size and node-local center `offset`. Handle kind and side belong to `internal.node.handles` declarations. Join by ID to partition source/target geometry or recover `top`, `right`, `bottom` and `left`. No handles produces `[]`, including omitted declarations and hidden/stale samples. Recover rectangle top-left by subtracting half the width/height from the center. Null or omitted declaration IDs are rejected at the public input boundary without changing the accepted document. Nullable connection-handle queries remain a separate contract.
 
 The original 065 member tests exercise both kinds on every side at zoom 0.5/2, exact public fields, hidden lifetime variants, callback retention and rejected IDs. Packed consumers independently compile positive and negative public declaration probes. These establish the named native mappings; exact React callback/frame timing and raw nullable/optional object shapes are deliberate differences, not parity claims.
+
+## Typed-data contract factory
+
+Core exports `defineFlowDataContract`, `createFlowNodeVariantSchema`, `createFlowEdgeVariantSchema`, `createFlowDataDocumentSchema`, and `validateFlowGraphDocument`. This factory foundation records a caller codec and isolation capability. Construction runs neither capability and creates no graph authority. Existing concrete JSON APIs retain their signatures and behavior.
+
+```ts
+import {
+  createFlowDataDocumentSchema,
+  createFlowEdgeVariantSchema,
+  createFlowNodeVariantSchema,
+  defineFlowDataContract,
+  validateFlowGraphDocument,
+} from '@flow/core'
+import { Effect, Schema as S, SchemaGetter as G } from 'effect'
+
+const date = S.String.pipe(
+  S.decodeTo(S.Date, {
+    decode: G.transformEffect((value) =>
+      Effect.sleep(1).pipe(Effect.as(new Date(value)))
+    ),
+    encode: G.transformEffect((value) =>
+      Effect.sleep(1).pipe(Effect.as(value.toISOString()))
+    ),
+  })
+)
+const Node = createFlowNodeVariantSchema({
+  type: S.Literal('dated'),
+  data: S.Struct({ created: date }),
+})
+const Edge = createFlowEdgeVariantSchema({
+  type: S.Literal('weighted'),
+  data: S.Struct({ weight: S.Number }),
+})
+const Document = createFlowDataDocumentSchema({ nodes: Node, edges: Edge })
+const contract = defineFlowDataContract({
+  id: 'dated-document',
+  document: Document,
+  isolation: {
+    detach: (value: typeof Document.Type) =>
+      Effect.sync(() => ({
+        ...value,
+        nodes: value.nodes.map((node) => ({
+          ...node,
+          data: { created: new Date(node.data.created.getTime()) },
+        })),
+        edges: value.edges.map((edge) => ({
+          ...edge,
+          data: { ...edge.data },
+        })),
+      })),
+  },
+})
+const decoded = S.decodeUnknownEffect(contract.document)({
+  nodes: [
+    {
+      id: 'one',
+      label: 'One',
+      position: { x: 0, y: 0 },
+      type: 'dated',
+      data: { created: '2026-10-02T00:00:00.000Z' },
+    },
+  ],
+  edges: [],
+})
+const checked = decoded.pipe(Effect.flatMap(validateFlowGraphDocument))
+```
+
+`Document.Type` contains Date instances; `Document.Encoded` contains strings. `FlowNodeOf<C>` and `FlowEdgeOf<C>` extract the exact decoded subtypes from a graph codec. `FlowNodeGeometry`, `FlowEdgeGeometry`, and `FlowGraphGeometry` derive from the concrete contracts and retain document/per-node origins. Builders replace only type/data or nodes/edges and preserve every other authoritative field schema. A whole-document codec can have a different encoded shape and additional decoded metadata; using these builders is optional.
+
+Supply exact field schemas for optional/default discriminators and data. Use ordinary `S.Union` for optional/default/untagged branches and narrow every branch in caller code. `S.toTaggedUnion('type')` requires a discriminator on every decoded branch. An untagged discriminator or no-data field uses `S.optional(S.Undefined)` so a foreign value fails instead of being stripped. `S.optionalKey` permits absence and rejects own undefined at runtime. `S.optional` permits both. Caller-selected key/value defaults and passthrough/omit encoding strategies remain unchanged.
+
+Decoding requires only `C.DecodingServices`, encoding only `C.EncodingServices`, and `isolation.detach` only its declared isolation environment. Compose and provide those Effects at the application boundary. Parser errors remain `S.SchemaError`. Service-free parsers can still suspend, so a `never` service environment does not make synchronous parsing safe. `S.decodeUnknownEffect(S.toType(C))` validates decoded classes without running encoding transforms. `validateFlowGraphDocument` runs the existing ordered physical-ID integrity traversal and returns the exact supplied document reference; it does not decode data, invoke isolation, or create authority.
+
+`FlowIsolation<C, RI>` is trusted caller code. Schema validates the decoded output shape but cannot certify independent Date values or private class slots. Supply a class-specific copy capability and mutation tests for those states. Successful codec roundtrips, `instanceOf`, and freezing cannot establish independence. The example capability copies its selected data classes; it is not a general deep-cloner for every mutable geometry extension.
+
+`FlowTypedFailureSchema` derives the five approved failure variants: codec, callback, disposed, revision conflict and projection. Codec operations are decode, validate-decoded, encode and isolate. `FlowTypedError` adds the existing document integrity failures. These schemas define future workflow data; the factory implements no actor, revision owner, callback delivery or native projection orchestration.
+
+### Conformity and deviations
+
+The factory's production path is public exports to the core builders/constructor or shared integrity validator. Units exercise real Schema parsers and class capabilities. Installed archive consumers compile correlated variants, brands and service negatives, then execute the public factory/runtime matrix. Current consumer compiler options omit exact optional property assignment enforcement; runtime optional-key rejection remains tested. Existing versioned-persistence browser suites guard shared concrete integrity only.
+
+Schema-derived contracts, accepted geometry/metadata and ordered integrity conform to the selected core contract. Effectful codec composition and trusted class isolation are intentional adaptations for services, suspension and mutable private state. Typed actors, reducers, getters, subscriptions, native canvas/render/lifecycle, typed persistence, pinned generic parity, all original generic members, full integration, CI, devices and collector delivery remain unverified.
+
+## Scoped typed Flow actor
+
+`makeTypedFlow` creates one scoped core graph owner from a `FlowDataContract` and an encoded or decoded initial document. The actor retains the codec's exact decoded node, edge and whole-document metadata types. Its methods return Effects; provide services when executing each method. The actor captures that execution's Context, including services supplied after construction.
+
+```ts
+import { Effect } from 'effect'
+import { makeTypedFlow } from '@flow/core'
+
+const program = Effect.scoped(
+  Effect.gen(function* () {
+    const initial = yield* decoded
+    const flow = yield* makeTypedFlow({
+      contract,
+      initial: { kind: 'decoded', input: initial },
+      viewport: { x: 0, y: 0, zoom: 1 },
+    })
+    const snapshot = yield* flow.readSnapshot()
+    yield* flow.replaceDecoded(snapshot.document, snapshot.revision)
+    return yield* flow.encodeDocument()
+  })
+)
+```
+
+The example uses the contract and decoded Effect from the factory example. Run `program` with the services required by that contract. Decoded construction requires encoding services, decoded isolation services and `Scope`. Encoded construction also requires decoding services and the optional encoded-input capture service. A dynamically selected initial kind requires both channels.
+
+`readSnapshot`, `readNodes`, `readEdges`, `readNode`, `readEdge` and `readSelected` require decoded isolation services. Missing branded node or edge IDs produce `Option.none`. Each read captures one accepted revision and document together, then detaches its delivery outside the writer. A newer accepted revision does not invalidate that captured read; actor closure rejects unfinished delivery. Selector defects produce `FlowCallbackFailure`.
+
+`replaceEncoded(input, expectedRevision)` requires decoding, encoding, isolation and encoded-capture services. `replaceDecoded(document, expectedRevision)` requires encoding and isolation. `updateDecoded(snapshot => Effect)` adds the updater's services, runs the updater once on a detached snapshot and attempts one revision comparison afterward. An awaited nested update can accept; the outer update then conflicts. There is no callback replay. Stale revisions produce `FlowRevisionConflict`; invalid expected revisions and revision exhaustion produce `FlowCallbackFailure`. Every accepted write increments the revision and returns `{ revision, changed: true }`, including equal documents.
+
+`encodeDocument` requires encoding and isolation services and returns checked finite JSON from an independent private copy. Decoded reads, writes and saves do not acquire the encoded-input capture service. The default encoded capture copies plain JSON through property descriptors before invoking the document codec. It rejects accessors, custom prototypes, symbol keys, cycles, undefined, functions, bigint, nonfinite numbers and sparse arrays without executing getters. Special own keys remain intact. For an encoded class or own-undefined/default branch, supply `FlowTypedEncodedInputCapture<RC>` with a trusted copy that preserves private state and absence. Schema validation cannot establish that capability's ownership promise.
+
+The isolation capability must detach Date values and private class slots at every input and delivery boundary. Custom checkers, encoders, updaters, selectors and observers receive private copies. A singleton copy capability violates that promise even if its class passes Schema validation. Containers are frozen after preparation; freezing does not prove private class independence.
+
+`FlowTypedSnapshot<C>` derives from `createFlowTypedSnapshotSchema(C)`. Its document Type and Encoded channels both retain exact `C.Type`; its outer document key is required and readonly without inheriting a codec key default. The exported schema metadata represents that field as a singleton Union: `fields.document.members[0]` is `S.toType(C)` and its `schema` is the original codec. Nested optional, default, no-data, class and branded fields remain unchanged.
+
+Initialization captures and validates the viewport before any document hook or staging call. `FlowTypedCheckpointSchema` refines the authoritative viewport with finite x and y checks, in that order. NaN and either infinity fail with `FlowCodecFailure`, operation `encode`, and `Checkpoint viewport.x must be finite` or `Checkpoint viewport.y must be finite`. Other viewport capture, shape or zoom failures use `Invalid checkpoint viewport`. The existing concrete `ViewportSchema` remains unchanged. Initialization and every write validate and copy the complete finite JSON checkpoint before acceptance.
+
+An optional `FlowTypedCheckpointGate` stages a separate frozen checkpoint and returns only after its required staging acknowledgement. Its reservation supplies a short, pure, nonthrowing `isCurrent`, an idempotent non-reverting `abort` Effect, and an `accepted` Effect. Staging and caller preparation run outside the writer; the final revision comparison and acceptance run together inside it. A staging failure rejects that request with `FlowProjectionFailure` at its prospective revision. Expired or throwing reservation checks reject before acceptance.
+
+After core acceptance, an independent ordered worker runs `accepted` and releases the transient staging identity once. Activation failure stores `FlowProjectionFailure` at the failed accepted revision with `Checkpoint activation failed`, rejects pending and new writes, and stops queued activation. Already accepted graph, revision and observer history remain available to reads, encoding and observation. The commit receipt establishes core acceptance. Native render, port acknowledgement, reload and durable persistence require their own integration evidence. Trusted abort defects are unsupported provider violations whose actual causes remain visible during cleanup; no liveness guarantee covers a nonterminating capability.
+
+`observe(snapshot => Effect)` captures each registration's Context and scope, requires isolation and listener services, and remains active until failure, cancellation or actor closure. Each registration receives an initial snapshot and every subsequent accepted revision through its own ordered unbounded queue. Slow listeners do not block acceptance or other listeners and may await updates. Pending deliveries retain private accepted references until delivery; cancellation, failure and disposal clear that queue. Listener failure removes that registration. Cancellation remains interruption; actor closure completes healthy observers normally.
+
+Closing the construction scope forbids acceptance, settles still-pending calls with `FlowDisposed` without replacing an earlier terminal gate failure, interrupts cooperative work and joins owned cleanup and late reservation handoffs. Input services and capabilities must cooperate with cancellation. No JavaScript blocking-code interruption guarantee is provided.
+
+### Conformity and deviations
+
+The production path is the public actor export through owned capture and preparation, mandatory checkpoint staging, one core acceptance writer and independent observer and activation workers. Owned units call that same source entry; packed fixtures import installed `@flow/core` exports. Existing concrete browser and versioned-persistence suites are separate regression boundaries.
+
+Typed core ownership, Schema-derived values, service composition and ordered graph integrity follow the core architecture. Effectful methods, trusted capture and isolation, revision conflicts without replay, initial observation and separate core acceptance and activation are intentional policies. Native typed transitions, renderer and framework lifecycle, typed persistence, pinned library parity, original generic members, full integration, CI, devices and collector delivery remain unverified.

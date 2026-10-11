@@ -148,6 +148,21 @@ export const FlowDocumentSchema = S.Struct({
 
 export type FlowDocument = typeof FlowDocumentSchema.Type
 
+export type FlowIntegrityNode = Pick<
+  FlowNode,
+  'id' | 'parentId' | 'extent' | 'handles'
+>
+
+export type FlowIntegrityEdge = Pick<
+  FlowEdge,
+  'id' | 'source' | 'target' | 'sourceHandle' | 'targetHandle'
+>
+
+export interface FlowIntegrityDocument {
+  readonly nodes: readonly FlowIntegrityNode[]
+  readonly edges: readonly FlowIntegrityEdge[]
+}
+
 export const FlowDocumentIntegrityErrorSchema = S.Union([
   DuplicateNodeId,
   DuplicateEdgeId,
@@ -165,15 +180,15 @@ export type FlowDocumentIntegrityError =
 
 const decodeUnknownFlowDocument = S.decodeUnknownEffect(FlowDocumentSchema)
 
-const indexDocumentNodes = (
-  nodes: readonly FlowNode[]
+const indexDocumentNodes = <N extends FlowIntegrityNode>(
+  nodes: readonly N[]
 ):
-  | { readonly nodesById: ReadonlyMap<NodeId, FlowNode> }
+  | { readonly nodesById: ReadonlyMap<NodeId, N> }
   | {
-      readonly nodesById: ReadonlyMap<NodeId, FlowNode>
+      readonly nodesById: ReadonlyMap<NodeId, N>
       readonly error: DuplicateNodeId
     } => {
-  const nodesById = new Map<NodeId, FlowNode>()
+  const nodesById = new Map<NodeId, N>()
 
   for (const node of nodes) {
     if (nodesById.has(node.id)) {
@@ -187,8 +202,8 @@ const indexDocumentNodes = (
 }
 
 const findParentReferenceError = (
-  nodes: readonly FlowNode[],
-  nodesById: ReadonlyMap<NodeId, FlowNode>
+  nodes: readonly FlowIntegrityNode[],
+  nodesById: ReadonlyMap<NodeId, FlowIntegrityNode>
 ): FlowDocumentIntegrityError | undefined => {
   for (const node of nodes) {
     if (node.parentId === undefined) {
@@ -212,8 +227,8 @@ const findParentReferenceError = (
 }
 
 const findParentCycleError = (
-  nodes: readonly FlowNode[],
-  nodesById: ReadonlyMap<NodeId, FlowNode>
+  nodes: readonly FlowIntegrityNode[],
+  nodesById: ReadonlyMap<NodeId, FlowIntegrityNode>
 ): ParentCycle | undefined => {
   const visited = new Set<NodeId>()
   const visiting = new Set<NodeId>()
@@ -251,7 +266,7 @@ const findParentCycleError = (
 }
 
 const findDuplicateEdgeId = (
-  edges: readonly FlowEdge[]
+  edges: readonly FlowIntegrityEdge[]
 ): DuplicateEdgeId | undefined => {
   const edgeIds = new Set<EdgeId>()
 
@@ -267,7 +282,7 @@ const findDuplicateEdgeId = (
 }
 
 const findDuplicateHandleId = (
-  nodes: readonly FlowNode[]
+  nodes: readonly FlowIntegrityNode[]
 ): DuplicateHandleId | undefined => {
   for (const node of nodes) {
     const handleIds = new Set<string>()
@@ -289,8 +304,8 @@ type EndpointHandlePolicy =
   | { readonly kind: 'canonical-kind' }
 
 const findEdgeReferenceError = (
-  edges: readonly FlowEdge[],
-  nodesById: ReadonlyMap<NodeId, FlowNode>,
+  edges: readonly FlowIntegrityEdge[],
+  nodesById: ReadonlyMap<NodeId, FlowIntegrityNode>,
   policy: EndpointHandlePolicy
 ): FlowDocumentIntegrityError | undefined => {
   for (const edge of edges) {
@@ -343,7 +358,7 @@ const findEdgeReferenceError = (
 }
 
 const findDocumentIntegrityError = (
-  document: FlowDocument,
+  document: FlowIntegrityDocument,
   policy: EndpointHandlePolicy
 ): FlowDocumentIntegrityError | undefined => {
   const nodeIndex = indexDocumentNodes(document.nodes)
@@ -411,10 +426,10 @@ const integrityAttributes = (error: FlowDocumentIntegrityError) =>
     })
   )
 
-const validateDocumentWithPolicy = (
-  document: FlowDocument,
+const validateDocumentWithPolicy = <D extends FlowIntegrityDocument>(
+  document: D,
   policy: EndpointHandlePolicy
-): Effect.Effect<FlowDocument, FlowDocumentIntegrityError> =>
+): Effect.Effect<D, FlowDocumentIntegrityError> =>
   Effect.gen(function* validateDocumentIntegrity() {
     const error = findDocumentIntegrityError(document, policy)
 
@@ -430,6 +445,11 @@ const validateDocumentWithPolicy = (
 
     return yield* error
   }).pipe(Effect.withSpan(FlowSpan.documentIntegrity))
+
+export const validateFlowGraphDocument = <D extends FlowIntegrityDocument>(
+  document: D
+): Effect.Effect<D, FlowDocumentIntegrityError> =>
+  validateDocumentWithPolicy(document, { kind: 'physical-id' })
 
 export const validateFlowDocument = (
   document: FlowDocument

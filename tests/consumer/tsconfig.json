@@ -13,6 +13,10 @@
     "consumer.typecheck.ts",
     "main.ts",
     "styles.d.ts",
-    "tutorial-first-canvas.ts"
+    "tutorial-first-canvas.ts",
+    "typed-data-factory.types.ts",
+    "typed-data-factory.runtime.ts",
+    "typed-flow-actor.types.ts",
+    "typed-flow-actor.runtime.ts"
   ]
 }

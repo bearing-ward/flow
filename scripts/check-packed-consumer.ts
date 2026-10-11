@@ -782,9 +782,27 @@ const program = Effect.gen(function* checkPackedConsumers() {
         )
       }
 
+      for (const file of [
+        'typed-data-factory.types.ts',
+        'typed-data-factory.runtime.ts',
+        'typed-flow-actor.types.ts',
+        'typed-flow-actor.runtime.ts',
+      ]) {
+        const contents = yield* fileSystem.readFileString(
+          path.join(root, 'tests/consumer', file)
+        )
+
+        yield* fileSystem.writeFileString(
+          path.join(consumerRoot, file),
+          contents
+        )
+      }
+
       yield* run('bun', ['install', '--no-save', '--no-progress'], consumerRoot)
       yield* run('bun', ['-e', "await import('@flow/core')"], consumerRoot)
       yield* checkPeers(consumerRoot, consumer.adapter, consumer.peers)
+      yield* run('bun', ['typed-data-factory.runtime.ts'], consumerRoot)
+      yield* run('bun', ['typed-flow-actor.runtime.ts'], consumerRoot)
       yield* run(
         'bun',
         [

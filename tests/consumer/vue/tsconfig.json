@@ -9,5 +9,13 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": []
   },
-  "include": ["consumer.typecheck.ts", "main.ts", "styles.d.ts"]
+  "include": [
+    "consumer.typecheck.ts",
+    "main.ts",
+    "styles.d.ts",
+    "typed-data-factory.types.ts",
+    "typed-data-factory.runtime.ts",
+    "typed-flow-actor.types.ts",
+    "typed-flow-actor.runtime.ts"
+  ]
 }

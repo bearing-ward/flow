@@ -1,3 +1,25 @@
+export { FlowTypedFailureSchema } from './domain/flow-data-contract.schema.ts'
+
+export type {
+  FlowDataContract,
+  FlowIsolation,
+  FlowNodeGeometry,
+  FlowEdgeGeometry,
+  FlowGraphGeometry,
+  FlowGraphCodec,
+  FlowNodeOf,
+  FlowEdgeOf,
+  FlowTypedFailure,
+  FlowTypedError,
+} from './domain/flow-data-contract.schema.ts'
+
+export {
+  defineFlowDataContract,
+  createFlowNodeVariantSchema,
+  createFlowEdgeVariantSchema,
+  createFlowDataDocumentSchema,
+} from './domain/flow-data-contract.ts'
+
 export {
   NodeOriginSchema,
   resolveNodeOrigin,
@@ -24,6 +46,7 @@ export {
   XYPositionSchema,
   decodeFlowDocument,
   validateFlowDocument,
+  validateFlowGraphDocument,
 } from './domain/flow.schema.ts'
 
 export {
@@ -42,6 +65,9 @@ export type {
   EdgeId,
   FlowDocument,
   FlowDocumentIntegrityError,
+  FlowIntegrityNode,
+  FlowIntegrityEdge,
+  FlowIntegrityDocument,
   FlowEdge,
   FlowEdgePath,
   FlowEdgeMarker,
@@ -575,3 +601,23 @@ export type {
   SavedVersionedFlowDocument,
   SavedVersionedFlowSession,
 } from './domain/flow-persistence.ts'
+
+export {
+  RevisionSchema,
+  FlowTypedCommitResultSchema,
+  FlowTypedCheckpointSchema,
+  createFlowTypedSnapshotSchema,
+} from './domain/flow-typed-actor.schema.ts'
+
+export type {
+  FlowTypedSnapshot,
+  FlowTypedCommitResult,
+  FlowTypedCheckpoint,
+  FlowTypedEncodedInputCapture,
+  FlowTypedCheckpointReservation,
+  FlowTypedCheckpointGate,
+  FlowTypedActorOptions,
+  TypedFlow,
+} from './domain/flow-typed-actor.schema.ts'
+
+export { makeTypedFlow } from './domain/flow-typed-actor.ts'
