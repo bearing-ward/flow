@@ -134,6 +134,7 @@ export const ActiveNodeResizeSchema = S.Struct({
   pointerId: S.Number,
   pointerStart: XYPositionSchema,
   sizeStart: NodeSizeSchema,
+  childExtent: S.optional(NodeExtentSchema),
 })
 
 export type ActiveNodeResize = typeof ActiveNodeResizeSchema.Type
@@ -544,6 +545,7 @@ export const NodeResizeCalculationInputSchema = S.Struct({
   minimumSize: NodeSizeSchema,
   bounds: S.optional(NodeExtentSchema),
   origin: S.optional(NodeOriginSchema),
+  childExtent: S.optional(NodeExtentSchema),
 })
 
 export type NodeResizeCalculationInput =
@@ -565,8 +567,8 @@ export const NodeResizeCalculationSchema = S.Struct({
   /** Apply to each direct child's local position to preserve its world position. */
   childrenPositionDelta: FinitePositionSchema,
   /**
-   * Empty when bounds were omitted or the resulting rectangle fits them. A
-   * non-empty value means no fully bounded candidate exists without violating
+   * Empty when the candidate satisfies the supplied external and child extents.
+   * A non-empty value means no bounded candidate exists without violating
    * a resize invariant; hosts should not silently commit it as in-bounds.
    */
   boundsIssues: S.Array(NodeResizeBoundsIssueSchema),
@@ -677,6 +679,34 @@ const applyResizeBounds = (
   return { x, y, width, height }
 }
 
+const childAxisMinimum = (
+  start: number,
+  size: number,
+  minimum: number,
+  childLower: number,
+  childUpper: number,
+  active: boolean,
+  fromLower: boolean,
+  issues: Set<NodeResizeBoundsIssue>
+): number => {
+  if (!active) {
+    if (childLower < start || childUpper > start + size) {
+      issues.add('unresized-axis-outside-bounds')
+    }
+
+    return minimum
+  }
+
+  if (fromLower ? childUpper > start + size : childLower < start) {
+    issues.add('stationary-edge-outside-bounds')
+  }
+
+  return Math.max(
+    minimum,
+    fromLower ? start + size - childLower : childUpper - start
+  )
+}
+
 /** Resize physical bounds in parent-local space, returning the stored anchor and child compensation. */
 export const calculateNodeResize = (
   input: NodeResizeCalculationInput
@@ -708,20 +738,44 @@ export const calculateNodeResize = (
 
   const { x: startX, y: startY } = startTopLeft
   const { width: startWidth, height: startHeight } = decoded.sizeStart
-  const { width: minimumWidth, height: minimumHeight } = decoded.minimumSize
+  let { width: minimumWidth, height: minimumHeight } = decoded.minimumSize
+
+  if (decoded.childExtent !== undefined) {
+    minimumWidth = childAxisMinimum(
+      startX,
+      startWidth,
+      minimumWidth,
+      decoded.childExtent.minX,
+      decoded.childExtent.maxX,
+      horizontal,
+      fromLeft,
+      boundsIssues
+    )
+    minimumHeight = childAxisMinimum(
+      startY,
+      startHeight,
+      minimumHeight,
+      decoded.childExtent.minY,
+      decoded.childExtent.maxY,
+      vertical,
+      fromTop,
+      boundsIssues
+    )
+  }
+
   let { width } = decoded.sizeStart
   let { height } = decoded.sizeStart
 
   if (horizontal) {
     width = Math.max(
-      decoded.minimumSize.width,
+      minimumWidth,
       width + decoded.delta.x * (fromLeft ? -1 : 1)
     )
   }
 
   if (vertical) {
     height = Math.max(
-      decoded.minimumSize.height,
+      minimumHeight,
       height + decoded.delta.y * (fromTop ? -1 : 1)
     )
   }

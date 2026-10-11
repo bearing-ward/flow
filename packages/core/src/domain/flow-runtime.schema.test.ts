@@ -567,6 +567,109 @@ describe('node resize contract', () => {
     }
   })
 
+  it.each([
+    ['left', { x: 500, y: 500 }, { x: 40, y: 30 }, { width: 80, height: 80 }],
+    ['right', { x: -500, y: 500 }, { x: 20, y: 30 }, { width: 70, height: 80 }],
+    ['top', { x: 500, y: 500 }, { x: 20, y: 50 }, { width: 100, height: 60 }],
+    [
+      'bottom',
+      { x: 500, y: -500 },
+      { x: 20, y: 30 },
+      { width: 100, height: 60 },
+    ],
+    [
+      'top-left',
+      { x: 500, y: 500 },
+      { x: 40, y: 50 },
+      { width: 80, height: 60 },
+    ],
+    [
+      'top-right',
+      { x: -500, y: 500 },
+      { x: 20, y: 50 },
+      { width: 70, height: 60 },
+    ],
+    [
+      'bottom-left',
+      { x: 500, y: -500 },
+      { x: 40, y: 30 },
+      { width: 80, height: 60 },
+    ],
+    [
+      'bottom-right',
+      { x: -500, y: -500 },
+      { x: 20, y: 30 },
+      { width: 70, height: 60 },
+    ],
+  ] satisfies readonly (readonly [
+    typeof NodeResizeDirectionSchema.Type,
+    { x: number; y: number },
+    { x: number; y: number },
+    { width: number; height: number },
+  ])[])(
+    'contains the child extent when shrinking from %s',
+    (direction, delta, position, size) => {
+      const result = calculateNodeResize({
+        direction,
+        delta,
+        positionStart: { x: 20, y: 30 },
+        sizeStart: { width: 100, height: 80 },
+        minimumSize: { width: 40, height: 24 },
+        childExtent: { minX: 40, minY: 50, maxX: 90, maxY: 90 },
+      })
+
+      expect(result).toMatchObject({ position, size, boundsIssues: [] })
+      expect({
+        x: result.position.x + 20 + result.childrenPositionDelta.x,
+        y: result.position.y + 20 + result.childrenPositionDelta.y,
+      }).toStrictEqual({ x: 40, y: 50 })
+    }
+  )
+
+  it('rejects conflicting ancestor bounds, impossible stationary edges, and invalid inactive axes', () => {
+    const base = {
+      direction: 'right',
+      positionStart: { x: 20, y: 30 },
+      sizeStart: { width: 100, height: 80 },
+      minimumSize: { width: 40, height: 24 },
+      delta: { x: -500, y: 0 },
+      childExtent: { minX: 40, minY: 50, maxX: 90, maxY: 90 },
+    } satisfies typeof NodeResizeCalculationInputSchema.Type
+
+    expect(
+      calculateNodeResize({
+        ...base,
+        bounds: { minX: 0, minY: 0, maxX: 80, maxY: 120 },
+      }).boundsIssues
+    ).toStrictEqual(['minimum-exceeds-bounds'])
+    expect(
+      calculateNodeResize({
+        ...base,
+        childExtent: { ...base.childExtent, minX: 10 },
+      }).boundsIssues
+    ).toStrictEqual(['stationary-edge-outside-bounds'])
+    expect(
+      calculateNodeResize({
+        ...base,
+        direction: 'left',
+        childExtent: { ...base.childExtent, maxX: 130 },
+      }).boundsIssues
+    ).toStrictEqual(['stationary-edge-outside-bounds'])
+    expect(
+      calculateNodeResize({
+        ...base,
+        childExtent: { ...base.childExtent, maxY: 120 },
+      }).boundsIssues
+    ).toStrictEqual(['unresized-axis-outside-bounds'])
+    expect(
+      calculateNodeResize({
+        ...base,
+        direction: 'bottom',
+        childExtent: { ...base.childExtent, minX: 10 },
+      }).boundsIssues
+    ).toStrictEqual(['unresized-axis-outside-bounds'])
+  })
+
   it('keeps the far edge fixed after crossing minimum size and returns inverse child movement', () => {
     const result = calculateNodeResize({
       direction: 'top-left',

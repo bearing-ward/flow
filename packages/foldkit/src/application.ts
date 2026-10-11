@@ -1063,7 +1063,9 @@ const routeAction = (model: Model, action: HostActionData) =>
         status = 'missing'
       } else if (
         acceptedGeneration === measurement.generation &&
-        internalNode.measurementStatus === 'measured'
+        internalNode.measurementStatus === 'measured' &&
+        internalNode.width === measurement.width &&
+        internalNode.height === measurement.height
       ) {
         status = 'measured'
       }

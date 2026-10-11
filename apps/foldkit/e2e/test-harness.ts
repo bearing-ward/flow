@@ -4,6 +4,8 @@ import {
   NodeIdSchema,
   decodeFlowDocument,
   FlowSnapshotSchema,
+  applyNodeBoundsChange,
+  NodeBoundsChangeSchema,
 } from '@flow/core'
 import type {
   ConnectionPreviewState,
@@ -23,6 +25,7 @@ import {
   defaultInteractionOptions,
   Message,
   createFoldkitObservers,
+  createFoldkitNodeMeasurementObserver,
 } from '@flow/foldkit'
 import type {
   MeasurementResultSchema,
@@ -101,6 +104,14 @@ interface FoldkitHarness {
   rendererChanges: (index: number) => readonly EncodedFlowChange[]
   clearRendererInteractionEvents: () => void
   disposeRendererContract: () => Promise<number>
+  acknowledgeNextResize: (document: typeof FlowDocumentSchema.Encoded) => void
+  attachResizeMeasurementObserver: () => void
+  resizeMeasurements: () => readonly {
+    nodeId: string
+    width: number
+    height: number
+  }[]
+  stopResizeMeasurementObserver: () => void
   replaceDocument: (document: typeof FlowDocumentSchema.Encoded) => void
   replaceViewport: (viewport: Viewport) => void
   changeKinds: () => readonly string[]
@@ -912,6 +923,57 @@ const disposeRendererContract = async (): Promise<number> => {
   return document.querySelectorAll('[data-testid="flow-canvas"]').length
 }
 
+let resizeMeasurementObserver:
+  | ReturnType<typeof createFoldkitNodeMeasurementObserver>
+  | undefined
+
+const resizeMeasurementRequests: {
+  nodeId: string
+  width: number
+  height: number
+}[] = []
+
+const stopResizeMeasurementObserver = (): void => {
+  resizeMeasurementObserver?.dispose()
+  resizeMeasurementObserver = undefined
+}
+
+const attachResizeMeasurementObserver = (): void => {
+  stopResizeMeasurementObserver()
+  const active = handle
+
+  const owner = document.querySelector<HTMLElement>(
+    '[data-testid="flow-canvas"]'
+  )
+
+  if (active === undefined || owner === null) {
+    throw new Error('Missing resize measurement host')
+  }
+
+  resizeMeasurementRequests.length = 0
+  resizeMeasurementObserver = createFoldkitNodeMeasurementObserver({
+    owner,
+    onMeasure: ({ requestId, measurement }) => {
+      resizeMeasurementRequests.push({
+        nodeId: measurement.nodeId,
+        width: measurement.width,
+        height: measurement.height,
+      })
+      active.ports.actions.send(
+        HostAction.MeasureNode({ requestId, measurement })
+      )
+    },
+  })
+}
+
+let resizeAcknowledgement: typeof FlowDocumentSchema.Type | undefined
+
+const acknowledgeNextResize = (
+  input: typeof FlowDocumentSchema.Encoded
+): void => {
+  resizeAcknowledgement = Effect.runSync(decodeFlowDocument(input))
+}
+
 let measurementGeneration = 0
 
 const measurementGenerations = new Map<string, number>()
@@ -988,7 +1050,26 @@ const mount = async (
   changes = []
   mountedAcceptedStateEvents = []
   mountedInteractionEvents = []
-  unsubscribe = handle.ports.changes.subscribe((change) => changes.push(change))
+  resizeAcknowledgement = undefined
+  const active = handle
+  unsubscribe = active.ports.changes.subscribe((change) => {
+    changes.push(change)
+
+    if (change.kind === 'node-bounds' && resizeAcknowledgement !== undefined) {
+      const document = applyNodeBoundsChange(
+        resizeAcknowledgement,
+        Schema.decodeUnknownSync(NodeBoundsChangeSchema)(change)
+      )
+
+      resizeAcknowledgement = undefined
+
+      if (document === undefined) {
+        throw new Error('Invalid resize acknowledgement')
+      }
+
+      active.ports.actions.send(HostAction.ReplaceDocument({ document }))
+    }
+  })
   handle.ports.acceptedStates.subscribe((change) =>
     mountedAcceptedStateEvents.push(change)
   )
@@ -1962,6 +2043,10 @@ window.__flowFoldkitTest = {
   disposeRendererContract,
   mountMeasurementDocument,
   updateMeasurementDocument,
+  acknowledgeNextResize,
+  attachResizeMeasurementObserver,
+  resizeMeasurements: () => [...resizeMeasurementRequests],
+  stopResizeMeasurementObserver,
   measurementInternalNode,
   measurementNodesInitialized,
   refreshMeasurementNode,

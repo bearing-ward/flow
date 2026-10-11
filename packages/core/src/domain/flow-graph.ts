@@ -1,4 +1,5 @@
 import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
+import type { NodeExtent } from './flow-node-extent.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import type { HandleId } from './flow-values.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
@@ -332,3 +333,52 @@ export const getHandleConnections = (
       : edge.target === nodeId &&
         (handleId === undefined || edge.targetHandle === handleId)
   )
+
+export const graphResizeChildExtent = (
+  graph: FlowGraphView,
+  nodeId: NodeId
+): NodeExtent | undefined => {
+  const parent = graph.nodes.get(nodeId)
+
+  if (parent === undefined) {
+    return undefined
+  }
+
+  const parentPosition = nodeAnchorToTopLeft(
+    parent.node.position,
+    parent.dimensions,
+    resolveNodeOrigin(parent.node, graph.document)
+  )
+
+  let extent: NodeExtent | undefined
+
+  for (const childId of graph.children.get(nodeId) ?? []) {
+    const child = graph.nodes.get(childId)
+
+    if (child === undefined || child.node.extent !== 'parent') {
+      continue
+    }
+
+    const childPosition = nodeAnchorToTopLeft(
+      child.node.position,
+      child.dimensions,
+      resolveNodeOrigin(child.node, graph.document)
+    )
+    const minX = parentPosition.x + childPosition.x
+    const minY = parentPosition.y + childPosition.y
+    const maxX = minX + child.dimensions.width
+    const maxY = minY + child.dimensions.height
+
+    extent =
+      extent === undefined
+        ? { minX, minY, maxX, maxY }
+        : {
+            minX: Math.min(extent.minX, minX),
+            minY: Math.min(extent.minY, minY),
+            maxX: Math.max(extent.maxX, maxX),
+            maxY: Math.max(extent.maxY, maxY),
+          }
+  }
+
+  return extent
+}

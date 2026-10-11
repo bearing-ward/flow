@@ -321,6 +321,7 @@ export {
   getOutgoers,
   graphIncomers,
   graphNode,
+  graphResizeChildExtent,
   graphNodeBounds,
   graphNodesIntersecting,
   graphOutgoers,

@@ -15,6 +15,12 @@ The public `FlowChange` union currently contains `NodePositionChange`, `Viewport
 
 The host applies transient node and viewport positions so interactions stay responsive. In uncontrolled mode it adopts the final change before notifying subscribers. In controlled mode it restores the last caller-supplied state until `update` or `updateViewport` acknowledges the change.
 
+Nested resize containment is core geometry. `graphResizeChildExtent` unions measured direct children with `extent: 'parent'` in the resized node's parent coordinate space. Hosts capture the extent at gesture start and pass it to the existing `calculateNodeResize` rectangle API. An atomic `node-bounds` proposal compensates every direct child by the inverse parent movement. Infeasible bounds produce an issue and no committed change. Ordinary children can overflow. The [nested resize trace](../research/traces/nested-resize-containment.md) records the production paths and browser test boundary.
+
+Vue excludes the active resized parent's transient DOM samples from accepted measurements and restores its accepted DOM before clearing preview. Committed rendering then feeds the normal observer.
+
+Foldkit resize previews use a temporary graph built from the complete proposal. Measurements of the actively resized parent stay buffered in the gesture session, outside accepted measurement state. An uncontrolled commit adopts a buffered measurement only when it matches the committed size. A controlled release retains the final proposal and buffered sample in a pending acceptance receipt. Document replacement consumes that receipt and adopts the sample only when the parent position, size, and compensated child positions match the proposal. This preserves measured readiness when acknowledgement and release share a render frame. Ordinary document replacements prune removed nodes and retain accepted measurements, including fixed-CSS children whose declared sizes change without a new observer delivery. Cancellation and controlled rejection preserve accepted measurements.
+
 ## Rejected alternatives
 
 - Storing measured width and height on `FlowNode` would mix caller data with browser-derived geometry.

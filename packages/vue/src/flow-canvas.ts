@@ -39,6 +39,7 @@ import {
   zoomViewportAt,
   selectionInRect,
   calculateNodeResize,
+  graphResizeChildExtent,
   NodeExtentSchema,
   canReconnectEdge,
   reconnectFlowEdge,
@@ -82,6 +83,8 @@ import type {
   NodeResizeDirection,
   SelectionMode,
   NodeExtent,
+  NodeId,
+  XYPosition,
   MeasuredHandle,
   Viewport,
   ViewportAnimationOptions,
@@ -268,6 +271,7 @@ interface ResizeSession {
   readonly start: { readonly x: number; readonly y: number }
   readonly position: { readonly x: number; readonly y: number }
   readonly size: { readonly width: number; readonly height: number }
+  readonly childExtent: NodeExtent | undefined
 }
 
 interface KeyboardResizeSession {
@@ -283,6 +287,7 @@ interface KeyboardResizeSession {
   readonly step: number
   readonly delta: { readonly x: number; readonly y: number }
   readonly change: NodeBoundsChange
+  readonly childExtent: NodeExtent | undefined
 }
 
 interface NodePositionStyle {
@@ -1155,12 +1160,22 @@ export const FlowCanvas = defineComponent({
       return [...new Map(measurements).values()]
     }
 
+    const isResizePreviewNode = (nodeId: string): boolean => {
+      const active = session.value
+
+      return (
+        (active?.kind === 'resize' || active?.kind === 'keyboard-resize') &&
+        active.node.id === nodeId
+      )
+    }
+
     const measureNodeHandles = (node: FlowNode, element: HTMLElement): void => {
       const generation = nodeGenerations.get(node.id)
 
       if (
         generation === undefined ||
         stateDisposed ||
+        isResizePreviewNode(node.id) ||
         nodeElements.get(node.id) !== element
       ) {
         return
@@ -1210,7 +1225,7 @@ export const FlowCanvas = defineComponent({
         const node =
           nodeId === undefined ? undefined : activeNodesById.get(nodeId)
 
-        if (node !== undefined) {
+        if (node !== undefined && !isResizePreviewNode(node.id)) {
           const currentElement = nodeElements.get(node.id)
 
           if (currentElement !== entry.target) {
@@ -2246,6 +2261,45 @@ export const FlowCanvas = defineComponent({
       transaction: FlowEditTransactionInput
     ): Promise<FlowEditResult> => applyEditResolved(() => transaction)
 
+    const resizePreviewGraph = (change: NodeBoundsChange) => {
+      const positions = new Map([
+        ...change.childPositions.map(
+          ({ nodeId, position }) =>
+            [nodeId, position] satisfies [NodeId, XYPosition]
+        ),
+        [change.nodeId, change.position],
+      ])
+
+      return createFlowGraph(
+        activeDocument.value,
+        getFlowMeasuredNodes(activeDocument.value, measurementState),
+        positions
+      )
+    }
+
+    const resizePreviewPosition = (change: NodeBoundsChange | undefined) =>
+      change === undefined
+        ? undefined
+        : resizePreviewGraph(change).nodes.get(change.nodeId)?.absolutePosition
+
+    const previewNodeBounds = (
+      element: HTMLElement,
+      change: NodeBoundsChange
+    ): void => {
+      const position = resizePreviewGraph(change).nodes.get(
+        change.nodeId
+      )?.absolutePosition
+
+      if (position === undefined) {
+        return
+      }
+
+      element.style.left = `${position.x}px`
+      element.style.top = `${position.y}px`
+      element.style.width = `${change.size.width}px`
+      element.style.height = `${change.size.height}px`
+    }
+
     // eslint-disable-next-line complexity -- one cleanup boundary settles every Vue session kind.
     const cleanupPreview = (
       active: Session | undefined = session.value,
@@ -2269,10 +2323,13 @@ export const FlowCanvas = defineComponent({
       }
 
       if (active?.kind === 'resize' || active?.kind === 'keyboard-resize') {
-        active.element.style.left = `${active.position.x}px`
-        active.element.style.top = `${active.position.y}px`
-        active.element.style.width = `${active.size.width}px`
-        active.element.style.height = `${active.size.height}px`
+        previewNodeBounds(active.element, {
+          kind: 'node-bounds',
+          nodeId: active.node.id,
+          position: active.position,
+          size: active.size,
+          childPositions: [],
+        })
       }
 
       if (active?.captureTarget.hasPointerCapture?.(active.pointerId)) {
@@ -2283,6 +2340,18 @@ export const FlowCanvas = defineComponent({
         session.value = undefined
       }
     }
+
+    watch(
+      () => activeDocument.value,
+      () => {
+        const active = session.value
+
+        if (active?.kind === 'resize' || active?.kind === 'keyboard-resize') {
+          cleanupPreview(active, 'document-replacement')
+        }
+      },
+      { flush: 'sync' }
+    )
 
     watch(
       () =>
@@ -2570,12 +2639,15 @@ export const FlowCanvas = defineComponent({
                     height: bounds.height / activeViewport.value.zoom,
                   }
 
-                  samples.push({
-                    nodeId: node.id,
-                    generation,
-                    ...size,
-                    handles: collectNodeHandles(node, element),
-                  })
+                  if (!isResizePreviewNode(node.id)) {
+                    samples.push({
+                      nodeId: node.id,
+                      generation,
+                      ...size,
+                      handles: collectNodeHandles(node, element),
+                    })
+                  }
+
                   status = 'requested'
                 }
               }
@@ -3442,6 +3514,7 @@ export const FlowCanvas = defineComponent({
         delta: { x: point.x - active.start.x, y: point.y - active.start.y },
         minimumSize: { width: 40, height: 24 },
         bounds,
+        childExtent: active.childExtent,
       })
 
       if (result.boundsIssues.length > 0) {
@@ -3468,21 +3541,9 @@ export const FlowCanvas = defineComponent({
     const keyboardResize = (
       node: FlowNode,
       direction: NodeResizeDirection,
-      delta: { readonly x: number; readonly y: number }
+      delta: { readonly x: number; readonly y: number },
+      origin: Pick<KeyboardResizeSession, 'position' | 'size' | 'childExtent'>
     ): NodeBoundsChange | undefined => {
-      const internal = getFlowInternalNode(
-        activeDocument.value,
-        measurementState,
-        node.id
-      )
-
-      const width = node.size?.width ?? internal?.width
-      const height = node.size?.height ?? internal?.height
-
-      if (width === undefined || height === undefined) {
-        return
-      }
-
       const parent =
         node.parentId === undefined
           ? undefined
@@ -3506,11 +3567,12 @@ export const FlowCanvas = defineComponent({
 
       const result = calculateNodeResize({
         direction,
-        positionStart: node.position,
-        sizeStart: { width, height },
+        positionStart: origin.position,
+        sizeStart: origin.size,
         delta,
         minimumSize: { width: 40, height: 24 },
         bounds,
+        childExtent: origin.childExtent,
       })
 
       if (result.boundsIssues.length > 0) {
@@ -3568,6 +3630,13 @@ export const FlowCanvas = defineComponent({
         direction,
         start: pointerInFlow(event),
         position: node.position,
+        childExtent: graphResizeChildExtent(
+          createFlowGraph(
+            activeDocument.value,
+            getFlowMeasuredNodes(activeDocument.value, measurementState)
+          ),
+          node.id
+        ),
         size: {
           width: internal.width,
           height: internal.height,
@@ -4217,7 +4286,8 @@ export const FlowCanvas = defineComponent({
           : undefined
 
       const position =
-        activeKeyboardResize?.change.position ?? nodePosition(node)
+        resizePreviewPosition(activeKeyboardResize?.change) ??
+        nodePosition(node)
 
       const size = activeKeyboardResize?.change.size ?? node.size
 
@@ -4319,7 +4389,8 @@ export const FlowCanvas = defineComponent({
                     const change = keyboardResize(
                       active.node,
                       active.direction,
-                      cumulativeDelta
+                      cumulativeDelta,
+                      active
                     )
 
                     if (change !== undefined) {
@@ -4330,10 +4401,7 @@ export const FlowCanvas = defineComponent({
                       }
 
                       session.value = updated
-                      updated.element.style.left = `${change.position.x}px`
-                      updated.element.style.top = `${change.position.y}px`
-                      updated.element.style.width = `${change.size.width}px`
-                      updated.element.style.height = `${change.size.height}px`
+                      previewNodeBounds(updated.element, change)
                     }
 
                     return
@@ -4352,10 +4420,9 @@ export const FlowCanvas = defineComponent({
                   )
 
                   const initialSize =
-                    node.size ??
-                    (internal === undefined
+                    internal === undefined
                       ? undefined
-                      : { width: internal.width, height: internal.height })
+                      : { width: internal.width, height: internal.height }
 
                   if (
                     element === undefined ||
@@ -4365,7 +4432,22 @@ export const FlowCanvas = defineComponent({
                     return
                   }
 
-                  const change = keyboardResize(node, direction, delta)
+                  const origin = {
+                    position: node.position,
+                    size: initialSize,
+                    childExtent: graphResizeChildExtent(
+                      createFlowGraph(
+                        activeDocument.value,
+                        getFlowMeasuredNodes(
+                          activeDocument.value,
+                          measurementState
+                        )
+                      ),
+                      node.id
+                    ),
+                  }
+
+                  const change = keyboardResize(node, direction, delta, origin)
 
                   if (change !== undefined) {
                     const keyboardSession: KeyboardResizeSession = {
@@ -4375,8 +4457,7 @@ export const FlowCanvas = defineComponent({
                       node,
                       element,
                       direction,
-                      position: node.position,
-                      size: initialSize,
+                      ...origin,
                       key: event.key,
                       step,
                       delta,
@@ -4394,10 +4475,7 @@ export const FlowCanvas = defineComponent({
                         [FlowAttribute.controlMode]: documentControlMode(),
                       }
                     )
-                    element.style.left = `${change.position.x}px`
-                    element.style.top = `${change.position.y}px`
-                    element.style.width = `${change.size.width}px`
-                    element.style.height = `${change.size.height}px`
+                    previewNodeBounds(element, change)
                   }
                 },
               })
@@ -5203,10 +5281,7 @@ export const FlowCanvas = defineComponent({
               const change = resizeCandidate(active, event)
 
               if (change !== undefined) {
-                active.element.style.left = `${change.position.x}px`
-                active.element.style.top = `${change.position.y}px`
-                active.element.style.width = `${change.size.width}px`
-                active.element.style.height = `${change.size.height}px`
+                previewNodeBounds(active.element, change)
               }
 
               return

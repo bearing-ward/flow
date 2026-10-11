@@ -81,6 +81,13 @@ const mountLifecycleScenario = async (
     )
     globalThis.flowController = controller
   }, withEdge)
+  await page.evaluate(() =>
+    globalThis.flowController?.updateNodeInternals([
+      'source',
+      'original',
+      'target',
+    ])
+  )
 }
 
 const centerOf = async (page: Page, selector: string) => {

@@ -32,6 +32,7 @@ import {
   areFlowNodesInitialized,
   setNodeMeasurementGenerations,
   calculateNodeResize,
+  graphResizeChildExtent,
   createFlowSnapshot,
   createConnectionPreviewSnapshot,
   selectNodesData,
@@ -272,6 +273,7 @@ interface ActiveKeyboardResize {
   readonly sizeStart: { readonly width: number; readonly height: number }
   readonly delta: XYPosition
   readonly change: NodeBoundsChange
+  readonly childExtent: ActiveNodeResize['childExtent']
 }
 
 export const CanvasBackgroundSchema = S.Struct({
@@ -3798,7 +3800,7 @@ export const createFlowHost = (
     const keyboardResizeCandidate = (
       resize: Pick<
         ActiveKeyboardResize,
-        'nodeId' | 'direction' | 'positionStart' | 'sizeStart'
+        'nodeId' | 'direction' | 'positionStart' | 'sizeStart' | 'childExtent'
       >,
       delta: XYPosition
     ): NodeBoundsChange | undefined => {
@@ -3832,6 +3834,7 @@ export const createFlowHost = (
         delta,
         minimumSize: { width: 40, height: 24 },
         bounds,
+        childExtent: resize.childExtent,
       })
 
       if (result.boundsIssues.length > 0) {
@@ -4214,6 +4217,11 @@ export const createFlowHost = (
           }
 
           cancelKeyboardResize(reason, true)
+        }
+
+        if (previous !== undefined && next !== previous) {
+          cancelNodeResize('document-replacement')
+          cancelKeyboardResize('document-replacement')
         }
 
         for (const node of next.nodes) {
@@ -5052,6 +5060,7 @@ export const createFlowHost = (
             },
             minimumSize: { width: 40, height: 24 },
             bounds,
+            childExtent: resize.childExtent,
           })
 
           if (result.boundsIssues.length > 0) {
@@ -5233,6 +5242,10 @@ export const createFlowHost = (
               pointerId: event.pointerId,
               pointerStart: pointerInFlow(event),
               sizeStart,
+              childExtent: graphResizeChildExtent(
+                createFlowGraph(document, measurements),
+                node.id
+              ),
             },
           }
 
@@ -7203,6 +7216,10 @@ export const createFlowHost = (
             nodeId: current.id,
             direction,
             positionStart: current.position,
+            childExtent: graphResizeChildExtent(
+              createFlowGraph(document, measurements),
+              current.id
+            ),
             sizeStart: {
               width:
                 measured.width > 0

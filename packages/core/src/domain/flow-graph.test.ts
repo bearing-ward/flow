@@ -12,15 +12,260 @@ import {
   getOutgoers,
   graphIncomers,
   graphNode,
+  graphResizeChildExtent,
   graphNodesIntersecting,
   graphOutgoers,
 } from './flow-graph.ts'
+import {
+  calculateNodeResize,
+  applyNodeBoundsChange,
+} from './flow-runtime.schema.ts'
 import { HandleIdSchema, NodeIdSchema } from './flow-values.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
 const nodeId = S.decodeUnknownSync(NodeIdSchema)
 
 describe('flow graph view', () => {
+  it('keeps child containment in physical parent coordinates when origins are nonzero', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodeOrigin: [0.5, 0.5],
+        nodes: [
+          {
+            id: 'ancestor',
+            label: 'Ancestor',
+            position: { x: 500, y: 600 },
+            size: { width: 400, height: 300 },
+          },
+          {
+            id: 'parent',
+            label: 'Parent',
+            parentId: 'ancestor',
+            position: { x: 220, y: 230 },
+            size: { width: 200, height: 150 },
+          },
+          {
+            id: 'child',
+            label: 'Child',
+            parentId: 'parent',
+            extent: 'parent',
+            origin: [1, 0.5],
+            position: { x: 80, y: 75 },
+            size: { width: 80, height: 40 },
+          },
+        ],
+        edges: [],
+      })
+    )
+
+    const childExtent = graphResizeChildExtent(
+      createFlowGraph(document),
+      nodeId('parent')
+    )
+
+    expect(childExtent).toStrictEqual({
+      minX: 120,
+      minY: 210,
+      maxX: 200,
+      maxY: 250,
+    })
+
+    expect(
+      calculateNodeResize({
+        direction: 'bottom-right',
+        positionStart: { x: 220, y: 230 },
+        sizeStart: { width: 200, height: 150 },
+        origin: [0.5, 0.5],
+        delta: { x: -500, y: -500 },
+        minimumSize: { width: 40, height: 24 },
+        childExtent,
+      })
+    ).toStrictEqual({
+      position: { x: 160, y: 202.5 },
+      size: { width: 80, height: 95 },
+      positionDelta: { x: -60, y: -27.5 },
+      childrenPositionDelta: { x: 0, y: 0 },
+      boundsIssues: [],
+    })
+  })
+
+  it('unions only direct constrained children using positive measurements and committed local positions', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          { id: 'ancestor', label: 'Ancestor', position: { x: 500, y: 600 } },
+          {
+            id: 'parent',
+            label: 'Parent',
+            parentId: 'ancestor',
+            position: { x: 20, y: 30 },
+            size: { width: 200, height: 150 },
+          },
+          {
+            id: 'first',
+            label: 'First',
+            parentId: 'parent',
+            extent: 'parent',
+            position: { x: 10, y: 15 },
+            size: { width: 1, height: 1 },
+          },
+          {
+            id: 'second',
+            label: 'Second',
+            parentId: 'parent',
+            extent: 'parent',
+            position: { x: 70, y: 60 },
+            size: { width: 50, height: 40 },
+          },
+          {
+            id: 'ordinary',
+            label: 'Ordinary',
+            parentId: 'parent',
+            position: { x: -200, y: 300 },
+            size: { width: 500, height: 500 },
+          },
+          {
+            id: 'grandchild',
+            label: 'Grandchild',
+            parentId: 'first',
+            extent: 'parent',
+            position: { x: 0, y: 0 },
+            size: { width: 300, height: 300 },
+          },
+        ],
+        edges: [],
+      })
+    )
+
+    const measurements = new Map([
+      [
+        nodeId('first'),
+        { nodeId: nodeId('first'), x: 0, y: 0, width: 80, height: 60 },
+      ],
+      [
+        nodeId('second'),
+        { nodeId: nodeId('second'), x: 0, y: 0, width: 0, height: 0 },
+      ],
+    ])
+
+    const graph = createFlowGraph(
+      document,
+      measurements,
+      new Map([
+        [nodeId('parent'), { x: 90, y: 100 }],
+        [nodeId('first'), { x: 1000, y: 1000 }],
+      ])
+    )
+
+    expect(graphResizeChildExtent(graph, nodeId('parent'))).toStrictEqual({
+      minX: 30,
+      minY: 45,
+      maxX: 140,
+      maxY: 130,
+    })
+    expect([
+      graphResizeChildExtent(graph, nodeId('ordinary')),
+      graphResizeChildExtent(graph, nodeId('missing')),
+    ]).toStrictEqual([undefined, undefined])
+
+    const result = calculateNodeResize({
+      direction: 'top-left',
+      positionStart: { x: 20, y: 30 },
+      sizeStart: { width: 200, height: 150 },
+      minimumSize: { width: 40, height: 24 },
+      delta: { x: 500, y: 500 },
+      childExtent: graphResizeChildExtent(graph, nodeId('parent')),
+    })
+
+    expect(result).toMatchObject({
+      position: { x: 30, y: 45 },
+      size: { width: 190, height: 135 },
+      boundsIssues: [],
+    })
+
+    const changed = applyNodeBoundsChange(document, {
+      kind: 'node-bounds',
+      nodeId: nodeId('parent'),
+      position: result.position,
+      size: result.size,
+      childPositions: document.nodes
+        .filter(({ parentId }) => parentId === nodeId('parent'))
+        .map((child) => ({
+          nodeId: child.id,
+          position: {
+            x: child.position.x + result.childrenPositionDelta.x,
+            y: child.position.y + result.childrenPositionDelta.y,
+          },
+        })),
+    })
+
+    expect(changed).toBeDefined()
+
+    if (changed === undefined) {
+      throw new Error('Missing compensated graph')
+    }
+
+    const before = createFlowGraph(document, measurements)
+    const after = createFlowGraph(changed, measurements)
+
+    for (const id of ['first', 'second', 'ordinary', 'grandchild']) {
+      expect(after.nodes.get(nodeId(id))?.absolutePosition).toStrictEqual(
+        before.nodes.get(nodeId(id))?.absolutePosition
+      )
+      expect(after.nodes.get(nodeId(id))?.dimensions).toStrictEqual(
+        before.nodes.get(nodeId(id))?.dimensions
+      )
+    }
+
+    expect(
+      calculateNodeResize({
+        direction: 'bottom-right',
+        positionStart: { x: 20, y: 30 },
+        sizeStart: { width: 200, height: 150 },
+        minimumSize: { width: 40, height: 24 },
+        delta: { x: -500, y: -500 },
+        childExtent: graphResizeChildExtent(
+          createFlowGraph({
+            ...document,
+            nodes: document.nodes.filter(({ extent }) => extent !== 'parent'),
+          }),
+          nodeId('parent')
+        ),
+      }).size
+    ).toStrictEqual({ width: 40, height: 24 })
+  })
+
+  it('uses the graph fallback for an unmeasured constrained child', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          { id: 'parent', label: 'Parent', position: { x: 20, y: 30 } },
+          {
+            id: 'child',
+            label: 'Child',
+            parentId: 'parent',
+            extent: 'parent',
+            position: { x: 10, y: 15 },
+          },
+        ],
+        edges: [],
+      })
+    )
+
+    expect(
+      graphResizeChildExtent(createFlowGraph(document), nodeId('parent'))
+    ).toStrictEqual({ minX: 30, minY: 45, maxX: 180, maxY: 89 })
+    expect(
+      graphResizeChildExtent(
+        createFlowGraph(document, new Map(), new Map(), {
+          width: 80,
+          height: 60,
+        }),
+        nodeId('parent')
+      )
+    ).toStrictEqual({ minX: 30, minY: 45, maxX: 110, maxY: 105 })
+  })
+
   it('resolves deterministic generated trees independent of document order', () => {
     const seeds = [0x13_57_9b_df, 0x24_68_ac_e0, 0xde_ad_be_ef, 0x10_20_30_40]
 

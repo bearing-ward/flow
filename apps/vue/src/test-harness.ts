@@ -1,6 +1,8 @@
 import { FlowEditErrorSchema, decodeFlowDocument } from '@flow/core'
 import type {
   FlowDocument,
+  FlowChange,
+  NodeBoundsChange,
   FlowConnection,
   FlowEdge,
   FlowNode,
@@ -83,6 +85,7 @@ interface TestApi {
   >
   destroyMeasurementDocument: () => void
   changeKinds: () => readonly string[]
+  boundsChanges: () => readonly NodeBoundsChange[]
   readState: (query: PublicStateQuery) => PublicStateRead
   acceptedStates: () => readonly FlowStateChange[]
   connectionCandidates: () => readonly FlowConnection[]
@@ -321,7 +324,7 @@ interface CanvasHarnessProps {
   noDragClassName?: string
   noWheelClassName?: string
   'onUpdate:viewport': (next: Viewport) => void
-  onChange: (change: { kind: string }) => void
+  onChange: (change: FlowChange) => void
   isValidConnection: (candidate: FlowConnection) => boolean
   onInit: () => void
   onNodeDragStart: () => void
@@ -428,6 +431,8 @@ const documentMode = ref<'controlled' | 'uncontrolled'>('controlled')
 const viewportMode = ref<'controlled' | 'uncontrolled'>('controlled')
 
 let changes: string[] = []
+
+let boundsChanges: NodeBoundsChange[] = []
 
 let positionChanges: {
   readonly nodeId: string
@@ -576,7 +581,11 @@ const Component = defineComponent({
         'onUpdate:viewport': (next: Viewport) => {
           viewportState.value = next
         },
-        onChange: (change: { kind: string }) => {
+        onChange: (change: FlowChange) => {
+          if (change.kind === 'node-bounds') {
+            boundsChanges.push(change)
+          }
+
           changes.push(change.kind)
           gestureEventLog.push(`change:${change.kind}`)
         },
@@ -670,6 +679,7 @@ const api: TestApi = {
     connectionValidatorThrows.value = false
     viewportState.value = { x: 0, y: 0, zoom: 1 }
     changes = []
+    boundsChanges = []
     positionChanges = []
     conformanceAcceptedStates = []
     conformanceSnapshot = undefined
@@ -757,6 +767,9 @@ const api: TestApi = {
   },
   changeKinds() {
     return [...changes]
+  },
+  boundsChanges() {
+    return [...boundsChanges]
   },
   readState(query) {
     if (

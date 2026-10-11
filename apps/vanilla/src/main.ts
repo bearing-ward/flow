@@ -187,6 +187,7 @@ const interactionScenes = {
         id: 'child',
         label: 'Child node',
         parentId: 'container',
+        extent: 'parent',
         position: { x: 32, y: 58 },
         size: { width: 120, height: 56 },
       },

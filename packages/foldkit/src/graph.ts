@@ -16,6 +16,7 @@ import {
   HandleIdSchema,
   EdgeIdSchema,
   NodeMeasurementInputSchema,
+  NodeBoundsChangeSchema,
   emptyFlowMeasurementState,
   applyNodeMeasurement,
   pruneFlowMeasurements,
@@ -38,6 +39,8 @@ import {
   applyNodeBoundsChange,
   applySelectionSetChange,
   calculateNodeResize,
+  graphResizeChildExtent,
+  NodeResizeCalculationInputSchema,
   selectionInRect,
   NodeResizeDirectionSchema,
   SelectionModeSchema,
@@ -69,6 +72,9 @@ import type {
   FlowChange as CoreFlowChange,
   FlowCommand as CoreFlowCommand,
   FlowDocument,
+  NodeBoundsChange,
+  NodeResizeCalculationInput,
+  NodeMeasurementInput,
   FlowEditError,
   FlowEditResult,
   FlowSnapshot,
@@ -143,12 +149,12 @@ const GestureSessionSchema = Schema.Union([
   Schema.Struct({
     kind: Schema.Literal('resize'),
     pointerId: Schema.Number,
-    nodeId: Schema.String,
+    nodeId: NodeIdSchema,
     direction: NodeResizeDirectionSchema,
     startX: Schema.Number,
     startY: Schema.Number,
-    position: Schema.Struct({ x: Schema.Number, y: Schema.Number }),
-    size: Schema.Struct({ width: Schema.Number, height: Schema.Number }),
+    input: NodeResizeCalculationInputSchema,
+    measurement: Schema.optional(NodeMeasurementInputSchema),
   }),
   Schema.Struct({
     kind: Schema.Literal('viewport-pan'),
@@ -179,7 +185,13 @@ const KeyboardSessionSchema = Schema.Union([
 const KeyboardResizeSessionSchema = Schema.Struct({
   nodeId: NodeIdSchema,
   direction: NodeResizeDirectionSchema,
-  delta: Schema.Struct({ x: Schema.Number, y: Schema.Number }),
+  input: NodeResizeCalculationInputSchema,
+  measurement: Schema.optional(NodeMeasurementInputSchema),
+})
+
+const ResizeAcceptanceSchema = Schema.Struct({
+  change: NodeBoundsChangeSchema,
+  measurement: Schema.optional(NodeMeasurementInputSchema),
 })
 
 export const ModelSchema = Schema.Struct({
@@ -207,6 +219,7 @@ export const ModelSchema = Schema.Struct({
   gestureSession: Schema.NullOr(GestureSessionSchema),
   keyboardConnectionSession: Schema.NullOr(KeyboardSessionSchema),
   keyboardResizeSession: Schema.NullOr(KeyboardResizeSessionSchema),
+  pendingResizeAcceptance: Schema.NullOr(ResizeAcceptanceSchema),
   selectionMode: SelectionModeSchema,
 })
 
@@ -1110,6 +1123,143 @@ const zoomViewportAt = (
   }
 }
 
+const measurementsForResize = (
+  model: Model,
+  document: FlowDocument,
+  change: NodeBoundsChange,
+  measurement: NodeMeasurementInput | undefined
+) => {
+  const measurements = pruneFlowMeasurements(document, model.measurements)
+
+  const current = getFlowMeasuredNodes(document, measurements).get(
+    change.nodeId
+  )
+
+  if (
+    current?.width === change.size.width &&
+    current.height === change.size.height
+  ) {
+    return measurements
+  }
+
+  const sampled =
+    measurement?.width === change.size.width &&
+    measurement.height === change.size.height
+      ? applyNodeMeasurement(document, measurements, measurement)
+      : measurements
+
+  const accepted = getFlowMeasuredNodes(document, sampled).get(change.nodeId)
+
+  if (
+    accepted?.width === change.size.width &&
+    accepted.height === change.size.height
+  ) {
+    return sampled
+  }
+
+  const nodes = sampled.nodes.filter(
+    ({ measurement: node }) => node.nodeId !== change.nodeId
+  )
+
+  return nodes.length === sampled.nodes.length
+    ? sampled
+    : { ...sampled, nodes, revision: sampled.revision + 1 }
+}
+
+const measurementsForDocument = (model: Model, document: FlowDocument) => {
+  const pending = model.pendingResizeAcceptance
+
+  if (pending === null) {
+    return pruneFlowMeasurements(document, model.measurements)
+  }
+
+  const { change } = pending
+  const nodes = new Map(document.nodes.map((node) => [node.id, node]))
+  const resized = nodes.get(change.nodeId)
+
+  const accepted =
+    resized?.position.x === change.position.x &&
+    resized.position.y === change.position.y &&
+    resized.size?.width === change.size.width &&
+    resized.size.height === change.size.height &&
+    change.childPositions.every(({ nodeId, position }) => {
+      const child = nodes.get(nodeId)
+
+      return (
+        child?.parentId === change.nodeId &&
+        child.position.x === position.x &&
+        child.position.y === position.y
+      )
+    })
+
+  return accepted
+    ? measurementsForResize(model, document, change, pending.measurement)
+    : pruneFlowMeasurements(document, model.measurements)
+}
+
+const resizeInput = (
+  model: Model,
+  node: FlowNode,
+  direction: NodeResizeCalculationInput['direction']
+): NodeResizeCalculationInput => {
+  const graph = createFlowGraph(
+    model.document,
+    getFlowMeasuredNodes(model.document, model.measurements)
+  )
+
+  const parent =
+    node.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
+
+  return {
+    direction,
+    positionStart: node.position,
+    sizeStart: graph.nodes.get(node.id)?.dimensions ?? {
+      width: 150,
+      height: 44,
+    },
+    minimumSize: { width: 40, height: 24 },
+    delta: { x: 0, y: 0 },
+    childExtent: graphResizeChildExtent(graph, node.id),
+    bounds:
+      node.extent === 'parent' && parent !== undefined
+        ? {
+            minX: 0,
+            minY: 0,
+            maxX: parent.dimensions.width,
+            maxY: parent.dimensions.height,
+          }
+        : undefined,
+  }
+}
+
+const resizeProposal = (
+  document: FlowDocument,
+  nodeId: NodeId,
+  input: NodeResizeCalculationInput
+): NodeBoundsChange | undefined => {
+  const result = calculateNodeResize(input)
+
+  if (result.boundsIssues.length > 0) {
+    return undefined
+  }
+
+  return {
+    kind: 'node-bounds',
+    nodeId,
+    position: result.position,
+    size: result.size,
+    childPositions: document.nodes
+      .filter((child) => child.parentId === nodeId)
+      .map((child) => ({
+        nodeId: child.id,
+        position: {
+          x: child.position.x + result.childrenPositionDelta.x,
+          y: child.position.y + result.childrenPositionDelta.y,
+        },
+      })),
+  }
+}
+
 export const update = (
   model: Model,
   message: GraphMessageData
@@ -1169,7 +1319,8 @@ export const update = (
         {
           ...model,
           document,
-          measurements: pruneFlowMeasurements(document, model.measurements),
+          measurements: measurementsForDocument(model, document),
+          pendingResizeAcceptance: null,
           pointerSession: null,
           gestureSession: null,
           keyboardConnectionSession: null,
@@ -1568,32 +1719,19 @@ export const update = (
         return noChange(model)
       }
 
-      const measured = getFlowMeasuredNodes(
-        model.document,
-        model.measurements
-      ).get(node.id)
-
-      const size = measured ?? node.size ?? { width: 150, height: 44 }
-
-      const position =
-        createFlowGraph(
-          model.document,
-          getFlowMeasuredNodes(model.document, model.measurements)
-        ).nodes.get(node.id)?.absolutePosition ?? node.position
-
       return {
         model: {
           ...model,
           keyboardConnectionSession: null,
+          pendingResizeAcceptance: null,
           gestureSession: {
             kind: 'resize',
             pointerId,
-            nodeId,
+            nodeId: node.id,
             direction,
             startX: clientX,
             startY: clientY,
-            position,
-            size,
+            input: resizeInput(model, node, direction),
           },
         },
       }
@@ -1636,6 +1774,24 @@ export const update = (
           },
           'viewport-update'
         )
+      }
+
+      if (session.kind === 'resize') {
+        return {
+          model: {
+            ...model,
+            gestureSession: {
+              ...session,
+              input: {
+                ...session.input,
+                delta: {
+                  x: (screenX - session.startX) / model.viewport.zoom,
+                  y: (screenY - session.startY) / model.viewport.zoom,
+                },
+              },
+            },
+          },
+        }
       }
 
       if (session.kind !== 'selection') {
@@ -1705,36 +1861,19 @@ export const update = (
       const dx = (released.clientX - gesture.startX) / model.viewport.zoom
       const dy = (released.clientY - gesture.startY) / model.viewport.zoom
 
-      const result = calculateNodeResize({
-        direction: gesture.direction,
-        positionStart: gesture.position,
-        sizeStart: gesture.size,
-        delta: { x: dx, y: dy },
-        minimumSize: { width: 40, height: 24 },
-      })
-
       const node = model.document.nodes.find(({ id }) => id === gesture.nodeId)
 
-      if (node === undefined || result.boundsIssues.length > 0) {
+      if (node === undefined) {
         return { model: cleared }
       }
 
-      const childPositions = model.document.nodes
-        .filter(({ parentId }) => parentId === node.id)
-        .map((child) => ({
-          nodeId: child.id,
-          position: {
-            x: child.position.x + result.childrenPositionDelta.x,
-            y: child.position.y + result.childrenPositionDelta.y,
-          },
-        }))
+      const change = resizeProposal(model.document, node.id, {
+        ...gesture.input,
+        delta: { x: dx, y: dy },
+      })
 
-      const change = {
-        kind: 'node-bounds' as const,
-        nodeId: node.id,
-        position: result.position,
-        size: result.size,
-        childPositions,
+      if (change === undefined) {
+        return { model: cleared }
       }
 
       const document = applyNodeBoundsChange(model.document, change)
@@ -1745,6 +1884,19 @@ export const update = (
             model,
             {
               ...cleared,
+              pendingResizeAcceptance:
+                model.documentMode === 'controlled'
+                  ? { change, measurement: gesture.measurement }
+                  : null,
+              measurements:
+                model.documentMode === 'uncontrolled'
+                  ? measurementsForResize(
+                      model,
+                      document,
+                      change,
+                      gesture.measurement
+                    )
+                  : model.measurements,
               document:
                 model.documentMode === 'uncontrolled'
                   ? document
@@ -1795,6 +1947,7 @@ export const update = (
         gestureSession: null,
         keyboardConnectionSession: null,
         keyboardResizeSession: null,
+        pendingResizeAcceptance: null,
       }
 
       if (activeKind === undefined) {
@@ -1809,16 +1962,39 @@ export const update = (
         }),
       }
     },
-    MeasureNode: ({ measurement }) => ({
-      model: {
-        ...model,
-        measurements: applyNodeMeasurement(
-          model.document,
-          model.measurements,
-          measurement
-        ),
-      },
-    }),
+    MeasureNode: ({ measurement }) => {
+      const resizeNodeId =
+        model.gestureSession?.kind === 'resize'
+          ? model.gestureSession.nodeId
+          : model.keyboardResizeSession?.nodeId
+
+      if (resizeNodeId === measurement.nodeId) {
+        return {
+          model: {
+            ...model,
+            gestureSession:
+              model.gestureSession?.kind === 'resize'
+                ? { ...model.gestureSession, measurement }
+                : model.gestureSession,
+            keyboardResizeSession:
+              model.keyboardResizeSession === null
+                ? null
+                : { ...model.keyboardResizeSession, measurement },
+          },
+        }
+      }
+
+      return {
+        model: {
+          ...model,
+          measurements: applyNodeMeasurement(
+            model.document,
+            model.measurements,
+            measurement
+          ),
+        },
+      }
+    },
     PruneMeasurements: () => ({
       model: {
         ...model,
@@ -2036,13 +2212,24 @@ export const update = (
       return {
         model: {
           ...model,
+          pendingResizeAcceptance: null,
           keyboardResizeSession: {
             nodeId,
             direction,
-            delta:
+            measurement:
               current?.nodeId === nodeId && current.direction === direction
-                ? { x: current.delta.x + delta.x, y: current.delta.y + delta.y }
-                : delta,
+                ? current.measurement
+                : undefined,
+            input:
+              current?.nodeId === nodeId && current.direction === direction
+                ? {
+                    ...current.input,
+                    delta: {
+                      x: current.input.delta.x + delta.x,
+                      y: current.input.delta.y + delta.y,
+                    },
+                  }
+                : { ...resizeInput(model, node, direction), delta },
           },
         },
       }
@@ -2068,40 +2255,10 @@ export const update = (
         return { model: cleared }
       }
 
-      const measured = getFlowMeasuredNodes(
-        model.document,
-        model.measurements
-      ).get(node.id)
+      const change = resizeProposal(model.document, node.id, session.input)
 
-      const size = measured ?? node.size ?? { width: 150, height: 44 }
-      const { position } = node
-
-      const result = calculateNodeResize({
-        direction: session.direction,
-        positionStart: position,
-        sizeStart: size,
-        delta: session.delta,
-        minimumSize: { width: 40, height: 24 },
-      })
-
-      if (result.boundsIssues.length > 0) {
-        return noChange(model)
-      }
-
-      const change = {
-        kind: 'node-bounds' as const,
-        nodeId: node.id,
-        position: result.position,
-        size: result.size,
-        childPositions: model.document.nodes
-          .filter((child) => child.parentId === node.id)
-          .map((child) => ({
-            nodeId: child.id,
-            position: {
-              x: child.position.x + result.childrenPositionDelta.x,
-              y: child.position.y + result.childrenPositionDelta.y,
-            },
-          })),
+      if (change === undefined) {
+        return { model: cleared }
       }
 
       const document = applyNodeBoundsChange(model.document, change)
@@ -2112,6 +2269,19 @@ export const update = (
             model,
             {
               ...cleared,
+              pendingResizeAcceptance:
+                model.documentMode === 'controlled'
+                  ? { change, measurement: session.measurement }
+                  : null,
+              measurements:
+                model.documentMode === 'uncontrolled'
+                  ? measurementsForResize(
+                      model,
+                      document,
+                      change,
+                      session.measurement
+                    )
+                  : model.measurements,
               document:
                 model.documentMode === 'uncontrolled'
                   ? document
@@ -2941,7 +3111,33 @@ const graphView = (
       model.measurements
     )
 
-    const graph = createFlowGraph(model.document, measurements)
+    const resizeSession =
+      model.gestureSession?.kind === 'resize'
+        ? model.gestureSession
+        : model.keyboardResizeSession
+
+    const resizeChange =
+      resizeSession === null
+        ? undefined
+        : resizeProposal(
+            model.document,
+            resizeSession.nodeId,
+            resizeSession.input
+          )
+
+    const renderDocument =
+      resizeChange === undefined
+        ? model.document
+        : (applyNodeBoundsChange(model.document, resizeChange) ??
+          model.document)
+
+    const renderMeasurements = new Map(measurements)
+
+    if (resizeChange !== undefined) {
+      renderMeasurements.delete(resizeChange.nodeId)
+    }
+
+    const graph = createFlowGraph(renderDocument, renderMeasurements)
     const mountedNodeIds = selectMountedNodeIds(model, measurements, graph)
 
     const nodes = graph.orderedNodes
@@ -2956,21 +3152,10 @@ const graphView = (
 
         const size = measured ?? node.size
 
-        const keyboardResize = model.keyboardResizeSession
+        const renderPosition = position
 
-        const keyboardResizeResult =
-          keyboardResize?.nodeId === node.id
-            ? calculateNodeResize({
-                direction: keyboardResize.direction,
-                positionStart: node.position,
-                sizeStart: size ?? { width: 150, height: 44 },
-                delta: keyboardResize.delta,
-                minimumSize: { width: 40, height: 24 },
-              })
-            : undefined
-
-        const renderPosition = keyboardResizeResult?.position ?? position
-        const renderSize = keyboardResizeResult?.size ?? size
+        const renderSize =
+          resizeChange?.nodeId === node.id ? resizeChange.size : size
 
         const style =
           renderSize === undefined
@@ -4022,6 +4207,7 @@ export const initialModel = (
   gestureSession: null,
   keyboardConnectionSession: null,
   keyboardResizeSession: null,
+  pendingResizeAcceptance: null,
   selectionMode,
 })
 
