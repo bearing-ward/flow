@@ -6,7 +6,10 @@ import type {
   ConformanceAdapter,
   MeasuredGeometryAdapter,
 } from '../../packages/conformance/src/index.ts'
-import type { FlowChangeSchema } from '../../packages/core/src/public.ts'
+import type {
+  FlowChangeSchema,
+  NodeSize,
+} from '../../packages/core/src/public.ts'
 
 const geometry = (node: Locator) =>
   node.evaluate((element) => {
@@ -30,7 +33,8 @@ export const nestedResizeContainment = (
   directionAttribute: string,
   readProposal: (
     page: Page
-  ) => Promise<typeof FlowChangeSchema.Encoded | undefined>
+  ) => Promise<typeof FlowChangeSchema.Encoded | undefined>,
+  settleHostPreview: (page: Page, expected: NodeSize) => Promise<void>
 ): void => {
   for (const input of ['pointer', 'keyboard']) {
     for (const direction of ['top-left', 'bottom-right']) {
@@ -207,27 +211,7 @@ export const nestedResizeContainment = (
             }
 
             const settlePreviewMeasurements = async () => {
-              if (host === 'Foldkit') {
-                await expect
-                  .poll(() =>
-                    page.evaluate(() =>
-                      window.__flowFoldkitTest
-                        ?.resizeMeasurements()
-                        .findLast(({ nodeId }) => nodeId === 'parent')
-                    )
-                  )
-                  .toEqual({
-                    nodeId: 'parent',
-                    width: horizontalExpected.width,
-                    height: horizontalExpected.height,
-                  })
-              }
-
-              if (host === 'Vue') {
-                await page.evaluate(() =>
-                  window.__flowVueTest?.refreshNode('parent')
-                )
-              }
+              await settleHostPreview(page, horizontalExpected)
 
               await expect
                 .poll(() =>
