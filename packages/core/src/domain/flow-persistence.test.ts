@@ -2,10 +2,12 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
+import { createFlowSnapshot } from '@flow/core'
 import { Effect, Schema as S } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import * as baseline from '../../../conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.js'
+import { NodeOriginSchema } from './flow-origin.schema.ts'
 import {
   decodeSavedFlowDocument,
   decodeSavedFlowSession,
@@ -399,7 +401,13 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
       'document own undefined nodeOrigin',
       { ...original, nodeOrigin: undefined },
     ],
-    ['document explicit zero origin', { ...original, nodeOrigin: [0, 0] }],
+    [
+      'document explicit zero origin',
+      {
+        ...original,
+        nodeOrigin: S.decodeUnknownSync(NodeOriginSchema)([0, 0]),
+      },
+    ],
     [
       'node own undefined origin',
       {
@@ -411,14 +419,17 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
       'node negative/outside origin',
       {
         ...original,
-        nodes: original.nodes.map((node) => ({ ...node, origin: [-0.5, 1.5] })),
+        nodes: original.nodes.map((node) => ({
+          ...node,
+          origin: S.decodeUnknownSync(NodeOriginSchema)([-0.5, 1.5]),
+        })),
       },
     ],
     [
       'both families origin precedence',
       {
         ...original,
-        nodeOrigin: [0, 0],
+        nodeOrigin: S.decodeUnknownSync(NodeOriginSchema)([0, 0]),
         nodes: original.nodes.map((node) => ({ ...node, connectable: false })),
       },
     ],
@@ -606,4 +617,192 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
       Effect.runSync(Effect.exit(baseline.decodeSavedFlowDocument(input)))._tag
     ).toBe('Failure')
   })
+})
+
+describe('live native retention against frozen legacy writers and readers', () => {
+  const node = {
+    id: 'node',
+    label: 'Node',
+    position: { x: 2, y: 3 },
+    selected: true,
+  }
+
+  const edge = { id: 'edge', source: 'node', target: 'node', selected: true }
+  const viewport = { x: 4, y: -5, zoom: 1.25 }
+
+  const extensions = [
+    ...[undefined, false, true].map((value) => ({
+      owner: 'node',
+      field: 'connectable',
+      value,
+    })),
+    ...[undefined, '', '   ', 'custom role'].flatMap((value) =>
+      ['node', 'edge'].map((owner) => ({ owner, field: 'ariaRole', value }))
+    ),
+    { owner: 'node', field: 'ariaDescription', value: '' },
+    ...['node', 'edge'].map((owner) => ({
+      owner,
+      field: 'ariaLabel',
+      value: '',
+    })),
+  ]
+
+  it.each(extensions)(
+    'rejects decoded $owner.$field=$value before either legacy projection without mutating a snapshot',
+    ({ owner, field, value }) => {
+      const document = Effect.runSync(
+        decodeFlowDocument({
+          nodes: [owner === 'node' ? { ...node, [field]: value } : node],
+          edges: [owner === 'edge' ? { ...edge, [field]: value } : edge],
+        })
+      )
+
+      const snapshot = createFlowSnapshot(document, viewport)
+      const before = structuredClone(snapshot)
+      const record = owner === 'node' ? document.nodes[0] : document.edges[0]
+      expect(Object.hasOwn(record ?? {}, field)).toBeTruthy()
+      expect(() => encodeSavedFlowDocument(snapshot.document)).toThrow(
+        expect.objectContaining({
+          code: 'native-fields-require-versioned-session',
+        })
+      )
+      expect(() =>
+        encodeSavedFlowSession(snapshot.document, snapshot.viewport)
+      ).toThrow(
+        expect.objectContaining({
+          code: 'native-fields-require-versioned-session',
+        })
+      )
+      expect(snapshot).toStrictEqual(before)
+    }
+  )
+
+  it.each([undefined, '   ', 'Existing label'])(
+    'preserves old-field value %j and selection omission with the independent baseline',
+    (value) => {
+      const document = Effect.runSync(
+        decodeFlowDocument({
+          nodes: [{ ...node, ariaLabel: value, ariaDescription: value }],
+          edges: [{ ...edge, ariaLabel: value }],
+        })
+      )
+
+      const saved = encodeSavedFlowSession(document, viewport)
+      expect(saved).toStrictEqual(
+        baseline.encodeSavedFlowSession(document, viewport)
+      )
+      expect(
+        Object.hasOwn(saved.document.nodes[0] ?? {}, 'selected')
+      ).toBeFalsy()
+      expect(
+        Object.hasOwn(saved.document.edges[0] ?? {}, 'selected')
+      ).toBeFalsy()
+      expect(Effect.runSync(decodeSavedFlowSession(saved))).toStrictEqual(
+        Effect.runSync(baseline.decodeSavedFlowSession(saved))
+      )
+    }
+  )
+
+  it('retains combined live fields while origin deterministically wins legacy rejection', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            ...node,
+            connectable: false,
+            ariaRole: '',
+            ariaLabel: '',
+            ariaDescription: '',
+          },
+        ],
+        edges: [{ ...edge, ariaRole: 'custom', ariaLabel: '' }],
+      })
+    )
+
+    for (const input of [
+      { ...document, nodeOrigin: undefined },
+      {
+        ...document,
+        nodes: document.nodes.map((entry) => ({
+          ...entry,
+          origin: S.decodeUnknownSync(NodeOriginSchema)([0, 0]),
+        })),
+      },
+    ]) {
+      expect(() => encodeSavedFlowDocument(input)).toThrow(
+        expect.objectContaining({ code: 'origin-requires-versioned-session' })
+      )
+      expect(() => encodeSavedFlowSession(input, viewport)).toThrow(
+        expect.objectContaining({ code: 'origin-requires-versioned-session' })
+      )
+    }
+  })
+
+  it.each(
+    extensions.filter(
+      ({ field }) => field === 'connectable' || field === 'ariaRole'
+    )
+  )(
+    'keeps frozen raw and JSON readers stripping forged $owner.$field=$value in v1',
+    ({ owner, field, value }) => {
+      const document = Effect.runSync(
+        decodeFlowDocument({ nodes: [node], edges: [edge] })
+      )
+
+      const saved = encodeSavedFlowSession(document, viewport)
+
+      const forged = {
+        ...saved,
+        document: {
+          nodes: saved.document.nodes.map((entry) =>
+            owner === 'node' ? { ...entry, [field]: value } : entry
+          ),
+          edges: saved.document.edges.map((entry) =>
+            owner === 'edge' ? { ...entry, [field]: value } : entry
+          ),
+        },
+      }
+
+      const json = JSON.stringify(forged)
+
+      for (const input of [forged, JSON.parse(json)]) {
+        const current = Effect.runSync(decodeSavedFlowSession(input))
+        expect(current).toStrictEqual(
+          Effect.runSync(baseline.decodeSavedFlowSession(input))
+        )
+
+        const record =
+          owner === 'node'
+            ? current.document.nodes[0]
+            : current.document.edges[0]
+
+        expect(Object.hasOwn(record ?? {}, field)).toBeFalsy()
+      }
+    }
+  )
+
+  it.each([
+    { owner: 'node', field: 'ariaDescription' },
+    { owner: 'node', field: 'ariaLabel' },
+    { owner: 'edge', field: 'ariaLabel' },
+  ])(
+    'keeps both frozen readers rejecting explicit empty $owner.$field',
+    ({ owner, field }) => {
+      const input = {
+        version: 1,
+        viewport,
+        document: {
+          nodes: [owner === 'node' ? { ...node, [field]: '' } : node],
+          edges: [owner === 'edge' ? { ...edge, [field]: '' } : edge],
+        },
+      }
+
+      expect(
+        Effect.runSync(Effect.exit(decodeSavedFlowSession(input)))._tag
+      ).toBe('Failure')
+      expect(
+        Effect.runSync(Effect.exit(baseline.decodeSavedFlowSession(input)))._tag
+      ).toBe('Failure')
+    }
+  )
 })

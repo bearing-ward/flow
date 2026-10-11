@@ -95,3 +95,34 @@ describe('pinned measured handle refresh reference', () => {
     ])
   })
 })
+
+describe('captured original handle fields', () => {
+  it.each(['initial', 'moved'] as const)(
+    'retains actual pinned owner/size and top-left fields: %s',
+    (phase) => {
+      const observation = fixture.cases[phase]
+
+      for (const [handle, nodeId, kind, geometry] of [
+        [observation.sourceHandle, 'source', 'source', observation.source],
+        [observation.targetHandle, 'target', 'target', observation.target],
+      ] as const) {
+        expect({
+          nodeId: handle.nodeId,
+          kind: handle.type,
+          width: handle.width,
+          height: handle.height,
+          center: {
+            x: handle.x + handle.width / 2,
+            y: handle.y + handle.height / 2,
+          },
+        }).toStrictEqual({
+          nodeId,
+          kind,
+          width: 10,
+          height: 10,
+          center: geometry.center,
+        })
+      }
+    }
+  )
+})

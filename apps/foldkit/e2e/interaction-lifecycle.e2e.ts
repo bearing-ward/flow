@@ -3350,3 +3350,190 @@ test('Foldkit selection cancels on removal, replacement, and unmount in both con
   }
   // oxlint-enable no-await-in-loop
 })
+
+test('Foldkit accepts directed named target-target pointers, renders measured identities and rejects the duplicate', async ({
+  page,
+}) => {
+  const adapter = createFoldkitConformanceAdapter(page)
+
+  const fixture = {
+    ...connectionFixture,
+    documentMode: 'uncontrolled',
+    allowedConnectionTargets: ['target', 'loose-source'],
+    document: interactionLifecycleFixture.connectionDocument,
+    actions: [],
+  } satisfies Parameters<typeof adapter.mount>[0]
+
+  await adapter.mount(fixture)
+  await page.evaluate(async (scenario) => {
+    await window.__flowFoldkitTest?.mount(scenario, 'full', {
+      connectionMode: 'loose',
+      connectionRadius: 20,
+      autoPanOnConnect: false,
+    })
+  }, fixture)
+
+  await page.evaluate(() =>
+    window.__flowFoldkitTest?.startMountedMeasurementObserver()
+  )
+
+  await expect.poll(() => adapter.nodesInitialized(false)).toBe(true)
+
+  await Promise.all(
+    ['target', 'loose-source'].map((nodeId) =>
+      expect
+        .poll(async () => {
+          const internal = await adapter.internalNode(nodeId)
+
+          const measured = internal?.handles.find(
+            ({ handleId }) => handleId === 'in'
+          )
+
+          return (
+            internal?.measurementStatus === 'measured' &&
+            internal.node.handles?.find(({ id }) => id === 'in')?.kind ===
+              'target' &&
+            measured !== undefined &&
+            measured.width > 0 &&
+            measured.height > 0
+          )
+        })
+        .toBe(true)
+    )
+  )
+
+  const initiating = page.locator(
+    '[data-node-id="loose-source"] [data-handle-id="in"]'
+  )
+
+  const destination = page.locator(
+    '[data-node-id="target"] [data-handle-id="in"]'
+  )
+
+  const from = await initiating.boundingBox()
+  const to = await destination.boundingBox()
+
+  if (from === null || to === null) {
+    throw new Error('Missing named target-target handles')
+  }
+
+  const gesture = async () => {
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
+      steps: 3,
+    })
+    await page.mouse.up()
+  }
+
+  await gesture()
+  await expect.poll(() => adapter.changeKinds()).toStrictEqual(['edge-add'])
+  const read = await adapter.readState({ edgeId: 'edge-1' })
+  expect(read.edge).toMatchObject({
+    id: 'edge-1',
+    source: 'target',
+    sourceHandle: 'in',
+    target: 'loose-source',
+    targetHandle: 'in',
+  })
+  expect(read.snapshot.document.edges).toHaveLength(1)
+
+  const source = await adapter.internalNode('target')
+  const target = await adapter.internalNode('loose-source')
+  const sourceHandle = source?.handles.find(({ handleId }) => handleId === 'in')
+  const targetHandle = target?.handles.find(({ handleId }) => handleId === 'in')
+
+  if (
+    source === null ||
+    target === null ||
+    sourceHandle === undefined ||
+    targetHandle === undefined
+  ) {
+    throw new Error('Missing current public endpoint geometry')
+  }
+
+  // Both actual declarations are left-sided targets. Accepted physical IDs
+  // attach at the measured outer boundary, independently of directed labels.
+  const sourcePoint = {
+    x:
+      source.absolutePosition.x +
+      sourceHandle.offset.x -
+      sourceHandle.width / 2,
+    y: source.absolutePosition.y + sourceHandle.offset.y,
+  }
+
+  const targetPoint = {
+    x:
+      target.absolutePosition.x +
+      targetHandle.offset.x -
+      targetHandle.width / 2,
+    y: target.absolutePosition.y + targetHandle.offset.y,
+  }
+
+  const edge = page.locator('.flow-foldkit-edge[data-edge-id="edge-1"]')
+  await expect(edge).toHaveCount(1)
+  await expect(edge).toHaveAttribute('data-source-id', 'target')
+  await expect(edge).toHaveAttribute('data-source-handle', 'in')
+  await expect(edge).toHaveAttribute('data-target-id', 'loose-source')
+  await expect(edge).toHaveAttribute('data-target-handle', 'in')
+  await expect(edge.locator('.flow-foldkit-edge-hit-target')).toHaveAttribute(
+    'd',
+    `M ${sourcePoint.x},${sourcePoint.y}L ${targetPoint.x},${targetPoint.y}`
+  )
+
+  const observed = await edge
+    .locator('.flow-foldkit-edge-hit-target')
+    .evaluate((element) => {
+      if (!(element instanceof SVGPathElement)) {
+        throw new TypeError('Expected rendered target-target path')
+      }
+
+      const first = element.getPointAtLength(0)
+      const last = element.getPointAtLength(element.getTotalLength())
+
+      return {
+        source: { x: first.x, y: first.y },
+        target: { x: last.x, y: last.y },
+      }
+    })
+
+  expect(observed).toStrictEqual({ source: sourcePoint, target: targetPoint })
+  const accepted = read.snapshot
+  await gesture()
+  await expect
+    .poll(async () => {
+      const events = await page.evaluate(
+        () => window.__flowFoldkitTest?.interactionEvents() ?? []
+      )
+
+      return events
+        .filter(({ name }) => name === 'onConnectEnd')
+        .map(({ outcome }) => outcome)
+    })
+    .toStrictEqual(['accepted', 'rejected'])
+  expect(await adapter.changeKinds()).toStrictEqual(['edge-add'])
+
+  const afterDuplicate = await adapter.readState({ edgeId: 'edge-1' })
+
+  expect(afterDuplicate.snapshot).toStrictEqual(accepted)
+
+  const events = await page.evaluate(
+    () => window.__flowFoldkitTest?.interactionEvents() ?? []
+  )
+
+  expect(
+    events
+      .filter(({ name }) =>
+        ['onConnectStart', 'onConnect', 'onConnectEnd'].includes(name)
+      )
+      .map(({ name, phase, outcome }) => `${name}:${phase}:${outcome ?? ''}`)
+  ).toStrictEqual([
+    'onConnectStart:start:',
+    'onConnect:proposal:accepted',
+    'onConnectEnd:end:accepted',
+    'onConnectStart:start:',
+    'onConnectEnd:end:rejected',
+  ])
+  await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
+  await adapter.destroy()
+})

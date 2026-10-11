@@ -42,7 +42,9 @@ import {
   selectFlowSelection,
   flowSelectionEqual,
   encodeSavedFlowSession,
+  encodeVersionedFlowSession,
   decodeSavedFlowSession,
+  decodeVersionedFlowSession,
   beginNodeDrag,
   beginViewportPan,
   clampViewport,
@@ -95,7 +97,7 @@ import {
   nodeIntersectsViewport,
   pruneFlowMeasurements,
   viewportFlowRect,
-  validateFlowConnection,
+  connectionFromHandleGesture,
   FlowDefaultEdgeOptionsSchema,
   decodeFlowDefaultEdgeOptions,
   applyDefaultEdgeOptions,
@@ -146,6 +148,7 @@ import type {
   NodeId,
   Viewport,
   SavedFlowSession,
+  SavedVersionedFlowSession,
   ViewportBounds,
   ViewportOperationResult,
   ViewportLimits,
@@ -876,6 +879,9 @@ export interface FlowController {
   ) => () => void
   readonly getSnapshot: () => FlowSnapshot
   readonly getDocumentRevision: () => number
+  readonly getVersionedSavedSession: () => SavedVersionedFlowSession
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- Public persistence input is decoded by the versioned session boundary.
+  readonly prepareVersionedRestore: (saved: unknown) => Promise<FlowSnapshot>
   readonly getSavedSession: () => SavedFlowSession
   readonly prepareRestore: (saved: SavedFlowSession) => Promise<FlowSnapshot>
   readonly getNodes: () => readonly FlowNode[]
@@ -1075,6 +1081,9 @@ export interface JavaScriptFlowController {
   readonly subscribeSelection: FlowController['subscribeSelection']
   readonly observeKeyPress: FlowController['observeKeyPress']
   readonly getSnapshot: () => FlowSnapshot
+  readonly getVersionedSavedSession: () => SavedVersionedFlowSession
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- Public persistence input is decoded by the versioned session boundary.
+  readonly prepareVersionedRestore: (saved: unknown) => Promise<FlowSnapshot>
   readonly getSavedSession: () => SavedFlowSession
   readonly prepareRestore: (saved: SavedFlowSession) => Promise<FlowSnapshot>
   readonly getNodes: () => readonly FlowNode[]
@@ -6532,18 +6541,16 @@ export const createFlowHost = (
       targetHandle: FlowHandle,
       inputKind: 'pointer-connect' | 'click-connect'
     ): 'proposed' | 'rejected' => {
-      const candidate: FlowConnection = {
-        source: started.source,
-        sourceHandle: started.sourceHandle,
-        target: targetNode.id,
-        targetHandle: targetHandle.id,
-      }
-
       const result = runEffect(
         Effect.result(
-          validateFlowConnection(
-            document,
-            candidate,
+          connectionFromHandleGesture(
+            {
+              document,
+              fromNodeId: started.source,
+              fromHandleId: started.sourceHandle,
+              toNodeId: targetNode.id,
+              toHandleId: targetHandle.id,
+            },
             options.connectionMode ?? 'strict'
           )
         )
@@ -8425,6 +8432,10 @@ export const createFlowHost = (
       },
       getSnapshot: () => createFlowSnapshot(document, authoritativeViewport),
       getDocumentRevision: () => documentRevision,
+      getVersionedSavedSession: () =>
+        encodeVersionedFlowSession(document, authoritativeViewport),
+      prepareVersionedRestore: (saved) =>
+        Effect.runPromise(decodeVersionedFlowSession(saved)),
       getSavedSession: () =>
         encodeSavedFlowSession(document, authoritativeViewport),
       prepareRestore: (saved) =>
@@ -9149,6 +9160,8 @@ export const mountFlow = (
     subscribeSelection: host.subscribeSelection,
     observeKeyPress: host.observeKeyPress,
     getSnapshot: host.getSnapshot,
+    getVersionedSavedSession: host.getVersionedSavedSession,
+    prepareVersionedRestore: host.prepareVersionedRestore,
     getSavedSession: host.getSavedSession,
     prepareRestore: host.prepareRestore,
     getNodes: host.getNodes,

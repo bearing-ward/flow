@@ -9,6 +9,7 @@ import type { Page } from '@playwright/test'
 import {
   interactionCancellationRetryCases,
   interactionConnectionCases,
+  currentNativeConnectionCases,
   interactionLifecycleFixture,
 } from '../../shared-e2e/interaction-lifecycle-contract.ts'
 
@@ -454,6 +455,48 @@ test('reconnection cancellation preserves the edge and permits a fresh reconnect
     '[data-edge-id="edge"][data-testid="flow-edge-path"]'
   )
 
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const controller = globalThis.flowController
+
+        if (controller === undefined || !controller.nodesInitialized()) {
+          return false
+        }
+
+        const source = controller.getInternalNode('source')
+        const original = controller.getInternalNode('original')
+
+        const out = source?.handles.find(
+          (handle) => handle.nodeId === 'source' && handle.handleId === 'out'
+        )
+
+        const input = original?.handles.find(
+          (handle) => handle.nodeId === 'original' && handle.handleId === 'in'
+        )
+
+        return (
+          out !== undefined &&
+          input !== undefined &&
+          out.width > 0 &&
+          out.height > 0 &&
+          input.width > 0 &&
+          input.height > 0
+        )
+      })
+    )
+    .toBe(true)
+
+  const originalSnapshot = await page.evaluate(() => {
+    const controller = globalThis.flowController
+
+    if (controller === undefined) {
+      throw new Error('Mounted public controller is missing')
+    }
+
+    return controller.getSnapshot()
+  })
+
   const originalPath = await path.getAttribute('d')
 
   const anchor =
@@ -475,7 +518,20 @@ test('reconnection cancellation preserves the edge and permits a fresh reconnect
     )
   ).toBeNull()
   await expect(path).toHaveAttribute('d', originalPath ?? '')
-  expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([])
+  expect(
+    await page.evaluate(() => {
+      const controller = globalThis.flowController
+
+      if (controller === undefined) {
+        throw new Error('Mounted public controller is missing after Escape')
+      }
+
+      return {
+        snapshot: controller.getSnapshot(),
+        changes: globalThis.flowChanges,
+      }
+    })
+  ).toStrictEqual({ snapshot: originalSnapshot, changes: [] })
 
   await drag(page, anchor, reconnectTargetSelector('target'))
   await expect
@@ -904,9 +960,45 @@ test('shared resize fixture drives the production Vanilla pointer path', async (
 test('shared connection cases drive the production Vanilla pointer path', async ({
   page,
 }) => {
+  expect(interactionConnectionCases.map(({ id }) => id)).toStrictEqual([
+    'strict-accepted',
+    'strict-rejects-opposite-handle-kinds',
+    'loose-normalizes-from-target-handle-origin',
+    'loose-rejects-target-to-target-rendering-gap',
+    'strict-rejects-duplicate',
+  ])
+  expect(currentNativeConnectionCases).toHaveLength(5)
+
+  for (const [index, scenario] of interactionConnectionCases.entries()) {
+    if (scenario.id !== 'loose-rejects-target-to-target-rendering-gap') {
+      expect(currentNativeConnectionCases[index]).toStrictEqual(scenario)
+    }
+  }
+
+  expect(currentNativeConnectionCases[3]).toStrictEqual({
+    id: 'loose-accepts-directed-named-target-to-target',
+    document: 'connection',
+    mode: 'loose',
+    connection: {
+      source: 'loose-source',
+      sourceHandle: 'in',
+      target: 'target',
+      targetHandle: 'in',
+    },
+    outcome: 'accepted',
+    normalized: {
+      source: 'target',
+      sourceHandle: 'in',
+      target: 'loose-source',
+      targetHandle: 'in',
+    },
+    expectedEdgeId: 'edge-1',
+    eventOrder: ['connectStart', 'connect', 'connectEnd'],
+  })
+
   // Each case remounts one page so host state cannot leak between scenarios.
   // eslint-disable no-await-in-loop
-  for (const scenario of interactionConnectionCases) {
+  for (const scenario of currentNativeConnectionCases) {
     const fixtureDocument =
       scenario.document === 'duplicate'
         ? interactionLifecycleFixture.duplicateDocument

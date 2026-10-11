@@ -1,3 +1,4 @@
+import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import type { HandleId } from './flow-values.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
@@ -28,7 +29,7 @@ export interface FlowGraphView {
 
 const fallbackDimensions = { width: 150, height: 44 } as const
 
-/** Build a pure geometry view from a document already accepted by decodeFlowDocument. */
+/** Build physical geometry; document positions and overrides are parent-relative anchors. */
 export const createFlowGraph = (
   document: FlowDocument,
   measurements: ReadonlyMap<NodeId, MeasuredNode> = new Map(),
@@ -87,6 +88,12 @@ export const createFlowGraph = (
         ? { width: measurement.width, height: measurement.height }
         : (node.size ?? fallback)
 
+    const topLeft = nodeAnchorToTopLeft(
+      position,
+      dimensions,
+      resolveNodeOrigin(node, document)
+    )
+
     const resolved: FlowGraphNode = {
       id,
       node,
@@ -94,10 +101,10 @@ export const createFlowGraph = (
       parentId: node.parentId,
       absolutePosition:
         parent === undefined
-          ? position
+          ? topLeft
           : {
-              x: parent.absolutePosition.x + position.x,
-              y: parent.absolutePosition.y + position.y,
+              x: parent.absolutePosition.x + topLeft.x,
+              y: parent.absolutePosition.y + topLeft.y,
             },
       dimensions,
       hidden: node.hidden === true || parent?.hidden === true,

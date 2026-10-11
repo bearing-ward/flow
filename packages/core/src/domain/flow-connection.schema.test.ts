@@ -148,10 +148,10 @@ describe('flow connections', () => {
     )
 
     expect(targetOrigin).toStrictEqual({
-      source: first.id,
-      sourceHandle: out.id,
-      target: second.id,
-      targetHandle: input.id,
+      source: second.id,
+      sourceHandle: input.id,
+      target: first.id,
+      targetHandle: out.id,
     })
   })
 
@@ -189,7 +189,7 @@ describe('flow connections', () => {
     )
   })
 
-  it('rejects stale endpoints and duplicates in loose mode after normalization', () => {
+  it('rejects stale endpoints and duplicates in loose mode without changing direction', () => {
     const loose = Effect.runSync(
       validateFlowConnection(
         document,
@@ -239,7 +239,7 @@ describe('flow connections', () => {
     )
   })
 
-  it('rejects loose target-to-target connections that cannot render', () => {
+  it('accepts directed loose target-to-target connections', () => {
     const targetOrigin = {
       source: second.id,
       sourceHandle: input.id,
@@ -247,12 +247,8 @@ describe('flow connections', () => {
       targetHandle: thirdInput.id,
     }
 
-    const invalid = Effect.runSync(
-      Effect.result(validateFlowConnection(document, targetOrigin, 'loose'))
-    )
-
-    expect(Option.getOrThrow(Result.getFailure(invalid)).reason).toBe(
-      'unsupported-handle-combination'
-    )
+    expect(
+      Effect.runSync(validateFlowConnection(document, targetOrigin, 'loose'))
+    ).toStrictEqual(targetOrigin)
   })
 })

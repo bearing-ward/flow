@@ -10,6 +10,7 @@ import {
 } from '../../../packages/conformance/src/index.ts'
 import {
   interactionConnectionCases,
+  currentNativeConnectionCases,
   interactionCancellationRetryCases,
   interactionLifecycleFixture,
   interactionReconnectionCases,
@@ -865,7 +866,7 @@ test('Vue production connection gestures follow shared strict and loose cases', 
   const adapter = createVueConformanceAdapter(page)
 
   /* eslint-disable no-await-in-loop */
-  for (const connectionCase of interactionConnectionCases) {
+  for (const connectionCase of currentNativeConnectionCases) {
     const document =
       connectionCase.document === 'duplicate'
         ? interactionLifecycleFixture.duplicateDocument

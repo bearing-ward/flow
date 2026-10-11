@@ -1,0 +1,25 @@
+{
+  "baseline": "841be137e253cf19c665269eaaa79edc19abf3c3",
+  "source": "/Users/richardmcandrews/.codex/worktrees/origin-contracts/flow",
+  "patchPaths": [
+    "packages/core/src/domain/flow-graph.ts",
+    "packages/core/src/domain/flow-node-extent.schema.ts",
+    "packages/core/src/domain/flow-runtime.schema.ts",
+    "packages/core/src/domain/flow.schema.ts",
+    "packages/core/src/public.ts",
+    "verification.config.json"
+  ],
+  "patchSha256": "56b28e8c6ee80337401655ae22c22430b601adce0b0a9949f81f7a348fe2d1e5",
+  "copiedSha256": {
+    "packages/core/src/domain/flow-origin.schema.ts": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca",
+    "packages/core/src/domain/flow-origin.schema.test.ts": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8",
+    "plans/067-origin-core-execution.md": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+  },
+  "generatedDoc": "docs/api-reference.md diff inspected; regenerate withdocs:generate-api ratherthan copyinggeneratedoutput",
+  "recordRenames": {
+    "plans/067-origin-core-execution.md": "plans/origin-core-execution.md",
+    "plans/079-origin-integration-execution.md": "plans/origin-integration-execution.md",
+    "plans/079-origin-assembly-provenance.json": "plans/origin-assembly-provenance.json"
+  },
+  "repair": "Primaryapproved exactplanningmetadata prefixcollisionrepair; copied historicalrecord bytes unchanged"
+}

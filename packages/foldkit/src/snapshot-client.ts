@@ -9,6 +9,7 @@ import {
   LegacySnapshotFailureSchema,
   SnapshotRequestSchema,
   SnapshotResponseSchema,
+  VersionedSnapshotResponseSchema,
 } from './application.ts'
 import type { SnapshotRequest } from './application.ts'
 
@@ -16,32 +17,54 @@ export const SnapshotQuerySchema = Schema.Struct(
   Struct.omit(SnapshotRequestSchema.fields, ['requestId'])
 )
 
+const SnapshotDisposedSchema = Schema.Struct({
+  status: Schema.Literal('disposed'),
+  requestId: Schema.String,
+})
+
+const SnapshotFailedSchema = Schema.Struct({
+  status: Schema.Literal('failed'),
+  requestId: Schema.String,
+  reason: Schema.Union([
+    Schema.Literals(['invalid-request', 'send-failed']),
+    SavedFlowFormatFailureCodeSchema,
+  ]),
+})
+
 export const FoldkitSnapshotResultSchema = Schema.Union([
   Schema.Struct({
     status: Schema.Literal('succeeded'),
     response: SnapshotResponseSchema,
   }),
+  SnapshotDisposedSchema,
+  SnapshotFailedSchema,
+])
+
+export const FoldkitVersionedSnapshotResultSchema = Schema.Union([
   Schema.Struct({
-    status: Schema.Literal('disposed'),
-    requestId: Schema.String,
+    status: Schema.Literal('succeeded'),
+    response: VersionedSnapshotResponseSchema,
   }),
-  Schema.Struct({
-    status: Schema.Literal('failed'),
-    requestId: Schema.String,
-    reason: Schema.Union([
-      Schema.Literals(['invalid-request', 'send-failed']),
-      SavedFlowFormatFailureCodeSchema,
-    ]),
-  }),
+  SnapshotDisposedSchema,
+  SnapshotFailedSchema,
 ])
 
 export type SnapshotQuery = typeof SnapshotQuerySchema.Encoded
 
 export type FoldkitSnapshotResult = typeof FoldkitSnapshotResultSchema.Type
 
+export type FoldkitVersionedSnapshotResult =
+  typeof FoldkitVersionedSnapshotResultSchema.Type
+
 export interface FoldkitSnapshotClient {
   readonly request: (query?: SnapshotQuery) => Promise<FoldkitSnapshotResult>
   readonly dispose: () => void
+}
+
+export interface FoldkitVersionedSnapshotClient extends FoldkitSnapshotClient {
+  readonly requestVersioned: (
+    query?: SnapshotQuery
+  ) => Promise<FoldkitVersionedSnapshotResult>
 }
 
 interface SnapshotPorts {
@@ -62,6 +85,31 @@ interface SnapshotPorts {
   }
 }
 
+interface VersionedSnapshotPorts extends SnapshotPorts {
+  readonly versionedSnapshots: {
+    readonly subscribe: (
+      listener: (
+        response: typeof VersionedSnapshotResponseSchema.Encoded
+      ) => void
+    ) => () => void
+  }
+  readonly versionedSnapshotRequests: SnapshotPorts['snapshotRequests']
+}
+
+type PendingSnapshot =
+  | {
+      readonly protocol: 'legacy'
+      readonly resolve: (result: FoldkitSnapshotResult) => void
+    }
+  | {
+      readonly protocol: 'versioned'
+      readonly resolve: (result: FoldkitVersionedSnapshotResult) => void
+    }
+
+type SnapshotTerminal =
+  | typeof SnapshotDisposedSchema.Type
+  | typeof SnapshotFailedSchema.Type
+
 let nextOwnerId = 0
 
 const reportFailure = (
@@ -78,95 +126,157 @@ const reportFailure = (
   )
 }
 
-/** Correlate one Runtime's public reads and settle requests at its host boundary. */
-export const createFoldkitSnapshotClient = (
+/** One owner correlates both public protocols without widening the legacy overload. */
+export function createFoldkitSnapshotClient(
+  ports: VersionedSnapshotPorts
+): FoldkitVersionedSnapshotClient
+export function createFoldkitSnapshotClient(
   ports: SnapshotPorts
-): FoldkitSnapshotClient => {
+): FoldkitSnapshotClient
+export function createFoldkitSnapshotClient(
+  ports: SnapshotPorts | VersionedSnapshotPorts
+): FoldkitSnapshotClient | FoldkitVersionedSnapshotClient {
   nextOwnerId += 1
   const ownerId = nextOwnerId
   let requestNumber = 0
   let disposed = false
-  const pending = new Map<string, (result: FoldkitSnapshotResult) => void>()
+  const pending = new Map<string, PendingSnapshot>()
 
-  const settle = (requestId: string, result: FoldkitSnapshotResult): void => {
-    const resolve = pending.get(requestId)
+  const versionedPorts =
+    'versionedSnapshots' in ports && 'versionedSnapshotRequests' in ports
+      ? ports
+      : undefined
+
+  const settleTerminal = (
+    requestId: string,
+    result: SnapshotTerminal
+  ): void => {
+    const entry = pending.get(requestId)
     pending.delete(requestId)
-    resolve?.(result)
+    entry?.resolve(result)
   }
 
   const stop = ports.snapshots.subscribe((response) => {
-    if (!disposed && pending.has(response.requestId)) {
-      settle(response.requestId, {
-        status: 'succeeded',
-        response: Schema.decodeUnknownSync(SnapshotResponseSchema)(response),
-      })
+    const entry = pending.get(response.requestId)
+
+    if (disposed || entry?.protocol !== 'legacy') {
+      return
     }
+
+    const validated = Schema.decodeUnknownSync(SnapshotResponseSchema)(response)
+    pending.delete(response.requestId)
+    entry.resolve({ status: 'succeeded', response: validated })
   })
 
   const stopFailures = ports.snapshotFailures.subscribe((failure) => {
-    if (!disposed && pending.has(failure.requestId)) {
-      const validated = Schema.decodeUnknownSync(LegacySnapshotFailureSchema)(
-        failure
-      )
+    const entry = pending.get(failure.requestId)
 
-      reportFailure(validated.code)
-      settle(validated.requestId, {
-        status: 'failed',
-        requestId: validated.requestId,
-        reason: validated.code,
-      })
+    if (disposed || entry?.protocol !== 'legacy') {
+      return
     }
+
+    const validated = Schema.decodeUnknownSync(LegacySnapshotFailureSchema)(
+      failure
+    )
+
+    reportFailure(validated.code)
+    settleTerminal(validated.requestId, {
+      status: 'failed',
+      requestId: validated.requestId,
+      reason: validated.code,
+    })
   })
 
-  return {
-    request: (query = {}) => {
-      requestNumber += 1
-      const requestId = `foldkit-snapshot-${ownerId}-${requestNumber}`
+  const stopVersioned = versionedPorts?.versionedSnapshots.subscribe(
+    (response) => {
+      const entry = pending.get(response.requestId)
 
-      const { promise, resolve } =
-        Promise.withResolvers<FoldkitSnapshotResult>()
-
-      if (disposed) {
-        resolve({ status: 'disposed', requestId })
-
-        return promise
+      if (disposed || entry?.protocol !== 'versioned') {
+        return
       }
 
-      let validated: typeof SnapshotQuerySchema.Type
+      const validated = Schema.decodeUnknownSync(
+        VersionedSnapshotResponseSchema
+      )(response)
 
-      try {
-        validated = Schema.decodeUnknownSync(SnapshotQuerySchema)(query)
-      } catch {
-        reportFailure('invalid-request')
-        resolve({ status: 'failed', requestId, reason: 'invalid-request' })
+      pending.delete(response.requestId)
+      entry.resolve({ status: 'succeeded', response: validated })
+    }
+  )
 
-        return promise
-      }
+  function request(
+    protocol: 'legacy',
+    query?: SnapshotQuery
+  ): Promise<FoldkitSnapshotResult>
+  function request(
+    protocol: 'versioned',
+    query?: SnapshotQuery
+  ): Promise<FoldkitVersionedSnapshotResult>
+  function request(
+    protocol: 'legacy' | 'versioned',
+    query: SnapshotQuery = {}
+  ): Promise<FoldkitSnapshotResult | FoldkitVersionedSnapshotResult> {
+    requestNumber += 1
+    const requestId = `foldkit-snapshot-${ownerId}-${requestNumber}`
 
-      pending.set(requestId, resolve)
+    const { promise, resolve } = Promise.withResolvers<
+      FoldkitSnapshotResult | FoldkitVersionedSnapshotResult
+    >()
 
-      try {
-        const sent = ports.snapshotRequests.send({ ...validated, requestId })
+    if (disposed) {
+      resolve({ status: 'disposed', requestId })
 
-        if (sent === false || (sent !== true && Exit.isFailure(sent))) {
-          reportFailure('send-failed')
-          settle(requestId, {
-            status: 'failed',
-            requestId,
-            reason: 'send-failed',
-          })
-        }
-      } catch {
+      return promise
+    }
+
+    let validated: typeof SnapshotQuerySchema.Type
+
+    try {
+      validated = Schema.decodeUnknownSync(SnapshotQuerySchema)(query)
+    } catch {
+      reportFailure('invalid-request')
+      resolve({ status: 'failed', requestId, reason: 'invalid-request' })
+
+      return promise
+    }
+
+    pending.set(
+      requestId,
+      protocol === 'legacy'
+        ? { protocol: 'legacy', resolve }
+        : { protocol: 'versioned', resolve }
+    )
+
+    try {
+      const outbound =
+        protocol === 'legacy'
+          ? ports.snapshotRequests
+          : versionedPorts?.versionedSnapshotRequests
+
+      const sent = outbound?.send({ ...validated, requestId }) ?? false
+
+      if (sent === false || (sent !== true && Exit.isFailure(sent))) {
         reportFailure('send-failed')
-        settle(requestId, {
+        settleTerminal(requestId, {
           status: 'failed',
           requestId,
           reason: 'send-failed',
         })
       }
+    } catch {
+      reportFailure('send-failed')
+      settleTerminal(requestId, {
+        status: 'failed',
+        requestId,
+        reason: 'send-failed',
+      })
+    }
 
-      return promise
-    },
+    return promise
+  }
+
+  const client: FoldkitSnapshotClient = {
+    request: (query) => request('legacy', query),
     dispose: () => {
       if (disposed) {
         return
@@ -175,10 +285,15 @@ export const createFoldkitSnapshotClient = (
       disposed = true
       stop()
       stopFailures()
+      stopVersioned?.()
 
       for (const requestId of pending.keys()) {
-        settle(requestId, { status: 'disposed', requestId })
+        settleTerminal(requestId, { status: 'disposed', requestId })
       }
     },
   }
+
+  return versionedPorts === undefined
+    ? client
+    : { ...client, requestVersioned: (query) => request('versioned', query) }
 }

@@ -1,0 +1,649 @@
+{
+  "baseline": "841be137e253cf19c665269eaaa79edc19abf3c3",
+  "inputs": {
+    "origin079": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/origin-integration/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "trackedPatchSha256": "3c11c2626543f4ba728649ec33956d2b996957c8fa95daab39b344baa341e2f2",
+      "files": [
+        {
+          "path": "docs/api-reference.md",
+          "kind": "tracked",
+          "sha256": "9bbd993354bfdf3c57950defec8419785f175dc41f0a092258b148e81f4af25a"
+        },
+        {
+          "path": "packages/core/src/domain/flow-graph.ts",
+          "kind": "tracked",
+          "sha256": "5b229ed00e07ac47d80fcd513a3ab977fc7c7cec6d7c352526cfa7a800a4ad44"
+        },
+        {
+          "path": "packages/core/src/domain/flow-node-extent.schema.ts",
+          "kind": "tracked",
+          "sha256": "5a63a81da7bf747f0fd5e80b6c15a69a86f6fadadc18295f1e586765d9b49e18"
+        },
+        {
+          "path": "packages/core/src/domain/flow-persistence.test.ts",
+          "kind": "tracked",
+          "sha256": "60e32b3cac309ab7365394219ed0cd45063745611687ae87f675513ff48ee101"
+        },
+        {
+          "path": "packages/core/src/domain/flow-runtime.schema.ts",
+          "kind": "tracked",
+          "sha256": "fef418a926ead3231f06134faafa104385345764a9217d5fe64d2282a0c892db"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.ts",
+          "kind": "tracked",
+          "sha256": "8c08716c6df581aca42df07aaf454b7d499144ebe997d9f8767e0009558c8838"
+        },
+        {
+          "path": "packages/core/src/public.ts",
+          "kind": "tracked",
+          "sha256": "e5f5ee32c50b96cc282b059077c34d1b3fb351ea40797b926c5d5770f0b1ab34"
+        },
+        {
+          "path": "packages/foldkit/src/application.test.ts",
+          "kind": "tracked",
+          "sha256": "aaedd046f34fe92b1ab8e0e6ea0b7c3ea856cad0ed4e21b157eb56a2a7f3a800"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "b2035c90a127423e9b1d9b35db0a583528c52620a3957840ef6f8ddf414a9774"
+        },
+        {
+          "path": "packages/core/src/domain/flow-origin.schema.test.ts",
+          "kind": "new",
+          "sha256": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8"
+        },
+        {
+          "path": "packages/core/src/domain/flow-origin.schema.ts",
+          "kind": "new",
+          "sha256": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca"
+        },
+        {
+          "path": "plans/079-migrate-origin-guard-fixtures.md",
+          "kind": "new",
+          "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
+        },
+        {
+          "path": "plans/origin-assembly-provenance.json",
+          "kind": "new",
+          "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
+        },
+        {
+          "path": "plans/origin-core-execution.md",
+          "kind": "new",
+          "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+        },
+        {
+          "path": "plans/origin-integration-execution.md",
+          "kind": "new",
+          "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
+        }
+      ]
+    },
+    "native077": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/native-schema-retention/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "trackedPatchSha256": "83c1db133163d4555d79b303b0774d6b70ed514bb88cc37fc1844639a09ac471",
+      "files": [
+        {
+          "path": "docs/api-reference.md",
+          "kind": "tracked",
+          "sha256": "2ebb172455acc2e5a927e5e4eac80aa9aaac30acefdadd9695009adbe44d884e"
+        },
+        {
+          "path": "docs/public-api.md",
+          "kind": "tracked",
+          "sha256": "450fe5bac7df65bd40ebda6ac51222444aa1b78104727dc84d0e96f3f61ae532"
+        },
+        {
+          "path": "packages/core/src/domain/flow-persistence.test.ts",
+          "kind": "tracked",
+          "sha256": "f8c5a41fbf6301487f8a70abd49c40e7d494ee5ef94eb5eb553525434f480a51"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "347eae17fb4c3182132e756f0f32711d259cd276c37415ff8488c52903208f3b"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.ts",
+          "kind": "tracked",
+          "sha256": "eafa37913605a929c9cb59eddf8425c8d1d16ea7010f92033d9c773229da857d"
+        },
+        {
+          "path": "research/PROGRESS.md",
+          "kind": "tracked",
+          "sha256": "a552644c405cdde1d2466354d884bd8e13e8c4d92d5de56fb02dd8035a6543d0"
+        },
+        {
+          "path": "research/traces/public-api-completion.md",
+          "kind": "tracked",
+          "sha256": "53c5295b2a70ef3da5defbe42b3bf84cf686f73565865aab3e64c34656910ff2"
+        },
+        {
+          "path": "tests/consumer/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "41222fa9c5f15d6895de3401b8441f3a9405f749a740343fc7af82fd1465155e"
+        },
+        {
+          "path": "tests/consumer/foldkit/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "740cacecf5263de59412fcfdfb9f296966699b00cf6be8365946a47e5b35dc9f"
+        },
+        {
+          "path": "tests/consumer/vue/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "c3ef30b4343fec9fe9eeca9f901d6dcf77914050af44e1ed3e30edcfb4c6be79"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "2e2930d8aa9790b4bc7bea1cd5aa0090d7f11da99dd7ce783bb570929bc045e9"
+        },
+        {
+          "path": "apps/foldkit/e2e/native-schema-fixture.ts",
+          "kind": "new",
+          "sha256": "92e7caf2ec2c7ad13b9fb1f8e313aef5c41147a81c9ac59d331cabc311d0ed27"
+        },
+        {
+          "path": "apps/foldkit/e2e/native-schema.e2e.ts",
+          "kind": "new",
+          "sha256": "b5616bb211f93f8531a5e2412d3acdad5f3684d3e7a9db79bd7feb7f08a5658f"
+        },
+        {
+          "path": "plans/077-retain-versioned-native-schema-fields.md",
+          "kind": "new",
+          "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
+        }
+      ]
+    },
+    "origin067": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/origin-contracts/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "trackedPatchSha256": "d22dd807d78bc57f7606bd80f54bb2409126db57964aaa646bd0085c98e110c3",
+      "files": [
+        {
+          "path": "docs/api-reference.md",
+          "kind": "tracked",
+          "sha256": "9bbd993354bfdf3c57950defec8419785f175dc41f0a092258b148e81f4af25a"
+        },
+        {
+          "path": "packages/core/src/domain/flow-graph.ts",
+          "kind": "tracked",
+          "sha256": "5b229ed00e07ac47d80fcd513a3ab977fc7c7cec6d7c352526cfa7a800a4ad44"
+        },
+        {
+          "path": "packages/core/src/domain/flow-node-extent.schema.ts",
+          "kind": "tracked",
+          "sha256": "5a63a81da7bf747f0fd5e80b6c15a69a86f6fadadc18295f1e586765d9b49e18"
+        },
+        {
+          "path": "packages/core/src/domain/flow-runtime.schema.ts",
+          "kind": "tracked",
+          "sha256": "fef418a926ead3231f06134faafa104385345764a9217d5fe64d2282a0c892db"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.ts",
+          "kind": "tracked",
+          "sha256": "8c08716c6df581aca42df07aaf454b7d499144ebe997d9f8767e0009558c8838"
+        },
+        {
+          "path": "packages/core/src/public.ts",
+          "kind": "tracked",
+          "sha256": "e5f5ee32c50b96cc282b059077c34d1b3fb351ea40797b926c5d5770f0b1ab34"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "b2035c90a127423e9b1d9b35db0a583528c52620a3957840ef6f8ddf414a9774"
+        },
+        {
+          "path": "packages/core/src/domain/flow-origin.schema.test.ts",
+          "kind": "new",
+          "sha256": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8"
+        },
+        {
+          "path": "packages/core/src/domain/flow-origin.schema.ts",
+          "kind": "new",
+          "sha256": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca"
+        },
+        {
+          "path": "plans/067-origin-core-execution.md",
+          "kind": "new",
+          "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+        }
+      ]
+    }
+  },
+  "assembly": {
+    "origin": "Complete frozen079 tracked production and exact fixture diff, new origin files and histories; generated API and verification scope regenerated/merged.",
+    "native": "Complete frozen077 diff, new Runtime fixtures and consumer probes; native schema and persistence patches applied over079 with no rejected hunks.",
+    "historyRenames": {
+      "plans/079-migrate-origin-guard-fixtures.md": "plans/historical-origin-fixture-plan.md",
+      "plans/077-retain-versioned-native-schema-fields.md": "plans/native-schema-retention-history.md"
+    },
+    "additionalScope": "Only approved080 unit dependencies, one public reconnection readiness case and accurate constructed-model evidence comment."
+  },
+  "lockSha256": "e6cd3b1436a12de7c05349f4dcb248238df53b9f93862d9f80b7c57b7cbabb4d",
+  "frozenInputsRechecked": true,
+  "initialFreeze": {
+    "status": "STOPPED: packed Vanilla consumer negative declaration directive placement; no source acceptance.",
+    "outputFiles": [
+      {
+        "path": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts",
+        "kind": "tracked",
+        "sha256": "03cef7b67b9821505f713839a1a7f24223f326fa97d8b890f569f9294dc72b52"
+      },
+      {
+        "path": "docs/api-reference.md",
+        "kind": "tracked",
+        "sha256": "c3f95776196e01f7842d0d9eb94f5b9c233e42c7d738aea7511c060187b9d412"
+      },
+      {
+        "path": "docs/public-api.md",
+        "kind": "tracked",
+        "sha256": "450fe5bac7df65bd40ebda6ac51222444aa1b78104727dc84d0e96f3f61ae532"
+      },
+      {
+        "path": "packages/core/src/domain/flow-edge.schema.test.ts",
+        "kind": "tracked",
+        "sha256": "89f17ec73aca2662aef059674d0ec38b03a2a65c70a517220fdbfb09f8a297cd"
+      },
+      {
+        "path": "packages/core/src/domain/flow-graph.ts",
+        "kind": "tracked",
+        "sha256": "5b229ed00e07ac47d80fcd513a3ab977fc7c7cec6d7c352526cfa7a800a4ad44"
+      },
+      {
+        "path": "packages/core/src/domain/flow-node-extent.schema.ts",
+        "kind": "tracked",
+        "sha256": "5a63a81da7bf747f0fd5e80b6c15a69a86f6fadadc18295f1e586765d9b49e18"
+      },
+      {
+        "path": "packages/core/src/domain/flow-persistence.test.ts",
+        "kind": "tracked",
+        "sha256": "b781e80e4de4d5e851326f16cec42baaab56356eeebe3ac5491366e9220be95f"
+      },
+      {
+        "path": "packages/core/src/domain/flow-runtime.schema.ts",
+        "kind": "tracked",
+        "sha256": "fef418a926ead3231f06134faafa104385345764a9217d5fe64d2282a0c892db"
+      },
+      {
+        "path": "packages/core/src/domain/flow.schema.test.ts",
+        "kind": "tracked",
+        "sha256": "347eae17fb4c3182132e756f0f32711d259cd276c37415ff8488c52903208f3b"
+      },
+      {
+        "path": "packages/core/src/domain/flow.schema.ts",
+        "kind": "tracked",
+        "sha256": "495b2bd511f8fbb46b9043fd978f999fac80fd439158457849b49fc06865a30f"
+      },
+      {
+        "path": "packages/core/src/public.ts",
+        "kind": "tracked",
+        "sha256": "e5f5ee32c50b96cc282b059077c34d1b3fb351ea40797b926c5d5770f0b1ab34"
+      },
+      {
+        "path": "packages/foldkit/src/application.test.ts",
+        "kind": "tracked",
+        "sha256": "95ee4b0d4fec4fe49e00a1ebcc56cdcbc64dd1744915e182353e6b062bceb809"
+      },
+      {
+        "path": "research/PROGRESS.md",
+        "kind": "tracked",
+        "sha256": "24d2bf80e2ab8270b8244fbc1f24ea50c4197fc081a28b4b87a05ff3a676a584"
+      },
+      {
+        "path": "research/traces/public-api-completion.md",
+        "kind": "tracked",
+        "sha256": "f69713cfeb6b165d54a5955d19ed4f8e03759326701e9072239f026b74c71483"
+      },
+      {
+        "path": "tests/consumer/consumer.typecheck.ts",
+        "kind": "tracked",
+        "sha256": "41222fa9c5f15d6895de3401b8441f3a9405f749a740343fc7af82fd1465155e"
+      },
+      {
+        "path": "tests/consumer/foldkit/consumer.typecheck.ts",
+        "kind": "tracked",
+        "sha256": "740cacecf5263de59412fcfdfb9f296966699b00cf6be8365946a47e5b35dc9f"
+      },
+      {
+        "path": "tests/consumer/vue/consumer.typecheck.ts",
+        "kind": "tracked",
+        "sha256": "c3ef30b4343fec9fe9eeca9f901d6dcf77914050af44e1ed3e30edcfb4c6be79"
+      },
+      {
+        "path": "verification.config.json",
+        "kind": "tracked",
+        "sha256": "01207e85bfb87f43466c24a01d432382060e396662f8b815622f84eb85a7d937"
+      },
+      {
+        "path": "apps/foldkit/e2e/native-schema-fixture.ts",
+        "kind": "new",
+        "sha256": "92e7caf2ec2c7ad13b9fb1f8e313aef5c41147a81c9ac59d331cabc311d0ed27"
+      },
+      {
+        "path": "apps/foldkit/e2e/native-schema.e2e.ts",
+        "kind": "new",
+        "sha256": "b5616bb211f93f8531a5e2412d3acdad5f3684d3e7a9db79bd7feb7f08a5658f"
+      },
+      {
+        "path": "packages/core/src/domain/flow-origin.schema.test.ts",
+        "kind": "new",
+        "sha256": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8"
+      },
+      {
+        "path": "packages/core/src/domain/flow-origin.schema.ts",
+        "kind": "new",
+        "sha256": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca"
+      },
+      {
+        "path": "plans/080-integrate-origin-native-test-contracts.md",
+        "kind": "new",
+        "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
+      },
+      {
+        "path": "plans/historical-origin-fixture-plan.md",
+        "kind": "new",
+        "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
+      },
+      {
+        "path": "plans/native-schema-retention-history.md",
+        "kind": "new",
+        "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
+      },
+      {
+        "path": "plans/origin-assembly-provenance.json",
+        "kind": "new",
+        "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
+      },
+      {
+        "path": "plans/origin-core-execution.md",
+        "kind": "new",
+        "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+      },
+      {
+        "path": "plans/origin-integration-execution.md",
+        "kind": "new",
+        "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
+      },
+      {
+        "path": "plans/origin-native-integration-design-review.md",
+        "kind": "new",
+        "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+      },
+      {
+        "path": "plans/origin-native-integration-execution.md",
+        "kind": "new",
+        "sha256": "3741338a227729c8a08dfab32ae3a12255cd5e80d1bfa877b686637a2328597a"
+      }
+    ],
+    "trackedOutputPatchSha256": "aa3c07647b66f7a8e960bfec35b928abb964e2616407c49525980eac8b72ccc3",
+    "results": {
+      "focusedVerifier": {
+        "exit": 1,
+        "log": "/tmp/flow-080-focused-verify.log",
+        "unitFiles": 47,
+        "unitTests": 506,
+        "citations": 2328,
+        "traces": 67,
+        "profile": "focused",
+        "fullSuite": false,
+        "stop": "packed consumer before selected host browser suites"
+      },
+      "targetedUnits": {
+        "files": 11,
+        "tests": 251,
+        "exit": 0
+      },
+      "explicitBrowser": {
+        "reconnectionRepeated": 3,
+        "vanillaLifecycle": 37,
+        "exit": 0
+      },
+      "qualityFailure": "trace format only, repaired once; second required failure is packed consumer negative directive placement"
+    },
+    "copiedReviewInputs": {
+      "plans/080-integrate-origin-native-test-contracts.md": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a",
+      "plans/origin-native-integration-design-review.md": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+    }
+  },
+  "primaryRevision1": {
+    "authorization": "Main080 primarysource reviewrevision1: exact three negative directive placements",
+    "canonicalPlanSha256": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14",
+    "initialScopeSha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a",
+    "files": [
+      "tests/consumer/consumer.typecheck.ts",
+      "tests/consumer/vue/consumer.typecheck.ts",
+      "tests/consumer/foldkit/consumer.typecheck.ts"
+    ],
+    "semanticChange": false
+  },
+  "finalStatus": "COMPLETE bounded executor gates; final primary source approval and independent reproduction pending.",
+  "preservedByteMirrors": [
+    "packages/core/src/domain/flow-graph.ts",
+    "packages/core/src/domain/flow-node-extent.schema.ts",
+    "packages/core/src/domain/flow-runtime.schema.ts",
+    "packages/core/src/public.ts",
+    "packages/core/src/domain/flow-origin.schema.ts",
+    "packages/core/src/domain/flow-origin.schema.test.ts",
+    "packages/core/src/domain/flow.schema.test.ts",
+    "apps/foldkit/e2e/native-schema-fixture.ts",
+    "apps/foldkit/e2e/native-schema.e2e.ts"
+  ],
+  "consumerRevisionIsExactDirectiveMove": true,
+  "copiedReviewInputs": {
+    "plans/080-integrate-origin-native-test-contracts.md": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14",
+    "plans/origin-native-integration-design-review.md": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+  },
+  "outputFiles": [
+    {
+      "path": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts",
+      "kind": "tracked",
+      "sha256": "03cef7b67b9821505f713839a1a7f24223f326fa97d8b890f569f9294dc72b52"
+    },
+    {
+      "path": "docs/api-reference.md",
+      "kind": "tracked",
+      "sha256": "c3f95776196e01f7842d0d9eb94f5b9c233e42c7d738aea7511c060187b9d412"
+    },
+    {
+      "path": "docs/public-api.md",
+      "kind": "tracked",
+      "sha256": "450fe5bac7df65bd40ebda6ac51222444aa1b78104727dc84d0e96f3f61ae532"
+    },
+    {
+      "path": "packages/core/src/domain/flow-edge.schema.test.ts",
+      "kind": "tracked",
+      "sha256": "89f17ec73aca2662aef059674d0ec38b03a2a65c70a517220fdbfb09f8a297cd"
+    },
+    {
+      "path": "packages/core/src/domain/flow-graph.ts",
+      "kind": "tracked",
+      "sha256": "5b229ed00e07ac47d80fcd513a3ab977fc7c7cec6d7c352526cfa7a800a4ad44"
+    },
+    {
+      "path": "packages/core/src/domain/flow-node-extent.schema.ts",
+      "kind": "tracked",
+      "sha256": "5a63a81da7bf747f0fd5e80b6c15a69a86f6fadadc18295f1e586765d9b49e18"
+    },
+    {
+      "path": "packages/core/src/domain/flow-persistence.test.ts",
+      "kind": "tracked",
+      "sha256": "b781e80e4de4d5e851326f16cec42baaab56356eeebe3ac5491366e9220be95f"
+    },
+    {
+      "path": "packages/core/src/domain/flow-runtime.schema.ts",
+      "kind": "tracked",
+      "sha256": "fef418a926ead3231f06134faafa104385345764a9217d5fe64d2282a0c892db"
+    },
+    {
+      "path": "packages/core/src/domain/flow.schema.test.ts",
+      "kind": "tracked",
+      "sha256": "347eae17fb4c3182132e756f0f32711d259cd276c37415ff8488c52903208f3b"
+    },
+    {
+      "path": "packages/core/src/domain/flow.schema.ts",
+      "kind": "tracked",
+      "sha256": "495b2bd511f8fbb46b9043fd978f999fac80fd439158457849b49fc06865a30f"
+    },
+    {
+      "path": "packages/core/src/public.ts",
+      "kind": "tracked",
+      "sha256": "e5f5ee32c50b96cc282b059077c34d1b3fb351ea40797b926c5d5770f0b1ab34"
+    },
+    {
+      "path": "packages/foldkit/src/application.test.ts",
+      "kind": "tracked",
+      "sha256": "95ee4b0d4fec4fe49e00a1ebcc56cdcbc64dd1744915e182353e6b062bceb809"
+    },
+    {
+      "path": "research/PROGRESS.md",
+      "kind": "tracked",
+      "sha256": "e5e14d5cad896d8d0f4a86c7686ef718ba797d0bb1c286e76d034c76ea2d550a"
+    },
+    {
+      "path": "research/traces/public-api-completion.md",
+      "kind": "tracked",
+      "sha256": "6cf4e8f355622b0dee4fd8c1fefffc2096a07a32e6061469043dd483f0e4e1e6"
+    },
+    {
+      "path": "tests/consumer/consumer.typecheck.ts",
+      "kind": "tracked",
+      "sha256": "fc84be06e58998f375571f70b5b02ee657b5d9c6eb30c340680cd09a7eb626d3"
+    },
+    {
+      "path": "tests/consumer/foldkit/consumer.typecheck.ts",
+      "kind": "tracked",
+      "sha256": "c1bf483e1d5d8665c3aa45d33ad7e8c7ceabf53831b89bf26f81a8a675e34b0a"
+    },
+    {
+      "path": "tests/consumer/vue/consumer.typecheck.ts",
+      "kind": "tracked",
+      "sha256": "f8288407672e4b539602c289f4789413b7c88bc0b2b4fd90d894b99c1c42357c"
+    },
+    {
+      "path": "verification.config.json",
+      "kind": "tracked",
+      "sha256": "01207e85bfb87f43466c24a01d432382060e396662f8b815622f84eb85a7d937"
+    },
+    {
+      "path": "apps/foldkit/e2e/native-schema-fixture.ts",
+      "kind": "new",
+      "sha256": "92e7caf2ec2c7ad13b9fb1f8e313aef5c41147a81c9ac59d331cabc311d0ed27"
+    },
+    {
+      "path": "apps/foldkit/e2e/native-schema.e2e.ts",
+      "kind": "new",
+      "sha256": "b5616bb211f93f8531a5e2412d3acdad5f3684d3e7a9db79bd7feb7f08a5658f"
+    },
+    {
+      "path": "packages/core/src/domain/flow-origin.schema.test.ts",
+      "kind": "new",
+      "sha256": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8"
+    },
+    {
+      "path": "packages/core/src/domain/flow-origin.schema.ts",
+      "kind": "new",
+      "sha256": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca"
+    },
+    {
+      "path": "plans/080-integrate-origin-native-test-contracts.md",
+      "kind": "new",
+      "sha256": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14"
+    },
+    {
+      "path": "plans/historical-origin-fixture-plan.md",
+      "kind": "new",
+      "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
+    },
+    {
+      "path": "plans/native-schema-retention-history.md",
+      "kind": "new",
+      "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
+    },
+    {
+      "path": "plans/origin-assembly-provenance.json",
+      "kind": "new",
+      "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
+    },
+    {
+      "path": "plans/origin-core-execution.md",
+      "kind": "new",
+      "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+    },
+    {
+      "path": "plans/origin-integration-execution.md",
+      "kind": "new",
+      "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
+    },
+    {
+      "path": "plans/origin-native-integration-design-review.md",
+      "kind": "new",
+      "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+    },
+    {
+      "path": "plans/origin-native-integration-execution.md",
+      "kind": "new",
+      "sha256": "52cd2beadd4c77d090700e83d1994ff3e94ab48a91fa8abdc429288d0473aea5"
+    },
+    {
+      "path": "plans/origin-native-integration-initial-scope.md",
+      "kind": "new",
+      "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
+    }
+  ],
+  "trackedOutputPatchSha256": "dd0e22b97662c684e291d0e403a0d45ab4679644d0e16397f39315071d8696e3",
+  "results": {
+    "focusedVerifier": {
+      "exit": 0,
+      "log": "/tmp/flow-080-review1-focused-verify.log",
+      "elapsedMs": 91731,
+      "unitFiles": 47,
+      "unitTests": 506,
+      "citations": 2328,
+      "traces": 67,
+      "profile": "focused",
+      "fullSuite": false,
+      "qualityFiles": 708,
+      "productionSources": 199,
+      "browserCases": {
+        "vanilla": 58,
+        "vue": 44,
+        "foldkit": 68
+      },
+      "packedConsumers": 3
+    },
+    "directPackedConsumers": {
+      "exit": 0,
+      "log": "/tmp/flow-080-review1-consumers.log",
+      "hosts": ["vanilla", "vue", "foldkit"]
+    },
+    "targetedUnits": {
+      "files": 11,
+      "tests": 251,
+      "exit": 0
+    },
+    "explicitBrowser": {
+      "reconnectionRepeated": 3,
+      "vanillaLifecycle": 37,
+      "exit": 0
+    },
+    "finalAuthoredEvidenceChecks": {
+      "quality": 0,
+      "docs": 0,
+      "traces": 0,
+      "logs": [
+        "/tmp/flow-080-review1-final-quality.log",
+        "/tmp/flow-080-review1-final-docs.log",
+        "/tmp/flow-080-review1-final-traces.log"
+      ]
+    },
+    "ports": "Executor listeners absent4176/4177/4178immediately after completed verifier11:53:31; fresh4176VitePID11425started11:55:32during primary coordination left untouched."
+  }
+}

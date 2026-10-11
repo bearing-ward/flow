@@ -4,6 +4,7 @@ import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { DuplicateEdgeId } from './duplicate-edge-id.ts'
 import { DuplicateHandleId } from './duplicate-handle-id.ts'
 import { DuplicateNodeId } from './duplicate-node-id.ts'
+import { NodeOriginSchema } from './flow-origin.schema.ts'
 import {
   EdgeIdSchema,
   HandleIdSchema,
@@ -64,6 +65,7 @@ export const FlowNodeSchema = S.Struct({
   id: NodeIdSchema,
   label: S.String,
   position: XYPositionSchema,
+  origin: S.optional(NodeOriginSchema),
   parentId: S.optional(NodeIdSchema),
   type: S.optional(S.NonEmptyString),
   data: S.optional(S.JsonObject),
@@ -74,10 +76,12 @@ export const FlowNodeSchema = S.Struct({
   selected: S.optional(S.Boolean),
   selectable: S.optional(S.Boolean),
   focusable: S.optional(S.Boolean),
+  connectable: S.optional(S.Boolean),
   draggable: S.optional(S.Boolean),
   deletable: S.optional(S.Boolean),
-  ariaLabel: S.optional(S.NonEmptyString),
-  ariaDescription: S.optional(S.NonEmptyString),
+  ariaRole: S.optional(S.String),
+  ariaLabel: S.optional(S.String),
+  ariaDescription: S.optional(S.String),
   hidden: S.optional(S.Boolean),
 })
 
@@ -128,7 +132,8 @@ export const FlowEdgeSchema = S.Struct({
   focusable: S.optional(S.Boolean),
   reconnectable: S.optional(FlowEdgeReconnectableSchema),
   interactionWidth: S.optional(S.Finite.check(S.isGreaterThan(0))),
-  ariaLabel: S.optional(S.NonEmptyString),
+  ariaRole: S.optional(S.String),
+  ariaLabel: S.optional(S.String),
   hidden: S.optional(S.Boolean),
   zIndex: S.optional(S.Finite),
 })
@@ -137,6 +142,7 @@ export type FlowEdge = typeof FlowEdgeSchema.Type
 
 export const FlowDocumentSchema = S.Struct({
   edges: S.Array(FlowEdgeSchema),
+  nodeOrigin: S.optional(NodeOriginSchema),
   nodes: S.Array(FlowNodeSchema),
 })
 
@@ -278,9 +284,14 @@ const findDuplicateHandleId = (
   return undefined
 }
 
+type EndpointHandlePolicy =
+  | { readonly kind: 'physical-id' }
+  | { readonly kind: 'canonical-kind' }
+
 const findEdgeReferenceError = (
   edges: readonly FlowEdge[],
-  nodesById: ReadonlyMap<NodeId, FlowNode>
+  nodesById: ReadonlyMap<NodeId, FlowNode>,
+  policy: EndpointHandlePolicy
 ): FlowDocumentIntegrityError | undefined => {
   for (const edge of edges) {
     if (!nodesById.has(edge.source)) {
@@ -314,7 +325,10 @@ const findEdgeReferenceError = (
         (candidate) => candidate.id === handleId
       )
 
-      if (handle?.kind !== endpoint) {
+      if (
+        handle === undefined ||
+        (policy.kind === 'canonical-kind' && handle.kind !== endpoint)
+      ) {
         return new MissingEdgeHandle({
           edgeId: edge.id,
           endpoint,
@@ -329,7 +343,8 @@ const findEdgeReferenceError = (
 }
 
 const findDocumentIntegrityError = (
-  document: FlowDocument
+  document: FlowDocument,
+  policy: EndpointHandlePolicy
 ): FlowDocumentIntegrityError | undefined => {
   const nodeIndex = indexDocumentNodes(document.nodes)
 
@@ -344,7 +359,7 @@ const findDocumentIntegrityError = (
     findParentCycleError(document.nodes, nodesById) ??
     findDuplicateEdgeId(document.edges) ??
     findDuplicateHandleId(document.nodes) ??
-    findEdgeReferenceError(document.edges, nodesById)
+    findEdgeReferenceError(document.edges, nodesById, policy)
   )
 }
 
@@ -396,11 +411,12 @@ const integrityAttributes = (error: FlowDocumentIntegrityError) =>
     })
   )
 
-export const validateFlowDocument = (
-  document: FlowDocument
+const validateDocumentWithPolicy = (
+  document: FlowDocument,
+  policy: EndpointHandlePolicy
 ): Effect.Effect<FlowDocument, FlowDocumentIntegrityError> =>
   Effect.gen(function* validateDocumentIntegrity() {
-    const error = findDocumentIntegrityError(document)
+    const error = findDocumentIntegrityError(document, policy)
 
     if (error === undefined) {
       return document
@@ -415,11 +431,19 @@ export const validateFlowDocument = (
     return yield* error
   }).pipe(Effect.withSpan(FlowSpan.documentIntegrity))
 
+export const validateFlowDocument = (
+  document: FlowDocument
+): Effect.Effect<FlowDocument, FlowDocumentIntegrityError> =>
+  validateDocumentWithPolicy(document, { kind: 'physical-id' })
+
 export type FlowDocumentInput = Parameters<typeof decodeUnknownFlowDocument>[0]
 
-export const decodeFlowDocument = (input: FlowDocumentInput) =>
+const decodeDocumentWithPolicy = (
+  input: FlowDocumentInput,
+  policy: EndpointHandlePolicy
+) =>
   decodeUnknownFlowDocument(input).pipe(
-    Effect.flatMap(validateFlowDocument),
+    Effect.flatMap((document) => validateDocumentWithPolicy(document, policy)),
     Effect.tap((document) =>
       Effect.gen(function* annotateDecodedDocument() {
         const attributes = {
@@ -435,3 +459,10 @@ export const decodeFlowDocument = (input: FlowDocumentInput) =>
     ),
     Effect.withSpan(FlowSpan.documentDecode)
   )
+
+export const decodeFlowDocument = (input: FlowDocumentInput) =>
+  decodeDocumentWithPolicy(input, { kind: 'physical-id' })
+
+/** Internal persistence boundary; literal1 retains the frozen ordered kind policy. */
+export const decodeLegacyFlowDocument = (input: FlowDocumentInput) =>
+  decodeDocumentWithPolicy(input, { kind: 'canonical-kind' })

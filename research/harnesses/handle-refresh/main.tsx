@@ -91,6 +91,8 @@ const Probe = () => {
       const last = path.getPointAtLength(path.getTotalLength())
 
       return {
+        sourceHandle: a,
+        targetHandle: b,
         source: {
           absolutePosition: source.internals.positionAbsolute,
           width: source.measured.width,

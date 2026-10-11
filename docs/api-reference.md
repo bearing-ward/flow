@@ -34,6 +34,7 @@ export type FlowNode = {
     readonly x: number;
     readonly y: number;
   };
+  readonly origin?: ReadonlyArray<number>;
   readonly parentId?: string;
   readonly type?: string;
   readonly data?: Readonly<Record<string, JsonValue>>;
@@ -51,8 +52,10 @@ export type FlowNode = {
   readonly selected?: boolean;
   readonly selectable?: boolean;
   readonly focusable?: boolean;
+  readonly connectable?: boolean;
   readonly draggable?: boolean;
   readonly deletable?: boolean;
+  readonly ariaRole?: string;
   readonly ariaLabel?: string;
   readonly ariaDescription?: string;
   readonly hidden?: boolean;
@@ -84,6 +87,7 @@ export type FlowEdge = {
   readonly focusable?: boolean;
   readonly reconnectable?: boolean | "source" | "target";
   readonly interactionWidth?: number;
+  readonly ariaRole?: string;
   readonly ariaLabel?: string;
   readonly hidden?: boolean;
   readonly zIndex?: number;
@@ -116,10 +120,12 @@ export type FlowDocument = {
     readonly focusable?: boolean;
     readonly reconnectable?: boolean | "source" | "target";
     readonly interactionWidth?: number;
+    readonly ariaRole?: string;
     readonly ariaLabel?: string;
     readonly hidden?: boolean;
     readonly zIndex?: number;
   }>;
+  readonly nodeOrigin?: ReadonlyArray<number>;
   readonly nodes: ReadonlyArray<{
     readonly id: string;
     readonly label: string;
@@ -127,6 +133,7 @@ export type FlowDocument = {
       readonly x: number;
       readonly y: number;
     };
+    readonly origin?: ReadonlyArray<number>;
     readonly parentId?: string;
     readonly type?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
@@ -144,8 +151,10 @@ export type FlowDocument = {
     readonly selected?: boolean;
     readonly selectable?: boolean;
     readonly focusable?: boolean;
+    readonly connectable?: boolean;
     readonly draggable?: boolean;
     readonly deletable?: boolean;
+    readonly ariaRole?: string;
     readonly ariaLabel?: string;
     readonly ariaDescription?: string;
     readonly hidden?: boolean;
@@ -186,6 +195,7 @@ export type FlowCommand = {
           readonly x: number;
           readonly y: number;
         };
+        readonly origin?: ReadonlyArray<number>;
         readonly parentId?: string;
         readonly type?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
@@ -203,8 +213,10 @@ export type FlowCommand = {
         readonly selected?: boolean;
         readonly selectable?: boolean;
         readonly focusable?: boolean;
+        readonly connectable?: boolean;
         readonly draggable?: boolean;
         readonly deletable?: boolean;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -219,6 +231,7 @@ export type FlowCommand = {
           readonly x: number;
           readonly y: number;
         };
+        readonly origin?: ReadonlyArray<number>;
         readonly parentId?: string;
         readonly type?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
@@ -236,8 +249,10 @@ export type FlowCommand = {
         readonly selected?: boolean;
         readonly selectable?: boolean;
         readonly focusable?: boolean;
+        readonly connectable?: boolean;
         readonly draggable?: boolean;
         readonly deletable?: boolean;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -265,6 +280,7 @@ export type FlowCommand = {
         readonly focusable?: boolean;
         readonly reconnectable?: boolean | "source" | "target";
         readonly interactionWidth?: number;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly hidden?: boolean;
         readonly zIndex?: number;
@@ -292,6 +308,7 @@ export type FlowCommand = {
         readonly focusable?: boolean;
         readonly reconnectable?: boolean | "source" | "target";
         readonly interactionWidth?: number;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly hidden?: boolean;
         readonly zIndex?: number;
@@ -410,6 +427,7 @@ export type FlowChange = {
     readonly focusable?: boolean;
     readonly reconnectable?: boolean | "source" | "target";
     readonly interactionWidth?: number;
+    readonly ariaRole?: string;
     readonly ariaLabel?: string;
     readonly hidden?: boolean;
     readonly zIndex?: number;
@@ -452,6 +470,7 @@ export type FlowChange = {
     readonly focusable?: boolean;
     readonly reconnectable?: boolean | "source" | "target";
     readonly interactionWidth?: number;
+    readonly ariaRole?: string;
     readonly ariaLabel?: string;
     readonly hidden?: boolean;
     readonly zIndex?: number;
@@ -484,10 +503,12 @@ export type FlowChange = {
       readonly focusable?: boolean;
       readonly reconnectable?: boolean | "source" | "target";
       readonly interactionWidth?: number;
+      readonly ariaRole?: string;
       readonly ariaLabel?: string;
       readonly hidden?: boolean;
       readonly zIndex?: number;
     }>;
+    readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
       readonly id: string;
       readonly label: string;
@@ -495,6 +516,7 @@ export type FlowChange = {
         readonly x: number;
         readonly y: number;
       };
+      readonly origin?: ReadonlyArray<number>;
       readonly parentId?: string;
       readonly type?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
@@ -512,8 +534,10 @@ export type FlowChange = {
       readonly selected?: boolean;
       readonly selectable?: boolean;
       readonly focusable?: boolean;
+      readonly connectable?: boolean;
       readonly draggable?: boolean;
       readonly deletable?: boolean;
+      readonly ariaRole?: string;
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
@@ -553,10 +577,12 @@ export type FlowSnapshot = {
       readonly focusable?: boolean;
       readonly reconnectable?: boolean | "source" | "target";
       readonly interactionWidth?: number;
+      readonly ariaRole?: string;
       readonly ariaLabel?: string;
       readonly hidden?: boolean;
       readonly zIndex?: number;
     }>;
+    readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
       readonly id: string;
       readonly label: string;
@@ -564,6 +590,7 @@ export type FlowSnapshot = {
         readonly x: number;
         readonly y: number;
       };
+      readonly origin?: ReadonlyArray<number>;
       readonly parentId?: string;
       readonly type?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
@@ -581,8 +608,10 @@ export type FlowSnapshot = {
       readonly selected?: boolean;
       readonly selectable?: boolean;
       readonly focusable?: boolean;
+      readonly connectable?: boolean;
       readonly draggable?: boolean;
       readonly deletable?: boolean;
+      readonly ariaRole?: string;
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
@@ -624,10 +653,12 @@ export type FlowStateChange = {
         readonly focusable?: boolean;
         readonly reconnectable?: boolean | "source" | "target";
         readonly interactionWidth?: number;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly hidden?: boolean;
         readonly zIndex?: number;
       }>;
+      readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
         readonly id: string;
         readonly label: string;
@@ -635,6 +666,7 @@ export type FlowStateChange = {
           readonly x: number;
           readonly y: number;
         };
+        readonly origin?: ReadonlyArray<number>;
         readonly parentId?: string;
         readonly type?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
@@ -652,8 +684,10 @@ export type FlowStateChange = {
         readonly selected?: boolean;
         readonly selectable?: boolean;
         readonly focusable?: boolean;
+        readonly connectable?: boolean;
         readonly draggable?: boolean;
         readonly deletable?: boolean;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -687,10 +721,12 @@ export type FlowStateChange = {
         readonly focusable?: boolean;
         readonly reconnectable?: boolean | "source" | "target";
         readonly interactionWidth?: number;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly hidden?: boolean;
         readonly zIndex?: number;
       }>;
+      readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
         readonly id: string;
         readonly label: string;
@@ -698,6 +734,7 @@ export type FlowStateChange = {
           readonly x: number;
           readonly y: number;
         };
+        readonly origin?: ReadonlyArray<number>;
         readonly parentId?: string;
         readonly type?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
@@ -715,8 +752,10 @@ export type FlowStateChange = {
         readonly selected?: boolean;
         readonly selectable?: boolean;
         readonly focusable?: boolean;
+        readonly connectable?: boolean;
         readonly draggable?: boolean;
         readonly deletable?: boolean;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -759,10 +798,12 @@ export type FlowSnapshot = {
       readonly focusable?: boolean;
       readonly reconnectable?: boolean | "source" | "target";
       readonly interactionWidth?: number;
+      readonly ariaRole?: string;
       readonly ariaLabel?: string;
       readonly hidden?: boolean;
       readonly zIndex?: number;
     }>;
+    readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
       readonly id: string;
       readonly label: string;
@@ -770,6 +811,7 @@ export type FlowSnapshot = {
         readonly x: number;
         readonly y: number;
       };
+      readonly origin?: ReadonlyArray<number>;
       readonly parentId?: string;
       readonly type?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
@@ -787,8 +829,10 @@ export type FlowSnapshot = {
       readonly selected?: boolean;
       readonly selectable?: boolean;
       readonly focusable?: boolean;
+      readonly connectable?: boolean;
       readonly draggable?: boolean;
       readonly deletable?: boolean;
+      readonly ariaRole?: string;
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
@@ -830,10 +874,12 @@ export type FlowStateChange = {
         readonly focusable?: boolean;
         readonly reconnectable?: boolean | "source" | "target";
         readonly interactionWidth?: number;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly hidden?: boolean;
         readonly zIndex?: number;
       }>;
+      readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
         readonly id: string;
         readonly label: string;
@@ -841,6 +887,7 @@ export type FlowStateChange = {
           readonly x: number;
           readonly y: number;
         };
+        readonly origin?: ReadonlyArray<number>;
         readonly parentId?: string;
         readonly type?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
@@ -858,8 +905,10 @@ export type FlowStateChange = {
         readonly selected?: boolean;
         readonly selectable?: boolean;
         readonly focusable?: boolean;
+        readonly connectable?: boolean;
         readonly draggable?: boolean;
         readonly deletable?: boolean;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
@@ -893,10 +942,12 @@ export type FlowStateChange = {
         readonly focusable?: boolean;
         readonly reconnectable?: boolean | "source" | "target";
         readonly interactionWidth?: number;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly hidden?: boolean;
         readonly zIndex?: number;
       }>;
+      readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
         readonly id: string;
         readonly label: string;
@@ -904,6 +955,7 @@ export type FlowStateChange = {
           readonly x: number;
           readonly y: number;
         };
+        readonly origin?: ReadonlyArray<number>;
         readonly parentId?: string;
         readonly type?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
@@ -921,8 +973,10 @@ export type FlowStateChange = {
         readonly selected?: boolean;
         readonly selectable?: boolean;
         readonly focusable?: boolean;
+        readonly connectable?: boolean;
         readonly draggable?: boolean;
         readonly deletable?: boolean;
+        readonly ariaRole?: string;
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;

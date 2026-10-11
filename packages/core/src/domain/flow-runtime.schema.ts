@@ -9,6 +9,12 @@ import {
 import { prepareFlowEdit } from './flow-edit.ts'
 import { NodeExtentSchema } from './flow-node-extent.schema.ts'
 import {
+  NodeOriginSchema,
+  nodeAnchorToTopLeft,
+  nodeTopLeftToAnchor,
+} from './flow-origin.schema.ts'
+import type { NodeOrigin } from './flow-origin.schema.ts'
+import {
   canReconnectEdge,
   ActiveEdgeReconnectSchema,
 } from './flow-reconnection.schema.ts'
@@ -537,6 +543,7 @@ export const NodeResizeCalculationInputSchema = S.Struct({
   delta: FinitePositionSchema,
   minimumSize: NodeSizeSchema,
   bounds: S.optional(NodeExtentSchema),
+  origin: S.optional(NodeOriginSchema),
 })
 
 export type NodeResizeCalculationInput =
@@ -553,7 +560,7 @@ export type NodeResizeBoundsIssue = typeof NodeResizeBoundsIssueSchema.Type
 export const NodeResizeCalculationSchema = S.Struct({
   position: FinitePositionSchema,
   size: NodeSizeSchema,
-  /** Actual local movement after optional bounds are applied. */
+  /** Stored anchor movement after optional physical bounds are applied. */
   positionDelta: FinitePositionSchema,
   /** Apply to each direct child's local position to preserve its world position. */
   childrenPositionDelta: FinitePositionSchema,
@@ -670,7 +677,7 @@ const applyResizeBounds = (
   return { x, y, width, height }
 }
 
-/** Calculate a bounded resize candidate in the node parent's local coordinate space. */
+/** Resize physical bounds in parent-local space, returning the stored anchor and child compensation. */
 export const calculateNodeResize = (
   input: NodeResizeCalculationInput
 ): NodeResizeCalculation => {
@@ -691,7 +698,15 @@ export const calculateNodeResize = (
 
   const boundsIssues = new Set<NodeResizeBoundsIssue>()
 
-  const { x: startX, y: startY } = decoded.positionStart
+  const origin: NodeOrigin = decoded.origin ?? [0, 0]
+
+  const startTopLeft = nodeAnchorToTopLeft(
+    decoded.positionStart,
+    decoded.sizeStart,
+    origin
+  )
+
+  const { x: startX, y: startY } = startTopLeft
   const { width: startWidth, height: startHeight } = decoded.sizeStart
   const { width: minimumWidth, height: minimumHeight } = decoded.minimumSize
   let { width } = decoded.sizeStart
@@ -711,13 +726,9 @@ export const calculateNodeResize = (
     )
   }
 
-  let x = fromLeft
-    ? decoded.positionStart.x + decoded.sizeStart.width - width
-    : decoded.positionStart.x
+  let x = fromLeft ? startX + decoded.sizeStart.width - width : startX
 
-  let y = fromTop
-    ? decoded.positionStart.y + decoded.sizeStart.height - height
-    : decoded.positionStart.y
+  let y = fromTop ? startY + decoded.sizeStart.height - height : startY
 
   if (decoded.bounds !== undefined) {
     const bounded = applyResizeBounds(
@@ -742,7 +753,7 @@ export const calculateNodeResize = (
     ;({ x, y, width, height } = bounded)
   }
 
-  const position = { x, y }
+  const position = nodeTopLeftToAnchor({ x, y }, { width, height }, origin)
 
   const positionDelta = {
     x: position.x - decoded.positionStart.x,
@@ -755,8 +766,8 @@ export const calculateNodeResize = (
     positionDelta,
     boundsIssues: [...boundsIssues],
     childrenPositionDelta: {
-      x: positionDelta.x === 0 ? 0 : -positionDelta.x,
-      y: positionDelta.y === 0 ? 0 : -positionDelta.y,
+      x: x === startX ? 0 : startX - x,
+      y: y === startY ? 0 : startY - y,
     },
   })
 }
@@ -1358,7 +1369,10 @@ export const commandToChange = (
 export const prepareFlowCommand = (
   document: FlowDocument,
   command: FlowCommand
-) =>
+): Effect.Effect<
+  FlowChange,
+  Effect.Error<ReturnType<typeof prepareFlowEdit>>
+> =>
   command.kind === 'edit-transaction'
     ? prepareFlowEdit(document, command.transaction).pipe(
         Effect.map(({ document: candidate, deletion }) => ({

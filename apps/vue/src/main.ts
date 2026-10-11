@@ -1,12 +1,9 @@
 import {
   decodeFlowDocument,
   FlowEditErrorSchema,
-  decodeSavedFlowDocument,
   fitViewportToNodes,
   getIncomers,
   getOutgoers,
-  SavedFlowDocumentSchema,
-  ViewportSchema,
 } from '@flow/core'
 import type {
   FlowConnection,
@@ -482,12 +479,6 @@ const StateTools = defineComponent({
       message.value = `Removed ${middle.id}; connected ${incoming.map(({ id }) => id).join(', ')} to ${outgoing.map(({ id }) => id).join(', ')}`
     }
 
-    const envelope = Schema.Struct({
-      version: Schema.Literal(1),
-      savedDocument: SavedFlowDocumentSchema,
-      viewport: ViewportSchema,
-    })
-
     return () =>
       h(
         'section',
@@ -636,17 +627,7 @@ const StateTools = defineComponent({
             'button',
             {
               onClick: () => {
-                const snapshot = flow.getSnapshot()
-                saved.value = Schema.encodeSync(envelope)({
-                  version: 1,
-                  savedDocument: {
-                    version: 1,
-                    document: Effect.runSync(
-                      decodeFlowDocument(snapshot.document)
-                    ),
-                  },
-                  viewport: snapshot.viewport,
-                })
+                saved.value = flow.getVersionedSavedSession()
                 message.value = 'Snapshot saved for this session'
               },
             },
@@ -681,20 +662,15 @@ const StateTools = defineComponent({
             'button',
             {
               disabled: saved.value === undefined,
-              onClick: () => {
+              onClick: async () => {
                 if (saved.value === undefined) {
                   message.value = 'No snapshot saved'
 
                   return
                 }
 
-                const state = Schema.decodeUnknownSync(envelope)(saved.value)
-
-                const document = Effect.runSync(
-                  decodeSavedFlowDocument(state.savedDocument)
-                )
-
-                flow.updateDocument(document)
+                const state = await flow.prepareVersionedRestore(saved.value)
+                flow.updateDocument(state.document)
                 flow.updateViewport(state.viewport)
                 message.value =
                   'Restored document and viewport; selection is transient'

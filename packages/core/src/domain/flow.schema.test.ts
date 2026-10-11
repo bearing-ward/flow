@@ -1,3 +1,4 @@
+import { createFlowSnapshot } from '@flow/core'
 import { Effect } from 'effect'
 import { describe, expect, it } from 'vitest'
 
@@ -145,23 +146,6 @@ describe('FlowDocumentSchema', () => {
       draggable: false,
       ariaDescription: 'Cannot be moved',
     })
-    expect(
-      Effect.runSync(
-        Effect.exit(
-          decodeFlowDocument({
-            edges: [],
-            nodes: [
-              {
-                id: 'bad',
-                label: 'Bad',
-                position: { x: 0, y: 0 },
-                ariaDescription: '',
-              },
-            ],
-          })
-        )
-      )._tag
-    ).toBe('Failure')
   })
 
   it('rejects missing, self, and cyclic parents and root parent extents', () => {
@@ -294,7 +278,7 @@ describe('FlowDocumentSchema', () => {
     expect(error).toBeInstanceOf(DuplicateHandleId)
   })
 
-  it('rejects an edge referencing a missing or wrong-kind handle', () => {
+  it('rejects an edge referencing a missing handle', () => {
     const error = Effect.runSync(
       Effect.flip(
         decodeFlowDocument({
@@ -302,7 +286,7 @@ describe('FlowDocumentSchema', () => {
             {
               id: 'edge-1',
               source: 'first',
-              sourceHandle: 'in',
+              sourceHandle: 'missing',
               target: 'second',
               targetHandle: 'in',
             },
@@ -451,5 +435,149 @@ describe('FlowDocumentSchema', () => {
     )
 
     expect(result._tag).toBe('Failure')
+  })
+})
+
+describe('approved native metadata through full public decode and snapshot', () => {
+  const node = { id: 'node', label: 'Node', position: { x: 0, y: 0 } }
+  const edge = { id: 'edge', source: 'node', target: 'node' }
+  const viewport = { x: 5, y: -7, zoom: 1.5 }
+
+  const fields = [
+    {
+      owner: 'node',
+      field: 'connectable',
+      values: [undefined, false, true],
+      invalid: [null, '', 0, {}],
+    },
+    ...['ariaRole', 'ariaLabel', 'ariaDescription'].map((field) => ({
+      owner: 'node',
+      field,
+      values: [undefined, '', '   ', 'custom value'],
+      invalid: [null, false, 0, {}],
+    })),
+    ...['ariaRole', 'ariaLabel'].map((field) => ({
+      owner: 'edge',
+      field,
+      values: [undefined, '', '   ', 'custom value'],
+      invalid: [null, false, 0, {}],
+    })),
+  ]
+
+  it.each(fields)(
+    'keeps missing $owner.$field missing without defaults',
+    ({ owner, field }) => {
+      const document = Effect.runSync(
+        decodeFlowDocument({ nodes: [node], edges: [edge] })
+      )
+
+      const snapshot = createFlowSnapshot(document, viewport)
+
+      const record =
+        owner === 'node'
+          ? snapshot.document.nodes[0]
+          : snapshot.document.edges[0]
+
+      expect(record).toBeDefined()
+      expect(Object.hasOwn(record ?? {}, field)).toBeFalsy()
+    }
+  )
+
+  it.each(
+    fields.flatMap(({ owner, field, values }) =>
+      values.map((value) => ({ owner, field, value }))
+    )
+  )(
+    'retains exact $owner.$field=$value in full decode, detached snapshot and JSON',
+    ({ owner, field, value }) => {
+      const input = {
+        nodes: [owner === 'node' ? { ...node, [field]: value } : node],
+        edges: [owner === 'edge' ? { ...edge, [field]: value } : edge],
+      }
+
+      const document = Effect.runSync(decodeFlowDocument(input))
+      const snapshot = createFlowSnapshot(document, viewport)
+      const decoded = owner === 'node' ? document.nodes[0] : document.edges[0]
+
+      const record =
+        owner === 'node'
+          ? snapshot.document.nodes[0]
+          : snapshot.document.edges[0]
+
+      expect({
+        decodedPresent: Object.hasOwn(decoded ?? {}, field),
+        snapshotPresent: Object.hasOwn(record ?? {}, field),
+      }).toStrictEqual({ decodedPresent: true, snapshotPresent: true })
+      expect(record).toMatchObject({ [field]: value })
+
+      expect(record).not.toBe(decoded)
+      expect({
+        record: Object.isFrozen(record),
+        document: Object.isFrozen(snapshot.document),
+        viewport: Object.isFrozen(snapshot.viewport),
+      }).toStrictEqual({ record: true, document: true, viewport: true })
+      const json = JSON.stringify(document)
+      const jsonDocument = Effect.runSync(decodeFlowDocument(JSON.parse(json)))
+
+      const jsonRecord =
+        owner === 'node' ? jsonDocument.nodes[0] : jsonDocument.edges[0]
+
+      const originalRecord = owner === 'node' ? node : edge
+
+      const expectedJsonRecord =
+        value === undefined
+          ? originalRecord
+          : { ...originalRecord, [field]: value }
+
+      expect({
+        present: Object.hasOwn(jsonRecord ?? {}, field),
+        record: jsonRecord,
+      }).toStrictEqual({
+        present: value !== undefined,
+        record: expectedJsonRecord,
+      })
+    }
+  )
+
+  it.each(
+    fields.flatMap(({ owner, field, invalid }) =>
+      invalid.map((value) => ({ owner, field, value }))
+    )
+  )(
+    'rejects invalid $owner.$field=$value at full decode',
+    ({ owner, field, value }) => {
+      const input = {
+        nodes: [owner === 'node' ? { ...node, [field]: value } : node],
+        edges: [owner === 'edge' ? { ...edge, [field]: value } : edge],
+      }
+
+      expect(Effect.runSync(Effect.exit(decodeFlowDocument(input)))._tag).toBe(
+        'Failure'
+      )
+    }
+  )
+
+  it('keeps malformed graph validation and strips unapproved edge descriptions', () => {
+    expect(
+      Effect.runSync(
+        Effect.flip(
+          decodeFlowDocument({
+            nodes: [{ ...node, connectable: false, ariaRole: '' }],
+            edges: [{ ...edge, target: 'missing' }],
+          })
+        )
+      )
+    ).toBeInstanceOf(MissingEdgeEndpoint)
+
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [node],
+        edges: [{ ...edge, ariaDescription: 'unapproved' }],
+      })
+    )
+
+    expect(
+      Object.hasOwn(document.edges[0] ?? {}, 'ariaDescription')
+    ).toBeFalsy()
   })
 })

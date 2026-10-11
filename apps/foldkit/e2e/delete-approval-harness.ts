@@ -10,14 +10,14 @@ import {
   createFoldkitSnapshotClient,
 } from '@flow/foldkit'
 import type {
-  SnapshotResponseSchema,
+  VersionedSnapshotResponseSchema,
   DeleteApprovalRequestedSchema,
   DeleteApprovalResponseSchema,
   DeleteRequestSchema,
   DeleteResultSchema,
   EditResponse,
   FoldkitDeleteClient,
-  FoldkitSnapshotClient,
+  FoldkitVersionedSnapshotClient,
   FoldkitSnapshotResult,
   ports,
 } from '@flow/foldkit'
@@ -41,7 +41,7 @@ interface DeleteHarness {
   readonly edit: (requestId: string) => Promise<EditResponse>
   readonly snapshot: (
     requestId: string
-  ) => Promise<typeof SnapshotResponseSchema.Encoded>
+  ) => Promise<typeof VersionedSnapshotResponseSchema.Encoded>
   readonly snapshotOutcome: () => Promise<FoldkitSnapshotResult>
   readonly probeHostAction: () => void
   readonly approvalWinsCancellationRace: () => Promise<
@@ -93,7 +93,7 @@ declare global {
 
 let active: Runtime.EmbedHandle<typeof ports> | undefined
 
-let snapshotClient: FoldkitSnapshotClient | undefined
+let snapshotClient: FoldkitVersionedSnapshotClient | undefined
 
 let raceClient: FoldkitDeleteClient | undefined
 
@@ -391,7 +391,7 @@ const harness: DeleteHarness = {
       throw new Error('Delete runtime is not started')
     }
 
-    const result = await snapshotClient.request()
+    const result = await snapshotClient.requestVersioned()
 
     return Match.value(result).pipe(
       Match.when({ status: 'succeeded' }, ({ response }) => ({

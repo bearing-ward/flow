@@ -1,21 +1,16 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Foldkit snapshot callers and measured-handle refresh",
-  "checks": [
-    "docs",
-    "catalog",
-    "api-members",
-    "contracts",
-    "traces",
-    "consumer"
-  ],
+  "activeWork": "Plan 082 and 085 promotion rehearsal with Vue calibration capture",
+  "checks": ["docs", "contracts", "calibration", "consumer"],
   "browserTests": {
-    "vanilla": ["measured-geometry.e2e.ts"],
-    "vue": ["measured-geometry.e2e.ts"],
-    "foldkit": [
-      "delete-approval.e2e.ts",
-      "placeholder-recipe.e2e.ts",
-      "measured-geometry.e2e.ts"
-    ]
+    "vanilla": ["public-edits.e2e.ts", "versioned-persistence.e2e.ts"],
+    "vue": [
+      "public-edits.e2e.ts",
+      "versioned-persistence.e2e.ts",
+      "minimap.e2e.ts",
+      "node-toolbar.e2e.ts",
+      "performance-calibration.e2e.ts"
+    ],
+    "foldkit": ["public-edits.e2e.ts", "versioned-persistence.e2e.ts"]
   }
 }

@@ -1,14 +1,14 @@
 {
   "reviewedAt": "2026-09-30",
-  "reviewedCommit": "77a725e",
-  "scope": "Plan 065 only. Native geometry implementation is accepted through integrated Plan 076. This artifact preserves original open acceptance cells and does not close parent 057/066.",
+  "reviewedCommit": "841be13",
+  "scope": "Plan 065 only. 63 original members and 189 host cells retain identity; native mappings independently architecture-reviewed and directly tested. Semantic evidence candidate remains subject to final primary source review. Parent 057/066 remains open.",
   "counts": {
     "groups": 5,
     "members": 63,
     "hostCells": 189,
     "states": {
-      "evidence-gap": 3,
-      "implementation-gap": 186
+      "reviewed-native-difference": 171,
+      "implemented-with-evidence": 18
     },
     "families": {
       "refresh": 1,
@@ -20,76 +20,73 @@
   },
   "verification": {
     "command": "bun run verify",
-    "checkout": "/Users/richardmcandrews/.codex/worktrees/snapshot-and-handle-refresh/flow",
-    "log": "/tmp/flow-065-reconcile-verify.log",
+    "checkout": "/Users/richardmcandrews/.codex/worktrees/contract-acceptance/flow",
+    "log": "/tmp/flow-065-verify-final.log",
     "profile": "focused",
     "fullSuite": false,
     "exitCode": 0,
-    "elapsedMs": 49315,
-    "unitTests": 409,
+    "elapsedMs": 50825,
+    "unitTests": 414,
     "unitFiles": 46,
     "browserTests": {
-      "vanilla": 8,
-      "vue": 8,
-      "foldkit": 27
+      "vanilla": 21,
+      "vue": 15,
+      "foldkit": 26
     },
     "packedConsumers": ["vanilla", "vue", "foldkit"],
-    "referenceBoundary": "Stored pinned fixture conformance and all-host browser comparisons rerun. Capture script was inspected but not rerun because it rewrites the tracked fixture and runs a formatter. Prior capture reproduction remains Plan 076 evidence."
+    "referenceBoundary": "Fresh clean exact-pin capture reproduced with two equal samples and actual owner/size/top-left fields, log /tmp/flow-065-capture.log. Post-bookkeeping focused verify passed; primary final source/evidence review pending."
   },
   "mappings": {
     "refresh": {
       "nativeMapping": "Vanilla controller and Vue useFlow.updateNodeInternals; Foldkit createFoldkitNodeInternalsRefresher.refresh. Ordered, coalesced owner-local remeasurement with per-ID promise results.",
-      "classification": "bounded behavior conforming; native facade intentionally different; exact scheduler unverified",
-      "remaining": "Review hook callback identity, owner lifecycle and void-versus-promise/status semantics. Do not infer exact frame completion from requested.",
+      "classification": "reviewed native mapping with member-specific public and installed-type evidence; final primary source review pending",
+      "remaining": "No unresolved owned cells after candidate transitions. Parent/other owners and full-suite acceptance remain open.",
       "source": [
         "apps/vanilla/src/mount-flow.ts:8609-8643",
         "packages/vue/src/flow-canvas.ts:2485-2508",
         "packages/vue/src/use-flow.ts:208-212",
         "packages/foldkit/src/update-node-internals.ts:37-155"
       ],
-      "productionTest": [
-        "apps/shared-e2e/handle-refresh-contract.ts:141-210",
-        "apps/shared-e2e/handle-refresh-contract.ts:370-403"
-      ],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:407-718"],
       "reference": [
         "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/hooks/useUpdateNodeInternals.ts:51-68"
       ]
     },
     "dimensions": {
       "nativeMapping": "FlowInternalNode.width/height are finite numeric current measurements or declared fallback dimensions.",
-      "classification": "numeric geometry implemented; original field semantics unverified",
-      "remaining": "Resolve unparsed dated documentation rows using retained rawSourceRow. Distinguish declared dimensions, accepted measurements, unmeasured fallback and hidden state; provide field-specific public assertions in each host.",
+      "classification": "reviewed native mapping with member-specific public and installed-type evidence; final primary source review pending",
+      "remaining": "No unresolved owned cells after candidate transitions. Parent/other owners and full-suite acceptance remain open.",
       "source": [
         "packages/core/src/domain/flow-measurement.schema.ts:16-23",
         "packages/core/src/domain/flow-measurement.schema.ts:352-369"
       ],
-      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:188-202"],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:407-718"],
       "reference": [
-        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:76-94"
+        "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:49-50"
       ]
     },
     "measured": {
       "nativeMapping": "FlowInternalNode measurementStatus plus width/height; no React-shaped measured object.",
-      "classification": "native projection implemented; optional object/field mapping unverified",
-      "remaining": "Review and test measured/unmeasured/hidden and optional width/height semantics. A numeric fallback is not evidence for upstream absence; retain explicit native mapping and compile-time consumer proof.",
+      "classification": "reviewed native mapping with member-specific public and installed-type evidence; final primary source review pending",
+      "remaining": "No unresolved owned cells after candidate transitions. Parent/other owners and full-suite acceptance remain open.",
       "source": [
         "packages/core/src/domain/flow-measurement.schema.ts:16-23",
         "packages/core/src/domain/flow-measurement.schema.ts:352-369"
       ],
-      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:188-202"],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:407-718"],
       "reference": [
         "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105"
       ]
     },
     "nullable-bounds": {
       "nativeMapping": "Numeric FlowInternalNode.width/height; no nullable internals.bounds object.",
-      "classification": "native numeric mapping implemented; null union branches unverified",
-      "remaining": "Specify number versus null meaning and optional bounds ownership. Require reviewed native difference or an explicit numbered implementation dependency; current geometry tests do not prove null branches.",
+      "classification": "reviewed native mapping with member-specific public and installed-type evidence; final primary source review pending",
+      "remaining": "No unresolved owned cells after candidate transitions. Parent/other owners and full-suite acceptance remain open.",
       "source": [
         "packages/core/src/domain/flow-measurement.schema.ts:16-23",
         "packages/core/src/domain/flow-measurement.schema.ts:362-369"
       ],
-      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:188-202"],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:407-718"],
       "reference": [
         "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
         "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
@@ -97,17 +94,14 @@
     },
     "handle-bounds": {
       "nativeMapping": "Frozen flat FlowInternalNode.handles with branded nodeId/handleId, graph-unit width/height and node-local center offset. Kind/side come from accepted FlowHandle declarations. React handleBounds is split by source/target and uses top-left coordinates.",
-      "classification": "equivalent caller endpoints conforming; public shape intentionally different; nested variants unverified",
-      "remaining": "Review each retained member, including null source/target, optional or null IDs, array/type parents and all four Position branches. Bind nodeId/handleId, size, center-to-top-left, kind/side and absence semantics to specific public assertions and positive/negative packed type probes. Endpoint equality does not prove every nested field.",
+      "classification": "reviewed native mapping with member-specific public and installed-type evidence; final primary source review pending",
+      "remaining": "No unresolved owned cells after candidate transitions. Parent/other owners and full-suite acceptance remain open.",
       "source": [
         "packages/core/src/domain/flow-edge.schema.ts:18-24",
         "packages/core/src/domain/flow-measurement.schema.ts:234-305",
         "packages/core/src/domain/flow-measurement.schema.ts:362-383"
       ],
-      "productionTest": [
-        "apps/shared-e2e/handle-refresh-contract.ts:151-210",
-        "apps/shared-e2e/handle-refresh-contract.ts:370-403"
-      ],
+      "productionTest": ["apps/shared-e2e/handle-refresh-contract.ts:407-718"],
       "reference": [
         "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
         "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
@@ -121,11 +115,30 @@
       "member": "useUpdateNodeInternals",
       "contractId": "hooks/use-update-node-internals::065::useUpdateNodeInternals",
       "mapping": "refresh",
-      "description": "React hook \u2014 Requests remeasurement/handle-position refresh after dynamic node/handle changes.",
+      "description": "React hook — Requests remeasurement/handle-position refresh after dynamic node/handle changes.",
       "hostStates": {
-        "vanilla": "evidence-gap",
-        "vue": "evidence-gap",
-        "foldkit": "evidence-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "Owner-local stable refresh facade. Vanilla/Vue accept one ID or readonly batch; Foldkit refresher accepts branded batch. Ordered per-ID promise statuses replace React void hook. Requested means dispatched, not universal rendered completion.",
+        "assertion": "useUpdateNodeInternals: Batch duplicate/missing results; retained actual controller/useFlow/refresher callback across accepted replacement; pending/late disposal settle explicitly; public SVG polling proves output, never timeout-as-disposal.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/hooks/useUpdateNodeInternals.ts:51-68"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:141-146",
+          "apps/shared-e2e/handle-refresh-contract.ts:370-403",
+          "apps/shared-e2e/handle-refresh-contract.ts:546-546"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -135,9 +148,29 @@
       "mapping": "dimensions",
       "description": "Unparsed captured row: source extraction joined member name, type, description, and any default without preserving field boundaries; see rawSourceRow.",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "height: Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -147,9 +180,29 @@
       "mapping": "nullable-bounds",
       "description": "field; required; type number | null; height: number | null;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height: Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -159,9 +212,29 @@
       "mapping": "nullable-bounds",
       "description": "union-variant; type number",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height.<union:1>: Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -171,9 +244,29 @@
       "mapping": "nullable-bounds",
       "description": "union-variant; type null",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height.<union:2>: Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -183,9 +276,29 @@
       "mapping": "nullable-bounds",
       "description": "field; required; type number | null; width: number | null;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width: Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -195,9 +308,29 @@
       "mapping": "nullable-bounds",
       "description": "union-variant; type number",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width.<union:1>: Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -207,9 +340,29 @@
       "mapping": "nullable-bounds",
       "description": "union-variant; type null",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width.<union:2>: Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -219,9 +372,31 @@
       "mapping": "handle-bounds",
       "description": "field; optional; type NodeHandleBounds; handleBounds?: NodeHandleBounds;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "both kinds collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the both kinds partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -231,9 +406,31 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type NodeHandleBounds; resolves to packages/system/src/types/nodes.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "both kinds collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the both kinds partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -243,9 +440,31 @@
       "mapping": "handle-bounds",
       "description": "field; required; type Handle[] | null; source: Handle[] | null;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -255,9 +474,31 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type Handle[]",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -267,9 +508,31 @@
       "mapping": "handle-bounds",
       "description": "array-element; type Handle",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -279,9 +542,31 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type Handle; resolves to packages/react/src/index.ts, packages/system/src/types/handles.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -291,9 +576,31 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type HandleBound",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.<type:HandleBound>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -303,9 +610,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; height: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "implemented-with-evidence",
+        "vue": "implemented-with-evidence",
+        "foldkit": "implemented-with-evidence"
+      },
+      "acceptance": {
+        "classification": "implemented-with-evidence",
+        "nativeMapping": "Native handles[].height, selected by accepted node.handles[].kind == source. Same graph-unit finite size / owner identity semantics.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.height: Each source handle has expected owner nodeId; height equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:614-614"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -315,9 +639,27 @@
       "mapping": "handle-bounds",
       "description": "field; optional; type string | null; id?: string | null;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id: Every source public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:548-549",
+          "apps/shared-e2e/handle-refresh-contract.ts:611-611"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -327,9 +669,27 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type string",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id.<union:1>: Every source public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:548-549",
+          "apps/shared-e2e/handle-refresh-contract.ts:611-611"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -339,9 +699,27 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type null",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id.<union:2>: Every source public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:548-549",
+          "apps/shared-e2e/handle-refresh-contract.ts:611-611"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -351,9 +729,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type string; nodeId: string;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "implemented-with-evidence",
+        "vue": "implemented-with-evidence",
+        "foldkit": "implemented-with-evidence"
+      },
+      "acceptance": {
+        "classification": "implemented-with-evidence",
+        "nativeMapping": "Native handles[].nodeId, selected by accepted node.handles[].kind == source. Same graph-unit finite size / owner identity semantics.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.nodeId: Each source handle has expected owner nodeId; nodeId equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:612-612"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -363,9 +758,27 @@
       "mapping": "handle-bounds",
       "description": "field; required; type Position; position: Position;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position: For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -375,9 +788,27 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type Position; resolves to packages/system/src/types/utils.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>: For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -387,9 +818,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.position maps to accepted node.handles[].side (bottom). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Bottom: For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -399,9 +848,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.position maps to accepted node.handles[].side (left). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Left: For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -411,9 +878,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.position maps to accepted node.handles[].side (right). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Right: For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -423,9 +908,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.position maps to accepted node.handles[].side (top). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Top: For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -435,9 +938,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type HandleType; type: HandleType;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -447,9 +967,26 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type HandleType; resolves to packages/system/src/types/handles.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -459,9 +996,26 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type 'source'",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:1>: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -471,9 +1025,26 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type 'target'",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:2>: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -483,9 +1054,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; width: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "implemented-with-evidence",
+        "vue": "implemented-with-evidence",
+        "foldkit": "implemented-with-evidence"
+      },
+      "acceptance": {
+        "classification": "implemented-with-evidence",
+        "nativeMapping": "Native handles[].width, selected by accepted node.handles[].kind == source. Same graph-unit finite size / owner identity semantics.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.width: Each source handle has expected owner nodeId; width equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:613-613"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -495,9 +1083,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; x: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.x top-left maps to native offset.x center. Top-left = center minus graph-unit width/2. Explicit center representation feeds core endpoint geometry and remains detached.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.x: All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed x top-left equals DOM graph-unit top-left. Native projection lacks raw x.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:615-617"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -507,9 +1112,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; y: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source Handle.y top-left maps to native offset.y center. Top-left = center minus graph-unit height/2. Explicit center representation feeds core endpoint geometry and remains detached.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.y: All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed y top-left equals DOM graph-unit top-left. Native projection lacks raw y.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:616-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -519,9 +1141,31 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type null",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:2>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -531,9 +1175,31 @@
       "mapping": "handle-bounds",
       "description": "field; required; type Handle[] | null; target: Handle[] | null;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -543,9 +1209,31 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type Handle[]",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -555,9 +1243,31 @@
       "mapping": "handle-bounds",
       "description": "array-element; type Handle",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -567,9 +1277,31 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type Handle; resolves to packages/react/src/index.ts, packages/system/src/types/handles.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -579,9 +1311,31 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type HandleBound",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.<type:HandleBound>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -591,9 +1345,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; height: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "implemented-with-evidence",
+        "vue": "implemented-with-evidence",
+        "foldkit": "implemented-with-evidence"
+      },
+      "acceptance": {
+        "classification": "implemented-with-evidence",
+        "nativeMapping": "Native handles[].height, selected by accepted node.handles[].kind == target. Same graph-unit finite size / owner identity semantics.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.height: Each target handle has expected owner nodeId; height equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:614-614"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -603,9 +1374,27 @@
       "mapping": "handle-bounds",
       "description": "field; optional; type string | null; id?: string | null;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id: Every target public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:548-549",
+          "apps/shared-e2e/handle-refresh-contract.ts:611-611"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -615,9 +1404,27 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type string",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id.<union:1>: Every target public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:548-549",
+          "apps/shared-e2e/handle-refresh-contract.ts:611-611"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -627,9 +1434,27 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type null",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id.<union:2>: Every target public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:548-549",
+          "apps/shared-e2e/handle-refresh-contract.ts:611-611"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -639,9 +1464,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type string; nodeId: string;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "implemented-with-evidence",
+        "vue": "implemented-with-evidence",
+        "foldkit": "implemented-with-evidence"
+      },
+      "acceptance": {
+        "classification": "implemented-with-evidence",
+        "nativeMapping": "Native handles[].nodeId, selected by accepted node.handles[].kind == target. Same graph-unit finite size / owner identity semantics.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.nodeId: Each target handle has expected owner nodeId; nodeId equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:612-612"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -651,9 +1493,27 @@
       "mapping": "handle-bounds",
       "description": "field; required; type Position; position: Position;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position: For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -663,9 +1523,27 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type Position; resolves to packages/system/src/types/utils.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>: For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -675,9 +1553,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.position maps to accepted node.handles[].side (bottom). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Bottom: For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -687,9 +1583,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.position maps to accepted node.handles[].side (left). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Left: For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -699,9 +1613,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.position maps to accepted node.handles[].side (right). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Right: For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -711,9 +1643,27 @@
       "mapping": "handle-bounds",
       "description": "enum-member",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.position maps to accepted node.handles[].side (top). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Top: For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/utils.ts:1-15"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -723,9 +1673,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type HandleType; type: HandleType;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -735,9 +1702,26 @@
       "mapping": "handle-bounds",
       "description": "type-reference; type HandleType; resolves to packages/system/src/types/handles.ts",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -747,9 +1731,26 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type 'source'",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:1>: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -759,9 +1760,26 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type 'target'",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:2>: Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:6-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -771,9 +1789,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; width: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "implemented-with-evidence",
+        "vue": "implemented-with-evidence",
+        "foldkit": "implemented-with-evidence"
+      },
+      "acceptance": {
+        "classification": "implemented-with-evidence",
+        "nativeMapping": "Native handles[].width, selected by accepted node.handles[].kind == target. Same graph-unit finite size / owner identity semantics.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.width: Each target handle has expected owner nodeId; width equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:613-613"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -783,9 +1818,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; x: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.x top-left maps to native offset.x center. Top-left = center minus graph-unit width/2. Explicit center representation feeds core endpoint geometry and remains detached.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.x: All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed x top-left equals DOM graph-unit top-left. Native projection lacks raw x.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:615-617"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -795,9 +1847,26 @@
       "mapping": "handle-bounds",
       "description": "field; required; type number; y: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target Handle.y top-left maps to native offset.y center. Top-left = center minus graph-unit height/2. Explicit center representation feeds core endpoint geometry and remains detached.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.y: All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed y top-left equals DOM graph-unit top-left. Native projection lacks raw y.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:616-618"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -807,9 +1876,31 @@
       "mapping": "handle-bounds",
       "description": "union-variant; type null",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:2>: Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:104-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:127-130",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/index.ts:124-125",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/handles.ts:8-16"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:568-618",
+          "apps/shared-e2e/handle-refresh-contract.ts:641-671"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -819,9 +1910,29 @@
       "mapping": "measured",
       "description": "field; required; type { width?: number; height?: number; }; measured: { width?: number; height?: number; };",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width/height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured: Public measured width and height equal graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -831,9 +1942,29 @@
       "mapping": "measured",
       "description": "field; optional; type number; height?: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured.height: Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -843,9 +1974,29 @@
       "mapping": "measured",
       "description": "field; optional; type number; width?: number;",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured.width: Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -855,9 +2006,29 @@
       "mapping": "measured",
       "description": "Unparsed captured row: source extraction joined member name, type, description, and any default without preserving field boundaries; see rawSourceRow.",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width/height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "measured: Public measured width and height equal graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     },
     {
@@ -867,9 +2038,29 @@
       "mapping": "dimensions",
       "description": "Unparsed captured row: source extraction joined member name, type, description, and any default without preserving field boundaries; see rawSourceRow.",
       "hostStates": {
-        "vanilla": "implementation-gap",
-        "vue": "implementation-gap",
-        "foldkit": "implementation-gap"
+        "vanilla": "reviewed-native-difference",
+        "vue": "reviewed-native-difference",
+        "foldkit": "reviewed-native-difference"
+      },
+      "acceptance": {
+        "classification": "reviewed-native-difference",
+        "nativeMapping": "FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations.",
+        "assertion": "width: Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants.",
+        "reference": [
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:90-105",
+          "research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/system/src/types/nodes.ts:138-140"
+        ],
+        "publicAssertions": [
+          "apps/shared-e2e/handle-refresh-contract.ts:534-561",
+          "apps/shared-e2e/handle-refresh-contract.ts:707-717",
+          "apps/shared-e2e/measured-geometry-contract.ts:101-127"
+        ],
+        "architectureReview": "plans/measured-handle-acceptance-design.md:100-102",
+        "installedProbes": {
+          "vanilla": "tests/consumer/consumer.typecheck.ts:342-523",
+          "vue": "tests/consumer/vue/consumer.typecheck.ts:121-300",
+          "foldkit": "tests/consumer/foldkit/consumer.typecheck.ts:239-420"
+        }
       }
     }
   ]

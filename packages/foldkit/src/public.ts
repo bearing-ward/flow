@@ -4,6 +4,8 @@ export {
   HostAction,
   ports,
   SnapshotRequestSchema,
+  VersionedSnapshotRequestSchema,
+  VersionedSnapshotResponseSchema,
   SnapshotResponseSchema,
   LegacySnapshotFailureSchema,
   EditRequestSchema,
@@ -19,6 +21,8 @@ export type {
   ViewportPaneMetrics,
   EditResponse,
   SnapshotRequest,
+  VersionedSnapshotRequest,
+  VersionedSnapshotResponse,
   SnapshotResponse,
   LegacySnapshotFailure,
 } from './application.ts'
@@ -26,11 +30,14 @@ export type {
 export {
   createFoldkitSnapshotClient,
   FoldkitSnapshotResultSchema,
+  FoldkitVersionedSnapshotResultSchema,
   SnapshotQuerySchema,
 } from './snapshot-client.ts'
 
 export type {
   FoldkitSnapshotClient,
+  FoldkitVersionedSnapshotClient,
+  FoldkitVersionedSnapshotResult,
   FoldkitSnapshotResult,
   SnapshotQuery,
 } from './snapshot-client.ts'
@@ -40,6 +47,7 @@ export {
   InteractionEventSchema,
   Message,
   prepareSavedSession,
+  prepareVersionedSavedSession,
 } from './graph.ts'
 
 export type { GraphInteractionOptions } from './graph.ts'

@@ -17,6 +17,7 @@ import type {
   FlowSnapshot,
   ConnectionPreviewSnapshot,
   SavedFlowSession,
+  SavedVersionedFlowSession,
   FlowStateChange,
   FlowNodeConnection,
   FlowSelection,
@@ -30,7 +31,9 @@ import {
   HandleIdSchema,
   NodeIdSchema,
   encodeSavedFlowSession,
+  encodeVersionedFlowSession,
   decodeSavedFlowSession,
+  decodeVersionedFlowSession,
   FlowHandleConnectionsQuerySchema,
   selectHandleConnections,
   selectNodeConnections,
@@ -246,6 +249,9 @@ export interface FlowActions {
   readonly snapshot: FlowEditor['snapshot']
   readonly connectionPreview: FlowEditor['connectionPreview']
   readonly getSnapshot: () => DeepReadonly<FlowSnapshot>
+  readonly getVersionedSavedSession: () => SavedVersionedFlowSession
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- Public persistence input is decoded by the versioned session boundary.
+  readonly prepareVersionedRestore: (saved: unknown) => Promise<FlowSnapshot>
   readonly getSavedSession: () => SavedFlowSession
   readonly prepareRestore: (saved: SavedFlowSession) => Promise<FlowSnapshot>
   readonly getNode: (id: string) => DeepReadonly<FlowNode> | undefined
@@ -430,6 +436,13 @@ export const useFlow = (): FlowActions => {
     snapshot,
     connectionPreview: editor.connectionPreview,
     getSnapshot,
+    getVersionedSavedSession: () =>
+      encodeVersionedFlowSession(
+        snapshot.value.document,
+        snapshot.value.viewport
+      ),
+    prepareVersionedRestore: (saved) =>
+      Effect.runPromise(decodeVersionedFlowSession(saved)),
     getSavedSession,
     prepareRestore: prepareRestoreSession,
     getNode,

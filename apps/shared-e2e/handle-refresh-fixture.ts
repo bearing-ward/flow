@@ -4,7 +4,7 @@ import type {
   FlowSnapshotSchema,
   NodeInternalsRefreshResultSchema,
   ConnectionPreviewSnapshotSchema,
-  SavedFlowSessionSchema,
+  SavedVersionedFlowSessionSchema,
 } from '../../packages/core/src/public.ts'
 
 export interface HandleRefreshFixture {
@@ -18,10 +18,14 @@ export interface HandleRefreshFixture {
   readonly preview: () => Promise<
     typeof ConnectionPreviewSnapshotSchema.Encoded
   >
-  readonly saved: () => Promise<typeof SavedFlowSessionSchema.Encoded>
+  readonly saved: () => Promise<typeof SavedVersionedFlowSessionSchema.Encoded>
   readonly replace: (
     document: typeof FlowDocumentSchema.Encoded
   ) => Promise<void>
+  readonly refreshIdentity: () => boolean
+  readonly rejectInvalidHandleId: (
+    variant: 'missing' | 'null' | 'empty'
+  ) => Promise<boolean>
   readonly dispose: () => void
 }
 

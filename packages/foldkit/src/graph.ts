@@ -46,6 +46,7 @@ import {
   nextConnectionEdge,
   prepareFlowEdit,
   validateFlowConnection,
+  connectionFromHandleGesture,
   normalizeFlowConnection,
   nearestConnectionTarget,
   panViewport,
@@ -56,7 +57,9 @@ import {
   selectNodeConnections as selectCoreNodeConnections,
   selectHandleConnections as selectCoreHandleConnections,
   encodeSavedFlowSession,
+  encodeVersionedFlowSession,
   decodeSavedFlowSession,
+  decodeVersionedFlowSession,
   applyDefaultEdgeOptions,
   decodeFlowDefaultEdgeOptions,
   FlowDefaultEdgeOptionsSchema,
@@ -70,6 +73,7 @@ import type {
   FlowEditResult,
   FlowSnapshot,
   SavedFlowSession,
+  SavedVersionedFlowSession,
   FlowStateChange,
   FlowStateChangeCause,
   FlowEdge,
@@ -462,6 +466,16 @@ export const selectSnapshot = (model: Model): FlowSnapshot => ({
 export const selectSavedSession = (model: Model): SavedFlowSession =>
   encodeSavedFlowSession(model.document, model.viewport)
 
+export const selectVersionedSavedSession = (
+  model: Model
+): SavedVersionedFlowSession =>
+  encodeVersionedFlowSession(model.document, model.viewport)
+
+/** Decode unknown versioned data without installing or acknowledging a graph. */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- This is the public/schema decode boundary for untrusted persistence input.
+export const prepareVersionedSavedSession = (saved: unknown) =>
+  decodeVersionedFlowSession(saved)
+
 /** Decode a session into an owner proposal; the Runtime model remains unchanged. */
 export const prepareSavedSession = (saved: SavedFlowSession) =>
   Effect.runPromise(decodeSavedFlowSession(saved))
@@ -789,26 +803,24 @@ const finishConnection = (
     return { model: cleared }
   }
 
-  const connection = normalizeFlowConnection(
-    model.document,
-    {
-      source: source.id,
-      sourceHandle: sourceHandle.id,
-      target: target.id,
-      targetHandle: targetHandle.id,
-    },
-    model.connectionMode
+  const validated = Effect.runSyncExit(
+    connectionFromHandleGesture(
+      {
+        document: model.document,
+        fromNodeId: source.id,
+        fromHandleId: sourceHandle.id,
+        toNodeId: target.id,
+        toHandleId: targetHandle.id,
+      },
+      model.connectionMode
+    )
   )
 
-  if (
-    Exit.isFailure(
-      Effect.runSyncExit(
-        validateFlowConnection(model.document, connection, model.connectionMode)
-      )
-    )
-  ) {
+  if (Exit.isFailure(validated)) {
     return { model: cleared }
   }
+
+  const connection = validated.value
 
   const edge = applyDefaultEdgeOptions(
     nextConnectionEdge(model.document, connection),

@@ -17,6 +17,7 @@ import type {
 import {
   HostAction,
   createProgram,
+  createFoldkitNodeMeasurementObserver,
   createFoldkitSnapshotClient,
   createViewportClient,
   defaultInteractionOptions,
@@ -25,20 +26,21 @@ import {
 } from '@flow/foldkit'
 import type {
   MeasurementResultSchema,
+  FoldkitNodeMeasurementObserver,
   ViewportEventSchema,
   ViewportRequestSchema,
   ViewportResponseSchema,
   InteractionEventSchema,
   EditResponse,
   FoldkitObservers,
-  FoldkitSnapshotClient,
+  FoldkitVersionedSnapshotClient,
   FoldkitSnapshotResult,
   FlowKeyCode,
   FlowKeyPressOptions,
   GraphInteractionOptions,
   ports,
   SnapshotRequest,
-  SnapshotResponseSchema,
+  VersionedSnapshotResponseSchema,
   ViewportClient,
 } from '@flow/foldkit'
 import { Effect, Exit, Match, Schema } from 'effect'
@@ -54,6 +56,7 @@ import '@flow/foldkit/style.css'
 import '../src/playground.css'
 
 interface FoldkitHarness {
+  startMountedMeasurementObserver: () => void
   mount: (
     fixture: ConformanceFixture,
     selectionMode?: 'full' | 'partial',
@@ -251,7 +254,7 @@ type EncodedFlowChange = typeof FlowChangeSchema.Encoded
 
 type EncodedFlowStateChange = typeof FlowStateChangeSchema.Encoded
 
-type EncodedSnapshotResponse = typeof SnapshotResponseSchema.Encoded
+type EncodedSnapshotResponse = typeof VersionedSnapshotResponseSchema.Encoded
 
 type MeasurementResultEncoded = typeof MeasurementResultSchema.Encoded
 
@@ -321,8 +324,41 @@ const contractKeyObserverId = (
 
 const snapshotClients = new WeakMap<
   Runtime.EmbedHandle<typeof ports>,
-  FoldkitSnapshotClient
+  FoldkitVersionedSnapshotClient
 >()
+
+const mountedMeasurementObservers = new WeakMap<
+  Runtime.EmbedHandle<typeof ports>,
+  FoldkitNodeMeasurementObserver
+>()
+
+const startMountedMeasurementObserver = (): void => {
+  const active = handle
+  const roots = document.querySelectorAll<HTMLElement>('.flow-foldkit-root')
+  const [owner] = roots
+
+  if (active === undefined || roots.length !== 1 || owner === undefined) {
+    throw new Error('Missing mounted Foldkit measurement owner')
+  }
+
+  mountedMeasurementObservers.get(active)?.dispose()
+
+  const observer = createFoldkitNodeMeasurementObserver({
+    owner,
+    zoom: () => 1,
+    onMeasure: ({ requestId, measurement }) => {
+      const sent = active.ports.actions.send(
+        HostAction.MeasureNode({ requestId, measurement })
+      )
+
+      if (Exit.isFailure(sent)) {
+        throw new Error('Mounted Foldkit measurement send failed')
+      }
+    },
+  })
+
+  mountedMeasurementObservers.set(active, observer)
+}
 
 const requestHandleSnapshot = async (
   active: Runtime.EmbedHandle<typeof ports>,
@@ -335,7 +371,7 @@ const requestHandleSnapshot = async (
     snapshotClients.set(active, client)
   }
 
-  const result = await client.request(query)
+  const result = await client.requestVersioned(query)
 
   return Match.value(result).pipe(
     Match.when({ status: 'succeeded' }, ({ response }) => response),
@@ -355,6 +391,9 @@ const disposeHandle = (
   if (active === undefined) {
     return
   }
+
+  mountedMeasurementObservers.get(active)?.dispose()
+  mountedMeasurementObservers.delete(active)
 
   let client = snapshotClients.get(active)
 
@@ -1902,6 +1941,7 @@ const probeAfterPublicDisposal = async (id: PublicProgramId) => {
 }
 
 window.__flowFoldkitTest = {
+  startMountedMeasurementObserver,
   mount,
   connectionPreviewStates: () => previewProbeStates,
   readConnectionPreview: readMountedConnectionPreview,

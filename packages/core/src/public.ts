@@ -1,4 +1,13 @@
 export {
+  NodeOriginSchema,
+  resolveNodeOrigin,
+  nodeAnchorToTopLeft,
+  nodeTopLeftToAnchor,
+} from './domain/flow-origin.schema.ts'
+
+export type { NodeOrigin } from './domain/flow-origin.schema.ts'
+
+export {
   EdgeIdSchema,
   FlowHandleSchema,
   HandleIdSchema,
@@ -458,6 +467,7 @@ export {
   ConnectionIssueSchema,
   FlowConnectionSchema,
   InvalidFlowConnection,
+  connectionFromHandleGesture,
   findConnectionIssue,
   normalizeFlowConnection,
   nextConnectionEdge,
@@ -471,6 +481,14 @@ export type {
   ConnectionIssue,
   FlowConnection,
 } from './domain/flow-connection.schema.ts'
+
+export {
+  FlowConnectionRequestSchema,
+  InvalidFlowConnectionRequest,
+  resolveFlowConnectionRequest,
+} from './domain/flow-connection-request.schema.ts'
+
+export type { FlowConnectionRequest } from './domain/flow-connection-request.schema.ts'
 
 export {
   ConnectionPreviewSnapshotSchema,
@@ -539,3 +557,21 @@ export type {
 } from './domain/flow-visibility.schema.ts'
 
 export type { NodeInternalsRefreshResult } from './domain/flow-measurement.schema.ts'
+
+export {
+  SavedOriginFlowDocumentSchema,
+  SavedOriginFlowSessionSchema,
+  SavedVersionedFlowDocumentSchema,
+  SavedVersionedFlowSessionSchema,
+  encodeVersionedFlowDocument,
+  encodeVersionedFlowSession,
+  decodeVersionedFlowDocument,
+  decodeVersionedFlowSession,
+} from './domain/flow-persistence.ts'
+
+export type {
+  SavedOriginFlowDocument,
+  SavedOriginFlowSession,
+  SavedVersionedFlowDocument,
+  SavedVersionedFlowSession,
+} from './domain/flow-persistence.ts'

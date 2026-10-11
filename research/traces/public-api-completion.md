@@ -283,3 +283,57 @@ The public browser entry is Placeholder's selection button listener at `apps/fol
 - Conforming to the Flow lifecycle contract: real mounted pending requests settle on disposal, fresh owners use distinct IDs, and disposed UI ignores late completions.
 - Intentionally different: Foldkit exposes Schema-derived serialized ports and caller-owned client lifecycle instead of React hooks. This preserves Runtime ownership; tests cover the public client and mounted host routes.
 - Unverified: live reserved-field format failures, broader upstream snapshot parity, collector delivery and original member closure remain outside this bounded evidence.
+
+## Plan 077: canonical native retention and actual legacy failure
+
+### Production path
+
+Full public decode reaches the complete document struct at `packages/core/src/domain/flow.schema.ts:143` and graph-integrity workflow at `packages/core/src/domain/flow.schema.ts:426`. The authoritative node fields are at `packages/core/src/domain/flow.schema.ts:79`; node and edge types derive from their schemas at `packages/core/src/domain/flow.schema.ts:88` and `packages/core/src/domain/flow.schema.ts:141`. The edge metadata fields are at `packages/core/src/domain/flow.schema.ts:135`. Optional Boolean connectable and optional String roles/labels/node description retain exact defined values and raw own undefined without injecting global defaults. Core public snapshots still detach and freeze at `packages/core/src/domain/flow-snapshot.ts:48`.
+
+Frozen v1 structs and guard are unchanged at `packages/core/src/domain/flow-persistence.ts:19`, `packages/core/src/domain/flow-persistence.ts:52` and `packages/core/src/domain/flow-persistence.ts:102`. Own origin wins before own connectable/role or empty-label/description rejection. Legacy snapshot requests use the existing typed public subscription at `packages/foldkit/src/application.ts:917`, selector at `packages/foldkit/src/graph.ts:462`, typed catch at `packages/foldkit/src/application.ts:1811`, actual failure command at `packages/foldkit/src/application.ts:695`, and shared correlated client at `packages/foldkit/src/snapshot-client.ts:106`. Graph and viewport retain the same Runtime authority. This slice adds no renderer, origin or v2 production path.
+
+### Separate test paths and observed output
+
+Full-decoder matrix assertions enter at `packages/core/src/domain/flow.schema.test.ts:437`. They inspect missing and own undefined, exact false/true and empty/whitespace/custom String values, detached/frozen snapshot output, JSON omission and null/wrong primitive rejection. Decoded-input legacy compatibility tests enter at `packages/core/src/domain/flow-persistence.test.ts:622`; they retain the actual independent baseline reader/writer rather than expanding its fixture. Existing fabricated application tests remain supplementary unit evidence.
+
+The new browser fixture starts at `apps/foldkit/e2e/native-schema-fixture.ts:44`, decodes normal external input at `apps/foldkit/e2e/native-schema-fixture.ts:53`, and mounts the public createProgram through Runtime.embed at `apps/foldkit/e2e/native-schema-fixture.ts:68`. It subscribes before requesting at `apps/foldkit/e2e/native-schema-fixture.ts:77`; typed replacements at `apps/foldkit/e2e/native-schema-fixture.ts:97` provide accepted-state emissions for retained document/presence inspection. This is not private Runtime state injection. Extension-bearing legacy requests intentionally return failure, so those requests cannot double as successful snapshot reads.
+
+The production browser assertion at `apps/foldkit/e2e/native-schema.e2e.ts:3` passed. It observed one matching native-format failure and zero success/accepted notification for initialization, retained false/empty/custom values, raw own undefined in accepted-state documents and public core snapshots, separate JSON omission, unchanged graph/viewport after failed request, ordinary old-field recovery on the same Runtime, selection-free saved-v1 output and a pending request settled once on client-before-Runtime disposal. Page-error/console-error defects were absent. Direct foreign/duplicate/late transport tests remain the separate existing snapshot-client unit boundary. Computed role/name/description and effective connectability are not asserted here.
+
+### Conformity and deviations
+
+- Conforming to the approved Flow retention contract: full live decode/public snapshots preserve the exact075matrix and reject invalid primitives; frozen legacy behavior and origin-first failure remain unchanged. The test boundary is core full decode/independent frozen reader-writer plus actual public mounted Foldkit producer/client.
+- Intentionally different format and owner workflow: Flow retains frozen-v1 envelopes and correlated guarded legacy failure. A later ordinary request succeeds on the same Runtime. This does not implement the pending070single-v2 contract or compare Flow serialization with a native React toObject envelope.
+- Unverified and held:068/074renderer semantics, computed accessibility, generic contracts,070all-host versioned round trips, parent057/066acceptance, full-suite/device/CI evidence and collector delivery. No original member cell closes from metadata retention.
+
+## Plan 080: assembled origin and native contract dependencies
+
+### Production paths and bounded assembly
+
+The assembled live document retains per-node origins at `packages/core/src/domain/flow.schema.ts:68`, the document origin at `packages/core/src/domain/flow.schema.ts:145`, and the reviewed native fields at `packages/core/src/domain/flow.schema.ts:79` and `packages/core/src/domain/flow.schema.ts:135`. The public decode entry at `packages/core/src/domain/flow.schema.ts:426` remains the one graph-integrity authority. Core graph resolution at `packages/core/src/domain/flow-graph.ts:88` retains the accepted measurement fallback and applies resolved origin to parent-relative anchors once. The reviewed public command return annotation at `packages/core/src/domain/flow-runtime.schema.ts:1369` changes inference without changing dispatch behavior. This stage activates no host-origin option or example and implements no versioned writer.
+
+The actual Vanilla controller exposes current measurement projections at `apps/vanilla/src/mount-flow.ts:8597` and readiness at `apps/vanilla/src/mount-flow.ts:8604`. Reconnection cancellation at `apps/vanilla/src/mount-flow.ts:3208` clears the transient gesture without accepting an edit. Its unchanged ResizeObserver path at `apps/vanilla/src/mount-flow.ts:2449` can install real handle geometry after mount, so a fallback-only SVG capture cannot establish the cancellation invariant. Source semantics are byte-preserved from the separately reviewed candidates except the approved additive live-schema assembly.
+
+### Separate test paths
+
+The live edge test at `packages/core/src/domain/flow-edge.schema.test.ts:190` passes exact empty ariaLabel through the full public decoder and inspects own presence, while null and Boolean labels remain in the rejection matrix. Frozen-v1 label constraints and independent reader tests remain unchanged. The combined native/origin writer fixture at `packages/core/src/domain/flow-persistence.test.ts:728` constructs the finite tuple through NodeOriginSchema and preserves origin-first rejection.
+
+The single repaired Vanilla lifecycle case starts at `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:448`. It polls public readiness and the declared source/out and original/in current measured handles before capturing accepted state at `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:489`. After Escape it checks identical accepted snapshot and zero edits at `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:533`, alongside the unchanged exact SVG, removed preview and successful fresh reconnection. Missing public controllers fail visibly. The constructed Foldkit application model remains only unit branch evidence; the separate mounted Runtime fixture above proves public producer/client behavior.
+
+### Conformity and deviations
+
+- Conforming to approved Flow source contracts: one graph authority, finite tuple origins, exact native metadata retention, accepted measurement fallback and frozen-v1 precedence. Tests preserve all prior guarantees and await real public measurement rather than assuming mount is measurement completion.
+- Intentionally different lifecycle test precondition: the reconnection test now captures measured endpoint geometry and the accepted snapshot. Production measurement/cancellation and exact path comparison are unchanged.
+- Observed focused evidence after primary source-review revision1: all506units, three packed consumers and170selected all-host browser cases passed, including the actual mounted native-schema Runtime fixture. The three existing negative consumer directives now apply immediately before the unchanged forbidden edge-description indexed access. The initial failed verifier remains historical evidence. Reconnection3/3 and Vanilla lifecycle37/37 also passed. Combined source acceptance remains unverified pending independent primary full-diff review/reproduction. Versioned persistence, host-origin activation, native renderer semantics, complete generics, original member closure, full-suite/device/CI/collector delivery and upstream parity remain held.
+
+## Original 065 measurement member acceptance candidate
+
+Production authority remains the generation-aware public projection at `packages/core/src/domain/flow-measurement.schema.ts:335`, refreshed through Vanilla `apps/vanilla/src/mount-flow.ts:8609`, Vue `packages/vue/src/flow-canvas.ts:2485`, and Foldkit `packages/foldkit/src/update-node-internals.ts:37`. The complete production/test boundary is traced in `research/traces/shared-measured-geometry.md:1`.
+
+Mounted original-member proof at `apps/shared-e2e/handle-refresh-contract.ts:407` asserts required dimensions/status, both kind partitions/all four side declarations, actual DOM record size/center/top-left, empty/hidden lifetimes, actual native callback references and missing/null/empty declaration ID rejection with unchanged accepted state. Vue hide unmount invalidates the prior generation at `packages/vue/src/flow-canvas.ts:1345`; the native numeric fallback is explicit. Installed probes start at `tests/consumer/consumer.typecheck.ts:342`, `tests/consumer/vue/consumer.typecheck.ts:121` and `tests/consumer/foldkit/consumer.typecheck.ts:239`. Actual upstream fields are retained in the fresh two-capture fixture and checked by `packages/conformance/src/handle-refresh-reference.test.ts:99`.
+
+### Conformity and deviations
+
+- Conforming: compared pinned numeric measured fields and equivalent-layout endpoints; every native production field is separately asserted against real output.
+- Intentionally different: reviewed total numeric projection/status, graph-owned declarations, readonly flat center geometry, mandatory nonempty IDs and native asynchronous refresh. Each of 63 original identities retains per-member proof/review over 189 cells. Nullable connection handles remain 067-owned.
+- Unverified: primary final source review, broader API cells, full-suite/integration, exact React callback/frame timing, CI/device/collector delivery and future upstream changes. Parent 057/066 stays open.

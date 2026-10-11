@@ -26,5 +26,5 @@ export default defineConfig({
   singleQuote: true,
   orderImports: 'norder',
   arrowParens: 'always',
-  ignorePatterns: [...ultracite.ignorePatterns, ...localIgnores],
+  ignorePatterns: [...(ultracite.ignorePatterns ?? []), ...localIgnores],
 })

@@ -24,16 +24,43 @@ export const startHandleRefresh = async (
     },
   })
 
+  const refreshReference = controller.updateNodeInternals
+
   window.__handleRefresh = {
     refresh: controller.updateNodeInternals,
     internal: (id) => Promise.resolve(controller.getInternalNode(id) ?? null),
     snapshot: () => Promise.resolve(controller.getSnapshot()),
     preview: () => Promise.resolve(controller.getConnectionPreview()),
-    saved: () => Promise.resolve(controller.getSavedSession()),
+    saved: () => Promise.resolve(controller.getVersionedSavedSession()),
     replace: (document) => {
       controller.update(document)
 
       return Promise.resolve()
+    },
+    refreshIdentity: () => refreshReference === controller.updateNodeInternals,
+    rejectInvalidHandleId: async (variant) => {
+      const candidate = structuredClone(controller.getSnapshot().document)
+
+      const handle = candidate.nodes.find(({ id }) => id === 'members')
+        ?.handles?.[0]
+
+      if (handle === undefined) {
+        throw new Error('Missing invalid-ID candidate')
+      }
+
+      if (variant === 'missing') {
+        Reflect.deleteProperty(handle, 'id')
+      } else {
+        Reflect.set(handle, 'id', variant === 'null' ? null : '')
+      }
+
+      try {
+        await controller.setNodes(candidate.nodes)
+
+        return false
+      } catch {
+        return true
+      }
     },
     dispose: controller.destroy,
   }

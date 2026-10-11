@@ -20,6 +20,7 @@ import {
   FlowNodeDataSchema,
   ConnectionPreviewSnapshotSchema,
   SavedFlowSessionSchema,
+  SavedVersionedFlowSessionSchema,
   SavedFlowFormatError,
   SavedFlowFormatFailureCodeSchema,
   selectNodeConnections,
@@ -213,6 +214,21 @@ export const SnapshotResponseSchema = Schema.Struct({
 
 export type SnapshotResponse = typeof SnapshotResponseSchema.Type
 
+export const VersionedSnapshotRequestSchema = Schema.Struct({
+  ...SnapshotRequestSchema.fields,
+})
+
+export const VersionedSnapshotResponseSchema = Schema.Struct({
+  ...SnapshotResponseSchema.fields,
+  savedSession: SavedVersionedFlowSessionSchema,
+})
+
+export type VersionedSnapshotRequest =
+  typeof VersionedSnapshotRequestSchema.Encoded
+
+export type VersionedSnapshotResponse =
+  typeof VersionedSnapshotResponseSchema.Type
+
 export const LegacySnapshotFailureSchema = Schema.Struct({
   requestId: Schema.String,
   code: SavedFlowFormatFailureCodeSchema,
@@ -294,6 +310,7 @@ export const AppMessage = FoldMessage.defineMessageUnion({
   GraphMessage: { message: Graph.Message },
   HostAction: { action: HostAction },
   SnapshotRequest: { request: SnapshotRequestSchema },
+  VersionedSnapshotRequest: { request: VersionedSnapshotRequestSchema },
   EditRequest: { request: EditRequestSchema },
   DeleteRequest: { request: DeleteRequestSchema },
   DeleteCancellation: { cancellation: DeleteCancellationSchema },
@@ -322,6 +339,7 @@ export const ports = {
   inbound: {
     actions: Port.inbound(HostAction),
     snapshotRequests: Port.inbound(SnapshotRequestSchema),
+    versionedSnapshotRequests: Port.inbound(VersionedSnapshotRequestSchema),
     editRequests: Port.inbound(EditRequestSchema),
     deleteRequests: Port.inbound(DeleteRequestSchema),
     deleteCancellations: Port.inbound(DeleteCancellationSchema),
@@ -331,6 +349,7 @@ export const ports = {
   outbound: {
     changes: Port.outbound(FlowChangeSchema),
     snapshots: Port.outbound(SnapshotResponseSchema),
+    versionedSnapshots: Port.outbound(VersionedSnapshotResponseSchema),
     snapshotFailures: Port.outbound(LegacySnapshotFailureSchema),
     acceptedStates: Port.outbound(FlowStateChangeSchema),
     editResults: Port.outbound(EditResponseSchema),
@@ -683,6 +702,63 @@ const PublishChanges = Command.define('PublishFlowChanges', {
     }),
 })
 
+const selectSnapshotProjection = (
+  graph: Graph.Model,
+  request: typeof SnapshotRequestSchema.Type
+) =>
+  structuredClone({
+    requestId: request.requestId,
+    snapshot: Graph.selectSnapshot(graph),
+    node:
+      request.nodeId === undefined
+        ? undefined
+        : Graph.selectNode(graph, request.nodeId),
+    edge:
+      request.edgeId === undefined
+        ? undefined
+        : Graph.selectEdge(graph, request.edgeId),
+    internalNode:
+      request.nodeId === undefined
+        ? null
+        : (Graph.selectInternalNode(graph, request.nodeId) ?? null),
+    nodesInitialized: Graph.selectNodesInitialized(graph, {
+      includeHidden: request.includeHiddenNodes === true,
+    }),
+    nodesData: selectNodesData(
+      graph.document,
+      (request.nodeIds ?? []).map((id) => NodeIdSchema.make(id))
+    ),
+    nodeConnections:
+      request.connections === undefined
+        ? []
+        : (() => {
+            const options = Schema.decodeUnknownSync(
+              FlowNodeConnectionOptionsSchema
+            )(request.connections)
+
+            const validatedOptions = {
+              nodeId: options.nodeId,
+            }
+
+            if (options.type !== undefined) {
+              Object.assign(validatedOptions, { type: options.type })
+            }
+
+            if (options.handleId !== undefined) {
+              Object.assign(validatedOptions, {
+                handleId: options.handleId,
+              })
+            }
+
+            return selectNodeConnections(graph.document, validatedOptions)
+          })(),
+    handleConnections:
+      request.handleConnections === undefined
+        ? []
+        : Graph.selectHandleConnections(graph, request.handleConnections),
+    connectionPreview: Graph.selectConnectionPreview(graph),
+  })
+
 const RespondSnapshot = Command.define('RespondFlowSnapshot', {
   args: { response: SnapshotResponseSchema },
   messages: [AppMessage.SnapshotPublished],
@@ -691,6 +767,18 @@ const RespondSnapshot = Command.define('RespondFlowSnapshot', {
       Effect.as(AppMessage.SnapshotPublished())
     ),
 })
+
+const RespondVersionedSnapshot = Command.define(
+  'RespondVersionedFlowSnapshot',
+  {
+    args: { response: VersionedSnapshotResponseSchema },
+    messages: [AppMessage.SnapshotPublished],
+    execute: ({ response }) =>
+      Port.emit(ports.outbound.versionedSnapshots, response).pipe(
+        Effect.as(AppMessage.SnapshotPublished())
+      ),
+  }
+)
 
 const RespondSnapshotFailure = Command.define('RespondFlowSnapshotFailure', {
   args: { failure: LegacySnapshotFailureSchema },
@@ -913,6 +1001,10 @@ const graphFold = Update.foldChild<
 const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
   actions: Port.subscription(ports.inbound.actions, (action) =>
     AppMessage.HostAction({ action })
+  ),
+  versionedSnapshotRequests: Port.subscription(
+    ports.inbound.versionedSnapshotRequests,
+    (request) => AppMessage.VersionedSnapshotRequest({ request })
   ),
   snapshotRequests: Port.subscription(
     ports.inbound.snapshotRequests,
@@ -1835,69 +1927,26 @@ export const update = (
         commands: [
           RespondSnapshot({
             response: {
-              requestId: request.requestId,
-              snapshot: Graph.selectSnapshot(model.graph),
-              node:
-                request.nodeId === undefined
-                  ? undefined
-                  : Graph.selectNode(model.graph, request.nodeId),
-              edge:
-                request.edgeId === undefined
-                  ? undefined
-                  : Graph.selectEdge(model.graph, request.edgeId),
-              internalNode:
-                request.nodeId === undefined
-                  ? null
-                  : (Graph.selectInternalNode(model.graph, request.nodeId) ??
-                    null),
-              nodesInitialized: Graph.selectNodesInitialized(model.graph, {
-                includeHidden: request.includeHiddenNodes === true,
-              }),
-              nodesData: selectNodesData(
-                model.graph.document,
-                (request.nodeIds ?? []).map((id) => NodeIdSchema.make(id))
-              ),
-              nodeConnections:
-                request.connections === undefined
-                  ? []
-                  : (() => {
-                      const options = Schema.decodeUnknownSync(
-                        FlowNodeConnectionOptionsSchema
-                      )(request.connections)
-
-                      const validatedOptions = {
-                        nodeId: options.nodeId,
-                      }
-
-                      if (options.type !== undefined) {
-                        Object.assign(validatedOptions, { type: options.type })
-                      }
-
-                      if (options.handleId !== undefined) {
-                        Object.assign(validatedOptions, {
-                          handleId: options.handleId,
-                        })
-                      }
-
-                      return selectNodeConnections(
-                        model.graph.document,
-                        validatedOptions
-                      )
-                    })(),
-              handleConnections:
-                request.handleConnections === undefined
-                  ? []
-                  : Graph.selectHandleConnections(
-                      model.graph,
-                      request.handleConnections
-                    ),
-              connectionPreview: Graph.selectConnectionPreview(model.graph),
+              ...selectSnapshotProjection(model.graph, request),
               savedSession,
             },
           }),
         ],
       }
     },
+    VersionedSnapshotRequest: ({ request }) => ({
+      model,
+      commands: [
+        RespondVersionedSnapshot({
+          response: {
+            ...selectSnapshotProjection(model.graph, request),
+            savedSession: Schema.decodeUnknownSync(
+              SavedVersionedFlowSessionSchema
+            )(Graph.selectVersionedSavedSession(model.graph)),
+          },
+        }),
+      ],
+    }),
     EditRequest: ({ request }) =>
       graphFold(
         model,

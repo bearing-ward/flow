@@ -1431,7 +1431,7 @@ const api: TestApi = {
       selectedConnections: probe.flow.getNodeConnections({
         nodeId: 'left-visible',
       }).value,
-      savedSession: probe.flow.getSavedSession(),
+      savedSession: probe.flow.getVersionedSavedSession(),
       missingNode: probe.flow.getNode('missing') === undefined,
       missingEdge: probe.flow.getEdge('missing') === undefined,
       frozen:
@@ -1901,7 +1901,9 @@ const api: TestApi = {
       throw new Error(`Missing ${id} state probe`)
     }
 
-    return probe.flow.prepareRestore(probe.flow.getSavedSession())
+    return probe.flow.prepareVersionedRestore(
+      probe.flow.getVersionedSavedSession()
+    )
   },
   updatePublicDocument(id, document) {
     const state = publicDocuments.get(id)

@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-import { assertDynamicHandleRefresh } from '../../shared-e2e/handle-refresh-contract.ts'
+import {
+  assertDynamicHandleRefresh,
+  assertHandleMemberAcceptance,
+} from '../../shared-e2e/handle-refresh-contract.ts'
 import { assertSharedMeasurementContract } from '../../shared-e2e/measured-geometry-contract.ts'
 import type { JavaScriptFlowController } from '../src/public.ts'
 import { createVanillaConformanceAdapter } from './controller-conformance.ts'
@@ -283,3 +286,11 @@ test('vanilla actual public geometry and SVG endpoints match pinned equivalent h
 }) => {
   await assertDynamicHandleRefresh(page, 'vanilla', 1, false, true)
 })
+
+for (const zoom of [0.5, 2]) {
+  test(`vanilla original 065 member mappings at zoom ${zoom}`, async ({
+    page,
+  }) => {
+    await assertHandleMemberAcceptance(page, 'vanilla', zoom)
+  })
+}

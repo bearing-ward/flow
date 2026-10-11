@@ -150,7 +150,9 @@ checkSelection.addEventListener('click', async () => {
     return
   }
 
-  const result = await snapshotClient.request({ nodeId: 'placeholder-created' })
+  const result = await snapshotClient.requestVersioned({
+    nodeId: 'placeholder-created',
+  })
 
   if (disposed) {
     return

@@ -6,11 +6,31 @@
     "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
     "browser": "Chromium 151.0.7922.34",
     "normalization": "captured node-local handleBounds top-left to center; accepted parent-local positions and SVG graph coordinates; caller-specified 10px borderless handles; timestamps excluded",
-    "capturedAt": "2026-09-30T13:27:27.193Z",
+    "capturedAt": "2026-09-30T15:17:15.396Z",
     "captureRuns": 2
   },
   "cases": {
     "initial": {
+      "sourceHandle": {
+        "id": "out",
+        "nodeId": "source",
+        "width": 10,
+        "height": 10,
+        "x": 115,
+        "y": 35,
+        "position": "right",
+        "type": "source"
+      },
+      "targetHandle": {
+        "id": "in",
+        "nodeId": "target",
+        "width": 10,
+        "height": 10,
+        "x": -5,
+        "y": 35,
+        "position": "left",
+        "type": "target"
+      },
       "source": {
         "absolutePosition": {
           "x": 50,
@@ -47,6 +67,26 @@
       }
     },
     "moved": {
+      "sourceHandle": {
+        "id": "out",
+        "nodeId": "source",
+        "width": 10,
+        "height": 10,
+        "x": 115,
+        "y": 15,
+        "position": "right",
+        "type": "source"
+      },
+      "targetHandle": {
+        "id": "in",
+        "nodeId": "target",
+        "width": 10,
+        "height": 10,
+        "x": -5,
+        "y": 55,
+        "position": "left",
+        "type": "target"
+      },
       "source": {
         "absolutePosition": {
           "x": 50,

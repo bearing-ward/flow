@@ -35,16 +35,45 @@ export const startHandleRefresh = async (
   const probe = defineComponent({
     setup() {
       const flow = useFlow()
+      const refreshReference = flow.updateNodeInternals
+
       window.__handleRefresh = {
         refresh: flow.updateNodeInternals,
         internal: (id) => Promise.resolve(flow.getInternalNode(id) ?? null),
         snapshot: () => Promise.resolve(flow.getSnapshot()),
         preview: () => Promise.resolve(flow.connectionPreview.value),
-        saved: () => Promise.resolve(flow.getSavedSession()),
+        saved: () => Promise.resolve(flow.getVersionedSavedSession()),
         replace: async (input) => {
           documentState.value = Effect.runSync(decodeFlowDocument(input))
           await nextTick()
           await nextTick()
+        },
+        refreshIdentity: () => refreshReference === flow.updateNodeInternals,
+        rejectInvalidHandleId: async (variant) => {
+          const snapshot = await window.__handleRefresh?.snapshot()
+
+          const candidate = structuredClone(snapshot?.document)
+
+          const handle = candidate?.nodes.find(({ id }) => id === 'members')
+            ?.handles?.[0]
+
+          if (handle === undefined || candidate === undefined) {
+            throw new Error('Missing invalid-ID candidate')
+          }
+
+          if (variant === 'missing') {
+            Reflect.deleteProperty(handle, 'id')
+          } else {
+            Reflect.set(handle, 'id', variant === 'null' ? null : '')
+          }
+
+          try {
+            await flow.setNodes(candidate.nodes)
+
+            return false
+          } catch {
+            return true
+          }
         },
         dispose: () => ownerState.app?.unmount(),
       }

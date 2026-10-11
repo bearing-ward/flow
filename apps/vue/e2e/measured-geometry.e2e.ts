@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { Schema as S } from 'effect'
 
-import { assertDynamicHandleRefresh } from '../../shared-e2e/handle-refresh-contract.ts'
+import {
+  assertDynamicHandleRefresh,
+  assertHandleMemberAcceptance,
+} from '../../shared-e2e/handle-refresh-contract.ts'
 import { assertSharedMeasurementContract } from '../../shared-e2e/measured-geometry-contract.ts'
 import { createVueConformanceAdapter } from './conformance.ts'
 
@@ -118,3 +121,9 @@ test('vue actual public geometry and SVG endpoints match pinned equivalent handl
 }) => {
   await assertDynamicHandleRefresh(page, 'vue', 1, false, true)
 })
+
+for (const zoom of [0.5, 2]) {
+  test(`vue original 065 member mappings at zoom ${zoom}`, async ({ page }) => {
+    await assertHandleMemberAcceptance(page, 'vue', zoom)
+  })
+}

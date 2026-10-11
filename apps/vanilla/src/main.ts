@@ -9,13 +9,10 @@ import {
   applyNodeSelectionChange,
   applySelectionSetChange,
   decodeFlowDocument,
-  decodeSavedFlowDocument,
   FlowEditErrorSchema,
   getIncomers,
   getOutgoers,
   getConnectedEdges,
-  SavedFlowDocumentSchema,
-  ViewportSchema,
   simpleBezierEdgePath,
 } from '@flow/core'
 import type {
@@ -582,12 +579,6 @@ const program = Effect.gen(function* program() {
   const stateOutput = statePanel.querySelector<HTMLOutputElement>('output')
   let savedState: unknown
 
-  const stateEnvelope = Schema.Struct({
-    version: Schema.Literal(1),
-    savedDocument: SavedFlowDocumentSchema,
-    viewport: ViewportSchema,
-  })
-
   const selectedId = 'validate'
 
   const showState = (text: string): void => {
@@ -896,11 +887,7 @@ const program = Effect.gen(function* program() {
       }
 
       case 'save': {
-        savedState = Schema.encodeSync(stateEnvelope)({
-          version: 1,
-          savedDocument: { version: 1, document: snapshot.document },
-          viewport: snapshot.viewport,
-        })
+        savedState = host.getVersionedSavedSession()
 
         const restore = statePanel.querySelector<HTMLButtonElement>(
           '[data-state="restore"]'
@@ -939,16 +926,11 @@ const program = Effect.gen(function* program() {
           return
         }
 
-        const decoded = Schema.decodeUnknownSync(stateEnvelope)(savedState)
-
-        const restored = Effect.runSync(
-          decodeSavedFlowDocument(decoded.savedDocument)
-        )
-
-        currentDocument = restored
-        mainDocument = restored
-        host.update(restored)
-        host.updateViewport(decoded.viewport)
+        const restored = await host.prepareVersionedRestore(savedState)
+        currentDocument = restored.document
+        mainDocument = restored.document
+        host.update(restored.document)
+        host.updateViewport(restored.viewport)
         showState(
           'Restored document and viewport; transient selection is not saved'
         )

@@ -9,7 +9,20 @@ const NodeGeometrySchema = S.Struct({
   center: PointSchema,
 })
 
+const CapturedHandleSchema = S.Struct({
+  id: S.String,
+  nodeId: S.String,
+  width: S.Finite,
+  height: S.Finite,
+  x: S.Finite,
+  y: S.Finite,
+  position: S.Literals(['left', 'right', 'top', 'bottom']),
+  type: S.Literals(['source', 'target']),
+})
+
 export const HandleRefreshObservationSchema = S.Struct({
+  sourceHandle: CapturedHandleSchema,
+  targetHandle: CapturedHandleSchema,
   source: NodeGeometrySchema,
   target: NodeGeometrySchema,
   endpoints: S.Struct({ start: PointSchema, end: PointSchema }),

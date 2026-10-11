@@ -111,6 +111,7 @@ const deleteElements = (
     )
 
     return {
+      ...document,
       nodes: document.nodes.filter((node) => !removedNodes.has(node.id)),
       edges: document.edges.filter((edge) => !removedEdges.has(edge.id)),
     }
@@ -260,6 +261,7 @@ export const prepareFlowEdit = (
 
     const result: FlowEditResult = {
       document: {
+        ...validated,
         nodes: validated.nodes.map((node) => {
           const original = document.nodes.find((item) => item.id === node.id)
 

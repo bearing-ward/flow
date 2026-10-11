@@ -200,8 +200,8 @@ export const mountVueNodeToolbarFixture = (root: HTMLElement): (() => void) => {
         return false
       }
 
-      node.style.width = `${width}px`
-      node.style.height = `${height}px`
+      node.style.minWidth = `${width}px`
+      node.style.minHeight = `${height}px`
 
       return true
     },

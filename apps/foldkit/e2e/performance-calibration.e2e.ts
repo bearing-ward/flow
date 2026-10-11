@@ -37,7 +37,7 @@ test('records a warmed Foldkit performance calibration run', async ({
     measurements,
   }
 
-  appendCalibrationRun(run)
+  await appendCalibrationRun(run)
   console.log(`FLOW_PERFORMANCE_CALIBRATION ${JSON.stringify(run)}`)
   expect(measurements).toHaveLength(workloads.length)
 })

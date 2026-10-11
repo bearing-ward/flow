@@ -1,15 +1,12 @@
 import {
   decodeFlowDocument,
-  decodeSavedFlowDocument,
   createFlowGraph,
   FlowEditDisposedSchema,
   getConnectedEdges,
   getIncomers,
   getOutgoers,
   NodeIdSchema,
-  SavedFlowDocumentSchema,
   FlowSnapshotSchema,
-  ViewportSchema,
 } from '@flow/core'
 import type {
   FlowDocument,
@@ -21,6 +18,7 @@ import type {
 import {
   createProgram,
   createFoldkitSnapshotClient,
+  prepareVersionedSavedSession,
   createFoldkitBaseNode,
   createFoldkitBaseHandle,
   createFoldkitLabeledHandle,
@@ -37,7 +35,7 @@ import {
 import type {
   EditResponse,
   ports,
-  SnapshotResponseSchema,
+  VersionedSnapshotResponseSchema,
   MeasurementResultSchema,
   FoldkitHostOptions,
   FlowCanvasUIMount,
@@ -549,12 +547,6 @@ const refreshNodeInternals = async (
   return promise
 }
 
-const envelope = Schema.Struct({
-  version: Schema.Literal(1),
-  savedDocument: SavedFlowDocumentSchema,
-  viewport: ViewportSchema,
-})
-
 let saved: unknown
 
 let editRequestNumber = 0
@@ -612,8 +604,10 @@ const disposeRuntime = (): void => {
 
 globalThis.addEventListener('pagehide', disposeRuntime, { once: true })
 
-const snapshot = async (): Promise<typeof SnapshotResponseSchema.Encoded> => {
-  const result = await snapshotClient.request({ nodeId: 'validate' })
+const snapshot = async (): Promise<
+  typeof VersionedSnapshotResponseSchema.Encoded
+> => {
+  const result = await snapshotClient.requestVersioned({ nodeId: 'validate' })
 
   return Match.value(result).pipe(
     Match.when({ status: 'succeeded' }, ({ response }) => response),
@@ -1158,11 +1152,7 @@ tools.addEventListener('click', async (event) => {
     }
 
     case 'save': {
-      saved = Schema.encodeSync(envelope)({
-        version: 1,
-        savedDocument: { version: 1, document: graph },
-        viewport: current.snapshot.viewport,
-      })
+      saved = current.savedSession
       restore.disabled = false
       setStatus('Snapshot saved for this session')
       break
@@ -1195,10 +1185,8 @@ tools.addEventListener('click', async (event) => {
         break
       }
 
-      const state = Schema.decodeUnknownSync(envelope)(saved)
-      await setDocument(
-        Effect.runSync(decodeSavedFlowDocument(state.savedDocument))
-      )
+      const state = await Effect.runPromise(prepareVersionedSavedSession(saved))
+      await setDocument(state.document)
       await setViewport(state.viewport)
       setStatus('Restored document and viewport; selection is transient')
       break

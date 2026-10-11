@@ -29,6 +29,7 @@ import {
   straightEdgePath,
   stepEdgePath,
   validateFlowConnection,
+  connectionFromHandleGesture,
   ViewportSchema,
   ViewportBoundsSchema,
   ViewportLimitsSchema,
@@ -2970,17 +2971,15 @@ export const FlowCanvas = defineComponent({
         return 'rejected'
       }
 
-      const candidate: FlowConnection = {
-        source: sourceNode.id,
-        sourceHandle: sourceHandle.id,
-        target: targetNode.id,
-        targetHandle: targetHandle.id,
-      }
-
       const validated = Effect.runSyncExit(
-        validateFlowConnection(
-          activeDocument.value,
-          candidate,
+        connectionFromHandleGesture(
+          {
+            document: activeDocument.value,
+            fromNodeId: sourceNode.id,
+            fromHandleId: sourceHandle.id,
+            toNodeId: targetNode.id,
+            toHandleId: targetHandle.id,
+          },
           connectionMode.value
         )
       )

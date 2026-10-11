@@ -1,12 +1,19 @@
 import { Exit } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import type {
   LegacySnapshotFailure,
   SnapshotRequest,
   SnapshotResponseSchema,
+  VersionedSnapshotResponseSchema,
 } from './application.ts'
 import { createFoldkitSnapshotClient } from './snapshot-client.ts'
+import type {
+  FoldkitSnapshotClient,
+  FoldkitSnapshotResult,
+  FoldkitVersionedSnapshotClient,
+  FoldkitVersionedSnapshotResult,
+} from './snapshot-client.ts'
 
 const response = (
   requestId: string
@@ -219,6 +226,7 @@ describe('Foldkit correlated public snapshot client', () => {
   test.each([
     'origin-requires-versioned-session',
     'native-fields-require-versioned-session',
+    'noncanonical-handles-require-versioned-session',
   ] as const)('settles %s once and permits a fresh request', async (code) => {
     const source = host()
     const client = createFoldkitSnapshotClient(source.ports)
@@ -304,5 +312,277 @@ describe('Foldkit correlated public snapshot client', () => {
     reentrant.dispose()
     await expect(pending).resolves.toMatchObject({ status: 'disposed' })
     expect([source.listeners.size, source.failures.size]).toStrictEqual([0, 0])
+  })
+})
+
+const versionedResponse = (
+  requestId: string
+): typeof VersionedSnapshotResponseSchema.Encoded => ({
+  ...response(requestId),
+  snapshot: {
+    document: { nodes: [], edges: [], nodeOrigin: [0, 0] },
+    viewport: { x: 0, y: 0, zoom: 1 },
+  },
+  savedSession: {
+    version: 2,
+    document: { nodes: [], edges: [], nodeOrigin: [0, 0] },
+    viewport: { x: 0, y: 0, zoom: 1 },
+  },
+})
+
+const versionedHost = () => {
+  const legacy = host()
+
+  const listeners = new Set<
+    (value: typeof VersionedSnapshotResponseSchema.Encoded) => void
+  >()
+
+  const requests: SnapshotRequest[] = []
+  const stopCounts = { legacy: 0, failure: 0, versioned: 0 }
+
+  const ports = {
+    ...legacy.ports,
+    snapshots: {
+      subscribe: (
+        listener: (value: typeof SnapshotResponseSchema.Encoded) => void
+      ) => {
+        const stop = legacy.ports.snapshots.subscribe(listener)
+
+        return () => {
+          stopCounts.legacy += 1
+          stop()
+        }
+      },
+    },
+    snapshotFailures: {
+      subscribe: (listener: (value: LegacySnapshotFailure) => void) => {
+        const stop = legacy.ports.snapshotFailures.subscribe(listener)
+
+        return () => {
+          stopCounts.failure += 1
+          stop()
+        }
+      },
+    },
+    versionedSnapshots: {
+      subscribe: (
+        listener: (
+          value: typeof VersionedSnapshotResponseSchema.Encoded
+        ) => void
+      ) => {
+        listeners.add(listener)
+
+        return () => {
+          stopCounts.versioned += 1
+          listeners.delete(listener)
+        }
+      },
+    },
+    versionedSnapshotRequests: {
+      send: (request: SnapshotRequest) => {
+        requests.push(request)
+
+        return Exit.void
+      },
+    },
+  }
+
+  return {
+    legacy,
+    ports,
+    requests,
+    listeners,
+    stopCounts,
+    emit: (value: typeof VersionedSnapshotResponseSchema.Encoded) => {
+      for (const listener of new Set(listeners)) {
+        listener(value)
+      }
+    },
+  }
+}
+
+describe('one-owner legacy and versioned snapshot protocols', () => {
+  test('preserves overloads and one sequence across legacy failure then versioned success', async () => {
+    const source = versionedHost()
+    const client = createFoldkitSnapshotClient(source.ports)
+    expectTypeOf(client).toEqualTypeOf<FoldkitVersionedSnapshotClient>()
+    expectTypeOf(client.request).returns.toEqualTypeOf<
+      Promise<FoldkitSnapshotResult>
+    >()
+    expectTypeOf(client.requestVersioned).returns.toEqualTypeOf<
+      Promise<FoldkitVersionedSnapshotResult>
+    >()
+    const legacyOnly = createFoldkitSnapshotClient(source.legacy.ports)
+    expectTypeOf(legacyOnly).toEqualTypeOf<FoldkitSnapshotClient>()
+    legacyOnly.dispose()
+    const first = client.request()
+    const [legacyRequest] = source.legacy.requests
+
+    if (legacyRequest === undefined) {
+      throw new Error('Missing legacy request')
+    }
+
+    source.legacy.fail({
+      requestId: legacyRequest.requestId,
+      code: 'noncanonical-handles-require-versioned-session',
+    })
+    await expect(first).resolves.toMatchObject({
+      status: 'failed',
+      reason: 'noncanonical-handles-require-versioned-session',
+    })
+    const second = client.requestVersioned()
+    const [versionedRequest] = source.requests
+
+    if (versionedRequest === undefined) {
+      throw new Error('Missing versioned request')
+    }
+
+    expect([
+      legacyRequest.requestId.slice(0, -1),
+      versionedRequest.requestId.slice(0, -1),
+    ]).toStrictEqual([
+      legacyRequest.requestId.slice(0, -1),
+      legacyRequest.requestId.slice(0, -1),
+    ])
+    source.emit(versionedResponse(versionedRequest.requestId))
+    await expect(second).resolves.toMatchObject({
+      status: 'succeeded',
+      response: { savedSession: { version: 2 } },
+    })
+    client.dispose()
+  })
+
+  test('ignores wrong protocol channels before decoding and settles only the matching channel', async () => {
+    const source = versionedHost()
+    const client = createFoldkitSnapshotClient(source.ports)
+    let settled = 0
+
+    const pending = client.requestVersioned().then((value) => {
+      settled += 1
+
+      return value
+    })
+
+    const [request] = source.requests
+
+    if (request === undefined) {
+      throw new Error('Missing versioned request')
+    }
+
+    source.legacy.emit({
+      ...response(request.requestId),
+      get nodesInitialized(): never {
+        throw new Error('Wrong-channel response decoded')
+      },
+    })
+    source.legacy.fail({
+      requestId: request.requestId,
+      get code(): never {
+        throw new Error('Wrong-channel failure decoded')
+      },
+    })
+    source.emit(versionedResponse('foreign'))
+    await Promise.resolve()
+    expect(settled).toBe(0)
+    source.emit(versionedResponse(request.requestId))
+    source.emit(versionedResponse(request.requestId))
+    await expect(pending).resolves.toMatchObject({
+      status: 'succeeded',
+      response: { savedSession: { version: 2 } },
+    })
+    const legacyPending = client.request()
+    const [legacyRequest] = source.legacy.requests
+
+    if (legacyRequest === undefined) {
+      throw new Error('Missing legacy request')
+    }
+
+    source.emit({
+      ...versionedResponse(legacyRequest.requestId),
+      get nodesInitialized(): never {
+        throw new Error('Wrong-channel versioned response decoded')
+      },
+    })
+    source.legacy.emit(response(legacyRequest.requestId))
+    await expect(legacyPending).resolves.toMatchObject({
+      status: 'succeeded',
+      response: { savedSession: { version: 1 } },
+    })
+    expect(settled).toBe(1)
+    client.dispose()
+  })
+
+  test('disposes both protocol requests once, unsubscribes every channel once and ignores late callbacks', async () => {
+    const source = versionedHost()
+    const client = createFoldkitSnapshotClient(source.ports)
+    const legacy = client.request()
+    const versioned = client.requestVersioned()
+    const [late] = source.listeners
+    const [request] = source.requests
+    client.dispose()
+    client.dispose()
+    expect([
+      await legacy,
+      await versioned,
+      await client.requestVersioned(),
+    ]).toMatchObject([
+      { status: 'disposed' },
+      { status: 'disposed' },
+      { status: 'disposed' },
+    ])
+
+    if (request === undefined) {
+      throw new Error('Missing request')
+    }
+
+    late?.(versionedResponse(request.requestId))
+    expect([
+      source.legacy.listeners.size,
+      source.legacy.failures.size,
+      source.listeners.size,
+    ]).toStrictEqual([0, 0, 0])
+    expect(source.stopCounts).toStrictEqual({
+      legacy: 1,
+      failure: 1,
+      versioned: 1,
+    })
+  })
+
+  test('settles versioned send failures and malformed queries without adding a failure reason', async () => {
+    const source = versionedHost()
+
+    const rejected = createFoldkitSnapshotClient({
+      ...source.ports,
+      versionedSnapshotRequests: { send: () => false },
+    })
+
+    await expect(rejected.requestVersioned()).resolves.toMatchObject({
+      status: 'failed',
+      reason: 'send-failed',
+    })
+    const invalidQuery = { nodeIds: 12 }
+    // @ts-expect-error Foreign query primitives remain invalid at the public boundary.
+    const invalidRequest = rejected.requestVersioned(invalidQuery)
+    await expect(invalidRequest).resolves.toMatchObject({
+      status: 'failed',
+      reason: 'invalid-request',
+    })
+
+    const throwing = createFoldkitSnapshotClient({
+      ...source.ports,
+      versionedSnapshotRequests: {
+        send: () => {
+          throw new Error('closed')
+        },
+      },
+    })
+
+    await expect(throwing.requestVersioned()).resolves.toMatchObject({
+      status: 'failed',
+      reason: 'send-failed',
+    })
+    rejected.dispose()
+    throwing.dispose()
+    expect(source.listeners.size).toBe(0)
   })
 })

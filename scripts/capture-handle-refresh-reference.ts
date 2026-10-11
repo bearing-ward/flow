@@ -137,6 +137,36 @@ const server = Bun.spawn(
 const browser = await chromium.launch({ headless: true })
 
 try {
+  const deadline = Date.now() + 15_000
+
+  const waitForServer = async (): Promise<void> => {
+    if (server.exitCode !== null) {
+      throw new Error(
+        `Reference server exited before readiness: ${server.exitCode}`
+      )
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}`)
+
+      if (response.ok) {
+        return
+      }
+    } catch {
+      // The strict-port Vite process has not bound its listener yet.
+    }
+
+    if (Date.now() >= deadline) {
+      throw new Error('Reference server did not become ready within 15 seconds')
+    }
+
+    await Bun.sleep(100)
+
+    return waitForServer()
+  }
+
+  await waitForServer()
+
   const captureOnce = async (): Promise<typeof CaptureSchema.Type> => {
     const page = await browser.newPage()
     const diagnostics: string[] = []

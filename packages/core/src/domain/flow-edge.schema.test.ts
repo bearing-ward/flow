@@ -32,6 +32,77 @@ const document = Effect.runSync(
 )
 
 describe('straight edge geometry', () => {
+  it('uses explicit noncanonical declarations and their measured physical sides', () => {
+    const accepted = Effect.runSync(
+      decodeFlowDocument({
+        nodes: document.nodes.map((node) => ({
+          ...node,
+          handles: [
+            {
+              id: 'physical',
+              kind: node.id === 'first' ? 'target' : 'source',
+              side: node.id === 'first' ? 'left' : 'bottom',
+            },
+          ],
+        })),
+        edges: [
+          {
+            id: 'edge',
+            source: 'first',
+            sourceHandle: 'physical',
+            target: 'second',
+            targetHandle: 'physical',
+          },
+        ],
+      })
+    )
+
+    const [edge] = accepted.edges
+
+    if (edge === undefined) {
+      throw new Error('Expected explicit edge')
+    }
+
+    const resolved = resolveEdgeHandles(accepted, edge)
+
+    if (resolved === undefined) {
+      throw new Error('Expected physical declarations')
+    }
+
+    const source = S.decodeUnknownSync(MeasuredHandleSchema)({
+      nodeId: 'first',
+      handleId: 'physical',
+      offset: { x: 10, y: 20 },
+      width: 12,
+      height: 12,
+    })
+
+    const target = S.decodeUnknownSync(MeasuredHandleSchema)({
+      nodeId: 'second',
+      handleId: 'physical',
+      offset: { x: 30, y: 40 },
+      width: 12,
+      height: 12,
+    })
+
+    expect(
+      edgeAttachmentPosition(
+        resolved.sourceNode.position,
+        resolved.sourceHandle,
+        source
+      )
+    ).toStrictEqual({ x: 104, y: 140 })
+    expect(
+      edgeAttachmentPosition(
+        resolved.targetNode.position,
+        resolved.targetHandle,
+        target
+      )
+    ).toStrictEqual({ x: 380, y: 166 })
+    expect(resolved.sourceHandle.kind).toBe('target')
+    expect(resolved.targetHandle.kind).toBe('source')
+  })
+
   it('selects the first declared handles when an edge omits handle IDs', () => {
     const [edge] = document.edges
 
@@ -187,6 +258,27 @@ describe('edge marker and stroke contracts', () => {
     })
   })
 
+  it('retains an exact empty accessibility label through full document decoding', () => {
+    const decoded = Effect.runSync(
+      decodeFlowDocument({
+        ...document,
+        edges: [
+          {
+            id: 'edge-1',
+            source: 'first',
+            target: 'second',
+            ariaLabel: '',
+          },
+        ],
+      })
+    )
+
+    expect({
+      label: decoded.edges[0]?.ariaLabel,
+      ownLabel: Object.hasOwn(decoded.edges[0] ?? {}, 'ariaLabel'),
+    }).toStrictEqual({ label: '', ownLabel: true })
+  })
+
   it('rejects unsupported arrows, reconnection options, colors, and widths', () => {
     for (const invalid of [
       { markerStart: 'triangle' },
@@ -194,7 +286,8 @@ describe('edge marker and stroke contracts', () => {
       { strokeWidth: 0 },
       { interactionWidth: 0 },
       { reconnectable: 'both' },
-      { ariaLabel: '' },
+      { ariaLabel: null },
+      { ariaLabel: false },
     ]) {
       expect(() =>
         Effect.runSync(
@@ -211,6 +304,22 @@ describe('edge marker and stroke contracts', () => {
           })
         )
       ).toThrow(/./u)
+    }
+  })
+})
+
+describe('original 065 handle identity boundary, unit path', () => {
+  it('rejects null, empty and missing identities rather than inventing DOM identities', () => {
+    for (const handleId of [null, '', undefined]) {
+      expect(() =>
+        S.decodeUnknownSync(MeasuredHandleSchema)({
+          nodeId: 'node',
+          handleId,
+          offset: { x: 0, y: 0 },
+          width: 0,
+          height: 0,
+        })
+      ).toThrow('Expected')
     }
   })
 })

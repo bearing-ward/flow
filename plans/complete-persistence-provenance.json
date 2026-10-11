@@ -1,0 +1,1510 @@
+{
+  "baseline": "841be137e253cf19c665269eaaa79edc19abf3c3",
+  "inputs": {
+    "originNative080": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/origin-native-integration/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "patchSha256": "dd0e22b97662c684e291d0e403a0d45ab4679644d0e16397f39315071d8696e3",
+      "files": [
+        {
+          "path": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts",
+          "kind": "tracked",
+          "sha256": "03cef7b67b9821505f713839a1a7f24223f326fa97d8b890f569f9294dc72b52"
+        },
+        {
+          "path": "docs/api-reference.md",
+          "kind": "tracked",
+          "sha256": "c3f95776196e01f7842d0d9eb94f5b9c233e42c7d738aea7511c060187b9d412"
+        },
+        {
+          "path": "docs/public-api.md",
+          "kind": "tracked",
+          "sha256": "450fe5bac7df65bd40ebda6ac51222444aa1b78104727dc84d0e96f3f61ae532"
+        },
+        {
+          "path": "packages/core/src/domain/flow-edge.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "89f17ec73aca2662aef059674d0ec38b03a2a65c70a517220fdbfb09f8a297cd"
+        },
+        {
+          "path": "packages/core/src/domain/flow-graph.ts",
+          "kind": "tracked",
+          "sha256": "5b229ed00e07ac47d80fcd513a3ab977fc7c7cec6d7c352526cfa7a800a4ad44"
+        },
+        {
+          "path": "packages/core/src/domain/flow-node-extent.schema.ts",
+          "kind": "tracked",
+          "sha256": "5a63a81da7bf747f0fd5e80b6c15a69a86f6fadadc18295f1e586765d9b49e18"
+        },
+        {
+          "path": "packages/core/src/domain/flow-persistence.test.ts",
+          "kind": "tracked",
+          "sha256": "b781e80e4de4d5e851326f16cec42baaab56356eeebe3ac5491366e9220be95f"
+        },
+        {
+          "path": "packages/core/src/domain/flow-runtime.schema.ts",
+          "kind": "tracked",
+          "sha256": "fef418a926ead3231f06134faafa104385345764a9217d5fe64d2282a0c892db"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "347eae17fb4c3182132e756f0f32711d259cd276c37415ff8488c52903208f3b"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.ts",
+          "kind": "tracked",
+          "sha256": "495b2bd511f8fbb46b9043fd978f999fac80fd439158457849b49fc06865a30f"
+        },
+        {
+          "path": "packages/core/src/public.ts",
+          "kind": "tracked",
+          "sha256": "e5f5ee32c50b96cc282b059077c34d1b3fb351ea40797b926c5d5770f0b1ab34"
+        },
+        {
+          "path": "packages/foldkit/src/application.test.ts",
+          "kind": "tracked",
+          "sha256": "95ee4b0d4fec4fe49e00a1ebcc56cdcbc64dd1744915e182353e6b062bceb809"
+        },
+        {
+          "path": "research/PROGRESS.md",
+          "kind": "tracked",
+          "sha256": "e5e14d5cad896d8d0f4a86c7686ef718ba797d0bb1c286e76d034c76ea2d550a"
+        },
+        {
+          "path": "research/traces/public-api-completion.md",
+          "kind": "tracked",
+          "sha256": "6cf4e8f355622b0dee4fd8c1fefffc2096a07a32e6061469043dd483f0e4e1e6"
+        },
+        {
+          "path": "tests/consumer/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "fc84be06e58998f375571f70b5b02ee657b5d9c6eb30c340680cd09a7eb626d3"
+        },
+        {
+          "path": "tests/consumer/foldkit/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "c1bf483e1d5d8665c3aa45d33ad7e8c7ceabf53831b89bf26f81a8a675e34b0a"
+        },
+        {
+          "path": "tests/consumer/vue/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "f8288407672e4b539602c289f4789413b7c88bc0b2b4fd90d894b99c1c42357c"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "01207e85bfb87f43466c24a01d432382060e396662f8b815622f84eb85a7d937"
+        },
+        {
+          "path": "apps/foldkit/e2e/native-schema-fixture.ts",
+          "kind": "new",
+          "sha256": "92e7caf2ec2c7ad13b9fb1f8e313aef5c41147a81c9ac59d331cabc311d0ed27"
+        },
+        {
+          "path": "apps/foldkit/e2e/native-schema.e2e.ts",
+          "kind": "new",
+          "sha256": "b5616bb211f93f8531a5e2412d3acdad5f3684d3e7a9db79bd7feb7f08a5658f"
+        },
+        {
+          "path": "packages/core/src/domain/flow-origin.schema.test.ts",
+          "kind": "new",
+          "sha256": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8"
+        },
+        {
+          "path": "packages/core/src/domain/flow-origin.schema.ts",
+          "kind": "new",
+          "sha256": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca"
+        },
+        {
+          "path": "plans/080-integrate-origin-native-test-contracts.md",
+          "kind": "new",
+          "sha256": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14"
+        },
+        {
+          "path": "plans/historical-origin-fixture-plan.md",
+          "kind": "new",
+          "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
+        },
+        {
+          "path": "plans/native-schema-retention-history.md",
+          "kind": "new",
+          "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
+        },
+        {
+          "path": "plans/origin-assembly-provenance.json",
+          "kind": "new",
+          "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
+        },
+        {
+          "path": "plans/origin-core-execution.md",
+          "kind": "new",
+          "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+        },
+        {
+          "path": "plans/origin-integration-execution.md",
+          "kind": "new",
+          "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
+        },
+        {
+          "path": "plans/origin-native-integration-design-review.md",
+          "kind": "new",
+          "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+        },
+        {
+          "path": "plans/origin-native-integration-execution.md",
+          "kind": "new",
+          "sha256": "52cd2beadd4c77d090700e83d1994ff3e94ab48a91fa8abdc429288d0473aea5"
+        },
+        {
+          "path": "plans/origin-native-integration-initial-scope.md",
+          "kind": "new",
+          "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
+        },
+        {
+          "path": "plans/origin-native-integration-provenance.json",
+          "kind": "new",
+          "sha256": "b03a46b0cb7399be77c03426ac826fb514bcffe09ef5f60a77cadba61f2c7fcb"
+        }
+      ]
+    },
+    "directedCore078": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/directed-handle-integrity/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "patchSha256": "4c0d8d3090de6c282d8d5e298829907409f61b8db6eae7a92bd21e35526fe03b",
+      "files": [
+        {
+          "path": "packages/conformance/src/index.test.ts",
+          "kind": "tracked",
+          "sha256": "818d507b7b969b3675f5976c998643b4938755118142b220a53960f7c72cba99"
+        },
+        {
+          "path": "packages/core/src/domain/flow-connection.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "edb4954f6cd2678a44cf9bf5c7e322ab49ec98a6e5db4c5273d8bf0eed1c37b5"
+        },
+        {
+          "path": "packages/core/src/domain/flow-connection.schema.ts",
+          "kind": "tracked",
+          "sha256": "ef17a3ac5902a385739a3292beda3724aa7c5c1c815f461dd77520c3080585d9"
+        },
+        {
+          "path": "packages/core/src/domain/flow-edge.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "b5700c87ea05ab4f1130b3e3d7988c35bd286ebafc9016e6a4effd8bb8a97da4"
+        },
+        {
+          "path": "packages/core/src/domain/flow-edge.schema.ts",
+          "kind": "tracked",
+          "sha256": "a2c5b5e69dbb88b524d01679a4a30742f2fd934f7ecf20fa736c07b47c5a48f1"
+        },
+        {
+          "path": "packages/core/src/domain/flow-persistence.ts",
+          "kind": "tracked",
+          "sha256": "f2d67fc8adf0e311e4a0cda9c4bf0bbbb7572385e3ad0f6e678add13cd66811e"
+        },
+        {
+          "path": "packages/core/src/domain/flow-reconnection.schema.ts",
+          "kind": "tracked",
+          "sha256": "b1a2b48ed7e520bc8cda868776f1d5873441a7999a5b97973adc489e02530632"
+        },
+        {
+          "path": "packages/core/src/domain/flow-save-format-error.ts",
+          "kind": "tracked",
+          "sha256": "064b458b810ad73da5b46ba21bc77a944f0cc075817e5985c977880d317d9c3a"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "024453f1cfa4d8850514259cfd85deccd04527897e75dff7e4056868f90fbc73"
+        },
+        {
+          "path": "packages/core/src/domain/flow.schema.ts",
+          "kind": "tracked",
+          "sha256": "77db4a0e4f041ab602ec21524891e9b2852dce9ebbea1da5e1e10200dab30545"
+        },
+        {
+          "path": "packages/core/src/public.ts",
+          "kind": "tracked",
+          "sha256": "6ac4709a73f2cd9c74206f2ddc3e7da7deb2eeb56040beb9f97e1cdd24e2e2a6"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "3f5414ec781b8fb86ed80b0ae8eacb097f1fe16446ebca6091e46d43a34320c8"
+        },
+        {
+          "path": "packages/core/src/domain/flow-connection-request.schema.ts",
+          "kind": "new",
+          "sha256": "40251cc876cb1eca57f67b251ebbfed885ea6385cb2ec7a0c64cc2e743d860fe"
+        },
+        {
+          "path": "packages/core/src/domain/flow-directed-handle.schema.test.ts",
+          "kind": "new",
+          "sha256": "2f16a4f5d9f98c53fa5a91f458cf1384e34f7161a30e47e8ef2e034584325868"
+        },
+        {
+          "path": "packages/core/src/domain/flow-legacy-handle-compatibility.ts",
+          "kind": "new",
+          "sha256": "f93c6fa89865997f0b9c5c609a290fe5dec3454b41165f62e1f72fffd29ddc7c"
+        },
+        {
+          "path": "plans/directed-handle-core-execution.md",
+          "kind": "new",
+          "sha256": "a941962f71a57379585551e6cf9c70bd646afb97436ee95672fcab87c5454b79"
+        }
+      ]
+    },
+    "measurement065": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/contract-acceptance/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "patchSha256": "c5f7b2df19af5037a5baea740bcab5b35139a486ca57acc954587d514a9af528",
+      "files": [
+        {
+          "path": "apps/foldkit/e2e/handle-refresh-fixture.ts",
+          "kind": "tracked",
+          "sha256": "098ea1a6022563693ae5545237084c74493898e2a1b6fc902cbe41ccc4d6da9a"
+        },
+        {
+          "path": "apps/foldkit/e2e/measured-geometry.e2e.ts",
+          "kind": "tracked",
+          "sha256": "c7da504fa71ca7d7d6f1b3bc5c45623950a1fbe39f80cd194329d22f5c6c07f1"
+        },
+        {
+          "path": "apps/shared-e2e/handle-refresh-contract.ts",
+          "kind": "tracked",
+          "sha256": "75faf8ddc03bf469d70a03f712a2fbed947935409ac2d47543387b4d77b60acf"
+        },
+        {
+          "path": "apps/shared-e2e/handle-refresh-fixture.ts",
+          "kind": "tracked",
+          "sha256": "211ba1550cfb742ae90d01039efbea25b6ace49afd7724c3fcd5c6f08ae11d2b"
+        },
+        {
+          "path": "apps/vanilla/e2e/measured-geometry.e2e.ts",
+          "kind": "tracked",
+          "sha256": "3781526ac3a47cdcf627fc9d9a7219ee089be10d15da12b9b2e8e5b6976278ea"
+        },
+        {
+          "path": "apps/vanilla/src/handle-refresh-fixture.ts",
+          "kind": "tracked",
+          "sha256": "17787017ebcd2bfa6d4d64f12d4ed4a9afdf71d7bb6e617a0c85ff96c4e2d4d7"
+        },
+        {
+          "path": "apps/vue/e2e/measured-geometry.e2e.ts",
+          "kind": "tracked",
+          "sha256": "764feea9dc3417b67dec7f4b2b56ec779733d74bb8f8c1fb1c544ef1eb67565b"
+        },
+        {
+          "path": "apps/vue/src/handle-refresh-fixture.ts",
+          "kind": "tracked",
+          "sha256": "34366a348b6f6a5cb7b43854ae6fbeeb43ea708315c74f80c95869b110ba69f7"
+        },
+        {
+          "path": "docs/public-api.md",
+          "kind": "tracked",
+          "sha256": "361e393b2e90afc90714c8f283ef86f5c600de925882b723069826e228847d38"
+        },
+        {
+          "path": "docs/react-flow-api-correspondence.md",
+          "kind": "tracked",
+          "sha256": "4bda5613104859b77a74183c7e52635cfd7ceafcd368e5e02d619251699e3c82"
+        },
+        {
+          "path": "packages/conformance/src/handle-refresh-reference.test.ts",
+          "kind": "tracked",
+          "sha256": "5dbc4bc9af5cc1e6e8ca70ef9e4f3c542219c75f157bdb28ca761d56bcc191c6"
+        },
+        {
+          "path": "packages/core/src/domain/flow-edge.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "243ce855a8a9b457d3e9e78be387c5bb3ecbdc824c2180fbc1dad51fed10fe1b"
+        },
+        {
+          "path": "packages/core/src/domain/flow-measurement.schema.test.ts",
+          "kind": "tracked",
+          "sha256": "94501641c275d203e606061642e49001a4a9b9c1f41fb493a32ba20f320d3af6"
+        },
+        {
+          "path": "plans/057-member-closure.json",
+          "kind": "tracked",
+          "sha256": "8e8308d47924a031b4a911192c78be9244cadc376613fcad60b16c223f43330b"
+        },
+        {
+          "path": "plans/065-complete-measured-handle-refresh.md",
+          "kind": "tracked",
+          "sha256": "4a159cc6f81ddbc6bbe6175a740170f0fcab85cc0a9c9de3f4648cdea3883f1c"
+        },
+        {
+          "path": "plans/065-member-reconciliation.json",
+          "kind": "tracked",
+          "sha256": "9f0946fc665264c1f90dd35c9c0224582c33b7c83ca4472c4673c0938945210d"
+        },
+        {
+          "path": "plans/check-065-reconciliation.mjs",
+          "kind": "tracked",
+          "sha256": "a4923d90cde0c019d35b6ce6cf8b7ca706010756034d5652dcade33eecd37cf1"
+        },
+        {
+          "path": "research/PROGRESS.md",
+          "kind": "tracked",
+          "sha256": "313279647c97f87b3c1949c9c052838c4c630556d4521f30b75c2c9bbe172019"
+        },
+        {
+          "path": "research/catalogs/api-members.json",
+          "kind": "tracked",
+          "sha256": "161699ea44c7383baf96a58a07570ccd252a73a5035ea5f0e3cd455ed4341d06"
+        },
+        {
+          "path": "research/fixtures/handle-refresh-reference.json",
+          "kind": "tracked",
+          "sha256": "4973ee9a64fa62a27b173374586224c65575901b8564deef4e6af897415d7bce"
+        },
+        {
+          "path": "research/harnesses/handle-refresh/fixture-schema.ts",
+          "kind": "tracked",
+          "sha256": "6e486c2d7d5751753d4c0cce228dfb0356186b21762907ddfc7abe01ebab6655"
+        },
+        {
+          "path": "research/harnesses/handle-refresh/main.tsx",
+          "kind": "tracked",
+          "sha256": "ae4c9a81eee8a33ee299488f1c8a055372db5837685a592dce366ab054eb16f0"
+        },
+        {
+          "path": "research/traces/public-api-completion.md",
+          "kind": "tracked",
+          "sha256": "50242874904eac7a782290457d30745acf7269e324ad94a2437d8fb184c7ccf6"
+        },
+        {
+          "path": "research/traces/shared-measured-geometry.md",
+          "kind": "tracked",
+          "sha256": "6dd836da32d035019e94d1a3f0edd616ab05066659aac7c908f930288e9c51dd"
+        },
+        {
+          "path": "scripts/capture-handle-refresh-reference.ts",
+          "kind": "tracked",
+          "sha256": "3b9dd3d6ba662f9cef06784756496a550760e2c5f673200c30dfa12c83c4b743"
+        },
+        {
+          "path": "tests/consumer/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "931795f0379aca9d61fa298633d63092e3676158dd34227f47336458fe8bf504"
+        },
+        {
+          "path": "tests/consumer/foldkit/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "6752e433c88ecd275cbbcedc8f556a467790233e19e5e401ec8c1ec4368d3c77"
+        },
+        {
+          "path": "tests/consumer/vue/consumer.typecheck.ts",
+          "kind": "tracked",
+          "sha256": "1bbc28b5444a4b51ee19182f8c7cb4a20044b3fdad83043d309b784b46634759"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "1b31579fe4ff9cff69609893e276eaefcedfe34d8e68fc90ae9c200d08385db7"
+        },
+        {
+          "path": "plans/065-acceptance-design.md",
+          "kind": "new",
+          "sha256": "beb5ef046f4d8ab627724548f74587f2fe7b383ca0a3b02f5b25d295978b7ecf"
+        },
+        {
+          "path": "plans/065-primary-source-review.md",
+          "kind": "new",
+          "sha256": "54a52db3a27d53cf7ccb7116f3d3af308086effd6344924c85231c71c5a86017"
+        }
+      ]
+    },
+    "pinnedCapture": {
+      "root": "/Users/richardmcandrews/.codex/worktrees/origin-connection-reference/flow",
+      "head": "841be137e253cf19c665269eaaa79edc19abf3c3",
+      "patchSha256": "6f2857f5fd4d74bd65aa3bb31c7ab77ef585bc00094246b644977b251310f450",
+      "files": [
+        {
+          "path": "research/PROGRESS.md",
+          "kind": "tracked",
+          "sha256": "dcb8beee03344ea4d4210b0bd57ac7d2d265670e0884f8381764d98b676af2d5"
+        },
+        {
+          "path": "verification.config.json",
+          "kind": "tracked",
+          "sha256": "f28efef9499b45efda3dcacb648c68bb2a17712f4557aacc65ae97310a1f410d"
+        },
+        {
+          "path": "packages/conformance/src/origin-connection-reference.test.ts",
+          "kind": "new",
+          "sha256": "348e90bb582bc5848a0dcb32de2bb7bca2d5876b49a2b44c543e461a8fa2f173"
+        },
+        {
+          "path": "plans/origin-connection-reference-execution.md",
+          "kind": "new",
+          "sha256": "84b2f0f60b4ce31d9318545cfaaa12b6edfc9a83bf59dae7c713201f2368f857"
+        },
+        {
+          "path": "research/fixtures/origin-connection-reference.json",
+          "kind": "new",
+          "sha256": "06d04831bd9bae9886bb8d62676ecfc44547e160cda0e7a40b0ba2fee5515643"
+        },
+        {
+          "path": "research/harnesses/origin-connection/fixture-schema.ts",
+          "kind": "new",
+          "sha256": "3280c7100fef5bf93f7aedba5d9a59e5fb858be3857fe0dbb370cbbd09585632"
+        },
+        {
+          "path": "research/harnesses/origin-connection/index.html",
+          "kind": "new",
+          "sha256": "2c9d70bf2d41906dbda2d166a2c9b85898681c608b89458374d7d3eac0476431"
+        },
+        {
+          "path": "research/harnesses/origin-connection/main.tsx",
+          "kind": "new",
+          "sha256": "72b55485978d685765d8d89781e6f934844bd5bd88ffef4a48c5aeb99c8e2234"
+        },
+        {
+          "path": "research/harnesses/origin-connection/vite.config.ts",
+          "kind": "new",
+          "sha256": "e76216b4602e9451a3a8e4e472ee54375a154a1547a58f392e10f56a9675a21b"
+        },
+        {
+          "path": "research/traces/origin-connection-reference.md",
+          "kind": "new",
+          "sha256": "026a9bb729a4c0277dc777d21daf375b60886bb3ac0e316847a80e93e676ecbd"
+        },
+        {
+          "path": "scripts/capture-origin-connection-reference.ts",
+          "kind": "new",
+          "sha256": "a1e6439ddceeaa901463206602ae99ba6e15b9c8c9d781b5779c7bc07b7fcc0e"
+        }
+      ]
+    }
+  },
+  "mainPlanInputs": {
+    "070-migrate-origin-aware-persistence.md": "d251a9e1801495926587c8342e959a889fc30db089057a6563323d907c644ef9",
+    "origin-connection-execution-design.md": "08ca42d60ceb96d06b5491e1a2d7fac3f0f13b8e6a63137ec02fc693c6c0a550",
+    "directed-connection-design-supplement.md": "1123d5c95ab7ecaf4b9ab68fbb181a18cf6197454db92bf302c21a6e0fe32745",
+    "origin-native-primary-source-review.md": "eddc450e151511e33bbe52b9585a6d5151dc2333f2f623e47dfbe7aa6bb9bf3c",
+    "directed-handle-primary-source-review.md": "f1ec1ef66ea47004842af96ea33c66f93f5231ce732efe8af9e04f9ce2ffa729",
+    "origin-connection-reference-primary-review.md": "c957686bce8a3f3cecb1cd4018dcebb61a2ef337e9bf7d5068da35a05e7a13a8",
+    "planning-artifact-names.md": "9bc0d0f138f4b8b3eddfb3f2b1f9710ff3b7e75f791ee5cd0d4e461a51a73650",
+    "persistence-output-isolation-design-review.md": "9b8ca8b86e49063667c63afcac694b2f04b6f7067d78b4273c5defe10f7b41ef"
+  },
+  "overlapDecisions": [
+    "080fullsource/proof/history first;078completecore patches applied with offsets, retaining origin/native schemas.",
+    "065complete proof/docs/closure patches applied;only EOF consumer patches collided because native probes were appended. Each exact065consumer body is retained and exact080native probe suffix appended.",
+    "Append-only065/capture progress and065trace sections preserved alongside080history.",
+    "065supplemental filenames/prooflinks renamed only;63member189cell semantic statuses unchanged.",
+    "Capture approved independently; full producer/schema/script/fixture/conformance/trace composed.",
+    "No input verification scope overrides070union; generatedAPI will regenerate."
+  ],
+  "renamedProofLinks": {
+    "065-acceptance-design.md": "measured-handle-acceptance-design.md",
+    "065-primary-source-review.md": "measured-handle-primary-source-review.md"
+  },
+  "lockSha256": "e6cd3b1436a12de7c05349f4dcb248238df53b9f93862d9f80b7c57b7cbabb4d",
+  "clientApproval": "Primary confirmed independent review APPROVE: full-port overload before legacy subset, one protocol-tagged pending owner; written review forthcoming.",
+  "frozenInputAudit": {
+    "mismatches": [],
+    "unchanged": true
+  },
+  "checkpointStatus": "STOPPED; primary authorized only final evidence/provenance records. Complete source frozen for later reviewed Plan082 new-checkout integration.",
+  "checkpointLogs": [
+    {
+      "path": "/tmp/flow-070-assembly-generate-api.log",
+      "sha256": "ee63e26681a1ba66c74843f9cf9b1d02a6d8f49603a735d6f9a8d5623ffe6bb2"
+    },
+    {
+      "path": "/tmp/flow-070-assembly-legacy-tests.log",
+      "sha256": "df7b883de8c6a7535a08648001b875ba75b92b8cb80d2fc774c71be93121d202"
+    },
+    {
+      "path": "/tmp/flow-070-assembly-typecheck.log",
+      "sha256": "1fd9df3e9cac2797fab79fcb33cee6f1f6d4d84ce3e9769ab22fee78ba938ef7"
+    },
+    {
+      "path": "/tmp/flow-070-client-tests-format.log",
+      "sha256": "b59e72909e73269578106d0f6f30d1b004ba6aae81e96529b504376aba740cb3"
+    },
+    {
+      "path": "/tmp/flow-070-core-format.log",
+      "sha256": "d41e422ddfaeb88bbc58cc2d50ef702db32f7c0c9c28d0080b4576f039336cd1"
+    },
+    {
+      "path": "/tmp/flow-070-core-matrix-quality.log",
+      "sha256": "336a1a622e4e4958d0e6734c0d718ec4409564aea57bfb9879bc86f563fd8f9f"
+    },
+    {
+      "path": "/tmp/flow-070-core-reader-projection-format.log",
+      "sha256": "031a223d1ec26b7f37914cb6ecf86d9047ee40d588f03107d7f26c01f3e6a56d"
+    },
+    {
+      "path": "/tmp/flow-070-core-test-class-repair.log",
+      "sha256": "16cc0be6e86430f105f5102c94a894f101e8562110d59598fa48c94ef1d8bc1b"
+    },
+    {
+      "path": "/tmp/flow-070-directed-commit-build.log",
+      "sha256": "045b3c65238a0124ddbd198c26c9ee50246f3afc0212ea4af50550bbaed4a12d"
+    },
+    {
+      "path": "/tmp/flow-070-final-spacing.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/flow-070-focused-selection.log",
+      "sha256": "524466baf2d3a8dccc3a8e0580ac2c86403b6bc26c4feb92c88b877f22ae5bb1"
+    },
+    {
+      "path": "/tmp/flow-070-focused-verify-repair1.log",
+      "sha256": "11c4bc46e7653dac37295a9bd0a050a771d02f601cb6c5c67cc991c6b08f0bca"
+    },
+    {
+      "path": "/tmp/flow-070-focused-verify.log",
+      "sha256": "e98b0b27a718e34b9664a70314051d1b9f610fcb9011c3e618e2f3094d8c570b"
+    },
+    {
+      "path": "/tmp/flow-070-foldkit-runtime-proof-repair1.log",
+      "sha256": "bbb67d7e9ed1a842e7d19ee2ed2d5fac33b80921fc697f54a79d539b5ff8e7e5"
+    },
+    {
+      "path": "/tmp/flow-070-foldkit-runtime-proof-repair2.log",
+      "sha256": "31eaa3bcc6facbb18ea54ad536b776271d9382fde12f22a5a22db1c8c570749c"
+    },
+    {
+      "path": "/tmp/flow-070-foldkit-runtime-proof.log",
+      "sha256": "35f7ec01f2f5b340ae5688249fd68162da482e08044000ca8ed621e23b1f383d"
+    },
+    {
+      "path": "/tmp/flow-070-host-client-format.log",
+      "sha256": "5a96a2f9b915016c9799090e39c77cf3703d33b2c9de07de8ed6194c33bd4417"
+    },
+    {
+      "path": "/tmp/flow-070-host-client-typecheck-repair1.log",
+      "sha256": "635a3fb78dc8a1b26d1dcb33d03cf2e37df2b5be8ff20b8e11c4ed3ad4b35667"
+    },
+    {
+      "path": "/tmp/flow-070-host-client-typecheck.log",
+      "sha256": "d291f23a252e70aa2bf25587b231c318cb4b00db6696c9b123fcef93927b0f62"
+    },
+    {
+      "path": "/tmp/flow-070-host-client-units.log",
+      "sha256": "521370bdb435dbca34652238323af789dd4f2206576fc815fc2cec4687b3e27d"
+    },
+    {
+      "path": "/tmp/flow-070-install.log",
+      "sha256": "12b0f42be1678e65b97ccde90eaed68ebf37fa8940a636949b4a10194f3d7981"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-typecheck-corrected.log",
+      "sha256": "854a2be7ee88ef4b9c0d31baa8219e13c6d41d3f21d5d6fd4615e52fecd6aac3"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-typecheck-final.log",
+      "sha256": "07cf507d8e8117f0a03bf25a406b51e6b677c0144ce9a1fb406b888543e6224f"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-typecheck-repair1.log",
+      "sha256": "6bc64ecd91c4a506f94dac545352e61381e0b9b79aea8084a151cdd8da537ade"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-typecheck.log",
+      "sha256": "cd5984279f04653849a1911741727df054766fe638b8ffc7957d9847acc61e43"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-units-final.log",
+      "sha256": "faa5ea2e1df1bd73614455bfb9c3b8b150bfa61dd7461a44d0370a798fc1c7ff"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-units-repair1.log",
+      "sha256": "055751ffe66d697285788a5a4e6e40aab41046e4e55b5fcebe91aff2fd14516f"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-units-repair2.log",
+      "sha256": "2e9280c1e583131007f7f25d9e32fe74b8ed909960f63542ae24db7c55b6781f"
+    },
+    {
+      "path": "/tmp/flow-070-ownership-units.log",
+      "sha256": "805217465771d45fe4edae78a1c55bdf1376b81168e8f2e502018888cdb06bac"
+    },
+    {
+      "path": "/tmp/flow-070-packed-consumers-repair1.log",
+      "sha256": "c49a7adca953d0c5af98ce668d916b351d36202e84fec6343eb3f071401c56e3"
+    },
+    {
+      "path": "/tmp/flow-070-packed-consumers.log",
+      "sha256": "2ab8bab188233d3ec50dc0c3572db4b5f7f8052b3af4a159da6534a0ac41b566"
+    },
+    {
+      "path": "/tmp/flow-070-public-proof-typecheck-repair1.log",
+      "sha256": "bd45597c5bb9b8788af68c08e272e441e0b170c779b5841257a0feadf2922f70"
+    },
+    {
+      "path": "/tmp/flow-070-public-proof-typecheck-repair2.log",
+      "sha256": "07cf507d8e8117f0a03bf25a406b51e6b677c0144ce9a1fb406b888543e6224f"
+    },
+    {
+      "path": "/tmp/flow-070-public-proof-typecheck.log",
+      "sha256": "442eba67b3187b5d38d45fa3fe5b16a48b6a2a251c9964650d46ff85c76eaeec"
+    },
+    {
+      "path": "/tmp/flow-070-quality-final.log",
+      "sha256": "30709539578c3bf610a69f00408ec3176fca74a63a8c0cd5968456f47b584a31"
+    },
+    {
+      "path": "/tmp/flow-070-quality-focused-repair.log",
+      "sha256": "a0db095471efdf50a3e81e49e863be6928b61983559b479b4c640fb312c8f0ac"
+    },
+    {
+      "path": "/tmp/flow-070-quality-focused-repair2.log",
+      "sha256": "d63b60eead55a2c0b9dfdb66c412b7bf4d0fe28fccf50b32932055bb04a18592"
+    },
+    {
+      "path": "/tmp/flow-070-quality-repaired.log",
+      "sha256": "1e280eac3fb294613de8a11bd28b69bd7c4f0fc5f2cb32590384dc11b6da8399"
+    },
+    {
+      "path": "/tmp/flow-070-quality-spacing-repair.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/flow-070-quality.log",
+      "sha256": "d29c769d81db4afadab400d1d768e17766093fecdb7d63a0dc4a86e01c70e134"
+    },
+    {
+      "path": "/tmp/flow-070-query-projection-type-repair.log",
+      "sha256": "773b68b4a442f92aee575a2f6cd68fa5425e25e5419d9943de2e0f0af8ddb30f"
+    },
+    {
+      "path": "/tmp/flow-070-runtime-readonly-diagnostic.log",
+      "sha256": "597b9b4b2dabd6b25a05387a67c6e1ccec8c9a2f371f15b89fc14f0bd9ce6293"
+    },
+    {
+      "path": "/tmp/flow-070-targeted-final-units.log",
+      "sha256": "438062ef90e8edcb1c337b891bf9581b1aa34af4b3cd323cc8a652131f78bb8b"
+    },
+    {
+      "path": "/tmp/flow-070-targeted-reader-matrix-final.log",
+      "sha256": "577e97de85d544ee1448e1b06bff05f4e1f48220faf88296bb36a7c86b31dce7"
+    },
+    {
+      "path": "/tmp/flow-070-traces.log",
+      "sha256": "503dbc8f67189a040b2f51defde71d90e7e2d380a5aa2156134a8ba86327db6b"
+    },
+    {
+      "path": "/tmp/flow-070-type-test-repair2-format.log",
+      "sha256": "b2aed9a2457386d0526189cd19990e13ab7793d63e49721f44143860ece17572"
+    },
+    {
+      "path": "/tmp/flow-070-typecheck-repair2.log",
+      "sha256": "25e6fedd689ae5700906fb98b194bb1356e810e1f71e0e541e9f11042a906ceb"
+    },
+    {
+      "path": "/tmp/flow-070-vanilla-directed-commit-proof-repair1.log",
+      "sha256": "bad064de46426bc8250abe0652f75e8319afa497a6e765c9522350d6412b2128"
+    },
+    {
+      "path": "/tmp/flow-070-vanilla-directed-commit-proof.log",
+      "sha256": "cdda54432e42770be11c014ca3fcd02a93034e5360aca318b70da0045b436579"
+    },
+    {
+      "path": "/tmp/flow-070-vanilla-public-proof.log",
+      "sha256": "20eb421b0abe3ce26d457dca8d5d633bb8f3f6267a8526f6e222165fab4229bf"
+    },
+    {
+      "path": "/tmp/flow-070-versioned-core-build-repair1.log",
+      "sha256": "38856f61038218524d377470ed552f715c524fe90c26b7085b3ff0e55d2f40ad"
+    },
+    {
+      "path": "/tmp/flow-070-versioned-core-build.log",
+      "sha256": "bd30d3deb0bccdb8c377335bc3c582ff5180eb8c44bf66d7f5ed5147eb4437dd"
+    },
+    {
+      "path": "/tmp/flow-070-versioned-core-tests-repair1.log",
+      "sha256": "ee4be244c7dedfa14b2d254f1a0db66a87d71552704cb7942c0014dc8aca5fa2"
+    },
+    {
+      "path": "/tmp/flow-070-versioned-core-tests.log",
+      "sha256": "e5c4df9d68aeb3759cac101cf12fcabfca133c749f24116065cb4d79c4b9903f"
+    },
+    {
+      "path": "/tmp/flow-070-vue-public-proof.log",
+      "sha256": "81e1bcf1efb1a38186aff4c8805863aaca462eb5b3aaca16584f91ba2cacca37"
+    }
+  ],
+  "checkpointTrackedPatchSha256": "f68cb5c58ba69ea39683707fc77fa81e7116b2e52a154fcbfc54d2d6e5b84987",
+  "checkpointOutputs": [
+    {
+      "path": "apps/foldkit/e2e/delete-approval-harness.ts",
+      "kind": "tracked",
+      "sha256": "022825c270028ae7727a5434a6751b3c0119f63f36846139d18f369a78513969"
+    },
+    {
+      "path": "apps/foldkit/e2e/handle-refresh-fixture.ts",
+      "kind": "tracked",
+      "sha256": "243b443e15cfc87f355dccd7e154a31bd364199f0b95df5470160edaafc5ab68"
+    },
+    {
+      "path": "apps/foldkit/e2e/measured-geometry.e2e.ts",
+      "kind": "tracked",
+      "sha256": "c7da504fa71ca7d7d6f1b3bc5c45623950a1fbe39f80cd194329d22f5c6c07f1"
+    },
+    {
+      "path": "apps/foldkit/e2e/native-schema-fixture.ts",
+      "kind": "new",
+      "sha256": "92e7caf2ec2c7ad13b9fb1f8e313aef5c41147a81c9ac59d331cabc311d0ed27"
+    },
+    {
+      "path": "apps/foldkit/e2e/native-schema.e2e.ts",
+      "kind": "new",
+      "sha256": "b5616bb211f93f8531a5e2412d3acdad5f3684d3e7a9db79bd7feb7f08a5658f"
+    },
+    {
+      "path": "apps/foldkit/e2e/test-harness.ts",
+      "kind": "tracked",
+      "sha256": "ad3c247c54468e6e54de5528e948f64b5b1e58b709002a0eb76089f385190abc"
+    },
+    {
+      "path": "apps/foldkit/e2e/versioned-persistence-fixture.ts",
+      "kind": "new",
+      "sha256": "c4e24b6c07b73b9110fecc5f75b5e04219be3e0af4102801e8deb20133787d3d"
+    },
+    {
+      "path": "apps/foldkit/e2e/versioned-persistence.e2e.ts",
+      "kind": "new",
+      "sha256": "6ba2311d3130730773067ca6ee9a5108fa5e16a5a8c06960677456629eceb639"
+    },
+    {
+      "path": "apps/foldkit/src/main.ts",
+      "kind": "tracked",
+      "sha256": "1f259ebe24d1109da3a89eb98b749e88ec0bdb0c2331b21bf75fd49e76d567c1"
+    },
+    {
+      "path": "apps/foldkit/ui-recipes/placeholder/main.ts",
+      "kind": "tracked",
+      "sha256": "3bc5f1553814ad79ef45fca41b669d467fdd2cd0ecf5c56f944dc435992fdc1a"
+    },
+    {
+      "path": "apps/shared-e2e/handle-refresh-contract.ts",
+      "kind": "tracked",
+      "sha256": "75faf8ddc03bf469d70a03f712a2fbed947935409ac2d47543387b4d77b60acf"
+    },
+    {
+      "path": "apps/shared-e2e/handle-refresh-fixture.ts",
+      "kind": "tracked",
+      "sha256": "c7a72654f6618eacf91c47bf51363e477966c7af2462287bfecdee4b6e659c62"
+    },
+    {
+      "path": "apps/shared-e2e/versioned-persistence-proof.ts",
+      "kind": "new",
+      "sha256": "18eda2297f600a2e2a36723749c1606464d80ffe64eb75808b29f6d25f7490e6"
+    },
+    {
+      "path": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts",
+      "kind": "tracked",
+      "sha256": "03cef7b67b9821505f713839a1a7f24223f326fa97d8b890f569f9294dc72b52"
+    },
+    {
+      "path": "apps/vanilla/e2e/measured-geometry.e2e.ts",
+      "kind": "tracked",
+      "sha256": "3781526ac3a47cdcf627fc9d9a7219ee089be10d15da12b9b2e8e5b6976278ea"
+    },
+    {
+      "path": "apps/vanilla/e2e/versioned-persistence.e2e.ts",
+      "kind": "new",
+      "sha256": "4bbc0985f2cd69b5f5afc1ab05648fa132290b242f5d3c2bbd1d1528c1c4753f"
+    },
+    {
+      "path": "apps/vanilla/src/handle-refresh-fixture.ts",
+      "kind": "tracked",
+      "sha256": "7ce6e0b8f0a15404dba58b9a2d966d660e95c44acbb01e07e2a07c3f38b302e8"
+    },
+    {
+      "path": "apps/vanilla/src/main.ts",
+      "kind": "tracked",
+      "sha256": "034cccb82e495bacedc07912f1e17680b68396447b645ae4d3948aa0645081cc"
+    },
+    {
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "kind": "tracked",
+      "sha256": "146e153465abf0c113cfd2458d9c559e3de701b4800eba5c25ddbfbe7082434e"
+    },
+    {
+      "path": "apps/vanilla/src/versioned-persistence-fixture.ts",
+      "kind": "new",
+      "sha256": "3ba7261792ae910e951855dae6214a522afbf9745dcb557ff43527d6cf90c44c"
+    },
+    {
+      "path": "apps/vue/e2e/measured-geometry.e2e.ts",
+      "kind": "tracked",
+      "sha256": "764feea9dc3417b67dec7f4b2b56ec779733d74bb8f8c1fb1c544ef1eb67565b"
+    },
+    {
+      "path": "apps/vue/e2e/versioned-persistence.e2e.ts",
+      "kind": "new",
+      "sha256": "b13f2b8874319330e7f59aff5e53c144a18db484717b623dfb05f3b6125520ca"
+    },
+    {
+      "path": "apps/vue/src/handle-refresh-fixture.ts",
+      "kind": "tracked",
+      "sha256": "f9a6b5cdb40834a1e1e1ebdd6d5cfec17f5228c7c336bf6d06ee097c8837778a"
+    },
+    {
+      "path": "apps/vue/src/main.ts",
+      "kind": "tracked",
+      "sha256": "c25498664d2266d2d9d8b1811cc4b5364e1f490521ab60ae64cb7cb325d9276d"
+    },
+    {
+      "path": "apps/vue/src/test-harness.ts",
+      "kind": "tracked",
+      "sha256": "0d5c2d38671c098aa9edfbb5b654c2c175a3b72b796af09232451d9d1fb8086e"
+    },
+    {
+      "path": "apps/vue/src/versioned-persistence-fixture.ts",
+      "kind": "new",
+      "sha256": "7422a2128465052e9a279f3c4e30758c584b6cec3d67fbc03b843ad459bc2b1f"
+    },
+    {
+      "path": "docs/api-reference.md",
+      "kind": "tracked",
+      "sha256": "c3f95776196e01f7842d0d9eb94f5b9c233e42c7d738aea7511c060187b9d412"
+    },
+    {
+      "path": "docs/public-api.md",
+      "kind": "tracked",
+      "sha256": "bb06176a243e28d0ac7e890169d40d309872d45905adf48c7ef1274818dede1f"
+    },
+    {
+      "path": "docs/react-flow-api-correspondence.md",
+      "kind": "tracked",
+      "sha256": "97ec70803be0503c34254a59f063b620862c6a19f5ccb1dacae2dc6d3566b127"
+    },
+    {
+      "path": "packages/conformance/src/handle-refresh-reference.test.ts",
+      "kind": "tracked",
+      "sha256": "5dbc4bc9af5cc1e6e8ca70ef9e4f3c542219c75f157bdb28ca761d56bcc191c6"
+    },
+    {
+      "path": "packages/conformance/src/index.test.ts",
+      "kind": "tracked",
+      "sha256": "818d507b7b969b3675f5976c998643b4938755118142b220a53960f7c72cba99"
+    },
+    {
+      "path": "packages/conformance/src/origin-connection-reference.test.ts",
+      "kind": "new",
+      "sha256": "348e90bb582bc5848a0dcb32de2bb7bca2d5876b49a2b44c543e461a8fa2f173"
+    },
+    {
+      "path": "packages/core/src/domain/flow-connection-request.schema.ts",
+      "kind": "new",
+      "sha256": "40251cc876cb1eca57f67b251ebbfed885ea6385cb2ec7a0c64cc2e743d860fe"
+    },
+    {
+      "path": "packages/core/src/domain/flow-connection.schema.test.ts",
+      "kind": "tracked",
+      "sha256": "edb4954f6cd2678a44cf9bf5c7e322ab49ec98a6e5db4c5273d8bf0eed1c37b5"
+    },
+    {
+      "path": "packages/core/src/domain/flow-connection.schema.ts",
+      "kind": "tracked",
+      "sha256": "ef17a3ac5902a385739a3292beda3724aa7c5c1c815f461dd77520c3080585d9"
+    },
+    {
+      "path": "packages/core/src/domain/flow-directed-handle.schema.test.ts",
+      "kind": "new",
+      "sha256": "2f16a4f5d9f98c53fa5a91f458cf1384e34f7161a30e47e8ef2e034584325868"
+    },
+    {
+      "path": "packages/core/src/domain/flow-edge.schema.test.ts",
+      "kind": "tracked",
+      "sha256": "71be6c6c330af6301afb787ebb085231060448b00aa1ec7dc602eb7ee80212db"
+    },
+    {
+      "path": "packages/core/src/domain/flow-edge.schema.ts",
+      "kind": "tracked",
+      "sha256": "a2c5b5e69dbb88b524d01679a4a30742f2fd934f7ecf20fa736c07b47c5a48f1"
+    },
+    {
+      "path": "packages/core/src/domain/flow-graph.ts",
+      "kind": "tracked",
+      "sha256": "5b229ed00e07ac47d80fcd513a3ab977fc7c7cec6d7c352526cfa7a800a4ad44"
+    },
+    {
+      "path": "packages/core/src/domain/flow-legacy-handle-compatibility.ts",
+      "kind": "new",
+      "sha256": "f93c6fa89865997f0b9c5c609a290fe5dec3454b41165f62e1f72fffd29ddc7c"
+    },
+    {
+      "path": "packages/core/src/domain/flow-measurement.schema.test.ts",
+      "kind": "tracked",
+      "sha256": "94501641c275d203e606061642e49001a4a9b9c1f41fb493a32ba20f320d3af6"
+    },
+    {
+      "path": "packages/core/src/domain/flow-node-extent.schema.ts",
+      "kind": "tracked",
+      "sha256": "5a63a81da7bf747f0fd5e80b6c15a69a86f6fadadc18295f1e586765d9b49e18"
+    },
+    {
+      "path": "packages/core/src/domain/flow-origin-persistence.test.ts",
+      "kind": "new",
+      "sha256": "b718c76fe613116d8a7aa3e7367a8a41513137a8624aaafc0f4af17181d692f9"
+    },
+    {
+      "path": "packages/core/src/domain/flow-origin.schema.test.ts",
+      "kind": "new",
+      "sha256": "ae0700ab1c1689b4a2bfb6c72938e34b2f7fa29ddaf1c04e477c7eb54a30d7c8"
+    },
+    {
+      "path": "packages/core/src/domain/flow-origin.schema.ts",
+      "kind": "new",
+      "sha256": "acbba3e7866ea56d6e7b74770d0b76c69a19f524b72b04379a0420c89211b4ca"
+    },
+    {
+      "path": "packages/core/src/domain/flow-persistence.test.ts",
+      "kind": "tracked",
+      "sha256": "b781e80e4de4d5e851326f16cec42baaab56356eeebe3ac5491366e9220be95f"
+    },
+    {
+      "path": "packages/core/src/domain/flow-persistence.ts",
+      "kind": "tracked",
+      "sha256": "fb4233531b44958dc03adf71bf7cb38ee52d767571b86614f4b081f3a11a5077"
+    },
+    {
+      "path": "packages/core/src/domain/flow-reconnection.schema.ts",
+      "kind": "tracked",
+      "sha256": "b1a2b48ed7e520bc8cda868776f1d5873441a7999a5b97973adc489e02530632"
+    },
+    {
+      "path": "packages/core/src/domain/flow-runtime.schema.ts",
+      "kind": "tracked",
+      "sha256": "fef418a926ead3231f06134faafa104385345764a9217d5fe64d2282a0c892db"
+    },
+    {
+      "path": "packages/core/src/domain/flow-save-format-error.ts",
+      "kind": "tracked",
+      "sha256": "064b458b810ad73da5b46ba21bc77a944f0cc075817e5985c977880d317d9c3a"
+    },
+    {
+      "path": "packages/core/src/domain/flow.schema.test.ts",
+      "kind": "tracked",
+      "sha256": "052ba4412dc01f35634e4f0a85ae6f3b01426ec5d9c8408101d5c510f460cfd7"
+    },
+    {
+      "path": "packages/core/src/domain/flow.schema.ts",
+      "kind": "tracked",
+      "sha256": "e6f3f97ffbaa99721b71d4e3474135e37cdf6030731f66eedb98b934e454130c"
+    },
+    {
+      "path": "packages/core/src/public.ts",
+      "kind": "tracked",
+      "sha256": "7b8f02100fab59d4804e332915b37e58c0effe9877c695c6cb342be5991867a5"
+    },
+    {
+      "path": "packages/foldkit/src/application.test.ts",
+      "kind": "tracked",
+      "sha256": "6b0e31af2cb747acf2209a74ab1a1997f5e80ab4c7d020404a85229460cb4b13"
+    },
+    {
+      "path": "packages/foldkit/src/application.ts",
+      "kind": "tracked",
+      "sha256": "09041a59a48e0f6c3e4dbaa97a86320083a5e3af3c312a5c8bae5efd2af6cdb7"
+    },
+    {
+      "path": "packages/foldkit/src/graph.ts",
+      "kind": "tracked",
+      "sha256": "bc7cea3a508a710a312d99cd83c2d6b241878da3295ca2acf81a97870883c778"
+    },
+    {
+      "path": "packages/foldkit/src/public.ts",
+      "kind": "tracked",
+      "sha256": "f9835e72fad88d40d6469938f0a32fea48d478dcc546f8fce2808a42ebeed925"
+    },
+    {
+      "path": "packages/foldkit/src/snapshot-client.test.ts",
+      "kind": "tracked",
+      "sha256": "aa3c5d30264eddd0760b5035068bc41d596bb4783d53acbe2d48ebf753dab838"
+    },
+    {
+      "path": "packages/foldkit/src/snapshot-client.ts",
+      "kind": "tracked",
+      "sha256": "f0cdd6de2e4f45bde412568749d4825f42fd56dcd06b55b3d50684ffe9937a18"
+    },
+    {
+      "path": "packages/vue/src/flow-canvas.ts",
+      "kind": "tracked",
+      "sha256": "611c202d65f81340790f047c421b5e612791aa035a993df5e5fc1b1a26a01350"
+    },
+    {
+      "path": "packages/vue/src/use-flow.ts",
+      "kind": "tracked",
+      "sha256": "abf4c45476d3dceb659035bf06ae29b1d04390a9ba32c715b74454058e90c2dc"
+    },
+    {
+      "path": "plans/057-member-closure.json",
+      "kind": "tracked",
+      "sha256": "36b6f9019d7799e51dcf6ef1a14c4ebb1fec52d0feeffbdc60039747ac043643"
+    },
+    {
+      "path": "plans/065-complete-measured-handle-refresh.md",
+      "kind": "tracked",
+      "sha256": "eae4741114e61b806b2b2458079fdcb27b9c73c2a035ef1d632f9317cc7a5994"
+    },
+    {
+      "path": "plans/065-member-reconciliation.json",
+      "kind": "tracked",
+      "sha256": "b4ed9ae49388ce0d32a54a05ad94e10c6e5eb9aab19125f43e8b6e32709e170f"
+    },
+    {
+      "path": "plans/070-migrate-origin-aware-persistence.md",
+      "kind": "tracked",
+      "sha256": "d251a9e1801495926587c8342e959a889fc30db089057a6563323d907c644ef9"
+    },
+    {
+      "path": "plans/080-integrate-origin-native-test-contracts.md",
+      "kind": "new",
+      "sha256": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14"
+    },
+    {
+      "path": "plans/check-065-reconciliation.mjs",
+      "kind": "tracked",
+      "sha256": "a4923d90cde0c019d35b6ce6cf8b7ca706010756034d5652dcade33eecd37cf1"
+    },
+    {
+      "path": "plans/complete-persistence-execution.md",
+      "kind": "new",
+      "sha256": "84a72124a0971df7d97d221b0c3c9903f2d0dd7188c3c93077eb1006aaa9dcd0"
+    },
+    {
+      "path": "plans/directed-connection-design-supplement.md",
+      "kind": "new",
+      "sha256": "1123d5c95ab7ecaf4b9ab68fbb181a18cf6197454db92bf302c21a6e0fe32745"
+    },
+    {
+      "path": "plans/directed-handle-core-execution.md",
+      "kind": "new",
+      "sha256": "a941962f71a57379585551e6cf9c70bd646afb97436ee95672fcab87c5454b79"
+    },
+    {
+      "path": "plans/directed-handle-primary-source-review.md",
+      "kind": "new",
+      "sha256": "f1ec1ef66ea47004842af96ea33c66f93f5231ce732efe8af9e04f9ce2ffa729"
+    },
+    {
+      "path": "plans/historical-origin-fixture-plan.md",
+      "kind": "new",
+      "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
+    },
+    {
+      "path": "plans/measured-handle-acceptance-design.md",
+      "kind": "new",
+      "sha256": "beb5ef046f4d8ab627724548f74587f2fe7b383ca0a3b02f5b25d295978b7ecf"
+    },
+    {
+      "path": "plans/measured-handle-primary-source-review.md",
+      "kind": "new",
+      "sha256": "54a52db3a27d53cf7ccb7116f3d3af308086effd6344924c85231c71c5a86017"
+    },
+    {
+      "path": "plans/native-schema-retention-history.md",
+      "kind": "new",
+      "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
+    },
+    {
+      "path": "plans/origin-assembly-provenance.json",
+      "kind": "new",
+      "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
+    },
+    {
+      "path": "plans/origin-connection-execution-design.md",
+      "kind": "new",
+      "sha256": "08ca42d60ceb96d06b5491e1a2d7fac3f0f13b8e6a63137ec02fc693c6c0a550"
+    },
+    {
+      "path": "plans/origin-connection-reference-execution.md",
+      "kind": "new",
+      "sha256": "84b2f0f60b4ce31d9318545cfaaa12b6edfc9a83bf59dae7c713201f2368f857"
+    },
+    {
+      "path": "plans/origin-connection-reference-primary-review.md",
+      "kind": "new",
+      "sha256": "c957686bce8a3f3cecb1cd4018dcebb61a2ef337e9bf7d5068da35a05e7a13a8"
+    },
+    {
+      "path": "plans/origin-core-execution.md",
+      "kind": "new",
+      "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
+    },
+    {
+      "path": "plans/origin-integration-execution.md",
+      "kind": "new",
+      "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
+    },
+    {
+      "path": "plans/origin-native-integration-design-review.md",
+      "kind": "new",
+      "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+    },
+    {
+      "path": "plans/origin-native-integration-execution.md",
+      "kind": "new",
+      "sha256": "52cd2beadd4c77d090700e83d1994ff3e94ab48a91fa8abdc429288d0473aea5"
+    },
+    {
+      "path": "plans/origin-native-integration-initial-scope.md",
+      "kind": "new",
+      "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
+    },
+    {
+      "path": "plans/origin-native-integration-provenance.json",
+      "kind": "new",
+      "sha256": "b03a46b0cb7399be77c03426ac826fb514bcffe09ef5f60a77cadba61f2c7fcb"
+    },
+    {
+      "path": "plans/origin-native-primary-source-review.md",
+      "kind": "new",
+      "sha256": "eddc450e151511e33bbe52b9585a6d5151dc2333f2f623e47dfbe7aa6bb9bf3c"
+    },
+    {
+      "path": "plans/persistence-output-isolation-design-review.md",
+      "kind": "new",
+      "sha256": "9b8ca8b86e49063667c63afcac694b2f04b6f7067d78b4273c5defe10f7b41ef"
+    },
+    {
+      "path": "plans/planning-artifact-names.md",
+      "kind": "new",
+      "sha256": "9bc0d0f138f4b8b3eddfb3f2b1f9710ff3b7e75f791ee5cd0d4e461a51a73650"
+    },
+    {
+      "path": "research/PROGRESS.md",
+      "kind": "tracked",
+      "sha256": "97d37d7d9fa8ef300074b1aad66a61764b5e0c63527125b07405103c95ca6e7f"
+    },
+    {
+      "path": "research/catalogs/api-members.json",
+      "kind": "tracked",
+      "sha256": "018ac2c23664ac9f28763abd02535b0176345a4c4f01655ad87c2dffd2e5b4d3"
+    },
+    {
+      "path": "research/fixtures/handle-refresh-reference.json",
+      "kind": "tracked",
+      "sha256": "4973ee9a64fa62a27b173374586224c65575901b8564deef4e6af897415d7bce"
+    },
+    {
+      "path": "research/fixtures/origin-connection-reference.json",
+      "kind": "new",
+      "sha256": "06d04831bd9bae9886bb8d62676ecfc44547e160cda0e7a40b0ba2fee5515643"
+    },
+    {
+      "path": "research/harnesses/handle-refresh/fixture-schema.ts",
+      "kind": "tracked",
+      "sha256": "6e486c2d7d5751753d4c0cce228dfb0356186b21762907ddfc7abe01ebab6655"
+    },
+    {
+      "path": "research/harnesses/handle-refresh/main.tsx",
+      "kind": "tracked",
+      "sha256": "ae4c9a81eee8a33ee299488f1c8a055372db5837685a592dce366ab054eb16f0"
+    },
+    {
+      "path": "research/harnesses/origin-connection/fixture-schema.ts",
+      "kind": "new",
+      "sha256": "3280c7100fef5bf93f7aedba5d9a59e5fb858be3857fe0dbb370cbbd09585632"
+    },
+    {
+      "path": "research/harnesses/origin-connection/index.html",
+      "kind": "new",
+      "sha256": "2c9d70bf2d41906dbda2d166a2c9b85898681c608b89458374d7d3eac0476431"
+    },
+    {
+      "path": "research/harnesses/origin-connection/main.tsx",
+      "kind": "new",
+      "sha256": "72b55485978d685765d8d89781e6f934844bd5bd88ffef4a48c5aeb99c8e2234"
+    },
+    {
+      "path": "research/harnesses/origin-connection/vite.config.ts",
+      "kind": "new",
+      "sha256": "e76216b4602e9451a3a8e4e472ee54375a154a1547a58f392e10f56a9675a21b"
+    },
+    {
+      "path": "research/traces/complete-versioned-persistence.md",
+      "kind": "new",
+      "sha256": "eae1f47493b3d574a24771ab8daa1926c3b9d53d79273b85ddab2aabaa203824"
+    },
+    {
+      "path": "research/traces/origin-connection-reference.md",
+      "kind": "new",
+      "sha256": "026a9bb729a4c0277dc777d21daf375b60886bb3ac0e316847a80e93e676ecbd"
+    },
+    {
+      "path": "research/traces/public-api-completion.md",
+      "kind": "tracked",
+      "sha256": "44e111cd4f7821e1f31a864467350928d062948daa0f28005b8b5220f8f1b007"
+    },
+    {
+      "path": "research/traces/shared-measured-geometry.md",
+      "kind": "tracked",
+      "sha256": "7209c6863115b996ebc796450b1eb40c7da1856adc5c3f5efcb3ac4b8e1cf809"
+    },
+    {
+      "path": "scripts/capture-handle-refresh-reference.ts",
+      "kind": "tracked",
+      "sha256": "3b9dd3d6ba662f9cef06784756496a550760e2c5f673200c30dfa12c83c4b743"
+    },
+    {
+      "path": "scripts/capture-origin-connection-reference.ts",
+      "kind": "new",
+      "sha256": "a1e6439ddceeaa901463206602ae99ba6e15b9c8c9d781b5779c7bc07b7fcc0e"
+    },
+    {
+      "path": "tests/consumer/consumer.typecheck.ts",
+      "kind": "tracked",
+      "sha256": "dda70e8f1e2b16e252a60fc638f9001c1847afdc7440cf4df5e62d1c83200d9b"
+    },
+    {
+      "path": "tests/consumer/foldkit/consumer.typecheck.ts",
+      "kind": "tracked",
+      "sha256": "80680485bcb88c8f1f98b98a014ae43d03e3e45f4779ca110674216deaec5ac0"
+    },
+    {
+      "path": "tests/consumer/vue/consumer.typecheck.ts",
+      "kind": "tracked",
+      "sha256": "4a9b0ecfb76efc6413e52781a184da62919334aec1a8d588588453bfa5e5ccd7"
+    },
+    {
+      "path": "verification.config.json",
+      "kind": "tracked",
+      "sha256": "f85431a4b7bb9a64d77cbad793326310659b19cab725b85833e0f8bb26215362"
+    }
+  ],
+  "strictPorts": {
+    "ports": [4176, 4177, 4178],
+    "ownedServersStopped": true
+  },
+  "frozenLegacyOracle": {
+    "path": "packages/conformance/src/fixtures/legacy-v1-persistence",
+    "provenance": {
+      "revision": "de36b4f64fe80d99886c0b7a9fb505258b872ac9",
+      "bun": "1.3.14",
+      "effect": "4.0.0-rc.116",
+      "typescript": "5.9.3",
+      "packageHash": "26101c75bc93ddfda7f644fcf637c9e51eb49fc1cd46ff8ec9203bc66079518e",
+      "entry": "packages/core/src/domain/flow-persistence.ts",
+      "target": "bun",
+      "external": ["effect"],
+      "sourceHashes": {
+        "packages/core/src/domain/flow-persistence.ts": "a0e982980720593f6e68d2c44b9cbda967cb600e1a566b141ebf759a6824a4ae",
+        "packages/core/src/domain/flow-runtime.schema.ts": "d2c1a05ba51da281c35dc120255b4567b3eb28dc4238a2ea09b702806091278c",
+        "packages/core/src/domain/flow-connection.schema.ts": "745b1146ebc1369e0cca3e43b1049400597518436d52a5828350cf8e6b5abbb0",
+        "packages/core/src/telemetry/flow-telemetry.ts": "ec7b617a412ebab74a6a52590161bebe8087ae868e272e3a5357f52f7f3e432d",
+        "packages/core/src/domain/flow-values.ts": "107e4148ce99187b591ef5f5d5f848e183058a1b98febcfb17274cbecd34054d",
+        "packages/core/src/domain/flow-edit.schema.ts": "e29d6028ac32e3f3f8fe099b468311e048ac44d33034e44575736b3a03c7ac4c",
+        "packages/core/src/domain/flow.schema.ts": "70ec97d5d956d37fb80035ca3d9a7bf405e389ff04872c274cc698a0c5d08a03",
+        "packages/core/src/domain/duplicate-edge-id.ts": "aea0c58d691db6ea89f2978977b2a27f33a0863e75d57cbda27c7d3e6092e04d",
+        "packages/core/src/domain/duplicate-handle-id.ts": "6a1324eb6714929986819b2734ff4ce9749b4fa903b7341d9a1fe32eec9781bd",
+        "packages/core/src/domain/duplicate-node-id.ts": "933b3b8b62b0922f16fff486b555cfad2ba09ad0bcc1e788e6ccc9a3e4440697",
+        "packages/core/src/domain/missing-edge-endpoint.ts": "3805ea3a611c7e1639576a880bcd763096fb0145cc44094db9415671fa8cd04d",
+        "packages/core/src/domain/missing-edge-handle.ts": "93a517496f3964d62ce3ac788451bd6d6c668e585d3b206e492c146df45860f7",
+        "packages/core/src/domain/missing-parent-node.ts": "5b94f68d8a258e1a3b9b04cbab314c25dc938c82080813ec72f577ea319be8b7",
+        "packages/core/src/domain/parent-cycle.ts": "657a38ae68da89bb51a7ed6f3ec0cfc1968dbc0d88dc25bc9c867fe8f6c1ac25",
+        "packages/core/src/domain/parent-extent-without-parent.ts": "e5861c13964f2c7022c17760524d6a4d060c17966d4c99c3360d5ca7662cc8f9",
+        "packages/core/src/domain/self-parent-node.ts": "769ce5cc5625223118455a7c53ed73d4324ade559c4a466cfc904cbea303941f",
+        "packages/core/src/domain/flow-edit.ts": "4a607ef06e63edbd9f02de4494c01688f624578fc3f7806eebec9adad6b49e92",
+        "packages/core/src/domain/flow-delete.schema.ts": "569fca095ca119070e15b7c8d908b0410be1958138ff3386bb84f088494be003",
+        "packages/core/src/domain/flow-edit-error.ts": "367f1968b7ff9d0588b280e0d94ce3ab87090824455f6abf2fd049463ff3fe2e",
+        "packages/core/src/domain/flow-delete-approval-failed-error.ts": "9af5f11cd6ea1a6ce6d6aa4bd70af462b97843bdcc1812220f95a53a70f0e491",
+        "packages/core/src/domain/flow-delete-cancelled-error.ts": "ac354fc8d1763c50a4d018699da9ddda1ec8b7775db807c84fd64e24f7b11d58",
+        "packages/core/src/domain/flow-delete-in-progress-error.ts": "9c374553da33691115d8506ef77c8f95395ff70c813adb2736b22b8b59d9f6f2",
+        "packages/core/src/domain/flow-delete-invalid-candidate-error.ts": "516613127fac76b3eb9297a8b6fc5ecd235a71b79dc7f52e08ab340e32861579",
+        "packages/core/src/domain/flow-delete-revision-error.ts": "faa5c34f83ac96e83cba81d3ef877b20232cb3e73570556906908ec20b94d80f",
+        "packages/core/src/domain/flow-edit-disposed-error.ts": "5c06d6268f9c044e8cab609990b0d2317cb0878846c873977222d0204a2e3be5",
+        "packages/core/src/domain/flow-node-extent.schema.ts": "7e444dd21eefa9259ee11fa1eed048922fef9697d5d1599950f430b15694ada6",
+        "packages/core/src/domain/flow-pan-extent.schema.ts": "5051570d4118d414a762e10f2353ddf2ac1bc48aa00e61b84dd82022b7ff0a0d",
+        "packages/core/src/domain/flow-reconnection.schema.ts": "5daeb0586510529a7d173be63a43df1d03be94478750dfbd198532d4d821efb4",
+        "packages/core/src/domain/flow-edge.schema.ts": "1a6ea3e724fbeacb3f5d4655b472585aa6a792d7833434bcfb4def9921f1ed8c",
+        "packages/core/src/domain/flow-snap-grid.schema.ts": "580079f0fb858ddc2317230221eac588153afa26297d045f3a0ebb46f236559d",
+        "packages/core/src/domain/flow-snapshot.ts": "7b6edd3dde543e7e1ba3483ebf90863795fcd1bd257f841cd042a79f3a67542b"
+      },
+      "artifactHashes": {
+        "baseline-reader-writer.js": "5fddef8419c2e15a65e898a1e6578a1ec960a6574076ac2612845f93194f2998",
+        "baseline-reader-writer.d.ts": "e45afbda20d9b92e9a8d079b8a5ecff5901c9d15be772eff4fc9772acd9c07bf",
+        "representative.json": "394ecd864ebe6af28b92b06a9b450d26115f68d0190262fdb2b976981a150fab",
+        "declarations/domain/duplicate-edge-id.d.ts": "1942be309b83354a7e5af91fd40f9de98b389bc557376f293331bbb8f84c5532",
+        "declarations/domain/duplicate-handle-id.d.ts": "1b75ea364c42a20c23967e520071dbf5e300b0f6cb30e8b20e01a36d01e63bef",
+        "declarations/domain/duplicate-node-id.d.ts": "91daa1c5f2179215cff3744289f96194ac41afb9be6a6fc4e65f03a52450559e",
+        "declarations/domain/flow-delete-approval-failed-error.d.ts": "a14c106bb4708f22bd7aa0e9eed10c262f1510a3bf51ca7742af899d2f962d77",
+        "declarations/domain/flow-delete-cancelled-error.d.ts": "f2e77034c585d3bf76e92a34a845a784b2631ed85d99ab8839928740c6a69b13",
+        "declarations/domain/flow-delete-error.d.ts": "94d069fcd1aa9970a0e23a2c14197e004cbee4d7d5cc8734dc2839e930a5d3e4",
+        "declarations/domain/flow-delete-in-progress-error.d.ts": "6cd6009ba6ebeee1a85586dd84b63cfa851ddb4f24fa19eefe5fa70ecf0b988d",
+        "declarations/domain/flow-delete-invalid-candidate-error.d.ts": "14e272ec05932a04a0c996a8d6dc42bfd70a544d1a5b469239372ff3672203f9",
+        "declarations/domain/flow-delete-revision-error.d.ts": "1bc8b3c65388308851641534609f6e3786636ab68314035481e5f78aa955f5d1",
+        "declarations/domain/flow-edit-disposed-error.d.ts": "9cd38996ef7fddcb299cfaa9582f97aa7f2da0a90ea1d0528da19d8ea5b1a90b",
+        "declarations/domain/flow-edit-error.d.ts": "76c7569131803d7bd0e1b514c8f460becb2ddd88eec3b22f592f912762271379",
+        "declarations/domain/flow-persistence.d.ts": "ad7659dab5b0c28eb2833af97124311e5e8c731a466f1530606d14b760f2872b",
+        "declarations/domain/flow-runtime.schema.d.ts": "d4cfd6ea961c4f761a29f130653d9cc393470a19c714b903b44c7d517dd63e9f",
+        "declarations/domain/flow-snap-grid.schema.d.ts": "06ec45f423fa7cbfe2f3a1f70c3f108a0e91f88d831855a4eaef7d1a8543f828",
+        "declarations/domain/flow-values.d.ts": "f4d14332a36b7087fcc731e785588d1c74726b0572e8bc4d6950c760237a6367",
+        "declarations/domain/flow.schema.d.ts": "a2d8afb95d08c87126d31a3e1a4930eca6ba6f8b2aa5610b2da351117e9c6f59",
+        "declarations/domain/missing-edge-endpoint.d.ts": "6dad9d9f060cc3f315728f929e1d5212e768bf9a73de86421c5ccc6a65a24aa7",
+        "declarations/domain/missing-edge-handle.d.ts": "46ac357e7c450875ac5207a2d668448432481da333bc10ca24b35122235fb6f6",
+        "declarations/domain/missing-parent-node.d.ts": "9641439e9419a7c5611a70371c67a9920e8adc8a228671167092c46e39081c4f",
+        "declarations/domain/parent-cycle.d.ts": "2a34987cc6a1a92a5048ca82fa3a3b7e8d50294fdb5658b61391aeb2c67caa34",
+        "declarations/domain/parent-extent-without-parent.d.ts": "e41f7e212a488ee0cc028d19c23392538885d459a87b843243081c157ba3bd63",
+        "declarations/domain/self-parent-node.d.ts": "fc5aa6a410faeb3d8d487b2ddd601cd701cbc7983217d4ccb018e3bb69409fbf"
+      }
+    },
+    "files": [
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.d.ts",
+        "sha256": "e45afbda20d9b92e9a8d079b8a5ecff5901c9d15be772eff4fc9772acd9c07bf"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.js",
+        "sha256": "5fddef8419c2e15a65e898a1e6578a1ec960a6574076ac2612845f93194f2998"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/duplicate-edge-id.d.ts",
+        "sha256": "1942be309b83354a7e5af91fd40f9de98b389bc557376f293331bbb8f84c5532"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/duplicate-handle-id.d.ts",
+        "sha256": "1b75ea364c42a20c23967e520071dbf5e300b0f6cb30e8b20e01a36d01e63bef"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/duplicate-node-id.d.ts",
+        "sha256": "91daa1c5f2179215cff3744289f96194ac41afb9be6a6fc4e65f03a52450559e"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-delete-approval-failed-error.d.ts",
+        "sha256": "a14c106bb4708f22bd7aa0e9eed10c262f1510a3bf51ca7742af899d2f962d77"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-delete-cancelled-error.d.ts",
+        "sha256": "f2e77034c585d3bf76e92a34a845a784b2631ed85d99ab8839928740c6a69b13"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-delete-error.d.ts",
+        "sha256": "94d069fcd1aa9970a0e23a2c14197e004cbee4d7d5cc8734dc2839e930a5d3e4"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-delete-in-progress-error.d.ts",
+        "sha256": "6cd6009ba6ebeee1a85586dd84b63cfa851ddb4f24fa19eefe5fa70ecf0b988d"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-delete-invalid-candidate-error.d.ts",
+        "sha256": "14e272ec05932a04a0c996a8d6dc42bfd70a544d1a5b469239372ff3672203f9"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-delete-revision-error.d.ts",
+        "sha256": "1bc8b3c65388308851641534609f6e3786636ab68314035481e5f78aa955f5d1"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-edit-disposed-error.d.ts",
+        "sha256": "9cd38996ef7fddcb299cfaa9582f97aa7f2da0a90ea1d0528da19d8ea5b1a90b"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-edit-error.d.ts",
+        "sha256": "76c7569131803d7bd0e1b514c8f460becb2ddd88eec3b22f592f912762271379"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-persistence.d.ts",
+        "sha256": "ad7659dab5b0c28eb2833af97124311e5e8c731a466f1530606d14b760f2872b"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-runtime.schema.d.ts",
+        "sha256": "d4cfd6ea961c4f761a29f130653d9cc393470a19c714b903b44c7d517dd63e9f"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-snap-grid.schema.d.ts",
+        "sha256": "06ec45f423fa7cbfe2f3a1f70c3f108a0e91f88d831855a4eaef7d1a8543f828"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow-values.d.ts",
+        "sha256": "f4d14332a36b7087fcc731e785588d1c74726b0572e8bc4d6950c760237a6367"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/flow.schema.d.ts",
+        "sha256": "a2d8afb95d08c87126d31a3e1a4930eca6ba6f8b2aa5610b2da351117e9c6f59"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/missing-edge-endpoint.d.ts",
+        "sha256": "6dad9d9f060cc3f315728f929e1d5212e768bf9a73de86421c5ccc6a65a24aa7"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/missing-edge-handle.d.ts",
+        "sha256": "46ac357e7c450875ac5207a2d668448432481da333bc10ca24b35122235fb6f6"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/missing-parent-node.d.ts",
+        "sha256": "9641439e9419a7c5611a70371c67a9920e8adc8a228671167092c46e39081c4f"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/parent-cycle.d.ts",
+        "sha256": "2a34987cc6a1a92a5048ca82fa3a3b7e8d50294fdb5658b61391aeb2c67caa34"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/parent-extent-without-parent.d.ts",
+        "sha256": "e41f7e212a488ee0cc028d19c23392538885d459a87b843243081c157ba3bd63"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/declarations/domain/self-parent-node.d.ts",
+        "sha256": "fc5aa6a410faeb3d8d487b2ddd601cd701cbc7983217d4ccb018e3bb69409fbf"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/provenance.json",
+        "sha256": "f9af17e0e2d1e9f78fd147b09d3142f33d076ec5f5bf7b06eabc7e886a7d6333"
+      },
+      {
+        "path": "packages/conformance/src/fixtures/legacy-v1-persistence/representative.json",
+        "sha256": "394ecd864ebe6af28b92b06a9b450d26115f68d0190262fdb2b976981a150fab"
+      }
+    ]
+  },
+  "historicalConnectionFixture": {
+    "path": "research/fixtures/interaction-lifecycle.json",
+    "sha256": "7ac47c49a0d567580fb3076c7252b60b89976df9bb866ca373e07663925d7db1",
+    "unchangedFromBaseline": true
+  },
+  "pinnedOriginConnectionCapture": {
+    "path": "research/fixtures/origin-connection-reference.json",
+    "sha256": "06d04831bd9bae9886bb8d62676ecfc44547e160cda0e7a40b0ba2fee5515643",
+    "metadata": {
+      "upstreamSha": "0a1f9575b25679f2880175de8d3eae21aedde921",
+      "version": "12.11.6",
+      "captureRuns": 2,
+      "browser": "Chromium 151.0.7922.34",
+      "capturedAt": "2026-09-30T16:06:31.081Z",
+      "normalization": "Graph and DOM coordinates rounded to0.001; timestamps excluded from samples; two fresh ReactFlow mounts per scenario; public toObject own handle/origin keys retained separately; 10px borderless caller handles"
+    },
+    "scenarioCount": 33
+  },
+  "dependencyManifests": [
+    {
+      "path": "package.json",
+      "sha256": "4c944ecead5be19031213069cd6ef22285aa5e199146d4fb686e922c9d65880c"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "e6cd3b1436a12de7c05349f4dcb248238df53b9f93862d9f80b7c57b7cbabb4d"
+    },
+    {
+      "path": "plans/057-member-closure.json",
+      "sha256": "36b6f9019d7799e51dcf6ef1a14c4ebb1fec52d0feeffbdc60039747ac043643"
+    },
+    {
+      "path": "plans/065-member-reconciliation.json",
+      "sha256": "b4ed9ae49388ce0d32a54a05ad94e10c6e5eb9aab19125f43e8b6e32709e170f"
+    },
+    {
+      "path": "research/catalogs/api-members.json",
+      "sha256": "018ac2c23664ac9f28763abd02535b0176345a4c4f01655ad87c2dffd2e5b4d3"
+    },
+    {
+      "path": "verification.config.json",
+      "sha256": "f85431a4b7bb9a64d77cbad793326310659b19cab725b85833e0f8bb26215362"
+    }
+  ],
+  "nextIntegration": {
+    "plan": "/Volumes/Sync/codex/9-19-26/flow/plans/082-integrate-ordered-legacy-and-current-gestures.md",
+    "approval": "PENDING independent architecture review; primary owns exact path/dispatch",
+    "sourceRepairInThisWorktree": false,
+    "planSha256AtFreeze": "2927da8beb18cf47ff8fd991d3488e7b9ee35d5112ead5834ff748010f807a88"
+  }
+}

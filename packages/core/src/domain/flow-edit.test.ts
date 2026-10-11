@@ -7,12 +7,13 @@ import {
   FlowDeleteInvalidCandidate,
   ProtectedDeletionConflict,
 } from './flow-edit-error.ts'
+import { FlowEditResultSchema } from './flow-edit.schema.ts'
 import {
   finalizeFlowDeleteCandidate,
   prepareFlowDeleteCandidate,
   prepareFlowEdit,
 } from './flow-edit.ts'
-import { decodeFlowDocument } from './flow.schema.ts'
+import { decodeFlowDocument, MissingEdgeEndpoint } from './flow.schema.ts'
 
 const document = () =>
   Effect.runSync(
@@ -277,5 +278,489 @@ describe(prepareFlowEdit, () => {
     const error = FlowEditDisposedSchema.make({})
     const encoded = Schema.encodeSync(FlowEditErrorSchema)(error)
     expect(encoded._tag).toBe(error._tag)
+  })
+})
+
+const originDocument = (nodeOrigin: readonly number[] = [-0.5, 1.5]) =>
+  Effect.runSync(decodeFlowDocument({ ...document(), nodeOrigin }))
+
+describe('document origin regression boundaries', () => {
+  it('retains origin during ordinary label and position edits', () => {
+    const initial = originDocument()
+
+    const result = Effect.runSync(
+      prepareFlowEdit(initial, {
+        operations: [
+          {
+            kind: 'update-node',
+            nodeId: 'd',
+            patch: { label: 'Edited', position: { x: 50, y: -20 } },
+          },
+        ],
+      })
+    )
+
+    expect(result.document).toMatchObject({ nodeOrigin: [-0.5, 1.5] })
+    expect(result.document.nodes[3]).toMatchObject({
+      label: 'Edited',
+      position: { x: 50, y: -20 },
+    })
+  })
+
+  it('retains origin through prepared and approved deletion', () => {
+    const initial = originDocument()
+
+    const { candidate, result: prepared } = Effect.runSync(
+      prepareFlowDeleteCandidate(initial, { nodeIds: ['b'] })
+    )
+
+    const result = Effect.runSync(
+      finalizeFlowDeleteCandidate(initial, candidate, true, 'origin-delete')
+    )
+
+    expect({
+      prepared: prepared.document,
+      approved: result.document,
+    }).toMatchObject({
+      prepared: { nodeOrigin: [-0.5, 1.5] },
+      approved: { nodeOrigin: [-0.5, 1.5] },
+    })
+    expect(result.deletion).toStrictEqual({
+      deletedNodeIds: ['b', 'c'],
+      deletedEdgeIds: ['ab', 'cd'],
+    })
+  })
+
+  it('retains origin when decoding the result document contract', () => {
+    const packet = {
+      document: originDocument(),
+      deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+    }
+
+    expect(
+      Schema.decodeUnknownSync(FlowEditResultSchema)(packet)
+    ).toStrictEqual(packet)
+  })
+
+  it('retains origin when encoding the result document contract', () => {
+    const packet = {
+      document: originDocument(),
+      deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+    }
+
+    expect(Schema.encodeSync(FlowEditResultSchema)(packet)).toStrictEqual(
+      packet
+    )
+  })
+})
+
+describe('origin preservation across transaction and deletion semantics', () => {
+  describe.each([
+    [0.5, 0.5],
+    [-0.5, 1.5],
+    [0, 0],
+  ])('explicit origin [%s, %s]', (x, y) => {
+    it('retains origin during label, position and data merges', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const edited = Effect.runSync(
+        prepareFlowEdit(initial, {
+          operations: [
+            {
+              kind: 'update-node',
+              nodeId: 'd',
+              patch: { label: 'Edited', position: { x: 50, y: -20 } },
+            },
+            {
+              kind: 'update-edge',
+              edgeId: 'cd',
+              patch: { label: 'Edited edge' },
+            },
+            {
+              kind: 'update-node-data',
+              nodeId: 'd',
+              data: { first: 1, second: 2 },
+            },
+            { kind: 'update-node-data', nodeId: 'd', data: { first: 3 } },
+            {
+              kind: 'update-edge-data',
+              edgeId: 'cd',
+              data: { first: 1, second: 2 },
+            },
+            { kind: 'update-edge-data', edgeId: 'cd', data: { first: 3 } },
+          ],
+        })
+      )
+
+      expect(edited.document).toMatchObject({ nodeOrigin: [x, y] })
+      expect(edited.document.nodes[3]).toMatchObject({
+        label: 'Edited',
+        position: { x: 50, y: -20 },
+        data: { first: 3, second: 2 },
+      })
+      expect(edited.document.edges[1]).toMatchObject({
+        label: 'Edited edge',
+        data: { first: 3, second: 2 },
+      })
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('preserves untouched node and edge references', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const edited = Effect.runSync(
+        prepareFlowEdit(initial, {
+          operations: [
+            { kind: 'update-node', nodeId: 'd', patch: { label: 'Edited' } },
+            {
+              kind: 'update-edge',
+              edgeId: 'cd',
+              patch: { label: 'Edited edge' },
+            },
+          ],
+        })
+      )
+
+      expect(edited.document.nodes[0]).toBe(initial.nodes[0])
+      expect(edited.document.edges[0]).toBe(initial.edges[0])
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('retains origin while replacing node and edge data', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const replaced = Effect.runSync(
+        prepareFlowEdit(initial, {
+          operations: [
+            { kind: 'update-node-data', nodeId: 'd', data: { first: 1 } },
+            { kind: 'update-edge-data', edgeId: 'cd', data: { first: 1 } },
+            {
+              kind: 'update-node-data',
+              nodeId: 'd',
+              data: { only: true },
+              replace: true,
+            },
+            {
+              kind: 'update-edge-data',
+              edgeId: 'cd',
+              data: { only: true },
+              replace: true,
+            },
+          ],
+        })
+      )
+
+      expect(replaced.document).toMatchObject({ nodeOrigin: [x, y] })
+      expect(replaced.document.nodes[3]?.data).toStrictEqual({ only: true })
+      expect(replaced.document.edges[1]?.data).toStrictEqual({ only: true })
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('retains origin during collection replacement and addition', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const collection = Effect.runSync(
+        prepareFlowEdit(initial, {
+          operations: [
+            { kind: 'set-edges', edges: [] },
+            {
+              kind: 'set-nodes',
+              nodes: [
+                { id: 'a', label: 'Replacement', position: { x: 0, y: 0 } },
+              ],
+            },
+            {
+              kind: 'add-nodes',
+              nodes: [{ id: 'x', label: 'Added', position: { x: 4, y: 4 } }],
+            },
+            {
+              kind: 'add-edges',
+              edges: [{ id: 'ax', source: 'a', target: 'x' }],
+            },
+          ],
+        })
+      )
+
+      expect(collection.document).toMatchObject({ nodeOrigin: [x, y] })
+      expect(
+        collection.document.nodes.map(({ id, label }) => ({ id, label }))
+      ).toStrictEqual([
+        { id: 'a', label: 'Replacement' },
+        { id: 'x', label: 'Added' },
+      ])
+      expect(collection.document.edges.map(({ id }) => id)).toStrictEqual([
+        'ax',
+      ])
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('retains origin and unaffected identities during empty and missing-target edits', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const noOp = Effect.runSync(prepareFlowEdit(initial, { operations: [] }))
+
+      const missing = Effect.runSync(
+        prepareFlowEdit(initial, {
+          operations: [
+            {
+              kind: 'update-node',
+              nodeId: 'missing',
+              patch: { label: 'Ignored' },
+            },
+            {
+              kind: 'update-edge',
+              edgeId: 'missing',
+              patch: { label: 'Ignored' },
+            },
+            {
+              kind: 'update-node-data',
+              nodeId: 'missing',
+              data: { ignored: true },
+            },
+            {
+              kind: 'update-edge-data',
+              edgeId: 'missing',
+              data: { ignored: true },
+            },
+          ],
+        })
+      )
+
+      for (const result of [noOp, missing]) {
+        expect(result.document).toStrictEqual(initial)
+
+        for (const [index, node] of initial.nodes.entries()) {
+          expect(result.document.nodes[index]).toBe(node)
+        }
+
+        for (const [index, edge] of initial.edges.entries()) {
+          expect(result.document.edges[index]).toBe(edge)
+        }
+      }
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('retains origin through delete then edit transactions', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const compound = Effect.runSync(
+        prepareFlowEdit(initial, {
+          operations: [
+            { kind: 'delete-elements', nodeIds: ['b', 'missing', 'b'] },
+            {
+              kind: 'update-node',
+              nodeId: 'd',
+              patch: { label: 'After delete' },
+            },
+          ],
+        })
+      )
+
+      expect(compound.document).toMatchObject({ nodeOrigin: [x, y] })
+      expect(
+        compound.document.nodes.map(({ id, label }) => ({ id, label }))
+      ).toStrictEqual([
+        { id: 'a', label: 'A' },
+        { id: 'd', label: 'After delete' },
+      ])
+      expect(compound.deletion).toStrictEqual({
+        deletedNodeIds: ['b', 'c'],
+        deletedEdgeIds: ['ab', 'cd'],
+      })
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('retains origin and document order through prepared and approved deletion', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const { candidate, result: prepared } = Effect.runSync(
+        prepareFlowDeleteCandidate(initial, { nodeIds: ['b'] })
+      )
+
+      const approved = Effect.runSync(
+        finalizeFlowDeleteCandidate(initial, candidate, true, 'origin-approved')
+      )
+
+      for (const result of [prepared, approved]) {
+        expect(result.document).toMatchObject({ nodeOrigin: [x, y] })
+        expect(result.document.nodes[0]).toBe(initial.nodes[0])
+        expect(result.document.nodes[1]).toBe(initial.nodes[3])
+        expect(result.deletion).toStrictEqual({
+          deletedNodeIds: ['b', 'c'],
+          deletedEdgeIds: ['ab', 'cd'],
+        })
+        expect(
+          Schema.decodeUnknownSync(FlowEditResultSchema)(
+            Schema.encodeSync(FlowEditResultSchema)(result)
+          )
+        ).toStrictEqual(result)
+      }
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('returns the original origin document when deletion is denied', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const { candidate } = Effect.runSync(
+        prepareFlowDeleteCandidate(initial, { nodeIds: ['b'] })
+      )
+
+      const denied = Effect.runSync(
+        finalizeFlowDeleteCandidate(initial, candidate, false, 'origin-denied')
+      )
+
+      expect(denied.document).toBe(initial)
+      expect(denied.deletion).toStrictEqual({
+        deletedNodeIds: [],
+        deletedEdgeIds: [],
+      })
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('leaves the original origin document intact on graph rollback', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const failure = Effect.runSync(
+        Effect.flip(
+          prepareFlowEdit(initial, {
+            operations: [{ kind: 'set-nodes', nodes: [] }],
+          })
+        )
+      )
+
+      expect(failure).toBeInstanceOf(MissingEdgeEndpoint)
+
+      expect(initial).toStrictEqual(before)
+    })
+
+    it('leaves protected origin documents intact on deletion failure', () => {
+      const initial = originDocument([x, y])
+
+      const before = structuredClone(initial)
+
+      const protectedDocument = Effect.runSync(
+        decodeFlowDocument({
+          ...initial,
+          nodes: initial.nodes.map((node) =>
+            node.id === 'c' ? { ...node, deletable: false } : node
+          ),
+        })
+      )
+
+      const protectedBefore = structuredClone(protectedDocument)
+
+      const protectedFailure = Effect.runSync(
+        Effect.flip(
+          prepareFlowEdit(protectedDocument, {
+            operations: [{ kind: 'delete-elements', nodeIds: ['b'] }],
+          })
+        )
+      )
+
+      expect(protectedFailure).toBeInstanceOf(ProtectedDeletionConflict)
+      expect(protectedFailure).toMatchObject({ nodeIds: ['c'] })
+      expect(protectedDocument).toStrictEqual(protectedBefore)
+
+      expect(initial).toStrictEqual(before)
+    })
+  })
+
+  it.each(['absent', 'own-undefined'])(
+    'preserves %s origin key semantics through edits and result transport',
+    (presence) => {
+      const initial =
+        presence === 'absent'
+          ? document()
+          : Effect.runSync(
+              decodeFlowDocument({ ...document(), nodeOrigin: undefined })
+            )
+
+      expect(Object.hasOwn(initial, 'nodeOrigin')).toBe(
+        presence === 'own-undefined'
+      )
+      expect(initial.nodeOrigin).toBeUndefined()
+
+      const { candidate } = Effect.runSync(
+        prepareFlowDeleteCandidate(initial, { nodeIds: ['b'] })
+      )
+
+      const results = [
+        Effect.runSync(prepareFlowEdit(initial, { operations: [] })),
+        Effect.runSync(
+          prepareFlowEdit(initial, {
+            operations: [
+              { kind: 'update-node', nodeId: 'd', patch: { label: 'Edited' } },
+            ],
+          })
+        ),
+        Effect.runSync(
+          finalizeFlowDeleteCandidate(
+            initial,
+            candidate,
+            true,
+            'optional-origin'
+          )
+        ),
+      ]
+
+      for (const result of results) {
+        const encoded = Schema.encodeSync(FlowEditResultSchema)(result)
+        const decoded = Schema.decodeUnknownSync(FlowEditResultSchema)(encoded)
+
+        for (const value of [
+          result.document,
+          encoded.document,
+          decoded.document,
+        ]) {
+          expect(Object.hasOwn(value, 'nodeOrigin')).toBe(
+            presence === 'own-undefined'
+          )
+          expect(value.nodeOrigin).toBeUndefined()
+        }
+      }
+    }
+  )
+
+  it.each([
+    null,
+    [0],
+    [0, 1, 2],
+    ['0', 1],
+    [Number.NaN, 0],
+    [0, Number.POSITIVE_INFINITY],
+    [Number.NEGATIVE_INFINITY, 0],
+  ])('rejects invalid origin metadata at result decoding: %j', (nodeOrigin) => {
+    expect(() =>
+      Schema.decodeUnknownSync(FlowEditResultSchema)({
+        document: { ...document(), nodeOrigin },
+        deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+      })
+    ).toThrow(expect.objectContaining({ name: 'SchemaError' }))
   })
 })

@@ -392,3 +392,60 @@ describe('generation-scoped measured handles', () => {
     ).toThrow('Expected')
   })
 })
+
+describe('original 065 dimension absence boundary, unit path', () => {
+  it('keeps current hidden dimensions while clearing handles, and uses fallback without a sample', () => {
+    const unmeasured = getFlowInternalNode(
+      document,
+      emptyFlowMeasurementState(),
+      id('hidden')
+    )
+
+    expect(unmeasured).toMatchObject({
+      width: 150,
+      height: 44,
+      measurementStatus: 'hidden',
+      handles: [],
+    })
+
+    const measured = applyNodeMeasurement(
+      document,
+      emptyFlowMeasurementState(),
+      {
+        generation: 0,
+        nodeId: id('hidden'),
+        width: 91,
+        height: 37,
+      }
+    )
+
+    expect(getFlowInternalNode(document, measured, id('hidden'))).toMatchObject(
+      { width: 91, height: 37, measurementStatus: 'hidden', handles: [] }
+    )
+  })
+
+  it('rejects nullable or missing sample dimensions while preserving zero samples', () => {
+    for (const dimension of ['width', 'height']) {
+      for (const value of [null, undefined]) {
+        expect(() =>
+          S.decodeUnknownSync(NodeMeasurementInputSchema)({
+            generation: 0,
+            nodeId: 'child',
+            width: 0,
+            height: 0,
+            [dimension]: value,
+          })
+        ).toThrow('Expected')
+      }
+    }
+
+    expect(
+      S.decodeUnknownSync(NodeMeasurementInputSchema)({
+        generation: 0,
+        nodeId: 'child',
+        width: 0,
+        height: 0,
+      })
+    ).toMatchObject({ width: 0, height: 0 })
+  })
+})

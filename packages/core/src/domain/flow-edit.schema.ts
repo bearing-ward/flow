@@ -2,6 +2,7 @@ import { Schema as S } from 'effect'
 
 import {
   EdgeIdSchema,
+  FlowDocumentSchema,
   FlowEdgeSchema,
   FlowNodeSchema,
   NodeIdSchema,
@@ -91,10 +92,7 @@ export const FlowDeleteResultSchema = S.Struct({
 export type FlowDeleteResult = typeof FlowDeleteResultSchema.Type
 
 export const FlowEditResultSchema = S.Struct({
-  document: S.Struct({
-    nodes: S.Array(FlowNodeSchema),
-    edges: S.Array(FlowEdgeSchema),
-  }),
+  document: FlowDocumentSchema,
   deletion: FlowDeleteResultSchema,
 })
 

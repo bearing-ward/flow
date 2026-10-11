@@ -1,5 +1,10 @@
 import { Schema as S } from 'effect'
 
+import {
+  nodeAnchorToTopLeft,
+  nodeTopLeftToAnchor,
+} from './flow-origin.schema.ts'
+import type { NodeOrigin } from './flow-origin.schema.ts'
 import { PanExtentSchema } from './flow-pan-extent.schema.ts'
 import { XYPositionSchema } from './flow-values.ts'
 import type { XYPosition } from './flow-values.ts'
@@ -37,17 +42,26 @@ const constrainAxis = (
   return Math.min(lastPosition, Math.max(minimum, proposed))
 }
 
-/** Keep the complete node within the extent; center it when it cannot fit. */
+/** Constrain an anchor using physical bounds; center oversized nodes within the extent. */
 export const constrainNodePosition = (
   position: XYPosition,
   dimensions: NodeDimensions,
-  extent: NodeExtent
-): XYPosition => ({
-  x: constrainAxis(position.x, extent.minX, extent.maxX, dimensions.width),
-  y: constrainAxis(position.y, extent.minY, extent.maxY, dimensions.height),
-})
+  extent: NodeExtent,
+  origin: NodeOrigin = [0, 0]
+): XYPosition => {
+  const topLeft = nodeAnchorToTopLeft(position, dimensions, origin)
 
-/** Constrain one shared delta so group members keep their relative positions. */
+  return nodeTopLeftToAnchor(
+    {
+      x: constrainAxis(topLeft.x, extent.minX, extent.maxX, dimensions.width),
+      y: constrainAxis(topLeft.y, extent.minY, extent.maxY, dimensions.height),
+    },
+    dimensions,
+    origin
+  )
+}
+
+/** Constrain physical top-left items with one delta, preserving group relative positions. */
 export const constrainNodeGroupDelta = (
   nodes: readonly NodeExtentItem[],
   proposedDelta: XYPosition,

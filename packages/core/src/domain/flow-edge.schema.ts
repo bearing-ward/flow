@@ -54,8 +54,8 @@ const selectHandle = (
   kind: FlowHandle['kind'],
   id: HandleId | undefined
 ): FlowHandle | undefined =>
-  node.handles?.find(
-    (handle) => handle.kind === kind && (id === undefined || handle.id === id)
+  node.handles?.find((handle) =>
+    id === undefined ? handle.kind === kind : handle.id === id
   )
 
 export const resolveEdgeHandles = (document: FlowDocument, edge: FlowEdge) => {

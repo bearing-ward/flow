@@ -67,7 +67,7 @@ export const reconnectFlowEdge = (
       return
     }
 
-    yield* validateFlowConnection(
+    const validated = yield* validateFlowConnection(
       {
         ...document,
         edges: document.edges.filter((item) => item.id !== edgeId),
@@ -77,6 +77,14 @@ export const reconnectFlowEdge = (
     )
 
     return endpoint === 'source'
-      ? { ...edge, source: nodeId, sourceHandle: handleId }
-      : { ...edge, target: nodeId, targetHandle: handleId }
+      ? {
+          ...edge,
+          source: validated.source,
+          sourceHandle: validated.sourceHandle,
+        }
+      : {
+          ...edge,
+          target: validated.target,
+          targetHandle: validated.targetHandle,
+        }
   })

@@ -13,8 +13,7 @@ import type { CalibrationMeasurement } from '../../shared-e2e/performance-calibr
 test('records a warmed Vue performance calibration run', async ({
   browser,
   page,
-}) => {
-  test.setTimeout(900_000)
+}, testInfo) => {
   await page.goto('/test.html')
   await page.evaluate(async () => {
     const harnessPath = '/src/test-harness.ts'
@@ -24,8 +23,14 @@ test('records a warmed Vue performance calibration run', async ({
   const measurements: CalibrationMeasurement[] = []
 
   for (const workload of workloads) {
+    testInfo.setTimeout(testInfo.timeout + 600_000)
+    const started = performance.now()
+    console.log(`FLOW_CALIBRATION_START vue/${workload.id}`)
     // oxlint-disable-next-line no-await-in-loop -- Capture each workload serially to avoid host and registry cross-contamination.
     measurements.push(await captureWorkload(page, 'vue', workload))
+    console.log(
+      `FLOW_CALIBRATION_COMPLETE vue/${workload.id} ${Math.round(performance.now() - started)}ms`
+    )
   }
 
   const source = sourceRevision()
@@ -40,7 +45,7 @@ test('records a warmed Vue performance calibration run', async ({
     measurements,
   }
 
-  appendCalibrationRun(run)
+  await appendCalibrationRun(run)
   console.log(`FLOW_PERFORMANCE_CALIBRATION ${JSON.stringify(run)}`)
   expect(measurements).toHaveLength(workloads.length)
 })

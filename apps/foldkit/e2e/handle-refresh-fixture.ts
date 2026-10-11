@@ -9,7 +9,7 @@ import {
   defaultInteractionOptions,
   createFoldkitSnapshotClient,
 } from '@flow/foldkit'
-import type { SnapshotResponseSchema, ports } from '@flow/foldkit'
+import type { VersionedSnapshotResponseSchema, ports } from '@flow/foldkit'
 import { Effect, Exit, Match } from 'effect'
 import { Runtime } from 'foldkit'
 
@@ -51,8 +51,10 @@ export const startHandleRefresh = async (
 
   const request = async (
     nodeId?: string
-  ): Promise<typeof SnapshotResponseSchema.Encoded> => {
-    const result = await client.request(nodeId === undefined ? {} : { nodeId })
+  ): Promise<typeof VersionedSnapshotResponseSchema.Encoded> => {
+    const result = await client.requestVersioned(
+      nodeId === undefined ? {} : { nodeId }
+    )
 
     return Match.value(result).pipe(
       Match.when({ status: 'succeeded' }, ({ response }) => response),
@@ -88,6 +90,8 @@ export const startHandleRefresh = async (
     measure: (element) => observer.measure(element),
   })
 
+  const refreshReference = refresher.refresh
+
   window.__handleRefresh = {
     refresh: (ids) =>
       refresher.refresh(
@@ -120,6 +124,27 @@ export const startHandleRefresh = async (
         })
       )
       await request()
+    },
+    refreshIdentity: () => refreshReference === refresher.refresh,
+    rejectInvalidHandleId: async (variant) => {
+      const { snapshot } = await request()
+      const candidate = Effect.runSync(decodeFlowDocument(snapshot.document))
+      const action = HostAction.ReplaceDocument({ document: candidate })
+
+      const handle = action.document.nodes.find(({ id }) => id === 'members')
+        ?.handles?.[0]
+
+      if (handle === undefined) {
+        throw new Error('Missing invalid-ID candidate')
+      }
+
+      if (variant === 'missing') {
+        Reflect.deleteProperty(handle, 'id')
+      } else {
+        Reflect.set(handle, 'id', variant === 'null' ? null : '')
+      }
+
+      return Exit.isFailure(runtime.ports.actions.send(action))
     },
     dispose: () => {
       refresher.dispose()

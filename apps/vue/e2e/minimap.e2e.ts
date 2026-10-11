@@ -55,8 +55,8 @@ test('Vue MiniMap projects accepted DOM measurements without editing document da
   }
 
   await node.evaluate((element) => {
-    element.style.width = '300px'
-    element.style.height = '180px'
+    element.style.minWidth = '300px'
+    element.style.minHeight = '180px'
   })
 
   await expect

@@ -15,6 +15,25 @@ export const interactionLifecycleFixture: InteractionLifecycleFixture =
 export const interactionConnectionCases =
   interactionLifecycleFixture.connectionCases
 
+// Preserve the immutable historical rejection. Current native hosts consume
+// the separately reviewed named target-target acceptance contract.
+export const currentNativeConnectionCases: InteractionLifecycleFixture['connectionCases'] =
+  interactionConnectionCases.map((scenario) => {
+    if (scenario.id !== 'loose-rejects-target-to-target-rendering-gap') {
+      return scenario
+    }
+
+    const { reason: _historicalReason, ...current } = scenario
+
+    return {
+      ...current,
+      id: 'loose-accepts-directed-named-target-to-target',
+      outcome: 'accepted',
+      expectedEdgeId: 'edge-1',
+      eventOrder: ['connectStart', 'connect', 'connectEnd'],
+    }
+  })
+
 export const interactionReconnectionCases =
   interactionLifecycleFixture.reconnectionCases
 

@@ -6,6 +6,9 @@ import path from 'node:path'
 
 import type { Browser, Page } from '@playwright/test'
 import { Schema } from 'effect'
+import { format } from 'oxfmt'
+
+import formatterConfig from '../../oxfmt.config.ts'
 
 const RequiredHostCoverageSchema = Schema.Struct({
   status: Schema.Literal('required'),
@@ -254,7 +257,9 @@ export interface CalibrationRun {
   readonly measurements: readonly CalibrationMeasurement[]
 }
 
-export const appendCalibrationRun = (run: CalibrationRun): void => {
+export const appendCalibrationRun = async (
+  run: CalibrationRun
+): Promise<void> => {
   // SAFETY: The checked-in calibration registry is loaded from its own validated file and owns this versioned run list.
   const original = JSON.parse(
     readFileSync(calibrationRegistryPath, 'utf-8')
@@ -273,6 +278,16 @@ export const appendCalibrationRun = (run: CalibrationRun): void => {
     `.calibration.${run.runId}.tmp`
   )
 
-  writeFileSync(temp, `${JSON.stringify(updated, null, 2)}\n`)
+  const formatted = await format(
+    calibrationRegistryPath,
+    `${JSON.stringify(updated, null, 2)}\n`,
+    formatterConfig
+  )
+
+  if (formatted.errors.length > 0) {
+    throw new Error('Unable to format calibration registry')
+  }
+
+  writeFileSync(temp, formatted.code)
   renameSync(temp, calibrationRegistryPath)
 }

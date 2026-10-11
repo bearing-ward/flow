@@ -1,6 +1,7 @@
 import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
+import { resolveEdgeHandles } from './flow-edge.schema.ts'
 import { EdgeIdSchema, HandleIdSchema, NodeIdSchema } from './flow-values.ts'
 import type { FlowDocument, FlowEdge } from './flow.schema.ts'
 
@@ -32,6 +33,15 @@ export const FlowConnectionSchema = S.Struct({
 
 export type FlowConnection = typeof FlowConnectionSchema.Type
 
+const FlowHandleGestureSchema = S.Struct({
+  fromNodeId: NodeIdSchema,
+  fromHandleId: HandleIdSchema,
+  toNodeId: NodeIdSchema,
+  toHandleId: HandleIdSchema,
+})
+
+type FlowHandleGesture = typeof FlowHandleGestureSchema.Type
+
 export const ConnectionIssueSchema = S.Literals([
   'missing-source-node',
   'missing-target-node',
@@ -57,7 +67,7 @@ export class InvalidFlowConnection extends tagged<InvalidFlowConnection>()(
   }
 ) {}
 
-/** Canonicalize loose target-origin gestures to Flow's directed edge shape. */
+/** Canonicalize only reversed opposite-kind pairs; directed validation never uses this. */
 export const normalizeFlowConnection = (
   document: FlowDocument,
   connection: FlowConnection,
@@ -73,7 +83,13 @@ export const normalizeFlowConnection = (
     (handle) => handle.id === connection.sourceHandle
   )
 
-  if (sourceHandle?.kind !== 'target') {
+  const target = document.nodes.find((node) => node.id === connection.target)
+
+  const targetHandle = target?.handles?.find(
+    (handle) => handle.id === connection.targetHandle
+  )
+
+  if (sourceHandle?.kind !== 'target' || targetHandle?.kind !== 'source') {
     return connection
   }
 
@@ -90,21 +106,20 @@ export const findConnectionIssue = (
   connection: FlowConnection,
   mode: ConnectionMode = 'strict'
 ): ConnectionIssue | undefined => {
-  const normalized = normalizeFlowConnection(document, connection, mode)
-  const source = document.nodes.find((node) => node.id === normalized.source)
+  const source = document.nodes.find((node) => node.id === connection.source)
 
   if (source === undefined) {
     return 'missing-source-node'
   }
 
-  const target = document.nodes.find((node) => node.id === normalized.target)
+  const target = document.nodes.find((node) => node.id === connection.target)
 
   if (target === undefined) {
     return 'missing-target-node'
   }
 
   const sourceHandle = source.handles?.find(
-    (handle) => handle.id === normalized.sourceHandle
+    (handle) => handle.id === connection.sourceHandle
   )
 
   if (
@@ -115,7 +130,7 @@ export const findConnectionIssue = (
   }
 
   const targetHandle = target.handles?.find(
-    (handle) => handle.id === normalized.targetHandle
+    (handle) => handle.id === connection.targetHandle
   )
 
   if (
@@ -126,28 +141,28 @@ export const findConnectionIssue = (
   }
 
   if (
-    normalized.source === normalized.target &&
-    normalized.sourceHandle === normalized.targetHandle
+    connection.source === connection.target &&
+    connection.sourceHandle === connection.targetHandle
   ) {
     return 'same-handle'
   }
 
   if (
-    mode === 'loose' &&
-    sourceHandle.kind === 'target' &&
-    targetHandle.kind === 'target'
-  ) {
-    return 'unsupported-handle-combination'
-  }
+    document.edges.some((edge) => {
+      if (
+        edge.source !== connection.source ||
+        edge.target !== connection.target
+      ) {
+        return false
+      }
 
-  if (
-    document.edges.some(
-      (edge) =>
-        edge.source === normalized.source &&
-        edge.sourceHandle === normalized.sourceHandle &&
-        edge.target === normalized.target &&
-        edge.targetHandle === normalized.targetHandle
-    )
+      const resolved = resolveEdgeHandles(document, edge)
+
+      return (
+        resolved?.sourceHandle.id === connection.sourceHandle &&
+        resolved.targetHandle.id === connection.targetHandle
+      )
+    })
   ) {
     return 'duplicate-connection'
   }
@@ -159,19 +174,18 @@ export const validateFlowConnection = (
   mode: ConnectionMode = 'strict'
 ): Effect.Effect<FlowConnection, InvalidFlowConnection> =>
   Effect.gen(function* validateConnection() {
-    const normalized = normalizeFlowConnection(document, connection, mode)
     const reason = findConnectionIssue(document, connection, mode)
 
     if (reason === undefined) {
-      return normalized
+      return connection
     }
 
     const attributes = {
       [FlowAttribute.connectionIssue]: reason,
-      [FlowAttribute.nodeId]: normalized.source,
-      [FlowAttribute.handleId]: normalized.sourceHandle,
-      [FlowAttribute.connectionTargetNodeId]: normalized.target,
-      [FlowAttribute.connectionTargetHandleId]: normalized.targetHandle,
+      [FlowAttribute.nodeId]: connection.source,
+      [FlowAttribute.handleId]: connection.sourceHandle,
+      [FlowAttribute.connectionTargetNodeId]: connection.target,
+      [FlowAttribute.connectionTargetHandleId]: connection.targetHandle,
     }
 
     yield* Effect.annotateCurrentSpan(attributes)
@@ -179,8 +193,37 @@ export const validateFlowConnection = (
       Effect.annotateLogs(attributes)
     )
 
-    return yield* new InvalidFlowConnection({ ...normalized, reason })
+    return yield* new InvalidFlowConnection({ ...connection, reason })
   }).pipe(Effect.withSpan(FlowSpan.connectionValidate))
+
+/** Construct fresh gesture direction once, then validate the directed pair. */
+export const connectionFromHandleGesture = (
+  {
+    document,
+    ...gesture
+  }: FlowHandleGesture & { readonly document: FlowDocument },
+  mode: ConnectionMode = 'strict'
+): Effect.Effect<FlowConnection, InvalidFlowConnection> => {
+  const fromHandle = document.nodes
+    .find((node) => node.id === gesture.fromNodeId)
+    ?.handles?.find((handle) => handle.id === gesture.fromHandleId)
+
+  const from = { nodeId: gesture.fromNodeId, handleId: gesture.fromHandleId }
+  const to = { nodeId: gesture.toNodeId, handleId: gesture.toHandleId }
+  const source = fromHandle?.kind === 'target' ? to : from
+  const target = fromHandle?.kind === 'target' ? from : to
+
+  return validateFlowConnection(
+    document,
+    {
+      source: source.nodeId,
+      sourceHandle: source.handleId,
+      target: target.nodeId,
+      targetHandle: target.handleId,
+    },
+    mode
+  )
+}
 
 export const nextConnectionEdge = (
   document: FlowDocument,
