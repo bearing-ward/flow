@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 frozen5635acf1 source review4 and controlled ACK disposition; explicit four unit and six node/connection browser files only; broad verification deferred by user",
+  "activeWork": "Plan099 source review4 rejected; seven continuation defects and literal-history gap; exact four unit/six node+connection browser fence; broad testing deferred by user",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
