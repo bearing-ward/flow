@@ -10,7 +10,7 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-Grounding and design closure are complete. Cold review round 2 cleared the binding click, typed-error and lifecycle-route amendments for one isolated writer. It retained a proof caution: an edit proposal that would remove a node does not prove the accepted pointer operation ended. Only actual active-node cancellation expands silent API routes; existing nonnode coverage and initialization remain unchanged. One codex/gpt-6-astra high implementation owner is running in `/Users/richardmcandrews/.codex/worktrees/flow-099-node-drag-threshold/flow`. The reviewed release is recorded by `node-design-synthesis-hashes-v2.json` in the canonical recovery directory. Source review, dedicated execution and native proof remain pending; no runtime acceptance is claimed.
+Grounding and design closure are complete. The first isolated implementation is committed at `e7c5d5e`; parent independently passed 78 dedicated units and 249 Chromium cases, and recorded ordinary pending-click, node completion and subsequent connection behavior across all hosts. Three source reviewers then found five production defects and one missing public release-proof boundary. Root accepted all six findings and reproduced unchecked Vanilla capture, retained Foldkit connection progress during pending node input, and Vue unmount reentry. Initialization ordering and viewport API replacement barriers also require repair. A fresh codex/gpt-6-astra high owner is repairing the same isolated checkout, with red regressions before correction. The candidate is not accepted or integrated. Evidence, the deduplicated verdict and binding repair choices are under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`. Fresh source review and parent proof follow repair; broad testing remains deferred.
 
 Vanilla already defaults to 1 and uses strict crossing, but direct exported host validation and moving-canvas distance need attention. Vue and Foldkit start lifecycle on down and use an eight-flow-unit release cutoff. Foldkit has no explicit native node capture and subscribes after model reduction. Root confirmed these mechanics in source. These are inspected differences, not runtime results or evidence of author intent.
 
@@ -32,10 +32,10 @@ All three hosts accept valid finite nonnegative configuration through their publ
 
 ## Throughput checkpoint
 
-- Blocking first steps. Grounding and design closure passed. The owner verifies frozen installed runtime APIs before implementing.
+- Blocking first steps. Grounding, design closure and first implementation checks passed within their boundaries. The repair owner reproduces accepted defects before correction.
 - Independent workstreams. Source has no fan-out. Root records metadata and later performs independent review and native proof.
 - Shared mutable state. One writer owns the isolated source checkout. Root owns plans, progress, verification scope, the canonical trail and integration.
-- Smallest safe decomposition. Ordered coherent commits implement the option, synchronous hosts, Foldkit native ownership and shared publication. The coupled Foldkit migration has one owner so callers and lifetime rules change together.
+- Smallest safe decomposition. One repair owner fixes authoritative native transition facts, operation-specific lifecycle classification, initialization ordering, capture checks and disposal gates with all affected callers and dedicated proof.
 
 ## Conformity and deviations
 
