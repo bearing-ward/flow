@@ -38,6 +38,8 @@ The first candidate at `974f71a` passed 23 dedicated unit and 115 Chromium cases
 
 The repaired candidate at `19a3fef` passed 33 dedicated units and 138 Chromium cases. Parent native T3 recordings confirm corrected click outcomes and public fresh/reconnect completion across all hosts. The comment deletion and fixture reshape are accepted. A follow-up source reviewer found deferred crossing movement can leave native release resolving against stale pending state. The ownership census and release premise record the remaining boundary. Integration is still blocked; ordinary-path native proof does not establish queue-starvation acceptance.
 
+At `9786bea`, native input is admitted through a lifetime queue and release targeting follows preceding movement. Parent independently passed 41 dedicated units and 143 Chromium cases; the prior queued-input blockers and comment scope are closed. Two new combinations remain. A stale node/pane guard can discard the following connection down, and disabled click initiation blocks target-click completion of an existing keyboard source. Parent native T3 input reproduced the latter. A fresh narrow owner is repairing both; integration and broad reconciliation remain open.
+
 ## Conformity and deviations
 
 Strict squared client distance, zero activation and pending suppression follow the pinned XYHandle contract as inspected in historical Plan 093. Current Flow production and test paths require fresh tracing and feature proof. Framework-owned pointer sessions remain an intentional adaptation. Full-suite acceptance and remaining API, example and UI coverage stay open.
