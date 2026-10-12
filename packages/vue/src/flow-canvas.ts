@@ -46,11 +46,15 @@ import {
   normalizeFlowConnection,
   nearestConnectionTarget,
   ConnectionModeSchema,
+  ConnectionDragThresholdSchema,
+  defaultConnectionDragThreshold,
+  connectionDragActivated,
+  HandleIdSchema,
+  EdgeIdSchema,
+  ReconnectEndpointSchema,
   ConnectionRadiusSchema,
   selectionAutoPanDelta,
   NodeIdSchema,
-  HandleIdSchema,
-  EdgeIdSchema,
   FlowAttribute,
   FlowSpan,
   applyDefaultEdgeOptions,
@@ -183,6 +187,39 @@ interface DragSession {
   readonly originY: number
 }
 
+const PendingHandleSchema = S.Struct({
+  nodeId: NodeIdSchema,
+  handleId: HandleIdSchema,
+  kind: S.Literals(['source', 'target']),
+})
+
+const PendingPointerSchema = S.Struct({
+  pointerId: S.Number,
+  startX: S.Finite,
+  startY: S.Finite,
+  threshold: ConnectionDragThresholdSchema,
+})
+
+const PendingConnectionSchema = S.Union([
+  S.Struct({
+    ...PendingPointerSchema.fields,
+    kind: S.Literal('connection-pending'),
+    from: PendingHandleSchema,
+  }),
+  S.Struct({
+    ...PendingPointerSchema.fields,
+    kind: S.Literal('reconnection-pending'),
+    edgeId: EdgeIdSchema,
+    endpoint: ReconnectEndpointSchema,
+    source: PendingHandleSchema,
+    target: PendingHandleSchema,
+  }),
+])
+
+type PendingConnection = typeof PendingConnectionSchema.Type & {
+  readonly captureTarget: HTMLElement | SVGElement
+}
+
 interface ConnectionSession {
   readonly kind: 'connection'
   readonly pointerId: number
@@ -300,6 +337,7 @@ interface NodePositionStyle {
 type Session =
   | DragSession
   | ConnectionSession
+  | PendingConnection
   | PanSession
   | SelectionSession
   | ResizeSession
@@ -535,6 +573,10 @@ export const FlowCanvas = defineComponent({
     connectionMode: {
       type: String as PropType<ConnectionMode>,
       default: 'strict',
+    },
+    connectionDragThreshold: {
+      type: Number,
+      default: defaultConnectionDragThreshold,
     },
     connectionRadius: {
       type: Number as PropType<ConnectionRadius>,
@@ -1052,6 +1094,52 @@ export const FlowCanvas = defineComponent({
     )
 
     const session = shallowRef<Session>()
+
+    let connectionDragThreshold: number | undefined = S.decodeUnknownSync(
+      ConnectionDragThresholdSchema
+    )(props.connectionDragThreshold)
+
+    let connectionCapture:
+      | { readonly owner: HTMLElement | SVGElement; readonly pointerId: number }
+      | undefined
+
+    const releaseConnectionCapture = (): void => {
+      const lease = connectionCapture
+      connectionCapture = undefined
+
+      if (lease?.owner.hasPointerCapture(lease.pointerId)) {
+        lease.owner.releasePointerCapture(lease.pointerId)
+      }
+    }
+
+    const acquireConnectionCapture = (
+      owner: HTMLElement | SVGElement,
+      pointerId: number
+    ): boolean => {
+      try {
+        owner.setPointerCapture(pointerId)
+
+        if (!owner.hasPointerCapture(pointerId)) {
+          return false
+        }
+
+        connectionCapture = { owner, pointerId }
+
+        return true
+      } catch (error) {
+        recordFlowTelemetry(
+          'Vue connection capture failed',
+          FlowSpan.gestureCancel,
+          {
+            [FlowAttribute.pointerId]: pointerId,
+            [FlowAttribute.cancellationReason]: String(error),
+          }
+        )
+
+        return false
+      }
+    }
+
     const clickConnection = shallowRef<ConnectionSession>()
     const canvasWidth = shallowRef(960)
     const canvasHeight = shallowRef(640)
@@ -2332,12 +2420,18 @@ export const FlowCanvas = defineComponent({
         })
       }
 
-      if (active?.captureTarget.hasPointerCapture?.(active.pointerId)) {
-        active.captureTarget.releasePointerCapture?.(active.pointerId)
-      }
-
       if (session.value === active) {
         session.value = undefined
+      }
+
+      if (
+        active?.kind === 'connection' ||
+        active?.kind === 'connection-pending' ||
+        active?.kind === 'reconnection-pending'
+      ) {
+        releaseConnectionCapture()
+      } else if (active?.captureTarget.hasPointerCapture?.(active.pointerId)) {
+        active.captureTarget.releasePointerCapture?.(active.pointerId)
       }
     }
 
@@ -2781,7 +2875,278 @@ export const FlowCanvas = defineComponent({
       )
     }
 
+    const resolvePendingHandle = (
+      identity: typeof PendingHandleSchema.Type
+    ) => {
+      const node = activeDocument.value.nodes.find(
+        ({ id }) => id === identity.nodeId
+      )
+
+      const handle = node?.handles?.find(
+        ({ id, kind }) => id === identity.handleId && kind === identity.kind
+      )
+
+      const current = graph.value.nodes.get(identity.nodeId)
+
+      const measured = measuredHandles.value
+        .get(identity.nodeId)
+        ?.get(identity.handleId)
+
+      const mounted = [
+        ...(canvas.value?.querySelectorAll<HTMLElement>('[data-handle-id]') ??
+          []),
+      ].some(
+        (element) =>
+          element.dataset.handleId === identity.handleId &&
+          element.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ===
+            identity.nodeId
+      )
+
+      if (
+        node === undefined ||
+        node.connectable === false ||
+        handle === undefined ||
+        current === undefined ||
+        current.hidden ||
+        measured === undefined ||
+        !mounted
+      ) {
+        return
+      }
+
+      return {
+        node,
+        handle,
+        start: edgeAttachmentPosition(
+          current.absolutePosition,
+          handle,
+          measured
+        ),
+      }
+    }
+
+    const pendingAsReconnection = (
+      pending: Extract<PendingConnection, { kind: 'reconnection-pending' }>
+    ): ConnectionSession | undefined => {
+      const edge = activeDocument.value.edges.find(
+        ({ id }) => id === pending.edgeId
+      )
+
+      const resolved = edge && resolveEdgeHandles(activeDocument.value, edge)
+      const source = resolvePendingHandle(pending.source)
+      const target = resolvePendingHandle(pending.target)
+
+      if (
+        edge === undefined ||
+        edge.hidden === true ||
+        edge.selected !== true ||
+        !canReconnectEdge(edge, pending.endpoint) ||
+        resolved === undefined ||
+        source === undefined ||
+        target === undefined ||
+        edge.source !== pending.source.nodeId ||
+        edge.target !== pending.target.nodeId ||
+        resolved.sourceHandle.id !== pending.source.handleId ||
+        resolved.targetHandle.id !== pending.target.handleId
+      ) {
+        return undefined
+      }
+
+      const start = pending.endpoint === 'source' ? target.start : source.start
+
+      return {
+        kind: 'connection',
+        pointerId: pending.pointerId,
+        captureTarget: pending.captureTarget,
+        sourceNode: source.node,
+        sourceHandle: source.handle.id,
+        start,
+        pointer: start,
+        reconnect: {
+          edgeId: edge.id,
+          endpoint: pending.endpoint,
+          handleSignature: activeDocument.value.nodes
+            .map(
+              (node) =>
+                `${node.id}:${(node.handles ?? [])
+                  .map(({ kind, id }) => `${kind}:${id}`)
+                  .toSorted()
+                  .join(',')}`
+            )
+            .join('|'),
+        },
+      }
+    }
+
+    const pendingAsConnection = (
+      pending: PendingConnection
+    ): ConnectionSession | undefined => {
+      if (
+        stateDisposed ||
+        !pending.captureTarget.isConnected ||
+        !pending.captureTarget.hasPointerCapture(pending.pointerId)
+      ) {
+        return undefined
+      }
+
+      if (pending.kind === 'connection-pending') {
+        const source = resolvePendingHandle(pending.from)
+
+        if (
+          source === undefined ||
+          (connectionMode.value === 'strict' &&
+            source.handle.kind !== 'source' &&
+            clickConnection.value === undefined)
+        ) {
+          return undefined
+        }
+
+        return {
+          kind: 'connection',
+          pointerId: pending.pointerId,
+          captureTarget: pending.captureTarget,
+          sourceNode: source.node,
+          sourceHandle: source.handle.id,
+          start: source.start,
+          pointer: source.start,
+        }
+      }
+
+      return pendingAsReconnection(pending)
+    }
+
+    const promoteConnection = (pending: PendingConnection): void => {
+      const active = pendingAsConnection(pending)
+
+      if (active === undefined) {
+        cleanupPreview(pending)
+
+        return
+      }
+
+      session.value = active
+      validatorFailureReported = false
+
+      if (pending.kind === 'reconnection-pending') {
+        const edge = activeDocument.value.edges.find(
+          ({ id }) => id === pending.edgeId
+        )
+
+        if (edge === undefined) {
+          cleanupPreview(active)
+
+          return
+        }
+
+        activeConnectionLifecycle = {
+          kind: 'reconnect',
+          activation: 'pointer',
+          edge,
+          endpoint: pending.endpoint,
+        }
+        emit('reconnectStart', {
+          edge,
+          endpoint: pending.endpoint,
+          activation: 'pointer',
+        })
+      } else if (activeConnectionLifecycle === undefined) {
+        activeConnectionLifecycle = {
+          kind: 'connect',
+          activation: 'pointer',
+          node: active.sourceNode,
+          handleId: active.sourceHandle,
+        }
+        emit('connectStart', {
+          node: active.sourceNode,
+          handleId: active.sourceHandle,
+          activation: 'pointer',
+        })
+      }
+
+      recordFlowTelemetry(
+        'Started Vue pointer connection',
+        pending.kind === 'reconnection-pending'
+          ? FlowSpan.edgeReconnectStart
+          : FlowSpan.connectionStart,
+        {
+          [FlowAttribute.pointerId]: pending.pointerId,
+          [FlowAttribute.inputKind]: 'pointer',
+        }
+      )
+    }
+
+    const admitConnection = (
+      pending: PendingConnection,
+      event: PointerEvent
+    ): void => {
+      if (!acquireConnectionCapture(pending.captureTarget, pending.pointerId)) {
+        return
+      }
+
+      session.value = pending
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (pending.threshold === 0) {
+        promoteConnection(pending)
+      }
+    }
+
+    watch(
+      () => props.connectionDragThreshold,
+      (value) => {
+        connectionDragThreshold = undefined
+        const result = S.decodeUnknownExit(ConnectionDragThresholdSchema)(value)
+
+        if (Exit.isFailure(result)) {
+          const active = session.value
+
+          if (
+            active?.kind === 'connection' ||
+            active?.kind === 'connection-pending' ||
+            active?.kind === 'reconnection-pending'
+          ) {
+            cleanupPreview(active, 'invalid-configuration')
+          }
+
+          S.decodeUnknownSync(ConnectionDragThresholdSchema)(value)
+
+          return
+        }
+
+        connectionDragThreshold = result.value
+        const active = session.value
+
+        if (
+          active?.kind === 'connection-pending' ||
+          active?.kind === 'reconnection-pending'
+        ) {
+          cleanupPreview(active, 'configuration-replacement')
+        }
+      },
+      { flush: 'sync' }
+    )
+    watch(
+      () => activeDocument.value,
+      () => {
+        const active = session.value
+
+        if (
+          (active?.kind === 'connection-pending' ||
+            active?.kind === 'reconnection-pending') &&
+          pendingAsConnection(active) === undefined
+        ) {
+          cleanupPreview(active, 'document-replacement')
+        }
+      },
+      { flush: 'sync' }
+    )
+
     const onPointerDown = (event: PointerEvent, node: FlowNode): void => {
+      if (event.button !== 0 || session.value !== undefined) {
+        return
+      }
+
       const { target } = event
 
       if (!(target instanceof HTMLElement)) {
@@ -2835,73 +3200,36 @@ export const FlowCanvas = defineComponent({
           [FlowAttribute.controlMode]: documentControlMode(),
         })
       } else {
-        const source = graph.value.nodes.get(node.id)
-
-        const sourceHandle = node.handles?.find(
-          (candidate) => candidate.id === handleId
-        )
-
-        const measured = measuredHandles.value.get(node.id)?.get(handleId)
+        const sourceHandle = node.handles?.find(({ id }) => id === handleId)
 
         if (
-          source === undefined ||
           sourceHandle === undefined ||
-          measured === undefined
+          connectionDragThreshold === undefined ||
+          (connectionMode.value === 'strict' &&
+            sourceHandle.kind !== 'source' &&
+            clickConnection.value === undefined)
         ) {
           return
         }
 
-        const start = edgeAttachmentPosition(
-          source.absolutePosition,
-          sourceHandle,
-          measured
-        )
-
-        const bounds = canvas.value?.getBoundingClientRect()
-
-        const viewport = activeViewport.value
-
-        session.value = {
-          kind: 'connection',
-          pointerId: event.pointerId,
-          captureTarget: currentTarget,
-          sourceNode: node,
-          sourceHandle: sourceHandle.id,
-          start,
-          pointer:
-            bounds === undefined
-              ? start
-              : {
-                  x: (event.clientX - bounds.left - viewport.x) / viewport.zoom,
-                  y: (event.clientY - bounds.top - viewport.y) / viewport.zoom,
-                },
-        }
-
-        if (activeConnectionLifecycle === undefined) {
-          validatorFailureReported = false
-          activeConnectionLifecycle = {
-            kind: 'connect',
-            activation: 'pointer',
-            node,
-            handleId: sourceHandle.id,
-          }
-          emit('connectStart', {
-            node,
-            handleId: sourceHandle.id,
-            activation: 'pointer',
-          })
-        }
-
-        recordFlowTelemetry(
-          'Started Vue connection',
-          FlowSpan.connectionStart,
+        admitConnection(
           {
-            [FlowAttribute.nodeId]: node.id,
-            [FlowAttribute.handleId]: sourceHandle.id,
-            [FlowAttribute.inputKind]: 'pointer',
-            [FlowAttribute.controlMode]: documentControlMode(),
-          }
+            kind: 'connection-pending',
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            threshold: connectionDragThreshold,
+            captureTarget: currentTarget,
+            from: {
+              nodeId: node.id,
+              handleId: sourceHandle.id,
+              kind: sourceHandle.kind,
+            },
+          },
+          event
         )
+
+        return
       }
 
       currentTarget.setPointerCapture?.(event.pointerId)
@@ -3084,7 +3412,7 @@ export const FlowCanvas = defineComponent({
       clientY: number,
       source: ConnectionSession
     ): { readonly nodeId: string; readonly handleId: string } | undefined => {
-      const targetElement = document
+      const targetElement = canvas.value?.ownerDocument
         .elementFromPoint(clientX, clientY)
         ?.closest<HTMLElement>('[data-handle-id]')
 
@@ -3093,7 +3421,11 @@ export const FlowCanvas = defineComponent({
 
       const directHandleId = targetElement?.dataset.handleId
 
-      if (directNodeId !== undefined && directHandleId !== undefined) {
+      if (
+        directNodeId !== undefined &&
+        directHandleId !== undefined &&
+        canvas.value?.contains(targetElement ?? null)
+      ) {
         return { nodeId: directNodeId, handleId: directHandleId }
       }
 
@@ -3357,7 +3689,6 @@ export const FlowCanvas = defineComponent({
       )
     }
 
-    // eslint-disable-next-line complexity
     const startReconnection = (
       edge: FlowEdge,
       endpoint: 'source' | 'target',
@@ -3365,104 +3696,43 @@ export const FlowCanvas = defineComponent({
     ): void => {
       const captureTarget = event.currentTarget
       const resolved = resolveEdgeHandles(activeDocument.value, edge)
-      const sourceNode = graph.value.nodes.get(edge.source)
-      const targetNode = graph.value.nodes.get(edge.target)
-
-      const sourceMeasured = measuredHandles.value
-        .get(edge.source)
-        ?.get(resolved?.sourceHandle.id ?? '')
-
-      const targetMeasured = measuredHandles.value
-        .get(edge.target)
-        ?.get(resolved?.targetHandle.id ?? '')
 
       if (
-        (event.button !== 0 &&
-          (event.button === 0 ||
-            !Array.isArray(props.panOnDrag) ||
-            !props.panOnDrag.includes(event.button))) ||
+        event.button !== 0 ||
         edge.selected !== true ||
         !canReconnectEdge(edge, endpoint) ||
         session.value !== undefined ||
         clickConnection.value !== undefined ||
         resolved === undefined ||
-        sourceNode === undefined ||
-        targetNode === undefined ||
-        sourceMeasured === undefined ||
-        targetMeasured === undefined ||
+        connectionDragThreshold === undefined ||
         !(captureTarget instanceof SVGElement)
       ) {
         return
       }
 
-      const sourceAnchor = edgeAttachmentPosition(
-        sourceNode.absolutePosition,
-        resolved.sourceHandle,
-        sourceMeasured
-      )
-
-      const targetAnchor = edgeAttachmentPosition(
-        targetNode.absolutePosition,
-        resolved.targetHandle,
-        targetMeasured
-      )
-
-      const start = endpoint === 'source' ? targetAnchor : sourceAnchor
-      const bounds = canvas.value?.getBoundingClientRect()
-      const viewport = activeViewport.value
-
-      session.value = {
-        kind: 'connection',
-        pointerId: event.pointerId,
-        captureTarget,
-        sourceNode: resolved.sourceNode,
-        sourceHandle: resolved.sourceHandle.id,
-        start,
-        pointer:
-          bounds === undefined
-            ? start
-            : {
-                x: (event.clientX - bounds.left - viewport.x) / viewport.zoom,
-                y: (event.clientY - bounds.top - viewport.y) / viewport.zoom,
-              },
-        reconnect: {
+      admitConnection(
+        {
+          kind: 'reconnection-pending',
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          threshold: connectionDragThreshold,
+          captureTarget,
           edgeId: edge.id,
           endpoint,
-          handleSignature: activeDocument.value.nodes
-            .map(
-              (node) =>
-                `${node.id}:${(node.handles ?? [])
-                  .map(({ kind, id }) => `${kind}:${id}`)
-                  .toSorted()
-                  .join(',')}`
-            )
-            .join('|'),
+          source: {
+            nodeId: edge.source,
+            handleId: resolved.sourceHandle.id,
+            kind: resolved.sourceHandle.kind,
+          },
+          target: {
+            nodeId: edge.target,
+            handleId: resolved.targetHandle.id,
+            kind: resolved.targetHandle.kind,
+          },
         },
-      }
-
-      activeConnectionLifecycle = {
-        kind: 'reconnect',
-        activation: 'pointer',
-        edge,
-        endpoint,
-      }
-      validatorFailureReported = false
-      emit('reconnectStart', { edge, endpoint, activation: 'pointer' })
-
-      recordFlowTelemetry(
-        'Started Vue edge reconnection',
-        FlowSpan.edgeReconnectStart,
-        {
-          [FlowAttribute.edgeId]: edge.id,
-          [FlowAttribute.edgeEndpoint]: endpoint,
-          [FlowAttribute.inputKind]: 'pointer',
-          [FlowAttribute.controlMode]: documentControlMode(),
-        }
+        event
       )
-
-      captureTarget.setPointerCapture?.(event.pointerId)
-      event.preventDefault()
-      event.stopPropagation()
     }
 
     const pointerInFlow = (event: PointerEvent) => {
@@ -3652,6 +3922,88 @@ export const FlowCanvas = defineComponent({
       captureTarget.setPointerCapture?.(event.pointerId)
     }
 
+    const finishPendingConnection = (
+      event: PointerEvent,
+      active: PendingConnection
+    ): void => {
+      const candidate = pendingAsConnection(active)
+      cleanupPreview(active)
+
+      if (active.kind === 'reconnection-pending' || candidate === undefined) {
+        return
+      }
+
+      const source = clickConnection.value ?? candidate
+      const target = connectionTargetAt(event.clientX, event.clientY, source)
+
+      if (target === undefined) {
+        return
+      }
+
+      if (clickConnection.value !== undefined) {
+        finishConnection(event, candidate)
+      } else if (
+        props.connectOnClick &&
+        target.nodeId === source.sourceNode.id &&
+        target.handleId === source.sourceHandle
+      ) {
+        clickConnection.value = source
+        validatorFailureReported = false
+        activeConnectionLifecycle = {
+          kind: 'connect',
+          activation: 'click',
+          node: source.sourceNode,
+          handleId: source.sourceHandle,
+        }
+        emit('connectStart', {
+          node: source.sourceNode,
+          handleId: source.sourceHandle,
+          activation: 'click',
+        })
+        emit('clickConnectStart', {
+          node: source.sourceNode,
+          handleId: source.sourceHandle,
+        })
+      }
+    }
+
+    const prepareConnectionMove = (event: PointerEvent): boolean => {
+      const active = session.value
+
+      if (
+        active?.kind === 'connection-pending' ||
+        active?.kind === 'reconnection-pending'
+      ) {
+        if (active.pointerId !== event.pointerId) {
+          return false
+        }
+
+        if (pendingAsConnection(active) === undefined) {
+          cleanupPreview(active)
+
+          return false
+        }
+
+        if (
+          !connectionDragActivated(
+            active.threshold,
+            active.startX,
+            active.startY,
+            event.clientX,
+            event.clientY
+          )
+        ) {
+          return false
+        }
+
+        promoteConnection(active)
+
+        return !stateDisposed && session.value?.kind === 'connection'
+      }
+
+      return true
+    }
+
     const onPointerUp = (event: PointerEvent): void => {
       const active = session.value
 
@@ -3660,6 +4012,15 @@ export const FlowCanvas = defineComponent({
         active.kind === 'keyboard-resize' ||
         active.pointerId !== event.pointerId
       ) {
+        return
+      }
+
+      if (
+        active.kind === 'connection-pending' ||
+        active.kind === 'reconnection-pending'
+      ) {
+        finishPendingConnection(event, active)
+
         return
       }
 
@@ -3952,7 +4313,9 @@ export const FlowCanvas = defineComponent({
       (current, previous) => {
         if (
           current.some((value, index) => value !== previous[index]) &&
-          session.value?.kind === 'connection'
+          (session.value?.kind === 'connection' ||
+            session.value?.kind === 'connection-pending' ||
+            session.value?.kind === 'reconnection-pending')
         ) {
           cancelActiveSession('configuration-replacement')
         }
@@ -4150,6 +4513,13 @@ export const FlowCanvas = defineComponent({
       event.stopPropagation()
 
       const reconnect = session.value
+
+      if (
+        reconnect?.kind === 'connection-pending' ||
+        reconnect?.kind === 'reconnection-pending'
+      ) {
+        return
+      }
 
       if (reconnect?.kind === 'connection' && reconnect.reconnect) {
         const status = finishReconnection(reconnect, node.id, handle.id)
@@ -5208,6 +5578,10 @@ export const FlowCanvas = defineComponent({
           class: 'flow-vue-canvas',
           'data-testid': 'flow-canvas',
           onPointermove: (event: PointerEvent) => {
+            if (!prepareConnectionMove(event)) {
+              return
+            }
+
             const active = session.value
 
             if (
@@ -5318,6 +5692,10 @@ export const FlowCanvas = defineComponent({
                 }
               }
 
+              return
+            }
+
+            if (active.kind !== 'node') {
               return
             }
 
@@ -5444,7 +5822,11 @@ export const FlowCanvas = defineComponent({
             }
           },
           onLostpointercapture: (event: PointerEvent) => {
-            if (session.value?.pointerId === event.pointerId) {
+            if (
+              session.value?.pointerId === event.pointerId &&
+              event.target === session.value.captureTarget &&
+              !session.value.captureTarget.hasPointerCapture(event.pointerId)
+            ) {
               cancelActiveSession('pointer-cancel')
             }
           },
