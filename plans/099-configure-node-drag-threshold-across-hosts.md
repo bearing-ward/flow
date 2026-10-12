@@ -10,7 +10,7 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-All grounding and three artifact-only architecture candidates are complete. Parent read every rationale and sketch, screened the shapes and scored the proposed contracts. An independent cross-provider judge is active. The provisional candidate 2 base distinguishes native input order from port publication order; candidate 1 supplies stronger pending-only state and identity rules. No Plan 099 production source is changed. The API correspondence map records a Vanilla-only configurable option at `docs/react-flow-api-correspondence.md:39` and `:196`.
+All grounding and three architecture candidates are complete. Parent and the independent cross-provider judge agree on candidate 2 as the conditional base, with candidate 1's pending-only state, raw-down interface and exact-origin admission rules. The judge rejected candidate 3's residual split delivery. A fresh artifact-only amendment is closing capture-target versus coordinate-canvas capabilities, admission proof, and publication order across replacement, failure and shutdown. Implementation remains held until the concrete design closes those obligations. No Plan 099 production source is changed.
 
 Vanilla already defaults to 1 and uses strict crossing, but direct exported host validation and moving-canvas distance need attention. Vue and Foldkit start lifecycle on down and use an eight-flow-unit release cutoff. Foldkit has no explicit native node capture and subscribes after model reduction. Root confirmed these mechanics in source. These are inspected differences, not runtime results or evidence of author intent.
 
