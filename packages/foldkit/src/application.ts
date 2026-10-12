@@ -1406,7 +1406,11 @@ const activeGestureTelemetry = (
 ): ActiveGestureTelemetry | undefined => {
   const pointer = graph.pointerSession
 
-  if (pointer !== null) {
+  if (
+    pointer !== null &&
+    pointer.kind !== 'connection-pending' &&
+    pointer.kind !== 'reconnection-pending'
+  ) {
     if (pointer.kind === 'connection') {
       return {
         span: FlowSpan.connectionStart,
@@ -1598,7 +1602,25 @@ const foldkitLifecycleEvents = (
       command.args.change !== null
   )
 
-  if (before === undefined && after !== undefined) {
+  const transitioned =
+    before !== undefined &&
+    after !== undefined &&
+    (before.kind !== after.kind ||
+      before.inputKind !== after.inputKind ||
+      before.entityId !== after.entityId)
+
+  if (transitioned && before !== undefined) {
+    events.push({
+      name: interactionEventName(before.kind, 'end'),
+      phase: 'end',
+      inputKind: before.inputKind,
+      outcome: 'cancelled',
+      reason: 'superseded',
+      ...interactionEntity(before),
+    })
+  }
+
+  if ((before === undefined || transitioned) && after !== undefined) {
     events.push({
       name: interactionEventName(after.kind, 'start'),
       phase: 'start',
@@ -1607,7 +1629,12 @@ const foldkitLifecycleEvents = (
     })
   }
 
-  if (after !== undefined && phase === 'progress') {
+  if (
+    after !== undefined &&
+    phase === 'progress' &&
+    current.pointerSession?.kind !== 'connection-pending' &&
+    current.pointerSession?.kind !== 'reconnection-pending'
+  ) {
     const session = current.gestureSession ?? current.pointerSession
 
     const progressEvent: Graph.InteractionEvent = {
@@ -1746,25 +1773,12 @@ const foldkitLifecycleEvents = (
   return events
 }
 
-const lifecycleStartCandidateTags = new Set([
-  'PointerDown',
-  'GestureDown',
-  'ResizeByKeyboard',
-  'KeyboardSelectionKey',
-  'ActivateHandle',
-  'ActivateReconnect',
-])
-
 export const update = (
   model: Model,
   message: AppMessageData
 ): Update.Return<Model, AppMessageData> => {
   const updateResult = AppMessage.match(message, {
     GraphMessage: ({ message: graphMessage }) => {
-      const isLifecycleStartCandidate = lifecycleStartCandidateTags.has(
-        graphMessage._tag
-      )
-
       const result = graphFold(model, graphMessage)
 
       const readyModel = model.lifecycleReady
@@ -1834,10 +1848,6 @@ export const update = (
         ],
       }
 
-      if (!isLifecycleStartCandidate) {
-        return withViewportEvents
-      }
-
       const previous = activeGestureTelemetry(model.graph)
       const current = activeGestureTelemetry(readyModel.graph)
 
@@ -1845,6 +1855,7 @@ export const update = (
         current !== undefined &&
         (previous === undefined ||
           previous.kind !== current.kind ||
+          previous.inputKind !== current.inputKind ||
           previous.entityId !== current.entityId)
 
       if (!started || current === undefined) {
@@ -2572,7 +2583,24 @@ export const createProgram = (
   rendererInstanceNumber += 1
   const instanceId = `flow-foldkit-runtime-${rendererInstanceNumber}`
 
-  const graphView = Graph.makeView(rendererRegistry, instanceId)
+  const initialGraph = Graph.initialModel(
+    document,
+    viewport,
+    allowedTargets,
+    documentMode,
+    viewportMode,
+    selectionMode,
+    interactionOptions,
+    instanceId
+  )
+
+  const pointerResource = Graph.createConnectionPointerResource(initialGraph)
+
+  const graphView = Graph.makeView(
+    rendererRegistry,
+    instanceId,
+    pointerResource
+  )
 
   return Runtime.makeElement({
     Model: ModelSchema,
@@ -2580,16 +2608,7 @@ export const createProgram = (
     container,
     init: () => ({
       model: {
-        graph: Graph.initialModel(
-          document,
-          viewport,
-          allowedTargets,
-          documentMode,
-          viewportMode,
-          selectionMode,
-          interactionOptions,
-          instanceId
-        ),
+        graph: initialGraph,
         changeKinds: [],
         viewportAnimation: null,
         viewportLimits,
@@ -2599,10 +2618,32 @@ export const createProgram = (
         cancelledDeleteOperations: [],
       },
     }),
-    update,
+    update: (model: Model, message: AppMessageData) => {
+      let preparedMessage = message
+
+      if (Predicate.isTagged('GraphMessage')(message)) {
+        const prepared = pointerResource.prepare(message.message)
+
+        if (Option.isNone(prepared)) {
+          return { model }
+        }
+
+        preparedMessage = AppMessage.GraphMessage({ message: prepared.value })
+      }
+
+      const result = update(model, preparedMessage)
+      pointerResource.reconcile(result.model.graph)
+
+      return result
+    },
     view: (model, h) => view(model, h, graphView),
     subscriptions: Subscription.aggregate(
       hostSubscriptions,
+      Subscription.lift(pointerResource.subscriptions)({
+        toChildModel: (model: Model) => model.graph,
+        toParentMessage: (message: typeof Graph.Message.Type) =>
+          AppMessage.GraphMessage({ message }),
+      }),
       Subscription.lift(Graph.subscriptions)({
         toChildModel: (model: Model) => model.graph,
         toParentMessage: (message: typeof Graph.Message.Type) =>

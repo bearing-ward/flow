@@ -1,4 +1,6 @@
 import {
+  FlowSpan,
+  FlowAttribute,
   FlowChangeSchema,
   FlowControlModeSchema,
   FlowCommandSchema,
@@ -11,6 +13,9 @@ import {
   ViewportSchema,
   FlowMeasurementStateSchema,
   ConnectionModeSchema,
+  ConnectionDragThresholdSchema,
+  defaultConnectionDragThreshold,
+  connectionDragActivated,
   ConnectionRadiusSchema,
   NodeIdSchema,
   HandleIdSchema,
@@ -102,11 +107,55 @@ import type {
   ConnectionPreviewSnapshot,
   FlowDefaultEdgeOptions,
 } from '@flow/core'
-import { Cause, Effect, Exit, Option, Schema, Stream } from 'effect'
+import {
+  Cause,
+  Effect,
+  Exit,
+  Option,
+  Predicate,
+  Queue,
+  Schema,
+  Stream,
+} from 'effect'
 import { Message as FoldMessage, Submodel, Subscription } from 'foldkit'
 import type { Html as FoldHtml, Update } from 'foldkit'
 
+const PendingHandleSchema = Schema.Struct({
+  nodeId: NodeIdSchema,
+  handleId: HandleIdSchema,
+  kind: Schema.Literals(['source', 'target']),
+})
+
+const PendingPointerSchema = Schema.Struct({
+  pointerId: Schema.Number,
+  startX: Schema.Finite,
+  startY: Schema.Finite,
+  threshold: ConnectionDragThresholdSchema,
+})
+
+const PendingConnectionSchema = Schema.Union([
+  Schema.Struct({
+    ...PendingPointerSchema.fields,
+    kind: Schema.Literal('connection-pending'),
+    from: PendingHandleSchema,
+  }),
+  Schema.Struct({
+    ...PendingPointerSchema.fields,
+    kind: Schema.Literal('reconnection-pending'),
+    edgeId: EdgeIdSchema,
+    endpoint: ReconnectEndpointSchema,
+    source: PendingHandleSchema,
+    target: PendingHandleSchema,
+  }),
+])
+
+const PointerClickReceiptSchema = Schema.Struct({
+  pointerId: Schema.Number,
+  target: Schema.NullOr(PendingHandleSchema),
+})
+
 const PointerSessionSchema = Schema.Union([
+  PendingConnectionSchema,
   Schema.Struct({
     kind: Schema.Literal('node-drag'),
     pointerId: Schema.Number,
@@ -202,6 +251,8 @@ export const ModelSchema = Schema.Struct({
   viewportMode: FlowControlModeSchema,
   allowedConnectionTargets: Schema.Array(Schema.String),
   connectionMode: ConnectionModeSchema,
+  connectionDragThreshold: ConnectionDragThresholdSchema,
+  pointerClickReceipt: Schema.NullOr(PointerClickReceiptSchema),
   connectionRadius: ConnectionRadiusSchema,
   autoPanOnConnect: Schema.Boolean,
   panOnDrag: Schema.Boolean,
@@ -360,8 +411,11 @@ export const Message = FoldMessage.defineMessageUnion({
     targetHandleId: Schema.NullOr(Schema.String),
   },
   PointerCancelled: { pointerId: Schema.Number },
+  RoutedPointerClick: { pointerId: Schema.Number },
   ConnectionPointerMoved: {
     pointerId: Schema.Number,
+    clientX: Schema.Finite,
+    clientY: Schema.Finite,
     autoPanDelta: Schema.Struct({ x: Schema.Number, y: Schema.Number }),
     flowX: Schema.Number,
     flowY: Schema.Number,
@@ -440,6 +494,9 @@ const noChange = (
 })
 
 export interface GraphInteractionOptions {
+  readonly connectionDragThreshold?:
+    | typeof ConnectionDragThresholdSchema.Type
+    | undefined
   readonly connectionMode: ConnectionMode
   readonly connectionRadius: ConnectionRadius
   readonly autoPanOnConnect: boolean
@@ -456,6 +513,7 @@ export interface GraphInteractionOptions {
 }
 
 export const defaultInteractionOptions: GraphInteractionOptions = {
+  connectionDragThreshold: defaultConnectionDragThreshold,
   connectionMode: 'strict',
   connectionRadius: 20,
   autoPanOnConnect: true,
@@ -995,6 +1053,74 @@ const finishKeyboardTargetClick = (
   return null
 }
 
+const pendingEligible = (
+  model: Model,
+  pending: typeof PendingConnectionSchema.Type
+): boolean => {
+  const graph = createFlowGraph(
+    model.document,
+    getFlowMeasuredNodes(model.document, model.measurements)
+  )
+
+  const eligible = (identity: typeof PendingHandleSchema.Type): boolean =>
+    graph.nodes.get(identity.nodeId)?.hidden === false &&
+    model.document.nodes.find(({ id }) => id === identity.nodeId)
+      ?.connectable !== false &&
+    model.document.nodes
+      .find(({ id }) => id === identity.nodeId)
+      ?.handles?.some(
+        ({ id, kind }) => id === identity.handleId && kind === identity.kind
+      ) === true
+
+  if (pending.kind === 'connection-pending') {
+    return (
+      eligible(pending.from) &&
+      (model.connectionMode === 'loose' ||
+        pending.from.kind === 'source' ||
+        model.keyboardConnectionSession !== null)
+    )
+  }
+
+  const edge = model.document.edges.find(({ id }) => id === pending.edgeId)
+  const resolved = edge && resolveEdgeHandles(model.document, edge)
+
+  return (
+    edge !== undefined &&
+    edge.hidden !== true &&
+    edge.selected === true &&
+    canReconnectEdge(edge, pending.endpoint) &&
+    resolved !== undefined &&
+    edge.source === pending.source.nodeId &&
+    edge.target === pending.target.nodeId &&
+    resolved.sourceHandle.id === pending.source.handleId &&
+    resolved.targetHandle.id === pending.target.handleId &&
+    eligible(pending.source) &&
+    eligible(pending.target)
+  )
+}
+
+const finishPendingPointer = (
+  model: Model,
+  session: typeof PendingConnectionSchema.Type,
+  message: PointerReleased
+) => {
+  const target =
+    session.kind === 'connection-pending' &&
+    pendingEligible(model, session) &&
+    message.targetNodeId === session.from.nodeId &&
+    message.targetHandleId === session.from.handleId
+      ? session.from
+      : null
+
+  return {
+    model: {
+      ...model,
+      pointerSession: null,
+      pointerClickReceipt: { pointerId: session.pointerId, target },
+    },
+  }
+}
+
 const finishPointer = (model: Model, message: PointerReleased) => {
   const session = model.pointerSession
 
@@ -1002,9 +1128,20 @@ const finishPointer = (model: Model, message: PointerReleased) => {
     return noChange(model)
   }
 
+  if (
+    session.kind === 'connection-pending' ||
+    session.kind === 'reconnection-pending'
+  ) {
+    return finishPendingPointer(model, session, message)
+  }
+
   const cleared = {
     ...model,
     pointerSession: null,
+    pointerClickReceipt:
+      session.kind === 'node-drag'
+        ? null
+        : { pointerId: session.pointerId, target: null },
     keyboardConnectionSession: null,
   }
 
@@ -1260,7 +1397,35 @@ const resizeProposal = (
   }
 }
 
-export const update = (
+const activatePending = (
+  pending: typeof PendingConnectionSchema.Type,
+  flowX: number,
+  flowY: number
+): NonNullable<Model['pointerSession']> =>
+  pending.kind === 'connection-pending'
+    ? {
+        kind: 'connection',
+        pointerId: pending.pointerId,
+        startX: pending.startX,
+        startY: pending.startY,
+        nodeId: pending.from.nodeId,
+        sourceHandleId: pending.from.handleId,
+        currentX: flowX,
+        currentY: flowY,
+        autoPanDelta: { x: 0, y: 0 },
+      }
+    : {
+        kind: 'reconnection',
+        pointerId: pending.pointerId,
+        startX: pending.startX,
+        startY: pending.startY,
+        edgeId: pending.edgeId,
+        endpoint: pending.endpoint,
+        currentX: flowX,
+        currentY: flowY,
+      }
+
+const updateState = (
   model: Model,
   message: GraphMessageData
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> =>
@@ -1322,6 +1487,7 @@ export const update = (
           measurements: measurementsForDocument(model, document),
           pendingResizeAcceptance: null,
           pointerSession: null,
+          pointerClickReceipt: null,
           gestureSession: null,
           keyboardConnectionSession: null,
           keyboardResizeSession: null,
@@ -1335,6 +1501,7 @@ export const update = (
           ...model,
           viewport,
           pointerSession: null,
+          pointerClickReceipt: null,
           gestureSession: null,
           keyboardConnectionSession: null,
         },
@@ -1345,6 +1512,7 @@ export const update = (
         ...model,
         selectionMode: mode,
         pointerSession: null,
+        pointerClickReceipt: null,
         gestureSession: null,
         keyboardConnectionSession: null,
       },
@@ -1354,6 +1522,7 @@ export const update = (
         ...model,
         allowedConnectionTargets: targets,
         pointerSession: null,
+        pointerClickReceipt: null,
         gestureSession: null,
         keyboardConnectionSession: null,
       },
@@ -1398,112 +1567,146 @@ export const update = (
         return noChange(model)
       }
 
-      if (edgeId !== null && endpoint !== null) {
-        const edge = model.document.edges.find(
-          (candidate) => candidate.id === edgeId
-        )
+      const origin = {
+        pointerId,
+        startX: clientX,
+        startY: clientY,
+        threshold: model.connectionDragThreshold,
+      }
 
-        if (edge === undefined || !canReconnectEdge(edge, endpoint)) {
+      let pending: typeof PendingConnectionSchema.Type
+
+      if (edgeId !== null && endpoint !== null) {
+        const edge = model.document.edges.find(({ id }) => id === edgeId)
+        const resolved = edge && resolveEdgeHandles(model.document, edge)
+
+        if (
+          edge === undefined ||
+          resolved === undefined ||
+          model.keyboardConnectionSession !== null
+        ) {
           return noChange(model)
         }
 
-        return {
-          model: {
-            ...model,
-            pointerSession: {
-              kind: 'reconnection',
-              pointerId,
-              startX: clientX,
-              startY: clientY,
-              edgeId,
-              endpoint,
-              currentX: flowPoint(
-                clientX,
-                clientY,
-                model.viewport,
-                canvasForModel(model)
-              ).x,
-              currentY: flowPoint(
-                clientX,
-                clientY,
-                model.viewport,
-                canvasForModel(model)
-              ).y,
-            },
+        pending = {
+          ...origin,
+          kind: 'reconnection-pending',
+          edgeId,
+          endpoint,
+          source: {
+            nodeId: edge.source,
+            handleId: resolved.sourceHandle.id,
+            kind: resolved.sourceHandle.kind,
           },
+          target: {
+            nodeId: edge.target,
+            handleId: resolved.targetHandle.id,
+            kind: resolved.targetHandle.kind,
+          },
+        }
+      } else {
+        const node = model.document.nodes.find(({ id }) => id === nodeId)
+
+        if (node === undefined) {
+          return noChange(model)
+        }
+
+        if (handleId === null) {
+          return node.draggable === false
+            ? noChange(model)
+            : {
+                model: {
+                  ...model,
+                  pointerClickReceipt: null,
+                  pointerSession: {
+                    kind: 'node-drag',
+                    ...origin,
+                    nodeId: node.id,
+                  },
+                },
+              }
+        }
+
+        const handle = node.handles?.find(({ id }) => id === handleId)
+
+        if (handle === undefined) {
+          return noChange(model)
+        }
+
+        pending = {
+          ...origin,
+          kind: 'connection-pending',
+          from: { nodeId: node.id, handleId: handle.id, kind: handle.kind },
         }
       }
 
-      if (nodeId === null) {
+      if (!pendingEligible(model, pending)) {
         return noChange(model)
       }
 
-      const node = model.document.nodes.find(
-        (candidate) => candidate.id === nodeId
+      const point = flowPoint(
+        clientX,
+        clientY,
+        model.viewport,
+        canvasForModel(model)
       )
-
-      const handle =
-        handleId === null
-          ? undefined
-          : node?.handles?.find((candidate) => candidate.id === handleId)
-
-      if (handleId === null && node?.draggable === false) {
-        return noChange(model)
-      }
-
-      if (
-        handleId !== null &&
-        (handle === undefined ||
-          (model.connectionMode === 'strict' && handle.kind !== 'source'))
-      ) {
-        return noChange(model)
-      }
 
       return {
         model: {
           ...model,
+          pointerClickReceipt: null,
           pointerSession:
-            handleId === null
-              ? {
-                  kind: 'node-drag',
-                  pointerId,
-                  startX: clientX,
-                  startY: clientY,
-                  nodeId,
-                }
-              : {
-                  kind: 'connection',
-                  pointerId,
-                  startX: clientX,
-                  startY: clientY,
-                  nodeId,
-                  sourceHandleId: handleId,
-                  autoPanDelta: { x: 0, y: 0 },
-                  currentX: flowPoint(
-                    clientX,
-                    clientY,
-                    model.viewport,
-                    canvasForModel(model)
-                  ).x,
-                  currentY: flowPoint(
-                    clientX,
-                    clientY,
-                    model.viewport,
-                    canvasForModel(model)
-                  ).y,
-                },
+            model.connectionDragThreshold === 0
+              ? activatePending(pending, point.x, point.y)
+              : pending,
         },
       }
     },
-    ConnectionPointerMoved: ({ pointerId, autoPanDelta, flowX, flowY }) => {
-      const session = model.pointerSession
+    ConnectionPointerMoved: ({
+      pointerId,
+      clientX,
+      clientY,
+      autoPanDelta,
+      flowX,
+      flowY,
+    }) => {
+      let session = model.pointerSession
 
       if (
         session === null ||
         session.pointerId !== pointerId ||
-        (session.kind !== 'connection' && session.kind !== 'reconnection')
+        session.kind === 'node-drag'
       ) {
         return noChange(model)
+      }
+
+      if (
+        session.kind === 'connection-pending' ||
+        session.kind === 'reconnection-pending'
+      ) {
+        if (!pendingEligible(model, session)) {
+          return {
+            model: {
+              ...model,
+              pointerSession: null,
+              pointerClickReceipt: null,
+            },
+          }
+        }
+
+        if (
+          !connectionDragActivated(
+            session.threshold,
+            session.startX,
+            session.startY,
+            clientX,
+            clientY
+          )
+        ) {
+          return noChange(model)
+        }
+
+        session = activatePending(session, flowX, flowY)
       }
 
       const pointerSession =
@@ -1512,6 +1715,25 @@ export const update = (
           : { ...session, currentX: flowX, currentY: flowY }
 
       return { model: { ...model, pointerSession } }
+    },
+    RoutedPointerClick: ({ pointerId }) => {
+      const receipt = model.pointerClickReceipt
+
+      if (receipt === null || receipt.pointerId !== pointerId) {
+        return noChange(model)
+      }
+
+      const cleared = { ...model, pointerClickReceipt: null }
+
+      return receipt.target === null
+        ? { model: cleared }
+        : updateState(
+            cleared,
+            Message.ClickHandle({
+              nodeId: receipt.target.nodeId,
+              handleId: receipt.target.handleId,
+            })
+          )
     },
     NodeDragMoved: () => noChange(model),
     ConnectionAutoPanFrame: () => {
@@ -1603,7 +1825,7 @@ export const update = (
         return noChange(model)
       }
 
-      const result = update(
+      const result = updateState(
         { ...model, keyboardActivation: true },
         Message.ActivateHandle({ nodeId, handleId })
       )
@@ -1917,8 +2139,21 @@ export const update = (
       }
 
       if (model.pointerSession?.pointerId === pointerId) {
+        if (
+          model.pointerSession.kind === 'connection-pending' ||
+          model.pointerSession.kind === 'reconnection-pending'
+        ) {
+          return {
+            model: {
+              ...model,
+              pointerSession: null,
+              pointerClickReceipt: null,
+            },
+          }
+        }
+
         return {
-          model: { ...model, pointerSession: null },
+          model: { ...model, pointerSession: null, pointerClickReceipt: null },
           outMessage: OutMessage.GestureCancelled({
             kind: model.pointerSession.kind,
             reason: 'pointer-cancel',
@@ -1944,13 +2179,18 @@ export const update = (
       const cleared = {
         ...model,
         pointerSession: null,
+        pointerClickReceipt: null,
         gestureSession: null,
         keyboardConnectionSession: null,
         keyboardResizeSession: null,
         pendingResizeAcceptance: null,
       }
 
-      if (activeKind === undefined) {
+      if (
+        activeKind === undefined ||
+        activeKind === 'connection-pending' ||
+        activeKind === 'reconnection-pending'
+      ) {
         return { model: cleared }
       }
 
@@ -2103,7 +2343,7 @@ export const update = (
 
       if (session?.kind === 'selection' && session.pointerId === -2) {
         if (key === 'Enter') {
-          return update(model, Message.CommitKeyboardSelection({}))
+          return updateState(model, Message.CommitKeyboardSelection({}))
         }
 
         // oxlint-disable require-readable-spacing
@@ -2147,7 +2387,7 @@ export const update = (
       }
 
       if (key === ' ' && !shift && nodeId !== null) {
-        return update(model, Message.ToggleNodeSelection({ nodeId }))
+        return updateState(model, Message.ToggleNodeSelection({ nodeId }))
       }
 
       return noChange(model)
@@ -2291,6 +2531,31 @@ export const update = (
           )
     },
   })
+
+export const update = (
+  model: Model,
+  message: GraphMessageData
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const result = updateState(model, message)
+  const pending = result.model.pointerSession
+
+  if (
+    (pending?.kind === 'connection-pending' ||
+      pending?.kind === 'reconnection-pending') &&
+    !pendingEligible(result.model, pending)
+  ) {
+    return {
+      ...result,
+      model: {
+        ...result.model,
+        pointerSession: null,
+        pointerClickReceipt: null,
+      },
+    }
+  }
+
+  return result
+}
 
 interface GraphTarget {
   readonly nodeId: string | null
@@ -3101,9 +3366,261 @@ const edgeReconnectControls = (
   })
 }
 
+export const createConnectionPointerResource = (initial: Model) => {
+  let current: Model | undefined = initial
+
+  let lease:
+    | {
+        readonly owner: HTMLElement
+        readonly pointerId: number
+        readonly startX: number
+        readonly startY: number
+        released: boolean
+      }
+    | undefined
+
+  const retire = (): void => {
+    const previous = lease
+    lease = undefined
+
+    if (previous?.owner.hasPointerCapture(previous.pointerId)) {
+      previous.owner.releasePointerCapture(previous.pointerId)
+    }
+  }
+
+  const reconcile = (model: Model): void => {
+    current = model
+    const pointer = model.pointerSession
+
+    if (
+      lease !== undefined &&
+      (pointer === null ||
+        pointer.kind === 'node-drag' ||
+        pointer.pointerId !== lease.pointerId ||
+        pointer.startX !== lease.startX ||
+        pointer.startY !== lease.startY)
+    ) {
+      retire()
+    }
+  }
+
+  const pendingMounted = (
+    pending: typeof PendingConnectionSchema.Type
+  ): boolean => {
+    const identities =
+      pending.kind === 'connection-pending'
+        ? [pending.from]
+        : [pending.source, pending.target]
+
+    const owner = lease?.owner
+
+    return !(
+      owner === undefined ||
+      !owner.isConnected ||
+      !owner.hasPointerCapture(pending.pointerId) ||
+      identities.some(
+        (identity) =>
+          ![...owner.querySelectorAll<HTMLElement>('[data-handle-id]')].some(
+            (element) =>
+              element.dataset.handleId === identity.handleId &&
+              element.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ===
+                identity.nodeId
+          )
+      )
+    )
+  }
+
+  const prepare = (
+    message: GraphMessageData
+  ): Option.Option<GraphMessageData> => {
+    if (
+      Predicate.isTagged('PointerDown')(message) &&
+      (message.handleId !== null || message.edgeId !== null) &&
+      (lease === undefined ||
+        message.pointerId !== lease.pointerId ||
+        message.clientX !== lease.startX ||
+        message.clientY !== lease.startY)
+    ) {
+      return Option.none()
+    }
+
+    const pending = current?.pointerSession
+
+    if (
+      Predicate.isTagged('ConnectionPointerMoved')(message) &&
+      pending !== undefined &&
+      pending !== null &&
+      pending.pointerId === message.pointerId &&
+      (pending.kind === 'connection-pending' ||
+        pending.kind === 'reconnection-pending') &&
+      !pendingMounted(pending)
+    ) {
+      return Option.some(
+        Message.PointerCancelled({ pointerId: pending.pointerId })
+      )
+    }
+
+    return Option.some(message)
+  }
+
+  const begin = (
+    model: Model,
+    message: Option.Option<GraphMessageData>
+  ): Option.Option<GraphMessageData> =>
+    Effect.runSync(
+      Effect.sync(() => {
+        if (current === undefined || Option.isNone(message)) {
+          return Option.none()
+        }
+
+        const down = message.value
+
+        if (
+          !Predicate.isTagged('PointerDown')(down) ||
+          (down.handleId === null && down.edgeId === null)
+        ) {
+          return message
+        }
+
+        const admitted = update(current, down).model.pointerSession
+        const owner = canvasForModel(model)
+
+        if (
+          lease !== undefined ||
+          admitted === null ||
+          admitted.kind === 'node-drag' ||
+          owner === null
+        ) {
+          return Option.none()
+        }
+
+        try {
+          owner.setPointerCapture(down.pointerId)
+
+          if (!owner.hasPointerCapture(down.pointerId)) {
+            return Option.none()
+          }
+
+          lease = {
+            owner,
+            pointerId: down.pointerId,
+            startX: down.clientX,
+            startY: down.clientY,
+            released: false,
+          }
+
+          return message
+        } catch (error) {
+          Effect.runSync(
+            Effect.logWarning('Foldkit connection capture failed').pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.pointerId]: down.pointerId,
+                [FlowAttribute.cancellationReason]: String(error),
+              }),
+              Effect.withSpan(FlowSpan.gestureCancel)
+            )
+          )
+
+          return Option.none()
+        }
+      })
+    )
+
+  const up = (event: PointerEvent): void => {
+    if (lease?.pointerId === event.pointerId) {
+      lease.released = true
+    }
+  }
+
+  const subscriptions = Subscription.make<Model, GraphMessageData>()(
+    (entry) => ({
+      connectionPointerOwner: entry(
+        { instanceId: Schema.String },
+        {
+          modelToDependencies: (model) => ({ instanceId: model.instanceId }),
+          dependenciesToStream: () =>
+            Stream.callback<GraphMessageData>((queue) => {
+              const loss = (event: PointerEvent): void => {
+                if (
+                  lease !== undefined &&
+                  !lease.released &&
+                  event.target === lease.owner &&
+                  event.pointerId === lease.pointerId &&
+                  !lease.owner.hasPointerCapture(event.pointerId)
+                ) {
+                  Queue.offerUnsafe(
+                    queue,
+                    Message.PointerCancelled({ pointerId: event.pointerId })
+                  )
+                }
+              }
+
+              const click = (event: MouseEvent): void => {
+                const receipt = current?.pointerClickReceipt
+
+                const canvas =
+                  current === undefined ? null : canvasForModel(current)
+
+                if (
+                  event.detail === 0 ||
+                  receipt === undefined ||
+                  receipt === null ||
+                  !(event.target instanceof Node) ||
+                  canvas === null ||
+                  !canvas.contains(event.target)
+                ) {
+                  return
+                }
+
+                if (
+                  event instanceof PointerEvent &&
+                  event.pointerId !== receipt.pointerId
+                ) {
+                  return
+                }
+
+                event.stopImmediatePropagation()
+                Queue.offerUnsafe(
+                  queue,
+                  Message.RoutedPointerClick({
+                    pointerId: receipt.pointerId,
+                  })
+                )
+              }
+
+              return Effect.acquireRelease(
+                Effect.sync(() => {
+                  document.addEventListener('pointerup', up, true)
+                  document.addEventListener('lostpointercapture', loss, true)
+                  document.addEventListener('click', click, true)
+
+                  return () => {
+                    current = undefined
+                    retire()
+                    document.removeEventListener('pointerup', up, true)
+                    document.removeEventListener(
+                      'lostpointercapture',
+                      loss,
+                      true
+                    )
+                    document.removeEventListener('click', click, true)
+                  }
+                }),
+                (dispose) => Effect.sync(dispose)
+              )
+            }),
+        }
+      ),
+    })
+  )
+
+  return { begin, prepare, reconcile, subscriptions }
+}
+
 const graphView = (
   renderers: FoldkitRendererRegistry = {},
-  markerScope = 'flow-foldkit'
+  markerScope = 'flow-foldkit',
+  pointerResource?: ReturnType<typeof createConnectionPointerResource>
 ) =>
   Submodel.defineView<Model, GraphMessageData>((model, h) => {
     const measurements = getFlowMeasuredNodes(
@@ -3517,12 +4034,19 @@ const graphView = (
             target
           ) =>
             button === 0
-              ? beginPointer(
-                  pointerId,
-                  clientX,
-                  clientY,
-                  target,
-                  model.viewport
+              ? (
+                  pointerResource?.begin ??
+                  ((_model: Model, message: Option.Option<GraphMessageData>) =>
+                    message)
+                )(
+                  model,
+                  beginPointer(
+                    pointerId,
+                    clientX,
+                    clientY,
+                    target,
+                    model.viewport
+                  )
                 )
               : Option.none()
         ),
@@ -3574,8 +4098,9 @@ const graphView = (
 
 export const makeView = (
   renderers?: FoldkitRendererRegistry,
-  markerScope?: string
-) => graphView(renderers, markerScope)
+  markerScope?: string,
+  pointerResource?: ReturnType<typeof createConnectionPointerResource>
+) => graphView(renderers, markerScope, pointerResource)
 
 // oxlint-disable anti-slop(require-readable-spacing)
 const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
@@ -3639,14 +4164,20 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
             type: 'pointerup',
             // oxlint-disable-next-line complexity
             mapEvent: (event: PointerEvent): GraphMessageData => {
-              let { nodeId, handleId } = readTarget(event.target)
-
               const connectionCanvas = canvasForInstance(instanceId)
 
+              const physical =
+                connectionCanvas?.ownerDocument.elementFromPoint(
+                  event.clientX,
+                  event.clientY
+                ) ?? null
+
+              let { nodeId, handleId } = readTarget(physical)
+
               if (
-                !(event.target instanceof Node) ||
+                physical === null ||
                 connectionCanvas === null ||
-                !connectionCanvas.contains(event.target)
+                !connectionCanvas.contains(physical)
               ) {
                 nodeId = null
                 handleId = null
@@ -3794,11 +4325,15 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
             mapEvent: (event: PointerEvent) =>
               Message.PointerCancelled({ pointerId: event.pointerId }),
           }),
-          Subscription.fromEvent({
+          Subscription.fromEventFilterMap({
             target: document,
             type: 'lostpointercapture',
-            mapEvent: (event: PointerEvent) =>
-              Message.PointerCancelled({ pointerId: event.pointerId }),
+            filterMapEvent: (event: PointerEvent) =>
+              pointerSession !== null && pointerSession.kind !== 'node-drag'
+                ? Option.none()
+                : Option.some(
+                    Message.PointerCancelled({ pointerId: event.pointerId })
+                  ),
           }),
         ]
 
@@ -3858,7 +4393,9 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
 
         if (
           pointerSession?.kind === 'connection' ||
-          pointerSession?.kind === 'reconnection'
+          pointerSession?.kind === 'reconnection' ||
+          pointerSession?.kind === 'connection-pending' ||
+          pointerSession?.kind === 'reconnection-pending'
         ) {
           events.push(
             Subscription.fromEvent({
@@ -3871,6 +4408,8 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
 
                 return Message.ConnectionPointerMoved({
                   pointerId: event.pointerId,
+                  clientX: event.clientX,
+                  clientY: event.clientY,
                   flowX: flowPoint(
                     event.clientX,
                     event.clientY,
@@ -3884,7 +4423,8 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                     canvas
                   ).y,
                   autoPanDelta:
-                    pointerSession.kind === 'connection'
+                    pointerSession.kind === 'connection' ||
+                    pointerSession.kind === 'connection-pending'
                       ? selectionAutoPanDelta(
                           {
                             x: event.clientX - (bounds?.left ?? 0),
@@ -4190,6 +4730,14 @@ export const initialModel = (
   allowedConnectionTargets: allowedTargets,
   ...defaultInteractionOptions,
   ...interactionOptions,
+  connectionDragThreshold: Schema.decodeUnknownSync(
+    ConnectionDragThresholdSchema
+  )(
+    interactionOptions.connectionDragThreshold === undefined
+      ? defaultConnectionDragThreshold
+      : interactionOptions.connectionDragThreshold
+  ),
+  pointerClickReceipt: null,
   panOnDrag: interactionOptions.panOnDrag ?? false,
   selectionOnDrag: interactionOptions.selectionOnDrag ?? true,
   panOnScroll: interactionOptions.panOnScroll ?? false,

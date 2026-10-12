@@ -241,7 +241,7 @@
 .flow-foldkit-edge-labels {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 1002;
   pointer-events: none;
 }
 .flow-foldkit-edge-label {
@@ -255,6 +255,7 @@
   pointer-events: none;
 }
 .flow-foldkit-reconnect-handle {
+  pointer-events: auto;
   position: absolute;
   z-index: 1001;
   width: 12px;
