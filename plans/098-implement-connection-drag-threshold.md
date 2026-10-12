@@ -36,6 +36,8 @@ The canonical continuation brief and append-only decision trail are in `/Users/r
 
 The first candidate at `974f71a` passed 23 dedicated unit and 115 Chromium cases. Three independent source reviewers identified missed queue ordering, click completion, viewport publication, Vue cancellation, and control-stacking cases. Parent native Chrome input reproduced zero-threshold click activation failure and a successful routed edge-add reporting cancellation. Strict positive admission stayed quiet at equality and processed the crossing move. Integration is blocked pending the fresh repair owner and expanded feature proof. Reports and the repair sketch are in the canonical continuation directory. Broad tests remain deferred.
 
+The repaired candidate at `19a3fef` passed 33 dedicated units and 138 Chromium cases. Parent native T3 recordings confirm corrected click outcomes and public fresh/reconnect completion across all hosts. The comment deletion and fixture reshape are accepted. A follow-up source reviewer found deferred crossing movement can leave native release resolving against stale pending state. The ownership census and release premise record the remaining boundary. Integration is still blocked; ordinary-path native proof does not establish queue-starvation acceptance.
+
 ## Conformity and deviations
 
 Strict squared client distance, zero activation and pending suppression follow the pinned XYHandle contract as inspected in historical Plan 093. Current Flow production and test paths require fresh tracing and feature proof. Framework-owned pointer sessions remain an intentional adaptation. Full-suite acceptance and remaining API, example and UI coverage stay open.
