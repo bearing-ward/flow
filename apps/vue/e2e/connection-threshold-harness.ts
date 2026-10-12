@@ -9,6 +9,7 @@ export {
   captureFailure,
   wrongPointer,
   invalid,
+  invalidConstructors,
   invalidVanillaHost,
   acknowledge,
 } from '../../shared-e2e/connection-threshold-harness.ts'

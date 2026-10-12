@@ -41,6 +41,8 @@ export interface Options {
   click?: boolean
   loose?: boolean
   edge?: boolean
+  edgeZIndex?: number
+  pan?: boolean
   controlled?: boolean
   reentrant?: 'dispose' | 'replace'
 }
@@ -98,6 +100,8 @@ let setThreshold: (value: ThresholdInput) => void = () => {
 }
 
 let rawEvents: (typeof InteractionEventSchema.Encoded)[] = []
+
+let viewportEvents: string[] = []
 
 let events: string[] = []
 
@@ -168,6 +172,14 @@ export const mount = async (
     fixture = { ...fixture, edges: [] }
   }
 
+  fixture = {
+    ...fixture,
+    edges: fixture.edges.map((edge) => ({
+      ...edge,
+      zIndex: options.edgeZIndex ?? 0,
+    })),
+  }
+  viewportEvents = []
   rawEvents = []
   events = []
   changes = []
@@ -282,6 +294,9 @@ export const mount = async (
 
             return true
           },
+          onViewportStart: () => viewportEvents.push('start'),
+          onViewportChange: () => viewportEvents.push('change'),
+          onViewportEnd: () => viewportEvents.push('end'),
           onConnectStart: () => record('connectStart'),
           onConnectEnd: () => record('connectEnd'),
           onConnect: () => record('connect'),
@@ -338,6 +353,7 @@ export const mount = async (
       'full',
       {
         ...defaultInteractionOptions,
+        panOnDrag: options.pan ?? false,
         connectionDragThreshold: options.threshold,
         connectOnClick: options.click ?? false,
         connectionMode: options.loose ? 'loose' : 'strict',
@@ -346,6 +362,9 @@ export const mount = async (
 
     const active = Runtime.embed<typeof ports, never, 'Element'>(program)
     const client = createFoldkitSnapshotClient(active.ports)
+    active.ports.viewportEvents.subscribe((event) =>
+      viewportEvents.push(event.kind)
+    )
     active.ports.changes.subscribe((change) =>
       changes.push(Schema.decodeUnknownSync(FlowChangeSchema)(change))
     )
@@ -426,6 +445,7 @@ export const read = async () => {
 
   return {
     rawEvents,
+    viewportEvents: [...viewportEvents],
     events: [...events],
     changes: [...changes],
     captureEvents: [...captureEvents],
@@ -611,4 +631,52 @@ export const acknowledge = () => {
   if (proposal?.kind === 'edge-reconnect') {
     replace({ ...fixture, edges: [proposal.edge] })
   }
+}
+
+export const invalidConstructors = async (
+  host: 'vanilla' | 'vue' | 'foldkit'
+) => {
+  const rejected: boolean[] = []
+
+  for (const value of [-1, null, '8', Number.NaN, Infinity, -Infinity]) {
+    // eslint-disable-next-line no-await-in-loop
+    const result = await invalid(host, value)
+    rejected.push(result.rejected)
+
+    if (host === 'vanilla') {
+      rejected.push(...invalidVanillaHost(value))
+    }
+  }
+
+  return rejected
+}
+
+export const overlapLabel = async () => {
+  const label = document.querySelector<HTMLElement>('.flow-foldkit-edge-label')
+
+  if (label === null) {
+    throw new Error('Missing edge label')
+  }
+
+  replace({
+    ...fixture,
+    edges: fixture.edges.map((edge) => ({
+      ...edge,
+      selected: false,
+      zIndex: 0,
+    })),
+    nodes: fixture.nodes.map((node) =>
+      node.id === 'source-next'
+        ? {
+            ...node,
+            position: {
+              x: label.offsetLeft - 25,
+              y: label.offsetTop - 15,
+            },
+            zIndex: 2,
+          }
+        : node
+    ),
+  })
+  await frames()
 }

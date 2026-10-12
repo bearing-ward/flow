@@ -166,7 +166,51 @@ export const connectionThresholdTests = (
         expect(
           crossing.events.filter((event: string) => event.endsWith('Start'))
         ).toEqual([kind === 'fresh' ? 'connectStart' : 'reconnectStart'])
-        expect(crossing.preview).not.toBeNull()
+
+        const canvas = await page
+          .locator('[data-testid="flow-canvas"]')
+          .boundingBox()
+
+        expect(canvas).not.toBeNull()
+
+        const endpoint = {
+          x: (point.x + 6 - (canvas?.x ?? 0) - 80) / zoom,
+          y: (point.y + 8 - (canvas?.y ?? 0) - 80) / zoom,
+        }
+
+        expect(crossing.preview.to.x).toBeCloseTo(endpoint.x, 4)
+        expect(crossing.preview.to.y).toBeCloseTo(endpoint.y, 4)
+
+        const rendered = await page
+          .locator(
+            '.flow-connection-preview, .flow-vue-connection-preview, .flow-foldkit-connection-preview-path'
+          )
+          .evaluate((element) => {
+            const line =
+              element instanceof SVGLineElement
+                ? element
+                : element.querySelector('line')
+
+            if (line instanceof SVGLineElement) {
+              return { x: line.x2.baseVal.value, y: line.y2.baseVal.value }
+            }
+
+            const path =
+              element instanceof SVGPathElement
+                ? element
+                : element.querySelector('path')
+
+            if (!(path instanceof SVGPathElement)) {
+              throw new Error('Missing preview path')
+            }
+
+            const end = path.getPointAtLength(path.getTotalLength())
+
+            return { x: end.x, y: end.y }
+          })
+
+        expect(rendered.x).toBeCloseTo(endpoint.x, 2)
+        expect(rendered.y).toBeCloseTo(endpoint.y, 2)
         expect(crossing.captured).toBe(true)
         expect(crossing.captureEvents).toEqual(['got'])
         expect(crossing.captureAtStart).toEqual([true])
@@ -295,6 +339,140 @@ export const connectionThresholdTests = (
         ).toHaveLength(1)
       }
     })
+  }
+
+  const registerFoldkitRepairs = () => {
+    if (host === 'foldkit') {
+      for (const threshold of [0, 8]) {
+        for (const controlled of [false, true]) {
+          test(`connectionDragThreshold repair Foldkit routed click threshold ${threshold} controlled ${controlled}`, async ({
+            page,
+          }) => {
+            await mount(page, {
+              threshold,
+              click: true,
+              loose: true,
+              controlled,
+            })
+            await page.locator(handle('source')).click()
+            const source = await call(page, 'read')
+            expect(
+              source.rawEvents.filter(
+                (event: { name: string; inputKind: string }) =>
+                  event.name === 'onConnectStart' && event.inputKind === 'click'
+              )
+            ).toHaveLength(1)
+            await page.locator(handle('target')).click()
+            const result = await call(page, 'read')
+            expect(result.changes).toHaveLength(1)
+
+            const proposal = result.rawEvents.filter(
+              (event: { name: string }) => event.name === 'onConnect'
+            )
+
+            expect(proposal).toHaveLength(1)
+            expect(proposal[0].outcome).toBe(
+              controlled ? 'proposed' : 'accepted'
+            )
+            expect(
+              result.rawEvents.findLast(
+                (event: { name: string }) => event.name === 'onConnectEnd'
+              )
+            ).toMatchObject({
+              name: 'onConnectEnd',
+              outcome: controlled ? 'proposed' : 'accepted',
+            })
+            expect(result.preview).toBeNull()
+          })
+        }
+      }
+
+      test('connectionDragThreshold repair Foldkit viewport publications survive lifecycle composition', async ({
+        page,
+      }) => {
+        await mount(page, { threshold: 8, pan: true })
+        await page.mouse.move(700, 400)
+        await page.mouse.down()
+        await page.mouse.move(740, 430)
+        await page.mouse.up()
+        const result = await call(page, 'read')
+        expect(result.viewportEvents).toEqual(['start', 'change', 'end'])
+      })
+      test('connectionDragThreshold repair Foldkit owner edge zIndex controls are reachable and labels retain their layer', async ({
+        page,
+      }) => {
+        await mount(page, { threshold: 8, edge: true, edgeZIndex: 3 })
+        const point = await start(page, anchor('target'))
+        const pending = await call(page, 'read')
+        expect(pending.captured).toBe(true)
+        await page.mouse.move(point.x + 10, point.y)
+        const active = await call(page, 'read')
+        expect(active.events).toContain('reconnectStart')
+        await page.mouse.up()
+        expect(
+          await page
+            .locator('.flow-foldkit-edge-labels')
+            .evaluate((element) => getComputedStyle(element).zIndex)
+        ).toBe('1')
+        await call(page, 'overlapLabel')
+        const overlap = await center(page, '.flow-foldkit-edge-label')
+
+        const stack = await page
+          .locator('.flow-foldkit-edge-label')
+          .evaluate((label, overlapPoint) => {
+            if (!(label instanceof HTMLElement)) {
+              throw new Error('Missing label')
+            }
+
+            label.style.pointerEvents = 'auto'
+
+            const top = document
+              .elementFromPoint(overlapPoint.x, overlapPoint.y)
+              ?.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
+
+            label.style.removeProperty('pointer-events')
+
+            return top
+          }, overlap)
+
+        expect(stack).toBe('source-next')
+        await page.mouse.click(overlap.x, overlap.y)
+        const selected = await call(page, 'read')
+        expect(selected.rawEvents).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'onNodeClick',
+              nodeId: 'source-next',
+            }),
+          ])
+        )
+      })
+    }
+  }
+
+  registerFoldkitRepairs()
+
+  for (const action of ['dispose', 'replace'] as const) {
+    for (const threshold of [0, 8]) {
+      test(`connectionDragThreshold repair ${host} fresh reentrant ${action} threshold ${threshold}`, async ({
+        page,
+      }) => {
+        await mount(page, { threshold, reentrant: action })
+        const point = await start(page, handle('source'))
+        await page.mouse.move(point.x + 10, point.y)
+        await call(page, 'frames')
+        await page.mouse.up()
+        const result = await call(page, 'read')
+        expect(
+          result.events.filter((event: string) => event === 'connectStart')
+        ).toEqual(['connectStart'])
+        expect(result).toMatchObject({
+          captured: false,
+          preview: null,
+          changes: [],
+        })
+      })
+    }
   }
 
   for (const invalidation of [
@@ -464,20 +642,8 @@ export const connectionThresholdTests = (
     const results = await page.evaluate(
       async ({ entry: modulePath, host: adapter }) => {
         const harness = await import(modulePath)
-        const rejected = []
 
-        for (const value of [-1, null, '8', Number.NaN, Infinity, -Infinity]) {
-          // Each mount owns the same fixture container.
-          // eslint-disable-next-line no-await-in-loop
-          const result = await harness.invalid(adapter, value)
-          rejected.push(result.rejected)
-
-          if (adapter === 'vanilla') {
-            rejected.push(...harness.invalidVanillaHost(value))
-          }
-        }
-
-        return rejected
+        return harness.invalidConstructors(adapter)
       },
       { entry, host }
     )
@@ -488,6 +654,53 @@ export const connectionThresholdTests = (
   })
 
   if (host === 'vue') {
+    for (const kind of ['blur', 'cancel', 'loss', 'escape']) {
+      test(`connectionDragThreshold repair Vue retained click ${kind} settles before retry`, async ({
+        page,
+      }) => {
+        await mount(page, { threshold: 8, click: true, loose: true })
+        await page.locator(handle('source')).click()
+        await start(page, handle('target'))
+
+        await (kind === 'escape'
+          ? page.keyboard.press('Escape')
+          : call(page, 'cancel', kind))
+
+        await page.mouse.move(700, 400)
+        await page.mouse.up()
+        const cancelled = await call(page, 'read')
+        expect(
+          cancelled.events.filter((event: string) => event === 'connectEnd')
+        ).toHaveLength(1)
+        const point = await start(page, handle('source'))
+        await page.mouse.move(point.x + 10, point.y)
+        const retry = await call(page, 'read')
+        expect(
+          retry.events.filter((event: string) => event === 'connectStart')
+        ).toHaveLength(2)
+        await call(page, 'cancel', 'blur')
+        await page.mouse.up()
+      })
+    }
+
+    test('connectionDragThreshold repair Vue invalid live value settles active auto-pan viewport', async ({
+      page,
+    }) => {
+      await mount(page, { threshold: 8 })
+      await start(page, handle('source'))
+      await page.mouse.move(950, 300)
+      await call(page, 'frames', 8)
+      const active = await call(page, 'read')
+      expect(active.viewportEvents).toContain('start')
+      await call(page, 'threshold', null)
+      await page.mouse.up()
+      const cancelled = await call(page, 'read')
+      expect(cancelled.viewportEvents.at(-1)).toBe('end')
+      expect(
+        cancelled.viewportEvents.filter((kind: string) => kind === 'end')
+      ).toHaveLength(1)
+      expect(cancelled).toMatchObject({ captured: false, preview: null })
+    })
     test('connectionDragThreshold Vue valid live replacement preserves an active pointer', async ({
       page,
     }) => {
