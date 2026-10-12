@@ -1,10 +1,10 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 098 accepted with dedicated feature commands; broad tests and calibration deferred by user",
+  "activeWork": "Plan 099 node threshold under independent review; explicit node and affected connection feature commands only; broad verification deferred by user",
   "checks": [],
   "browserTests": {
-    "vanilla": ["connection-threshold.e2e.ts"],
-    "vue": ["connection-threshold.e2e.ts"],
-    "foldkit": ["connection-threshold.e2e.ts"]
+    "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
+    "vue": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
+    "foldkit": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"]
   }
 }
