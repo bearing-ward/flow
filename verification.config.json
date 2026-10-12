@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 repair4 parent feature fence passed; root-reproduced pan-release R5-1 blocks acceptance; independent source review active; exact four unit/six node+connection browser fence; broad testing deferred",
+  "activeWork": "Plan099 repair4 parent feature fence passed; root-reproduced observation R5-1 and R5-2 block acceptance; source reviewers A/B active; exact four unit/six node+connection browser fence; broad testing deferred",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
