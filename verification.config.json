@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Feature-only connection drag threshold implementation; broad tests and calibration deferred by user",
+  "activeWork": "Plan 098 accepted with dedicated feature commands; broad tests and calibration deferred by user",
   "checks": [],
   "browserTests": {
     "vanilla": ["connection-threshold.e2e.ts"],

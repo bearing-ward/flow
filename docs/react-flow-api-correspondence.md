@@ -37,7 +37,7 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | ariaLabelConfig | individual ARIA fields only | partial labels | partial labels | partial labels | Host accessibility/localization; global config gap. |
 | nodeOrigin | gap | gap | gap | gap | Core coordinate convention; no prop equivalence. |
 | nodeDragThreshold | gesture threshold primitive | mount option | fixed adapter behavior; no prop | fixed host behavior; no option | Threshold option and equivalence are Vanilla-only; Vue/Foldkit configuration remains unsupported. |
-| connectionDragThreshold | gap | connection-session threshold | connection-session threshold | pointer session | Host lifecycle; exact API gap. |
+| connectionDragThreshold | Schema and strict client-distance predicate | mount option | prop | graph initialization option | Default 1, zero activates on down, positive movement must strictly exceed the threshold. Dedicated feature proof passed across hosts; mounted reference comparison and packed consumer compatibility remain unverified. See Plan 098. |
 | paneClickDistance | gap | gap | gap | gap | Host interaction config; unassessed. |
 | nodeClickDistance | gap | gap | gap | gap | Host interaction config; unassessed. |
 | proOptions | gap | gap | gap | gap | Product/licensing/attribution policy; unassessed. |

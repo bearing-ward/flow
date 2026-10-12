@@ -40,6 +40,31 @@ The repaired candidate at `19a3fef` passed 33 dedicated units and 138 Chromium c
 
 At `9786bea`, native input is admitted through a lifetime queue and release targeting follows preceding movement. Parent independently passed 41 dedicated units and 143 Chromium cases; the prior queued-input blockers and comment scope are closed. Two new combinations remain. A stale node/pane guard can discard the following connection down, and disabled click initiation blocks target-click completion of an existing keyboard source. Parent native T3 input reproduced the latter. A fresh narrow owner is repairing both; integration and broad reconciliation remain open.
 
+## Accepted integration
+
+Plan 098 is accepted within its feature boundary and integrated at `a869252`. Reviewed source `9671109442b56d6c1461686348d87d643d44d043` was archived before combining its final red regression and narrow fix into `68e2306`. The normalized tree equals the reviewed tree. All integrated `apps/` and `packages/` files also equal that tree. Imported research artifacts are unchanged.
+
+Parent independently passed 58 dedicated units and 151 Chromium cases with these commands:
+
+```sh
+bunx vitest run packages/core/src/domain/flow-connection-drag-threshold.schema.test.ts packages/foldkit/src/connection-threshold.test.ts
+bunx playwright test -c playwright.config.ts connection-threshold.e2e.ts --workers=1
+bunx playwright test -c apps/vue/playwright.config.ts connection-threshold.e2e.ts --workers=1
+bunx playwright test -c apps/foldkit/playwright.config.ts connection-threshold.e2e.ts --workers=1
+```
+
+No verifier profile was invoked. Results were 40 Vanilla, 53 Vue and 58 Foldkit browser cases. Builds, scoped types, lint and format needed for the feature passed in the implementation receipts. Three independent source reviewers and the comment reviewer found no remaining findings. Parent native T3 recordings repeat fresh and reconnect completion across all hosts and the previously failing mixed keyboard completion. Ordinary native recordings do not prove naturally starved scheduling.
+
+Evidence resolves under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`: `review-verdict-round4.md`, `parent-final-feature-checks.json`, its separate logs, `parent-final-native-hosts.json`, and `parent-final-native-keyboard.json`. The original reviewed history is recoverable from `threshold-reviewed-history.bundle`.
+
+The optional threshold defaults to 1 and rejects invalid explicit values. Foldkit's `ConnectionPointerMoved` message now requires client coordinates. Its model includes pending activation and a retained click receipt. Application message lifts preserve native origin identity. `Graph.makeView` requires an owned native resource; the prior unowned fallback is removed. Existing internal callers migrated. Packed external consumer compatibility has not been rerun. Browser fixtures import built public artifacts by relative paths, so they do not establish package resolution in a packed consumer.
+
+Remaining work includes historical eager-activation test reconciliation, broader profiles, calibration, packed consumers, other engines and touch, naturally starved scheduling, arbitrary native lease replacement, huge finite arithmetic, reference runtime comparison, and broader catalog coverage. No collector delivery claim is made.
+
 ## Conformity and deviations
 
-Strict squared client distance, zero activation and pending suppression follow the pinned XYHandle contract as inspected in historical Plan 093. Current Flow production and test paths require fresh tracing and feature proof. Framework-owned pointer sessions remain an intentional adaptation. Full-suite acceptance and remaining API, example and UI coverage stay open.
+Conforming within the dedicated feature tests: strict squared client distance, zero activation, pending suppression and validated public configuration. The comparison follows the pinned XYHandle contract by source inspection. Mounted reference runtime parity is unverified.
+
+Intentionally different: framework-owned pointer sessions and host-specific click, keyboard and auto-pan policies. Deterministic queue tests control deferred reduction explicitly.
+
+Unverified: naturally starved native scheduling and the deferred boundaries above. Full-suite acceptance and remaining API, example and UI coverage stay open.
