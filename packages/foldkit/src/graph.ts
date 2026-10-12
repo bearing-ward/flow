@@ -1754,15 +1754,33 @@ const updateState = (
 
       const cleared = { ...model, pointerClickReceipt: null }
 
-      return receipt.target === null
-        ? { model: cleared }
-        : updateState(
-            cleared,
-            Message.ClickHandle({
-              nodeId: receipt.target.nodeId,
-              handleId: receipt.target.handleId,
-            })
-          )
+      if (receipt.target === null) {
+        return { model: cleared }
+      }
+
+      const keyboardSession = cleared.keyboardConnectionSession
+
+      if (
+        receipt.target.kind === 'target' &&
+        cleared.connectionMode === 'loose' &&
+        keyboardSession?.kind === 'connection' &&
+        keyboardSession.inputKind === 'keyboard'
+      ) {
+        return completeKeyboardConnection(
+          cleared,
+          keyboardSession,
+          receipt.target.nodeId,
+          receipt.target.handleId
+        )
+      }
+
+      return updateState(
+        cleared,
+        Message.ClickHandle({
+          nodeId: receipt.target.nodeId,
+          handleId: receipt.target.handleId,
+        })
+      )
     },
     NodeDragMoved: () => noChange(model),
     ConnectionAutoPanFrame: () => {
@@ -3809,11 +3827,7 @@ export const createConnectionPointerResource = (initial: Model) => {
 
         const owner = canvasForModel(model)
 
-        if (
-          owner === null ||
-          current.gestureSession !== null ||
-          current.pointerSession?.kind === 'node-drag'
-        ) {
+        if (owner === null) {
           return Option.none()
         }
 

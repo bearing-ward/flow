@@ -223,6 +223,132 @@ describe('connectionDragThreshold application transitions, constructed models', 
     ])
   })
 
+  it.each([
+    { threshold: undefined, controlled: false, allowed: true },
+    { threshold: undefined, controlled: true, allowed: true },
+    { threshold: 8, controlled: false, allowed: true },
+    { threshold: 8, controlled: true, allowed: true },
+    { threshold: undefined, controlled: false, allowed: false },
+    { threshold: undefined, controlled: true, allowed: false },
+    { threshold: 8, controlled: false, allowed: false },
+    { threshold: 8, controlled: true, allowed: false },
+  ])(
+    'round3 keyboard receipt uses allowed-target validation and publication, threshold=$threshold controlled=$controlled allowed=$allowed',
+    ({ threshold, controlled, allowed }) => {
+      const base = initial(threshold)
+
+      const model: ReturnType<typeof initial> = {
+        ...base,
+        graph: {
+          ...base.graph,
+          connectOnClick: false,
+          connectionMode: 'loose',
+          documentMode: controlled ? 'controlled' : 'uncontrolled',
+          allowedConnectionTargets: allowed ? ['target'] : [],
+          document: { ...base.graph.document, edges: [] },
+        },
+      }
+
+      const keyboard = step(
+        model,
+        Message.ActivateHandle({
+          nodeId: NodeIdSchema.make('source'),
+          handleId: HandleIdSchema.make('out'),
+        })
+      ).model
+
+      const pending = step(
+        keyboard,
+        Message.PointerDown({ ...down(), nodeId: 'target', handleId: 'in' })
+      ).model
+
+      const released = step(
+        pending,
+        Message.PointerReleased({
+          pointerId: 1,
+          clientX: 10,
+          clientY: 20,
+          targetNodeId: 'target',
+          targetHandleId: 'in',
+        })
+      ).model
+
+      const completed = step(
+        released,
+        Message.RoutedPointerClick({ pointerId: 1 })
+      )
+
+      const publishedOutcome = controlled ? 'proposed' : 'accepted'
+      const outcome = allowed ? publishedOutcome : 'rejected'
+      expect(events(completed)).toMatchObject([
+        ...(allowed
+          ? [{ name: 'onConnect', inputKind: 'keyboard', outcome }]
+          : []),
+        { name: 'onConnectEnd', inputKind: 'keyboard', outcome },
+      ])
+      expect(completed.model.graph.keyboardConnectionSession).toBeNull()
+      expect(completed.model.graph.pointerClickReceipt).toBeNull()
+      expect(completed.model.graph.document.edges).toHaveLength(
+        allowed && !controlled ? 1 : 0
+      )
+
+      const expectedChange = expect.objectContaining({
+        kind: 'edge-add',
+        edge: expect.objectContaining({
+          source: 'source',
+          sourceHandle: 'out',
+          target: 'target',
+          targetHandle: 'in',
+        }),
+      })
+
+      expect(
+        completed.commands?.find(({ name }) => name === 'PublishFlowChanges')
+          ?.args?.change
+      ).toStrictEqual(allowed ? expectedChange : undefined)
+    }
+  )
+
+  it('round3 strict mode keeps disabled native click completion guarded', () => {
+    const base = initial(8)
+    const model = { ...base, graph: { ...base.graph, connectOnClick: false } }
+
+    const keyboard = step(
+      model,
+      Message.ActivateHandle({
+        nodeId: NodeIdSchema.make('source'),
+        handleId: HandleIdSchema.make('out'),
+      })
+    ).model
+
+    const pending = step(
+      keyboard,
+      Message.PointerDown({ ...down(), nodeId: 'target', handleId: 'in' })
+    ).model
+
+    const released = step(
+      pending,
+      Message.PointerReleased({
+        pointerId: 1,
+        clientX: 10,
+        clientY: 20,
+        targetNodeId: 'target',
+        targetHandleId: 'in',
+      })
+    ).model
+
+    const clicked = step(released, Message.RoutedPointerClick({ pointerId: 1 }))
+    expect(clicked.model.graph.keyboardConnectionSession).toStrictEqual({
+      kind: 'connection',
+      sourceNodeId: 'source',
+      sourceHandleId: 'out',
+      inputKind: 'keyboard',
+    })
+    expect(events(clicked)).toStrictEqual([])
+    expect(clicked.model.graph.document.edges).toStrictEqual(document.edges)
+    expect(clicked.model.graph.pointerClickReceipt).toBeNull()
+  })
+
   it.each([-1, null, '8', Number.NaN, Infinity])(
     'rejects invalid constructor input %s',
     (value) => {
@@ -737,6 +863,219 @@ describe('connectionDragThreshold repair native resource with controlled deferre
       } finally {
         await Effect.runPromise(Fiber.interrupt(fiber))
       }
+    }
+  )
+
+  it.each([
+    { previous: 'node', reconnect: false },
+    { previous: 'node', reconnect: true },
+    { previous: 'pane', reconnect: false },
+    { previous: 'pane', reconnect: true },
+  ])(
+    'round3 queued $previous release permits following connection down, reconnect=$reconnect',
+    async ({ previous, reconnect }) => {
+      const { owner, dom, model: base, resource } = setupResource()
+
+      const model = {
+        ...base,
+        graph: {
+          ...base.graph,
+          document: reconnect ? document : base.graph.document,
+          panOnDrag: true,
+        },
+      }
+
+      const previousDown =
+        previous === 'node'
+          ? Message.PointerDown({ ...down(), handleId: null })
+          : Message.GestureDown({
+              pointerId: 1,
+              clientX: 10,
+              clientY: 20,
+              screenX: 10,
+              screenY: 20,
+              nodeId: null,
+              direction: null,
+              allowPan: true,
+            })
+
+      let reduced = step(model, previousDown).model
+      resource.reconcile(reduced.graph, previousDown)
+
+      const previousKind =
+        reduced.graph.gestureSession?.kind ?? reduced.graph.pointerSession?.kind
+
+      const queued: (typeof Message.Type)[] = []
+
+      const fiber = Effect.runFork(
+        Stream.runForEach(
+          Stream.mergeAll(
+            [
+              resource.subscriptions.connectionPointerOwner.dependenciesToStream(
+                {
+                  instanceId: reduced.graph.instanceId,
+                }
+              ),
+              subscriptions.pointerEvents.dependenciesToStream(
+                subscriptions.pointerEvents.modelToDependencies(reduced.graph)
+              ),
+            ],
+            { concurrency: 'unbounded' }
+          ),
+          (message) =>
+            Effect.sync(() => {
+              queued.push(message)
+            })
+        )
+      )
+
+      try {
+        await Effect.runPromise(Effect.sleep('10 millis'))
+        dom.dispatchEvent(syntheticPointer('pointerup'))
+        await Effect.runPromise(Effect.sleep('10 millis'))
+        expect({
+          previousKind,
+          tags: queued.map((message) => message._tag),
+        }).toStrictEqual({
+          previousKind: previous === 'node' ? 'node-drag' : 'viewport-pan',
+          tags: [previous === 'node' ? 'PointerReleased' : 'GestureReleased'],
+        })
+
+        const admitted = Option.getOrThrow(
+          resource.begin(reduced.graph, Option.some(down(reconnect)))
+        )
+
+        const captureStages = [owner.captured]
+
+        for (const message of [...queued, admitted]) {
+          const prepared = Option.getOrThrow(
+            resource.prepare(wrapGraphMessage({ message }).message)
+          )
+
+          reduced = step(reduced, prepared).model
+          resource.reconcile(reduced.graph, prepared)
+          captureStages.push(owner.captured)
+        }
+
+        expect({
+          gesture: reduced.graph.gestureSession,
+          pointerKind: reduced.graph.pointerSession?.kind,
+          captureStages,
+        }).toStrictEqual({
+          gesture: null,
+          pointerKind: reconnect
+            ? 'reconnection-pending'
+            : 'connection-pending',
+          captureStages: [true, true, true],
+        })
+        const crossing = step(reduced, move(20, 20))
+        resource.reconcile(crossing.model.graph)
+        expect({
+          lifecycle: events(crossing),
+          captured: owner.captured,
+        }).toMatchObject({
+          lifecycle: [
+            {
+              name: reconnect ? 'onReconnectStart' : 'onConnectStart',
+              inputKind: 'pointer',
+            },
+            {
+              name: reconnect ? 'onReconnectPreview' : 'onConnectionPreview',
+              x: 90,
+              y: 80,
+            },
+          ],
+          captured: true,
+        })
+        const cancelled = step(crossing.model, Message.CancelGesture({}))
+        resource.reconcile(cancelled.model.graph, Message.CancelGesture({}))
+        expect(owner.captured).toBeFalsy()
+      } finally {
+        await Effect.runPromise(Fiber.interrupt(fiber))
+      }
+    }
+  )
+
+  it.each([
+    { previous: 'node', reconnect: false },
+    { previous: 'node', reconnect: true },
+    { previous: 'pane', reconnect: false },
+    { previous: 'pane', reconnect: true },
+  ])(
+    'round3 active $previous rejects connection down and retires only its capture, reconnect=$reconnect',
+    ({ previous, reconnect }) => {
+      const { owner, model: base, resource } = setupResource()
+
+      const model = {
+        ...base,
+        graph: {
+          ...base.graph,
+          document: reconnect ? document : base.graph.document,
+          panOnDrag: true,
+        },
+      }
+
+      const previousDown =
+        previous === 'node'
+          ? Message.PointerDown({ ...down(), handleId: null })
+          : Message.GestureDown({
+              pointerId: 1,
+              clientX: 10,
+              clientY: 20,
+              screenX: 10,
+              screenY: 20,
+              nodeId: null,
+              direction: null,
+              allowPan: true,
+            })
+
+      const active = step(model, previousDown).model
+      resource.reconcile(active.graph, previousDown)
+
+      const admitted = Option.getOrThrow(
+        resource.begin(active.graph, Option.some(down(reconnect)))
+      )
+
+      expect(owner.captured).toBeTruthy()
+
+      const prepared = Option.getOrThrow(
+        resource.prepare(wrapGraphMessage({ message: admitted }).message)
+      )
+
+      const rejected = step(active, prepared)
+      resource.reconcile(rejected.model.graph, prepared)
+      expect({
+        graphPreserved: rejected.model.graph === active.graph,
+        events: events(rejected),
+        captured: owner.captured,
+        rejectedOrigin: Option.isNone(resource.prepare(admitted)),
+      }).toStrictEqual({
+        graphPreserved: true,
+        events: [],
+        captured: false,
+        rejectedOrigin: true,
+      })
+      const released = step(active, Message.CancelGesture({})).model
+      resource.reconcile(released.graph, Message.CancelGesture({}))
+
+      const retry = Option.getOrThrow(
+        resource.begin(released.graph, Option.some(down(reconnect)))
+      )
+
+      const accepted = step(released, retry).model
+      resource.reconcile(accepted.graph, retry)
+      expect({
+        kind: accepted.graph.pointerSession?.kind,
+        captured: owner.captured,
+      }).toStrictEqual({
+        kind: reconnect ? 'reconnection-pending' : 'connection-pending',
+        captured: true,
+      })
+      resource.reconcile(
+        step(accepted, Message.CancelGesture({})).model.graph,
+        Message.CancelGesture({})
+      )
+      expect(owner.captured).toBeFalsy()
     }
   )
 

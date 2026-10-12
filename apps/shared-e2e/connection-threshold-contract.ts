@@ -409,6 +409,137 @@ export const connectionThresholdTests = (
         }
       }
 
+      for (const threshold of [undefined, 8]) {
+        for (const controlled of [false, true]) {
+          test(`connectionDragThreshold round3 Foldkit keyboard source native target click threshold ${threshold ?? 'default'} controlled ${controlled}`, async ({
+            page,
+          }) => {
+            await mount(page, {
+              threshold,
+              controlled,
+              loose: true,
+              click: false,
+            })
+            await page.locator(handle('source')).focus()
+            await page.keyboard.press('Enter')
+            const started = await call(page, 'read')
+            expect(started.events).toEqual(['connectStart'])
+            await page.locator(handle('target')).click()
+            const completed = await call(page, 'read')
+            expect(completed.events).toEqual([
+              'connectStart',
+              'connect',
+              'connectEnd',
+            ])
+            expect(completed.changes).toMatchObject([
+              {
+                kind: 'edge-add',
+                edge: {
+                  source: 'source',
+                  sourceHandle: 'out',
+                  target: 'target',
+                  targetHandle: 'in',
+                },
+              },
+            ])
+            expect(completed.state.document.edges).toHaveLength(
+              controlled ? 0 : 1
+            )
+            expect(
+              completed.rawEvents.filter((event: { name: string }) =>
+                event.name.startsWith('onConnect')
+              )
+            ).toMatchObject([
+              {
+                name: 'onConnectStart',
+                inputKind: 'keyboard',
+                nodeId: 'source',
+              },
+              {
+                name: 'onConnect',
+                inputKind: 'keyboard',
+                outcome: controlled ? 'proposed' : 'accepted',
+              },
+              {
+                name: 'onConnectEnd',
+                inputKind: 'keyboard',
+                outcome: controlled ? 'proposed' : 'accepted',
+              },
+            ])
+            expect(completed).toMatchObject({ captured: false, preview: null })
+          })
+        }
+
+        test(`connectionDragThreshold round3 Foldkit disabled native click initiation and source-kind completion threshold ${threshold ?? 'default'}`, async ({
+          page,
+        }) => {
+          await mount(page, { threshold, loose: true, click: false })
+          await page.locator(handle('source')).click()
+          await page.locator(handle('target')).click()
+          expect(await call(page, 'read')).toMatchObject({
+            events: [],
+            changes: [],
+            captured: false,
+            preview: null,
+          })
+          await page.locator(handle('source')).focus()
+          await page.keyboard.press('Enter')
+          await page.locator(handle('source-next')).click()
+          expect(await call(page, 'read')).toMatchObject({
+            events: ['connectStart'],
+            changes: [],
+            captured: false,
+          })
+          await page.locator(handle('target')).click()
+          const completed = await call(page, 'read')
+          expect(completed.events).toEqual([
+            'connectStart',
+            'connect',
+            'connectEnd',
+          ])
+          expect(completed.changes).toMatchObject([
+            { kind: 'edge-add', edge: { source: 'source', target: 'target' } },
+          ])
+        })
+      }
+
+      for (const controlled of [false, true]) {
+        test(`connectionDragThreshold round3 Foldkit keyboard native duplicate target click is rejected controlled ${controlled}`, async ({
+          page,
+        }) => {
+          await mount(page, {
+            threshold: 8,
+            loose: true,
+            click: false,
+            edge: true,
+            controlled,
+          })
+          await call(page, 'invalidate', 'selection')
+          await call(page, 'frames')
+          await page.locator(handle('source')).focus()
+          await page.keyboard.press('Enter')
+          await page.locator(handle('original')).click()
+          const rejected = await call(page, 'read')
+          expect(rejected.events).toEqual(['connectStart', 'connectEnd'])
+          expect(rejected.changes).toHaveLength(0)
+          expect(
+            rejected.rawEvents.filter(
+              (event: { name: string }) => event.name === 'onConnectEnd'
+            )
+          ).toMatchObject([
+            { inputKind: 'keyboard', outcome: 'rejected', nodeId: 'source' },
+          ])
+          expect(rejected).toMatchObject({ captured: false, preview: null })
+          await page.locator(handle('source')).focus()
+          await page.keyboard.press('Enter')
+          await page.locator(handle('target')).click()
+          const retry = await call(page, 'read')
+          expect(retry.changes).toMatchObject([
+            { kind: 'edge-add', edge: { source: 'source', target: 'target' } },
+          ])
+        })
+      }
+
       test('connectionDragThreshold round2 Foldkit rejected routed duplicate has one rejected terminal and no proposal', async ({
         page,
       }) => {
