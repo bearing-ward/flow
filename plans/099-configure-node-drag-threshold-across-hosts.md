@@ -10,11 +10,11 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-All three current production and test traces are complete. Their synthesis and the source-control investigation of Foldkit native ownership are active. No Plan 099 production source is changed. The API correspondence map records a Vanilla-only configurable option at `docs/react-flow-api-correspondence.md:39` and `:196`.
+All three current production and test traces and their behavior synthesis are complete. The source-control investigation of Foldkit native ownership is active before design. No Plan 099 production source is changed. The API correspondence map records a Vanilla-only configurable option at `docs/react-flow-api-correspondence.md:39` and `:196`.
 
 Vanilla already defaults to 1 and uses strict crossing, but direct exported host validation and moving-canvas distance need attention. Vue and Foldkit start lifecycle on down and use an eight-flow-unit release cutoff. Foldkit has no explicit native node capture and subscribes after model reduction. Root confirmed these mechanics in source. These are inspected differences, not runtime results or evidence of author intent.
 
-The canonical source maps are `node-threshold-vanilla-trace.md`, `node-threshold-vue-trace.md` and `node-threshold-foldkit-trace.md` under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`. Separate synthesis tasks will establish design constraints before implementation.
+The canonical source maps and `node-threshold-how-synthesis.md` are under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`. The synthesis narrows the explorer's claim about crossing movement. Pinned XYDrag constructs offsets at activation; Flow keeps pointer-down origins. Matching activation timing does not establish matching movement output. Preserve Flow's preview and publication policies and classify this geometry difference explicitly. The ownership rationale remains a separate design input.
 
 ## Exit condition
 
