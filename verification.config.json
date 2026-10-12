@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 batch1 compact ownership comparison active; three serial repairs with targeted regressions, then one complete feature pass at stable batch boundary; seven runtime groups/two gaps; exact four unit/six node+connection browser scope; broad testing deferred",
+  "activeWork": "Plan099 batch1 nine compact design outputs complete/read/frozen; one independent cross-judge active before serial source repair; targeted regressions then stable feature pass; exact four unit/six node+connection browser scope; broad testing deferred",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
