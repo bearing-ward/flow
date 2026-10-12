@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 099 second repair under fresh source review; explicit node and affected connection feature commands only; broad verification deferred by user",
+  "activeWork": "Plan 099 operation ownership design and held-history proof; explicit node and affected connection feature commands only; broad verification deferred by user",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
