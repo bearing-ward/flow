@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 source review4 rejected; seven continuation defects and literal-history gap; exact four unit/six node+connection browser fence; broad testing deferred by user",
+  "activeWork": "Plan099 continuation private-design comparison; seven runtime defects and literal histories; exact four unit/six node+connection browser fence; broad testing deferred",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
