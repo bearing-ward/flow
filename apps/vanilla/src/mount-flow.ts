@@ -12,6 +12,11 @@ import {
   NodeExtentSchema,
   NodeResizeDirectionSchema,
   SnapGridSchema,
+  ConnectionDragThresholdSchema,
+  defaultConnectionDragThreshold,
+  connectionDragActivated,
+  EdgeIdSchema,
+  ReconnectEndpointSchema,
   ConnectionRadiusSchema,
   ConnectionModeSchema,
   SelectionModeSchema,
@@ -276,6 +281,37 @@ interface ActiveKeyboardResize {
   readonly childExtent: ActiveNodeResize['childExtent']
 }
 
+const PendingHandleSchema = S.Struct({
+  nodeId: NodeIdSchema,
+  handleId: HandleIdSchema,
+  kind: S.Literals(['source', 'target']),
+})
+
+const PendingPointerSchema = S.Struct({
+  pointerId: S.Number,
+  startX: S.Finite,
+  startY: S.Finite,
+  threshold: ConnectionDragThresholdSchema,
+})
+
+const PendingConnectionSchema = S.Union([
+  S.Struct({
+    ...PendingPointerSchema.fields,
+    kind: S.Literal('connection-pending'),
+    from: PendingHandleSchema,
+  }),
+  S.Struct({
+    ...PendingPointerSchema.fields,
+    kind: S.Literal('reconnection-pending'),
+    edgeId: EdgeIdSchema,
+    endpoint: ReconnectEndpointSchema,
+    source: PendingHandleSchema,
+    target: PendingHandleSchema,
+  }),
+])
+
+type PendingConnection = typeof PendingConnectionSchema.Type
+
 export const CanvasBackgroundSchema = S.Struct({
   pattern: S.Literals(['dots', 'lines', 'none']),
   spacing: S.optional(S.Finite.check(S.isGreaterThan(0))),
@@ -289,6 +325,7 @@ export const CanvasUISchema = S.Struct({
 
 export const FlowMountOptionsSchema = S.Struct({
   documentMode: FlowControlModeSchema,
+  connectionDragThreshold: S.optional(ConnectionDragThresholdSchema),
   nodeDragThreshold: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
   connectOnClick: S.optional(S.Boolean),
   panOnDrag: S.optional(
@@ -699,6 +736,9 @@ export interface FlowEdgeRenderer {
 
 export interface FlowHostOptions {
   readonly documentMode: FlowControlMode
+  readonly connectionDragThreshold?:
+    | typeof ConnectionDragThresholdSchema.Type
+    | undefined
   readonly nodeDragThreshold?: number | undefined
   readonly connectOnClick?: boolean | undefined
   readonly panOnDrag?: boolean | readonly number[] | undefined
@@ -1504,6 +1544,14 @@ export const createFlowHost = (
   initialDocument: FlowDocument,
   options: FlowHostOptions
 ) => {
+  const connectionDragThreshold = S.decodeUnknownSync(
+    ConnectionDragThresholdSchema
+  )(
+    options.connectionDragThreshold === undefined
+      ? defaultConnectionDragThreshold
+      : options.connectionDragThreshold
+  )
+
   validateCanvasPanelOptions(options.panel, options.panels)
 
   return Effect.gen(function* buildFlowHost() {
@@ -1573,6 +1621,28 @@ export const createFlowHost = (
     const viewport = globalThis.document.createElement('div')
     viewport.className = 'flow-viewport'
     viewport.dataset.testid = 'flow-viewport'
+
+    let pendingConnection: PendingConnection | null = null
+    let connectionCapture: number | null = null
+
+    const acquireConnectionCapture = (pointerId: number): boolean => {
+      if (!runEffect(browser.capturePointer(canvas, pointerId))) {
+        return false
+      }
+
+      connectionCapture = pointerId
+
+      return true
+    }
+
+    const releaseConnectionCapture = (): void => {
+      const pointerId = connectionCapture
+      connectionCapture = null
+
+      if (pointerId !== null) {
+        runEffect(browser.releasePointer(canvas, pointerId))
+      }
+    }
 
     let destroyed = false
     const viewportPortalDisposers = new Set<() => void>()
@@ -2401,6 +2471,15 @@ export const createFlowHost = (
     // eslint-disable-next-line prefer-const -- Assigned after the operations object is initialized.
     let reconcileVisible: (() => void) | undefined
 
+    const clearPendingConnection = (): void => {
+      if (pendingConnection !== null) {
+        suppressClickUntilPointerUp()
+      }
+
+      pendingConnection = null
+      releaseConnectionCapture()
+    }
+
     const resizeObserver = yield* browser
       .observeResize((observedEntries) => {
         const acceptedMeasurements: NodeMeasurementInput[] = []
@@ -2591,7 +2670,7 @@ export const createFlowHost = (
       clientX: number,
       clientY: number
     ): HTMLElement | null => {
-      const direct = globalThis.document
+      const direct = canvas.ownerDocument
         .elementFromPoint(clientX, clientY)
         ?.closest<HTMLElement>('.flow-handle')
 
@@ -2847,7 +2926,7 @@ export const createFlowHost = (
         return
       }
 
-      const targetElement = globalThis.document
+      const targetElement = canvas.ownerDocument
         .elementFromPoint(event.clientX, event.clientY)
         ?.closest<HTMLElement>('.flow-handle')
 
@@ -3082,11 +3161,7 @@ export const createFlowHost = (
       clearConnectionHover()
       removeConnectionPreview()
 
-      for (const pointerId of pointerIdsFromOutcome(outcome, [
-        connection.pointerId,
-      ])) {
-        runEffect(browser.releasePointer(canvas, pointerId))
-      }
+      releaseConnectionCapture()
 
       return connection
     }
@@ -3224,15 +3299,11 @@ export const createFlowHost = (
       }
 
       const reconnect = interactionSlots.activeReconnection
-      const outcome = endSession('reconnection', reconnect.pointerId, terminal)
+      endSession('reconnection', reconnect.pointerId, terminal)
       interactionSlots.activeReconnection = null
       removeConnectionPreview()
 
-      for (const pointerId of pointerIdsFromOutcome(outcome, [
-        reconnect.pointerId,
-      ])) {
-        runEffect(browser.releasePointer(canvas, pointerId))
-      }
+      releaseConnectionCapture()
 
       return reconnect
     }
@@ -3267,6 +3338,186 @@ export const createFlowHost = (
       )
     }
 
+    const pendingHandleElement = (
+      identity: typeof PendingHandleSchema.Type,
+      next = document
+    ): HTMLElement | undefined => {
+      const node = next.nodes.find(({ id }) => id === identity.nodeId)
+
+      const handle = node?.handles?.find(
+        ({ id, kind }) => id === identity.handleId && kind === identity.kind
+      )
+
+      if (
+        node?.connectable === false ||
+        handle === undefined ||
+        createFlowGraph(next, measurements, renderedNodePositions).nodes.get(
+          identity.nodeId
+        )?.hidden !== false
+      ) {
+        return undefined
+      }
+
+      return [...canvas.querySelectorAll<HTMLElement>('.flow-handle')].find(
+        (element) =>
+          element.dataset.nodeId === identity.nodeId &&
+          element.dataset.handleId === identity.handleId
+      )
+    }
+
+    const pendingReconnectionEligible = (
+      pending: Extract<PendingConnection, { kind: 'reconnection-pending' }>,
+      next: FlowDocument
+    ): boolean => {
+      const edge = next.edges.find(({ id }) => id === pending.edgeId)
+      const resolved = edge && resolveEdgeHandles(next, edge)
+
+      return (
+        edge !== undefined &&
+        edge.selected === true &&
+        edge.hidden !== true &&
+        canReconnectEdge(edge, pending.endpoint) &&
+        resolved !== undefined &&
+        edge.source === pending.source.nodeId &&
+        edge.target === pending.target.nodeId &&
+        resolved.sourceHandle.id === pending.source.handleId &&
+        resolved.sourceHandle.kind === pending.source.kind &&
+        resolved.targetHandle.id === pending.target.handleId &&
+        resolved.targetHandle.kind === pending.target.kind &&
+        pendingHandleElement(pending.source, next) !== undefined &&
+        pendingHandleElement(pending.target, next) !== undefined
+      )
+    }
+
+    const pendingConnectionEligible = (
+      pending: PendingConnection,
+      next = document
+    ): boolean => {
+      if (
+        destroyed ||
+        !canvas.isConnected ||
+        connectionCapture !== pending.pointerId ||
+        !canvas.hasPointerCapture(pending.pointerId)
+      ) {
+        return false
+      }
+
+      if (pending.kind === 'connection-pending') {
+        return (
+          options.nodesConnectable !== false &&
+          (options.connectionMode === 'loose' ||
+            pending.from.kind === 'source') &&
+          pendingHandleElement(pending.from, next) !== undefined
+        )
+      }
+
+      return pendingReconnectionEligible(pending, next)
+    }
+
+    const promoteConnection = (
+      pending: PendingConnection,
+      event: PointerEvent
+    ): void => {
+      if (!pendingConnectionEligible(pending)) {
+        clearPendingConnection()
+
+        return
+      }
+
+      pendingConnection = null
+
+      if (pending.kind === 'reconnection-pending') {
+        const fixed =
+          pending.endpoint === 'source' ? pending.target : pending.source
+
+        const element = pendingHandleElement(fixed)
+
+        if (element === undefined) {
+          releaseConnectionCapture()
+
+          return
+        }
+
+        const active = {
+          edgeId: pending.edgeId,
+          endpoint: pending.endpoint,
+          pointerId: pending.pointerId,
+        }
+
+        interactionSlots.activeReconnection = active
+        showConnectionPreview(handleCenterInFlow(element), {
+          kind: 'reconnect',
+          edgeId: pending.edgeId,
+          endpoint: pending.endpoint,
+        })
+        notifyReconnectStart({
+          edgeId: pending.edgeId,
+          endpoint: pending.endpoint,
+        })
+        runTelemetry(
+          Effect.logDebug('Started edge reconnection').pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.edgeId]: pending.edgeId,
+              [FlowAttribute.edgeEndpoint]: pending.endpoint,
+            }),
+            Effect.withSpan(FlowSpan.edgeReconnectStart)
+          )
+        )
+      } else {
+        const element = pendingHandleElement(pending.from)
+
+        if (element === undefined) {
+          releaseConnectionCapture()
+
+          return
+        }
+
+        interactionSlots.activeConnection = {
+          pointerId: pending.pointerId,
+          source: pending.from.nodeId,
+          sourceHandle: pending.from.handleId,
+        }
+        connectionPointer = pointerInCanvas(event)
+        const bounds = canvas.getBoundingClientRect()
+        connectionPointerStart = {
+          x: pending.startX - bounds.left,
+          y: pending.startY - bounds.top,
+        }
+        showConnectionPreview(handleCenterInFlow(element), { kind: 'connect' })
+        notifyConnectStart({
+          source: pending.from.nodeId,
+          sourceHandle: pending.from.handleId,
+          inputKind: 'pointer-connect',
+        })
+        runTelemetry(
+          Effect.logDebug('Started connection gesture').pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.nodeId]: pending.from.nodeId,
+              [FlowAttribute.handleId]: pending.from.handleId,
+            }),
+            Effect.withSpan(FlowSpan.connectionStart)
+          )
+        )
+      }
+    }
+
+    const admitConnection = (
+      pending: PendingConnection,
+      event: PointerEvent
+    ): void => {
+      if (!acquireConnectionCapture(event.pointerId)) {
+        return
+      }
+
+      pendingConnection = pending
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (pending.threshold === 0) {
+        promoteConnection(pending, event)
+      }
+    }
+
     const startReconnection = (
       anchor: SVGCircleElement,
       event: PointerEvent
@@ -3280,10 +3531,10 @@ export const createFlowHost = (
 
       if (
         event.button !== 0 ||
+        pendingConnection !== null ||
         edge?.selected !== true ||
         (endpoint !== 'source' && endpoint !== 'target') ||
         !canReconnectEdge(edge, endpoint) ||
-        group === null ||
         interactionSlots.activeReconnection !== null ||
         interactionSlots.activeConnection !== null ||
         activeClickConnection !== null ||
@@ -3293,67 +3544,47 @@ export const createFlowHost = (
         return
       }
 
-      const fixedEndpoint: ReconnectEndpoint =
-        endpoint === 'source' ? 'target' : 'source'
+      const resolved = resolveEdgeHandles(document, edge)
 
-      const fixedAnchor = group.querySelector<SVGCircleElement>(
-        `.flow-edge-reconnect-anchor[data-endpoint="${fixedEndpoint}"]`
-      )
-
-      if (fixedAnchor === null) {
+      if (resolved === undefined) {
         return
       }
 
-      interactionSlots.activeReconnection = {
-        edgeId: edge.id,
-        endpoint,
-        pointerId: event.pointerId,
-      }
-
-      if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
-        cancelReconnection('pointer-capture-failed')
-
-        return
-      }
-
-      showConnectionPreview(
+      admitConnection(
         {
-          x: Number(fixedAnchor.getAttribute('cx')),
-          y: Number(fixedAnchor.getAttribute('cy')),
-        },
-        {
-          kind: 'reconnect',
+          kind: 'reconnection-pending',
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          threshold: connectionDragThreshold,
           edgeId: edge.id,
           endpoint,
-        }
-      )
-      notifyReconnectStart({ edgeId: edge.id, endpoint })
-      event.preventDefault()
-      event.stopPropagation()
-
-      const attributes = {
-        [FlowAttribute.edgeId]: edge.id,
-        [FlowAttribute.edgeEndpoint]: endpoint,
-      }
-
-      runTelemetry(
-        Effect.logDebug('Started edge reconnection').pipe(
-          Effect.annotateLogs(attributes),
-          Effect.withSpan(FlowSpan.edgeReconnectStart, { attributes })
-        )
+          source: {
+            nodeId: edge.source,
+            handleId: resolved.sourceHandle.id,
+            kind: resolved.sourceHandle.kind,
+          },
+          target: {
+            nodeId: edge.target,
+            handleId: resolved.targetHandle.id,
+            kind: resolved.targetHandle.kind,
+          },
+        },
+        event
       )
     }
 
     const startConnection = (
       node: FlowNode,
       handle: FlowHandle,
-      handleElement: HTMLElement,
+      _handleElement: HTMLElement,
       event: PointerEvent
     ): void => {
       if (
         options.nodesConnectable === false ||
         event.button !== 0 ||
         (options.connectionMode !== 'loose' && handle.kind !== 'source') ||
+        pendingConnection !== null ||
         interactionSlots.activeConnection !== null ||
         activeClickConnection !== null ||
         interactionSlots.activeReconnection !== null ||
@@ -3363,43 +3594,16 @@ export const createFlowHost = (
         return
       }
 
-      interactionSlots.activeConnection = {
-        pointerId: event.pointerId,
-        source: node.id,
-        sourceHandle: handle.id,
-      }
-
-      if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
-        cancelConnection('pointer-capture-failed')
-
-        return
-      }
-
-      const start = handleCenterInFlow(handleElement)
-
-      showConnectionPreview(start, { kind: 'connect' })
-      notifyConnectStart({
-        source: node.id,
-        sourceHandle: handle.id,
-        inputKind: 'pointer-connect',
-      })
-      connectionPointer = pointerInCanvas(event)
-      connectionPointerStart = connectionPointer
-      event.preventDefault()
-      event.stopPropagation()
-      runTelemetry(
-        Effect.logDebug('Started connection gesture').pipe(
-          Effect.annotateLogs({
-            [FlowAttribute.nodeId]: node.id,
-            [FlowAttribute.handleId]: handle.id,
-          }),
-          Effect.withSpan(FlowSpan.connectionStart, {
-            attributes: {
-              [FlowAttribute.nodeId]: node.id,
-              [FlowAttribute.handleId]: handle.id,
-            },
-          })
-        )
+      admitConnection(
+        {
+          kind: 'connection-pending',
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          threshold: connectionDragThreshold,
+          from: { nodeId: node.id, handleId: handle.id, kind: handle.kind },
+        },
+        event
       )
     }
 
@@ -4145,6 +4349,13 @@ export const createFlowHost = (
         previous?: FlowDocument,
         quiet = false
       ): void {
+        if (
+          pendingConnection !== null &&
+          !pendingConnectionEligible(pendingConnection, next)
+        ) {
+          clearPendingConnection()
+        }
+
         const nextIds = new Set(next.nodes.map((node) => node.id))
 
         const removedNodeIds =
@@ -5339,6 +5550,10 @@ export const createFlowHost = (
         }
 
         const onPointerDown = (event: PointerEvent): void => {
+          if (pendingConnection !== null) {
+            return
+          }
+
           if (activeKeyboardResize?.nodeId === node.id) {
             event.preventDefault()
             event.stopPropagation()
@@ -5890,6 +6105,7 @@ export const createFlowHost = (
     }
 
     const hasCanvasPointerGesture = (): boolean =>
+      pendingConnection !== null ||
       interactionSlots.activeDrag !== null ||
       interactionSlots.activeConnection !== null ||
       activeClickConnection !== null ||
@@ -6099,7 +6315,47 @@ export const createFlowHost = (
       )
     }
 
+    const prepareConnectionMove = (event: PointerEvent): boolean => {
+      if (pendingConnection !== null) {
+        const pending = pendingConnection
+
+        if (pending.pointerId !== event.pointerId) {
+          return false
+        }
+
+        if (!pendingConnectionEligible(pending)) {
+          clearPendingConnection()
+
+          return false
+        }
+
+        if (
+          !connectionDragActivated(
+            pending.threshold,
+            pending.startX,
+            pending.startY,
+            event.clientX,
+            event.clientY
+          )
+        ) {
+          return false
+        }
+
+        promoteConnection(pending, event)
+
+        if (destroyed || connectionCapture !== event.pointerId) {
+          return false
+        }
+      }
+
+      return true
+    }
+
     const moveConnectionPreview = (event: PointerEvent): boolean => {
+      if (!prepareConnectionMove(event)) {
+        return true
+      }
+
       if (
         interactionSlots.activeConnection?.pointerId === event.pointerId ||
         interactionSlots.activeReconnection?.pointerId === event.pointerId
@@ -6340,6 +6596,10 @@ export const createFlowHost = (
       reason: string,
       pointerId: number | undefined
     ): void => {
+      if (isGestureForPointer(pendingConnection, pointerId)) {
+        clearPendingConnection()
+      }
+
       if (isGestureForPointer(interactionSlots.activeConnection, pointerId)) {
         cancelConnection(reason)
       }
@@ -6397,6 +6657,7 @@ export const createFlowHost = (
 
     const hasActivePointerGesture = (pointerId: number | undefined): boolean =>
       [
+        isGestureForPointer(pendingConnection, pointerId),
         isGestureForPointer(interactionSlots.activeDrag, pointerId),
         isGestureForPointer(interactionSlots.activeConnection, pointerId),
         isGestureForPointer(interactionSlots.activeReconnection, pointerId),
@@ -6446,6 +6707,13 @@ export const createFlowHost = (
     }
 
     const onLostPointerCapture = (event: PointerEvent): void => {
+      if (
+        connectionCapture === event.pointerId &&
+        (event.target !== canvas || canvas.hasPointerCapture(event.pointerId))
+      ) {
+        return
+      }
+
       cancelActiveGestures('lost-pointer-capture', event.pointerId)
     }
 
@@ -6663,6 +6931,54 @@ export const createFlowHost = (
 
     // eslint-disable-next-line complexity -- Ordered pointer/click completion must emit one terminal callback after validation.
     const finishConnection = (event: PointerEvent): void => {
+      if (pendingConnection?.pointerId === event.pointerId) {
+        const pending = pendingConnection
+        const eligible = pendingConnectionEligible(pending)
+        clearPendingConnection()
+        suppressCanvasClick = true
+        globalThis.setTimeout(() => {
+          suppressCanvasClick = false
+        }, 0)
+
+        if (
+          eligible &&
+          pending.kind === 'connection-pending' &&
+          options.connectOnClick === true &&
+          Math.hypot(
+            event.clientX - pending.startX,
+            event.clientY - pending.startY
+          ) <= 3
+        ) {
+          const element = connectionTargetAt(
+            {
+              source: pending.from.nodeId,
+              sourceHandle: pending.from.handleId,
+            },
+            event.clientX,
+            event.clientY
+          )
+
+          const node = document.nodes.find(
+            ({ id }) => id === pending.from.nodeId
+          )
+
+          const handle = node?.handles?.find(
+            ({ id }) => id === pending.from.handleId
+          )
+
+          if (
+            node !== undefined &&
+            handle !== undefined &&
+            element?.dataset.nodeId === node.id &&
+            element.dataset.handleId === handle.id
+          ) {
+            beginClickConnection(node, handle, element)
+          }
+        }
+
+        return
+      }
+
       if (interactionSlots.activeConnection?.pointerId !== event.pointerId) {
         return
       }
@@ -6772,13 +7088,15 @@ export const createFlowHost = (
 
       const active = interactionSlots.activeReconnection
 
-      const handleElement = globalThis.document
+      const handleElement = canvas.ownerDocument
         .elementFromPoint(event.clientX, event.clientY)
         ?.closest<HTMLElement>('.flow-handle')
 
-      const node = document.nodes.find(
-        (item) => item.id === handleElement?.dataset.nodeId
-      )
+      const node = canvas.contains(handleElement ?? null)
+        ? document.nodes.find(
+            (item) => item.id === handleElement?.dataset.nodeId
+          )
+        : undefined
 
       const handle = node?.handles?.find(
         (item) => item.id === handleElement?.dataset.handleId
@@ -7098,7 +7416,7 @@ export const createFlowHost = (
         return
       }
 
-      if (options.keyboardActivation === false) {
+      if (options.keyboardActivation === false || pendingConnection !== null) {
         return
       }
 
@@ -8374,6 +8692,7 @@ export const createFlowHost = (
           cancelActiveDrag('host-destroyed')
           cancelNodeResize('host-destroyed')
           cancelKeyboardResize('host-destroyed', true)
+          clearPendingConnection()
           cancelConnection('host-destroyed')
           cancelClickConnection('host-destroyed')
           cancelReconnection('host-destroyed')

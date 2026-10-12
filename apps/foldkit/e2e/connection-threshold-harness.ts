@@ -1,0 +1,16 @@
+export {
+  mount,
+  read,
+  frames,
+  cancel,
+  clearEvents,
+  invalidate,
+  threshold,
+  captureFailure,
+  wrongPointer,
+  invalid,
+  invalidConstructors,
+  overlapLabel,
+  invalidVanillaHost,
+  acknowledge,
+} from '../../shared-e2e/connection-threshold-harness.ts'

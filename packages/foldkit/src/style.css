@@ -255,8 +255,8 @@
   pointer-events: none;
 }
 .flow-foldkit-reconnect-handle {
+  pointer-events: auto;
   position: absolute;
-  z-index: 1001;
   width: 12px;
   height: 12px;
   padding: 0;

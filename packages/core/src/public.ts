@@ -626,3 +626,11 @@ export type {
 } from './domain/flow-typed-actor.schema.ts'
 
 export { makeTypedFlow } from './domain/flow-typed-actor.ts'
+
+export {
+  ConnectionDragThresholdSchema,
+  defaultConnectionDragThreshold,
+  connectionDragActivated,
+} from './domain/flow-connection-drag-threshold.schema.ts'
+
+export type { ConnectionDragThreshold } from './domain/flow-connection-drag-threshold.schema.ts'
