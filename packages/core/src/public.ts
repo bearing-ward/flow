@@ -632,4 +632,5 @@ export {
   defaultConnectionDragThreshold,
   connectionDragActivated,
 } from './domain/flow-connection-drag-threshold.schema.ts'
+
 export type { ConnectionDragThreshold } from './domain/flow-connection-drag-threshold.schema.ts'
