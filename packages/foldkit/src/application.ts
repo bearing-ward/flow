@@ -45,6 +45,7 @@ import {
 import type { FlowDocument, Viewport, SelectionModeSchema } from '@flow/core'
 import {
   Cause,
+  Data,
   Duration,
   Effect,
   Exit,
@@ -334,6 +335,10 @@ export const AppMessage = FoldMessage.defineMessageUnion({
 })
 
 export type AppMessageData = typeof AppMessage.Type
+
+export const wrapGraphMessage =
+  Data.taggedEnum<Extract<AppMessageData, { readonly _tag: 'GraphMessage' }>>()
+    .GraphMessage
 
 export const ports = {
   inbound: {
@@ -933,7 +938,7 @@ const graphFold = Update.foldChild<
   update: Graph.update,
   read: (model: Model) => Option.some(model.graph),
   write: (model, graph) => ({ ...model, graph }),
-  toParentMessage: (message) => AppMessage.GraphMessage({ message }),
+  toParentMessage: (message) => wrapGraphMessage({ message }),
   foldOutMessage: Graph.OutMessage.match({
     GestureCancelled:
       ({ kind, reason }) =>
@@ -2553,7 +2558,7 @@ export const initialModel = (
 export const view = (
   model: Model,
   h: Html.HtmlBuilder<AppMessageData>,
-  graphView: typeof Graph.View = Graph.View
+  graphView: ReturnType<typeof Graph.makeView>
 ): Html.Html =>
   h.div(
     [h.Class('flow-foldkit-root')],
@@ -2562,7 +2567,7 @@ export const view = (
         slotId: 'flow-graph',
         model: model.graph,
         view: graphView,
-        toParentMessage: (message) => AppMessage.GraphMessage({ message }),
+        toParentMessage: (message) => wrapGraphMessage({ message }),
       }),
     ]
   )
@@ -2629,7 +2634,7 @@ export const createProgram = (
           return { model }
         }
 
-        preparedMessage = AppMessage.GraphMessage({ message: prepared.value })
+        preparedMessage = wrapGraphMessage({ message: prepared.value })
       }
 
       const result = update(model, preparedMessage)
@@ -2661,12 +2666,12 @@ export const createProgram = (
       Subscription.lift(pointerResource.subscriptions)({
         toChildModel: (model: Model) => model.graph,
         toParentMessage: (message: typeof Graph.Message.Type) =>
-          AppMessage.GraphMessage({ message }),
+          wrapGraphMessage({ message }),
       }),
       Subscription.lift(Graph.subscriptions)({
         toChildModel: (model: Model) => model.graph,
         toParentMessage: (message: typeof Graph.Message.Type) =>
-          AppMessage.GraphMessage({ message }),
+          wrapGraphMessage({ message }),
       })
     ),
   })

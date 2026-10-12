@@ -3414,8 +3414,8 @@ const connectionReleaseTarget = (
     | 'connectionMode'
     | 'connectionRadius'
   >,
-  event: PointerEvent,
-  connectionCanvas = canvasForInstance(model.instanceId)
+  event: PointerReleased,
+  connectionCanvas: HTMLElement
 ) => {
   const {
     document: flowDocument,
@@ -3428,23 +3428,8 @@ const connectionReleaseTarget = (
 
   const measurements = getFlowMeasuredNodes(flowDocument, model.measurements)
   const graph = createFlowGraph(flowDocument, measurements)
-
-  const physical =
-    connectionCanvas?.ownerDocument.elementFromPoint(
-      event.clientX,
-      event.clientY
-    ) ?? null
-
-  let { nodeId, handleId } = readTarget(physical)
-
-  if (
-    physical === null ||
-    connectionCanvas === null ||
-    !connectionCanvas.contains(physical)
-  ) {
-    nodeId = null
-    handleId = null
-  }
+  let nodeId = event.targetNodeId
+  let handleId = event.targetHandleId
 
   if (
     pointerSession?.kind === 'connection' &&
@@ -3550,155 +3535,245 @@ const connectionReleaseTarget = (
   return { nodeId, handleId }
 }
 
+const qualifiesEscape = (event: KeyboardEvent): boolean => {
+  if (event.key !== 'Escape' || event.defaultPrevented) {
+    return false
+  }
+
+  const { target } = event
+
+  const nativeControl =
+    target instanceof Element
+      ? target.closest(
+          'input, textarea, select, button:not(.flow-foldkit-select-node), a[href], [contenteditable="true"], [data-flow-no-drag], [data-flow-nodrag]'
+        )
+      : null
+
+  const interactionControl =
+    target instanceof Element
+      ? target.closest(
+          '[data-handle-id], [data-resize-direction], [data-edge-endpoint], .flow-foldkit-select-node'
+        )
+      : null
+
+  return nativeControl === null || interactionControl !== null
+}
+
+interface ConnectionLease {
+  readonly owner: HTMLElement
+  readonly down: Extract<GraphMessageData, { readonly _tag: 'PointerDown' }>
+  native: 'pressed' | 'released' | 'click-queued' | 'cancelled'
+  admission: 'awaiting' | 'admitted' | 'rejected'
+}
+
+const pendingMounted = (
+  pending: typeof PendingConnectionSchema.Type,
+  owner: HTMLElement
+): boolean => {
+  const identities =
+    pending.kind === 'connection-pending'
+      ? [pending.from]
+      : [pending.source, pending.target]
+
+  return (
+    owner.isConnected &&
+    identities.every((identity) =>
+      [...owner.querySelectorAll<HTMLElement>('[data-handle-id]')].some(
+        (element) =>
+          element.dataset.handleId === identity.handleId &&
+          element.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ===
+            identity.nodeId
+      )
+    )
+  )
+}
+
+const leaseMatchesPointer = (
+  lease: ConnectionLease,
+  pointer: Model['pointerSession']
+): boolean =>
+  pointer !== null &&
+  pointer.kind !== 'node-drag' &&
+  pointer.pointerId === lease.down.pointerId &&
+  pointer.startX === lease.down.clientX &&
+  pointer.startY === lease.down.clientY
+
 export const createConnectionPointerResource = (initial: Model) => {
   let current: Model | undefined = initial
+  let lease: ConnectionLease | undefined
+  const outstanding = new Set<ConnectionLease>()
+  const origins = new WeakMap<GraphMessageData, ConnectionLease>()
 
-  let lease:
-    | {
-        readonly owner: HTMLElement
-        readonly down: Extract<
-          GraphMessageData,
-          { readonly _tag: 'PointerDown' }
-        >
-        readonly pointerId: number
-        readonly startX: number
-        readonly startY: number
-        phase:
-          | 'awaiting-admission'
-          | 'admitted'
-          | 'released-before-admission'
-          | 'released'
-      }
-    | undefined
+  const associate = (message: GraphMessageData, origin: ConnectionLease) => {
+    origins.set(message, origin)
 
-  const retire = (): void => {
-    const previous = lease
+    return message
+  }
+
+  const releaseCapture = (origin: ConnectionLease): void => {
+    if (lease !== origin) {
+      return
+    }
+
     lease = undefined
 
-    if (previous?.owner.hasPointerCapture(previous.pointerId)) {
-      previous.owner.releasePointerCapture(previous.pointerId)
+    if (origin.owner.hasPointerCapture(origin.down.pointerId)) {
+      origin.owner.releasePointerCapture(origin.down.pointerId)
     }
   }
 
-  const retiresLease = (message: GraphMessageData | undefined): boolean => {
-    if (message === undefined) {
-      return false
-    }
-
-    return (
-      Predicate.isTagged('CancelGesture')(message) ||
-      Predicate.isTagged('ReplaceDocument')(message) ||
-      Predicate.isTagged('ReplaceViewport')(message) ||
-      ((Predicate.isTagged('PointerCancelled')(message) ||
-        Predicate.isTagged('RoutedPointerClick')(message)) &&
-        message.pointerId === lease?.pointerId)
-    )
+  const retire = (origin: ConnectionLease): void => {
+    outstanding.delete(origin)
+    releaseCapture(origin)
   }
+
+  const invalidate = (): void => {
+    for (const origin of outstanding) {
+      origin.admission = 'rejected'
+      retire(origin)
+    }
+  }
+
+  const invalidatesOwnership = (message: GraphMessageData): boolean =>
+    Predicate.isTagged('CancelGesture')(message) ||
+    Predicate.isTagged('ReplaceDocument')(message) ||
+    Predicate.isTagged('ReplaceViewport')(message) ||
+    (Predicate.isTagged('PointerCancelled')(message) &&
+      message.pointerId === lease?.down.pointerId)
 
   const reconcile = (model: Model, message?: GraphMessageData): void => {
     current = model
-
-    if (lease === undefined) {
-      return
-    }
-
-    if (retiresLease(message)) {
-      retire()
-
-      return
-    }
+    const origin = message === undefined ? undefined : origins.get(message)
 
     if (
-      lease.phase === 'awaiting-admission' ||
-      lease.phase === 'released-before-admission'
+      message !== undefined &&
+      origin === undefined &&
+      invalidatesOwnership(message)
     ) {
-      if (
-        message === undefined ||
-        !Predicate.isTagged('PointerDown')(message) ||
-        message.pointerId !== lease.pointerId ||
-        message.clientX !== lease.startX ||
-        message.clientY !== lease.startY
-      ) {
-        return
+      invalidate()
+
+      return
+    }
+
+    if (origin !== undefined && message !== undefined) {
+      if (Predicate.isTagged('PointerDown')(message)) {
+        origin.admission = leaseMatchesPointer(origin, model.pointerSession)
+          ? 'admitted'
+          : 'rejected'
+
+        if (origin.admission === 'rejected') {
+          retire(origin)
+        }
       }
 
-      lease.phase =
-        lease.phase === 'awaiting-admission' ? 'admitted' : 'released'
+      if (
+        Predicate.isTagged('RoutedPointerClick')(message) ||
+        Predicate.isTagged('PointerCancelled')(message) ||
+        Predicate.isTagged('CancelGesture')(message)
+      ) {
+        retire(origin)
+      }
     }
 
     const pointer = model.pointerSession
 
-    if (
-      lease.phase === 'released' &&
-      model.pointerClickReceipt?.pointerId === lease.pointerId
-    ) {
-      return
+    for (const candidate of outstanding) {
+      if (candidate.admission === 'awaiting') {
+        continue
+      }
+
+      if (model.pointerClickReceipt?.pointerId === candidate.down.pointerId) {
+        continue
+      }
+
+      if (!leaseMatchesPointer(candidate, pointer)) {
+        candidate.admission = 'rejected'
+        retire(candidate)
+      }
     }
-
-    if (
-      pointer === null ||
-      pointer.kind === 'node-drag' ||
-      pointer.pointerId !== lease.pointerId ||
-      pointer.startX !== lease.startX ||
-      pointer.startY !== lease.startY
-    ) {
-      retire()
-    }
-  }
-
-  const pendingMounted = (
-    pending: typeof PendingConnectionSchema.Type
-  ): boolean => {
-    const identities =
-      pending.kind === 'connection-pending'
-        ? [pending.from]
-        : [pending.source, pending.target]
-
-    const owner = lease?.owner
-
-    return !(
-      owner === undefined ||
-      !owner.isConnected ||
-      !owner.hasPointerCapture(pending.pointerId) ||
-      identities.some(
-        (identity) =>
-          ![...owner.querySelectorAll<HTMLElement>('[data-handle-id]')].some(
-            (element) =>
-              element.dataset.handleId === identity.handleId &&
-              element.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ===
-                identity.nodeId
-          )
-      )
-    )
   }
 
   const prepare = (
     message: GraphMessageData
   ): Option.Option<GraphMessageData> => {
-    if (
-      Predicate.isTagged('PointerDown')(message) &&
-      (message.handleId !== null || message.edgeId !== null) &&
-      (lease === undefined ||
-        message.pointerId !== lease.pointerId ||
-        message.clientX !== lease.startX ||
-        message.clientY !== lease.startY)
-    ) {
+    if (current === undefined) {
       return Option.none()
     }
 
-    const pending = current?.pointerSession
+    const origin = origins.get(message)
 
-    if (
-      Predicate.isTagged('ConnectionPointerMoved')(message) &&
-      pending !== undefined &&
-      pending !== null &&
-      pending.pointerId === message.pointerId &&
-      (pending.kind === 'connection-pending' ||
-        pending.kind === 'reconnection-pending') &&
-      !pendingMounted(pending)
-    ) {
+    if (origin === undefined) {
+      return Predicate.isTagged('PointerDown')(message) &&
+        (message.handleId !== null || message.edgeId !== null)
+        ? Option.none()
+        : Option.some(message)
+    }
+
+    if (origin.admission === 'rejected') {
+      return Option.none()
+    }
+
+    if (Predicate.isTagged('ConnectionPointerMoved')(message)) {
+      const pending = current.pointerSession
+
+      if (
+        pending !== null &&
+        (pending.kind === 'connection-pending' ||
+          pending.kind === 'reconnection-pending') &&
+        !pendingMounted(pending, origin.owner)
+      ) {
+        return Option.some(
+          associate(
+            Message.PointerCancelled({ pointerId: message.pointerId }),
+            origin
+          )
+        )
+      }
+
+      const point = flowPoint(
+        message.clientX,
+        message.clientY,
+        current.viewport,
+        origin.owner
+      )
+
+      const bounds = origin.owner.getBoundingClientRect()
+
       return Option.some(
-        Message.PointerCancelled({ pointerId: pending.pointerId })
+        associate(
+          Message.ConnectionPointerMoved({
+            ...message,
+            flowX: point.x,
+            flowY: point.y,
+            autoPanDelta:
+              origin.down.edgeId === null
+                ? selectionAutoPanDelta(
+                    {
+                      x: message.clientX - bounds.left,
+                      y: message.clientY - bounds.top,
+                    },
+                    origin.owner.clientWidth,
+                    origin.owner.clientHeight
+                  )
+                : { x: 0, y: 0 },
+          }),
+          origin
+        )
+      )
+    }
+
+    if (Predicate.isTagged('PointerReleased')(message)) {
+      const target = connectionReleaseTarget(current, message, origin.owner)
+
+      return Option.some(
+        associate(
+          Message.PointerReleased({
+            ...message,
+            targetNodeId: target.nodeId,
+            targetHandleId: target.handleId,
+          }),
+          origin
+        )
       )
     }
 
@@ -3724,18 +3799,20 @@ export const createConnectionPointerResource = (initial: Model) => {
           return message
         }
 
-        if (lease?.phase === 'released') {
-          retire()
+        if (lease?.native === 'pressed') {
+          return Option.none()
         }
 
-        const admitted = update(current, down).model.pointerSession
+        if (lease !== undefined) {
+          releaseCapture(lease)
+        }
+
         const owner = canvasForModel(model)
 
         if (
-          lease !== undefined ||
-          admitted === null ||
-          admitted.kind === 'node-drag' ||
-          owner === null
+          owner === null ||
+          current.gestureSession !== null ||
+          current.pointerSession?.kind === 'node-drag'
         ) {
           return Option.none()
         }
@@ -3747,16 +3824,17 @@ export const createConnectionPointerResource = (initial: Model) => {
             return Option.none()
           }
 
-          lease = {
+          const acquired: ConnectionLease = {
             owner,
             down,
-            pointerId: down.pointerId,
-            startX: down.clientX,
-            startY: down.clientY,
-            phase: 'awaiting-admission',
+            native: 'pressed',
+            admission: 'awaiting',
           }
 
-          return message
+          lease = acquired
+          outstanding.add(acquired)
+
+          return Option.some(associate(down, acquired))
         } catch (error) {
           Effect.runSync(
             Effect.logWarning('Foldkit connection capture failed').pipe(
@@ -3773,6 +3851,11 @@ export const createConnectionPointerResource = (initial: Model) => {
       })
     )
 
+  const pressed = (event: PointerEvent) =>
+    lease?.native === 'pressed' && lease.down.pointerId === event.pointerId
+      ? lease
+      : undefined
+
   const subscriptions = Subscription.make<Model, GraphMessageData>()(
     (entry) => ({
       connectionPointerOwner: entry(
@@ -3781,140 +3864,195 @@ export const createConnectionPointerResource = (initial: Model) => {
           modelToDependencies: (model) => ({ instanceId: model.instanceId }),
           dependenciesToStream: () =>
             Stream.callback<GraphMessageData>((queue) => {
-              const up = (event: PointerEvent): void => {
-                if (
-                  lease === undefined ||
-                  current === undefined ||
-                  lease.pointerId !== event.pointerId ||
-                  lease.phase === 'released' ||
-                  lease.phase === 'released-before-admission'
-                ) {
+              const offer = (
+                origin: ConnectionLease,
+                message: GraphMessageData
+              ): void => {
+                Queue.offerUnsafe(queue, associate(message, origin))
+              }
+
+              const cancel = (
+                origin: ConnectionLease,
+                message: GraphMessageData
+              ): void => {
+                origin.native = 'cancelled'
+                offer(origin, message)
+              }
+
+              const move = (event: PointerEvent): void => {
+                const origin = pressed(event)
+
+                if (origin === undefined) {
                   return
                 }
 
-                const model =
-                  lease.phase === 'awaiting-admission'
-                    ? update(current, lease.down).model
-                    : current
+                if (
+                  !origin.owner.isConnected ||
+                  !origin.owner.hasPointerCapture(event.pointerId)
+                ) {
+                  cancel(
+                    origin,
+                    Message.PointerCancelled({ pointerId: event.pointerId })
+                  )
 
-                lease.phase =
-                  lease.phase === 'awaiting-admission'
-                    ? 'released-before-admission'
-                    : 'released'
+                  return
+                }
 
-                const { nodeId, handleId } = connectionReleaseTarget(
-                  model,
-                  event,
-                  lease.owner
-                )
-
-                Queue.offerUnsafe(
-                  queue,
-                  Message.PointerReleased({
+                offer(
+                  origin,
+                  Message.ConnectionPointerMoved({
                     pointerId: event.pointerId,
                     clientX: event.clientX,
                     clientY: event.clientY,
-                    targetNodeId: nodeId,
-                    targetHandleId: handleId,
+                    flowX: 0,
+                    flowY: 0,
+                    autoPanDelta: { x: 0, y: 0 },
                   })
                 )
               }
 
-              const cancelAwaiting = (message: GraphMessageData): void => {
-                if (
-                  lease?.phase === 'awaiting-admission' ||
-                  lease?.phase === 'released-before-admission'
-                ) {
-                  Queue.offerUnsafe(queue, message)
+              const up = (event: PointerEvent): void => {
+                const origin = pressed(event)
+
+                if (origin === undefined) {
+                  return
                 }
+
+                if (
+                  !origin.owner.isConnected ||
+                  !origin.owner.hasPointerCapture(event.pointerId)
+                ) {
+                  cancel(
+                    origin,
+                    Message.PointerCancelled({ pointerId: event.pointerId })
+                  )
+
+                  return
+                }
+
+                const physical = origin.owner.ownerDocument.elementFromPoint(
+                  event.clientX,
+                  event.clientY
+                )
+
+                const target = readTarget(
+                  physical !== null && origin.owner.contains(physical)
+                    ? physical
+                    : null
+                )
+
+                origin.native = 'released'
+                offer(
+                  origin,
+                  Message.PointerReleased({
+                    pointerId: event.pointerId,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    targetNodeId: target.nodeId,
+                    targetHandleId: target.handleId,
+                  })
+                )
               }
 
-              const blur = (): void => cancelAwaiting(Message.CancelGesture({}))
+              const pointerCancel = (event: PointerEvent): void => {
+                const origin = pressed(event)
 
-              const cancel = (event: PointerEvent): void => {
-                if (event.pointerId === lease?.pointerId) {
-                  cancelAwaiting(
+                if (origin !== undefined) {
+                  cancel(
+                    origin,
                     Message.PointerCancelled({ pointerId: event.pointerId })
                   )
                 }
               }
 
-              const loss = (event: PointerEvent): void => {
+              const blur = (): void => {
+                if (lease !== undefined && lease.native !== 'cancelled') {
+                  cancel(lease, Message.CancelGesture({}))
+                }
+              }
+
+              const escape = (event: KeyboardEvent): void => {
                 if (
                   lease !== undefined &&
-                  (lease.phase === 'awaiting-admission' ||
-                    lease.phase === 'admitted') &&
-                  event.target === lease.owner &&
-                  event.pointerId === lease.pointerId &&
-                  !lease.owner.hasPointerCapture(event.pointerId)
+                  lease.native !== 'cancelled' &&
+                  qualifiesEscape(event)
                 ) {
-                  Queue.offerUnsafe(
-                    queue,
+                  event.preventDefault()
+                  cancel(lease, Message.CancelGesture({}))
+                }
+              }
+
+              const loss = (event: PointerEvent): void => {
+                const origin = pressed(event)
+
+                if (
+                  origin !== undefined &&
+                  event.target === origin.owner &&
+                  !origin.owner.hasPointerCapture(event.pointerId)
+                ) {
+                  cancel(
+                    origin,
                     Message.PointerCancelled({ pointerId: event.pointerId })
                   )
                 }
               }
 
               const click = (event: MouseEvent): void => {
-                const receipt = current?.pointerClickReceipt
-
-                const releasedPointer =
-                  lease?.phase === 'released' ||
-                  lease?.phase === 'released-before-admission'
-                    ? lease.pointerId
-                    : undefined
-
-                const clickPointer = releasedPointer ?? receipt?.pointerId
-
-                const canvas =
-                  current === undefined ? null : canvasForModel(current)
+                const origin = lease
 
                 if (
+                  origin?.native !== 'released' ||
                   event.detail === 0 ||
-                  clickPointer === undefined ||
                   !(event.target instanceof Node) ||
-                  canvas === null ||
-                  !canvas.contains(event.target)
-                ) {
-                  return
-                }
-
-                if (
-                  event instanceof PointerEvent &&
-                  event.pointerId !== clickPointer
+                  !origin.owner.contains(event.target) ||
+                  (event instanceof PointerEvent &&
+                    event.pointerId !== origin.down.pointerId)
                 ) {
                   return
                 }
 
                 event.stopImmediatePropagation()
-                Queue.offerUnsafe(
-                  queue,
+                origin.native = 'click-queued'
+                offer(
+                  origin,
                   Message.RoutedPointerClick({
-                    pointerId: clickPointer,
+                    pointerId: origin.down.pointerId,
                   })
                 )
               }
 
               return Effect.acquireRelease(
                 Effect.sync(() => {
+                  document.addEventListener('pointermove', move, true)
                   document.addEventListener('pointerup', up, true)
-                  document.addEventListener('pointercancel', cancel, true)
-                  window.addEventListener('blur', blur)
+                  document.addEventListener(
+                    'pointercancel',
+                    pointerCancel,
+                    true
+                  )
+                  document.addEventListener('keydown', escape, true)
                   document.addEventListener('lostpointercapture', loss, true)
                   document.addEventListener('click', click, true)
+                  window.addEventListener('blur', blur)
 
                   return () => {
                     current = undefined
-                    retire()
+                    invalidate()
+                    document.removeEventListener('pointermove', move, true)
                     document.removeEventListener('pointerup', up, true)
-                    document.removeEventListener('pointercancel', cancel, true)
-                    window.removeEventListener('blur', blur)
+                    document.removeEventListener(
+                      'pointercancel',
+                      pointerCancel,
+                      true
+                    )
+                    document.removeEventListener('keydown', escape, true)
                     document.removeEventListener(
                       'lostpointercapture',
                       loss,
                       true
                     )
                     document.removeEventListener('click', click, true)
+                    window.removeEventListener('blur', blur)
                   }
                 }),
                 (dispose) => Effect.sync(dispose)
@@ -3929,9 +4067,9 @@ export const createConnectionPointerResource = (initial: Model) => {
 }
 
 const graphView = (
-  renderers: FoldkitRendererRegistry = {},
-  markerScope = 'flow-foldkit',
-  pointerResource?: ReturnType<typeof createConnectionPointerResource>
+  renderers: FoldkitRendererRegistry,
+  markerScope: string,
+  pointerResource: ReturnType<typeof createConnectionPointerResource>
 ) =>
   Submodel.defineView<Model, GraphMessageData>((model, h) => {
     const measurements = getFlowMeasuredNodes(
@@ -4348,11 +4486,7 @@ const graphView = (
             target
           ) =>
             button === 0
-              ? (
-                  pointerResource?.begin ??
-                  ((_model: Model, message: Option.Option<GraphMessageData>) =>
-                    message)
-                )(
+              ? pointerResource.begin(
                   model,
                   beginPointer(
                     pointerId,
@@ -4412,9 +4546,9 @@ const graphView = (
   })
 
 export const makeView = (
-  renderers?: FoldkitRendererRegistry,
-  markerScope?: string,
-  pointerResource?: ReturnType<typeof createConnectionPointerResource>
+  renderers: FoldkitRendererRegistry,
+  markerScope: string,
+  pointerResource: ReturnType<typeof createConnectionPointerResource>
 ) => graphView(renderers, markerScope, pointerResource)
 
 // oxlint-disable anti-slop(require-readable-spacing)
@@ -4424,38 +4558,22 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
       active: Schema.Boolean,
       gestureActive: Schema.Boolean,
       viewport: ViewportSchema,
-      document: FlowDocumentSchema,
-      measurements: FlowMeasurementStateSchema,
       pointerSession: Schema.NullOr(PointerSessionSchema),
-      connectionMode: ConnectionModeSchema,
-      connectionRadius: ConnectionRadiusSchema,
-      allowedConnectionTargets: Schema.Array(Schema.String),
-      instanceId: Schema.String,
     },
     {
       modelToDependencies: (model) => ({
-        active: model.pointerSession !== null || model.gestureSession !== null,
+        active:
+          model.pointerSession?.kind === 'node-drag' ||
+          model.gestureSession !== null,
         gestureActive: model.gestureSession !== null,
         viewport: model.viewport,
-        document: model.document,
-        measurements: model.measurements,
         pointerSession: model.pointerSession,
-        connectionMode: model.connectionMode,
-        connectionRadius: model.connectionRadius,
-        allowedConnectionTargets: model.allowedConnectionTargets,
-        instanceId: model.instanceId,
       }),
       dependenciesToStream: ({
         active,
         gestureActive,
         viewport,
-        document: flowDocument,
-        measurements: measurementState,
         pointerSession,
-        connectionMode,
-        connectionRadius,
-        allowedConnectionTargets,
-        instanceId,
       }) => {
         if (!active) {
           return Stream.empty
@@ -4478,19 +4596,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                 return Message.IgnoreInput({})
               }
 
-              const { nodeId, handleId } = connectionReleaseTarget(
-                {
-                  instanceId,
-                  document: flowDocument,
-                  measurements: measurementState,
-                  pointerSession,
-                  viewport,
-                  allowedConnectionTargets,
-                  connectionMode,
-                  connectionRadius,
-                },
-                event
-              )
+              const { nodeId, handleId } = readTarget(event.target)
 
               if (!gestureActive) {
                 return Message.PointerReleased({
@@ -4593,55 +4699,6 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
           )
         }
 
-        if (
-          pointerSession?.kind === 'connection' ||
-          pointerSession?.kind === 'reconnection' ||
-          pointerSession?.kind === 'connection-pending' ||
-          pointerSession?.kind === 'reconnection-pending'
-        ) {
-          events.push(
-            Subscription.fromEvent({
-              target: document,
-              type: 'pointermove',
-              mapEvent: (event: PointerEvent) => {
-                const canvas = canvasForInstance(instanceId)
-
-                const bounds = canvas?.getBoundingClientRect()
-
-                return Message.ConnectionPointerMoved({
-                  pointerId: event.pointerId,
-                  clientX: event.clientX,
-                  clientY: event.clientY,
-                  flowX: flowPoint(
-                    event.clientX,
-                    event.clientY,
-                    viewport,
-                    canvas
-                  ).x,
-                  flowY: flowPoint(
-                    event.clientX,
-                    event.clientY,
-                    viewport,
-                    canvas
-                  ).y,
-                  autoPanDelta:
-                    pointerSession.kind === 'connection' ||
-                    pointerSession.kind === 'connection-pending'
-                      ? selectionAutoPanDelta(
-                          {
-                            x: event.clientX - (bounds?.left ?? 0),
-                            y: event.clientY - (bounds?.top ?? 0),
-                          },
-                          canvas?.clientWidth ?? 0,
-                          canvas?.clientHeight ?? 0
-                        )
-                      : { x: 0, y: 0 },
-                })
-              },
-            })
-          )
-        }
-
         return Stream.mergeAll(events, { concurrency: 'unbounded' })
       },
     }
@@ -4651,7 +4708,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
     {
       modelToDependencies: (model) => ({
         active:
-          model.pointerSession !== null ||
+          model.pointerSession?.kind === 'node-drag' ||
           model.gestureSession !== null ||
           model.keyboardConnectionSession !== null ||
           model.keyboardResizeSession !== null,
@@ -4661,31 +4718,10 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
           ? Subscription.fromEventFilterMapPreventDefault({
               target: document,
               type: 'keydown',
-              filterMapEvent: (event): Option.Option<GraphMessageData> => {
-                if (event.key !== 'Escape') {
-                  return Option.none()
-                }
-
-                const { target } = event
-
-                const nativeControl =
-                  target instanceof Element
-                    ? target.closest(
-                        'input, textarea, select, button:not(.flow-foldkit-select-node), a[href], [contenteditable="true"], [data-flow-no-drag], [data-flow-nodrag]'
-                      )
-                    : null
-
-                const interactionControl =
-                  target instanceof Element
-                    ? target.closest(
-                        '[data-handle-id], [data-resize-direction], [data-edge-endpoint], .flow-foldkit-select-node'
-                      )
-                    : null
-
-                return nativeControl === null || interactionControl !== null
+              filterMapEvent: (event): Option.Option<GraphMessageData> =>
+                qualifiesEscape(event)
                   ? Option.some(Message.CancelGesture({}))
-                  : Option.none()
-              },
+                  : Option.none(),
             })
           : Stream.empty,
     }
@@ -4960,8 +4996,6 @@ export const initialModel = (
   pendingResizeAcceptance: null,
   selectionMode,
 })
-
-export const View = graphView()
 
 export const subscriptions = PointerEvents
 
