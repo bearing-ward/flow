@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 selected-packet amendment after four cold-review design blockers and incomplete proof/read coverage; seven runtime defects; exact four unit/six node+connection browser fence; broad testing deferred",
+  "activeWork": "Plan099 amended ownership packet complete cold review with named historical inputs before source repair; seven runtime defects and literal proof; exact four unit/six node+connection browser fence; broad testing deferred",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
