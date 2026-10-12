@@ -10,7 +10,7 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-All grounding and three architecture candidates are complete. Parent and the independent cross-provider judge agree on candidate 2 as the conditional base, with candidate 1's pending-only state, raw-down interface and exact-origin admission rules. The judge rejected candidate 3's residual split delivery. A fresh artifact-only amendment is closing capture-target versus coordinate-canvas capabilities, admission proof, and publication order across replacement, failure and shutdown. Implementation remains held until the concrete design closes those obligations. No Plan 099 production source is changed.
+All grounding, candidate comparison and the amended design are complete. The final package uses one native FIFO and one scoped lane for changes, accepted states and interaction events, with immutable batches enqueued synchronously after reduction and native reconciliation. Accepted states remain ordered transition history against replacement notifications. A fresh independent closure review is checking exact API fit, failure and teardown. The isolated source checkout is prepared but has no implementation owner or source edits. Root will release one writer after accepted findings close; no runtime acceptance is claimed.
 
 Vanilla already defaults to 1 and uses strict crossing, but direct exported host validation and moving-canvas distance need attention. Vue and Foldkit start lifecycle on down and use an eight-flow-unit release cutoff. Foldkit has no explicit native node capture and subscribes after model reduction. Root confirmed these mechanics in source. These are inspected differences, not runtime results or evidence of author intent.
 
