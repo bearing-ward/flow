@@ -10,7 +10,7 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-Grounding and the native/publication design are complete. First cold review confirmed the architecture but found three concrete gaps in the click API, typed-error detachment and lifecycle route scope. Binding amendments retain installed declarative click propagation while brokering observation messages into the FIFO, reconstruct typed errors through their Schema codec, and make route eligibility explicit. Only active-node cancellation expands silent API routes; existing nonnode coverage and initialization remain unchanged. A fresh closure review is checking those responses. The isolated source checkout is prepared but has no implementation owner or source edits; no runtime acceptance is claimed.
+Grounding and design closure are complete. Cold review round 2 cleared the binding click, typed-error and lifecycle-route amendments for one isolated writer. It retained a proof caution: an edit proposal that would remove a node does not prove the accepted pointer operation ended. Only actual active-node cancellation expands silent API routes; existing nonnode coverage and initialization remain unchanged. One codex/gpt-6-astra high implementation owner is running in `/Users/richardmcandrews/.codex/worktrees/flow-099-node-drag-threshold/flow`. The reviewed release is recorded by `node-design-synthesis-hashes-v2.json` in the canonical recovery directory. Source review, dedicated execution and native proof remain pending; no runtime acceptance is claimed.
 
 Vanilla already defaults to 1 and uses strict crossing, but direct exported host validation and moving-canvas distance need attention. Vue and Foldkit start lifecycle on down and use an eight-flow-unit release cutoff. Foldkit has no explicit native node capture and subscribes after model reduction. Root confirmed these mechanics in source. These are inspected differences, not runtime results or evidence of author intent.
 
@@ -32,11 +32,11 @@ All three hosts accept valid finite nonnegative configuration through their publ
 
 ## Throughput checkpoint
 
-- Blocking first steps. Trace current source and settle the activation contract before code writes.
-- Independent workstreams. Host-specific read-only explorers can inspect separate call paths.
-- Shared mutable state. Source implementation will have one isolated owner. Root owns plan and progress records.
-- Smallest safe decomposition. Decide after tracing how much shared validation exists. Native lifecycle ownership remains host-specific.
+- Blocking first steps. Grounding and design closure passed. The owner verifies frozen installed runtime APIs before implementing.
+- Independent workstreams. Source has no fan-out. Root records metadata and later performs independent review and native proof.
+- Shared mutable state. One writer owns the isolated source checkout. Root owns plans, progress, verification scope, the canonical trail and integration.
+- Smallest safe decomposition. Ordered coherent commits implement the option, synchronous hosts, Foldkit native ownership and shared publication. The coupled Foldkit migration has one owner so callers and lifetime rules change together.
 
 ## Conformity and deviations
 
-Unverified at this phase. The documented public configuration gap is current, but exact runtime behavior and reference comparison await source tracing and dedicated proof. Framework ownership is an intentional architectural adaptation. The feature does not establish catalog-wide parity.
+Conforming by pinned-source inspection only. The selected default and activation comparison correspond to the inspected XYDrag path; no mounted reference result is claimed. Flow's pointer-down geometry, host preview/control policies and framework ownership are intentional differences. Shared publication history, Vue invalid-frame cancellation and the bounded origin correction are explicit compatibility changes. Implementation behavior, native targeting, source acceptance and broad parity remain unverified pending dedicated proof and review.
