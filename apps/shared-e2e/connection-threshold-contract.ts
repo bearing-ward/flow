@@ -341,6 +341,28 @@ export const connectionThresholdTests = (
     })
   }
 
+  test(`connectionDragThreshold ${host} zero with click disabled completes only the pointer drag`, async ({
+    page,
+  }) => {
+    await mount(page, { threshold: 0, click: false })
+    await page.locator(handle('source')).click()
+    const clicked = await call(page, 'read')
+    expect(clicked.changes).toHaveLength(0)
+    expect(clicked.preview).toBeNull()
+    expect(
+      clicked.rawEvents.filter(
+        (event: { inputKind: string }) => event.inputKind === 'click'
+      )
+    ).toHaveLength(0)
+    await start(page, handle('source'))
+    const target = await center(page, handle('target'))
+    await page.mouse.move(target.x, target.y)
+    await page.mouse.up()
+    const result = await call(page, 'read')
+    expect(result.changes).toHaveLength(1)
+    expect(result.preview).toBeNull()
+  })
+
   const registerFoldkitRepairs = () => {
     if (host === 'foldkit') {
       for (const threshold of [0, 8]) {
@@ -386,6 +408,69 @@ export const connectionThresholdTests = (
           })
         }
       }
+
+      test('connectionDragThreshold round2 Foldkit rejected routed duplicate has one rejected terminal and no proposal', async ({
+        page,
+      }) => {
+        await mount(page, {
+          threshold: 8,
+          click: true,
+          loose: true,
+          edge: true,
+        })
+        await call(page, 'invalidate', 'selection')
+        await call(page, 'frames')
+        await page.locator(handle('source')).click()
+        await page.locator(handle('original')).click()
+        const result = await call(page, 'read')
+        expect(result.changes).toHaveLength(0)
+        expect(
+          result.rawEvents.filter(
+            (event: { name: string }) => event.name === 'onConnect'
+          )
+        ).toHaveLength(0)
+        expect(
+          result.rawEvents.filter(
+            (event: { name: string }) => event.name === 'onConnectEnd'
+          )
+        ).toMatchObject([{ outcome: 'rejected', inputKind: 'click' }])
+        expect(result.preview).toBeNull()
+      })
+
+      test('connectionDragThreshold round2 Foldkit native clicks cannot replay a consumed drag receipt', async ({
+        page,
+      }) => {
+        await mount(page, { threshold: 8, click: true, loose: true })
+        await start(page, handle('source'))
+        const target = await center(page, handle('target'))
+        await page.mouse.move(target.x, target.y)
+        await page.mouse.up()
+        const completed = await call(page, 'read')
+        expect(completed.changes).toHaveLength(1)
+        expect(completed.preview).toBeNull()
+        await page.mouse.click(700, 400)
+        await page.mouse.click(700, 400)
+        const replayed = await call(page, 'read')
+        expect(replayed.changes).toEqual(completed.changes)
+        expect(
+          replayed.rawEvents.filter((event: { name: string }) =>
+            event.name.startsWith('onConnect')
+          )
+        ).toEqual(
+          completed.rawEvents.filter((event: { name: string }) =>
+            event.name.startsWith('onConnect')
+          )
+        )
+        expect(replayed.preview).toBeNull()
+        await page.locator(handle('source')).click()
+        const retry = await call(page, 'read')
+        expect(
+          retry.rawEvents.filter(
+            (event: { name: string; inputKind: string }) =>
+              event.name === 'onConnectStart' && event.inputKind === 'click'
+          )
+        ).toHaveLength(1)
+      })
 
       test('connectionDragThreshold repair Foldkit viewport publications survive lifecycle composition', async ({
         page,
