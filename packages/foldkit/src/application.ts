@@ -1564,7 +1564,8 @@ const lifecycleMessagePhase = (
 
   if (
     Predicate.isTagged('PointerReleased')(message) ||
-    Predicate.isTagged('GestureReleased')(message)
+    Predicate.isTagged('GestureReleased')(message) ||
+    Predicate.isTagged('RoutedPointerClick')(message)
   ) {
     return 'release'
   }
@@ -1859,7 +1860,7 @@ export const update = (
           previous.entityId !== current.entityId)
 
       if (!started || current === undefined) {
-        return withLifecycle
+        return withViewportEvents
       }
 
       const lifecycle = {
@@ -2632,7 +2633,25 @@ export const createProgram = (
       }
 
       const result = update(model, preparedMessage)
-      pointerResource.reconcile(result.model.graph)
+      let resourceMessage: Graph.GraphMessageData | undefined
+
+      if (Predicate.isTagged('GraphMessage')(preparedMessage)) {
+        resourceMessage = preparedMessage.message
+      } else if (Predicate.isTagged('HostAction')(preparedMessage)) {
+        const { action } = preparedMessage
+
+        if (Predicate.isTagged('ReplaceDocument')(action)) {
+          resourceMessage = Graph.Message.ReplaceDocument({
+            document: action.document,
+          })
+        } else if (Predicate.isTagged('ReplaceViewport')(action)) {
+          resourceMessage = Graph.Message.ReplaceViewport({
+            viewport: action.viewport,
+          })
+        }
+      }
+
+      pointerResource.reconcile(result.model.graph, resourceMessage)
 
       return result
     },

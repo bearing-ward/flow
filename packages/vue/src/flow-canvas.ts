@@ -2435,6 +2435,31 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const cancelActiveSession = (reason = 'superseded'): void => {
+      const active = session.value
+
+      if (active !== undefined) {
+        recordFlowTelemetry(
+          'Cancelled Vue interaction session',
+          FlowSpan.gestureCancel,
+          {
+            [FlowAttribute.cancellationReason]: reason,
+            [FlowAttribute.inputKind]: active.kind,
+          }
+        )
+      }
+
+      if (active?.kind === 'pan') {
+        viewportGestureActive = false
+        endViewportObservation(activeViewport.value, 'superseded')
+      }
+
+      cleanupPreview(active, reason)
+      stopConnectionAutoPan('superseded')
+      endConnectionLifecycle('cancelled', reason)
+      clickConnection.value = undefined
+    }
+
     watch(
       () => activeDocument.value,
       () => {
@@ -3106,7 +3131,7 @@ export const FlowCanvas = defineComponent({
             active?.kind === 'connection-pending' ||
             active?.kind === 'reconnection-pending'
           ) {
-            cleanupPreview(active, 'invalid-configuration')
+            cancelActiveSession('invalid-configuration')
           }
 
           S.decodeUnknownSync(ConnectionDragThresholdSchema)(value)
@@ -4268,34 +4293,8 @@ export const FlowCanvas = defineComponent({
         event.key === 'Escape' &&
         (!ownsKeyboardInput || resizeControl || connectionControl)
       ) {
-        cleanupPreview(undefined, 'escape')
-        stopConnectionAutoPan('superseded')
-        clickConnection.value = undefined
+        cancelActiveSession('escape')
       }
-    }
-
-    const cancelActiveSession = (reason = 'superseded'): void => {
-      const active = session.value
-
-      if (active !== undefined) {
-        recordFlowTelemetry(
-          'Cancelled Vue interaction session',
-          FlowSpan.gestureCancel,
-          {
-            [FlowAttribute.cancellationReason]: reason,
-            [FlowAttribute.inputKind]: active.kind,
-          }
-        )
-      }
-
-      if (active?.kind === 'pan') {
-        viewportGestureActive = false
-        endViewportObservation(activeViewport.value, 'superseded')
-      }
-
-      cleanupPreview(active, reason)
-      stopConnectionAutoPan('superseded')
-      clickConnection.value = undefined
     }
 
     const onWindowBlur = (): void => {
@@ -5810,15 +5809,7 @@ export const FlowCanvas = defineComponent({
           onWheel,
           onPointercancel: (event: PointerEvent) => {
             if (session.value?.pointerId === event.pointerId) {
-              stopConnectionAutoPan('superseded')
-
-              if (session.value.kind === 'pan') {
-                viewportGestureActive = false
-                endViewportObservation(activeViewport.value, 'superseded')
-              }
-
-              cleanupPreview()
-              clickConnection.value = undefined
+              cancelActiveSession('pointer-cancel')
             }
           },
           onLostpointercapture: (event: PointerEvent) => {
