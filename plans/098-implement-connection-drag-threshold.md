@@ -25,14 +25,14 @@ All three production hosts expose and validate the threshold, preserve native po
 
 ## Throughput checkpoint
 
-- [ ] Blocking first steps. Ground current public configuration and native reconnection ownership. Compare design candidates before source writes.
-- [ ] Independent workstreams. Read-only design candidates have separate output directories. One implementation owner handles the code-coupled feature across hosts.
-- [ ] Shared mutable state. The implementation owns one isolated worktree. Root owns progress, plan status and the decision trail. No concurrent writers share source files.
-- [ ] Smallest safe decomposition. One owner implements the shared threshold contract and each host's pending-to-active transition so lifecycle and capture semantics remain coherent.
+- [x] Blocking first steps. Current source and native Vanilla down behavior are grounded. All three designs were read and independently compared before source writes.
+- [x] Independent workstreams. Read-only design candidates have separate output directories. One implementation owner handles the code-coupled feature across hosts.
+- [x] Shared mutable state. The implementation owns one isolated worktree. Root owns progress, plan status and the decision trail. No concurrent writers share source files.
+- [x] Smallest safe decomposition. One owner implements the shared threshold contract and each host's pending-to-active transition so lifecycle and capture semantics remain coherent.
 
 ## Evidence
 
-The canonical continuation brief and append-only decision trail are in `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`. Current feature source inspection and design are in progress. No new runtime or reference parity is claimed yet.
+The canonical continuation brief and append-only decision trail are in `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`. Source grounding and independent design comparison are complete. Parent and cross-judge chose design 2 with synchronous Foldkit capture acquisition and Vue threshold snapshots from design 1. Shared Schema validation and arithmetic accompany adapter-owned pending variants. Implementation is active on `codex/098-connection-drag-threshold` in its isolated worktree. A native Vanilla public-mount baseline records preview and capture on down before movement. No threshold implementation or reference runtime acceptance is claimed yet.
 
 ## Conformity and deviations
 
