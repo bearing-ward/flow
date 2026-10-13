@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 93,
+    "inScopeCloseAllHosts": 107,
     "inScopeCloseByHost": {
-      "vanilla": 119,
-      "vue": 116,
-      "foldkit": 99
+      "vanilla": 130,
+      "vue": 125,
+      "foldkit": 111
     }
   },
   "waves": {
@@ -104,14 +104,15 @@
     {
       "section": "api-reference components",
       "name": "<EdgeLabelRenderer />",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Dedicated HTML edge-label layer; only viewport portal today",
       "effort": "M",
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference components",
@@ -128,14 +129,15 @@
     {
       "section": "api-reference components",
       "name": "<EdgeToolbar />",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Vanilla edge toolbar component (only anchors/core helpers)",
       "effort": "S",
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "api-reference components",
@@ -188,14 +190,15 @@
     {
       "section": "api-reference components",
       "name": "<NodeToolbar />",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Vanilla node toolbar component (only anchors/core helpers)",
       "effort": "S",
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "api-reference components",
@@ -695,36 +698,39 @@
       "name": "ConnectionLineComponent",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Export Foldkit connection preview renderer type",
       "effort": "S",
-      "theme": "connection-line"
+      "theme": "connection-line",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "ConnectionLineComponentProps",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add fromNode/fromHandle/fromPosition/toPosition/lineType to preview state",
       "effort": "M",
-      "theme": "connection-line"
+      "theme": "connection-line",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "ConnectionLineType",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add configurable preview path type option",
       "effort": "S",
-      "theme": "connection-line"
+      "theme": "connection-line",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
@@ -837,26 +843,28 @@
     {
       "section": "api-reference types",
       "name": "EdgeProps",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add sourceX/Y,targetX/Y,positions,labelX/Y,selected,markers to renderer props",
       "effort": "M",
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "EdgeTypes",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Export Foldkit renderer registry/edge renderer types",
       "effort": "S",
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
@@ -1029,26 +1037,28 @@
     {
       "section": "api-reference types",
       "name": "NodeProps",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add selected/dragging/positionAbsolute/isConnectable/zIndex/dimensions props",
       "effort": "M",
-      "theme": "node-props"
+      "theme": "node-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "NodeTypes",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Export Foldkit node renderer registry types",
       "effort": "S",
-      "theme": "node-props"
+      "theme": "node-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
@@ -2386,50 +2396,54 @@
     {
       "section": "ui components",
       "name": "Node Search",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No search control, result navigation, viewport focus",
       "effort": "M",
-      "theme": "ui-controls"
+      "theme": "ui-controls",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "ui components",
       "name": "Zoom Slider",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No range zoom control bound to viewport",
       "effort": "S",
-      "theme": "ui-controls"
+      "theme": "ui-controls",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "ui components",
       "name": "Zoom Select",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No zoom preset/fit select control",
       "effort": "S",
-      "theme": "ui-controls"
+      "theme": "ui-controls",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "ui components",
       "name": "DevTools",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No snapshot inspector/change logger/viewport panel",
       "effort": "M",
-      "theme": "devtools"
+      "theme": "devtools",
+      "updatedBy": ["Plan 106"]
     }
   ]
 }
