@@ -26,7 +26,13 @@ export const createFlowInteractivityState = (
   const interactivity = shallowRef(resolveFlowInteractivity(props()))
 
   const setInteractivity = (next: FlowInteractivityInput): void => {
-    const merged = resolveFlowInteractivity({ ...interactivity.value, ...next })
+    const current = interactivity.value
+
+    const merged: FlowInteractivity = {
+      nodesDraggable: next.nodesDraggable ?? current.nodesDraggable,
+      nodesConnectable: next.nodesConnectable ?? current.nodesConnectable,
+      elementsSelectable: next.elementsSelectable ?? current.elementsSelectable,
+    }
 
     if (
       switchNames.every((name) => merged[name] === interactivity.value[name])
@@ -35,14 +41,17 @@ export const createFlowInteractivityState = (
     }
 
     interactivity.value = merged
+
+    const attributes = {
+      [FlowAttribute.nodesDraggable]: merged.nodesDraggable,
+      [FlowAttribute.nodesConnectable]: merged.nodesConnectable,
+      [FlowAttribute.elementsSelectable]: merged.elementsSelectable,
+    }
+
     Effect.runSync(
-      Effect.logDebug('Changed Vue interaction switches').pipe(
-        Effect.annotateLogs({
-          [FlowAttribute.inputKind]: switchNames
-            .map((name) => `${name}=${String(merged[name])}`)
-            .join(','),
-        }),
-        Effect.withSpan(FlowSpan.controllerUpdate)
+      Effect.logDebug('Changed flow interactivity').pipe(
+        Effect.annotateLogs(attributes),
+        Effect.withSpan(FlowSpan.interactivityChange, { attributes })
       )
     )
   }
