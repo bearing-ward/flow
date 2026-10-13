@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 121,
+    "inScopeCloseAllHosts": 141,
     "inScopeCloseByHost": {
-      "vanilla": 142,
-      "vue": 133,
-      "foldkit": 126
+      "vanilla": 154,
+      "vue": 146,
+      "foldkit": 144
     }
   },
   "waves": {
@@ -92,14 +92,15 @@
     {
       "section": "api-reference components",
       "name": "<Controls />",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "showInteractive lock toggle and onInteractiveChange",
       "effort": "S",
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference components",
@@ -142,14 +143,15 @@
     {
       "section": "api-reference components",
       "name": "<Handle />",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "isConnectable/Start/End, isValidConnection, onConnect handle props",
       "effort": "M",
-      "theme": "connection"
+      "theme": "connection",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference components",
@@ -229,12 +231,13 @@
       "name": "useConnection()",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit connection-preview subscription beyond snapshot reads",
       "effort": "S",
-      "theme": "connection"
+      "theme": "connection",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference hooks",
@@ -251,14 +254,15 @@
     {
       "section": "api-reference hooks",
       "name": "useEdgesState()",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "onEdgesChange change-array controlled flow plus setter convenience",
       "effort": "M",
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference hooks",
@@ -359,14 +363,15 @@
     {
       "section": "api-reference hooks",
       "name": "useNodesState()",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "onNodesChange change-array controlled flow plus setter convenience",
       "effort": "M",
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference hooks",
@@ -747,14 +752,15 @@
     {
       "section": "api-reference types",
       "name": "ConnectionState",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Add inProgress/fromNode/fromHandle/toHandle fields; Foldkit reactive accessor",
       "effort": "M",
-      "theme": "connection"
+      "theme": "connection",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -832,13 +838,14 @@
       "section": "api-reference types",
       "name": "EdgeMouseHandler",
       "vanilla": "C",
-      "vue": "P",
-      "foldkit": "P",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Vue/Foldkit edge events lack browser event payload",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -919,12 +926,13 @@
       "name": "IsValidConnection",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit validator callback beyond allowedTargets list",
       "effort": "S",
-      "theme": "connection"
+      "theme": "connection",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1014,13 +1022,14 @@
       "section": "api-reference types",
       "name": "NodeMouseHandler",
       "vanilla": "C",
-      "vue": "P",
-      "foldkit": "P",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Vue/Foldkit node events lack browser event payload",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1123,14 +1132,15 @@
     {
       "section": "api-reference types",
       "name": "OnEdgesChange",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Emit EdgeChange[] deltas instead of FlowChange stream",
       "effort": "M",
-      "theme": "changes"
+      "theme": "changes",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1148,13 +1158,14 @@
       "section": "api-reference types",
       "name": "OnError",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Vue error emit limited to connection-validator boundary",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1195,14 +1206,15 @@
     {
       "section": "api-reference types",
       "name": "OnNodesChange",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Emit NodeChange[] deltas instead of FlowChange stream",
       "effort": "M",
-      "theme": "changes"
+      "theme": "changes",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1219,26 +1231,28 @@
     {
       "section": "api-reference types",
       "name": "OnReconnect",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Vanilla onReconnect lacks old edge plus new connection",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
       "name": "OnSelectionChangeFunc",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit selection-change event",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1340,14 +1354,15 @@
     {
       "section": "api-reference types",
       "name": "SelectionDragHandler",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 2,
       "missing": "Selection drag payload lacks dragged nodes",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "api-reference types",
@@ -1425,26 +1440,28 @@
     {
       "section": "examples nodes",
       "name": "Add Node On Edge Drop",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "onConnectEnd lacks drop client position",
       "effort": "S",
-      "theme": "connection-events"
+      "theme": "connection-events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "examples nodes",
       "name": "Connection Limit",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "No per-handle connectable or connection limit",
       "effort": "M",
-      "theme": "handles"
+      "theme": "handles",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "examples nodes",
@@ -1778,14 +1795,15 @@
     {
       "section": "examples edges",
       "name": "Temporary Edges",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "onConnectEnd lacks drop position for temp edge",
       "effort": "M",
-      "theme": "connection-events"
+      "theme": "connection-events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "examples edges",
@@ -1829,12 +1847,13 @@
       "name": "Context Menu",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit lacks node/pane context-menu events",
       "effort": "S",
-      "theme": "events"
+      "theme": "events",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "examples interaction",
@@ -1865,12 +1884,13 @@
       "name": "Preventing Cycles",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit lacks isValidConnection callback",
       "effort": "S",
-      "theme": "validation"
+      "theme": "validation",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "examples interaction",
@@ -1901,12 +1921,13 @@
       "name": "Validation",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit only static allowedConnectionTargets",
       "effort": "S",
-      "theme": "validation"
+      "theme": "validation",
+      "updatedBy": ["Plan 108"]
     },
     {
       "section": "examples interaction",
