@@ -14,6 +14,17 @@ export { BrowserCapabilityError } from './browser-capability-error.ts'
 
 export { CanvasUIOptionsError } from './mount-flow.ts'
 
+export { createFlowBaseEdge, createFlowEdgeText } from './base-edge.ts'
+
+export type {
+  FlowBaseEdgeMount,
+  FlowBaseEdgeOptions,
+  FlowEdgeLabel,
+  FlowEdgeStyle,
+  FlowEdgeTextMount,
+  FlowEdgeTextOptions,
+} from './base-edge.ts'
+
 export { createFlowBackground } from './background.ts'
 
 export type {

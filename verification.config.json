@@ -1,10 +1,10 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 103: Vue FlowBaseEdge and FlowEdgeText",
+  "activeWork": "Plan 104: Vanilla and Foldkit BaseEdge and EdgeText",
   "checks": [],
   "browserTests": {
-    "vanilla": [],
-    "vue": ["base-edge.e2e.ts", "renderer-contract.e2e.ts"],
-    "foldkit": []
+    "vanilla": ["base-edge.e2e.ts", "renderer-contract.e2e.ts"],
+    "vue": ["base-edge.e2e.ts"],
+    "foldkit": ["base-edge.e2e.ts", "canvas-ui-contract.e2e.ts"]
   }
 }

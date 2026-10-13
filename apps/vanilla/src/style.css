@@ -236,6 +236,16 @@ body,
   fill: none;
 }
 
+.flow-edge-textbg {
+  fill: #ffffff;
+}
+
+.flow-edge-text {
+  fill: #1e293b;
+  font-size: 10px;
+  pointer-events: none;
+}
+
 .flow-edge-hit {
   fill: none;
   stroke: transparent;

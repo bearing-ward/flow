@@ -77,6 +77,14 @@ export type {
   FlowViewportPortalMount,
 } from './ui.ts'
 
+export { flowBaseEdge, flowEdgeText } from './base-edge.ts'
+
+export type {
+  FlowBaseEdgeOptions,
+  FlowEdgeLabel,
+  FlowEdgeTextOptions,
+} from './base-edge.ts'
+
 export { mountFlowEdgeToolbar, mountFlowNodeToolbar } from './toolbar.ts'
 
 export type {

@@ -42,11 +42,11 @@ Each row links to a local evidence section. Production pointers identify impleme
 | Entry | Flow starting point and evidence | Vanilla | Vue | Foldkit | Reference | Remaining work |
 | --- | --- | --- | --- | --- | --- | --- |
 | [&lt;Background /&gt;](https://reactflow.dev/api-reference/components/background) | [CanvasBackgroundSchema](#canvas-ui) | P | G | G | U | Compare patterns/options; provide framework APIs. |
-| [&lt;BaseEdge /&gt;](https://reactflow.dev/api-reference/components/base-edge) | [FlowEdgeRenderer / Vue FlowBaseEdge](#rendering) | P | P | G | U | Expose reusable Vanilla and Foldkit primitives (Plan 104); compare against a live reference runtime. |
+| [&lt;BaseEdge /&gt;](https://reactflow.dev/api-reference/components/base-edge) | [createFlowBaseEdge / Vue FlowBaseEdge / Foldkit flowBaseEdge](#rendering) | P | P | P | U | Compare against a live reference runtime. |
 | [&lt;ControlButton /&gt;](https://reactflow.dev/api-reference/components/control-button) | [No standalone exported control primitive](#open-api) | G | G | G | U | Define reusable button integration for each framework. |
 | [&lt;Controls /&gt;](https://reactflow.dev/api-reference/components/controls) | [CanvasUISchema.controls](#canvas-ui) | P | G | G | U | Compare controls and options; framework controls remain open. |
 | [&lt;EdgeLabelRenderer /&gt;](https://reactflow.dev/api-reference/components/edge-label-renderer) | [Custom edge label host](#labels) | P | G | G | U | Compare HTML label placement, portals, and interaction ownership. |
-| [&lt;EdgeText /&gt;](https://reactflow.dev/api-reference/components/edge-text) | [SVG text labels / Vue FlowEdgeText / core edgeTextLayout](#labels) | P | P | G | U | Expose reusable Vanilla and Foldkit primitives (Plan 104); compare against a live reference runtime. |
+| [&lt;EdgeText /&gt;](https://reactflow.dev/api-reference/components/edge-text) | [createFlowEdgeText / Vue FlowEdgeText / Foldkit flowEdgeText / core edgeTextLayout](#labels) | P | P | P | U | Compare against a live reference runtime. |
 | [&lt;EdgeToolbar /&gt;](https://reactflow.dev/api-reference/components/edge-toolbar) | [toolbarContainers.edges / Vue FlowEdgeToolbar / Foldkit mountFlowEdgeToolbar](#toolbars) | P | P | P | U | Compare against a live reference runtime. |
 | [&lt;Handle /&gt;](https://reactflow.dev/api-reference/components/handle) | [FlowHandle + host-rendered buttons](#connections) | P | P | P | U | Map handle props, modes, measurement, and interactions per adapter. |
 | [&lt;MiniMap /&gt;](https://reactflow.dev/api-reference/components/minimap) | [CanvasUISchema.minimap](#canvas-ui) | P | G | G | U | Compare node rendering/options and framework support. |
