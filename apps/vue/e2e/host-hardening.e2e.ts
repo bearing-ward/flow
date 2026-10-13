@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
-import type { VueHardeningFixture } from '../src/host-hardening-test.ts'
+import type {
+  VueHardeningFixture,
+  VueHardeningOptions,
+} from '../src/host-hardening-test.ts'
 
 interface Point {
   readonly x: number
@@ -66,9 +69,9 @@ const pathStart = async (locator: Locator): Promise<Point> => {
   return { x, y }
 }
 
-const mount = async (page: Page, nodesResizable = false) => {
+const mount = async (page: Page, options: VueHardeningOptions = {}) => {
   await page.goto('/test.html')
-  await page.evaluate(async (resizable) => {
+  await page.evaluate(async (mountOptions) => {
     const { mountVueHardeningFixture } =
       await import('../src/host-hardening-test.ts')
 
@@ -78,10 +81,15 @@ const mount = async (page: Page, nodesResizable = false) => {
       throw new Error('Vue hardening fixture mount point is missing')
     }
 
-    mountVueHardeningFixture(root, { nodesResizable: resizable })
-  }, nodesResizable)
-  await expect(node(page, 'a')).toBeVisible()
-  await expect(edgeHit(page, 'e-cd')).toHaveCount(1)
+    mountVueHardeningFixture(root, mountOptions)
+  }, options)
+
+  if (options.scene === 'nested') {
+    await expect(node(page, 'k')).toBeVisible()
+  } else {
+    await expect(node(page, 'a')).toBeVisible()
+    await expect(edgeHit(page, 'e-cd')).toHaveCount(1)
+  }
 }
 
 test('a click selects a node and the multi-selection key toggles it', async ({
@@ -566,9 +574,114 @@ test('handles stay usable on selected nodes; resize controls need nodesResizable
     )
     .toBe(1)
 
-  await mount(page, true)
+  await mount(page, { nodesResizable: true })
   await node(page, 'a').click()
   await expect(node(page, 'a').locator('.flow-vue-resize-handle')).toHaveCount(
     8
   )
+})
+
+test('a click at threshold 0 with selectNodesOnDrag reads the selection from the press', async ({
+  page,
+}) => {
+  await mount(page, { nodeDragThreshold: 0, selectNodesOnDrag: true })
+
+  await node(page, 'a').click()
+  await expect
+    .poll(() => selectedIds(page))
+    .toEqual({ nodes: ['a'], edges: [] })
+
+  await node(page, 'b').click()
+  await expect
+    .poll(() => selectedIds(page))
+    .toEqual({ nodes: ['b'], edges: [] })
+
+  await node(page, 'c').click({ modifiers: ['Meta'] })
+  await expect
+    .poll(() => selectedIds(page))
+    .toEqual({ nodes: ['b', 'c'], edges: [] })
+
+  await node(page, 'c').click({ modifiers: ['Meta'] })
+  await expect
+    .poll(() => selectedIds(page))
+    .toEqual({ nodes: ['b'], edges: [] })
+})
+
+test('dragging a child with its selected parent commits the parent', async ({
+  page,
+}) => {
+  await mount(page, { scene: 'nested' })
+
+  const parent = await boxOf(node(page, 'p'))
+
+  await page.mouse.click(parent.x + parent.width - 20, parent.y + 20)
+  await node(page, 'k').click({ modifiers: ['Meta'] })
+  await expect
+    .poll(() => selectedIds(page))
+    .toEqual({ nodes: ['p', 'k'], edges: [] })
+
+  const child = await boxOf(node(page, 'k'))
+  const from = await centreOf(node(page, 'k'))
+
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+  await page.mouse.move(from.x + 3, from.y + 3)
+  await page.mouse.move(from.x + 40, from.y + 30, { steps: 4 })
+  await page.mouse.up()
+
+  await expect
+    .poll(() =>
+      fixture(page, (api) =>
+        api
+          .nodes()
+          .filter(({ id }) => id === 'p' || id === 'k')
+          .map(({ id, position }) => [id, position.x, position.y])
+      )
+    )
+    .toEqual([
+      ['p', 120, 110],
+      ['k', 40, 60],
+    ])
+
+  const moved = await boxOf(node(page, 'k'))
+
+  expect(moved.x - child.x).toBeCloseTo(40, 0)
+  expect(moved.y - child.y).toBeCloseTo(30, 0)
+})
+
+test('empty and collapsed nodes are measured at zero size', async ({
+  page,
+}) => {
+  await mount(page, { scene: 'nested' })
+
+  await expect
+    .poll(() => fixture(page, (api) => api.flow().nodesInitialized()))
+    .toBe(true)
+  expect(
+    await fixture(page, (api) => {
+      const hidden = api.internal('z')
+
+      return [hidden?.measurementStatus, hidden?.width, hidden?.height]
+    })
+  ).toEqual(['measured', 0, 0])
+
+  await page.evaluate(() =>
+    document.querySelector('#app')?.classList.add('hardening-collapsed')
+  )
+  await expect
+    .poll(() =>
+      fixture(page, (api) =>
+        api
+          .nodeChanges()
+          .findLast(
+            (change) => change.type === 'dimensions' && change.id === 'y'
+          )
+      )
+    )
+    .toEqual({
+      id: 'y',
+      type: 'dimensions',
+      dimensions: { width: 0, height: 0 },
+    })
+  expect(await fixture(page, (api) => api.internal('y')?.width)).toBe(0)
 })

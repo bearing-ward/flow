@@ -176,11 +176,44 @@ const initialDocument = () =>
     })
   )
 
-/** Mount the hardening scene; `nodesResizable` opts into resize controls. */
+/**
+ * A parent with a child, a node hidden by CSS (`z`) and a node a test can
+ * shrink to nothing (`y`).
+ */
+const nestedDocument = () =>
+  Effect.runSync(
+    decodeFlowDocument({
+      nodes: [
+        { ...probe('p', 80, 80), size: { width: 300, height: 220 } },
+        { ...probe('k', 40, 60), parentId: 'p' },
+        probe('z', 520, 80),
+        probe('y', 520, 300),
+      ],
+      edges: [],
+    })
+  )
+
+export interface VueHardeningOptions {
+  /** Opt into resize controls on selected nodes. */
+  readonly nodesResizable?: boolean
+  readonly nodeDragThreshold?: number
+  readonly selectNodesOnDrag?: boolean
+  readonly scene?: 'default' | 'nested'
+}
+
+/** Mount the hardening scene with the given canvas options. */
 export const mountVueHardeningFixture = (
   root: HTMLElement,
-  options: { readonly nodesResizable?: boolean } = {}
+  options: VueHardeningOptions = {}
 ): void => {
+  const style = document.createElement('style')
+
+  style.textContent = [
+    '.flow-vue-node[data-node-id="z"] { display: none; }',
+    '.hardening-collapsed .flow-vue-node[data-node-id="y"] { display: none; }',
+  ].join('\n')
+  document.head.append(style)
+
   const nodeChanges: NodeChange[] = []
   const events: HardeningEvent[] = []
   const samples: InternalSample[] = []
@@ -251,8 +284,13 @@ export const mountVueHardeningFixture = (
           h(
             FlowCanvas,
             {
-              defaultDocument: initialDocument(),
+              defaultDocument:
+                options.scene === 'nested'
+                  ? nestedDocument()
+                  : initialDocument(),
               nodesResizable: options.nodesResizable === true,
+              nodeDragThreshold: options.nodeDragThreshold ?? 1,
+              selectNodesOnDrag: options.selectNodesOnDrag === true,
               nodeTypes: { probe: ProbeNode },
               edgeTypes: { floating: FloatingProbeEdge, detour: DetourEdge },
               onNodesChange: (changes: readonly NodeChange[]) => {

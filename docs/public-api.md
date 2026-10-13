@@ -189,6 +189,12 @@ Each measured handle has required nonempty `handleId`, `nodeId`, numeric size an
 
 The original 065 member tests exercise both kinds on every side at zoom 0.5/2, exact public fields, hidden lifetime variants, callback retention and rejected IDs. Packed consumers independently compile positive and negative public declaration probes. These establish the named native mappings; exact React callback/frame timing and raw nullable/optional object shapes are deliberate differences, not parity claims.
 
+## Vue selection, drags and measurement
+
+A Vue node click selects the node; Meta or Ctrl toggles it in the current selection, and a plain click on a selected node keeps the selection. Clicks on controls inside a node (buttons, inputs, links, handles, resize controls) do not select it. An edge is selected when a press is released over the same edge without moving. Pressing a selected node drags every selected, draggable node whose ancestors are not also dragged; the drop commits each moved node, and drags of two or more nodes report `selectedNodesDragStart`, `selectedNodesDrag` and `selectedNodesDragStop` with the dragged `nodes`. Nodes and edges, including custom edge renderer props, follow a drag every frame, and every dragged node reports `dragging`. Positions still reach `nodesChange` only at the drop.
+
+Resize controls show on selected nodes only when `nodesResizable` is set. Measured size changes, including the first, arrive on `nodesChange` as `{ type: 'dimensions' }` changes. Vue measures a node once its canvas is in the document; a connected node with an empty or hidden box measures as zero. Sizes and handle offsets divide client rectangles by the zoom of the rendered viewport transform. `FlowBaseEdge` reports its path, so a custom edge's hit target, hover and focus follow the drawn path. Test boundary: `apps/vue/e2e/host-hardening.e2e.ts`.
+
 ## Typed-data contract factory
 
 Core exports `defineFlowDataContract`, `createFlowNodeVariantSchema`, `createFlowEdgeVariantSchema`, `createFlowDataDocumentSchema`, and `validateFlowGraphDocument`. This factory foundation records a caller codec and isolation capability. Construction runs neither capability and creates no graph authority. Existing concrete JSON APIs retain their signatures and behavior.

@@ -72,21 +72,32 @@ export const dragGroupPositions = (
     ])
   )
 
-/** The document with drag preview positions applied, for rendering only. */
-export const withDragPreview = (
+/** The drag members and every descendant they carry along. */
+export const dragCarriedNodes = (
   document: FlowDocument,
-  positions: ReadonlyMap<FlowNode['id'], XYPosition> | undefined
-): FlowDocument =>
-  positions === undefined || positions.size === 0
-    ? document
-    : {
-        ...document,
-        nodes: document.nodes.map((node) => {
-          const position = positions.get(node.id)
+  memberIds: ReadonlySet<FlowNode['id']>
+): ReadonlySet<FlowNode['id']> => {
+  const byId = new Map(document.nodes.map((node) => [node.id, node]))
 
-          return position === undefined ? node : { ...node, position }
-        }),
+  const carried = (node: FlowNode): boolean => {
+    const seen = new Set<string>()
+    let current: FlowNode | undefined = node
+
+    while (current !== undefined && !seen.has(current.id)) {
+      if (memberIds.has(current.id)) {
+        return true
       }
+
+      seen.add(current.id)
+      current =
+        current.parentId === undefined ? undefined : byId.get(current.parentId)
+    }
+
+    return false
+  }
+
+  return new Set(document.nodes.filter(carried).map(({ id }) => id))
+}
 
 /** Interactive descendants whose clicks do not select their node. */
 export const nodeClickControls =
