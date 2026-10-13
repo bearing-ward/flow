@@ -69,6 +69,26 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+.flow-foldkit-toolbar-layer {
+  position: absolute;
+  z-index: 14;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flow-foldkit-node-toolbar,
+.flow-foldkit-edge-toolbar {
+  position: absolute;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  pointer-events: auto;
+}
+
+.flow-foldkit-node-toolbar[hidden],
+.flow-foldkit-edge-toolbar[hidden] {
+  display: none;
+}
+
 .flow-foldkit-panel {
   position: absolute;
   z-index: 18;

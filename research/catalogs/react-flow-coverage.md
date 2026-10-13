@@ -47,12 +47,12 @@ Each row links to a local evidence section. Production pointers identify impleme
 | [&lt;Controls /&gt;](https://reactflow.dev/api-reference/components/controls) | [CanvasUISchema.controls](#canvas-ui) | P | G | G | U | Compare controls and options; framework controls remain open. |
 | [&lt;EdgeLabelRenderer /&gt;](https://reactflow.dev/api-reference/components/edge-label-renderer) | [Custom edge label host](#labels) | P | G | G | U | Compare HTML label placement, portals, and interaction ownership. |
 | [&lt;EdgeText /&gt;](https://reactflow.dev/api-reference/components/edge-text) | [SVG text labels](#labels) | P | G | G | U | Map text/background props and expose reusable components. |
-| [&lt;EdgeToolbar /&gt;](https://reactflow.dev/api-reference/components/edge-toolbar) | [toolbarContainers.edges / Vue FlowEdgeToolbar](#toolbars) | P | P | G | U | Port to Foldkit; compare against a live reference runtime. |
+| [&lt;EdgeToolbar /&gt;](https://reactflow.dev/api-reference/components/edge-toolbar) | [toolbarContainers.edges / Vue FlowEdgeToolbar / Foldkit mountFlowEdgeToolbar](#toolbars) | P | P | P | U | Compare against a live reference runtime. |
 | [&lt;Handle /&gt;](https://reactflow.dev/api-reference/components/handle) | [FlowHandle + host-rendered buttons](#connections) | P | P | P | U | Map handle props, modes, measurement, and interactions per adapter. |
 | [&lt;MiniMap /&gt;](https://reactflow.dev/api-reference/components/minimap) | [CanvasUISchema.minimap](#canvas-ui) | P | G | G | U | Compare node rendering/options and framework support. |
 | [&lt;NodeResizeControl /&gt;](https://reactflow.dev/api-reference/components/node-resize-control) | [Directional host resize controls](#resize) | P | G | G | U | Expose configurable controls in each adapter; compare callbacks and constraints. |
 | [&lt;NodeResizer /&gt;](https://reactflow.dev/api-reference/components/node-resizer) | [Eight-direction vanilla resize](#resize) | P | G | G | U | Compare full API and lifecycle; implement adapter equivalents. |
-| [&lt;NodeToolbar /&gt;](https://reactflow.dev/api-reference/components/node-toolbar) | [toolbarContainers.nodes](#toolbars) | P | G | G | U | Compare placement/visibility API and port to adapters. |
+| [&lt;NodeToolbar /&gt;](https://reactflow.dev/api-reference/components/node-toolbar) | [toolbarContainers.nodes / Vue FlowNodeToolbar / Foldkit mountFlowNodeToolbar](#toolbars) | P | P | P | U | Compare against a live reference runtime. |
 | [&lt;Panel /&gt;](https://reactflow.dev/api-reference/components/panel) | [panels / CanvasPanelPlacement](#panels) | P | G | G | U | Compare props/placement and add framework components. |
 | [&lt;ViewportPortal /&gt;](https://reactflow.dev/api-reference/components/viewport-portal) | [overlayPortal is only a related building block](#panels) | P | G | G | U | Provide graph-coordinate content that follows the viewport transform. |
 

@@ -6,6 +6,7 @@ import {
   edgeToolbarPlacement,
   flowToolbarAnchors,
   nodeToolbarAnchor,
+  nodeToolbarTranslate,
 } from './flow-toolbar-anchor.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
@@ -132,6 +133,39 @@ describe('flow toolbar anchors', () => {
       { x: -100, y: 0 },
       { x: -100, y: -50 },
       { x: -100, y: -100 },
+    ])
+  })
+
+  it('translates node toolbars outside the anchored side for every alignment', () => {
+    const positions = ['top', 'right', 'bottom', 'left'] as const
+    const aligns = ['start', 'center', 'end'] as const
+
+    expect(nodeToolbarTranslate()).toStrictEqual({ x: -50, y: -100 })
+    expect(
+      positions.map((position) =>
+        aligns.map((align) => nodeToolbarTranslate(position, align))
+      )
+    ).toStrictEqual([
+      [
+        { x: 0, y: -100 },
+        { x: -50, y: -100 },
+        { x: -100, y: -100 },
+      ],
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: -50 },
+        { x: 0, y: -100 },
+      ],
+      [
+        { x: 0, y: 0 },
+        { x: -50, y: 0 },
+        { x: -100, y: 0 },
+      ],
+      [
+        { x: -100, y: 0 },
+        { x: -100, y: -50 },
+        { x: -100, y: -100 },
+      ],
     ])
   })
 })

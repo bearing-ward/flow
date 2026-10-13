@@ -1594,7 +1594,7 @@
           "status": "partial",
           "export": "@flow/vue: FlowNodeToolbar from packages/vue/src/public.ts",
           "implementation": "packages/vue/src/node-toolbar.ts; per-canvas measured graph and target in packages/vue/src/flow-canvas.ts",
-          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:21-65",
+          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:31-89",
           "styles": "packages/vue/src/style.css:16-35",
           "test": "apps/vue/e2e/node-toolbar.e2e.ts",
           "fixture": "apps/vue/src/node-toolbar-test.ts",
@@ -1604,6 +1604,21 @@
           ],
           "testedOutcome": "The focused mounted Vue E2E passes 1/1. It verifies measured node positioning, pan and zoom following while toolbar dimensions remain fixed, top and right/end placement with offsets, single-selection default visibility, explicit visibility, hidden and missing node omission, Playwright child click and synthetic wheel/pointer gesture exclusion, per-canvas target ownership, and toolbar/canvas teardown.",
           "remaining": "Partial: this Vue fixture covers the implemented prop subset and tested viewport. No pinned React runtime comparison or screenshot comparison ran. Group node IDs, the complete upstream option surface, focus restoration after self-removal, edge toolbars, Vanilla/Foldkit toolbars, narrow-screen behavior, and full host coverage remain unverified."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: mountFlowNodeToolbar from packages/foldkit/src/public.ts",
+          "implementation": "packages/foldkit/src/toolbar.ts; canvas-scoped screen layer fed by app graph/viewport updates",
+          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:31-124",
+          "styles": "packages/foldkit/src/style.css:72-90",
+          "test": "apps/foldkit/e2e/toolbars.e2e.ts",
+          "fixture": "apps/foldkit/e2e/toolbar-ui.ts",
+          "evidenceStatus": "tested",
+          "tests": [
+            "Foldkit node and edge toolbars anchor fixed-size content and follow app-fed state"
+          ],
+          "testedOutcome": "The mounted Foldkit E2E on the demo canvas passes. It verifies top/center default and right/end forced placement with the 10px default offset at zoom 1 and 1.5, fixed dimensions, single-selection default visibility (hidden with zero or two selected), forced and suppressed visibility (including against a caller display:flex class), hidden and missing node omission, node.zIndex + 1 style values, no-pan/no-drag/no-wheel class and data markers, duplicate-content rejection, child click delivery, layer ownership, layer removal and content restoration on dispose. Gesture exclusion behavior over the toolbar is not exercised.",
+          "remaining": "Partial: updates are app-fed like other Foldkit canvas UI; the demo app does not yet wire them. Toolbar z uses node.zIndex + 1 rather than React's selection-elevated internal z. Group node IDs, focus restoration after self-removal, automatic disposal when the canvas leaves the document, painted stacking against nodes, and a live React runtime comparison remain unverified."
         }
       }
     },
@@ -1627,7 +1642,7 @@
           "status": "partial",
           "export": "@flow/vue: FlowEdgeToolbar from packages/vue/src/public.ts",
           "implementation": "packages/vue/src/edge-toolbar.ts; per-canvas graph and screen target shared with FlowNodeToolbar in packages/vue/src/flow-canvas.ts",
-          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:151-162",
+          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:186-197",
           "styles": "packages/vue/src/style.css:56-62",
           "test": "apps/vue/e2e/edge-toolbar.e2e.ts",
           "fixture": "apps/vue/src/edge-toolbar-test.ts",
@@ -1637,6 +1652,21 @@
           ],
           "testedOutcome": "The focused mounted Vue E2E passes. It verifies centered and right/bottom alignment at a flow point, following through two combined pan/zoom transforms (zoom 2 and 0.5) with fixed toolbar dimensions, the edge.zIndex + 1 style value, selection-driven default visibility, explicit visibility, hidden and removed edge omission, child click delivery, and per-canvas target ownership.",
           "remaining": "Partial: no pinned React runtime or screenshot comparison ran. Rendering in the screen-space toolbar layer instead of scale(1/zoom) inside the edge label layer is an intentional difference with matching geometry; that layer stacks above all nodes, so edge.zIndex + 1 orders toolbars only among themselves, unlike React where nodes can cover the toolbar. Hidden or missing edges render no toolbar even when forced visible. Painted stacking against nodes and edges is not tested. Foldkit edge toolbars, focus restoration after self-removal, and narrow-screen behavior remain unverified."
+        },
+        "foldkit": {
+          "status": "partial",
+          "export": "@flow/foldkit: mountFlowEdgeToolbar from packages/foldkit/src/public.ts",
+          "implementation": "packages/foldkit/src/toolbar.ts; canvas-scoped screen layer fed by app graph/viewport updates",
+          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:186-197",
+          "styles": "packages/foldkit/src/style.css:72-90",
+          "test": "apps/foldkit/e2e/toolbars.e2e.ts",
+          "fixture": "apps/foldkit/e2e/toolbar-ui.ts",
+          "evidenceStatus": "tested",
+          "tests": [
+            "Foldkit node and edge toolbars anchor fixed-size content and follow app-fed state"
+          ],
+          "testedOutcome": "The same E2E verifies centered and right/bottom alignment at a flow point at zoom 1 and 1.5, fixed dimensions, the edge.zIndex + 1 style value, selection-driven default visibility, forced visibility, and hidden and missing edge omission.",
+          "remaining": "Partial: the screen-space layer stacks above nodes, so edge.zIndex + 1 orders only toolbars; hidden or missing edges hide even forced toolbars. App-fed updates, demo integration, and a live React runtime comparison remain unverified."
         }
       }
     },

@@ -391,6 +391,7 @@ export {
   edgeToolbarPlacement,
   flowToolbarAnchors,
   nodeToolbarAnchor,
+  nodeToolbarTranslate,
 } from './domain/flow-toolbar-anchor.ts'
 
 export type {

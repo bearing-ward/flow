@@ -77,6 +77,15 @@ export type {
   FlowViewportPortalMount,
 } from './ui.ts'
 
+export { mountFlowEdgeToolbar, mountFlowNodeToolbar } from './toolbar.ts'
+
+export type {
+  FlowEdgeToolbarMount,
+  FlowEdgeToolbarOptions,
+  FlowNodeToolbarMount,
+  FlowNodeToolbarOptions,
+} from './toolbar.ts'
+
 export { createFoldkitObservers } from './observers.ts'
 
 export { createFoldkitNodeMeasurementObserver } from './measurement-observer.ts'

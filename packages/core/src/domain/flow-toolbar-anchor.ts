@@ -88,6 +88,41 @@ export const nodeToolbarAnchor = (
   }
 }
 
+const nodeToolbarTranslatePercent: Record<
+  FlowToolbarPosition,
+  Record<FlowToolbarAlign, XYPosition>
+> = {
+  top: {
+    start: { x: 0, y: -100 },
+    center: { x: -50, y: -100 },
+    end: { x: -100, y: -100 },
+  },
+  right: {
+    start: { x: 0, y: 0 },
+    center: { x: 0, y: -50 },
+    end: { x: 0, y: -100 },
+  },
+  bottom: {
+    start: { x: 0, y: 0 },
+    center: { x: -50, y: 0 },
+    end: { x: -100, y: 0 },
+  },
+  left: {
+    start: { x: -100, y: 0 },
+    center: { x: -100, y: -50 },
+    end: { x: -100, y: -100 },
+  },
+}
+
+/**
+ * Percent of a node toolbar's own size to translate by so it sits outside the
+ * anchored side of its node with the requested alignment.
+ */
+export const nodeToolbarTranslate = (
+  position: FlowToolbarPosition = 'top',
+  align: FlowToolbarAlign = 'center'
+): XYPosition => nodeToolbarTranslatePercent[position][align]
+
 export const edgeToolbarAnchor = (
   edge: FlowEdge,
   graph: FlowGraphView,
