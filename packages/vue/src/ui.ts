@@ -1,8 +1,8 @@
+import { flowInteractivityFor, isFlowInteractive } from '@flow/core'
 import { Schema as S } from 'effect'
-import { computed, defineComponent, h, onBeforeUnmount, ref, useId } from 'vue'
+import { computed, defineComponent, h, useId } from 'vue'
 import type { PropType, StyleValue } from 'vue'
 
-import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
 import { useFlow } from './use-flow.ts'
 
 const positions = [
@@ -114,27 +114,22 @@ export const FlowControls = defineComponent({
   },
   setup(props, { attrs, slots, expose }) {
     const flow = useFlow()
-    const root = ref<HTMLElement | null>(null)
-    const interactive = ref(true)
 
-    const lock = createFlowInteractivityLock(
-      () =>
-        root.value?.closest<HTMLElement>('.flow-vue-canvas') ??
-        // An unmounted control owns no canvas, so it gates nothing.
-        document.createElement('div')
+    // React Flow Controls: interactive while any switch is on; the lock sets all three.
+    const interactive = computed(() =>
+      isFlowInteractive(flow.interactivity.value)
     )
 
     const setInteractive = (next: boolean): void => {
-      interactive.value = next
-      lock.setInteractive(next)
+      flow.setInteractivity(flowInteractivityFor(next))
     }
 
     const toggleInteractivity = (): void => {
-      setInteractive(!interactive.value)
-      props.onInteractiveChange?.(interactive.value)
+      const next = !interactive.value
+      setInteractive(next)
+      props.onInteractiveChange?.(next)
     }
 
-    onBeforeUnmount(() => lock.release())
     expose({ isInteractive: () => interactive.value, setInteractive })
 
     const zoomIn = (): void => {
@@ -204,7 +199,6 @@ export const FlowControls = defineComponent({
           ...attrs,
           class: classes.value,
           style: [props.style, attrs.style],
-          ref: root,
           role: 'group',
           'aria-label': props.ariaLabel,
           'data-flow-ui': 'controls',

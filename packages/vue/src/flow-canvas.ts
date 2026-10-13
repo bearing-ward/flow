@@ -75,9 +75,21 @@ import {
   flowNodeRendererProps,
   sameFlowEdgeRendererProps,
   sameFlowNodeRendererProps,
+  flowChangeElementChanges,
+  flowConnectionState,
+  flowFinalConnectionState,
+  handleGestureConnectable,
+  isHandleConnectable,
+  isNodeConnectable,
+  isNodeDraggable,
+  isNodeSelectable,
 } from '@flow/core'
 import type {
+  EdgeChange,
   FlowChange,
+  FlowConnectionState,
+  FlowFinalConnectionState,
+  NodeChange,
   FlowConnection,
   ConnectionPreviewState,
   ConnectionMode,
@@ -140,12 +152,17 @@ import {
   declaredRendererProps,
   FlowEdgeLabelRendererContextKey,
 } from './edge-label-renderer.ts'
+import { createFlowInteractivityState } from './interactivity.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyPressOptions } from './key-press-observer.ts'
 import { FlowMiniMapContextKey } from './minimap.ts'
 import { FlowNodeToolbarContextKey } from './node-toolbar.ts'
 import { FlowEditorKey, FlowNodeIdKey } from './use-flow.ts'
-import type { FlowEditor } from './use-flow.ts'
+import type {
+  FlowEditor,
+  FlowErrorBoundary,
+  FlowErrorReport,
+} from './use-flow.ts'
 import { FlowViewportPortalContextKey } from './viewport-portal.ts'
 
 const recordFlowTelemetry = (
@@ -578,6 +595,19 @@ interface ConnectionEndPayload {
   readonly connection?: FlowConnection
 }
 
+/**
+ * Second `connectEnd` and `reconnectEnd` argument, as React Flow's
+ * `onConnectEnd(event, connectionState)`.
+ */
+export interface FlowConnectionEndDetails {
+  /** React Flow `FinalConnectionState` from the last in-progress state. */
+  readonly connectionState: FlowFinalConnectionState
+  /** Release pointer client coordinates; absent for keyboard completion. */
+  readonly clientPosition?: { readonly x: number; readonly y: number }
+  /** The releasing pointer event; absent for keyboard completion. */
+  readonly event?: PointerEvent
+}
+
 interface NodeEndPayload {
   readonly node: FlowNode
   readonly status: Exclude<ConnectionEndPayload['status'], 'rejected'>
@@ -698,6 +728,12 @@ export const FlowCanvas = defineComponent({
     renderOnlyVisible: { type: Boolean, default: false },
     selectionMode: { type: String as PropType<SelectionMode>, default: 'full' },
     nodeExtent: { type: Object as PropType<NodeExtent>, default: undefined },
+    /** Let nodes be dragged; a node's own `draggable` wins. */
+    nodesDraggable: { type: Boolean, default: true },
+    /** Let handles start and finish connections; node and handle flags win. */
+    nodesConnectable: { type: Boolean, default: true },
+    /** Let nodes and edges be selected; an element's own `selectable` wins. */
+    elementsSelectable: { type: Boolean, default: true },
   },
   slots: Object as SlotsType<{
     default: Record<string, never>
@@ -706,6 +742,10 @@ export const FlowCanvas = defineComponent({
   }>,
   emits: {
     change: (_change: FlowChange) => true,
+    /** React Flow `onNodesChange` deltas for each semantic change. */
+    nodesChange: (_changes: readonly NodeChange[]) => true,
+    /** React Flow `onEdgesChange` deltas for each semantic change. */
+    edgesChange: (_changes: readonly EdgeChange[]) => true,
     'update:document': (_document: FlowDocument) => true,
     'update:nodes': (_nodes: readonly FlowNode[]) => true,
     'update:edges': (_edges: readonly FlowEdge[]) => true,
@@ -723,11 +763,14 @@ export const FlowCanvas = defineComponent({
       _viewport: Viewport,
       _status: ViewportOperationResult['status']
     ) => true,
-    nodeDragStart: (_node: FlowNode) => true,
-    nodeDrag: (_payload: {
-      readonly node: FlowNode
-      readonly position: { readonly x: number; readonly y: number }
-    }) => true,
+    nodeDragStart: (_node: FlowNode, _event?: PointerEvent) => true,
+    nodeDrag: (
+      _payload: {
+        readonly node: FlowNode
+        readonly position: { readonly x: number; readonly y: number }
+      },
+      _event?: PointerEvent
+    ) => true,
     nodeDragEnd: (_payload: NodeEndPayload) => true,
     nodeDragStop: (_payload: NodeEndPayload) => true,
     connectStart: (_payload: {
@@ -738,7 +781,10 @@ export const FlowCanvas = defineComponent({
     connectProgress: (_payload: { readonly preview: ConnectionPreviewState }) =>
       true,
     connect: (_connection: FlowConnection) => true,
-    connectEnd: (_payload: ConnectionEndPayload) => true,
+    connectEnd: (
+      _payload: ConnectionEndPayload,
+      _details?: FlowConnectionEndDetails
+    ) => true,
     reconnectStart: (_payload: {
       readonly edge: FlowEdge
       readonly endpoint: 'source' | 'target'
@@ -751,7 +797,10 @@ export const FlowCanvas = defineComponent({
       readonly edge: FlowEdge
       readonly connection: FlowConnection
     }) => true,
-    reconnectEnd: (_payload: ConnectionEndPayload) => true,
+    reconnectEnd: (
+      _payload: ConnectionEndPayload,
+      _details?: FlowConnectionEndDetails
+    ) => true,
     selectionStart: (_payload: {
       readonly position: { readonly x: number; readonly y: number }
       readonly activation: 'pointer' | 'keyboard'
@@ -770,11 +819,7 @@ export const FlowCanvas = defineComponent({
       readonly edges: readonly FlowEdge[]
     }) => true,
     init: (_editor: FlowEditor) => true,
-    error: (_error: {
-      readonly name: string
-      readonly message: string
-      readonly boundary: 'connection-validator'
-    }) => true,
+    error: (_error: FlowErrorReport) => true,
     paneClick: (_position: { readonly x: number; readonly y: number }) => true,
     paneMouseDown: (_position: { readonly x: number; readonly y: number }) =>
       true,
@@ -793,20 +838,20 @@ export const FlowCanvas = defineComponent({
       readonly deltaX: number
       readonly deltaY: number
     }) => true,
-    nodeMouseDown: (_node: FlowNode) => true,
-    nodeMouseUp: (_node: FlowNode) => true,
-    nodeMouseMove: (_node: FlowNode) => true,
-    nodeMouseEnter: (_node: FlowNode) => true,
-    nodeMouseLeave: (_node: FlowNode) => true,
-    nodeDoubleClick: (_node: FlowNode) => true,
-    nodeContextMenu: (_node: FlowNode) => true,
-    edgeMouseDown: (_edge: FlowEdge) => true,
-    edgeMouseUp: (_edge: FlowEdge) => true,
-    edgeMouseMove: (_edge: FlowEdge) => true,
-    edgeMouseEnter: (_edge: FlowEdge) => true,
-    edgeMouseLeave: (_edge: FlowEdge) => true,
-    edgeDoubleClick: (_edge: FlowEdge) => true,
-    edgeContextMenu: (_edge: FlowEdge) => true,
+    nodeMouseDown: (_node: FlowNode, _event?: MouseEvent) => true,
+    nodeMouseUp: (_node: FlowNode, _event?: MouseEvent) => true,
+    nodeMouseMove: (_node: FlowNode, _event?: MouseEvent) => true,
+    nodeMouseEnter: (_node: FlowNode, _event?: MouseEvent) => true,
+    nodeMouseLeave: (_node: FlowNode, _event?: MouseEvent) => true,
+    nodeDoubleClick: (_node: FlowNode, _event?: MouseEvent) => true,
+    nodeContextMenu: (_node: FlowNode, _event?: MouseEvent) => true,
+    edgeMouseDown: (_edge: FlowEdge, _event?: MouseEvent) => true,
+    edgeMouseUp: (_edge: FlowEdge, _event?: MouseEvent) => true,
+    edgeMouseMove: (_edge: FlowEdge, _event?: MouseEvent) => true,
+    edgeMouseEnter: (_edge: FlowEdge, _event?: MouseEvent) => true,
+    edgeMouseLeave: (_edge: FlowEdge, _event?: MouseEvent) => true,
+    edgeDoubleClick: (_edge: FlowEdge, _event?: MouseEvent) => true,
+    edgeContextMenu: (_edge: FlowEdge, _event?: MouseEvent) => true,
     selectionContextMenu: (_payload: {
       readonly rect: {
         readonly x: number
@@ -834,8 +879,8 @@ export const FlowCanvas = defineComponent({
       }
     }) => true,
     selectionDragStop: (_payload: SelectionEndPayload) => true,
-    nodeClick: (_node: FlowNode) => true,
-    edgeClick: (_edge: FlowEdge) => true,
+    nodeClick: (_node: FlowNode, _event?: MouseEvent) => true,
+    edgeClick: (_edge: FlowEdge, _event?: PointerEvent | KeyboardEvent) => true,
   },
   // eslint-disable-next-line complexity -- the Vue boundary coordinates host lifecycles and core operations.
   setup(props, { emit, slots, expose }) {
@@ -960,6 +1005,43 @@ export const FlowCanvas = defineComponent({
     let stateDisposed = false
     let requestedStateCause: FlowStateChange['cause'] | undefined
 
+    const { interactivity, setInteractivity } = createFlowInteractivityState(
+      () => ({
+        nodesDraggable: props.nodesDraggable,
+        nodesConnectable: props.nodesConnectable,
+        elementsSelectable: props.elementsSelectable,
+      })
+    )
+
+    const reportError = (error: Error, boundary: FlowErrorBoundary): void => {
+      if (stateDisposed) {
+        return
+      }
+
+      recordFlowFailure('Vue flow failure reported', FlowSpan.editFailure, {
+        [FlowAttribute.failureName]: error.name,
+        [FlowAttribute.failureMessage]: error.message,
+        [FlowAttribute.inputKind]: boundary,
+      })
+      emit('error', { name: error.name, message: error.message, boundary })
+    }
+
+    /** React Flow `onNodesChange` and `onEdgesChange` next to each FlowChange. */
+    const emitElementChanges = (
+      before: FlowDocument,
+      change: FlowChange
+    ): void => {
+      const { nodes, edges } = flowChangeElementChanges(before, change)
+
+      if (nodes.length > 0 && !stateDisposed) {
+        emit('nodesChange', nodes)
+      }
+
+      if (edges.length > 0 && !stateDisposed) {
+        emit('edgesChange', edges)
+      }
+    }
+
     const drainStateQueue = (): void => {
       if (publishingState || stateDisposed) {
         return
@@ -1009,6 +1091,7 @@ export const FlowCanvas = defineComponent({
                   })
                 )
               )
+              reportError(failure, 'state-listener')
             }
           }
         }
@@ -1446,6 +1529,15 @@ export const FlowCanvas = defineComponent({
     let connectionPreviewState: (
       initiating: ConnectionPreviewOwner
     ) => ConnectionPreviewState | null
+
+    const connectionOrigin = (initiating: ConnectionPreviewOwner) => {
+      const data =
+        initiating.kind === 'retained'
+          ? initiating.source.data
+          : initiating.active
+
+      return { nodeId: data.sourceNode.id, handleId: data.sourceHandle }
+    }
 
     type ValidationOwner =
       | {
@@ -1917,7 +2009,10 @@ export const FlowCanvas = defineComponent({
         return
       }
 
+      const documentBefore = activeDocument.value
+
       emit('change', change)
+      emitElementChanges(documentBefore, change)
 
       if (stateDisposed) {
         return
@@ -2064,12 +2159,15 @@ export const FlowCanvas = defineComponent({
     }
 
     const selectNodeForDrag = (node: FlowNode): void => {
-      if (!props.selectNodesOnDrag || node.selectable === false) {
+      if (
+        !props.selectNodesOnDrag ||
+        !isNodeSelectable(interactivity.value, node)
+      ) {
         return
       }
 
       const selectedNodeIds = activeDocument.value.nodes
-        .filter((candidate) => candidate.selectable !== false)
+        .filter((candidate) => isNodeSelectable(interactivity.value, candidate))
         .filter((candidate) => candidate.id === node.id || candidate.selected)
         .map(({ id }) => id)
 
@@ -2091,6 +2189,24 @@ export const FlowCanvas = defineComponent({
       return active.source.kind === 'own'
         ? active.source.owner
         : active.source.source.owner
+    }
+
+    /** The last preview of each gesture, for React Flow's final connection state. */
+    const lastConnectionPreviews = new WeakMap<
+      ConnectionOwner,
+      ConnectionPreviewState
+    >()
+
+    const rememberConnectionPreview = (
+      initiating: ConnectionPreviewOwner,
+      preview: ConnectionPreviewState
+    ): void => {
+      lastConnectionPreviews.set(
+        initiating.kind === 'retained'
+          ? initiating.source.owner
+          : connectionOwner(initiating.active),
+        preview
+      )
     }
 
     const previewOwnerLive = (initiating: ConnectionPreviewOwner): boolean => {
@@ -2326,12 +2442,12 @@ export const FlowCanvas = defineComponent({
         }
 
         case 'connectEnd': {
-          emit('connectEnd', port.payload)
+          emit('connectEnd', port.payload, port.details)
           break
         }
 
         case 'reconnectEnd': {
-          emit('reconnectEnd', port.payload)
+          emit('reconnectEnd', port.payload, port.details)
           break
         }
 
@@ -3398,9 +3514,20 @@ export const FlowCanvas = defineComponent({
 
       const transaction = resolveInput(currentDocument)
 
-      const result = await Effect.runPromise(
-        prepareFlowEdit(currentDocument, transaction)
-      )
+      let result: FlowEditResult
+
+      try {
+        result = await Effect.runPromise(
+          prepareFlowEdit(currentDocument, transaction)
+        )
+      } catch (error) {
+        reportError(
+          error instanceof Error ? error : new Error(String(error)),
+          'edit'
+        )
+
+        throw error
+      }
 
       if (stateDisposed) {
         throw new Error('FlowCanvasDisposed')
@@ -3414,6 +3541,7 @@ export const FlowCanvas = defineComponent({
         }
 
         emit('change', proposal)
+        emitElementChanges(currentDocument, proposal)
 
         if (hasSplitModel) {
           emit('update:nodes', result.document.nodes)
@@ -3425,11 +3553,14 @@ export const FlowCanvas = defineComponent({
         return result
       }
 
-      emit('change', {
+      const proposal: FlowChange = {
         kind: 'edit-proposal',
         document: result.document,
         deletion: result.deletion,
-      })
+      }
+
+      emit('change', proposal)
+      emitElementChanges(currentDocument, proposal)
 
       withStateCause('semantic-change', () => {
         ownedDocument.value = result.document
@@ -3514,6 +3645,7 @@ export const FlowCanvas = defineComponent({
       | {
           readonly kind: 'connectEnd' | 'reconnectEnd' | 'clickConnectEnd'
           readonly payload: ConnectionEndPayload
+          readonly details?: FlowConnectionEndDetails
         }
       | {
           readonly kind: 'nodeDragEnd' | 'nodeDragStop'
@@ -3598,6 +3730,56 @@ export const FlowCanvas = defineComponent({
 
     let capturedDisposal: CapturedDisposal | undefined
 
+    /** Pointer releases that completed a connection claim. */
+    const connectionReleases = new WeakMap<ConnectionClaim, PointerEvent>()
+
+    const finalConnectionState = (
+      claim: ConnectionClaim,
+      result: ConnectionResult
+    ): FlowFinalConnectionState => {
+      const { source } = claim
+      const last = lastConnectionPreviews.get(claim.owner)
+
+      const fallback: ConnectionPreviewState =
+        source.reconnect === undefined
+          ? {
+              kind: 'connect',
+              from: source.start,
+              to: source.pointer,
+              candidate: null,
+              valid: null,
+            }
+          : {
+              kind: 'reconnect',
+              from: source.start,
+              to: source.pointer,
+              candidate: null,
+              valid: null,
+              edgeId: S.decodeUnknownSync(EdgeIdSchema)(
+                source.reconnect.edgeId
+              ),
+              endpoint: source.reconnect.endpoint,
+            }
+
+      const base = last ?? fallback
+
+      const preview: ConnectionPreviewState =
+        result.kind === 'success'
+          ? { ...base, candidate: result.connection, valid: true }
+          : base
+
+      return flowFinalConnectionState(
+        flowConnectionState({
+          document: activeDocument.value,
+          preview: createConnectionPreviewSnapshot(preview),
+          origin: {
+            nodeId: source.sourceNode.id,
+            handleId: source.sourceHandle,
+          },
+        })
+      )
+    }
+
     const finishConnectionClaim = (
       claim: ConnectionClaim,
       result: ConnectionResult,
@@ -3613,6 +3795,8 @@ export const FlowCanvas = defineComponent({
       claim.owner.state = { kind: 'ended' }
       pendingConnectionClaims.delete(claim)
 
+      const release = connectionReleases.get(claim)
+
       const payload: ConnectionEndPayload =
         result.kind === 'success'
           ? {
@@ -3622,11 +3806,23 @@ export const FlowCanvas = defineComponent({
             }
           : { status: result.kind, reason: result.reason }
 
+      const connectionState = finalConnectionState(claim, result)
+
+      const details: FlowConnectionEndDetails =
+        release === undefined
+          ? { connectionState }
+          : {
+              connectionState,
+              clientPosition: { x: release.clientX, y: release.clientY },
+              event: release,
+            }
+
       const ports: TerminalPort[] = [
         {
           kind:
             claim.lifecycle.kind === 'connect' ? 'connectEnd' : 'reconnectEnd',
           payload,
+          details,
         },
       ]
 
@@ -4097,6 +4293,33 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const liveConnectionPreview = computed(() => {
+      const initiating = currentConnectionPreviewOwner()
+
+      if (initiating === undefined) {
+        return { initiating, snapshot: null }
+      }
+
+      const preview = connectionPreviewState(initiating)
+
+      return {
+        initiating,
+        snapshot:
+          preview === null ? null : createConnectionPreviewSnapshot(preview),
+      }
+    })
+
+    const connectionState = computed((): FlowConnectionState =>
+      flowConnectionState({
+        document: activeDocument.value,
+        preview: liveConnectionPreview.value.snapshot,
+        origin:
+          liveConnectionPreview.value.initiating === undefined
+            ? undefined
+            : connectionOrigin(liveConnectionPreview.value.initiating),
+      })
+    )
+
     const editor: FlowEditor = {
       document: computed(() => stateSnapshot.value.document),
       viewport: computed(() => stateSnapshot.value.viewport),
@@ -4115,19 +4338,11 @@ export const FlowCanvas = defineComponent({
         deleteApprovalPending = false
       },
       withEditMutation,
-      connectionPreview: computed(() => {
-        const initiating = currentConnectionPreviewOwner()
-
-        if (initiating === undefined) {
-          return null
-        }
-
-        const preview = connectionPreviewState(initiating)
-
-        return preview === null
-          ? null
-          : createConnectionPreviewSnapshot(preview)
-      }),
+      connectionPreview: computed(() => liveConnectionPreview.value.snapshot),
+      connectionState,
+      interactivity,
+      setInteractivity,
+      reportError,
       subscribeState,
       subscribeSelection,
       observeKeyPress: observeOwnedKeyPress,
@@ -4428,7 +4643,6 @@ export const FlowCanvas = defineComponent({
 
       if (
         node === undefined ||
-        node.connectable === false ||
         handle === undefined ||
         current === undefined ||
         current.hidden ||
@@ -4468,6 +4682,8 @@ export const FlowCanvas = defineComponent({
         resolved === undefined ||
         source === undefined ||
         target === undefined ||
+        source.node.connectable === false ||
+        target.node.connectable === false ||
         edge.source !== pending.source.nodeId ||
         edge.target !== pending.target.nodeId ||
         resolved.sourceHandle.id !== pending.source.handleId ||
@@ -4520,7 +4736,14 @@ export const FlowCanvas = defineComponent({
           source === undefined ||
           (connectionMode.value === 'strict' &&
             source.handle.kind !== 'source' &&
-            pending.sourceAssociation.kind === 'fresh')
+            pending.sourceAssociation.kind === 'fresh') ||
+          (pending.sourceAssociation.kind === 'fresh' &&
+            !isHandleConnectable(
+              interactivity.value,
+              source.node,
+              source.handle,
+              'start'
+            ))
         ) {
           return undefined
         }
@@ -4774,7 +4997,7 @@ export const FlowCanvas = defineComponent({
       if (
         resolved === undefined ||
         resolved.hidden ||
-        resolved.node.draggable === false
+        !isNodeDraggable(interactivity.value, resolved.node)
       ) {
         return undefined
       }
@@ -4830,7 +5053,10 @@ export const FlowCanvas = defineComponent({
       return false
     }
 
-    const promoteNode = (pending: DragSession): DragSession | undefined => {
+    const promoteNode = (
+      pending: DragSession,
+      event: PointerEvent
+    ): DragSession | undefined => {
       if (pending.kind !== 'node-pending' || !continueNode(pending)) {
         return undefined
       }
@@ -4838,7 +5064,7 @@ export const FlowCanvas = defineComponent({
       const { threshold: _threshold, ...fields } = pending
       const active: DragSession = { ...fields, kind: 'node' }
       session.value = active
-      emit('nodeDragStart', active.node)
+      emit('nodeDragStart', active.node, event)
 
       if (!continueNode(active)) {
         return undefined
@@ -4878,7 +5104,7 @@ export const FlowCanvas = defineComponent({
           event.clientX,
           event.clientY
         )
-          ? promoteNode(active)
+          ? promoteNode(active, event)
           : undefined
       }
 
@@ -4891,10 +5117,14 @@ export const FlowCanvas = defineComponent({
       const dy = (event.clientY - dragging.startY) / activeViewport.value.zoom
 
       active.element.style.transform = `translate(${dx}px, ${dy}px)`
-      emit('nodeDrag', {
-        node: active.node,
-        position: { x: active.originX + dx, y: active.originY + dy },
-      })
+      emit(
+        'nodeDrag',
+        {
+          node: active.node,
+          position: { x: active.originX + dx, y: active.originY + dy },
+        },
+        event
+      )
     }
 
     watch(
@@ -4984,10 +5214,11 @@ export const FlowCanvas = defineComponent({
       session.value = pending
 
       if (pending.threshold === 0) {
-        promoteNode(pending)
+        promoteNode(pending, event)
       }
     }
 
+    // eslint-disable-next-line complexity -- One pointer entry admits node drags and handle connections under the interaction switches.
     const onPointerDown = (event: PointerEvent, node: FlowNode): void => {
       if (stateDisposed || event.button !== 0 || session.value !== undefined) {
         return
@@ -5011,7 +5242,12 @@ export const FlowCanvas = defineComponent({
 
       const handleId = handle?.dataset.handleId
 
-      if (handleId === undefined && node.draggable === false) {
+      // A node that cannot be dragged leaves the press to the pane, which
+      // pans as in React Flow.
+      if (
+        handleId === undefined &&
+        !isNodeDraggable(interactivity.value, node)
+      ) {
         return
       }
 
@@ -5038,7 +5274,14 @@ export const FlowCanvas = defineComponent({
         connectionDragThreshold === undefined ||
         (connectionMode.value === 'strict' &&
           sourceHandle.kind !== 'source' &&
-          clickConnection.value === undefined)
+          clickConnection.value === undefined) ||
+        (clickConnection.value === undefined &&
+          !isHandleConnectable(
+            interactivity.value,
+            node,
+            sourceHandle,
+            'start'
+          ))
       ) {
         return
       }
@@ -5094,7 +5337,13 @@ export const FlowCanvas = defineComponent({
         edge === undefined ||
         targetNode === undefined ||
         targetHandle === undefined ||
-        resolved === undefined
+        resolved === undefined ||
+        !isHandleConnectable(
+          interactivity.value,
+          targetNode,
+          targetHandle,
+          'end'
+        )
       ) {
         return { kind: 'rejected', reason: 'invalid-target' }
       }
@@ -5262,6 +5511,7 @@ export const FlowCanvas = defineComponent({
         connectionFromHandleGesture(
           {
             document: activeDocument.value,
+            interactivity: interactivity.value,
             fromNodeId: sourceNode.id,
             fromHandleId: sourceHandle.id,
             toNodeId: targetNode.id,
@@ -5298,6 +5548,7 @@ export const FlowCanvas = defineComponent({
         connectionFromHandleGesture(
           {
             document: activeDocument.value,
+            interactivity: interactivity.value,
             fromNodeId: sourceNode.id,
             fromHandleId: sourceHandle.id,
             toNodeId: targetNode.id,
@@ -5444,6 +5695,41 @@ export const FlowCanvas = defineComponent({
         : undefined
     }
 
+    /** Handle connectability of a preview target, as React Flow's valid-handle check. */
+    const targetConnectable = (
+      active: ConnectionData,
+      target: { readonly nodeId: string; readonly handleId: string } | undefined
+    ): boolean => {
+      if (target === undefined) {
+        return true
+      }
+
+      if (active.reconnect === undefined) {
+        return handleGestureConnectable(
+          activeDocument.value,
+          {
+            fromNodeId: active.sourceNode.id,
+            fromHandleId: active.sourceHandle,
+            toNodeId: target.nodeId,
+            toHandleId: target.handleId,
+          },
+          interactivity.value
+        )
+      }
+
+      const node = activeDocument.value.nodes.find(
+        ({ id }) => id === target.nodeId
+      )
+
+      const handle = node?.handles?.find(({ id }) => id === target.handleId)
+
+      return (
+        node === undefined ||
+        handle === undefined ||
+        isHandleConnectable(interactivity.value, node, handle, 'end')
+      )
+    }
+
     connectionPreviewState = (
       initiating: ConnectionPreviewOwner
     ): ConnectionPreviewState | null => {
@@ -5543,7 +5829,10 @@ export const FlowCanvas = defineComponent({
           )
         )
 
-        if (Exit.isSuccess(result)) {
+        if (Exit.isSuccess(result) && !targetConnectable(active, target)) {
+          normalized = result.value
+          valid = false
+        } else if (Exit.isSuccess(result)) {
           normalized = result.value
           valid = validateConnectionAtBoundary(result.value, {
             kind: 'preview',
@@ -5894,6 +6183,10 @@ export const FlowCanvas = defineComponent({
 
       if (claim === undefined) {
         return
+      }
+
+      if (input.kind === 'pointer' || input.kind === 'pending') {
+        connectionReleases.set(claim, input.release)
       }
 
       clearClaimPresentation(claim)
@@ -6507,7 +6800,7 @@ export const FlowCanvas = defineComponent({
           nodeElement !== null &&
           nodeElement !== undefined &&
           graphNode !== undefined &&
-          graphNode.node.selectable !== false &&
+          isNodeSelectable(interactivity.value, graphNode.node) &&
           target.closest(
             'input, textarea, select, button, a[href], [contenteditable="true"], [data-flow-nodrag], [data-flow-no-drag]'
           ) === null &&
@@ -6639,6 +6932,26 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    /**
+     * A press on a node that cannot be dragged pans the viewport, as React
+     * Flow marks only draggable nodes `nopan`. Handles, form controls and
+     * no-drag content keep the press.
+     */
+    const pansFromNode = (target: Element): boolean => {
+      const nodeId =
+        target.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
+
+      const node = activeDocument.value.nodes.find(({ id }) => id === nodeId)
+
+      return (
+        node !== undefined &&
+        !isNodeDraggable(interactivity.value, node) &&
+        target.closest(
+          '[data-handle-id], .flow-vue-resize-handle, button, input, select, textarea, a[href], [contenteditable="true"], [data-flow-nodrag], [data-flow-no-drag]'
+        ) === null
+      )
+    }
+
     // eslint-disable-next-line complexity -- The public pointer admission entry preserves the existing selection, pan and interactive-target policies.
     const onCanvasPointerDown = (event: PointerEvent): void => {
       if (stateDisposed) {
@@ -6651,11 +6964,20 @@ export const FlowCanvas = defineComponent({
         event.button !== 0 ||
         session.value !== undefined ||
         !(target instanceof Element) ||
-        !(currentTarget instanceof HTMLElement) ||
-        target.closest('[data-node-id]') !== null
+        !(currentTarget instanceof HTMLElement)
       ) {
         return
       }
+
+      const nodeElement = target.closest<HTMLElement>('[data-node-id]')
+      const onNode = nodeElement !== null
+
+      if (onNode && !pansFromNode(target)) {
+        return
+      }
+
+      // Capturing on the node keeps its click and mouse events for callers.
+      const panCaptureTarget = nodeElement ?? currentTarget
 
       const excludedFromPan = hasClassAncestor(target, props.noPanClassName)
       const excludedFromDrag = hasClassAncestor(target, props.noDragClassName)
@@ -6663,7 +6985,12 @@ export const FlowCanvas = defineComponent({
       const panKeyRequired = props.panActivationKeyCode
       const panKeyActive = activationKeyIsPressed(panKeyRequired)
 
-      const isSelection = event.shiftKey || props.selectionOnDrag
+      // React Flow draws a selection box only while elements are selectable,
+      // and only from the pane.
+      const isSelection =
+        !onNode &&
+        interactivity.value.elementsSelectable &&
+        (event.shiftKey || props.selectionOnDrag)
 
       if (
         excludedFromDrag ||
@@ -6705,14 +7032,14 @@ export const FlowCanvas = defineComponent({
               },
             },
             pointerId: event.pointerId,
-            captureTarget: currentTarget,
+            captureTarget: panCaptureTarget,
             startX,
             startY,
             viewportStart: activeViewport.value,
           }
 
       const admitted = session.value
-      currentTarget.setPointerCapture?.(event.pointerId)
+      panCaptureTarget.setPointerCapture?.(event.pointerId)
 
       if (isSelection) {
         emit('selectionStart', { position: flowPoint, activation: 'pointer' })
@@ -6756,7 +7083,9 @@ export const FlowCanvas = defineComponent({
         }
       }
 
-      event.preventDefault()
+      if (!onNode) {
+        event.preventDefault()
+      }
     }
 
     const onWheel = (event: WheelEvent): void => {
@@ -6897,7 +7226,8 @@ export const FlowCanvas = defineComponent({
 
       if (
         (connectionMode.value === 'strict' && handle.kind !== 'source') ||
-        session.value !== undefined
+        session.value !== undefined ||
+        !isHandleConnectable(interactivity.value, node, handle, 'start')
       ) {
         return
       }
@@ -7103,7 +7433,18 @@ export const FlowCanvas = defineComponent({
         h('button', {
           key: handle.id,
           type: 'button',
-          class: ['flow-vue-handle', `flow-vue-handle-${handle.side}`],
+          class: [
+            'flow-vue-handle',
+            `flow-vue-handle-${handle.side}`,
+            {
+              // React Flow's Handle classes, for styling and tests.
+              connectable:
+                handle.connectable ??
+                isNodeConnectable(interactivity.value, node),
+              connectablestart: handle.connectableStart !== false,
+              connectableend: handle.connectableEnd !== false,
+            },
+          ],
           'data-handle-id': handle.id,
           'data-handle-kind': handle.kind,
           'aria-label': `${handle.kind} handle ${handle.id}`,
@@ -7301,18 +7642,24 @@ export const FlowCanvas = defineComponent({
           ref: nodeRef(node),
           style,
           onPointerdown: (event: PointerEvent) => onPointerDown(event, node),
-          onMousedown: () => emit('nodeMouseDown', node),
-          onMouseup: () => emit('nodeMouseUp', node),
-          onMousemove: () => emit('nodeMouseMove', node),
-          onMouseenter: () => emit('nodeMouseEnter', node),
-          onMouseleave: () => emit('nodeMouseLeave', node),
-          onClick: () => emit('nodeClick', node),
-          onDblclick: () => emit('nodeDoubleClick', node),
-          onContextmenu: () => emit('nodeContextMenu', node),
+          onMousedown: (event: MouseEvent) =>
+            emit('nodeMouseDown', node, event),
+          onMouseup: (event: MouseEvent) => emit('nodeMouseUp', node, event),
+          onMousemove: (event: MouseEvent) =>
+            emit('nodeMouseMove', node, event),
+          onMouseenter: (event: MouseEvent) =>
+            emit('nodeMouseEnter', node, event),
+          onMouseleave: (event: MouseEvent) =>
+            emit('nodeMouseLeave', node, event),
+          onClick: (event: MouseEvent) => emit('nodeClick', node, event),
+          onDblclick: (event: MouseEvent) =>
+            emit('nodeDoubleClick', node, event),
+          onContextmenu: (event: MouseEvent) =>
+            emit('nodeContextMenu', node, event),
           onKeydown: (event: KeyboardEvent) => {
             if (
               event.target !== event.currentTarget ||
-              node.selectable === false ||
+              !isNodeSelectable(interactivity.value, node) ||
               (event.key !== ' ' && event.key !== 'Enter')
             ) {
               return
@@ -7323,7 +7670,7 @@ export const FlowCanvas = defineComponent({
             const nodeIds = activeDocument.value.nodes
               .filter(
                 (candidate) =>
-                  candidate.selectable !== false &&
+                  isNodeSelectable(interactivity.value, candidate) &&
                   (candidate.id === node.id
                     ? candidate.selected !== true
                     : candidate.selected === true)
@@ -7487,21 +7834,24 @@ export const FlowCanvas = defineComponent({
         onPointerdown: (event: PointerEvent) => {
           if (event.button === 0) {
             event.preventDefault()
-            emit('edgeClick', edge)
+            emit('edgeClick', edge, event)
           }
         },
-        onMousedown: () => emit('edgeMouseDown', edge),
-        onMouseup: () => emit('edgeMouseUp', edge),
-        onMousemove: () => emit('edgeMouseMove', edge),
-        onMouseenter: () => emit('edgeMouseEnter', edge),
-        onMouseleave: () => emit('edgeMouseLeave', edge),
-        onDblclick: () => emit('edgeDoubleClick', edge),
-        onContextmenu: () => emit('edgeContextMenu', edge),
+        onMousedown: (event: MouseEvent) => emit('edgeMouseDown', edge, event),
+        onMouseup: (event: MouseEvent) => emit('edgeMouseUp', edge, event),
+        onMousemove: (event: MouseEvent) => emit('edgeMouseMove', edge, event),
+        onMouseenter: (event: MouseEvent) =>
+          emit('edgeMouseEnter', edge, event),
+        onMouseleave: (event: MouseEvent) =>
+          emit('edgeMouseLeave', edge, event),
+        onDblclick: (event: MouseEvent) => emit('edgeDoubleClick', edge, event),
+        onContextmenu: (event: MouseEvent) =>
+          emit('edgeContextMenu', edge, event),
         onKeydown: (event: KeyboardEvent) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
             event.stopPropagation()
-            emit('edgeClick', edge)
+            emit('edgeClick', edge, event)
           }
         },
       })
@@ -8501,6 +8851,7 @@ export const FlowCanvas = defineComponent({
               const preview = connectionPreviewState(initiating)
 
               if (preview !== null && previewOwnerLive(initiating)) {
+                rememberConnectionPreview(initiating, preview)
                 emit('connectProgress', { preview })
               }
 
@@ -8612,6 +8963,8 @@ export const FlowCanvas = defineComponent({
               const preview = connectionPreviewState(initiating)
 
               if (preview !== null && previewOwnerLive(initiating)) {
+                rememberConnectionPreview(initiating, preview)
+
                 if (updated.reconnect === undefined) {
                   emit('connectProgress', { preview })
                 } else {

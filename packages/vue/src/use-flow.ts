@@ -16,6 +16,9 @@ import type {
   FlowNodeSchema,
   FlowSnapshot,
   ConnectionPreviewSnapshot,
+  FlowConnectionState,
+  FlowInteractivity,
+  FlowInteractivityInput,
   SavedFlowSession,
   SavedVersionedFlowSession,
   FlowStateChange,
@@ -52,7 +55,7 @@ import {
 } from '@flow/core'
 import { Effect, Schema as S } from 'effect'
 import { computed, inject, onScopeDispose, watch } from 'vue'
-import type { ComputedRef, DeepReadonly, InjectionKey } from 'vue'
+import type { ComputedRef, DeepReadonly, InjectionKey, ShallowRef } from 'vue'
 
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 
@@ -133,6 +136,26 @@ const isEdgeDataUpdater = (
   // eslint-disable-next-line anti-slop/no-runtime-typeof -- callback discrimination is the public adapter boundary; functions stay out of serialized core operations.
   typeof input === 'function'
 
+/**
+ * Where a failure reported through FlowCanvas's `error` event happened:
+ * a throwing `isValidConnection`, a rejected edit, a failed delete approval or
+ * delete callback, a throwing state subscriber or a throwing connection
+ * observer callback.
+ */
+export type FlowErrorBoundary =
+  | 'connection-validator'
+  | 'edit'
+  | 'delete'
+  | 'state-listener'
+  | 'connection-observer'
+
+/** Payload of FlowCanvas's `error` event, as React Flow's `onError`. */
+export interface FlowErrorReport {
+  readonly name: string
+  readonly message: string
+  readonly boundary: FlowErrorBoundary
+}
+
 export interface FlowEditor {
   readonly document: ComputedRef<DeepReadonly<FlowDocument>>
   readonly viewport: ComputedRef<DeepReadonly<Viewport>>
@@ -144,6 +167,13 @@ export interface FlowEditor {
   readonly connectionPreview: ComputedRef<
     DeepReadonly<ConnectionPreviewSnapshot>
   >
+  /** React Flow `ConnectionState` of the canvas's connection gesture. */
+  readonly connectionState: ComputedRef<FlowConnectionState>
+  /** Current interaction switches; the latest prop change or setter call wins. */
+  readonly interactivity: Readonly<ShallowRef<FlowInteractivity>>
+  readonly setInteractivity: (next: FlowInteractivityInput) => void
+  /** Report a failure through the canvas `error` event. */
+  readonly reportError: (error: Error, boundary: FlowErrorBoundary) => void
   readonly subscribeState: (
     listener: (change: FlowStateChange) => void
   ) => () => void
@@ -251,6 +281,9 @@ export interface FlowActions {
   readonly viewport: ComputedRef<DeepReadonly<Viewport>>
   readonly snapshot: FlowEditor['snapshot']
   readonly connectionPreview: FlowEditor['connectionPreview']
+  readonly connectionState: FlowEditor['connectionState']
+  readonly interactivity: FlowEditor['interactivity']
+  readonly setInteractivity: FlowEditor['setInteractivity']
   readonly getSnapshot: () => DeepReadonly<FlowSnapshot>
   readonly getVersionedSavedSession: () => SavedVersionedFlowSession
   // oxlint-disable-next-line anti-slop/no-unknown-parameters -- Public persistence input is decoded by the versioned session boundary.
@@ -440,6 +473,9 @@ export const useFlow = (): FlowActions => {
     viewport,
     snapshot,
     connectionPreview: editor.connectionPreview,
+    connectionState: editor.connectionState,
+    interactivity: editor.interactivity,
+    setInteractivity: editor.setInteractivity,
     getSnapshot,
     getVersionedSavedSession: () =>
       encodeVersionedFlowSession(
@@ -613,6 +649,7 @@ export const useFlow = (): FlowActions => {
       const operationId = `vue-delete-${deleteSequence}`
       const capturedRevision = editor.getDocumentRevision()
       const capturedDocument = getSnapshot().document
+      let reportedDeleteFailure: Error | undefined
 
       const prepared = await Effect.runPromise(
         prepareFlowDeleteCandidate(capturedDocument, input)
@@ -726,6 +763,14 @@ export const useFlow = (): FlowActions => {
 
           callbackOutcome.failure = notifyDeleteCandidate(candidate)
           callbackOutcome.ready = callbackOutcome.failure === undefined
+
+          if (
+            callbackOutcome.failure !== undefined &&
+            !(callbackOutcome.failure instanceof FlowDeleteCancelled)
+          ) {
+            reportedDeleteFailure = callbackOutcome.failure
+            editor.reportError(callbackOutcome.failure, 'delete')
+          }
         })
 
         if (result === undefined) {
@@ -877,12 +922,16 @@ export const useFlow = (): FlowActions => {
           ) {
             finish(error)
           } else {
-            finish(
-              new FlowDeleteApprovalFailed({
-                operationId,
-                reason: error instanceof Error ? error.message : String(error),
-              })
-            )
+            const failure = new FlowDeleteApprovalFailed({
+              operationId,
+              reason: error instanceof Error ? error.message : String(error),
+            })
+
+            if (error !== reportedDeleteFailure) {
+              editor.reportError(failure, 'delete')
+            }
+
+            finish(failure)
           }
         }
       })()
@@ -897,6 +946,10 @@ export const useNodes = (): FlowActions['nodes'] => useFlow().nodes
 export const useEdges = (): FlowActions['edges'] => useFlow().edges
 
 export const useViewport = (): FlowActions['viewport'] => useFlow().viewport
+
+/** React Flow `useConnection`: the live connection state of the nearest canvas. */
+export const useConnection = (): FlowActions['connectionState'] =>
+  useFlow().connectionState
 
 /** Reactive connections with callbacks for changes in accepted graph state. */
 export const useNodeConnections = (
@@ -921,6 +974,7 @@ export const useNodeConnections = (
   }
 
   const connections = useFlow().getNodeConnections(query)
+  const editor = inject(FlowEditorKey)
 
   watch(connections, (next, previous) => {
     const delta = diffNodeConnections(previous, next)
@@ -931,6 +985,10 @@ export const useNodeConnections = (
         options.onDisconnect?.(delta.disconnected)
       } catch (error) {
         callbackErrors.push(error)
+        editor?.reportError(
+          error instanceof Error ? error : new Error(String(error)),
+          'connection-observer'
+        )
       }
     }
 
@@ -939,6 +997,10 @@ export const useNodeConnections = (
         options.onConnect?.(delta.connected)
       } catch (error) {
         callbackErrors.push(error)
+        editor?.reportError(
+          error instanceof Error ? error : new Error(String(error)),
+          'connection-observer'
+        )
       }
     }
 

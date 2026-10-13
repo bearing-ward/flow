@@ -1,5 +1,7 @@
 export { FlowCanvas } from './flow-canvas.ts'
 
+export type { FlowConnectionEndDetails } from './flow-canvas.ts'
+
 export { FlowTooltip } from './ui/tooltip.ts'
 
 export { FlowMiniMap } from './minimap.ts'
@@ -46,21 +48,38 @@ export {
   useNodeConnections,
   useHandleConnections,
   useEdges,
+  useConnection,
   useFlow,
   useNodes,
   useViewport,
 } from './use-flow.ts'
 
+export { useEdgesState, useNodesState } from './use-elements-state.ts'
+
+export type {
+  UseEdgesStateResult,
+  UseNodesStateResult,
+} from './use-elements-state.ts'
+
 export type {
   FlowActions,
   FlowDeleteLifecycleOptions,
   FlowEditor,
+  FlowErrorBoundary,
+  FlowErrorReport,
   FlowNodeSlot,
   FlowNodeConnectionsOptions,
   FlowHandleConnectionsOptions,
 } from './use-flow.ts'
 
-export type { FlowSelection } from '@flow/core'
+export type {
+  EdgeChange,
+  FlowConnectionState,
+  FlowFinalConnectionState,
+  FlowInteractivity,
+  FlowSelection,
+  NodeChange,
+} from '@flow/core'
 
 export type { FlowPanelPosition } from './ui.ts'
 

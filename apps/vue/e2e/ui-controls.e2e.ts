@@ -108,9 +108,17 @@ test('Vue UI catalog controls drive the viewport, lock, search and devtools', as
     await page.evaluate(() => window.__flowVueUiControls?.interactiveCalls())
   ).toEqual([false])
 
+  // A locked node does not move; dragging on it pans, as in React Flow.
   const before = await nodePosition(page, 'a')
-  await drag(page, centre(await boxOf(nodeA)), { x: 300, y: 80 })
+  const lockedFrom = centre(await boxOf(nodeA))
+  await drag(page, lockedFrom, { x: lockedFrom.x + 40, y: lockedFrom.y + 20 })
   expect(await nodePosition(page, 'a')).toEqual(before)
+  await expect
+    .poll(() => page.evaluate(() => window.__flowVueUiControls?.viewport()))
+    .toEqual({ x: 40, y: 20, zoom: 1 })
+  await page.evaluate(() =>
+    window.__flowVueUiControls?.setViewport({ x: 0, y: 0, zoom: 1 })
+  )
 
   const source = page.locator('[data-node-id="a"] [data-handle-id="out"]')
   const target = page.locator('[data-node-id="b"] [data-handle-id="in"]')
@@ -119,6 +127,13 @@ test('Vue UI catalog controls drive the viewport, lock, search and devtools', as
     await page.evaluate(() => window.__flowVueUiControls?.edgeCount())
   ).toBe(0)
   await nodeA.click()
+
+  // The keyboard selection paths are switched off too.
+  await nodeA.focus()
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Shift+Space')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Enter')
   expect(
     await page.evaluate(
       () =>
