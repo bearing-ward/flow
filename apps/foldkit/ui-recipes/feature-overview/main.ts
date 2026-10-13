@@ -284,21 +284,3 @@ host.runtime.ports.measurementResults.subscribe((result) => {
     void fitOnce()
   }
 })
-
-// Foldkit reports node clicks; selecting the clicked node shows its toolbar
-// and Foldkit's resize controls.
-host.runtime.ports.interactionEvents.subscribe((events) => {
-  const clicked = events.find(({ name }) => name === 'onNodeClick')?.nodeId
-
-  if (clicked === undefined || clicked === null) {
-    return
-  }
-
-  void host.edit(
-    host.document().nodes.map(({ id }) => ({
-      kind: 'update-node' as const,
-      nodeId: id,
-      patch: { selected: id === clicked },
-    }))
-  )
-})

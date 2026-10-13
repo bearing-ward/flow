@@ -49,7 +49,12 @@ import {
   resolveEdgeHandles,
   selectFlowSelection,
 } from '@flow/core'
-import type { FlowDocument, Viewport, SelectionModeSchema } from '@flow/core'
+import type {
+  FlowDocument,
+  NodeId,
+  Viewport,
+  SelectionModeSchema,
+} from '@flow/core'
 import {
   Cause,
   Data,
@@ -844,9 +849,12 @@ const emitPublication = (
   })
 }
 
+// Snapshot reads see an active node drag's live positions, as React Flow's
+// `getNodes` and `getInternalNode` do mid-drag.
 const selectSnapshotProjection = (
-  graph: Graph.Model,
-  request: typeof SnapshotRequestSchema.Type
+  acceptedGraph: Graph.Model,
+  request: typeof SnapshotRequestSchema.Type,
+  graph = Graph.selectLiveModel(acceptedGraph)
 ) =>
   structuredClone({
     requestId: request.requestId,
@@ -1642,6 +1650,75 @@ const nativeBarrierFor = (
     ? { kind: message._tag }
     : undefined
 
+const selectionDragNames: Partial<
+  Record<Graph.InteractionEvent['name'], Graph.InteractionEvent['name']>
+> = {
+  onNodeDragStart: 'onSelectionDragStart',
+  onNodeDrag: 'onSelectionDragMove',
+  onNodeDragStop: 'onSelectionDragStop',
+}
+
+/**
+ * Node drag events carry every dragged node's live position, as React Flow
+ * drag handlers receive the dragged nodes. A drag of several nodes also
+ * reports the selection drag events with the same payload.
+ */
+const withNodeDragPayload = (
+  events: readonly Graph.InteractionEvent[],
+  previous: Graph.Model,
+  current: Graph.Model,
+  message: Graph.GraphMessageData
+): Graph.InteractionEvent[] =>
+  events.flatMap((event) => {
+    const selectionName = selectionDragNames[event.name]
+
+    if (selectionName === undefined) {
+      return [event]
+    }
+
+    const graph = event.phase === 'end' ? previous : current
+    const session = graph.pointerSession
+
+    if (session?.kind !== 'node-drag') {
+      return [event]
+    }
+
+    // React Flow reports drag start with the nodes where the press found them.
+    let at: { readonly clientX: number; readonly clientY: number } | undefined
+
+    if (event.phase === 'start') {
+      at = { clientX: session.startX, clientY: session.startY }
+    } else if (
+      event.phase === 'end' &&
+      Predicate.isTagged('PointerReleased')(message)
+    ) {
+      at = message
+    }
+
+    const positions = Graph.selectNodeDragPositions(graph, at) ?? []
+
+    const primary =
+      positions.find(({ nodeId }) => nodeId === session.nodeId) ?? positions[0]
+
+    let enriched: Graph.InteractionEvent = {
+      ...event,
+      nodeIds: positions.map(({ nodeId }) => nodeId),
+      nodePositions: positions,
+    }
+
+    if (primary !== undefined) {
+      enriched = {
+        ...enriched,
+        position: primary.position,
+        positionAbsolute: primary.positionAbsolute,
+      }
+    }
+
+    return positions.length > 1
+      ? [enriched, { ...enriched, name: selectionName }]
+      : [enriched]
+  })
+
 /** Attach the React Flow style deltas each semantic change proposes. */
 const withElementChanges = (
   document: FlowDocument,
@@ -1689,12 +1766,17 @@ const graphFold = (
   const events =
     route === 'full' ||
     (before?.kind === 'node-drag' && after?.kind !== 'node-drag')
-      ? foldkitLifecycleEvents(
+      ? withNodeDragPayload(
+          foldkitLifecycleEvents(
+            model.graph,
+            result.model.graph,
+            message,
+            result,
+            cancellationReason
+          ),
           model.graph,
           result.model.graph,
-          message,
-          result,
-          cancellationReason
+          message
         )
       : []
 
@@ -1702,7 +1784,10 @@ const graphFold = (
     route === 'full'
       ? events
       : events.filter(
-          (event) => event.name === 'onNodeDragStop' && event.phase === 'end'
+          (event) =>
+            (event.name === 'onNodeDragStop' ||
+              event.name === 'onSelectionDragStop') &&
+            event.phase === 'end'
         )
 
   const started = eligible.some((event) => event.phase === 'start')
@@ -1808,6 +1893,34 @@ const withEndedKeyboardConnection = (
       }
 }
 
+/**
+ * React Flow's `dimensions` NodeChange when a measurement changes a node's
+ * measured size, including its first measurement.
+ */
+const dimensionsChange = (
+  previous: Graph.Model,
+  current: Graph.Model,
+  nodeId: NodeId
+): typeof NodeChangeSchema.Type | undefined => {
+  // Raw measurement records: a declared `size` is not a measurement.
+  const measured = (graph: Graph.Model) =>
+    graph.measurements.nodes.find(
+      ({ measurement }) => measurement.nodeId === nodeId
+    )?.measurement
+
+  const before = measured(previous)
+  const after = measured(current)
+
+  return after === undefined ||
+    (before?.width === after.width && before.height === after.height)
+    ? undefined
+    : {
+        id: nodeId,
+        type: 'dimensions',
+        dimensions: { width: after.width, height: after.height },
+      }
+}
+
 const routeAction = (model: Model, action: HostActionData) =>
   HostAction.match(action, {
     ReplaceDocument: ({ document }) =>
@@ -1854,10 +1967,30 @@ const routeAction = (model: Model, action: HostActionData) =>
       }
     },
     MeasureNode: ({ requestId, measurement }) => {
-      const result = graphFold(
+      const measured = graphFold(
         model,
         Graph.Message.MeasureNode({ measurement })
       )
+
+      const dimensions = dimensionsChange(
+        model.graph,
+        measured.model.graph,
+        measurement.nodeId
+      )
+
+      const result: AppReduction =
+        dimensions === undefined
+          ? measured
+          : {
+              ...measured,
+              outMessage: [
+                ...(measured.outMessage ?? []),
+                {
+                  kind: 'change',
+                  elementChanges: { nodes: [dimensions], edges: [] },
+                },
+              ],
+            }
 
       const internalNode =
         Graph.selectInternalNode(result.model.graph, measurement.nodeId) ?? null

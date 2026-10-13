@@ -143,4 +143,10 @@ host.onChange((change) => {
   if (change.kind === 'node-position') {
     void reparent(change.nodeId)
   }
+
+  if (change.kind === 'node-positions') {
+    for (const { nodeId } of change.positions) {
+      void reparent(nodeId)
+    }
+  }
 })

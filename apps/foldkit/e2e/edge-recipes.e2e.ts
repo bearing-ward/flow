@@ -239,14 +239,19 @@ for (const { scene, simple, delta, after } of [
 
     await expect(() => expectFacing('right', 'left')).toPass()
 
-    // Foldkit commits node moves on release and has no drag preview, so the
-    // node and its edge keep their place until the drop.
+    // The node and its floating edge follow the pointer before the drop.
     const node = page.locator('[data-node-id="s-left"]')
     const before = await nodeBox(page, 's-left')
 
     await dragBy(page, await centerOf(node), delta, async () => {
-      expect(await nodeBox(page, 's-left')).toEqual(before)
-      await expectFacing('right', 'left')
+      await expect
+        .poll(async () => {
+          const live = await nodeBox(page, 's-left')
+
+          return live.left
+        })
+        .toBeGreaterThan(before.left + delta.x - 5)
+      await expect(() => expectFacing(after[0], after[1])).toPass()
     })
 
     await expect

@@ -1537,8 +1537,10 @@ test('Foldkit pointer cancellation discards a drag and permits a fresh drag', as
   await page.mouse.up()
 
   expect(await adapter.changeKinds()).toEqual([])
-  const cancelledSnapshot = await adapter.snapshot()
-  expect(cancelledSnapshot.positions).toEqual([{ id: 'move', x: 80, y: 100 }])
+  // The live drag preview reverts on the next render after the cancel.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toEqual([{ id: 'move', x: 80, y: 100 }])
 
   await adapter.perform({ kind: 'drag-node', nodeId: 'move', dx: 32, dy: 20 })
   await expect.poll(() => adapter.changeKinds()).toEqual(['node-position'])
