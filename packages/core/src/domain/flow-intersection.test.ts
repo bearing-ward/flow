@@ -5,6 +5,7 @@ import {
   getInternalNodeBounds,
   getIntersectingNodes,
   getRectOverlapArea,
+  isNodeIntersecting,
   isRectIntersecting,
 } from './flow-intersection.ts'
 import { FlowNodeSchema } from './flow.schema.ts'
@@ -87,6 +88,70 @@ describe(getIntersectingNodes, () => {
         { partially: false }
       ).map(({ id }) => id)
     ).toStrictEqual(['a'])
+  })
+})
+
+const internal = (
+  id: string,
+  x: number,
+  y: number,
+  width = 100,
+  height = 50
+) => ({
+  absolutePosition: { x, y },
+  handles: [],
+  height,
+  width,
+  measurementStatus: 'measured' as const,
+  node: S.decodeUnknownSync(FlowNodeSchema)({
+    id,
+    label: id,
+    position: { x: 0, y: 0 },
+  }),
+})
+
+describe('getIntersectingNodes(nodeOrRect, partially, nodes)', () => {
+  const a = internal('a', 0, 0)
+
+  const nodes = [
+    a,
+    internal('b', 150, 0),
+    internal('c', 40, 20),
+    internal('d', 10, 10, 20, 20),
+  ]
+
+  it('excludes the node itself and keeps partial overlaps by default', () => {
+    expect(
+      getIntersectingNodes(a, undefined, nodes).map(({ node }) => node.id)
+    ).toStrictEqual(['c', 'd'])
+  })
+
+  it('needs containment either way when not partial', () => {
+    expect(
+      getIntersectingNodes(a, false, nodes).map(({ node }) => node.id)
+    ).toStrictEqual(['d'])
+  })
+
+  it('takes a rectangle and candidate lists alike', () => {
+    expect(
+      getIntersectingNodes({ x: 140, y: 0, width: 20, height: 20 }, true, [
+        box('x', 150, 0),
+        box('y', 0, 0),
+      ]).map(({ id }) => id)
+    ).toStrictEqual(['x'])
+  })
+})
+
+describe(isNodeIntersecting, () => {
+  const area = { x: 0, y: 0, width: 100, height: 100 }
+
+  it('checks a node or rectangle against an area', () => {
+    expect(isNodeIntersecting(internal('a', 90, 90), area)).toBeTruthy()
+    expect(isNodeIntersecting(internal('a', 90, 90), area, false)).toBeFalsy()
+    expect(
+      isNodeIntersecting({ x: 10, y: 10, width: 10, height: 10 }, area, false)
+    ).toBeTruthy()
+    expect(isNodeIntersecting(box('b', 200, 0), area)).toBeFalsy()
   })
 })
 

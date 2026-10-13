@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Flow Vue intersection recipes</title>
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .recipe-root .flow-vue-canvas {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .recipe-root .flow-vue-node {
+        box-sizing: border-box;
+      }
+
+      /* Page-owned overlay for crossing markers and the proximity preview. */
+      .intersection-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 15;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+      }
+
+      .intersection-overlay circle {
+        fill: #f97316;
+        stroke: #fff;
+        stroke-width: 2;
+      }
+
+      .intersection-overlay line {
+        stroke: #2563eb;
+        stroke-dasharray: 6 4;
+        stroke-width: 2;
+      }
+
+      .recipe-panel {
+        position: absolute;
+        z-index: 20;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/intersection-recipes.ts"></script>
+  </body>
+</html>
