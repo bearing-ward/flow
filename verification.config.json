@@ -1,10 +1,18 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 112 Vue host hardening",
-  "checks": ["docs", "catalog", "examples", "api-members", "consumer"],
+  "activeWork": "Plan 110 core instance helpers and recipes; Plan 112 Vue host hardening",
+  "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
-    "vanilla": [],
+    "vanilla": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "node-threshold.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ],
     "vue": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts",
       "host-hardening.e2e.ts",
       "connection.e2e.ts",
       "node-threshold.e2e.ts",
@@ -17,6 +25,10 @@
       "renderer-props.e2e.ts",
       "interaction-lifecycle.e2e.ts"
     ],
-    "foldkit": []
+    "foldkit": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ]
   }
 }

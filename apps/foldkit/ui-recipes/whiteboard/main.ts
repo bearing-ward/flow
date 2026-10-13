@@ -1,4 +1,7 @@
 import {
+  flowMeasurementsFromInternalNodes,
+  getEdgePolylines,
+  getEdgesGeometry,
   getFreehandPath,
   getNodesInsideLasso,
   getPointsBounds,
@@ -12,6 +15,7 @@ import type { FoldkitNodeRenderer } from '@flow/foldkit'
 import { Option, Schema as S } from 'effect'
 
 import { measuredBounds, mountRecipeHost } from '../recipe-host.ts'
+import type { MeasuredState } from '../recipe-host.ts'
 
 import './whiteboard.css'
 
@@ -178,44 +182,31 @@ render(host.document())
 
 host.onAccepted(render)
 
-/** Flow-space samples along every rendered edge path; `d` is in flow coordinates. */
-const edgeSamples = (): ReadonlyMap<string, readonly XYPosition[]> => {
-  const samples = new Map<string, readonly XYPosition[]>()
-
-  for (const element of frame.querySelectorAll<SVGElement>(
-    '[data-testid="flow-edge"]'
-  )) {
-    const path = element.querySelector<SVGPathElement>(
-      '.flow-foldkit-edge-path'
-    )
-
-    const { edgeId } = element.dataset
-
-    if (path === null || edgeId === undefined) {
-      continue
-    }
-
-    const length = path.getTotalLength()
-    const count = Math.max(2, Math.ceil(length / 4))
-
-    samples.set(
-      edgeId,
-      Array.from({ length: count + 1 }, (_, index) => {
-        const point = path.getPointAtLength((length * index) / count)
-
-        return { x: point.x, y: point.y }
-      })
-    )
-  }
-
-  return samples
+/** What an eraser trail can hit: measured node bounds and rendered edge paths. */
+interface Erasable {
+  readonly bounds: ReadonlyMap<string, FlowRect>
+  readonly edges: readonly {
+    readonly id: string
+    readonly polylines: readonly (readonly XYPosition[])[]
+  }[]
 }
+
+/** Hit targets from the public snapshot port and the core edge-geometry query. */
+const erasable = ({ document, internals }: MeasuredState): Erasable => ({
+  bounds: measuredBounds(internals),
+  edges: getEdgesGeometry(document, {
+    measurements: flowMeasurementsFromInternalNodes(internals.values()),
+  }).map((geometry) => ({
+    id: geometry.id,
+    polylines: getEdgePolylines(geometry),
+  })),
+})
 
 interface Stroke {
   readonly pointerId: number
   readonly client: XYPosition[]
   readonly flow: XYPosition[]
-  bounds: ReadonlyMap<string, FlowRect>
+  targets: Erasable
 }
 
 let stroke: Stroke | undefined
@@ -255,13 +246,13 @@ const drawPreview = (current: Stroke): void => {
   )
 }
 
-/** Nodes and edges an eraser trail crosses, from measured bounds and rendered paths. */
-const erasedBy = (trail: readonly XYPosition[], bounds: Stroke['bounds']) => ({
-  nodeIds: [...bounds].flatMap(([id, rect]) =>
+/** Nodes and edges an eraser trail crosses. */
+const erasedBy = (trail: readonly XYPosition[], targets: Erasable) => ({
+  nodeIds: [...targets.bounds].flatMap(([id, rect]) =>
     polylineIntersectsRect(trail, rect) ? [id] : []
   ),
-  edgeIds: [...edgeSamples()].flatMap(([id, samples]) =>
-    polylinesIntersect(trail, samples) ? [id] : []
+  edgeIds: targets.edges.flatMap(({ id, polylines }) =>
+    polylines.some((points) => polylinesIntersect(trail, points)) ? [id] : []
   ),
 })
 
@@ -284,10 +275,9 @@ const markErased = (marked: { nodeIds: string[]; edgeIds: string[] }) => {
     .join(',')
 }
 
-/** Cache measured node bounds for live eraser marking. */
-const loadBounds = async (target: Stroke): Promise<void> => {
-  const { internals } = await host.measuredState()
-  target.bounds = measuredBounds(internals)
+/** Cache hit targets for live eraser marking. */
+const loadTargets = async (target: Stroke): Promise<void> => {
+  target.targets = erasable(await host.measuredState())
 }
 
 overlay.addEventListener('pointerdown', (event) => {
@@ -303,13 +293,13 @@ overlay.addEventListener('pointerdown', (event) => {
     pointerId: event.pointerId,
     client: [client],
     flow: [host.screenToFlow(client)],
-    bounds: new Map(),
+    targets: { bounds: new Map(), edges: [] },
   }
 
   stroke = started
   drawPreview(started)
 
-  void loadBounds(started)
+  void loadTargets(started)
 })
 
 overlay.addEventListener('pointermove', (event) => {
@@ -323,7 +313,7 @@ overlay.addEventListener('pointermove', (event) => {
   drawPreview(stroke)
 
   if (tool === 'eraser') {
-    markErased(erasedBy(stroke.flow, stroke.bounds))
+    markErased(erasedBy(stroke.flow, stroke.targets))
   }
 })
 
@@ -349,8 +339,7 @@ const finishLasso = async (polygon: readonly XYPosition[]) => {
 }
 
 const finishEraser = async (trail: readonly XYPosition[]) => {
-  const { internals } = await host.measuredState()
-  const erased = erasedBy(trail, measuredBounds(internals))
+  const erased = erasedBy(trail, erasable(await host.measuredState()))
   markErased({ nodeIds: [], edgeIds: [] })
 
   if (erased.nodeIds.length > 0 || erased.edgeIds.length > 0) {
