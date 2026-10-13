@@ -170,6 +170,26 @@ describe(reparentNode, () => {
     ])
   })
 
+  it('keeps a parent extent when moving into another parent', () => {
+    const child = [
+      node('g', 100, 100),
+      node('h', 400, 100),
+      node('n', 200, 200, { parentId: 'g', extent: 'parent' }),
+    ]
+
+    expect(
+      reparentNode(
+        child,
+        new Map([
+          ...bounds,
+          [nodeId('h'), { x: 400, y: 100, width: 300, height: 300 }],
+        ]),
+        'n',
+        nodeId('h')
+      ).find(({ id }) => id === 'n')?.extent
+    ).toBe('parent')
+  })
+
   it('detaches a node to the top level', () => {
     const child = [
       node('g', 100, 100),

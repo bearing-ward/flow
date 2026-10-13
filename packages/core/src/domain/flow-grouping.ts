@@ -242,12 +242,19 @@ export const reparentNode = (
         return node
       }
 
-      const { parentId: _previous, extent: _extent, ...rest } = node
+      const { parentId: _previous, ...rest } = node
       const position = { x: rect.x - origin.x, y: rect.y - origin.y }
 
-      return parentId === undefined
-        ? { ...rest, position }
-        : { ...rest, parentId, position }
+      if (parentId !== undefined) {
+        return { ...rest, parentId, position }
+      }
+
+      // A parent-relative extent only applies while the node has a parent.
+      const { extent, ...detached } = rest
+
+      return extent === 'parent'
+        ? { ...detached, position }
+        : { ...rest, position }
     })
   )
 }

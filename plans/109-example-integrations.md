@@ -30,6 +30,13 @@ References: the pinned `examples/react/src/examples/Layouting`, `Intersection`, 
 
 ## Conformity and deviations
 
+- **Review gaps, 2026-10-13 (recorded as partial in the audit).**
+  - The eraser finds edge geometry by reading each host's private rendered edge classes, because no host offers a public edge-geometry query. Wave 4 adds that to the instance API. Until then, Eraser Tool is partial in every host.
+  - Auto Layout and Dynamic Layouting check measurements every animation frame, because no host emits an event when measurements change. Vue additionally waits out early 0x0 measurements.
+  - Vue and Foldkit select nodes through node-click events plus edits, because plain click-to-select is missing there. This affects Selection Grouping and Feature Overview.
+  - The Vue ELK ports scene stays at zoom 1, because handle offsets go stale after `fitView`.
+  - These are host hardening items, not recipe defects.
+
 - **Conforming.**
   - `getIntersectingNodes` and `isRectIntersecting` follow React Flow's overlap rule for `getIntersectingNodes` and `isNodeIntersecting` (`packages/react/src/hooks/useReactFlow.ts:210`). Unit tests cover it.
   - Dagre Tree follows the pinned `Layouting` example: TB and LR layouts, with handles that move with the direction. It uses measured sizes where the example uses a fixed 150x50.

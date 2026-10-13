@@ -28,18 +28,11 @@ const widthOf = async (locator: Locator): Promise<number> => {
   return box.width
 }
 
-/** The scale of the rendered viewport transform; NaN while the page reloads. */
-const viewportZoom = async (page: Page): Promise<number> => {
-  try {
-    return await page
-      .locator('.flow-vue-viewport')
-      .evaluate(
-        (element) => new DOMMatrix(getComputedStyle(element).transform).a
-      )
-  } catch {
-    return Number.NaN
-  }
-}
+/** The scale of the rendered viewport transform. */
+const viewportZoom = (page: Page): Promise<number> =>
+  page
+    .locator('.flow-vue-viewport')
+    .evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).a)
 
 test('feature overview renders the built-in UI around custom nodes and edges', async ({
   page,

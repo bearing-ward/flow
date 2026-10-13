@@ -230,9 +230,13 @@ test('force-layout animates, settles without overlaps and pins a dropped node', 
   await expect(status(page)).toHaveAttribute('data-running', 'true')
 
   const first = await boxOf(node(page, 'f1'))
-  await page.waitForTimeout(150)
-  const second = await boxOf(node(page, 'f1'))
-  expect(Math.hypot(second.x - first.x, second.y - first.y)).toBeGreaterThan(0)
+  await expect
+    .poll(async () => {
+      const second = await boxOf(node(page, 'f1'))
+
+      return Math.hypot(second.x - first.x, second.y - first.y)
+    })
+    .toBeGreaterThan(0)
 
   await expect(status(page)).toHaveAttribute('data-running', 'false', {
     timeout: 20_000,
