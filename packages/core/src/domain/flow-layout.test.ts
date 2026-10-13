@@ -1,3 +1,4 @@
+import { Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -7,9 +8,13 @@ import {
   orientFlowHandles,
 } from './flow-layout.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
-import type { FlowDocument } from './flow.schema.ts'
+import {
+  FlowDocumentSchema,
+  HandleIdSchema,
+  NodeIdSchema,
+} from './flow.schema.ts'
 
-const document: FlowDocument = {
+const document = S.decodeUnknownSync(FlowDocumentSchema)({
   nodes: [
     {
       id: 'a',
@@ -30,7 +35,7 @@ const document: FlowDocument = {
     { id: 'ac', source: 'a', target: 'c' },
     { id: 'ah', source: 'a', target: 'h' },
   ],
-}
+})
 
 const internal = (
   id: string,
@@ -55,8 +60,8 @@ const internal = (
 }
 
 const handle = (handleId: string, x: number, y: number) => ({
-  nodeId: 'a',
-  handleId,
+  nodeId: NodeIdSchema.make('a'),
+  handleId: HandleIdSchema.make(handleId),
   offset: { x, y },
   width: 10,
   height: 10,

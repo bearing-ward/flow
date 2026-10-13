@@ -1,0 +1,22 @@
+.subflows-page .flow-foldkit-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+}
+
+/* Group nodes are translucent boxes with their label in the corner. */
+.subflows-page .flow-foldkit-node:has(> .subflow-group-label) {
+  align-items: flex-start;
+  justify-content: flex-start;
+  border: 1px dashed #64748b;
+  background: rgb(148 163 184 / 18%);
+  box-shadow: none;
+}
+
+.subflow-group-label {
+  padding: 4px 8px 0 18px;
+  font-size: 12px;
+  color: #475569;
+}

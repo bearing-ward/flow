@@ -1,0 +1,27 @@
+.computing-flows-page .flow-foldkit-node {
+  width: 190px;
+  padding: 8px 10px;
+}
+
+.compute-node {
+  display: grid;
+  gap: 6px;
+}
+
+.compute-node-title {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.compute-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.compute-node output {
+  min-height: 1.2em;
+  font-weight: 600;
+}

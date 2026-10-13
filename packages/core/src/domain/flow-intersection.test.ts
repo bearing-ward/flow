@@ -1,3 +1,4 @@
+import { Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -6,6 +7,7 @@ import {
   getRectOverlapArea,
   isRectIntersecting,
 } from './flow-intersection.ts'
+import { FlowNodeSchema } from './flow.schema.ts'
 
 const box = (id: string, x: number, y: number, width = 100, height = 50) => ({
   id,
@@ -97,7 +99,11 @@ describe(getInternalNodeBounds, () => {
         height: 40,
         width: 90,
         measurementStatus: 'measured',
-        node: { id: 'n', label: 'n', position: { x: 1, y: 2 } },
+        node: S.decodeUnknownSync(FlowNodeSchema)({
+          id: 'n',
+          label: 'n',
+          position: { x: 1, y: 2 },
+        }),
       })
     ).toStrictEqual({ id: 'n', bounds: { x: 5, y: 6, width: 90, height: 40 } })
   })

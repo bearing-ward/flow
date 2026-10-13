@@ -221,7 +221,7 @@ export const reparentNode = (
   nodes: readonly FlowNode[],
   bounds: FlowNodeBoundsLookup,
   nodeId: string,
-  parentId: NodeId | undefined
+  parentId?: NodeId
 ): readonly FlowNode[] => {
   const rect = bounds.get(nodeId)
   const parentRect = parentId === undefined ? undefined : bounds.get(parentId)

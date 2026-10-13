@@ -1,19 +1,28 @@
+import { Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import { getDropParentId, groupNodes, reparentNode } from './flow-grouping.ts'
+import { FlowNodeSchema, NodeIdSchema } from './flow.schema.ts'
 import type { FlowNode } from './flow.schema.ts'
 
 const node = (
   id: string,
   x: number,
   y: number,
-  extra: Partial<FlowNode> = {}
-): FlowNode => ({
-  id,
-  label: id,
-  position: { x, y },
-  ...extra,
-})
+  extra: {
+    readonly parentId?: string
+    readonly extent?: 'parent'
+    readonly selected?: boolean
+  } = {}
+): FlowNode =>
+  S.decodeUnknownSync(FlowNodeSchema)({
+    id,
+    label: id,
+    position: { x, y },
+    ...extra,
+  })
+
+const nodeId = NodeIdSchema.make
 
 const rect = (x: number, y: number, width = 100, height = 40) => ({
   x,
@@ -38,7 +47,7 @@ describe(groupNodes, () => {
   it('wraps the nodes in a padded parent and keeps absolute positions', () => {
     const result = groupNodes(nodes, bounds, {
       nodeIds: ['a', 'b'],
-      groupId: 'g',
+      groupId: nodeId('g'),
       padding: 10,
     })
 
@@ -70,7 +79,7 @@ describe(groupNodes, () => {
         ['p', rect(50, 50, 400, 400)],
         ['a', rect(60, 60)],
       ]),
-      { nodeIds: ['a'], groupId: 'g', padding: 5, type: 'group' }
+      { nodeIds: ['a'], groupId: nodeId('g'), padding: 5, type: 'group' }
     )
 
     expect(result).toMatchObject({
@@ -85,25 +94,25 @@ describe(groupNodes, () => {
 
   it('rejects empty, duplicate, unmeasured and mixed selections', () => {
     expect(
-      groupNodes(nodes, bounds, { nodeIds: [], groupId: 'g' })
+      groupNodes(nodes, bounds, { nodeIds: [], groupId: nodeId('g') })
     ).toStrictEqual({
       kind: 'rejected',
       reason: 'empty-selection',
     })
     expect(
-      groupNodes(nodes, bounds, { nodeIds: ['a'], groupId: 'c' })
+      groupNodes(nodes, bounds, { nodeIds: ['a'], groupId: nodeId('c') })
     ).toMatchObject({
       reason: 'duplicate-group-id',
     })
     expect(
-      groupNodes(nodes, new Map(), { nodeIds: ['a'], groupId: 'g' })
+      groupNodes(nodes, new Map(), { nodeIds: ['a'], groupId: nodeId('g') })
     ).toMatchObject({
       reason: 'missing-bounds',
     })
     expect(
       groupNodes([...nodes, node('d', 0, 0, { parentId: 'c' })], bounds, {
         nodeIds: ['a', 'd'],
-        groupId: 'g',
+        groupId: nodeId('g'),
       })
     ).toMatchObject({ reason: 'mixed-parents' })
   })
@@ -155,7 +164,7 @@ describe(reparentNode, () => {
   ])
 
   it('moves a node under a parent and keeps its absolute position', () => {
-    expect(reparentNode(nodes, bounds, 'n', 'g')).toStrictEqual([
+    expect(reparentNode(nodes, bounds, 'n', nodeId('g'))).toStrictEqual([
       node('g', 100, 100),
       node('n', 200, 200, { parentId: 'g' }),
     ])
@@ -174,10 +183,10 @@ describe(reparentNode, () => {
   })
 
   it('ignores missing bounds and cycles', () => {
-    expect(reparentNode(nodes, new Map(), 'n', 'g')).toBe(nodes)
+    expect(reparentNode(nodes, new Map(), 'n', nodeId('g'))).toBe(nodes)
 
     const nested = [node('g', 0, 0), node('n', 0, 0, { parentId: 'g' })]
 
-    expect(reparentNode(nested, bounds, 'g', 'n')).toBe(nested)
+    expect(reparentNode(nested, bounds, 'g', nodeId('n'))).toBe(nested)
   })
 })

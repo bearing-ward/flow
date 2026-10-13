@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Flow Vue layout recipes</title>
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .recipe-root .flow-vue-canvas {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      /* Nodes size to their labels, so measured widths differ. */
+      .recipe-root .flow-vue-node {
+        width: max-content;
+        max-width: 320px;
+      }
+
+      .recipe-root .flow-vue-node:has(> .recipe-placeholder) {
+        min-width: 60px;
+        border-style: dashed;
+        color: #64748b;
+        background: #f8fafc;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .recipe-elk-multiple-handles .flow-vue-handle[data-handle-id='out-a'] {
+        top: 20%;
+      }
+
+      .recipe-elk-multiple-handles .flow-vue-handle[data-handle-id='out-b'] {
+        top: 50%;
+      }
+
+      .recipe-elk-multiple-handles .flow-vue-handle[data-handle-id='out-c'] {
+        top: 80%;
+      }
+
+      .recipe-panel {
+        position: absolute;
+        z-index: 20;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/layout-recipes.ts"></script>
+  </body>
+</html>
