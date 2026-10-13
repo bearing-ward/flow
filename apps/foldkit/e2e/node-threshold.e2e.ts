@@ -162,6 +162,7 @@ for (const mode of [
         phase: 'start',
         inputKind: 'pointer',
         nodeId: 'source',
+        nodeIds: ['source'],
       },
     }
 
@@ -172,6 +173,7 @@ for (const mode of [
         phase: 'progress',
         inputKind: 'pointer',
         nodeId: 'source',
+        nodeIds: ['source'],
         x: 102,
         y: 90,
       },
@@ -203,6 +205,7 @@ for (const mode of [
         inputKind: 'pointer',
         outcome: 'accepted',
         nodeId: 'source',
+        nodeIds: ['source'],
       },
     }
 
@@ -250,7 +253,8 @@ for (const mode of [
       observations: expected,
       capturedAtStart: true,
       disposed: mode === 'proposal-dispose' || mode === 'queued-dispose',
-      queuedCallbacks: mode.startsWith('queued-') ? 2 : 0,
+      // The elementChanges port adds one publication to the held window.
+      queuedCallbacks: mode.startsWith('queued-') ? 3 : 0,
     })
   })
 }
@@ -260,6 +264,7 @@ const nodeProgress = (x: number) => ({
   phase: 'progress',
   inputKind: 'pointer',
   nodeId: 'source',
+  nodeIds: ['source'],
   x,
   y: 90,
 })
@@ -349,6 +354,7 @@ for (const sourceKind of ['click', 'keyboard'] as const) {
       phase: 'start',
       inputKind: 'pointer',
       nodeId: 'source',
+      nodeIds: ['source'],
     }
 
     const stop = {
@@ -356,6 +362,7 @@ for (const sourceKind of ['click', 'keyboard'] as const) {
       phase: 'end',
       inputKind: 'pointer',
       nodeId: 'source',
+      nodeIds: ['source'],
       outcome: 'accepted',
     }
 

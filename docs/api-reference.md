@@ -48,6 +48,9 @@ export type FlowNode = {
     readonly id: string;
     readonly kind: "source" | "target";
     readonly side: "top" | "right" | "bottom" | "left";
+    readonly connectable?: boolean;
+    readonly connectableStart?: boolean;
+    readonly connectableEnd?: boolean;
   }>;
   readonly selected?: boolean;
   readonly selectable?: boolean;
@@ -147,6 +150,9 @@ export type FlowDocument = {
       readonly id: string;
       readonly kind: "source" | "target";
       readonly side: "top" | "right" | "bottom" | "left";
+      readonly connectable?: boolean;
+      readonly connectableStart?: boolean;
+      readonly connectableEnd?: boolean;
     }>;
     readonly selected?: boolean;
     readonly selectable?: boolean;
@@ -209,6 +215,9 @@ export type FlowCommand = {
           readonly id: string;
           readonly kind: "source" | "target";
           readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
         }>;
         readonly selected?: boolean;
         readonly selectable?: boolean;
@@ -245,6 +254,9 @@ export type FlowCommand = {
           readonly id: string;
           readonly kind: "source" | "target";
           readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
         }>;
         readonly selected?: boolean;
         readonly selectable?: boolean;
@@ -530,6 +542,9 @@ export type FlowChange = {
         readonly id: string;
         readonly kind: "source" | "target";
         readonly side: "top" | "right" | "bottom" | "left";
+        readonly connectable?: boolean;
+        readonly connectableStart?: boolean;
+        readonly connectableEnd?: boolean;
       }>;
       readonly selected?: boolean;
       readonly selectable?: boolean;
@@ -604,6 +619,9 @@ export type FlowSnapshot = {
         readonly id: string;
         readonly kind: "source" | "target";
         readonly side: "top" | "right" | "bottom" | "left";
+        readonly connectable?: boolean;
+        readonly connectableStart?: boolean;
+        readonly connectableEnd?: boolean;
       }>;
       readonly selected?: boolean;
       readonly selectable?: boolean;
@@ -680,6 +698,9 @@ export type FlowStateChange = {
           readonly id: string;
           readonly kind: "source" | "target";
           readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
         }>;
         readonly selected?: boolean;
         readonly selectable?: boolean;
@@ -748,6 +769,9 @@ export type FlowStateChange = {
           readonly id: string;
           readonly kind: "source" | "target";
           readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
         }>;
         readonly selected?: boolean;
         readonly selectable?: boolean;
@@ -825,6 +849,9 @@ export type FlowSnapshot = {
         readonly id: string;
         readonly kind: "source" | "target";
         readonly side: "top" | "right" | "bottom" | "left";
+        readonly connectable?: boolean;
+        readonly connectableStart?: boolean;
+        readonly connectableEnd?: boolean;
       }>;
       readonly selected?: boolean;
       readonly selectable?: boolean;
@@ -901,6 +928,9 @@ export type FlowStateChange = {
           readonly id: string;
           readonly kind: "source" | "target";
           readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
         }>;
         readonly selected?: boolean;
         readonly selectable?: boolean;
@@ -969,6 +999,9 @@ export type FlowStateChange = {
           readonly id: string;
           readonly kind: "source" | "target";
           readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
         }>;
         readonly selected?: boolean;
         readonly selectable?: boolean;

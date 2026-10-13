@@ -27,6 +27,9 @@ const centre = (box: {
   height: number
 }) => ({ x: box.x + box.width / 2, y: box.y + box.height / 2 })
 
+const viewportX = (page: Page) =>
+  page.evaluate(() => window.__flowFoldkitUiControls?.viewport().x)
+
 const zoomOf = (page: Page) =>
   page.evaluate(() => window.__flowFoldkitUiControls?.viewport().zoom)
 
@@ -140,17 +143,41 @@ test('Foldkit UI catalog controls drive the viewport, lock, search and devtools'
     )
   ).toEqual([false])
 
+  expect(
+    await page.evaluate(() => window.__flowFoldkitUiControls?.interactivity())
+  ).toEqual({
+    nodesDraggable: false,
+    nodesConnectable: false,
+    elementsSelectable: false,
+  })
+
+  // Dragging a locked node pans the pane instead, as in React Flow.
   const before = await nodePosition(page, 'a')
   await drag(page, centre(await boxOf(nodeA)), { x: 300, y: 80 })
+  await expect.poll(() => viewportX(page)).not.toBe(0)
   expect(await nodePosition(page, 'a')).toEqual(before)
+  await page.evaluate(() =>
+    window.__flowFoldkitUiControls?.setViewport({ x: 0, y: 0, zoom: 1 })
+  )
+  await expect.poll(() => zoomOf(page)).toBe(1)
+  await expect.poll(() => viewportX(page)).toBe(0)
 
   const source = page.locator('[data-node-id="a"] [data-handle-id="out"]')
   const target = page.locator('[data-node-id="b"] [data-handle-id="in"]')
   await drag(page, centre(await boxOf(source)), centre(await boxOf(target)))
+  await source.focus()
+  await page.keyboard.press('Enter')
+  await target.focus()
+  await page.keyboard.press('Enter')
   expect(
     await page.evaluate(() => window.__flowFoldkitUiControls?.edgeCount())
   ).toBe(0)
-  await nodeA.click()
+
+  const selectA = nodeA.locator('.flow-foldkit-select-node')
+  // aria-disabled controls refuse actionability checks; click anyway.
+  await selectA.click({ force: true })
+  await selectA.focus()
+  await page.keyboard.press('Space')
   expect(
     await page.evaluate(
       () =>
@@ -274,7 +301,7 @@ test('Foldkit UI catalog controls drive the viewport, lock, search and devtools'
   await devtools.getByRole('button', { name: 'Node inspector' }).click()
   await expect(inspector).toBeHidden()
 
-  // Disposal removes the panels and releases the lock.
+  // Disposal removes the panels; the switches belong to the Runtime and stay.
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'true')
   await page.evaluate(() => window.__flowFoldkitUiControls?.disposeAll())
@@ -284,8 +311,8 @@ test('Foldkit UI catalog controls drive the viewport, lock, search and devtools'
   ).toHaveCount(0)
 
   const nodeB = page.locator('.flow-foldkit-node[data-node-id="b"]')
-  const released = await nodePosition(page, 'b')
+  const kept = await nodePosition(page, 'b')
   const boxB = await boxOf(nodeB)
   await drag(page, centre(boxB), { x: boxB.x - 60, y: boxB.y + 40 })
-  await expect.poll(() => nodePosition(page, 'b')).not.toEqual(released)
+  expect(await nodePosition(page, 'b')).toEqual(kept)
 })
