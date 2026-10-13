@@ -1,4 +1,5 @@
 import {
+  flowEdgeMarkerType,
   applyNodePositionChange,
   applyNodePositionsChange,
   applyNodeBoundsChange,
@@ -8057,7 +8058,10 @@ export const FlowCanvas = defineComponent({
         const edge = withEdgeDefaults(storedEdge)
         const stroke = edge.stroke ?? '#64748b'
 
-        for (const kind of [edge.markerStart, edge.markerEnd]) {
+        for (const kind of [
+          flowEdgeMarkerType(edge.markerStart),
+          flowEdgeMarkerType(edge.markerEnd),
+        ]) {
           if (kind === undefined) {
             continue
           }
@@ -8215,7 +8219,13 @@ export const FlowCanvas = defineComponent({
         },
       })
 
-    const edgeMarkers = (edge: FlowEdge) => {
+    const edgeMarkers = (storedEdge: FlowEdge) => {
+      const edge = {
+        stroke: storedEdge.stroke,
+        markerStart: flowEdgeMarkerType(storedEdge.markerStart),
+        markerEnd: flowEdgeMarkerType(storedEdge.markerEnd),
+      }
+
       const stroke = edge.stroke ?? '#64748b'
 
       return {

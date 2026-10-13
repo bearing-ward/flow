@@ -5,6 +5,8 @@ import {
   FitViewNodeDimensionsSchema,
   FitViewPaddingSchema,
   fitViewportToNodes,
+  FlowFitViewOptionsSchema,
+  resolveFitViewNodeIds,
 } from './flow-fit-view.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { NodeIdSchema } from './flow-values.ts'
@@ -173,5 +175,97 @@ describe('fit viewport to nodes', () => {
         'Expected'
       )
     }
+  })
+})
+
+describe('FitViewOptions', () => {
+  it('decodes React fit options with node lists and Flow shorthands', () => {
+    expect(
+      S.decodeUnknownSync(FlowFitViewOptionsSchema)({
+        padding: 0.2,
+        includeHiddenNodes: true,
+        minZoom: 0.5,
+        maxZoom: 1.5,
+        duration: 200,
+        nodes: [{ id: 'first' }],
+      })
+    ).toMatchObject({ nodes: [{ id: 'first' }], minZoom: 0.5 })
+    expect(
+      S.decodeUnknownSync(FlowFitViewOptionsSchema)({ nodes: 'selected' })
+    ).toStrictEqual({ nodes: 'selected' })
+    expect(() =>
+      S.decodeUnknownSync(FlowFitViewOptionsSchema)({ minZoom: 0 })
+    ).toThrow(/Expected/u)
+    expect(() =>
+      S.decodeUnknownSync(FlowFitViewOptionsSchema)({ nodes: ['first'] })
+    ).toThrow(/Expected/u)
+  })
+
+  it('resolves the fitted node ids', () => {
+    const selected = {
+      nodes: [firstNode, { ...secondNode, selected: true }],
+    }
+
+    expect(resolveFitViewNodeIds(selected)).toBeUndefined()
+    expect(resolveFitViewNodeIds(selected, 'all')).toBeUndefined()
+    expect([
+      ...(resolveFitViewNodeIds(selected, 'selected') ?? []),
+    ]).toStrictEqual([secondId])
+    expect([
+      ...(resolveFitViewNodeIds(selected, [{ id: firstId }]) ?? []),
+    ]).toStrictEqual([firstId])
+  })
+
+  it('applies per-call minZoom and maxZoom over the canvas limits', () => {
+    const fit = (options: { minZoom?: number; maxZoom?: number }) =>
+      fitViewportToNodes({
+        document: { nodes: [firstNode], edges: [] },
+        measurements,
+        currentViewport,
+        paneWidth: 1000,
+        paneHeight: 600,
+        limits,
+        ...options,
+      }).zoom
+
+    expect(fit({})).toBe(4)
+    expect(fit({ maxZoom: 1.5 })).toBe(1.5)
+    expect(
+      fitViewportToNodes({
+        document,
+        measurements,
+        currentViewport,
+        paneWidth: 1000,
+        paneHeight: 600,
+        limits,
+        minZoom: 2,
+      }).zoom
+    ).toBe(2)
+  })
+
+  it('includes hidden nodes only when includeHiddenNodes is set', () => {
+    const hiddenDocument = {
+      nodes: [firstNode, { ...secondNode, hidden: true }],
+      edges: [],
+    }
+
+    const input = {
+      document: hiddenDocument,
+      measurements,
+      currentViewport,
+      paneWidth: 1000,
+      paneHeight: 600,
+      limits,
+    }
+
+    expect(fitViewportToNodes(input)).toStrictEqual(
+      fitViewportToNodes({
+        ...input,
+        document: { nodes: [firstNode], edges: [] },
+      })
+    )
+    expect(
+      fitViewportToNodes({ ...input, includeHiddenNodes: true })
+    ).toStrictEqual(fitViewportToNodes({ ...input, document }))
   })
 })

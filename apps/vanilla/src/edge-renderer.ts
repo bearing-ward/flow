@@ -5,6 +5,7 @@ import {
   inferHandleMeasurement,
   edgeLabelPosition,
   flowEdgeRendererProps,
+  flowEdgeMarkerType,
   flowNodeBounds,
   orderFlowEdges,
   sameFlowEdgeRendererProps,
@@ -775,8 +776,8 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           return `url(#${markerId})`
         }
 
-        const markerStart = markerUrl(edge.markerStart)
-        const markerEnd = markerUrl(edge.markerEnd)
+        const markerStart = markerUrl(flowEdgeMarkerType(edge.markerStart))
+        const markerEnd = markerUrl(flowEdgeMarkerType(edge.markerEnd))
 
         const labelAnchor =
           customGeometry?.labelAnchor ??

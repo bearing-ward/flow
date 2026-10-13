@@ -20,7 +20,6 @@ describe('default edge options', () => {
       'sourceHandle',
       'targetHandle',
       'selected',
-      'style',
       'markerEndColor',
     ]) {
       expect(
@@ -31,6 +30,38 @@ describe('default edge options', () => {
         )
       ).toBeTruthy()
     }
+  })
+
+  it('accepts Plan 114 presentation defaults and keeps stored edge values on top', () => {
+    const defaults = Effect.runSync(
+      decodeFlowDefaultEdgeOptions({
+        animated: true,
+        className: 'default-edge',
+        style: { stroke: '#ff0072', strokeWidth: 2 },
+        labelStyle: { fill: 'white' },
+        labelShowBg: false,
+        labelBgStyle: { fill: '#333' },
+        labelBgPadding: [8, 4],
+        labelBgBorderRadius: 4,
+        markerEnd: { type: 'arrowclosed', color: '#ff0072' },
+      })
+    )
+
+    const edge = S.decodeSync(FlowEdgeSchema)({
+      id: 'edge-1',
+      source: 'source',
+      target: 'target',
+      animated: false,
+      style: { stroke: 'black' },
+    })
+
+    expect(applyDefaultEdgeOptions(edge, defaults)).toMatchObject({
+      animated: false,
+      className: 'default-edge',
+      style: { stroke: 'black' },
+      labelBgPadding: [8, 4],
+      markerEnd: { type: 'arrowclosed', color: '#ff0072' },
+    })
   })
 
   it('applies defaults below stored explicit values', () => {

@@ -845,7 +845,13 @@ for (const field of [
     })
   }
 
-  for (const marker of [{ type: 'arrow' }, 'reference:id', '', null]) {
+  for (const marker of [
+    { type: 'triangle' },
+    { color: 'red' },
+    'reference:id',
+    '',
+    null,
+  ]) {
     markerCase(
       `protected ${field} rejects new ${JSON.stringify(marker)}`,
       () => {
@@ -871,6 +877,26 @@ for (const field of [
       }
     )
   }
+
+  markerCase(`Plan 114 ${field} accepts a marker configuration`, () => {
+    const marker = { type: 'arrowclosed', color: '#ff0072', width: 20 }
+    const input = { id: 'edge', source: 'a', target: 'b', [field]: marker }
+
+    for (const output of [
+      S.decodeUnknownSync(FlowEdgeSchema)(input),
+      S.decodeUnknownSync(FlowDefaultEdgeOptionsSchema)({ [field]: marker }),
+      S.decodeUnknownSync(markerFactory)({
+        ...input,
+        type: 'weighted',
+        data: { weight: 1 },
+      }),
+    ]) {
+      markerCheck(
+        JSON.stringify(output[field]) === JSON.stringify(marker),
+        'configured marker round trip'
+      )
+    }
+  })
 }
 
 markerCase(

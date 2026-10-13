@@ -188,7 +188,7 @@ export const markerConfigurationNegativeProof = (
   const { fields } = FlowEdgeMarkerConfigurationSchema
   // @ts-expect-error validating Declaration does not promise Struct mapFields
   const { mapFields } = FlowEdgeMarkerConfigurationSchema
-  // @ts-expect-error graph marker integration is not part of this foundation
+  // Plan 114: graph edges accept marker configurations.
   const existingEndpoint: FlowEdge['markerStart'] = configuration
   // @ts-expect-error old marker kind does not widen to arbitrary logical strings
   const existingKind: FlowEdgeMarker = 'custom:marker'

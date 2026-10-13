@@ -7,6 +7,7 @@ import type { Viewport } from './flow-runtime.schema.ts'
 import { SavedFlowFormatError } from './flow-save-format-error.ts'
 import type { SavedFlowFormatFailureCode } from './flow-save-format-error.ts'
 import { createFlowSnapshot } from './flow-snapshot.ts'
+import { FlowClassNameSchema, FlowStyleSchema } from './flow-style.schema.ts'
 import {
   EdgeIdSchema,
   HandleIdSchema,
@@ -16,9 +17,12 @@ import {
 import {
   decodeFlowDocument,
   decodeLegacyFlowDocument,
+  FlowEdgeLabelBgPaddingSchema,
+  FlowEdgeMarkerOptionSchema,
+  FlowHandleSideSchema,
   validateFlowDocument,
 } from './flow.schema.ts'
-import type { FlowDocument } from './flow.schema.ts'
+import type { FlowDocument, FlowEdge, FlowNode } from './flow.schema.ts'
 
 // Literal-v1 fields and nested constraints are frozen to de36b4f. Live node/edge
 // schemas may evolve independently. IDs and XYPosition retain their stable contracts.
@@ -105,6 +109,67 @@ const rejectLegacyFormat = (code: SavedFlowFormatFailureCode): never => {
   throw new SavedFlowFormatError({ code })
 }
 
+// Plan 114 presentation fields. Only the v3 envelope stores them.
+const presentationNodeKeys = [
+  'style',
+  'className',
+  'sourcePosition',
+  'targetPosition',
+  'dragHandle',
+  'expandParent',
+] as const satisfies readonly (keyof FlowNode)[]
+
+const presentationEdgeKeys = [
+  'style',
+  'className',
+  'animated',
+  'labelStyle',
+  'labelShowBg',
+  'labelBgStyle',
+  'labelBgPadding',
+  'labelBgBorderRadius',
+] as const satisfies readonly (keyof FlowEdge)[]
+
+const isMarkerKind = (
+  marker: FlowEdge['markerStart']
+): marker is 'arrow' | 'arrowclosed' | undefined =>
+  marker === undefined || marker === 'arrow' || marker === 'arrowclosed'
+
+const hasPresentationFields = (document: FlowDocument): boolean =>
+  document.nodes.some((node) =>
+    presentationNodeKeys.some((key) => Object.hasOwn(node, key))
+  ) ||
+  document.edges.some(
+    (edge) =>
+      presentationEdgeKeys.some((key) => Object.hasOwn(edge, key)) ||
+      !isMarkerKind(edge.markerStart) ||
+      !isMarkerKind(edge.markerEnd)
+  )
+
+type LegacyMarkerEdge = Omit<FlowEdge, 'markerStart' | 'markerEnd'> & {
+  readonly markerStart?: 'arrow' | 'arrowclosed' | undefined
+  readonly markerEnd?: 'arrow' | 'arrowclosed' | undefined
+}
+
+const isLegacyMarkerEdge = (
+  edge: FlowEdge
+): edge is FlowEdge & LegacyMarkerEdge =>
+  isMarkerKind(edge.markerStart) && isMarkerKind(edge.markerEnd)
+
+/**
+ * Narrow an accepted v1/v2 edge to marker kinds, unchanged (own undefined
+ * keys included). Callers route marker configurations to v3 first.
+ */
+const legacyMarkerEdge = (edge: FlowEdge): LegacyMarkerEdge => {
+  if (isLegacyMarkerEdge(edge)) {
+    return edge
+  }
+
+  const { markerStart: _start, markerEnd: _end, ...rest } = edge
+
+  return rest
+}
+
 const versionedFormatReason = (
   document: FlowDocument
 ): SavedFlowFormatFailureCode | undefined => {
@@ -132,6 +197,10 @@ const versionedFormatReason = (
 
   if (findLegacyEndpointKindIssue(document) !== undefined) {
     return 'noncanonical-handles-require-versioned-session'
+  }
+
+  if (hasPresentationFields(document)) {
+    return 'presentation-fields-require-versioned-session'
   }
 }
 
@@ -177,7 +246,9 @@ export const encodeSavedFlowDocument = (
       version: 1,
       document: {
         nodes: document.nodes.map(({ selected: _selected, ...node }) => node),
-        edges: document.edges.map(({ selected: _selected, ...edge }) => edge),
+        edges: document.edges.map(({ selected: _selected, ...edge }) =>
+          legacyMarkerEdge(edge)
+        ),
       },
     })
   )
@@ -276,14 +347,63 @@ export const SavedOriginFlowSessionSchema = S.Struct({
   viewport: SavedViewportSchema,
 })
 
+// v3 adds the Plan 114 presentation fields; selection and `measured` stay transient.
+const SavedPresentationFlowNodeSchema = S.Struct({
+  ...SavedOriginFlowNodeSchema.fields,
+  style: S.optional(FlowStyleSchema),
+  className: S.optional(FlowClassNameSchema),
+  sourcePosition: S.optional(FlowHandleSideSchema),
+  targetPosition: S.optional(FlowHandleSideSchema),
+  dragHandle: S.optional(S.NonEmptyString),
+  expandParent: S.optional(S.Boolean),
+})
+
+const SavedPresentationFlowEdgeSchema = S.Struct({
+  ...SavedOriginFlowEdgeSchema.fields,
+  markerStart: S.optional(FlowEdgeMarkerOptionSchema),
+  markerEnd: S.optional(FlowEdgeMarkerOptionSchema),
+  style: S.optional(FlowStyleSchema),
+  className: S.optional(FlowClassNameSchema),
+  animated: S.optional(S.Boolean),
+  labelStyle: S.optional(FlowStyleSchema),
+  labelShowBg: S.optional(S.Boolean),
+  labelBgStyle: S.optional(FlowStyleSchema),
+  labelBgPadding: S.optional(FlowEdgeLabelBgPaddingSchema),
+  labelBgBorderRadius: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+})
+
+const SavedPresentationDocumentBodySchema = S.Struct({
+  nodeOrigin: S.optional(NodeOriginSchema),
+  nodes: S.Array(SavedPresentationFlowNodeSchema),
+  edges: S.Array(SavedPresentationFlowEdgeSchema),
+})
+
+export const SavedPresentationFlowDocumentSchema = S.Struct({
+  version: S.Literal(3),
+  document: SavedPresentationDocumentBodySchema,
+})
+
+export const SavedPresentationFlowSessionSchema = S.Struct({
+  ...SavedPresentationFlowDocumentSchema.fields,
+  viewport: SavedViewportSchema,
+})
+
+export type SavedPresentationFlowDocument =
+  typeof SavedPresentationFlowDocumentSchema.Encoded
+
+export type SavedPresentationFlowSession =
+  typeof SavedPresentationFlowSessionSchema.Encoded
+
 export const SavedVersionedFlowDocumentSchema = S.Union([
   SavedFlowDocumentSchema,
   SavedOriginFlowDocumentSchema,
+  SavedPresentationFlowDocumentSchema,
 ])
 
 export const SavedVersionedFlowSessionSchema = S.Union([
   SavedFlowSessionSchema,
   SavedOriginFlowSessionSchema,
+  SavedPresentationFlowSessionSchema,
 ])
 
 export type SavedOriginFlowDocument =
@@ -297,7 +417,10 @@ export type SavedVersionedFlowDocument =
 export type SavedVersionedFlowSession =
   typeof SavedVersionedFlowSessionSchema.Encoded
 
-/** Choose one complete v2 body only for valid accepted extension semantics. */
+/**
+ * Choose the oldest envelope that represents the document: v1, then the v2
+ * origin/native body, then the v3 body for presentation fields.
+ */
 export const encodeVersionedFlowDocument = (
   document: FlowDocument
 ): SavedVersionedFlowDocument => {
@@ -307,8 +430,20 @@ export const encodeVersionedFlowDocument = (
     return encodeSavedFlowDocument(document)
   }
 
+  if (hasPresentationFields(document)) {
+    return structuredClone(
+      S.encodeSync(SavedPresentationFlowDocumentSchema)({
+        version: 3,
+        document,
+      })
+    )
+  }
+
   return structuredClone(
-    S.encodeSync(SavedOriginFlowDocumentSchema)({ version: 2, document })
+    S.encodeSync(SavedOriginFlowDocumentSchema)({
+      version: 2,
+      document: { ...document, edges: document.edges.map(legacyMarkerEdge) },
+    })
   )
 }
 
@@ -321,7 +456,7 @@ export const encodeVersionedFlowSession = (
 })
 
 const VersionedEnvelopeHeaderSchema = S.Struct({
-  version: S.Literals([1, 2]),
+  version: S.Literals([1, 2, 3]),
   document: S.Unknown,
 })
 
@@ -354,9 +489,11 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
       return yield* decodeAdditiveLegacyBody(saved.document)
     }
 
-    const saved = yield* S.decodeUnknownEffect(SavedOriginFlowDocumentSchema)(
-      input
-    )
+    const saved = yield* S.decodeUnknownEffect(
+      header.version === 2
+        ? SavedOriginFlowDocumentSchema
+        : SavedPresentationFlowDocumentSchema
+    )(input)
 
     return yield* decodeFlowDocument(saved.document)
   }).pipe(
@@ -391,9 +528,11 @@ export const decodeVersionedFlowSession = (input: unknown) =>
       return createFlowSnapshot(document, saved.viewport)
     }
 
-    const saved = yield* S.decodeUnknownEffect(SavedOriginFlowSessionSchema)(
-      input
-    )
+    const saved = yield* S.decodeUnknownEffect(
+      header.version === 2
+        ? SavedOriginFlowSessionSchema
+        : SavedPresentationFlowSessionSchema
+    )(input)
 
     const document = yield* decodeFlowDocument(saved.document)
 

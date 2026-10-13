@@ -62,6 +62,16 @@ export type FlowNode = {
   readonly ariaLabel?: string;
   readonly ariaDescription?: string;
   readonly hidden?: boolean;
+  readonly style?: Readonly<Record<string, JsonValue>>;
+  readonly className?: string;
+  readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+  readonly targetPosition?: "top" | "right" | "bottom" | "left";
+  readonly dragHandle?: string;
+  readonly expandParent?: boolean;
+  readonly measured?: {
+    readonly width?: number;
+    readonly height?: number;
+  };
 };
 ```
 
@@ -80,10 +90,18 @@ export type FlowEdge = {
   readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
   readonly label?: string;
   readonly data?: Readonly<Record<string, JsonValue>>;
-  readonly markerStart?: "arrow" | "arrowclosed";
-  readonly markerEnd?: "arrow" | "arrowclosed";
+  readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+  readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
   readonly stroke?: string;
   readonly strokeWidth?: number;
+  readonly style?: Readonly<Record<string, JsonValue>>;
+  readonly className?: string;
+  readonly animated?: boolean;
+  readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+  readonly labelShowBg?: boolean;
+  readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+  readonly labelBgPadding?: ReadonlyArray<number>;
+  readonly labelBgBorderRadius?: number;
   readonly selected?: boolean;
   readonly deletable?: boolean;
   readonly selectable?: boolean;
@@ -113,10 +131,18 @@ export type FlowDocument = {
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
     readonly label?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
-    readonly markerStart?: "arrow" | "arrowclosed";
-    readonly markerEnd?: "arrow" | "arrowclosed";
+    readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+    readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
     readonly stroke?: string;
     readonly strokeWidth?: number;
+    readonly style?: Readonly<Record<string, JsonValue>>;
+    readonly className?: string;
+    readonly animated?: boolean;
+    readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+    readonly labelShowBg?: boolean;
+    readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+    readonly labelBgPadding?: ReadonlyArray<number>;
+    readonly labelBgBorderRadius?: number;
     readonly selected?: boolean;
     readonly deletable?: boolean;
     readonly selectable?: boolean;
@@ -164,6 +190,16 @@ export type FlowDocument = {
     readonly ariaLabel?: string;
     readonly ariaDescription?: string;
     readonly hidden?: boolean;
+    readonly style?: Readonly<Record<string, JsonValue>>;
+    readonly className?: string;
+    readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+    readonly targetPosition?: "top" | "right" | "bottom" | "left";
+    readonly dragHandle?: string;
+    readonly expandParent?: boolean;
+    readonly measured?: {
+      readonly width?: number;
+      readonly height?: number;
+    };
   }>;
 };
 ```
@@ -229,6 +265,16 @@ export type FlowCommand = {
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
       }>;
     }
     | {
@@ -268,6 +314,16 @@ export type FlowCommand = {
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
       }>;
     }
     | {
@@ -282,10 +338,18 @@ export type FlowCommand = {
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
-        readonly markerStart?: "arrow" | "arrowclosed";
-        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
         readonly stroke?: string;
         readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
         readonly selected?: boolean;
         readonly deletable?: boolean;
         readonly selectable?: boolean;
@@ -310,10 +374,18 @@ export type FlowCommand = {
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
-        readonly markerStart?: "arrow" | "arrowclosed";
-        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
         readonly stroke?: string;
         readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
         readonly selected?: boolean;
         readonly deletable?: boolean;
         readonly selectable?: boolean;
@@ -429,10 +501,18 @@ export type FlowChange = {
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
     readonly label?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
-    readonly markerStart?: "arrow" | "arrowclosed";
-    readonly markerEnd?: "arrow" | "arrowclosed";
+    readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+    readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
     readonly stroke?: string;
     readonly strokeWidth?: number;
+    readonly style?: Readonly<Record<string, JsonValue>>;
+    readonly className?: string;
+    readonly animated?: boolean;
+    readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+    readonly labelShowBg?: boolean;
+    readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+    readonly labelBgPadding?: ReadonlyArray<number>;
+    readonly labelBgBorderRadius?: number;
     readonly selected?: boolean;
     readonly deletable?: boolean;
     readonly selectable?: boolean;
@@ -472,10 +552,18 @@ export type FlowChange = {
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
     readonly label?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
-    readonly markerStart?: "arrow" | "arrowclosed";
-    readonly markerEnd?: "arrow" | "arrowclosed";
+    readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+    readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
     readonly stroke?: string;
     readonly strokeWidth?: number;
+    readonly style?: Readonly<Record<string, JsonValue>>;
+    readonly className?: string;
+    readonly animated?: boolean;
+    readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+    readonly labelShowBg?: boolean;
+    readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+    readonly labelBgPadding?: ReadonlyArray<number>;
+    readonly labelBgBorderRadius?: number;
     readonly selected?: boolean;
     readonly deletable?: boolean;
     readonly selectable?: boolean;
@@ -505,10 +593,18 @@ export type FlowChange = {
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
       readonly label?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
-      readonly markerStart?: "arrow" | "arrowclosed";
-      readonly markerEnd?: "arrow" | "arrowclosed";
+      readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+      readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
       readonly stroke?: string;
       readonly strokeWidth?: number;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly animated?: boolean;
+      readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelShowBg?: boolean;
+      readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelBgPadding?: ReadonlyArray<number>;
+      readonly labelBgBorderRadius?: number;
       readonly selected?: boolean;
       readonly deletable?: boolean;
       readonly selectable?: boolean;
@@ -556,6 +652,16 @@ export type FlowChange = {
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+      readonly targetPosition?: "top" | "right" | "bottom" | "left";
+      readonly dragHandle?: string;
+      readonly expandParent?: boolean;
+      readonly measured?: {
+        readonly width?: number;
+        readonly height?: number;
+      };
     }>;
   };
   readonly deletion: {
@@ -582,10 +688,18 @@ export type FlowSnapshot = {
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
       readonly label?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
-      readonly markerStart?: "arrow" | "arrowclosed";
-      readonly markerEnd?: "arrow" | "arrowclosed";
+      readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+      readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
       readonly stroke?: string;
       readonly strokeWidth?: number;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly animated?: boolean;
+      readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelShowBg?: boolean;
+      readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelBgPadding?: ReadonlyArray<number>;
+      readonly labelBgBorderRadius?: number;
       readonly selected?: boolean;
       readonly deletable?: boolean;
       readonly selectable?: boolean;
@@ -633,6 +747,16 @@ export type FlowSnapshot = {
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+      readonly targetPosition?: "top" | "right" | "bottom" | "left";
+      readonly dragHandle?: string;
+      readonly expandParent?: boolean;
+      readonly measured?: {
+        readonly width?: number;
+        readonly height?: number;
+      };
     }>;
   };
   readonly viewport: {
@@ -661,10 +785,18 @@ export type FlowStateChange = {
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
-        readonly markerStart?: "arrow" | "arrowclosed";
-        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
         readonly stroke?: string;
         readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
         readonly selected?: boolean;
         readonly deletable?: boolean;
         readonly selectable?: boolean;
@@ -712,6 +844,16 @@ export type FlowStateChange = {
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
       }>;
     };
     readonly viewport: {
@@ -732,10 +874,18 @@ export type FlowStateChange = {
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
-        readonly markerStart?: "arrow" | "arrowclosed";
-        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
         readonly stroke?: string;
         readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
         readonly selected?: boolean;
         readonly deletable?: boolean;
         readonly selectable?: boolean;
@@ -783,6 +933,16 @@ export type FlowStateChange = {
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
       }>;
     };
     readonly viewport: {
@@ -812,10 +972,18 @@ export type FlowSnapshot = {
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
       readonly label?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
-      readonly markerStart?: "arrow" | "arrowclosed";
-      readonly markerEnd?: "arrow" | "arrowclosed";
+      readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+      readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
       readonly stroke?: string;
       readonly strokeWidth?: number;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly animated?: boolean;
+      readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelShowBg?: boolean;
+      readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelBgPadding?: ReadonlyArray<number>;
+      readonly labelBgBorderRadius?: number;
       readonly selected?: boolean;
       readonly deletable?: boolean;
       readonly selectable?: boolean;
@@ -863,6 +1031,16 @@ export type FlowSnapshot = {
       readonly ariaLabel?: string;
       readonly ariaDescription?: string;
       readonly hidden?: boolean;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+      readonly targetPosition?: "top" | "right" | "bottom" | "left";
+      readonly dragHandle?: string;
+      readonly expandParent?: boolean;
+      readonly measured?: {
+        readonly width?: number;
+        readonly height?: number;
+      };
     }>;
   };
   readonly viewport: {
@@ -891,10 +1069,18 @@ export type FlowStateChange = {
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
-        readonly markerStart?: "arrow" | "arrowclosed";
-        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
         readonly stroke?: string;
         readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
         readonly selected?: boolean;
         readonly deletable?: boolean;
         readonly selectable?: boolean;
@@ -942,6 +1128,16 @@ export type FlowStateChange = {
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
       }>;
     };
     readonly viewport: {
@@ -962,10 +1158,18 @@ export type FlowStateChange = {
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
-        readonly markerStart?: "arrow" | "arrowclosed";
-        readonly markerEnd?: "arrow" | "arrowclosed";
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
         readonly stroke?: string;
         readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
         readonly selected?: boolean;
         readonly deletable?: boolean;
         readonly selectable?: boolean;
@@ -1013,6 +1217,16 @@ export type FlowStateChange = {
         readonly ariaLabel?: string;
         readonly ariaDescription?: string;
         readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
       }>;
     };
     readonly viewport: {

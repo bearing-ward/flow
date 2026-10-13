@@ -7,6 +7,7 @@ import { Effect, Schema as S } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import * as baseline from '../../../conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.js'
+import { legacyV1Input } from '../../../conformance/src/legacy-v1-input.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
 import {
   decodeSavedFlowDocument,
@@ -290,10 +291,10 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
     expectTypeOf<SavedFlowDocument>().toEqualTypeOf<baseline.SavedFlowDocument>()
     expectTypeOf<SavedFlowSession>().toEqualTypeOf<baseline.SavedFlowSession>()
     expect(encodeSavedFlowDocument(original)).toStrictEqual(
-      baseline.encodeSavedFlowDocument(original)
+      baseline.encodeSavedFlowDocument(legacyV1Input(original))
     )
     expect(encodeSavedFlowSession(original, viewport)).toStrictEqual(
-      baseline.encodeSavedFlowSession(original, viewport)
+      baseline.encodeSavedFlowSession(legacyV1Input(original), viewport)
     )
   })
 
@@ -513,7 +514,7 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
     }
 
     expect(encodeSavedFlowDocument(document)).toStrictEqual(
-      baseline.encodeSavedFlowDocument(document)
+      baseline.encodeSavedFlowDocument(legacyV1Input(document))
     )
   })
 
@@ -689,7 +690,7 @@ describe('live native retention against frozen legacy writers and readers', () =
 
       const saved = encodeSavedFlowSession(document, viewport)
       expect(saved).toStrictEqual(
-        baseline.encodeSavedFlowSession(document, viewport)
+        baseline.encodeSavedFlowSession(legacyV1Input(document), viewport)
       )
       expect(
         Object.hasOwn(saved.document.nodes[0] ?? {}, 'selected')

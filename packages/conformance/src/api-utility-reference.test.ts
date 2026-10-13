@@ -26,7 +26,6 @@ import { ApiUtilityReferenceFixtureSchema } from '../../../scripts/api-utility-r
 
 interface UtilityNode extends FlowNode {
   readonly dragging?: boolean
-  readonly measured?: { readonly width: number; readonly height: number }
   readonly resizing?: boolean
   readonly width?: number
   readonly height?: number

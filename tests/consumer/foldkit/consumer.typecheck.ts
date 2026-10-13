@@ -495,7 +495,7 @@ export const completeVersionedSession = encodeVersionedFlowSession(document, {
   zoom: 1,
 })
 
-export const completeVersion: 1 | 2 = completeVersionedSession.version
+export const completeVersion: 1 | 2 | 3 = completeVersionedSession.version
 
 // @ts-expect-error An additive encoder cannot promise literal-v1 output.
 export const additiveLiteralOne: 1 = completeVersionedSession.version
@@ -510,6 +510,10 @@ export const explicitVersionTwo: SavedVersionedFlowSession = {
   version: 2,
   document: {
     ...document,
+    // v2 edges carry only marker kinds; Plan 114 marker configurations need v3.
+    edges: document.edges.map(
+      ({ markerStart: _start, markerEnd: _end, ...edge }) => edge
+    ),
     nodeOrigin: S.decodeUnknownSync(NodeOriginSchema)([-0.5, 1.5]),
   },
   viewport: { x: 0, y: 0, zoom: 1 },
@@ -517,8 +521,8 @@ export const explicitVersionTwo: SavedVersionedFlowSession = {
 
 export const invalidVersionedFormat: SavedVersionedFlowSession = {
   ...completeVersionedSession,
-  // @ts-expect-error A third unreleased format is outside the single-v2 contract.
-  version: 3,
+  // @ts-expect-error A fourth format is outside the v1/v2/v3 contract.
+  version: 4,
 }
 
 export const inspectCompleteRuntimePorts = (

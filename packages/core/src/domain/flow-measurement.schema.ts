@@ -1,6 +1,6 @@
 import { Schema as S } from 'effect'
 
-import { MeasuredHandleSchema } from './flow-edge.schema.ts'
+import { flowNodeHandles, MeasuredHandleSchema } from './flow-edge.schema.ts'
 import { createFlowGraph } from './flow-graph.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { MeasuredNodeSchema } from './flow-runtime.schema.ts'
@@ -160,7 +160,10 @@ export const applyNodeMeasurements = (
       continue
     }
 
-    const handleDeclarations = nodesById.get(measurement.nodeId)?.handles ?? []
+    const declaringNode = nodesById.get(measurement.nodeId)
+
+    const handleDeclarations =
+      declaringNode === undefined ? [] : flowNodeHandles(declaringNode)
 
     const nextMeasurement: MeasuredNode = {
       nodeId: measurement.nodeId,

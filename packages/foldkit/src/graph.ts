@@ -1,4 +1,5 @@
 import {
+  flowEdgeMarkerType,
   FlowSpan,
   FlowAttribute,
   FlowChangeSchema,
@@ -3670,13 +3671,20 @@ const edgeVisuals = (
           markerDefinition(
             h,
             markerStartId,
-            edge.markerStart ?? 'arrow',
+            flowEdgeMarkerType(edge.markerStart) ?? 'arrow',
             stroke
           ),
         ]),
     ...(markerEndId === undefined
       ? []
-      : [markerDefinition(h, markerEndId, edge.markerEnd ?? 'arrow', stroke)]),
+      : [
+          markerDefinition(
+            h,
+            markerEndId,
+            flowEdgeMarkerType(edge.markerEnd) ?? 'arrow',
+            stroke
+          ),
+        ]),
   ]
 
   const hitTarget = h.path([
@@ -5377,8 +5385,14 @@ const graphView = (
             h.DataAttribute('source-handle', edge.sourceHandle ?? ''),
             h.DataAttribute('target-id', edge.target),
             h.DataAttribute('target-handle', edge.targetHandle ?? ''),
-            h.DataAttribute('marker-start-kind', edge.markerStart ?? ''),
-            h.DataAttribute('marker-end-kind', edge.markerEnd ?? ''),
+            h.DataAttribute(
+              'marker-start-kind',
+              flowEdgeMarkerType(edge.markerStart) ?? ''
+            ),
+            h.DataAttribute(
+              'marker-end-kind',
+              flowEdgeMarkerType(edge.markerEnd) ?? ''
+            ),
             h.DataAttribute('selected', String(edge.selected === true)),
             h.DataAttribute('testid', 'flow-edge'),
             h.Attribute('role', 'group'),

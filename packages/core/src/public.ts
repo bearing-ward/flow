@@ -40,6 +40,10 @@ export {
   FlowEdgeMarkerSchema,
   FlowEdgeMarkerConfigurationSchema,
   FlowEdgeMarkerValueSchema,
+  FlowEdgeMarkerOptionSchema,
+  FlowEdgeLabelBgPaddingSchema,
+  FlowHandleSideSchema,
+  NodeMeasuredSchema,
   FlowEdgeReconnectableSchema,
   FlowEdgeStrokeSchema,
   FlowNodeSchema,
@@ -75,6 +79,10 @@ export type {
   FlowEdgeMarker,
   FlowEdgeMarkerConfiguration,
   FlowEdgeMarkerValue,
+  FlowEdgeMarkerOption,
+  FlowEdgeLabelBgPadding,
+  FlowHandleSide,
+  NodeMeasured,
   FlowEdgeReconnectable,
   FlowNode,
   NodeSize,
@@ -267,12 +275,16 @@ export type { PanExtent } from './domain/flow-pan-extent.schema.ts'
 export {
   FitViewPaddingSchema,
   FitViewNodeDimensionsSchema,
+  FlowFitViewOptionsSchema,
   fitViewportToNodes,
+  resolveFitViewNodeIds,
 } from './domain/flow-fit-view.ts'
 
 export type {
+  FitViewInput,
   FitViewPadding,
   FitViewNodeDimensions,
+  FlowFitViewOptions,
 } from './domain/flow-fit-view.ts'
 
 export {
@@ -291,11 +303,13 @@ export type {
 
 export {
   SnapGridSchema,
+  SnapGridTupleSchema,
+  FlowSnapGridInputSchema,
   snapGroupDelta,
   snapPosition,
 } from './domain/flow-snap-grid.schema.ts'
 
-export type { SnapGrid } from './domain/flow-snap-grid.schema.ts'
+export type { SnapGrid, SnapGridTuple } from './domain/flow-snap-grid.schema.ts'
 
 export {
   ConnectionRadiusSchema,
@@ -327,9 +341,18 @@ export {
   graphOutgoers,
 } from './domain/flow-graph.ts'
 
-export { selectFlowMiniMapProjection } from './domain/flow-minimap.ts'
+export {
+  FlowMiniMapOptionsSchema,
+  flowMiniMapDefaults,
+  flowMiniMapPanViewport,
+  flowMiniMapWheelZoom,
+  selectFlowMiniMapProjection,
+} from './domain/flow-minimap.ts'
 
 export type {
+  FlowMiniMapNodeAttribute,
+  FlowMiniMapNodeProps,
+  FlowMiniMapOptions,
   FlowMiniMapProjection,
   FlowMiniMapSize,
   FlowMiniMapViewport,
@@ -766,6 +789,7 @@ export {
   bezierEdgePath,
   edgeAttachmentPosition,
   inferHandleMeasurement,
+  flowNodeHandles,
   edgeLabelPosition,
   resolveEdgeHandles,
   straightEdgePath,
@@ -815,6 +839,8 @@ export {
   SavedOriginFlowSessionSchema,
   SavedVersionedFlowDocumentSchema,
   SavedVersionedFlowSessionSchema,
+  SavedPresentationFlowDocumentSchema,
+  SavedPresentationFlowSessionSchema,
   encodeVersionedFlowDocument,
   encodeVersionedFlowSession,
   decodeVersionedFlowDocument,
@@ -826,6 +852,8 @@ export type {
   SavedOriginFlowSession,
   SavedVersionedFlowDocument,
   SavedVersionedFlowSession,
+  SavedPresentationFlowDocument,
+  SavedPresentationFlowSession,
 } from './domain/flow-persistence.ts'
 
 export {
@@ -864,3 +892,128 @@ export {
 } from './domain/flow-node-drag-threshold.schema.ts'
 
 export type { NodeDragThreshold } from './domain/flow-node-drag-threshold.schema.ts'
+
+export {
+  FlowStyleSchema,
+  FlowClassNameSchema,
+  flowStyleDeclarations,
+  flowStyleText,
+  flowClassNames,
+} from './domain/flow-style.schema.ts'
+
+export type {
+  FlowStyle,
+  FlowClassName,
+  FlowStyleDeclaration,
+} from './domain/flow-style.schema.ts'
+
+export {
+  flowEdgeMarkerDefaults,
+  flowEdgeMarkerType,
+  flowEdgeMarkerId,
+  resolveFlowEdgeMarker,
+  collectFlowEdgeMarkers,
+} from './domain/flow-edge-marker.ts'
+
+export type { ResolvedFlowEdgeMarker } from './domain/flow-edge-marker.ts'
+
+export {
+  FlowColorModeSchema,
+  flowColorModeMediaQuery,
+  resolveFlowColorMode,
+  flowThemeTokens,
+  flowThemeVariable,
+  flowThemeValue,
+  flowThemeDefaults,
+  flowThemeStylesheet,
+} from './domain/flow-theme.ts'
+
+export type {
+  FlowColorMode,
+  FlowColorModeClass,
+  FlowThemeToken,
+} from './domain/flow-theme.ts'
+
+export {
+  FlowZIndexModeSchema,
+  computeFlowStacking,
+  flowRootParentZIncrement,
+  flowSelectedElementZ,
+} from './domain/flow-z-index.ts'
+
+export type {
+  FlowStacking,
+  FlowStackingInput,
+  FlowZIndexMode,
+} from './domain/flow-z-index.ts'
+
+export {
+  CoordinateExtentSchema,
+  FlowExtentInputSchema,
+  coordinateExtentToPanExtent,
+  panExtentToCoordinateExtent,
+} from './domain/flow-coordinate-extent.ts'
+
+export type { CoordinateExtent } from './domain/flow-coordinate-extent.ts'
+
+export {
+  FlowPanelPositionSchema,
+  flowPanelPlacement,
+  flowPanelPositions,
+} from './domain/flow-panel-position.ts'
+
+export type {
+  FlowPanelPlacement,
+  FlowPanelPosition,
+} from './domain/flow-panel-position.ts'
+
+export {
+  FlowAriaLabelTextConfigSchema,
+  defaultFlowAriaLabelConfig,
+  resolveFlowAriaLabelConfig,
+} from './domain/flow-aria-label-config.ts'
+
+export type {
+  FlowAriaLabelConfig,
+  FlowAriaLabelConfigInput,
+  FlowAriaLabelTextConfig,
+  FlowAriaLiveMessageInput,
+} from './domain/flow-aria-label-config.ts'
+
+export {
+  FlowNodeResizeConstraintsSchema,
+  FlowResizeControlDirectionSchema,
+  FlowResizeControlPositionSchema,
+  FlowResizeControlVariantSchema,
+  FlowResizeParamsSchema,
+  FlowResizeParamsWithDirectionSchema,
+  calculateFlowNodeResizerDimensions,
+  flowNodeResizeDefaults,
+  flowResizeHandlePositions,
+  flowResizeLinePositions,
+  getFlowResizeControlDirection,
+  getFlowResizeDirection,
+  startFlowNodeResize,
+  stepFlowNodeResize,
+} from './domain/flow-node-resizer.ts'
+
+export type {
+  FlowNodeResizeChild,
+  FlowNodeResizeConstraints,
+  FlowNodeResizeSession,
+  FlowNodeResizeStart,
+  FlowNodeResizeStep,
+  FlowNodeResizerDimensionsInput,
+  FlowResizeControlDirection,
+  FlowResizeControlPosition,
+  FlowResizeControlVariant,
+  FlowResizeParams,
+  FlowResizeParamsWithDirection,
+} from './domain/flow-node-resizer.ts'
+
+export { calculateFlowExpandParent } from './domain/flow-expand-parent.ts'
+
+export type {
+  FlowExpandParentChange,
+  FlowExpandParentChild,
+} from './domain/flow-expand-parent.ts'

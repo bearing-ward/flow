@@ -49,12 +49,42 @@ export const inferHandleMeasurement = (
   height: 11,
 })
 
+/**
+ * Declared handles, or React-style default handles when a node declares none
+ * but sets `sourcePosition`/`targetPosition`: one `target` handle (default
+ * top) and one `source` handle (default bottom), as the React default node.
+ */
+export const flowNodeHandles = (
+  node: Pick<FlowNode, 'handles' | 'sourcePosition' | 'targetPosition'>
+): readonly FlowHandle[] => {
+  if (node.handles !== undefined) {
+    return node.handles
+  }
+
+  if (node.sourcePosition === undefined && node.targetPosition === undefined) {
+    return []
+  }
+
+  return [
+    {
+      id: HandleIdSchema.make('target'),
+      kind: 'target',
+      side: node.targetPosition ?? 'top',
+    },
+    {
+      id: HandleIdSchema.make('source'),
+      kind: 'source',
+      side: node.sourcePosition ?? 'bottom',
+    },
+  ]
+}
+
 const selectHandle = (
   node: FlowNode,
   kind: FlowHandle['kind'],
   id: HandleId | undefined
 ): FlowHandle | undefined =>
-  node.handles?.find((handle) =>
+  flowNodeHandles(node).find((handle) =>
     id === undefined ? handle.kind === kind : handle.id === id
   )
 

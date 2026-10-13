@@ -11,6 +11,7 @@ import { DuplicateEdgeId } from './duplicate-edge-id.ts'
 import { DuplicateHandleId } from './duplicate-handle-id.ts'
 import { DuplicateNodeId } from './duplicate-node-id.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
+import { FlowClassNameSchema, FlowStyleSchema } from './flow-style.schema.ts'
 import {
   EdgeIdSchema,
   HandleIdSchema,
@@ -52,10 +53,20 @@ export {
 
 export type { EdgeId, HandleId, NodeId, XYPosition } from './flow-values.ts'
 
+/** React Flow `Position`: the side of a node a handle or edge attaches to. */
+export const FlowHandleSideSchema = S.Literals([
+  'top',
+  'right',
+  'bottom',
+  'left',
+])
+
+export type FlowHandleSide = typeof FlowHandleSideSchema.Type
+
 export const FlowHandleSchema = S.Struct({
   id: HandleIdSchema,
   kind: S.Literals(['source', 'target']),
-  side: S.Literals(['top', 'right', 'bottom', 'left']),
+  side: FlowHandleSideSchema,
   /** React Flow Handle `isConnectable`; defaults to the node's connectability. */
   connectable: S.optional(S.Boolean),
   /** React Flow Handle `isConnectableStart`: a connection may start here. */
@@ -72,6 +83,17 @@ export const NodeSizeSchema = S.Struct({
 })
 
 export type NodeSize = typeof NodeSizeSchema.Type
+
+/**
+ * React Flow `node.measured`: the last DOM measurement. Transient read model;
+ * hosts populate it on read and persistence never stores it.
+ */
+export const NodeMeasuredSchema = S.Struct({
+  width: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  height: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+})
+
+export type NodeMeasured = typeof NodeMeasuredSchema.Type
 
 export const FlowNodeSchema = S.Struct({
   id: NodeIdSchema,
@@ -95,6 +117,19 @@ export const FlowNodeSchema = S.Struct({
   ariaLabel: S.optional(S.String),
   ariaDescription: S.optional(S.String),
   hidden: S.optional(S.Boolean),
+  /** Inline style applied to the node wrapper. */
+  style: S.optional(FlowStyleSchema),
+  /** Extra classes applied to the node wrapper. */
+  className: S.optional(FlowClassNameSchema),
+  /** Side of the default source handle when `handles` is omitted. */
+  sourcePosition: S.optional(FlowHandleSideSchema),
+  /** Side of the default target handle when `handles` is omitted. */
+  targetPosition: S.optional(FlowHandleSideSchema),
+  /** CSS selector; only pointer-downs inside a matching element start a drag. */
+  dragHandle: S.optional(S.NonEmptyString),
+  /** Grow the parent when this child is dragged or resized past its bounds. */
+  expandParent: S.optional(S.Boolean),
+  measured: S.optional(NodeMeasuredSchema),
 })
 
 export type FlowNode = typeof FlowNodeSchema.Type
@@ -193,6 +228,22 @@ export const FlowEdgeMarkerValueSchema = S.Union([
 
 export type FlowEdgeMarkerValue = typeof FlowEdgeMarkerValueSchema.Type
 
+/** React Flow `EdgeMarkerType` restricted to built-in kinds: a kind or a marker configuration. */
+export const FlowEdgeMarkerOptionSchema = S.Union([
+  FlowEdgeMarkerSchema,
+  FlowEdgeMarkerConfigurationSchema,
+])
+
+export type FlowEdgeMarkerOption = typeof FlowEdgeMarkerOptionSchema.Type
+
+/** React Flow `labelBgPadding`: horizontal then vertical padding. */
+export const FlowEdgeLabelBgPaddingSchema = S.Tuple([
+  S.Finite.check(S.isGreaterThanOrEqualTo(0)),
+  S.Finite.check(S.isGreaterThanOrEqualTo(0)),
+])
+
+export type FlowEdgeLabelBgPadding = typeof FlowEdgeLabelBgPaddingSchema.Type
+
 export const FlowEdgeReconnectableSchema = S.Union([
   S.Boolean,
   S.Literals(['source', 'target']),
@@ -214,10 +265,22 @@ export const FlowEdgeSchema = S.Struct({
   path: S.optional(FlowEdgePathSchema),
   label: S.optional(S.String),
   data: S.optional(S.JsonObject),
-  markerStart: S.optional(FlowEdgeMarkerSchema),
-  markerEnd: S.optional(FlowEdgeMarkerSchema),
+  markerStart: S.optional(FlowEdgeMarkerOptionSchema),
+  markerEnd: S.optional(FlowEdgeMarkerOptionSchema),
   stroke: S.optional(FlowEdgeStrokeSchema),
   strokeWidth: S.optional(S.Finite.check(S.isGreaterThan(0))),
+  /** Inline style applied to the visible edge path. */
+  style: S.optional(FlowStyleSchema),
+  /** Extra classes applied to the edge group. */
+  className: S.optional(FlowClassNameSchema),
+  /** Dashed, moving stroke; adds the `animated` class. */
+  animated: S.optional(S.Boolean),
+  labelStyle: S.optional(FlowStyleSchema),
+  /** Draw a background rectangle behind the label; defaults to true. */
+  labelShowBg: S.optional(S.Boolean),
+  labelBgStyle: S.optional(FlowStyleSchema),
+  labelBgPadding: S.optional(FlowEdgeLabelBgPaddingSchema),
+  labelBgBorderRadius: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
   selected: S.optional(S.Boolean),
   deletable: S.optional(S.Boolean),
   selectable: S.optional(S.Boolean),

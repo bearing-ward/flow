@@ -107,7 +107,6 @@ interface Identified {
 }
 
 type NodeUtilityItem = FlowNode & {
-  readonly measured?: { readonly width: number; readonly height: number }
   readonly width?: number
   readonly height?: number
   readonly resizing?: boolean

@@ -2,6 +2,7 @@ import { Effect, Predicate, Schema as S, SchemaIssue } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import * as frozen from '../../../conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.js'
+import { legacyV1Input } from '../../../conformance/src/legacy-v1-input.ts'
 import {
   decodeSavedFlowDocument,
   decodeSavedFlowSession,
@@ -203,7 +204,7 @@ describe('complete single v2 persistence contract', () => {
       encodeVersionedFlowSession(document, viewport)
     ).toEqualTypeOf<SavedVersionedFlowSession>()
     expect(encodeVersionedFlowSession(document, viewport)).toStrictEqual(
-      frozen.encodeSavedFlowSession(document, viewport)
+      frozen.encodeSavedFlowSession(legacyV1Input(document), viewport)
     )
     expect(Effect.runSync(decodeVersionedFlowSession(saved))).toStrictEqual(
       Effect.runSync(frozen.decodeSavedFlowSession(saved))
@@ -423,7 +424,7 @@ describe('complete single v2 persistence contract', () => {
     ]).toStrictEqual([2, false, false])
   })
 
-  it.each([0, 3, '2', null])(
+  it.each([0, 4, '2', null])(
     'rejects unknown/malformed version %j',
     (version) => {
       expect(
@@ -627,9 +628,11 @@ describe('saved JSON output ownership', () => {
       encodeSavedFlowSession(input, viewport),
     ]
 
-    expect(outputs[0]).toStrictEqual(frozen.encodeSavedFlowDocument(input))
+    expect(outputs[0]).toStrictEqual(
+      frozen.encodeSavedFlowDocument(legacyV1Input(input))
+    )
     expect(outputs[1]).toStrictEqual(
-      frozen.encodeSavedFlowSession(input, viewport)
+      frozen.encodeSavedFlowSession(legacyV1Input(input), viewport)
     )
     const independent = encodeSavedFlowSession(input, viewport)
 
@@ -662,7 +665,7 @@ describe('legacy-representable endpoint presence', () => {
     const saved = encodeVersionedFlowSession(document, viewport)
     expect(saved.version).toBe(1)
     expect(saved).toStrictEqual(
-      frozen.encodeSavedFlowSession(document, viewport)
+      frozen.encodeSavedFlowSession(legacyV1Input(document), viewport)
     )
     expect(
       Object.hasOwn(saved.document.edges[0] ?? {}, 'sourceHandle')
