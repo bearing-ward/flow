@@ -1,10 +1,13 @@
 import * as S from 'effect/Schema'
 
 import type { FitViewOptions, FlowController } from './mount-flow.ts'
+import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
+import { controllerCanvas } from './ui/overlay.ts'
 
 const ControlsOptionsSchema = S.Struct({
   showZoom: S.optional(S.Boolean),
   showFitView: S.optional(S.Boolean),
+  showInteractive: S.optional(S.Boolean),
   position: S.optional(
     S.Literals([
       'top-left',
@@ -26,20 +29,26 @@ export type FlowControlsOptions = typeof ControlsOptionsSchema.Encoded & {
   readonly onZoomIn?: (() => void) | undefined
   readonly onZoomOut?: (() => void) | undefined
   readonly onFitView?: (() => void) | undefined
+  /** Called with the next interactive state after the lock button toggles. */
+  readonly onInteractiveChange?: ((interactive: boolean) => void) | undefined
   readonly style?: Readonly<Record<string, string>> | undefined
 }
 
 export interface FlowControlsMount {
   readonly element: HTMLDivElement
+  /** Whether nodes and edges currently accept drag, connect and select gestures. */
+  readonly isInteractive: () => boolean
+  readonly setInteractive: (interactive: boolean) => void
   readonly destroy: () => void
 }
 
-type ControlAction = 'zoom-in' | 'zoom-out' | 'fit'
+type ControlAction = 'zoom-in' | 'zoom-out' | 'fit' | 'interactive'
 
 const actionLabels: Record<ControlAction, { label: string; text: string }> = {
   'zoom-in': { label: 'Zoom in', text: '+' },
   'zoom-out': { label: 'Zoom out', text: '−' },
   fit: { label: 'Fit view', text: 'Fit' },
+  interactive: { label: 'Toggle interactivity', text: 'Lock' },
 }
 
 interface RestoredButton {
@@ -61,6 +70,7 @@ export const createFlowControls = (
     onZoomIn: input.onZoomIn,
     onZoomOut: input.onZoomOut,
     onFitView: input.onFitView,
+    onInteractiveChange: input.onInteractiveChange,
     style: input.style,
   }
 
@@ -105,6 +115,26 @@ export const createFlowControls = (
   if (options.showFitView !== false) {
     addAction('fit')
   }
+
+  if (options.showInteractive !== false) {
+    addAction('interactive')
+  }
+
+  const lock = createFlowInteractivityLock(() => controllerCanvas(controller))
+
+  const setInteractive = (interactive: boolean): void => {
+    lock.setInteractive(interactive)
+    group.dataset.interactive = String(interactive)
+
+    const button = buttons.get('interactive')
+
+    if (button) {
+      button.setAttribute('aria-pressed', String(!interactive))
+      button.textContent = interactive ? 'Lock' : 'Unlock'
+    }
+  }
+
+  setInteractive(true)
 
   const restored: RestoredButton[] = (options.children ?? []).map(
     (element) => ({
@@ -172,6 +202,13 @@ export const createFlowControls = (
         break
       }
 
+      case 'interactive': {
+        const next = !lock.isInteractive()
+        setInteractive(next)
+        options.onInteractiveChange?.(next)
+        break
+      }
+
       default: {
         break
       }
@@ -186,12 +223,15 @@ export const createFlowControls = (
 
   return {
     element: group,
+    isInteractive: lock.isInteractive,
+    setInteractive,
     destroy: () => {
       if (destroyed) {
         return
       }
 
       destroyed = true
+      lock.release()
       unsubscribe()
       group.removeEventListener('click', onClick)
       group.remove()

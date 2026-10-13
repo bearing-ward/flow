@@ -499,3 +499,72 @@
     animation: none !important;
   }
 }
+
+/* Plan 106 UI catalog panels. */
+.flow-vue-zoom-slider,
+.flow-vue-zoom-select,
+.flow-vue-node-search,
+.flow-vue-devtools {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  font:
+    12px/1.4 system-ui,
+    sans-serif;
+}
+.flow-vue-zoom-slider[data-orientation='vertical'] {
+  flex-direction: column;
+}
+.flow-vue-zoom-slider[data-orientation='vertical'] .flow-vue-zoom-slider-range {
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+.flow-vue-zoom-slider-percent {
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+}
+.flow-vue-node-search,
+.flow-vue-devtools {
+  flex-direction: column;
+  align-items: stretch;
+}
+.flow-vue-node-search-results {
+  max-height: 180px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+.flow-vue-node-search-option {
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.flow-vue-node-search-option[aria-selected='true'] {
+  background: #dbeafe;
+}
+.flow-vue-devtools {
+  max-width: 320px;
+  max-height: 60%;
+  overflow: auto;
+}
+.flow-vue-devtools-toggles {
+  display: flex;
+  gap: 4px;
+}
+.flow-vue-devtools-toggles [aria-pressed='true'] {
+  background: #dbeafe;
+}
+.flow-vue-devtools-panel ul,
+.flow-vue-devtools-panel ol {
+  margin: 0;
+  padding-left: 16px;
+}
+.flow-vue-node-search [hidden],
+.flow-vue-devtools [hidden] {
+  display: none !important;
+}

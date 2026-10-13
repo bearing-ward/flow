@@ -4105,6 +4105,7 @@ export const FlowCanvas = defineComponent({
       applyEditResolved,
       updateViewport,
       getViewport,
+      getViewportLimits: () => viewportLimits,
       getZoom,
       viewportInitialized,
       screenToFlowPosition,

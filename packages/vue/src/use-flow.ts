@@ -25,6 +25,7 @@ import type {
   ViewportAnimationOptions,
   ViewportBounds,
   ViewportOperationResult,
+  ViewportLimits,
   ViewportPadding,
 } from '@flow/core'
 import {
@@ -164,6 +165,8 @@ export interface FlowEditor {
   ) => Promise<FlowEditResult>
   readonly updateViewport: (viewport: Viewport) => void
   readonly getViewport: () => Viewport
+  /** Zoom limits of the providing canvas. Optional for custom providers. */
+  readonly getViewportLimits?: () => ViewportLimits
   readonly getZoom: () => number
   readonly viewportInitialized: () => boolean
   readonly screenToFlowPosition: (position: { x: number; y: number }) => {
@@ -319,6 +322,8 @@ export interface FlowActions {
   ) => Promise<FlowDeleteResult>
   readonly updateViewport: FlowEditor['updateViewport']
   readonly getViewport: FlowEditor['getViewport']
+  /** Zoom limits of the nearest FlowCanvas. */
+  readonly getViewportLimits: () => ViewportLimits
   readonly getZoom: FlowEditor['getZoom']
   readonly viewportInitialized: FlowEditor['viewportInitialized']
   readonly screenToFlowPosition: FlowEditor['screenToFlowPosition']
@@ -457,6 +462,8 @@ export const useFlow = (): FlowActions => {
     updateDocument: editor.updateDocument,
     updateViewport: editor.updateViewport,
     getViewport: editor.getViewport,
+    getViewportLimits: () =>
+      editor.getViewportLimits?.() ?? { minZoom: 0.4, maxZoom: 2 },
     getZoom: editor.getZoom,
     viewportInitialized: editor.viewportInitialized,
     screenToFlowPosition: editor.screenToFlowPosition,

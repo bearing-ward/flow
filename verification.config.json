@@ -1,10 +1,22 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 104: Vanilla and Foldkit BaseEdge and EdgeText",
-  "checks": [],
+  "activeWork": "Plan 106: UI catalog controls",
+  "checks": ["docs", "catalog", "examples", "api-members", "consumer"],
   "browserTests": {
-    "vanilla": ["base-edge.e2e.ts", "renderer-contract.e2e.ts"],
-    "vue": ["base-edge.e2e.ts"],
-    "foldkit": ["base-edge.e2e.ts", "canvas-ui-contract.e2e.ts"]
+    "vanilla": [
+      "ui-controls.e2e.ts",
+      "canvas-ui-contract.e2e.ts",
+      "canvas-ui.e2e.ts"
+    ],
+    "vue": [
+      "ui-controls.e2e.ts",
+      "canvas-ui-contract.e2e.ts",
+      "edge-toolbar.e2e.ts"
+    ],
+    "foldkit": [
+      "ui-controls.e2e.ts",
+      "canvas-ui-contract.e2e.ts",
+      "toolbars.e2e.ts"
+    ]
   }
 }

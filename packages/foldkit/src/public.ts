@@ -87,6 +87,29 @@ export type {
 
 export { mountFlowEdgeToolbar, mountFlowNodeToolbar } from './toolbar.ts'
 
+export { mountFlowZoomSelect, mountFlowZoomSlider } from './ui/zoom-controls.ts'
+
+export type {
+  FoldkitZoomControlMount,
+  FoldkitZoomControlOptions,
+  FoldkitZoomSliderOptions,
+} from './ui/zoom-controls.ts'
+
+export { mountFlowNodeSearch } from './ui/node-search.ts'
+
+export type {
+  FoldkitNodeSearchMount,
+  FoldkitNodeSearchOptions,
+} from './ui/node-search.ts'
+
+export { mountFlowDevTools } from './ui/devtools.ts'
+
+export type {
+  FoldkitDevToolsMount,
+  FoldkitDevToolsOptions,
+  FoldkitDevToolsPanel,
+} from './ui/devtools.ts'
+
 export type {
   FlowEdgeToolbarMount,
   FlowEdgeToolbarOptions,

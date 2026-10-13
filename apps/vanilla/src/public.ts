@@ -122,3 +122,38 @@ export type { FlowAppendix, FlowAppendixOptions } from './ui/appendix.ts'
 export { createFlowTooltip } from './ui/tooltip.ts'
 
 export type { FlowTooltip, FlowTooltipOptions } from './ui/tooltip.ts'
+
+export {
+  createFlowZoomSelect,
+  createFlowZoomSlider,
+} from './ui/zoom-controls.ts'
+
+export type {
+  FlowZoomControlMount,
+  FlowZoomSelectOptions,
+  FlowZoomSliderOptions,
+} from './ui/zoom-controls.ts'
+
+export { createFlowNodeSearch } from './ui/node-search.ts'
+
+export type {
+  FlowNodeSearchMount,
+  FlowNodeSearchOptions,
+} from './ui/node-search.ts'
+
+export { createFlowDevTools } from './ui/devtools.ts'
+
+export type {
+  FlowDevToolsMount,
+  FlowDevToolsOptions,
+  FlowDevToolsPanel,
+} from './ui/devtools.ts'
+
+export { createFlowEdgeToolbar, createFlowNodeToolbar } from './ui/toolbar.ts'
+
+export type {
+  FlowEdgeToolbarMount,
+  FlowEdgeToolbarOptions,
+  FlowNodeToolbarMount,
+  FlowNodeToolbarOptions,
+} from './ui/toolbar.ts'
