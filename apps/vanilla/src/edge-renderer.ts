@@ -7,6 +7,7 @@ import {
   flowEdgeRendererProps,
   flowNodeBounds,
   orderFlowEdges,
+  sameFlowEdgeRendererProps,
   resolveEdgeHandles,
   smoothStepEdgePath,
   simpleBezierEdgePath,
@@ -19,6 +20,7 @@ import type {
   FlowEdgeMarker,
   FlowNode,
   FlowDefaultEdgeOptions,
+  FlowEdgeRendererProps,
   FlowGraphView,
   HandleId,
   MeasuredHandle,
@@ -214,6 +216,9 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   labelLayer.setAttribute('aria-hidden', 'true')
   layer.append(definitions, pathLayer)
   viewport.append(layer)
+
+  // The props each custom edge renderer last received, to skip unchanged frames.
+  const sentProps = new WeakMap<EdgeEntry, FlowEdgeRendererProps>()
 
   const edgeLabelRenderer = globalThis.document.createElement('div')
   edgeLabelRenderer.classList.add('flow-edge-label-renderer')
@@ -761,6 +766,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           if (instance === undefined) {
             entry.renderer = { kind: 'default' }
           } else {
+            sentProps.set(entry, context.props)
             runEffect(
               Scope.addFinalizer(
                 entry.scope,
@@ -781,9 +787,24 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           }
 
           added += 1
-        } else if (entry.renderer.kind === 'custom' && !projectionOnly) {
-          entry.renderer.instance.update(edge, context)
-          updated += 1
+        } else if (entry.renderer.kind === 'custom') {
+          const { instance } = entry.renderer
+          const positionOnly = projectionOnly || onlyEdges !== undefined
+
+          if (positionOnly && instance.updateProps !== undefined) {
+            // Opted-in renderers get per-frame props instead of `update`.
+            if (
+              !sameFlowEdgeRendererProps(sentProps.get(entry), context.props)
+            ) {
+              sentProps.set(entry, context.props)
+              instance.updateProps(context.props, context)
+              updated += 1
+            }
+          } else if (!projectionOnly) {
+            sentProps.set(entry, context.props)
+            instance.update(edge, context)
+            updated += 1
+          }
         }
 
         if (!owns()) {

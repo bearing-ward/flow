@@ -551,6 +551,7 @@ export {
   flowEdgeRendererProps,
   flowNodeBounds,
   flowNodeRendererProps,
+  sameFlowEdgeRendererProps,
   sameFlowNodeRendererProps,
 } from './domain/flow-renderer-props.ts'
 

@@ -52,6 +52,12 @@ export interface FlowEdgeRendererProps {
   readonly pathType: FlowEdgePath
   readonly source: NodeId
   readonly target: NodeId
+  /**
+   * The resolved handle ids. Vanilla and Vue only render edges whose handles
+   * resolve, so they always pass ids. Foldkit still draws an edge from a
+   * default side when a handle does not resolve and passes null, matching
+   * React Flow's `string | null`.
+   */
   readonly sourceHandleId: HandleId | null
   readonly targetHandleId: HandleId | null
   readonly sourceX: number
@@ -91,6 +97,61 @@ export interface FlowEdgeRendererPropsInput {
   /** Overrides the built-in label anchor when the host already computed one. */
   readonly labelPosition?: XYPosition | undefined
 }
+
+const nodeBoundsKeys = [
+  'id',
+  'node',
+  'x',
+  'y',
+  'width',
+  'height',
+] as const satisfies readonly (keyof FlowNodeBounds)[]
+
+const edgeRendererPropKeys = [
+  'id',
+  'type',
+  'pathType',
+  'source',
+  'target',
+  'sourceHandleId',
+  'targetHandleId',
+  'sourceX',
+  'sourceY',
+  'targetX',
+  'targetY',
+  'sourcePosition',
+  'targetPosition',
+  'selected',
+  'selectable',
+  'deletable',
+  'data',
+  'label',
+  'markerStart',
+  'markerEnd',
+  'interactionWidth',
+  'labelX',
+  'labelY',
+] as const satisfies readonly Exclude<
+  keyof FlowEdgeRendererProps,
+  'sourceNode' | 'targetNode'
+>[]
+
+const sameNodeBounds = (left: FlowNodeBounds, right: FlowNodeBounds) =>
+  left === right || nodeBoundsKeys.every((key) => left[key] === right[key])
+
+/**
+ * Whether two edge prop snapshots would render identically: fields compare by
+ * identity, `sourceNode`/`targetNode` by their bounds. Hosts use it to keep
+ * prop identity across pan and zoom renders and to skip per-frame updates.
+ */
+export const sameFlowEdgeRendererProps = (
+  left: FlowEdgeRendererProps | undefined,
+  right: FlowEdgeRendererProps
+): boolean =>
+  left !== undefined &&
+  edgeRendererPropKeys.every((key) => left[key] === right[key]) &&
+  sameNodeBounds(left.sourceNode, right.sourceNode) &&
+  sameNodeBounds(left.targetNode, right.targetNode)
 
 /** Compute one custom edge renderer's props from resolved edge geometry. */
 export const flowEdgeRendererProps = (
@@ -138,7 +199,12 @@ export const flowEdgeRendererProps = (
   }
 }
 
-/** Host-neutral props for a custom node renderer, modeled on React Flow `NodeProps`. */
+/**
+ * Host-neutral props for a custom node renderer, modeled on React Flow
+ * `NodeProps`. `sourcePosition`, `targetPosition` and `dragHandle` are
+ * omitted: Flow nodes declare handle sides on `handles` and have no
+ * drag-handle selector field.
+ */
 export interface FlowNodeRendererProps {
   readonly id: NodeId
   readonly type: string
@@ -243,7 +309,8 @@ export interface FlowConnectionLineProps {
   readonly toY: number
   readonly fromPosition: FlowPosition
   readonly toPosition: FlowPosition
-  readonly toNode: FlowNode | null
+  /** Bounds of the hovered node, the same shape as `fromNode`. */
+  readonly toNode: FlowNodeBounds | null
   readonly toHandle: FlowHandle | null
   readonly connectionStatus: 'valid' | 'invalid' | null
   readonly pointer: XYPosition
@@ -369,12 +436,21 @@ export const flowConnectionLineProps = (
       : { nodeId: candidate.source, handleId: candidate.sourceHandle }
   }
 
-  const toNode =
-    toEnd === undefined ? undefined : input.graph.nodes.get(toEnd.nodeId)?.node
+  const toGraphNode =
+    toEnd === undefined ? undefined : input.graph.nodes.get(toEnd.nodeId)
 
-  const toHandle = toNode?.handles?.find(({ id }) => id === toEnd?.handleId)
+  const toHandle = toGraphNode?.node.handles?.find(
+    ({ id }) => id === toEnd?.handleId
+  )
+
   const fromPosition = fromHandle.side
-  const toPosition = toHandle?.side ?? oppositePosition[fromPosition]
+
+  // React Flow takes the hovered handle's side only for a valid connection
+  // (XYHandle.ts:192); otherwise the line ends facing the origin handle.
+  const toPosition =
+    preview.valid === true && toHandle !== undefined
+      ? toHandle.side
+      : oppositePosition[fromPosition]
 
   let connectionStatus: FlowConnectionLineProps['connectionStatus'] = null
 
@@ -397,7 +473,7 @@ export const flowConnectionLineProps = (
     fromNode: flowNodeBounds(fromGraphNode),
     fromHandle,
     ...params,
-    toNode: toNode ?? null,
+    toNode: toGraphNode === undefined ? null : flowNodeBounds(toGraphNode),
     toHandle: toHandle ?? null,
     connectionStatus,
     pointer: preview.to,

@@ -1,6 +1,7 @@
 import { decodeFlowDocument, getBezierPath } from '@flow/core'
 import type {
   FlowConnectionLineType,
+  FlowNode,
   Viewport,
   ViewportOperationResult,
 } from '@flow/core'
@@ -50,8 +51,11 @@ const ProbeEdge = defineComponent({
     targetNode: { type: Object as PropType<FlowNodeBounds>, required: true },
   },
   setup(props) {
+    let renders = 0
+
     return () => {
       const [path] = getBezierPath(props)
+      renders += 1
 
       return [
         h('path', {
@@ -61,6 +65,7 @@ const ProbeEdge = defineComponent({
           'stroke-width': 2,
           'marker-end': props.markerEnd,
           'data-testid': 'probe-edge-path',
+          'data-renders': renders,
           'data-selected': String(props.selected),
           'data-target-node': `${props.targetNode.id}:${props.targetNode.width}`,
         }),
@@ -102,11 +107,16 @@ const ProbeNode = defineComponent({
     height: { type: Number, default: undefined },
   },
   setup(props) {
-    return () =>
-      h(
+    let renders = 0
+
+    return () => {
+      renders += 1
+
+      return h(
         'div',
         {
           'data-testid': `probe-node-${props.id}`,
+          'data-renders': renders,
           'data-selected': String(props.selected),
           'data-dragging': String(props.dragging),
           'data-x': props.positionAbsoluteX,
@@ -116,6 +126,26 @@ const ProbeNode = defineComponent({
           'data-size': `${props.width}x${props.height}`,
         },
         props.id
+      )
+    }
+  },
+})
+
+/** A node written against the original contract: it declares only `node`. */
+const LegacyNode = defineComponent({
+  props: {
+    // SAFETY: FlowCanvas supplies the accepted node snapshot.
+    node: { type: Object as PropType<FlowNode>, required: true },
+  },
+  setup(props, { attrs }) {
+    return () =>
+      h(
+        'div',
+        {
+          'data-testid': `legacy-node-${props.node.id}`,
+          'data-fallthrough': Object.keys(attrs).join(','),
+        },
+        props.node.label
       )
   },
 })
@@ -184,6 +214,7 @@ const initialDocument = () =>
         {
           id: 'c',
           label: 'C',
+          type: 'legacy',
           position: { x: 420, y: 40 },
           handles: [{ id: 'in', kind: 'target', side: 'left' }],
         },
@@ -230,7 +261,7 @@ export const mountVueRendererPropsFixture = (
       setup() {
         const common = {
           defaultDocument: initialDocument(),
-          nodeTypes: { probe: ProbeNode },
+          nodeTypes: { probe: ProbeNode, legacy: LegacyNode },
           edgeTypes: { probe: ProbeEdge },
           selectNodesOnDrag: true,
           style: { width: '720px', height: '420px' },

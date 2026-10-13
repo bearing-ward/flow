@@ -33,6 +33,7 @@ const documentInput = {
     {
       id: 'c',
       label: 'C',
+      type: 'legacy',
       position: { x: 420, y: 40 },
       handles: [{ id: 'in', kind: 'target', side: 'left' }],
     },
@@ -50,6 +51,15 @@ const documentInput = {
     },
     {
       id: 'builtin',
+      source: 'a',
+      sourceHandle: 'out',
+      target: 'b',
+      targetHandle: 'in',
+      path: 'bezier',
+    },
+    {
+      id: 'legacy',
+      type: 'legacy',
       source: 'a',
       sourceHandle: 'out',
       target: 'b',
@@ -74,6 +84,9 @@ const nodeTypes: FoldkitNodeTypes = {
       ],
       [node.label]
     ),
+  // Written against the original contract: two arguments, no props.
+  legacy: (node, h) =>
+    h.div([h.DataAttribute('testid', `legacy-node-${node.id}`)], [node.label]),
 }
 
 const edgeTypes: FoldkitEdgeTypes = {
@@ -112,6 +125,18 @@ const edgeTypes: FoldkitEdgeTypes = {
       ...(props.markerEnd === undefined ? [] : [h.MarkerEnd(props.markerEnd)]),
     ])
   },
+}
+
+const legacyEdgeTypes: FoldkitEdgeTypes = {
+  ...edgeTypes,
+  // Written against the original contract: it draws the geometry path.
+  legacy: (edge, geometry, h) =>
+    h.path([
+      h.DataAttribute('testid', `legacy-edge-${edge.id}`),
+      h.D(geometry.path),
+      h.Fill('none'),
+      h.Stroke('#64748b'),
+    ]),
 }
 
 const probePreview: FoldkitConnectionPreviewRenderer = (state, h, line) =>
@@ -172,11 +197,15 @@ export const mountFoldkitRendererPropsFixture = (
       options.customPreview
         ? {
             nodeTypes,
-            edgeTypes,
+            edgeTypes: legacyEdgeTypes,
             connectionLineType: 'step',
             connectionPreview: probePreview,
           }
-        : { nodeTypes, edgeTypes, connectionLineType: 'bezier' },
+        : {
+            nodeTypes,
+            edgeTypes: legacyEdgeTypes,
+            connectionLineType: 'bezier',
+          },
       undefined,
       'full',
       defaultInteractionOptions

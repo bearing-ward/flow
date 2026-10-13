@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 105: Custom renderer props contract",
+  "activeWork": "Plan 105b: Renderer props contract review fixes",
   "checks": [],
   "browserTests": {
     "vanilla": [
@@ -17,6 +17,7 @@
     "foldkit": [
       "renderer-props.e2e.ts",
       "base-edge.e2e.ts",
+      "renderer-contract.e2e.ts",
       "canvas-ui-contract.e2e.ts"
     ]
   }

@@ -1,8 +1,11 @@
+import { connectionLinePath } from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 import {
   centerOf,
+  expectBezierPreviewMatchesCore,
+  expectCustomEdgeFollowsDrag,
   expectDraggingDuringDrag,
   expectEdgeLabelFollowsZoom,
 } from '../../shared-e2e/renderer-props.ts'
@@ -42,6 +45,10 @@ const mount = async (page: Page, customPreview: boolean) => {
   }, customPreview)
 }
 
+const bezierLinePath = (
+  params: Parameters<typeof connectionLinePath>[1]
+): string => connectionLinePath('bezier', params)
+
 const sourceHandle = '[data-node-id="a"] [data-handle-id="out"]'
 
 const probePath = '[data-testid="probe-edge-path"]'
@@ -77,7 +84,10 @@ test('Foldkit custom renderers receive React Flow style edge and node props', as
   await page.mouse.move(from.x + 120, from.y + 90, { steps: 5 })
   const preview = page.locator('.flow-foldkit-connection-preview-path')
   await expect(preview).toHaveAttribute('data-connection-line-type', 'bezier')
-  await expect(preview).toHaveAttribute('d', /^M[\d.-]+,[\d.-]+ C/u)
+  await expectBezierPreviewMatchesCore(preview, bezierLinePath, {
+    fromPosition: 'right',
+    toPosition: 'left',
+  })
   await page.mouse.up()
 
   const node = page.getByTestId('probe-node-a')
@@ -135,4 +145,50 @@ test('Foldkit custom connection previews receive connection line props', async (
   await expect(preview).toHaveAttribute('data-to-node', 'c')
   await expect(preview).toHaveAttribute('data-status', 'valid')
   await page.mouse.up()
+})
+
+test('Foldkit custom edges using getBezierPath(props) follow a node drag', async ({
+  page,
+}) => {
+  await mount(page, false)
+
+  // Foldkit commits the dragged position on release, so both edges follow
+  // once the drag frames end.
+  await expectCustomEdgeFollowsDrag(
+    page,
+    page.locator('.flow-foldkit-node[data-node-id="b"]'),
+    {
+      custom: page.getByTestId('probe-edge-path'),
+      builtin: page.locator(
+        '.flow-foldkit-edge[data-edge-id="builtin"] .flow-foldkit-edge-path'
+      ),
+    },
+    { x: -60, y: 70 },
+    { duringDrag: false }
+  )
+})
+
+test('Foldkit renderers written against the original contract still work', async ({
+  page,
+}) => {
+  await mount(page, false)
+
+  await expect(page.getByTestId('legacy-node-c')).toHaveText('C')
+
+  const legacyEdge = page.getByTestId('legacy-edge-legacy')
+  const before = await legacyEdge.getAttribute('d')
+  expect(before).toMatch(/^M/u)
+
+  // The geometry-path edge follows a drag of its target node.
+  const start = await centerOf(
+    page.locator('.flow-foldkit-node[data-node-id="b"]')
+  )
+
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 3, start.y + 3)
+  await page.mouse.move(start.x + 40, start.y + 50, { steps: 6 })
+  await page.mouse.up()
+  await expect(legacyEdge).not.toHaveAttribute('d', before ?? '')
+  await expect(page.getByTestId('legacy-node-c')).toHaveText('C')
 })
