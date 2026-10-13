@@ -11,6 +11,7 @@ import {
   flowEdgeRendererProps,
   flowNodeBounds,
   flowNodeRendererProps,
+  sameFlowEdgeRendererProps,
 } from './flow-renderer-props.ts'
 import { FlowDocumentSchema } from './flow.schema.ts'
 
@@ -32,7 +33,10 @@ const document = S.decodeUnknownSync(FlowDocumentSchema)({
       selected: true,
       connectable: false,
       data: { tone: 'warm' },
-      handles: [{ id: 'b-in', kind: 'target', side: 'left' }],
+      handles: [
+        { id: 'b-in', kind: 'target', side: 'left' },
+        { id: 'b-top', kind: 'target', side: 'top' },
+      ],
     },
   ],
   edges: [
@@ -59,6 +63,25 @@ const graphNode = (id: string) => {
 
   return found
 }
+
+const lineFor = (valid: boolean | null) =>
+  flowConnectionLineProps({
+    graph,
+    connectionLineType: 'bezier',
+    origin: { nodeId: 'a', handleId: 'a-out' },
+    preview: S.decodeUnknownSync(ConnectionPreviewStateSchema)({
+      kind: 'connect',
+      from: { x: 100, y: 20 },
+      to: { x: 350, y: 100 },
+      candidate: {
+        source: 'a',
+        sourceHandle: 'a-out',
+        target: 'b',
+        targetHandle: 'b-top',
+      },
+      valid,
+    }),
+  })
 
 describe('renderer props', () => {
   it('gives custom edges the endpoint geometry the core path helpers need', () => {
@@ -220,5 +243,47 @@ describe('renderer props', () => {
         borderRadius: 0,
       })[0]
     )
+  })
+
+  it('takes toPosition from the hovered handle only for a valid connection', () => {
+    expect(lineFor(true)).toMatchObject({
+      toPosition: 'top',
+      toHandle: { id: 'b-top' },
+      toNode: { id: 'b', x: 300, y: 100, width: 100, height: 40 },
+    })
+    expect(lineFor(false)).toMatchObject({
+      toPosition: 'left',
+      toHandle: { id: 'b-top' },
+      connectionStatus: 'invalid',
+    })
+    expect(lineFor(null)?.toPosition).toBe('left')
+  })
+
+  it('compares edge props by value, with node bounds by field', () => {
+    const [edge] = document.edges
+
+    if (edge === undefined) {
+      throw new Error('missing edge')
+    }
+
+    const propsAt = (targetX: number) =>
+      flowEdgeRendererProps({
+        edge,
+        source: { x: 100, y: 20 },
+        target: { x: targetX, y: 120 },
+        sourcePosition: 'right',
+        targetPosition: 'left',
+        sourceHandleId: null,
+        targetHandleId: null,
+        sourceNode: flowNodeBounds(graphNode('a')),
+        targetNode: flowNodeBounds(graphNode('b')),
+        markerStart: undefined,
+        markerEnd: undefined,
+        defaultInteractionWidth: 20,
+      })
+
+    expect(sameFlowEdgeRendererProps(propsAt(300), propsAt(300))).toBeTruthy()
+    expect(sameFlowEdgeRendererProps(propsAt(300), propsAt(310))).toBeFalsy()
+    expect(sameFlowEdgeRendererProps(undefined, propsAt(300))).toBeFalsy()
   })
 })

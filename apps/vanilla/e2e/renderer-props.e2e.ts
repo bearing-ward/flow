@@ -1,8 +1,11 @@
+import { connectionLinePath } from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 import {
   centerOf,
+  expectBezierPreviewMatchesCore,
+  expectCustomEdgeFollowsDrag,
   expectDraggingDuringDrag,
   expectEdgeLabelFollowsZoom,
 } from '../../shared-e2e/renderer-props.ts'
@@ -41,6 +44,10 @@ const mount = async (page: Page, customPreview: boolean) => {
   }, customPreview)
 }
 
+const bezierLinePath = (
+  params: Parameters<typeof connectionLinePath>[1]
+): string => connectionLinePath('bezier', params)
+
 const sourceHandle = '.flow-handle[data-node-id="a"][data-handle-id="out"]'
 
 const probePath = '[data-testid="probe-edge-path"]'
@@ -74,7 +81,10 @@ test('Vanilla custom renderers receive React Flow style edge and node props', as
   await page.mouse.move(from.x + 120, from.y + 90, { steps: 5 })
   const preview = page.locator('.flow-connection-preview-path')
   await expect(preview).toHaveAttribute('data-connection-line-type', 'bezier')
-  await expect(preview).toHaveAttribute('d', /^M[\d.-]+,[\d.-]+ C/u)
+  await expectBezierPreviewMatchesCore(preview, bezierLinePath, {
+    fromPosition: 'right',
+    toPosition: 'left',
+  })
   await page.mouse.up()
 
   const node = page.getByTestId('probe-node-a')
@@ -132,4 +142,74 @@ test('Vanilla custom connection previews receive connection line props', async (
   await expect(preview).toHaveAttribute('data-to-node', 'c')
   await expect(preview).toHaveAttribute('data-status', 'valid')
   await page.mouse.up()
+})
+
+test('Vanilla custom edges using getBezierPath(props) follow a node drag', async ({
+  page,
+}) => {
+  await mount(page, false)
+
+  const custom = page.getByTestId('probe-edge-path')
+  const grip = page.locator('[data-testid="flow-node"][data-node-id="b"]')
+  let updatesInDrag: string | null = null
+
+  await expectCustomEdgeFollowsDrag(
+    page,
+    grip,
+    {
+      custom,
+      builtin: page.locator('.flow-edge-path[data-edge-id="builtin"]'),
+    },
+    { x: -60, y: 70 },
+    {
+      duringDrag: true,
+      onDragStarted: async () => {
+        await expect(grip).toHaveClass(/dragging/u)
+        updatesInDrag = await custom.getAttribute('data-updates')
+      },
+      // The opted-in edge follows through updateProps, not update.
+      whileDragging: () =>
+        expect(custom).toHaveAttribute('data-updates', updatesInDrag ?? ''),
+    }
+  )
+})
+
+test('Vanilla renderers written against the original contract still work and skip drag frames', async ({
+  page,
+}) => {
+  await mount(page, false)
+
+  const legacy = page.getByTestId('legacy-node-c')
+  const frame = page.locator('[data-testid="flow-node"][data-node-id="c"]')
+  await expect(legacy).toHaveText('C')
+
+  const start = await centerOf(legacy)
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 3, start.y + 3)
+  await page.mouse.move(start.x + 10, start.y + 8, { steps: 2 })
+  await expect(frame).toHaveClass(/dragging/u)
+
+  // Drag start may select the node, a document change; count from here.
+  const updatesInDrag = Number(await legacy.getAttribute('data-updates'))
+  const boxBefore = await frame.boundingBox()
+  await page.mouse.move(start.x + 60, start.y + 40, { steps: 8 })
+  await expect
+    .poll(async () => {
+      const box = await frame.boundingBox()
+
+      return box?.x
+    })
+    .toBeGreaterThan((boxBefore?.x ?? 0) + 40)
+
+  // Drag frames move the node without re-running update(node).
+  await expect(legacy).toHaveAttribute('data-updates', String(updatesInDrag))
+  await page.mouse.up()
+  await expect(frame).not.toHaveClass(/dragging/u)
+
+  // The committed position is a document change, which reaches update.
+  await expect
+    .poll(async () => Number(await legacy.getAttribute('data-updates')))
+    .toBeGreaterThan(updatesInDrag)
+  await expect(legacy).toHaveText('C')
 })

@@ -130,3 +130,100 @@ export const expectDraggingDuringDrag = async (
   await page.mouse.up()
   await expect(probe).toHaveAttribute('data-dragging', 'false')
 }
+
+const bezierEndpoints =
+  /^M(?<fromX>[^,]+),(?<fromY>\S+) C\S+ \S+ (?<toX>[^,]+),(?<toY>\S+)$/u
+
+type Side = 'top' | 'right' | 'bottom' | 'left'
+
+interface BezierLineParams {
+  readonly fromX: number
+  readonly fromY: number
+  readonly toX: number
+  readonly toY: number
+  readonly fromPosition: Side
+  readonly toPosition: Side
+}
+
+/**
+ * Assert a built-in bezier preview's `d` equals core's connection line path
+ * (`linePath`, the host passes `connectionLinePath('bezier', …)`) for its own
+ * endpoints, so the control points follow React Flow's formula.
+ */
+export const expectBezierPreviewMatchesCore = async (
+  preview: Locator,
+  linePath: (params: BezierLineParams) => string,
+  positions: { readonly fromPosition: Side; readonly toPosition: Side }
+) => {
+  const d = (await preview.getAttribute('d')) ?? ''
+  const endpoints = bezierEndpoints.exec(d)?.groups
+
+  if (endpoints === undefined) {
+    throw new Error(`Expected a bezier preview path, got "${d}"`)
+  }
+
+  expect(d).toBe(
+    linePath({
+      fromX: Number(endpoints.fromX),
+      fromY: Number(endpoints.fromY),
+      toX: Number(endpoints.toX),
+      toY: Number(endpoints.toY),
+      ...positions,
+    })
+  )
+}
+
+/**
+ * Drag `grip` by `delta` and assert the custom edge path equals the built-in
+ * edge path after the drag frames, and that both moved. With `duringDrag`,
+ * also assert they match while the pointer is still down.
+ */
+export const expectCustomEdgeFollowsDrag = async (
+  page: Page,
+  grip: Locator,
+  paths: { readonly custom: Locator; readonly builtin: Locator },
+  delta: { readonly x: number; readonly y: number },
+  options: {
+    readonly duringDrag: boolean
+    /** Runs once the drag has started, before the remaining drag frames. */
+    readonly onDragStarted?: (() => Promise<void>) | undefined
+    /** Extra checks to run before the pointer is released. */
+    readonly whileDragging?: (() => Promise<void>) | undefined
+  }
+) => {
+  const before = await paths.builtin.getAttribute('d')
+
+  await expect(paths.custom).toHaveAttribute('d', before ?? '')
+
+  const start = await centerOf(grip)
+
+  const matchesBuiltin = async () => {
+    await expect
+      .poll(async () => {
+        const builtin = await paths.builtin.getAttribute('d')
+        const custom = await paths.custom.getAttribute('d')
+
+        return builtin !== before && custom === builtin
+      })
+      .toBe(true)
+  }
+
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  // Thresholds are strict; cross them by 2px before expecting a drag.
+  await page.mouse.move(start.x + 3, start.y + 3)
+  await page.mouse.move(start.x + delta.x / 3, start.y + delta.y / 3, {
+    steps: 2,
+  })
+  await options.onDragStarted?.()
+  await page.mouse.move(start.x + delta.x, start.y + delta.y, { steps: 6 })
+
+  if (options.duringDrag) {
+    await matchesBuiltin()
+  }
+
+  await options.whileDragging?.()
+
+  await page.mouse.up()
+  await matchesBuiltin()
+}

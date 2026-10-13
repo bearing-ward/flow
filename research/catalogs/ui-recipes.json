@@ -1126,7 +1126,7 @@
       "url": "https://reactflow.dev/ui/components/node-search",
       "kind": "component",
       "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
-      "implementationStatus": "not-started",
+      "implementationStatus": "partial",
       "sourcePolicy": "Original searchable control markup and behavior.",
       "dependencies": ["panel"],
       "referenceEvidence": {
@@ -1136,31 +1136,31 @@
       },
       "hosts": {
         "vanilla": {
-          "export": "@flow/vanilla (planned NodeSearch export)",
+          "export": "@flow/vanilla: createFlowNodeSearch, FlowNodeSearchMount, FlowNodeSearchOptions",
           "recipePath": "apps/vanilla/src/ui/node-search.ts",
-          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/node-search",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "test": "apps/vanilla/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers lowercase label filtering, combobox/listbox roles, ArrowUp/ArrowDown active option with aria-activedescendant, Enter and pointer choice, single-node selection through the public edit API, and centring the chosen node at the current zoom. Deviation: centres with setCenter instead of the registry fitView. Upstream runtime comparison unverified."
         },
         "vue": {
-          "export": "@flow/vue (planned NodeSearch component export)",
-          "recipePath": "packages/vue/src/ui/NodeSearch.vue",
-          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/node-search",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vue: FlowNodeSearch",
+          "recipePath": "packages/vue/src/ui/node-search.ts",
+          "test": "apps/vue/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers lowercase label filtering, combobox/listbox roles, ArrowUp/ArrowDown active option with aria-activedescendant, Enter and pointer choice, single-node selection through the public edit API, and centring the chosen node at the current zoom. Deviation: centres with setCenter instead of the registry fitView. Upstream runtime comparison unverified."
         },
         "foldkit": {
-          "export": "@flow/foldkit (planned NodeSearch view export; not yet implemented)",
+          "export": "@flow/foldkit: mountFlowNodeSearch, FoldkitNodeSearchMount, FoldkitNodeSearchOptions",
           "recipePath": "packages/foldkit/src/ui/node-search.ts",
-          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/node-search",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "test": "apps/foldkit/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers lowercase label filtering, combobox/listbox roles, ArrowUp/ArrowDown active option with aria-activedescendant, Enter and pointer choice, single-node selection through the public edit API, and centring the chosen node at the current zoom. Deviation: centres with setCenter instead of the registry fitView. Upstream runtime comparison unverified."
         }
       },
       "requiredOutcome": "Find a node by keyboard, move viewport through public APIs, expose result count and active result, and clear results on escape/selection."
@@ -1171,7 +1171,7 @@
       "url": "https://reactflow.dev/ui/components/zoom-slider",
       "kind": "component",
       "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
-      "implementationStatus": "not-started",
+      "implementationStatus": "partial",
       "sourcePolicy": "Original native range control.",
       "dependencies": ["panel"],
       "referenceEvidence": {
@@ -1181,31 +1181,31 @@
       },
       "hosts": {
         "vanilla": {
-          "export": "@flow/vanilla (planned ZoomSlider export)",
-          "recipePath": "apps/vanilla/src/ui/zoom-slider.ts",
-          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/zoom-slider",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vanilla: createFlowZoomSlider, FlowZoomControlMount, FlowZoomSliderOptions",
+          "recipePath": "apps/vanilla/src/ui/zoom-controls.ts",
+          "test": "apps/vanilla/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers range min/max from canvas zoom limits, pointer fill and keyboard ArrowRight changing viewport zoom, the percentage reset button, and no-pan/no-drag/no-wheel markers. Upstream runtime comparison unverified."
         },
         "vue": {
-          "export": "@flow/vue (planned ZoomSlider component export)",
-          "recipePath": "packages/vue/src/ui/ZoomSlider.vue",
-          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/zoom-slider",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vue: FlowZoomSlider",
+          "recipePath": "packages/vue/src/ui/zoom-controls.ts",
+          "test": "apps/vue/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers range min/max from canvas zoom limits, pointer fill and keyboard ArrowRight changing viewport zoom, the percentage reset button, and no-pan/no-drag/no-wheel markers. Upstream runtime comparison unverified."
         },
         "foldkit": {
-          "export": "@flow/foldkit (planned ZoomSlider view export; not yet implemented)",
-          "recipePath": "packages/foldkit/src/ui/zoom-slider.ts",
-          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/zoom-slider",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/foldkit: mountFlowZoomSlider, FoldkitZoomControlMount, FoldkitZoomSliderOptions",
+          "recipePath": "packages/foldkit/src/ui/zoom-controls.ts",
+          "test": "apps/foldkit/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers range min/max from canvas zoom limits, pointer fill and keyboard ArrowRight changing viewport zoom, the percentage reset button, and no-pan/no-drag/no-wheel markers. Upstream runtime comparison unverified."
         }
       },
       "requiredOutcome": "Adjust zoom with pointer and keyboard, enforce configured bounds, and announce current zoom accessibly."
@@ -1216,7 +1216,7 @@
       "url": "https://reactflow.dev/ui/components/zoom-select",
       "kind": "component",
       "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
-      "implementationStatus": "not-started",
+      "implementationStatus": "partial",
       "sourcePolicy": "Original native select or accessible combobox; no copied assets.",
       "dependencies": ["panel"],
       "referenceEvidence": {
@@ -1226,31 +1226,31 @@
       },
       "hosts": {
         "vanilla": {
-          "export": "@flow/vanilla (planned ZoomSelect export)",
-          "recipePath": "apps/vanilla/src/ui/zoom-select.ts",
-          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/zoom-select",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vanilla: createFlowZoomSelect, FlowZoomControlMount, FlowZoomSelectOptions",
+          "recipePath": "apps/vanilla/src/ui/zoom-controls.ts",
+          "test": "apps/vanilla/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers the native select presets (Fit view, 50%, 100%, 150%, 200%), zoom changes, fit view, and the current-zoom label. Upstream runtime comparison unverified."
         },
         "vue": {
-          "export": "@flow/vue (planned ZoomSelect component export)",
-          "recipePath": "packages/vue/src/ui/ZoomSelect.vue",
-          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/zoom-select",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vue: FlowZoomSelect",
+          "recipePath": "packages/vue/src/ui/zoom-controls.ts",
+          "test": "apps/vue/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers the native select presets (Fit view, 50%, 100%, 150%, 200%), zoom changes, fit view, and the current-zoom label. Upstream runtime comparison unverified."
         },
         "foldkit": {
-          "export": "@flow/foldkit (planned ZoomSelect view export; not yet implemented)",
-          "recipePath": "packages/foldkit/src/ui/zoom-select.ts",
-          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/zoom-select",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/foldkit: mountFlowZoomSelect, FoldkitZoomControlMount, FoldkitZoomControlOptions",
+          "recipePath": "packages/foldkit/src/ui/zoom-controls.ts",
+          "test": "apps/foldkit/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers the native select presets (Fit view, 50%, 100%, 150%, 200%), zoom changes, fit view, and the current-zoom label. Upstream runtime comparison unverified."
         }
       },
       "requiredOutcome": "Choose a preset or fit option with keyboard and pointer, then assert public viewport state and accessible current value."
@@ -1261,7 +1261,7 @@
       "url": "https://reactflow.dev/ui/components/devtools",
       "kind": "component",
       "referenceStatus": "catalog-listed; full option/outcome comparison unverified",
-      "implementationStatus": "not-started",
+      "implementationStatus": "partial",
       "sourcePolicy": "Original inspector UI; diagnostics from public snapshots only.",
       "dependencies": ["panel"],
       "referenceEvidence": {
@@ -1271,31 +1271,31 @@
       },
       "hosts": {
         "vanilla": {
-          "export": "@flow/vanilla (planned DevTools export)",
+          "export": "@flow/vanilla: createFlowDevTools, FlowDevToolsMount, FlowDevToolsOptions, FlowDevToolsPanel",
           "recipePath": "apps/vanilla/src/ui/devtools.ts",
-          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/devtools",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "test": "apps/vanilla/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers aria-pressed panel toggles, a node and edge inspector list from public snapshots, a change log entry for a public position edit, and the viewport logger. Deviation: the node inspector is a panel list, not per-node overlays, and the change logger derives entries from accepted state changes. Upstream runtime comparison unverified."
         },
         "vue": {
-          "export": "@flow/vue (planned DevTools component export)",
-          "recipePath": "packages/vue/src/ui/DevTools.vue",
-          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/devtools",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vue: FlowDevTools, FlowDevToolsPanel",
+          "recipePath": "packages/vue/src/ui/devtools.ts",
+          "test": "apps/vue/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers aria-pressed panel toggles, a node and edge inspector list from public snapshots, a change log entry for a public position edit, and the viewport logger. Deviation: the node inspector is a panel list, not per-node overlays, and the change logger derives entries from accepted state changes. Upstream runtime comparison unverified."
         },
         "foldkit": {
-          "export": "@flow/foldkit (planned DevTools view export; not yet implemented)",
+          "export": "@flow/foldkit: mountFlowDevTools, FoldkitDevToolsMount, FoldkitDevToolsOptions, FoldkitDevToolsPanel",
           "recipePath": "packages/foldkit/src/ui/devtools.ts",
-          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/devtools",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "test": "apps/foldkit/e2e/ui-controls.e2e.ts",
+          "route": "none; browser fixture in the test file",
+          "status": "partial",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 106 browser test passed 3/3. Covers aria-pressed panel toggles, a node and edge inspector list from public snapshots, a change log entry for a public position edit, and the viewport logger. Deviation: the node inspector is a panel list, not per-node overlays, and the change logger derives entries from accepted state changes. Upstream runtime comparison unverified."
         }
       },
       "requiredOutcome": "Inspect nodes, edges, selection, and viewport through public snapshots; route edits through validation and prove invalid input is reported without private Map reads or bypassing protected deletion."

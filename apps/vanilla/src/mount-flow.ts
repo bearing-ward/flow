@@ -199,6 +199,7 @@ import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 import { createCanvasUI } from './canvas-ui.ts'
 import { createEdgeRenderer, measureNodeHandles } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
+import { createFlowGraphCache } from './flow-graph-cache.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 
@@ -647,8 +648,19 @@ export type FlowConnectionPreviewRenderer = (
 ) => void
 
 export interface FlowNodeRendererInstance {
-  /** `props` carries React Flow style NodeProps such as `selected` and `dragging`. */
+  /**
+   * Runs when the node changes in the document. `props` carries React Flow
+   * style NodeProps such as `selected`. It does not run for position-only
+   * changes such as drag frames, so renderers that rebuild their DOM here keep
+   * focus and input state during a drag.
+   */
   readonly update: (node: FlowNode, props: FlowNodeRendererProps) => void
+  /**
+   * Opt-in: runs with fresh NodeProps whenever they change between document
+   * updates, such as `dragging` and `positionAbsoluteX/Y` on every drag frame.
+   * Keep it cheap and avoid rebuilding DOM here.
+   */
+  readonly updateProps?: ((props: FlowNodeRendererProps) => void) | undefined
   readonly destroy: () => void
 }
 
@@ -735,7 +747,16 @@ const pointerIdsFromOutcome = (
     : fallback
 
 export interface FlowEdgeRendererInstance {
+  /** Runs when the edge or its endpoints change outside a drag frame. */
   readonly update: (edge: FlowEdge, context: FlowEdgeRenderContext) => void
+  /**
+   * Opt-in: runs with fresh EdgeProps when they change on a position-only
+   * pass, such as every frame of a node drag, so `getBezierPath(props)`
+   * edges follow the dragged node. `update` does not run on those passes.
+   */
+  readonly updateProps?:
+    | ((props: FlowEdgeRendererProps, context: FlowEdgeRenderContext) => void)
+    | undefined
   readonly destroy: () => void
 }
 
@@ -1928,13 +1949,19 @@ export const createFlowHost = (
         nodesConnectable: options.nodesConnectable,
       })
 
-    /** Push changed NodeProps to a custom renderer between document updates. */
+    /** Push changed NodeProps to an opted-in custom renderer between document updates. */
     const refreshNodeRendererProps = (
       entry: NodeEntry,
       node: FlowNode | undefined,
       graph: FlowGraphView
     ): void => {
-      if (entry.renderer.kind !== 'custom' || node === undefined) {
+      const updateProps =
+        entry.renderer.kind === 'custom'
+          ? entry.renderer.instance.updateProps
+          : undefined
+
+      // Renderers without `updateProps` only hear about document changes.
+      if (updateProps === undefined || node === undefined) {
         return
       }
 
@@ -1947,7 +1974,7 @@ export const createFlowHost = (
       sentNodeRendererProps.set(entry, props)
 
       try {
-        entry.renderer.instance.update(node, props)
+        updateProps(props)
       } catch (error) {
         runTelemetry(
           Effect.logWarning('Node renderer update failed').pipe(
@@ -4221,6 +4248,30 @@ export const createFlowHost = (
         : { nodeId: active.source, handleId: active.sourceHandle }
     }
 
+    const connectionLineGraph = createFlowGraphCache()
+
+    /**
+     * Line props are only built when a custom preview or a typed built-in
+     * line consumes them, from a graph cached per document and measurements.
+     */
+    const connectionLineProps = (
+      value: ConnectionPreviewState | null,
+      customPreview: boolean
+    ): FlowConnectionLineProps | null =>
+      value === null ||
+      (!customPreview && options.connectionLineType === undefined)
+        ? null
+        : (flowConnectionLineProps({
+            graph: connectionLineGraph(
+              document,
+              measurements,
+              renderedNodePositions
+            ),
+            preview: value,
+            connectionLineType: options.connectionLineType ?? 'straight',
+            origin: connectionLineOrigin(),
+          }) ?? null)
+
     const publishConnectionPreview = (
       preview: ConnectionPreviewState | null,
       element = connectionPreview
@@ -4250,15 +4301,10 @@ export const createFlowHost = (
         }
       }
 
-      const line =
-        value === null
-          ? null
-          : (flowConnectionLineProps({
-              graph: graphFor(),
-              preview: value,
-              connectionLineType: options.connectionLineType ?? 'straight',
-              origin: connectionLineOrigin(),
-            }) ?? null)
+      const line = connectionLineProps(
+        value,
+        element !== null && options.connectionPreview !== undefined
+      )
 
       if (options.connectionLineType !== undefined && line !== null) {
         element

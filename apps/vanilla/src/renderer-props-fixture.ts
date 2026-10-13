@@ -1,5 +1,9 @@
 import { decodeFlowDocument, getBezierPath } from '@flow/core'
-import type { FlowEdgeRendererProps, FlowNodeRendererProps } from '@flow/core'
+import type {
+  FlowEdgeRendererProps,
+  FlowNode,
+  FlowNodeRendererProps,
+} from '@flow/core'
 import { Effect } from 'effect'
 
 import type {
@@ -33,6 +37,33 @@ const probeNode: FlowNodeRenderer = (node, content, props) => {
 
   return {
     update: (_next, nextProps) => paint(nextProps),
+    updateProps: paint,
+    destroy: () => element.remove(),
+  }
+}
+
+/**
+ * A renderer written against the original contract: two arguments and an
+ * `update(node)` that rebuilds its DOM, so it must not run per drag frame.
+ */
+const legacyNode = (node: FlowNode, content: HTMLElement) => {
+  const element = document.createElement('div')
+  let updates = 0
+
+  const paint = (next: FlowNode) => {
+    element.dataset.testid = `legacy-node-${next.id}`
+    element.dataset.updates = String(updates)
+    element.replaceChildren(next.label)
+  }
+
+  paint(node)
+  content.append(element)
+
+  return {
+    update: (next: FlowNode) => {
+      updates += 1
+      paint(next)
+    },
     destroy: () => element.remove(),
   }
 }
@@ -75,8 +106,16 @@ const probeEdge: FlowEdgeRenderer = {
     paint(context.props)
     visual.append(path)
 
+    let updates = 0
+    path.dataset.updates = '0'
+
     return {
-      update: (_next, nextContext) => paint(nextContext.props),
+      update: (_next, nextContext) => {
+        updates += 1
+        path.dataset.updates = String(updates)
+        paint(nextContext.props)
+      },
+      updateProps: paint,
       destroy: () => {
         path.remove()
         label.remove()
@@ -135,6 +174,7 @@ const fixtureDocument = {
     {
       id: 'c',
       label: 'C',
+      type: 'legacy',
       position: { x: 420, y: 40 },
       handles: [{ id: 'in', kind: 'target', side: 'left' }],
     },
@@ -174,7 +214,7 @@ export const mountVanillaRendererPropsFixture = (
     documentMode: 'uncontrolled',
     connectionLineType: options.customPreview ? 'step' : 'bezier',
     connectionPreview: options.customPreview ? probePreview : undefined,
-    nodeRenderers: { probe: probeNode },
+    nodeRenderers: { probe: probeNode, legacy: legacyNode },
     edgeRenderers: { probe: probeEdge },
     viewport: {
       mode: 'uncontrolled',

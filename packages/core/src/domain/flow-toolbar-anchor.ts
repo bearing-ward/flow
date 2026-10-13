@@ -28,19 +28,18 @@ const toScreen = (position: XYPosition, viewport: Viewport): XYPosition => ({
   y: viewport.y + position.y * viewport.zoom,
 })
 
-export const nodeToolbarAnchor = (
-  graph: FlowGraphView,
-  nodeId: NodeId,
+/** Anchor a node toolbar to flow-space node bounds, for hosts that read internal nodes. */
+export const nodeToolbarAnchorForBounds = (
+  nodeId: string,
+  bounds: {
+    readonly x: number
+    readonly y: number
+    readonly width: number
+    readonly height: number
+  },
   viewport: Viewport,
   options: FlowNodeToolbarAnchorOptions = {}
-): FlowToolbarAnchor | undefined => {
-  const node = graph.nodes.get(nodeId)
-
-  if (node === undefined || node.hidden) {
-    return undefined
-  }
-
-  const bounds = graphNodeBounds(node)
+): FlowToolbarAnchor => {
   const position = options.position ?? 'top'
   const align = options.align ?? 'center'
   const offset = options.offset ?? 0
@@ -86,6 +85,26 @@ export const nodeToolbarAnchor = (
       y: screenPoint.y + offsetVector.y * offset,
     },
   }
+}
+
+export const nodeToolbarAnchor = (
+  graph: FlowGraphView,
+  nodeId: NodeId,
+  viewport: Viewport,
+  options: FlowNodeToolbarAnchorOptions = {}
+): FlowToolbarAnchor | undefined => {
+  const node = graph.nodes.get(nodeId)
+
+  if (node === undefined || node.hidden) {
+    return undefined
+  }
+
+  return nodeToolbarAnchorForBounds(
+    nodeId,
+    graphNodeBounds(node),
+    viewport,
+    options
+  )
 }
 
 const nodeToolbarTranslatePercent: Record<

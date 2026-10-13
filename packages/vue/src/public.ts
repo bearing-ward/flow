@@ -90,3 +90,11 @@ export { StatusIndicator, FlowStatusSchema } from './ui/status-indicator.ts'
 export type { FlowStatus } from './ui/status-indicator.ts'
 
 export { FlowAppendix } from './ui/appendix.ts'
+
+export { FlowZoomSelect, FlowZoomSlider } from './ui/zoom-controls.ts'
+
+export { FlowNodeSearch } from './ui/node-search.ts'
+
+export { FlowDevTools } from './ui/devtools.ts'
+
+export type { FlowDevToolsPanel } from './ui/devtools.ts'

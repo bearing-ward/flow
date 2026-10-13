@@ -1,7 +1,8 @@
 import { Schema as S } from 'effect'
-import { computed, defineComponent, h, useId } from 'vue'
+import { computed, defineComponent, h, onBeforeUnmount, ref, useId } from 'vue'
 import type { PropType, StyleValue } from 'vue'
 
+import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
 import { useFlow } from './use-flow.ts'
 
 const positions = [
@@ -94,6 +95,8 @@ export const FlowControls = defineComponent({
     },
     showZoom: { type: Boolean, default: true },
     showFitView: { type: Boolean, default: true },
+    /** Show the lock button that toggles node and edge interactivity. */
+    showInteractive: { type: Boolean, default: true },
     fitViewOptions: {
       type: Object as PropType<FitViewOptions>,
       default: undefined,
@@ -104,9 +107,35 @@ export const FlowControls = defineComponent({
     onZoomIn: { type: Function as PropType<() => void>, default: undefined },
     onZoomOut: { type: Function as PropType<() => void>, default: undefined },
     onFitView: { type: Function as PropType<() => void>, default: undefined },
+    onInteractiveChange: {
+      type: Function as PropType<(interactive: boolean) => void>,
+      default: undefined,
+    },
   },
-  setup(props, { attrs, slots }) {
+  setup(props, { attrs, slots, expose }) {
     const flow = useFlow()
+    const root = ref<HTMLElement | null>(null)
+    const interactive = ref(true)
+
+    const lock = createFlowInteractivityLock(
+      () =>
+        root.value?.closest<HTMLElement>('.flow-vue-canvas') ??
+        // An unmounted control owns no canvas, so it gates nothing.
+        document.createElement('div')
+    )
+
+    const setInteractive = (next: boolean): void => {
+      interactive.value = next
+      lock.setInteractive(next)
+    }
+
+    const toggleInteractivity = (): void => {
+      setInteractive(!interactive.value)
+      props.onInteractiveChange?.(interactive.value)
+    }
+
+    onBeforeUnmount(() => lock.release())
+    expose({ isInteractive: () => interactive.value, setInteractive })
 
     const zoomIn = (): void => {
       void flow.zoomIn()
@@ -156,6 +185,17 @@ export const FlowControls = defineComponent({
               { default: () => 'Fit' }
             )
           : null,
+        props.showInteractive
+          ? h(
+              FlowControlButton,
+              {
+                'aria-label': 'Toggle interactivity',
+                'aria-pressed': String(!interactive.value),
+                onClick: toggleInteractivity,
+              },
+              { default: () => (interactive.value ? 'Lock' : 'Unlock') }
+            )
+          : null,
       ]
 
       return h(
@@ -164,9 +204,11 @@ export const FlowControls = defineComponent({
           ...attrs,
           class: classes.value,
           style: [props.style, attrs.style],
+          ref: root,
           role: 'group',
           'aria-label': props.ariaLabel,
           'data-flow-ui': 'controls',
+          'data-interactive': String(interactive.value),
         },
         children
       )

@@ -2,6 +2,7 @@ import { selectFlowMiniMapProjection } from '@flow/core'
 import type { FlowGraphView, ViewportPaddingSchema } from '@flow/core'
 
 import type { ViewportClient } from './application.ts'
+import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
 
 const stopCanvasClick = (event: MouseEvent): void => event.stopPropagation()
 
@@ -180,6 +181,8 @@ export interface FlowControlsOptions {
   readonly orientation?: 'vertical' | 'horizontal'
   readonly showZoom?: boolean
   readonly showFitView?: boolean
+  /** Show the lock button that toggles node and edge interactivity. Defaults to true. */
+  readonly showInteractive?: boolean
   readonly fitViewOptions?: {
     readonly padding?: typeof ViewportPaddingSchema.Type
   }
@@ -192,10 +195,15 @@ export interface FlowControlsOptions {
   readonly onZoomIn?: () => void
   readonly onZoomOut?: () => void
   readonly onFitView?: () => void
+  /** Called with the next interactive state after the lock button toggles. */
+  readonly onInteractiveChange?: (interactive: boolean) => void
 }
 
 export interface FlowControlsMount {
   readonly element: HTMLDivElement
+  /** Whether nodes and edges currently accept drag, connect and select gestures. */
+  readonly isInteractive: () => boolean
+  readonly setInteractive: (interactive: boolean) => void
   readonly dispose: () => void
 }
 
@@ -631,6 +639,37 @@ export const createFlowControls = (
     })
   }
 
+  const lock = createFlowInteractivityLock(
+    () =>
+      group.closest<HTMLElement>('.flow-foldkit-canvas') ??
+      // Detached controls own no canvas, so they gate nothing.
+      owner.createElement('div')
+  )
+
+  let lockButton: HTMLButtonElement | undefined
+
+  const setInteractive = (interactive: boolean): void => {
+    lock.setInteractive(interactive)
+    group.dataset.interactive = String(interactive)
+    lockButton?.setAttribute('aria-pressed', String(!interactive))
+
+    if (lockButton !== undefined) {
+      lockButton.textContent = interactive ? 'Lock' : 'Unlock'
+    }
+  }
+
+  if (options.showInteractive !== false) {
+    lockButton = button('Toggle interactivity', () => {
+      const next = !lock.isInteractive()
+      setInteractive(next)
+      options.onInteractiveChange?.(next)
+
+      return Promise.resolve()
+    })
+  }
+
+  setInteractive(true)
+
   for (const child of options.children ?? []) {
     group.append(child)
   }
@@ -639,7 +678,11 @@ export const createFlowControls = (
 
   return {
     element: group,
+    isInteractive: lock.isInteractive,
+    setInteractive,
     dispose: () => {
+      lock.release()
+
       for (const stop of listeners) {
         stop()
       }

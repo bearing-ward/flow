@@ -398,8 +398,36 @@ export {
   edgeToolbarPlacement,
   flowToolbarAnchors,
   nodeToolbarAnchor,
+  nodeToolbarAnchorForBounds,
   nodeToolbarTranslate,
 } from './domain/flow-toolbar-anchor.ts'
+
+export {
+  blocksLockedInteraction,
+  clampZoom,
+  describeFlowStateChange,
+  devToolsEdgeRows,
+  devToolsNodeRows,
+  flowLockEventTypes,
+  flowZoomPresets,
+  formatViewportLog,
+  nextListIndex,
+  parseZoomPresetValue,
+  searchFlowNodes,
+  selectOnlyNodeTransaction,
+  zoomPercentLabel,
+} from './domain/flow-ui-controls.ts'
+
+export type {
+  FlowChangeLogEntry,
+  FlowChangeLogKind,
+  FlowDevToolsEdgeRow,
+  FlowDevToolsNodeRow,
+  FlowLockEventType,
+  FlowLockTarget,
+  FlowNodeSearchResult,
+  FlowZoomPreset,
+} from './domain/flow-ui-controls.ts'
 
 export type {
   FlowEdgeToolbarAlignX,
@@ -551,6 +579,7 @@ export {
   flowEdgeRendererProps,
   flowNodeBounds,
   flowNodeRendererProps,
+  sameFlowEdgeRendererProps,
   sameFlowNodeRendererProps,
 } from './domain/flow-renderer-props.ts'
 

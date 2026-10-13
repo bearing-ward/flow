@@ -73,6 +73,8 @@ import {
   flowEdgeRendererProps,
   flowNodeBounds,
   flowNodeRendererProps,
+  sameFlowEdgeRendererProps,
+  sameFlowNodeRendererProps,
 } from '@flow/core'
 import type {
   FlowChange,
@@ -134,6 +136,7 @@ import type {
 
 import {
   createEdgeLabelRegistry,
+  createRendererPropsCache,
   declaredRendererProps,
   FlowEdgeLabelRendererContextKey,
 } from './edge-label-renderer.ts'
@@ -4134,6 +4137,7 @@ export const FlowCanvas = defineComponent({
       applyEditResolved,
       updateViewport,
       getViewport,
+      getViewportLimits: () => viewportLimits,
       getZoom,
       viewportInitialized,
       screenToFlowPosition,
@@ -6977,20 +6981,39 @@ export const FlowCanvas = defineComponent({
       )
     }
 
+    // Unchanged renderer props keep their identity, so pan and zoom renders
+    // do not re-render every custom node and edge.
+    const nodeRendererPropsCache = createRendererPropsCache(
+      sameFlowNodeRendererProps
+    )
+
+    const edgeRendererPropsCache = createRendererPropsCache(
+      sameFlowEdgeRendererProps
+    )
+
+    watch(activeDocument, (next) => {
+      nodeRendererPropsCache.retain(new Set(next.nodes.map(({ id }) => id)))
+      edgeRendererPropsCache.retain(new Set(next.edges.map(({ id }) => id)))
+    })
+
     const nodeRendererProps = (
       node: FlowNode,
       position: XYPosition,
       resizePreview: KeyboardResizeSession | undefined
     ): FlowNodeRendererProps =>
-      flowNodeRendererProps(node, {
-        positionAbsolute: position,
-        dragging:
-          session.value?.kind === 'node' && session.value.node.id === node.id,
-        size:
-          resizePreview?.change.size ??
-          measuredNodes.value.get(node.id) ??
-          node.size,
-      })
+      nodeRendererPropsCache.keep(
+        node.id,
+        flowNodeRendererProps(node, {
+          positionAbsolute: position,
+          // Vue drags one node at a time, so the dragged node is the session node.
+          dragging:
+            session.value?.kind === 'node' && session.value.node.id === node.id,
+          size:
+            resizePreview?.change.size ??
+            measuredNodes.value.get(node.id) ??
+            node.size,
+        })
+      )
 
     /** Preview state is only computed when a renderer or line type consumes it. */
     const connectionLinePreview = (
@@ -7548,20 +7571,23 @@ export const FlowCanvas = defineComponent({
       const { markerStart, markerEnd } = edgeMarkers(edge)
 
       if (geometry !== undefined && Edge !== undefined) {
-        const rendererProps = flowEdgeRendererProps({
-          edge,
-          source: geometry.sourceAnchor,
-          target: geometry.targetAnchor,
-          sourcePosition: geometry.sourceHandle.side,
-          targetPosition: geometry.targetHandle.side,
-          sourceHandleId: geometry.sourceHandle.id,
-          targetHandleId: geometry.targetHandle.id,
-          sourceNode: flowNodeBounds(geometry.sourceNode),
-          targetNode: flowNodeBounds(geometry.targetNode),
-          markerStart,
-          markerEnd,
-          defaultInteractionWidth: 20,
-        })
+        const rendererProps = edgeRendererPropsCache.keep(
+          edge.id,
+          flowEdgeRendererProps({
+            edge,
+            source: geometry.sourceAnchor,
+            target: geometry.targetAnchor,
+            sourcePosition: geometry.sourceHandle.side,
+            targetPosition: geometry.targetHandle.side,
+            sourceHandleId: geometry.sourceHandle.id,
+            targetHandleId: geometry.targetHandle.id,
+            sourceNode: flowNodeBounds(geometry.sourceNode),
+            targetNode: flowNodeBounds(geometry.targetNode),
+            markerStart,
+            markerEnd,
+            defaultInteractionWidth: 20,
+          })
+        )
 
         edgeChildren = [
           h(
