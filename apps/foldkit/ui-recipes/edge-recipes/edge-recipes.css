@@ -1,0 +1,105 @@
+body {
+  margin: 0;
+}
+
+.edge-recipes-page {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+.edge-recipes-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+}
+
+.edge-recipes-frame {
+  position: relative;
+  width: 900px;
+  height: 560px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+.edge-recipes-frame .flow-foldkit-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Node boxes match their declared size so floating endpoints sit on the DOM border. */
+.edge-recipes-frame .flow-foldkit-node {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+}
+
+.edge-recipe-delete {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: #e2e8f0;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.edge-recipe-delete:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.edge-recipe-data-label {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fef3c7;
+  font-size: 12px;
+}
+
+/* Easy Connect: invisible handles cover the node body, so the whole node connects. */
+[data-scene='easy-connect'] .flow-foldkit-handle {
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 6px;
+  opacity: 0;
+  transform: none;
+  cursor: crosshair;
+}
+
+.easy-node-body {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.easy-drag-strip {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 16px;
+  border-radius: 6px 6px 0 0;
+  background: #cbd5e1;
+  cursor: grab;
+}
+
+/* Foldkit shows resize controls on selected nodes; this recipe selects nodes to
+   connect them, so the controls would cover the source handles. */
+[data-scene='multi-connection-line'] .flow-foldkit-resize {
+  display: none;
+}
