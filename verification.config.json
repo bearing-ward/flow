@@ -8,13 +8,25 @@
       "ui-controls.e2e.ts",
       "gesture-options.e2e.ts",
       "interaction-lifecycle.e2e.ts",
-      "canvas.e2e.ts"
+      "canvas.e2e.ts",
+      "movement-slices.e2e.ts",
+      "node-threshold.e2e.ts",
+      "edge-recipes.e2e.ts",
+      "renderer-props.e2e.ts"
     ],
     "vue": [
       "events-and-changes.e2e.ts",
       "ui-controls.e2e.ts",
       "connection.e2e.ts"
     ],
-    "foldkit": ["events-and-changes.e2e.ts", "ui-controls.e2e.ts"]
+    "foldkit": [
+      "events-and-changes.e2e.ts",
+      "ui-controls.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
+      "handle-connections.e2e.ts",
+      "public-state.e2e.ts",
+      "connection-threshold.e2e.ts",
+      "renderer-props.e2e.ts"
+    ]
   }
 }

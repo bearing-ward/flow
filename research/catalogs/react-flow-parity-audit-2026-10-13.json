@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 93,
+    "inScopeCloseAllHosts": 121,
     "inScopeCloseByHost": {
-      "vanilla": 119,
-      "vue": 116,
-      "foldkit": 99
+      "vanilla": 142,
+      "vue": 133,
+      "foldkit": 126
     }
   },
   "waves": {
@@ -104,14 +104,15 @@
     {
       "section": "api-reference components",
       "name": "<EdgeLabelRenderer />",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Dedicated HTML edge-label layer; only viewport portal today",
       "effort": "M",
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference components",
@@ -128,14 +129,15 @@
     {
       "section": "api-reference components",
       "name": "<EdgeToolbar />",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Vanilla edge toolbar component (only anchors/core helpers)",
       "effort": "S",
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "api-reference components",
@@ -188,14 +190,15 @@
     {
       "section": "api-reference components",
       "name": "<NodeToolbar />",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Vanilla node toolbar component (only anchors/core helpers)",
       "effort": "S",
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "api-reference components",
@@ -695,36 +698,39 @@
       "name": "ConnectionLineComponent",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Export Foldkit connection preview renderer type",
       "effort": "S",
-      "theme": "connection-line"
+      "theme": "connection-line",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "ConnectionLineComponentProps",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add fromNode/fromHandle/fromPosition/toPosition/lineType to preview state",
       "effort": "M",
-      "theme": "connection-line"
+      "theme": "connection-line",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "ConnectionLineType",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add configurable preview path type option",
       "effort": "S",
-      "theme": "connection-line"
+      "theme": "connection-line",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
@@ -837,26 +843,28 @@
     {
       "section": "api-reference types",
       "name": "EdgeProps",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add sourceX/Y,targetX/Y,positions,labelX/Y,selected,markers to renderer props",
       "effort": "M",
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "EdgeTypes",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Export Foldkit renderer registry/edge renderer types",
       "effort": "S",
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
@@ -1029,26 +1037,28 @@
     {
       "section": "api-reference types",
       "name": "NodeProps",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Add selected/dragging/positionAbsolute/isConnectable/zIndex/dimensions props",
       "effort": "M",
-      "theme": "node-props"
+      "theme": "node-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
       "name": "NodeTypes",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Export Foldkit node renderer registry types",
       "effort": "S",
-      "theme": "node-props"
+      "theme": "node-props",
+      "updatedBy": ["Plan 105"]
     },
     {
       "section": "api-reference types",
@@ -1402,14 +1412,15 @@
     {
       "section": "examples overview",
       "name": "Feature Overview",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "No gallery route combining all features per host",
       "effort": "M",
-      "theme": "gallery"
+      "theme": "gallery",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples nodes",
@@ -1474,14 +1485,15 @@
     {
       "section": "examples nodes",
       "name": "Easy Connect",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Whole-node handles plus floating edge attachment",
       "effort": "M",
-      "theme": "floating-edges"
+      "theme": "floating-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples nodes",
@@ -1703,37 +1715,40 @@
       "section": "examples edges",
       "name": "Floating Edges",
       "vanilla": "C",
-      "vue": "C",
+      "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
-      "theme": "floating-edges"
+      "theme": "floating-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
       "name": "Edge Markers",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Only arrow/arrowclosed; no custom SVG markers",
       "effort": "M",
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
       "name": "Multi Connection Line",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Preview renderer is single-source only",
       "effort": "M",
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
@@ -1751,13 +1766,14 @@
       "section": "examples edges",
       "name": "Simple Floating Edges",
       "vanilla": "C",
-      "vue": "C",
+      "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
-      "theme": "floating-edges"
+      "theme": "floating-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
@@ -1788,12 +1804,13 @@
       "name": "Computing Flows",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Foldkit node views cannot write node data",
       "effort": "M",
-      "theme": "computing-flows"
+      "theme": "computing-flows",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples interaction",
@@ -1942,26 +1959,28 @@
     {
       "section": "examples grouping",
       "name": "Selection Grouping · Pro",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "No group-selection reparent helper",
       "effort": "M",
-      "theme": "subflows"
+      "theme": "subflows",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples grouping",
       "name": "Parent Child Relation · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Drop-to-reparent needs intersection helper",
       "effort": "M",
-      "theme": "subflows"
+      "theme": "subflows",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples grouping",
@@ -1980,36 +1999,39 @@
       "name": "Dagre Tree",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "dagre integration; Foldkit measured-size access",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
       "name": "Elkjs Tree",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "elkjs integration; Foldkit measured-size access",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
       "name": "Elkjs Multiple Handles",
       "vanilla": "C",
       "vue": "P",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Measured handle positions outside Vanilla",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
@@ -2045,19 +2067,21 @@
       "wave": 6,
       "missing": "Layout engine integration on measure/change",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
       "name": "Force Layout · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "d3-force continuous position updates",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
@@ -2069,7 +2093,8 @@
       "wave": 6,
       "missing": "Layout engine integration with add-node placeholders",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
@@ -2141,43 +2166,47 @@
       "wave": 6,
       "missing": "No freeform pane tool overlay/hit-test recipe",
       "effort": "M",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples whiteboard",
       "name": "Lasso Selection",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No freeform lasso selection",
       "effort": "M",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples whiteboard",
       "name": "Rectangle",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Foldkit lacks pane pointer-down/up events",
       "effort": "S",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples whiteboard",
       "name": "Freehand Draw · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No freehand stroke capture tool",
       "effort": "M",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples misc",
@@ -2350,86 +2379,93 @@
     {
       "section": "ui components",
       "name": "Edge with Button",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "BaseEdge/EdgeText exist; no button-edge recipe or tests",
       "effort": "S",
-      "theme": "ui-edge"
+      "theme": "ui-edge",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "ui components",
       "name": "Edge with Node Data",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "No endpoint-data edge recipe; BaseEdge primitives only",
       "effort": "M",
-      "theme": "ui-edge"
+      "theme": "ui-edge",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "ui components",
       "name": "Animated SVG Edge",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "No animated edge recipe with reduced-motion handling",
       "effort": "S",
-      "theme": "ui-edge"
+      "theme": "ui-edge",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "ui components",
       "name": "Node Search",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No search control, result navigation, viewport focus",
       "effort": "M",
-      "theme": "ui-controls"
+      "theme": "ui-controls",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "ui components",
       "name": "Zoom Slider",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No range zoom control bound to viewport",
       "effort": "S",
-      "theme": "ui-controls"
+      "theme": "ui-controls",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "ui components",
       "name": "Zoom Select",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No zoom preset/fit select control",
       "effort": "S",
-      "theme": "ui-controls"
+      "theme": "ui-controls",
+      "updatedBy": ["Plan 106"]
     },
     {
       "section": "ui components",
       "name": "DevTools",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No snapshot inspector/change logger/viewport panel",
       "effort": "M",
-      "theme": "devtools"
+      "theme": "devtools",
+      "updatedBy": ["Plan 106"]
     }
   ]
 }

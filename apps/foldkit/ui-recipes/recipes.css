@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+}
+
+.recipe-page {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+.recipe-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+}
+
+.recipe-toolbar button[aria-pressed='true'] {
+  background: #dbeafe;
+  border-color: #2563eb;
+}
+
+.recipe-frame {
+  position: relative;
+  width: 900px;
+  height: 540px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+.recipe-frame .flow-foldkit-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Measured sizes feed back into the node style, so they must include padding. */
+.recipe-frame .flow-foldkit-node {
+  box-sizing: border-box;
+}

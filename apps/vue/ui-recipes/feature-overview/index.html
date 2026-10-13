@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Flow Vue feature overview</title>
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .recipe-root .flow-vue-canvas {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .recipe-root .flow-vue-node {
+        box-sizing: border-box;
+      }
+
+      .recipe-root .flow-vue-node:has(> .recipe-annotation) {
+        border-color: #f59e0b;
+        background: #fffbeb;
+      }
+
+      .recipe-annotation {
+        display: grid;
+        gap: 4px;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+
+      .recipe-annotation strong {
+        color: #b45309;
+      }
+
+      .recipe-overview-panel {
+        padding: 8px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: white;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+
+      .recipe-overview-panel h1 {
+        margin: 0 0 4px;
+        font-size: 14px;
+      }
+
+      .recipe-edge-button {
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border: 1px solid #fff;
+        border-radius: 50%;
+        background: #eee;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      .recipe-toolbar-button {
+        padding: 2px 8px;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/feature-overview-recipes.ts"></script>
+  </body>
+</html>

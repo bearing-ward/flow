@@ -1,0 +1,14 @@
+/* Groups are translucent boxes with their label in the top-left corner. */
+.flow-node:has(.subflow-group-label) {
+  place-items: start;
+  padding: 6px 8px;
+  border: 1px dashed #64748b;
+  background: rgb(148 163 184 / 18%);
+  box-shadow: none;
+}
+
+.subflow-group-label {
+  color: #334155;
+  font-size: 11px;
+  font-weight: 600;
+}

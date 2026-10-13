@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Flow Vue computing flows recipe</title>
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .recipe-root .flow-vue-canvas {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .recipe-panel {
+        position: absolute;
+        z-index: 20;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+
+      .recipe-compute-node {
+        display: grid;
+        gap: 4px;
+        font:
+          12px system-ui,
+          sans-serif;
+      }
+
+      .recipe-compute-node input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/computing-flows-recipes.ts"></script>
+  </body>
+</html>

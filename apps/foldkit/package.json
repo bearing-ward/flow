@@ -16,7 +16,11 @@
     "foldkit": "0.163.0"
   },
   "devDependencies": {
+    "@dagrejs/dagre": "3.1.1",
     "@foldkit/vite-plugin": "0.24.0",
+    "@types/d3-force": "3.0.10",
+    "d3-force": "3.0.0",
+    "elkjs": "0.12.0",
     "vite": "8.0.13"
   }
 }

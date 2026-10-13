@@ -1,6 +1,16 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  // Example layout libraries are only reached from recipe pages, after Vite's
+  // initial dependency scan; pre-bundle them so first loads do not reload.
+  optimizeDeps: {
+    include: [
+      '@dagrejs/dagre',
+      'd3-force',
+      'elkjs/lib/elk-api',
+      'elkjs/lib/elk.bundled.js',
+    ],
+  },
   root: import.meta.dirname,
   define: {
     __VUE_OPTIONS_API__: true,

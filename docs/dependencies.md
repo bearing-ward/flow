@@ -29,3 +29,13 @@
 | `@oxlint/plugins` | Loads the vendored anti-slop and anti-slop Effect JavaScript plugins. Its version matches Oxlint exactly. | Publishing or consuming anti-slop as an npm dependency would conflict with its vendored-source model. |
 | `oxfmt` | Applies and checks the Ultracite formatting preset. | Prettier is mature, but Oxfmt keeps the formatter in the same Oxc toolchain as Oxlint. |
 | `ultracite` | Supplies the shared Oxlint, Vitest, and Oxfmt policy used by workspace scripts. | Hand-maintained base rules would duplicate a large policy and make upgrades harder to audit. |
+
+## Example-only dependencies
+
+These packages serve the layout recipes in `apps/{vanilla,vue,foldkit}/ui-recipes/layout` ([Plan 109](../plans/109-example-integrations.md)). Each app declares them as exact dev dependencies. No package under `packages/` imports them, and the `@flow/vanilla` package build bundles only `src/public.ts`, so they stay out of published code. Flow core supplies the engine-neutral input and output helpers (`getFlowLayoutInput`, `applyFlowLayoutPositions`), so a consumer can swap engines without Flow changes.
+
+| Package | Owner | Purpose | Alternatives considered | Removal boundary |
+| --- | --- | --- | --- | --- |
+| `@dagrejs/dagre` 3.1.1 | The three example apps | Layered tree layout for the Dagre Tree, Auto Layout and Dynamic Layouting recipes. It ships ESM and its own types. | The unmaintained `dagre` 0.8 package needs separate types and CommonJS interop. `d3-hierarchy` lays out only trees, not general graphs. | Remove with the layout recipes, or when the recipes move to another engine. |
+| `elkjs` 0.12.0 | The three example apps | ELK layered layout with fixed-position ports for the Elkjs Tree and Elkjs Multiple Handles recipes. The recipes import the bundled build, which runs on the main thread without a worker. | Dagre has no port constraints, so it cannot place edges by measured handle position. A web-worker ELK setup adds a worker URL per host for no gain at recipe size. | Remove with the ELK recipes. |
+| `d3-force` 3.0.0 and `@types/d3-force` 3.0.10 | The three example apps | Force simulation for the Force Layout recipe. The recipe drives ticks from its own animation frame loop and writes positions through public edits. | A hand-written spring simulation would duplicate a well-tested solver. `d3-force` has no DOM dependency and needs no other d3 module. | Remove with the Force Layout recipe. |
