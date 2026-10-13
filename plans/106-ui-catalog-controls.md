@@ -34,7 +34,15 @@ The pinned source has no UI components, so this follows the [React Flow UI](http
 ## Conformity and deviations
 
 - **Conforming.** Slider range and limits, presets, percentage reset, label search, single selection on choose, `showInteractive` default and callback, toolbar contracts from plans 101 and 102, and the three DevTools panels.
-- **Intentionally different: the lock is an event gate.** Flow has no runtime interactivity switch, so the lock blocks node, handle and edge gestures, including `onNodeClick` callbacks, which React Flow still fires. Box selection on the pane is not blocked. Disposing the controls releases the lock.
+- **Partial: the lock is an event gate, not a setting.** Flow has no runtime interactivity switch, so the lock blocks pointer gestures on nodes, handles and edges. Review on 2026-10-13 found further gaps, so the lock stays rated partial (P) until the switches exist:
+  - `onNodeClick` callbacks are blocked; React Flow still fires them.
+  - Panning by dragging on a node is blocked, as are NodeResizer handles and buttons inside nodes without a nodrag marker.
+  - Box selection on the pane is not blocked.
+  - In Vue, keyboard selection (Shift+Space, then Enter) still works while locked, because the canvas keydown listener runs before the lock.
+  - The lock always starts unlocked and ignores existing options such as `nodesConnectable: false`.
+  - A pending click or keyboard connection cannot be completed while locked; Escape or a pane click cancels it.
+  - Disposing the controls releases the lock.
+  - Wave 2 replaces this gate with runtime `nodesDraggable` / `nodesConnectable` / `elementsSelectable` switches in every host.
 - **Intentionally different: centring.** Node Search centres on the node at the current zoom with `setCenter`. The React registry component calls `fitView` on the node, which also changes the zoom. A centred node at a stable zoom is easier to verify and works the same in all three hosts.
 - **Intentionally different: the node inspector.** It lists nodes and edges in the DevTools panel. The registry component draws per-node overlays in the viewport.
 - **Intentionally different: the change logger.** It logs semantic changes derived from accepted state changes (node and edge add, remove, position, selection, data), not React `NodeChange` objects. Viewport-only updates go to the viewport logger.
