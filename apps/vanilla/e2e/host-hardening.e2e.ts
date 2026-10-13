@@ -104,6 +104,29 @@ const floatingPoint = (page: Page, fraction: number) =>
     return new DOMPoint(point.x, point.y).matrixTransform(matrix)
   }, fraction)
 
+const rightResize = (page: Page, nodeId: string) =>
+  node(page, nodeId).locator('.flow-node-resize-handle[data-direction="right"]')
+
+const widthOf = async (page: Page, nodeId: string) => {
+  const box = await node(page, nodeId).boundingBox()
+
+  return box?.width ?? 0
+}
+
+/** Real mouse resize from the right control, paused so the observer measures mid-gesture. */
+const pointerResize = async (page: Page, nodeId: string, dx: number) => {
+  const grip = await centre(rightResize(page, nodeId))
+  await page.mouse.move(grip.x, grip.y)
+  await page.mouse.down()
+  await page.mouse.move(grip.x + 3, grip.y)
+  await page.mouse.move(grip.x + dx / 2, grip.y, { steps: 3 })
+  await expect(node(page, nodeId)).toHaveClass(/resizing/u)
+  await page.waitForTimeout(150)
+  await page.mouse.move(grip.x + dx, grip.y, { steps: 3 })
+  await expect(node(page, nodeId)).toHaveClass(/resizing/u)
+  await page.mouse.up()
+}
+
 test.describe('Vanilla host hardening', () => {
   test('onNodeClick fires on the first click that selects a node', async ({
     page,
@@ -202,10 +225,32 @@ test.describe('Vanilla host hardening', () => {
     })
   }
 
-  test('a selected node keeps its right handle usable and resize controls are opt-out', async ({
+  test('an interactionPath that throws reports onError and keeps the handle route', async ({
+    page,
+  }) => {
+    await mount(page, { documentMode: 'uncontrolled', floating: 'throwing' })
+    const hit = page.locator('[data-edge-id="e"] .flow-edge-hit')
+    const route = page.locator('[data-edge-id="e"] .flow-edge-path')
+    await expect(page.getByTestId('floating-path')).toHaveCount(1)
+    await expect.poll(() => hit.getAttribute('d')).not.toBeNull()
+    expect(await hit.getAttribute('d')).toBe(await route.getAttribute('d'))
+    await expect
+      .poll(() =>
+        page.evaluate(() => globalThis.hardeningFixture?.errors ?? [])
+      )
+      .toContain('interaction path failed')
+    await expect(node(page, 'b')).toBeVisible()
+  })
+
+  test('resize controls are opt-in, and a selected node keeps its right handle usable', async ({
     page,
   }) => {
     await mount(page, { documentMode: 'uncontrolled' })
+    await node(page, 'a').locator('.flow-node-content').click()
+    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(page.locator('.flow-node-resize-handle')).toHaveCount(0)
+
+    await mount(page, { documentMode: 'uncontrolled', nodesResizable: true })
     const alpha = node(page, 'a')
     await alpha.locator('.flow-node-content').click()
     await expect(alpha).toHaveClass(/selected/u)
@@ -222,34 +267,98 @@ test.describe('Vanilla host hardening', () => {
     await expect(alpha).not.toHaveClass(/resizing/u)
 
     // The right resize control moved clear of the handle and still resizes.
-    const resize = alpha.locator(
-      '.flow-node-resize-handle[data-direction="right"]'
-    )
-
-    const before = await alpha.boundingBox()
-    const grip = await centre(resize)
+    const grip = await centre(rightResize(page, 'a'))
 
     expect(Math.abs(grip.x - start.x)).toBeGreaterThanOrEqual(12)
-    await page.mouse.move(grip.x, grip.y)
-    await page.mouse.down()
-    await page.mouse.move(grip.x + 3, grip.y)
-    await page.mouse.move(grip.x + 30, grip.y, { steps: 3 })
-    await expect(alpha).toHaveClass(/resizing/u)
-    await page.mouse.up()
-    await expect
-      .poll(async () => {
-        const after = await alpha.boundingBox()
 
-        return (after?.width ?? 0) - (before?.width ?? 0)
-      })
-      .toBeGreaterThan(20)
+    const before = await widthOf(page, 'a')
+    await pointerResize(page, 'a', 30)
+    await expect.poll(() => widthOf(page, 'a')).toBeGreaterThan(before + 20)
+  })
 
-    await mount(page, {
-      documentMode: 'uncontrolled',
-      nodeResizeControls: false,
-    })
+  test('controlled pointer and keyboard resizes complete while every change is applied', async ({
+    page,
+  }) => {
+    await mount(page, { documentMode: 'controlled', nodesResizable: true })
+    await expect.poll(() => dimensionIds(page)).toEqual(['a', 'b'])
     await node(page, 'a').locator('.flow-node-content').click()
     await expect(node(page, 'a')).toHaveClass(/selected/u)
-    await expect(page.locator('.flow-node-resize-handle')).toHaveCount(0)
+
+    const initial = await widthOf(page, 'a')
+    await pointerResize(page, 'a', 60)
+    await expect.poll(() => widthOf(page, 'a')).toBeGreaterThan(initial + 50)
+    await expect(node(page, 'a')).not.toHaveClass(/resizing/u)
+
+    // The measured size of the committed resize still arrives afterwards.
+    await expect
+      .poll(async () => {
+        const changes = await dimensionChangesOf(page, 'a')
+        const last = changes.at(-1)
+
+        return last?.dimensions?.width ?? 0
+      })
+      .toBeGreaterThan(initial + 50)
+
+    const afterPointer = await widthOf(page, 'a')
+    const control = rightResize(page, 'a')
+    await control.focus()
+    await page.keyboard.down('ArrowRight')
+    await expect(node(page, 'a')).toHaveClass(/resizing/u)
+    // Let the observer measure the keyboard preview before the keyup.
+    await page.waitForTimeout(150)
+    await expect(node(page, 'a')).toHaveClass(/resizing/u)
+    await page.keyboard.up('ArrowRight')
+    await expect(node(page, 'a')).not.toHaveClass(/resizing/u)
+    await expect.poll(() => widthOf(page, 'a')).toBeGreaterThan(afterPointer)
+  })
+
+  test('drags, resizes and handle connections do not report onNodeClick', async ({
+    page,
+  }) => {
+    await mount(page, { documentMode: 'uncontrolled', nodesResizable: true })
+    const alpha = node(page, 'a')
+    await alpha.locator('.flow-node-content').click()
+    await expect.poll(() => nodeClicks(page)).toEqual(['a'])
+
+    // Node drag.
+    const body = await centre(alpha.locator('.flow-node-content'))
+    await page.mouse.move(body.x, body.y)
+    await page.mouse.down()
+    await page.mouse.move(body.x + 3, body.y + 3)
+    await page.mouse.move(body.x + 40, body.y + 20, { steps: 4 })
+    await page.mouse.up()
+
+    // Resize from the bottom-right corner.
+    const corner = await centre(
+      alpha.locator('.flow-node-resize-handle[data-direction="bottom-right"]')
+    )
+
+    await page.mouse.move(corner.x, corner.y)
+    await page.mouse.down()
+    await page.mouse.move(corner.x + 3, corner.y + 3)
+    await page.mouse.move(corner.x + 30, corner.y + 20, { steps: 3 })
+    await page.mouse.up()
+
+    // Connection drag from a's handle onto b's handle.
+    const from = await centre(
+      alpha.locator('.flow-handle[data-handle-id="out"]')
+    )
+
+    const to = await centre(
+      node(page, 'b').locator('.flow-handle[data-handle-id="in"]')
+    )
+
+    await page.mouse.move(from.x, from.y)
+    await page.mouse.down()
+    await page.mouse.move(from.x + 3, from.y + 3)
+    await page.mouse.move(to.x, to.y, { steps: 6 })
+    await page.mouse.up()
+
+    await page.waitForTimeout(100)
+    expect(await nodeClicks(page)).toEqual(['a'])
+
+    // A plain click still reports.
+    await node(page, 'b').locator('.flow-node-content').click()
+    await expect.poll(() => nodeClicks(page)).toEqual(['a', 'b'])
   })
 })

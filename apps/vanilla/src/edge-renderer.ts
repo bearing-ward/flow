@@ -87,9 +87,22 @@ const svgNamespace = 'http://www.w3.org/2000/svg'
  */
 const customInteraction = (
   instance: FlowEdgeRendererInstance,
-  visual: SVGGElement
+  visual: SVGGElement,
+  reportFailure: (label: string, error: Error) => void
 ): { readonly path: string; readonly width?: number } | undefined => {
-  const returned = instance.interactionPath?.()
+  let returned: string | undefined
+
+  try {
+    returned = instance.interactionPath?.()
+  } catch (error) {
+    // A failing renderer callback keeps the handle route for this edge.
+    reportFailure(
+      'Edge interaction path',
+      error instanceof Error ? error : new Error(String(error))
+    )
+
+    return undefined
+  }
 
   if (returned !== undefined && returned.length > 0) {
     return { path: returned }
@@ -229,7 +242,8 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     dependency: ProjectionDependency
   ) => boolean,
   hostClosing: () => boolean,
-  cleanupFailures: unknown[]
+  cleanupFailures: unknown[],
+  reportCallbackFailure: (label: string, error: Error) => void
 ) => {
   nextMarkerScope += 1
   const markerScope = nextMarkerScope
@@ -861,7 +875,11 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
         const interaction =
           entry.renderer.kind === 'custom'
-            ? customInteraction(entry.renderer.instance, visual)
+            ? customInteraction(
+                entry.renderer.instance,
+                visual,
+                reportCallbackFailure
+              )
             : undefined
 
         path.setAttribute('d', pathData)

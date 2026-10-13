@@ -13,9 +13,12 @@ import './style.css'
 /** Plan 111 Vanilla host hardening: clicks, measured sizes, edge hits, resize controls. */
 export interface HardeningFixtureOptions {
   readonly documentMode: 'controlled' | 'uncontrolled'
-  readonly nodeResizeControls?: boolean
-  /** Floating edge source of its hit path: BaseEdge or `interactionPath`. */
-  readonly floating?: 'base-edge' | 'returned'
+  readonly nodesResizable?: boolean
+  /**
+   * Floating edge source of its hit path: BaseEdge, `interactionPath`, or an
+   * `interactionPath` that throws.
+   */
+  readonly floating?: 'base-edge' | 'returned' | 'throwing'
 }
 
 export interface HardeningFixture {
@@ -24,6 +27,7 @@ export interface HardeningFixture {
   readonly edgeClicks: string[]
   readonly edgeEnters: string[]
   readonly nodeChanges: NodeChange[][]
+  readonly errors: string[]
   readonly callerNodes: () => readonly FlowNode[]
 }
 
@@ -77,6 +81,30 @@ const returnedFloating: FlowEdgeRenderer = {
   },
 }
 
+/** A renderer whose `interactionPath` fails; the host keeps the handle route. */
+const throwingFloating: FlowEdgeRenderer = {
+  render: (edge, context, visual) => {
+    const drawn = returnedFloating.render?.(edge, context, visual)
+
+    if (drawn === undefined) {
+      throw new Error('Missing floating renderer')
+    }
+
+    return {
+      ...drawn,
+      interactionPath: () => {
+        throw new Error('interaction path failed')
+      },
+    }
+  },
+}
+
+const floatingRenderers = {
+  'base-edge': baseEdgeFloating,
+  returned: returnedFloating,
+  throwing: throwingFloating,
+} as const
+
 /*
  * `a` sits above `b`. Their handles face right, so the handle route bulges
  * to the right, while the floating edge runs straight down between the
@@ -125,6 +153,7 @@ export const mountHardeningFixture = (
   const edgeClicks: string[] = []
   const edgeEnters: string[] = []
   const nodeChanges: NodeChange[][] = []
+  const errors: string[] = []
   // The caller's `useNodesState`, bound once the canvas exists.
   const caller: CallerNodesOwner = { state: undefined }
 
@@ -141,7 +170,8 @@ export const mountHardeningFixture = (
         initial: { x: 0, y: 0, zoom: 1 },
         limits: { minZoom: 0.5, maxZoom: 2 },
       },
-      nodeResizeControls: options.nodeResizeControls,
+      nodesResizable: options.nodesResizable,
+      onError: (error) => errors.push(error.message),
       onNodesChange: (changes) => {
         nodeChanges.push([...changes])
         caller.state?.onChange(changes)
@@ -164,12 +194,7 @@ export const mountHardeningFixture = (
       edgeRenderers:
         options.floating === undefined
           ? undefined
-          : {
-              floating:
-                options.floating === 'base-edge'
-                  ? baseEdgeFloating
-                  : returnedFloating,
-            },
+          : { floating: floatingRenderers[options.floating] },
     }
   )
 
@@ -189,6 +214,7 @@ export const mountHardeningFixture = (
     edgeClicks,
     edgeEnters,
     nodeChanges,
+    errors,
     callerNodes: () => nodesState.get(),
   }
 }

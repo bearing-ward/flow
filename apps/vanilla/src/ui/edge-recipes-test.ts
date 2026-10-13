@@ -879,8 +879,6 @@ const report = (edges: readonly FlowEdge[]): void => {
 
 const controller = mountFlow(canvas, scene.document, {
   documentMode: 'uncontrolled',
-  // React Flow's edge examples add no NodeResizer.
-  nodeResizeControls: false,
   viewport: {
     mode: 'uncontrolled',
     initial: { x: 0, y: 0, zoom: 1 },

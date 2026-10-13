@@ -304,6 +304,14 @@ const noopUnsubscribe = (): boolean => false
 
 const ignoreNodeChanges = (): void => undefined
 
+const neverHeld = (): boolean => false
+
+const ignoreCallbackFailure = (): void => undefined
+
+const rethrowFailure = (error: Error): void => {
+  throw error
+}
+
 const mountedViewportPortalElements = new WeakSet<HTMLElement>()
 
 interface ActiveKeyboardResize {
@@ -385,8 +393,8 @@ export const FlowMountOptionsSchema = S.Struct({
   nodesConnectable: S.optional(S.Boolean),
   nodesDraggable: S.optional(S.Boolean),
   elementsSelectable: S.optional(S.Boolean),
-  /** Show resize controls on selected nodes. Defaults to `true`. */
-  nodeResizeControls: S.optional(S.Boolean),
+  /** React Flow `NodeResizer`: resize controls on selected nodes. Off by default. */
+  nodesResizable: S.optional(S.Boolean),
   panOnScroll: S.optional(S.Boolean),
   panOnScrollSpeed: S.optional(S.Finite.check(S.isGreaterThan(0))),
   panOnScrollMode: S.optional(S.Literals(['free', 'horizontal', 'vertical'])),
@@ -862,8 +870,8 @@ export interface FlowHostOptions {
   readonly nodesConnectable?: boolean | undefined
   readonly nodesDraggable?: boolean | undefined
   readonly elementsSelectable?: boolean | undefined
-  /** Show resize controls on selected nodes. Defaults to `true`. */
-  readonly nodeResizeControls?: boolean | undefined
+  /** React Flow `NodeResizer`: resize controls on selected nodes. Off by default. */
+  readonly nodesResizable?: boolean | undefined
   readonly onNodesChange?: FlowNodesChangeListener | undefined
   readonly onEdgesChange?: FlowEdgesChangeListener | undefined
   readonly panOnScroll?: boolean | undefined
@@ -1626,7 +1634,7 @@ const resizeDirections: readonly NodeResizeDirection[] = [
 ]
 
 /**
- * Resize controls on a selected node. `enabled` is the `nodeResizeControls`
+ * Resize controls on a selected node. `enabled` is the `nodesResizable`
  * mount option, React Flow's opt-in `NodeResizer`.
  */
 const renderNodeResizeHandle = (
@@ -2203,6 +2211,9 @@ export const createFlowHost = (
     const measuredDimensions = createMeasuredDimensionsTracker()
     let measuredDimensionsPending = false
 
+    /** Bound to the active resize slots once they are defined below. */
+    let measuredDimensionsHeld: () => boolean = neverHeld
+
     /** Bound to the boundary callback reporter once it is defined below. */
     let reportMeasuredDimensions: (
       changes: Parameters<FlowNodesChangeListener>[0]
@@ -2212,26 +2223,38 @@ export const createFlowHost = (
      * React Flow `dimensions` node changes. Measurement lands from render
      * passes, observers and refreshes; one microtask reports the net size
      * changes, so a controlled `onNodesChange` never re-enters a render pass.
+     * While a pointer or keyboard resize is active the report waits for the
+     * gesture to end: a controlled owner applying it would replace the
+     * document and cancel the resize. The resize commit carries the size.
      */
+    const flushMeasuredDimensions = (): void => {
+      measuredDimensionsPending = false
+
+      if (destroyed) {
+        return
+      }
+
+      if (measuredDimensionsHeld()) {
+        measuredDimensionsPending = true
+        globalThis.requestAnimationFrame(flushMeasuredDimensions)
+
+        return
+      }
+
+      const changes = measuredDimensions.changes(measurements)
+
+      if (changes.length > 0) {
+        reportMeasuredDimensions(changes)
+      }
+    }
+
     const scheduleMeasuredDimensions = (): void => {
       if (measuredDimensionsPending || options.onNodesChange === undefined) {
         return
       }
 
       measuredDimensionsPending = true
-      globalThis.queueMicrotask(() => {
-        measuredDimensionsPending = false
-
-        if (destroyed) {
-          return
-        }
-
-        const changes = measuredDimensions.changes(measurements)
-
-        if (changes.length > 0) {
-          reportMeasuredDimensions(changes)
-        }
-      })
+      globalThis.queueMicrotask(flushMeasuredDimensions)
     }
 
     let nextMeasurementGeneration = -1
@@ -2893,6 +2916,10 @@ export const createFlowHost = (
       )
     }
 
+    /** Bound to the boundary callback reporter once it is defined below. */
+    let reportEdgeCallbackFailure: (label: string, error: Error) => void =
+      ignoreCallbackFailure
+
     const edgeRenderer: ReturnType<
       typeof createEdgeRenderer<
         PaintOrigin,
@@ -2909,7 +2936,8 @@ export const createFlowHost = (
       runEffect,
       (pass, dependency) => projectionMatches(pass, dependency),
       () => destroyed,
-      cleanupFailures
+      cleanupFailures,
+      (label, error) => reportEdgeCallbackFailure(label, error)
     )
 
     const captureProjection = (
@@ -3043,6 +3071,9 @@ export const createFlowHost = (
         }
       }
     }
+
+    reportEdgeCallbackFailure = (label, error) =>
+      reportBoundaryCallback(label, 'renderer', rethrowFailure, error)
 
     reportMeasuredDimensions = (changes) => {
       const { onNodesChange } = options
@@ -3425,6 +3456,10 @@ export const createFlowHost = (
     }
 
     let activeKeyboardResize: ActiveKeyboardResize | null = null
+
+    measuredDimensionsHeld = () =>
+      interactionSlots.activeNodeResize !== null ||
+      activeKeyboardResize !== null
     let activeKeyboardNodeDrag: FlowNodeDragPayload | null = null
 
     const adoptedPosition = (node: FlowNode): XYPosition =>
@@ -3681,14 +3716,25 @@ export const createFlowHost = (
     let selectionFrame: number | null = null
     let interactionMode: 'select' | 'pan' = 'select'
 
+    /**
+     * `gesture` marks a click that ends a node drag, resize, pan or
+     * connection. It also suppresses the click callbacks, as React Flow does.
+     * Without it the release already handled selection, so only canvas
+     * selection skips the click.
+     */
     interface ClickSuppressionReceipt {
       readonly kind: 'click-suppression'
+      readonly gesture: boolean
     }
 
     let clickSuppression: ClickSuppressionReceipt | null = null
 
-    const suppressClickThroughDispatch = (): void => {
-      const receipt: ClickSuppressionReceipt = { kind: 'click-suppression' }
+    const suppressClickThroughDispatch = (gesture = false): void => {
+      const receipt: ClickSuppressionReceipt = {
+        kind: 'click-suppression',
+        gesture,
+      }
+
       clickSuppression = receipt
       globalThis.setTimeout(() => {
         if (clickSuppression === receipt) {
@@ -3697,8 +3743,8 @@ export const createFlowHost = (
       }, 0)
     }
 
-    const suppressClickUntilPointerUp = (): void => {
-      clickSuppression = { kind: 'click-suppression' }
+    const suppressClickUntilPointerUp = (gesture = false): void => {
+      clickSuppression = { kind: 'click-suppression', gesture }
     }
 
     type VanillaRecords = FlowInteractionSlots & {
@@ -4088,7 +4134,7 @@ export const createFlowHost = (
 
     const clearPendingConnection = (): void => {
       if (pendingConnection !== null) {
-        suppressClickUntilPointerUp()
+        suppressClickUntilPointerUp(true)
       }
 
       pendingConnection = null
@@ -6204,7 +6250,7 @@ export const createFlowHost = (
       }
 
       canvas.classList.add('panning')
-      suppressClickUntilPointerUp()
+      suppressClickUntilPointerUp(true)
 
       return true
     }
@@ -6767,7 +6813,7 @@ export const createFlowHost = (
           renderNodeResizeHandle(
             entry.element,
             node,
-            options.nodeResizeControls !== false
+            options.nodesResizable === true
           )
 
           if (
@@ -7367,11 +7413,7 @@ export const createFlowHost = (
           }
 
           renderNodeHandles(handles, node, interactivity)
-          renderNodeResizeHandle(
-            element,
-            node,
-            options.nodeResizeControls !== false
-          )
+          renderNodeResizeHandle(element, node, options.nodesResizable === true)
 
           // eslint-disable-next-line complexity -- Activation checks the existing phase, geometry and callback ownership.
           const activateNodeDrag = (event: PointerEvent): boolean => {
@@ -7613,7 +7655,7 @@ export const createFlowHost = (
               runEffect(browser.releasePointer(element, pointerId))
             }
 
-            suppressClickThroughDispatch()
+            suppressClickThroughDispatch(true)
 
             if (
               outcome.kind === 'finished' &&
@@ -8030,7 +8072,7 @@ export const createFlowHost = (
             element.classList.remove('dragging')
             draggingNodeIds.delete(node.id)
             refreshNodeRendererProps(nodeEntry, findNode(node.id), graphFor())
-            suppressClickThroughDispatch()
+            suppressClickThroughDispatch(wasActivated)
             runEffect(browser.releasePointer(element, event.pointerId))
 
             const current = findNode(node.id)
@@ -9521,7 +9563,7 @@ export const createFlowHost = (
       }
 
       endUserViewportObservation(observation)
-      suppressClickThroughDispatch()
+      suppressClickThroughDispatch(true)
 
       const change: FlowChange = {
         kind: 'viewport',
@@ -9871,7 +9913,7 @@ export const createFlowHost = (
         return
       }
 
-      suppressClickThroughDispatch()
+      suppressClickThroughDispatch(true)
 
       const active = interactionSlots.activeReconnection
       connectionEndEvent = event
@@ -11005,13 +11047,17 @@ export const createFlowHost = (
       hostBrowserScope
     )
     yield* Scope.provide(
-      browser.listen(canvas, 'click', onCanvasClick),
-      hostBrowserScope
-    )
-    yield* Scope.provide(
-      browser.listen(canvas, 'click', (event) =>
-        dispatchCanvasEvent('Click', event)
-      ),
+      browser.listen(canvas, 'click', (event) => {
+        // A click that ends a drag, resize, pan or connection reaches neither
+        // selection nor the click callbacks, as in React Flow.
+        const suppressed = clickSuppression?.gesture === true
+
+        onCanvasClick(event)
+
+        if (!suppressed) {
+          dispatchCanvasEvent('Click', event)
+        }
+      }),
       hostBrowserScope
     )
     yield* Scope.provide(
