@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 batch1 selected lexical-family/dependency-specific design; one serial repair writer active; named regressions per unit then one root feature pass on frozen batch; exact four unit/six node+connection browser scope; broad testing deferred",
+  "activeWork": "Plan099 batch1 partial units1/2 targeted green; root corrected impossible pending-click oracle after one focused repro; fresh unit3 acquisition writer active; complete feature pass only after stable batch; exact four unit/six node+connection browser scope; broad testing deferred",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
