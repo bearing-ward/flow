@@ -673,6 +673,7 @@ export {
   getEdgeIntersections,
   getEdgePolylines,
   getEdgesGeometry,
+  getFlowNodeBounds,
   getPathPolylines,
   isEdgeIntersectingRect,
   isPointNearEdge,

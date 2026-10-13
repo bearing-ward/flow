@@ -7,6 +7,7 @@ import {
   getEdgeGeometry,
   getEdgeIntersections,
   getEdgesGeometry,
+  getFlowNodeBounds,
   getPathPolylines,
   isEdgeIntersectingRect,
   isPointNearEdge,
@@ -125,6 +126,39 @@ describe(getEdgesGeometry, () => {
   })
 })
 
+describe(getFlowNodeBounds, () => {
+  const nested = S.decodeUnknownSync(FlowDocumentSchema)({
+    nodeOrigin: [0.5, 0.5],
+    nodes: [
+      node('parent', 200, 100, { size: { width: 200, height: 100 } }),
+      node('child', 50, 30, { parentId: 'parent', origin: [0, 0] }),
+      node('hidden', 0, 0, { hidden: true }),
+    ],
+    edges: [],
+  })
+
+  it('makes parent-relative anchors absolute with origins and ancestors', () => {
+    expect(getFlowNodeBounds(nested)).toStrictEqual([
+      { id: 'parent', bounds: { x: 100, y: 50, width: 200, height: 100 } },
+      { id: 'child', bounds: { x: 150, y: 80, width: 100, height: 40 } },
+    ])
+  })
+
+  it('treats drag overrides as parent-relative anchors, moving children too', () => {
+    const moved = getFlowNodeBounds(nested, {
+      positionOverrides: new Map([
+        ['parent', { x: 300, y: 100 }],
+        ['child', { x: 60, y: 30 }],
+      ]),
+    })
+
+    expect(moved).toStrictEqual([
+      { id: 'parent', bounds: { x: 200, y: 50, width: 200, height: 100 } },
+      { id: 'child', bounds: { x: 260, y: 80, width: 100, height: 40 } },
+    ])
+  })
+})
+
 describe(flowMeasurementsFromInternalNodes, () => {
   it('keeps measured internal nodes only', () => {
     const state = S.decodeUnknownSync(FlowMeasurementStateSchema)({
@@ -222,21 +256,35 @@ describe('edge hit tests', () => {
     expect(
       getEdgeIntersections(horizontal, { path: 'M0,10 L100,10' })
     ).toStrictEqual([])
+  })
 
-    const geometry = getEdgesGeometry(document)
-    const [straight, bezier, smooth] = geometry
+  it('ignores edges that only share a handle anchor or touch with an end', () => {
+    const [straight, bezier] = getEdgesGeometry(document)
 
-    if (
-      straight === undefined ||
-      bezier === undefined ||
-      smooth === undefined
-    ) {
+    if (straight === undefined || bezier === undefined) {
       throw new Error('missing geometry')
     }
 
-    expect(getEdgeIntersections(straight, bezier)).toStrictEqual([
-      { x: 105.5, y: 20 },
-    ])
-    expect(getEdgeIntersections(bezier, smooth)).toStrictEqual([])
+    // Both edges leave the out handle of node a.
+    expect(straight.source).toStrictEqual(bezier.source)
+    expect(getEdgeIntersections(straight, bezier)).toStrictEqual([])
+    expect(
+      getEdgeIntersections({ path: 'M0,0 L100,0' }, { path: 'M100,0 L200,50' })
+    ).toStrictEqual([])
+    expect(
+      getEdgeIntersections(horizontal, { path: 'M50,0 L50,50' })
+    ).toStrictEqual([])
+  })
+
+  it('reports no point for collinear overlap and one for a crossing at a vertex', () => {
+    expect(
+      getEdgeIntersections(horizontal, { path: 'M20,0 L80,0' })
+    ).toStrictEqual([])
+    expect(
+      getEdgeIntersections(
+        { path: 'M0,0 L50,50 L100,0' },
+        { path: 'M50,0 L50,100' }
+      )
+    ).toStrictEqual([{ x: 50, y: 50 }])
   })
 })

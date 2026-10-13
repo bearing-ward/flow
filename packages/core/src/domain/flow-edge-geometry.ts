@@ -8,7 +8,8 @@ import {
   straightEdgePath,
 } from './flow-edge.schema.ts'
 import { createFlowGraph } from './flow-graph.ts'
-import type { FlowGraphNode } from './flow-graph.ts'
+import type { FlowGraphNode, FlowGraphView } from './flow-graph.ts'
+import type { FlowIntersectionCandidate } from './flow-intersection.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { smoothStepEdgePath, stepEdgePath } from './flow-step-edge.schema.ts'
@@ -115,6 +116,56 @@ const anchor = (
       inferHandleMeasurement(graphNode.id, handle, graphNode.dimensions)
   )
 
+/** The node graph with measurements and parent-relative overrides applied. */
+const geometryGraph = (
+  document: FlowDocument,
+  options: FlowEdgeGeometryOptions
+): FlowGraphView => {
+  const overrides = options.positionOverrides
+
+  return createFlowGraph(
+    document,
+    options.measurements ?? new Map(),
+    new Map(
+      document.nodes.flatMap(({ id }) => {
+        const position = overrides?.get(id)
+
+        return position === undefined ? [] : [[id, position] as const]
+      })
+    )
+  )
+}
+
+/**
+ * Absolute flow-space bounds of every visible node, in document order.
+ * Positions in `positionOverrides` are parent-relative anchors, as drag
+ * events report them; the node origin and every ancestor's position are
+ * applied, so children of a moved parent move with it. Unmeasured nodes use
+ * their declared size.
+ */
+export const getFlowNodeBounds = (
+  document: FlowDocument,
+  options: FlowEdgeGeometryOptions = {}
+): readonly FlowIntersectionCandidate[] => {
+  const graph = geometryGraph(document, options)
+
+  return document.nodes.flatMap(({ id }) => {
+    const graphNode = graph.nodes.get(id)
+
+    return graphNode === undefined || graphNode.hidden
+      ? []
+      : [
+          {
+            id,
+            bounds: {
+              ...graphNode.absolutePosition,
+              ...graphNode.dimensions,
+            },
+          },
+        ]
+  })
+}
+
 /**
  * Geometry of every edge the built-in renderers draw, in document order.
  * Hidden edges, edges touching hidden nodes and edges whose handles do not
@@ -125,20 +176,7 @@ export const getEdgesGeometry = (
   options: FlowEdgeGeometryOptions = {}
 ): readonly FlowEdgeRenderGeometry[] => {
   const measurements = options.measurements ?? new Map()
-
-  const overrides = options.positionOverrides
-
-  const graph = createFlowGraph(
-    document,
-    measurements,
-    new Map(
-      document.nodes.flatMap(({ id }) => {
-        const position = overrides?.get(id)
-
-        return position === undefined ? [] : [[id, position] as const]
-      })
-    )
-  )
+  const graph = geometryGraph(document, options)
 
   return document.edges.flatMap((edge) => {
     const resolved =
@@ -559,24 +597,41 @@ export const isEdgeIntersectingRect = (
 const samePoint = (first: XYPosition, second: XYPosition): boolean =>
   Math.abs(first.x - second.x) < 1e-6 && Math.abs(first.y - second.y) < 1e-6
 
+/** First and last point of every subpath: where an edge starts or ends. */
+const pathEnds = (
+  polylines: readonly (readonly XYPosition[])[]
+): readonly XYPosition[] =>
+  polylines.flatMap((polyline) => {
+    const [start] = polyline
+    const end = polyline.at(-1)
+
+    return start === undefined || end === undefined ? [] : [start, end]
+  })
+
 /**
- * Points where two edge paths cross, along the first path. Parallel
- * overlapping pieces report no point; a crossing found twice at a shared
- * polyline vertex is reported once.
+ * Points where two edge paths properly cross, along the first path. Points
+ * where either path starts or ends never count, so edges that share a
+ * handle anchor, or where one edge only touches the other with its end, do
+ * not cross. Collinear overlapping pieces report no point. A crossing found
+ * twice at a polyline vertex is reported once.
  */
 export const getEdgeIntersections = (
   first: Pick<FlowEdgeRenderGeometry, 'path'>,
   second: Pick<FlowEdgeRenderGeometry, 'path'>
 ): readonly XYPosition[] => {
-  const secondPairs = getEdgePolylines(second).flatMap(pairs)
+  const firstPolylines = getEdgePolylines(first)
+  const secondPolylines = getEdgePolylines(second)
+  const ends = [...pathEnds(firstPolylines), ...pathEnds(secondPolylines)]
+  const secondPairs = secondPolylines.flatMap(pairs)
   const found: XYPosition[] = []
 
-  for (const [a1, a2] of getEdgePolylines(first).flatMap(pairs)) {
+  for (const [a1, a2] of firstPolylines.flatMap(pairs)) {
     for (const [b1, b2] of secondPairs) {
       const point = crossing(a1, a2, b1, b2)
 
       if (
         point !== undefined &&
+        !ends.some((end) => samePoint(end, point)) &&
         !found.some((existing) => samePoint(existing, point))
       ) {
         found.push(point)

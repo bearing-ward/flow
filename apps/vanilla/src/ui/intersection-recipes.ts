@@ -2,7 +2,7 @@ import {
   flowMeasurementsFromInternalNodes,
   getEdgeIntersections,
   getEdgesGeometry,
-  getInternalNodeBounds,
+  getFlowNodeBounds,
   getIntersectingNodes,
   getNodesBounds,
   getProximityConnection,
@@ -24,7 +24,6 @@ import './intersection-recipes.css'
 import {
   createRecipePage,
   everyFrame,
-  measuredNode,
   pageButton,
   sceneParameter,
 } from './recipe-page.ts'
@@ -62,6 +61,24 @@ const link = (source: string, target: string) => ({
   sourceHandle: 'out',
   targetHandle: 'in',
 })
+
+/** Nodes with a handle on every side, for the edge-paths scene. */
+const pathNode = (id: string, x: number, y: number) => ({
+  ...box(id, x, y),
+  handles: [
+    ...handles,
+    { id: 'top', kind: 'target', side: 'top' },
+    { id: 'bottom', kind: 'source', side: 'bottom' },
+  ] as const,
+})
+
+const pathEdge = (
+  path: 'bezier' | 'step' | 'smoothstep' | 'simplebezier' | 'straight',
+  source: string,
+  sourceHandle: string,
+  target: string,
+  targetHandle: string
+) => ({ id: path, source, sourceHandle, target, targetHandle, path })
 
 /** The fixed area of the Intersections scene, in flow coordinates. */
 const area: FlowRect = { x: 40, y: 40, width: 100, height: 100 }
@@ -106,6 +123,25 @@ const documents = {
     nodes: [box('A', 40, 200), box('B', 400, 40), box('C', 400, 360)],
     edges: [],
   },
+  'edge-paths': {
+    nodes: [
+      pathNode('S1', 40, 40),
+      pathNode('T1', 360, 140),
+      pathNode('S2', 40, 220),
+      pathNode('T2', 360, 320),
+      pathNode('S3', 560, 40),
+      pathNode('T3', 760, 200),
+      pathNode('S4', 560, 300),
+      pathNode('T4', 760, 440),
+    ],
+    edges: [
+      pathEdge('bezier', 'S1', 'out', 'T1', 'in'),
+      pathEdge('step', 'S2', 'out', 'T2', 'top'),
+      pathEdge('smoothstep', 'S3', 'bottom', 'T3', 'in'),
+      pathEdge('simplebezier', 'S4', 'out', 'T4', 'top'),
+      pathEdge('straight', 'S1', 'bottom', 'T2', 'in'),
+    ],
+  },
 }
 
 const sceneName = sceneParameter('intersections')
@@ -139,27 +175,30 @@ const mounted = (): JavaScriptFlowController => {
   return flow.current
 }
 
-/** Measured absolute bounds of every node, with live drag positions applied. */
-const candidates = (): readonly FlowIntersectionCandidate[] =>
-  mounted()
-    .getNodes()
-    .flatMap((node) => {
-      const internal = measuredNode(mounted(), node.id)
+/**
+ * The accepted document with measurements and live drag positions. Drag
+ * positions are parent-relative anchors, the same as `positionOverrides`.
+ */
+const geometryInput = () => {
+  const { document: flowDocument } = mounted().getSnapshot()
 
-      if (internal === undefined) {
-        return []
-      }
+  return {
+    flowDocument,
+    options: {
+      measurements: flowMeasurementsFromInternalNodes(
+        flowDocument.nodes.map(({ id }) => mounted().getInternalNode(id))
+      ),
+      positionOverrides: live,
+    },
+  }
+}
 
-      const { bounds } = getInternalNodeBounds(internal)
-      const position = live.get(node.id)
+/** Absolute bounds of every visible node, moved by the live drag. */
+const candidates = (): readonly FlowIntersectionCandidate[] => {
+  const { flowDocument, options } = geometryInput()
 
-      return [
-        {
-          id: node.id,
-          bounds: position === undefined ? bounds : { ...bounds, ...position },
-        },
-      ]
-    })
+  return getFlowNodeBounds(flowDocument, options)
+}
 
 const ids = (items: readonly { readonly id: string }[]): string =>
   items
@@ -243,14 +282,8 @@ const reportCollisions = (nodes: readonly FlowIntersectionCandidate[]) => {
 }
 
 const reportEdges = (nodes: readonly FlowIntersectionCandidate[]) => {
-  const { document: flowDocument } = mounted().getSnapshot()
-
-  const geometry = getEdgesGeometry(flowDocument, {
-    measurements: flowMeasurementsFromInternalNodes(
-      flowDocument.nodes.map(({ id }) => mounted().getInternalNode(id))
-    ),
-    positionOverrides: live,
-  })
+  const { flowDocument, options } = geometryInput()
+  const geometry = getEdgesGeometry(flowDocument, options)
 
   const crossings = geometry.flatMap((first, index) =>
     geometry
@@ -297,11 +330,24 @@ const reportProximity = (nodes: readonly FlowIntersectionCandidate[]) => {
   )
 }
 
+/** Publish the core edge geometry so tests can compare it with the rendered paths. */
+const reportPaths = () => {
+  const { flowDocument, options } = geometryInput()
+
+  status.dataset.geometry = JSON.stringify(
+    getEdgesGeometry(flowDocument, options).map(({ id, path }) => ({
+      id,
+      path,
+    }))
+  )
+}
+
 const reporters = {
   intersections: reportIntersections,
   'node-collisions': reportCollisions,
   'edge-intersection': reportEdges,
   'proximity-connect': reportProximity,
+  'edge-paths': reportPaths,
 }
 
 const report = (): void => {

@@ -73,17 +73,77 @@ test('intersections: a dragged node reports the nodes and area it overlaps', asy
   await expect(status).toHaveAttribute('data-object', '5:0:1')
 })
 
-test('node collisions: resolving and dropping leave no overlaps', async ({
+const collisionIds = ['A', 'B', 'C', 'D'] as const
+
+/** Rendered boxes of the collision scene's nodes, by id. */
+const collisionBoxes = async (page: Page) =>
+  new Map(
+    await Promise.all(
+      collisionIds.map(
+        async (id) => [id, await boxOf(nodeLocator(page, id))] as const
+      )
+    )
+  )
+
+/** Pairs whose rendered boxes overlap, like `A/B`. */
+const overlappingPairs = (boxes: ReadonlyMap<string, Box>): string =>
+  collisionIds
+    .flatMap((first, index) =>
+      collisionIds.slice(index + 1).flatMap((second) => {
+        const a = boxes.get(first)
+        const b = boxes.get(second)
+
+        if (a === undefined || b === undefined) {
+          return []
+        }
+
+        const x = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)
+        const y = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y)
+
+        return x > 0 && y > 0 ? [`${first}/${second}`] : []
+      })
+    )
+    .join(',')
+
+const movedBy = (before: Box | undefined, after: Box | undefined): number =>
+  before === undefined || after === undefined
+    ? 0
+    : Math.hypot(after.x - before.x, after.y - before.y)
+
+test('node collisions: resolving and dropping move nodes until none overlap', async ({
   page,
 }) => {
   const status = await open(page, 'node-collisions')
   await expect(status).toHaveAttribute('data-overlapping', 'A/B,A/C,B/C')
 
+  const initial = await collisionBoxes(page)
+  expect(overlappingPairs(initial)).toBe('A/B,A/C,B/C')
+
   await page.getByTestId('resolve-collisions').click()
+
+  // Rendered boxes, not the status line, prove the nodes really moved apart.
+  await expect
+    .poll(async () => {
+      const boxes = await collisionBoxes(page)
+
+      return {
+        overlapping: overlappingPairs(boxes),
+        moved: (['A', 'B', 'C'] as const).some(
+          (id) => movedBy(initial.get(id), boxes.get(id)) > 1
+        ),
+      }
+    })
+    .toStrictEqual({ overlapping: '', moved: true })
   await expect(status).toHaveAttribute('data-overlapping', '')
 
-  const a = await boxOf(nodeLocator(page, 'A'))
-  const d = await boxOf(nodeLocator(page, 'D'))
+  const resolved = await collisionBoxes(page)
+  const a = resolved.get('A')
+  const d = resolved.get('D')
+
+  if (a === undefined || d === undefined) {
+    throw new Error('Missing collision nodes')
+  }
+
   const start = await pressNode(page, 'D')
   const dx = a.x + 30 - d.x
   const dy = a.y + 10 - d.y
@@ -91,12 +151,23 @@ test('node collisions: resolving and dropping leave no overlaps', async ({
   await expect(status).toHaveAttribute('data-overlapping', /A\/D|D\//u)
   await page.mouse.up()
 
-  await expect(status).toHaveAttribute('data-overlapping', '')
+  // The dropped node stays where it was dropped; A makes room.
+  await expect
+    .poll(async () => {
+      const boxes = await collisionBoxes(page)
+      const dropped = boxes.get('D')
 
-  // The dropped node stays where it was dropped; the others make room.
-  const dropped = await boxOf(nodeLocator(page, 'D'))
-  expect(Math.abs(dropped.x - (d.x + dx))).toBeLessThanOrEqual(2)
-  expect(Math.abs(dropped.y - (d.y + dy))).toBeLessThanOrEqual(2)
+      return {
+        overlapping: overlappingPairs(boxes),
+        aMoved: movedBy(resolved.get('A'), boxes.get('A')) > 1,
+        dStayed:
+          dropped !== undefined &&
+          Math.abs(dropped.x - (d.x + dx)) <= 2 &&
+          Math.abs(dropped.y - (d.y + dy)) <= 2,
+      }
+    })
+    .toStrictEqual({ overlapping: '', aMoved: true, dStayed: true })
+  await expect(status).toHaveAttribute('data-overlapping', '')
 })
 
 test('edge intersection: crossing markers follow the edge paths live', async ({

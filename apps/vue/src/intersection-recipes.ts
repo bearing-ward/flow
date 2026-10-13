@@ -3,7 +3,7 @@ import {
   flowMeasurementsFromInternalNodes,
   getEdgeIntersections,
   getEdgesGeometry,
-  getInternalNodeBounds,
+  getFlowNodeBounds,
   getIntersectingNodes,
   getNodesBounds,
   getProximityConnection,
@@ -54,6 +54,24 @@ const link = (source: string, target: string) => ({
   targetHandle: 'in',
 })
 
+/** Nodes with a handle on every side, for the edge-paths scene. */
+const pathNode = (id: string, x: number, y: number) => ({
+  ...box(id, x, y),
+  handles: [
+    ...handles,
+    { id: 'top', kind: 'target', side: 'top' },
+    { id: 'bottom', kind: 'source', side: 'bottom' },
+  ] as const,
+})
+
+const pathEdge = (
+  path: 'bezier' | 'step' | 'smoothstep' | 'simplebezier' | 'straight',
+  source: string,
+  sourceHandle: string,
+  target: string,
+  targetHandle: string
+) => ({ id: path, source, sourceHandle, target, targetHandle, path })
+
 /** The fixed area of the Intersections scene, in flow coordinates. */
 const area: FlowRect = { x: 40, y: 40, width: 100, height: 100 }
 
@@ -97,6 +115,25 @@ const documents = {
     nodes: [box('A', 40, 200), box('B', 400, 40), box('C', 400, 360)],
     edges: [],
   },
+  'edge-paths': {
+    nodes: [
+      pathNode('S1', 40, 40),
+      pathNode('T1', 360, 140),
+      pathNode('S2', 40, 220),
+      pathNode('T2', 360, 320),
+      pathNode('S3', 560, 40),
+      pathNode('T3', 760, 200),
+      pathNode('S4', 560, 300),
+      pathNode('T4', 760, 440),
+    ],
+    edges: [
+      pathEdge('bezier', 'S1', 'out', 'T1', 'in'),
+      pathEdge('step', 'S2', 'out', 'T2', 'top'),
+      pathEdge('smoothstep', 'S3', 'bottom', 'T3', 'in'),
+      pathEdge('simplebezier', 'S4', 'out', 'T4', 'top'),
+      pathEdge('straight', 'S1', 'bottom', 'T2', 'in'),
+    ],
+  },
 }
 
 const sceneName =
@@ -130,22 +167,22 @@ const ids = (items: readonly { readonly id: string }[]): string =>
     .toSorted()
     .join(',')
 
-/** Measured absolute bounds of every node, with the live drag position applied. */
+/**
+ * Measurements and the live drag position. `nodeDrag` reports a
+ * parent-relative anchor, the same as `positionOverrides`.
+ */
+const geometryOptions = (flow: FlowActions) => ({
+  measurements: flowMeasurementsFromInternalNodes(
+    flow.document.value.nodes.map(({ id }) => flow.getInternalNode(id))
+  ),
+  positionOverrides: new Map(
+    drag.value === undefined ? [] : [[drag.value.id, drag.value.position]]
+  ),
+})
+
+/** Absolute bounds of every visible node, moved by the live drag. */
 const candidates = (flow: FlowActions): readonly FlowIntersectionCandidate[] =>
-  flow.nodes.value.flatMap(({ id }) => {
-    const internal = flow.getInternalNode(id)
-
-    if (internal?.measurementStatus !== 'measured') {
-      return []
-    }
-
-    const { bounds } = getInternalNodeBounds(internal)
-    const live = drag.value?.id === id ? drag.value.position : undefined
-
-    return [
-      { id, bounds: live === undefined ? bounds : { ...bounds, ...live } },
-    ]
-  })
+  getFlowNodeBounds(flow.document.value, geometryOptions(flow))
 
 const proximity = (nodes: readonly FlowIntersectionCandidate[], id: string) => {
   const dragged = nodes.find((node) => node.id === id)
@@ -260,16 +297,10 @@ const sceneReadout = (
   }
 
   if (sceneName === 'edge-intersection') {
-    const flowDocument = flow.document.value
-
-    const geometry = getEdgesGeometry(flowDocument, {
-      measurements: flowMeasurementsFromInternalNodes(
-        flowDocument.nodes.map(({ id }) => flow.getInternalNode(id))
-      ),
-      positionOverrides: new Map(
-        drag.value === undefined ? [] : [[drag.value.id, drag.value.position]]
-      ),
-    })
+    const geometry = getEdgesGeometry(
+      flow.document.value,
+      geometryOptions(flow)
+    )
 
     const crossings = geometry.flatMap((first, index) =>
       geometry
@@ -290,6 +321,21 @@ const sceneReadout = (
               ),
       },
       markers: crossings,
+      line: undefined,
+    }
+  }
+
+  if (sceneName === 'edge-paths') {
+    // Publish the core edge geometry so tests can compare it with the rendered paths.
+    return {
+      attributes: {
+        'data-geometry': JSON.stringify(
+          getEdgesGeometry(flow.document.value, geometryOptions(flow)).map(
+            ({ id, path }) => ({ id, path })
+          )
+        ),
+      },
+      markers: [],
       line: undefined,
     }
   }
@@ -332,7 +378,7 @@ const RecipePanel = defineComponent({
         .map(({ id }) => {
           const internal = flow.getInternalNode(id)
 
-          return `${id}:${internal?.measurementStatus}:${internal?.width}x${internal?.height}`
+          return `${id}:${internal?.measurementStatus}:${internal?.width}x${internal?.height}:${JSON.stringify(internal?.handles)}`
         })
         .join('|')
 
