@@ -283,6 +283,71 @@ const dimensions = (result: ReturnType<typeof update>) =>
       : []
   ) ?? []
 
+const startWith = (
+  options: Partial<Graph.GraphInteractionOptions>,
+  documentMode: 'controlled' | 'uncontrolled' = 'uncontrolled'
+): AppModel => {
+  const model = initialModel(
+    document,
+    { x: 0, y: 0, zoom: 2 },
+    [],
+    undefined,
+    'full',
+    { ...Graph.defaultInteractionOptions, ...options }
+  )
+
+  return { ...model, graph: { ...model.graph, documentMode } }
+}
+
+const selectionChanges = (result: ReturnType<typeof update>) =>
+  semanticChanges(result)?.filter(({ kind }) => kind === 'selection-set')
+
+describe('Foldkit click selection edge cases', () => {
+  it('selects on click at nodeDragThreshold 0 when the pointer did not move', () => {
+    let result = step(startWith({ nodeDragThreshold: 0 }), down('c'))
+
+    expect(result.model.graph.pointerSession?.kind).toBe('node-drag')
+
+    result = step(result.model, up(10, 10))
+    result = step(result.model, click('c'))
+    expect(selected(result.model)).toStrictEqual(['c'])
+
+    result = step(result.model, down('a'))
+    result = step(result.model, up(10, 10))
+    result = step(result.model, click('a', 'meta'))
+    expect(selected(result.model)).toStrictEqual(['a', 'c'])
+  })
+
+  it('swallows the click at nodeDragThreshold 0 once the pointer moved', () => {
+    let result = step(startWith({ nodeDragThreshold: 0 }), down('c'))
+    result = step(result.model, move(12, 10))
+    result = step(result.model, up(12, 10))
+    result = step(result.model, click('c'))
+
+    expect(selected(result.model)).toStrictEqual(['a', 'b'])
+  })
+
+  it('proposes Meta-click and toggle-button selections in controlled mode', () => {
+    const controlled = startWith({}, 'controlled')
+    const toggled = step(controlled, click('c', 'meta'))
+
+    expect(selectionChanges(toggled)).toStrictEqual([
+      { kind: 'selection-set', nodeIds: ['a', 'b', 'c'], edgeIds: [] },
+    ])
+    expect(selected(toggled.model)).toStrictEqual(['a', 'b'])
+
+    const button = step(
+      controlled,
+      Graph.Message.ToggleNodeSelection({ nodeId: NodeIdSchema.make('a') })
+    )
+
+    expect(selectionChanges(button)).toStrictEqual([
+      { kind: 'selection-set', nodeIds: ['b'], edgeIds: [] },
+    ])
+    expect(selected(button.model)).toStrictEqual(['a', 'b'])
+  })
+})
+
 describe('Foldkit measurement and data changes', () => {
   it('reports dimensions changes for first and changed measurements only', () => {
     const first = measure(start(), 120)

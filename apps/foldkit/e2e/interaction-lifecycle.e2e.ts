@@ -1922,6 +1922,24 @@ test('Foldkit supports keyboard node selection and resize through focused contro
     kind: 'selection-set',
     nodeIds: ['move', 'already-selected'],
   })
+  // The controlled owner accepts the proposed selection.
+  await adapter.perform({
+    kind: 'update-document',
+    document: {
+      ...movementFixture.document,
+      nodes: [
+        ...movementFixture.document.nodes.map((node) =>
+          node.id === 'move' ? { ...node, selected: true } : node
+        ),
+        {
+          id: 'already-selected',
+          label: 'Already selected',
+          position: { x: 360, y: 300 },
+          selected: true,
+        },
+      ],
+    },
+  })
   await expect(
     page.getByRole('button', { name: 'Resize Move from right' })
   ).toBeVisible()

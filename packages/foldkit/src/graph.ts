@@ -213,6 +213,16 @@ const PointerSessionSchema = Schema.Union([
     nodeId: NodeIdSchema,
     /** Every dragged node; the pressed node is first when it moves itself. */
     nodeIds: Schema.Array(NodeIdSchema),
+    /** Where the drag found each dragged node: relative and absolute top-left. */
+    origins: Schema.Array(
+      Schema.Struct({
+        nodeId: NodeIdSchema,
+        x: Schema.Finite,
+        y: Schema.Finite,
+        absoluteX: Schema.Finite,
+        absoluteY: Schema.Finite,
+      })
+    ),
     /** The pointer's latest client position, for the live drag preview. */
     currentX: Schema.Finite,
     currentY: Schema.Finite,
@@ -1174,15 +1184,13 @@ type NodeDragSession = Extract<
 /**
  * The nodes a press on `nodeId` drags, as React Flow's `getDragItems`: a
  * selected node drags every selected, draggable, visible node that has no
- * selected ancestor; an unselected node drags alone.
+ * selected ancestor; an unselected node drags alone. Each item records where
+ * the drag found it, so every frame is an offset from there.
  */
-const nodeDragItems = (model: Model, nodeId: NodeId): readonly NodeId[] => {
-  const pressed = model.document.nodes.find(({ id }) => id === nodeId)
-
-  if (pressed?.selected !== true) {
-    return [nodeId]
-  }
-
+const nodeDragStart = (
+  model: Model,
+  nodeId: NodeId
+): Pick<NodeDragSession, 'nodeIds' | 'origins'> => {
   const interactivity = selectInteractivity(model)
 
   const graph = createFlowGraph(
@@ -1190,15 +1198,19 @@ const nodeDragItems = (model: Model, nodeId: NodeId): readonly NodeId[] => {
     getFlowMeasuredNodes(model.document, model.measurements)
   )
 
+  const pressed = graph.nodes.get(nodeId)?.node
+
   const candidates = new Set(
-    model.document.nodes
-      .filter(
-        (node) =>
-          (node.selected === true || node.id === nodeId) &&
-          isNodeDraggable(interactivity, node) &&
-          graph.nodes.get(node.id)?.hidden === false
-      )
-      .map(({ id }) => id)
+    pressed?.selected === true
+      ? model.document.nodes
+          .filter(
+            (node) =>
+              (node.selected === true || node.id === nodeId) &&
+              isNodeDraggable(interactivity, node) &&
+              graph.nodes.get(node.id)?.hidden === false
+          )
+          .map(({ id }) => id)
+      : [nodeId]
   )
 
   const hasDraggedAncestor = (id: NodeId): boolean => {
@@ -1217,62 +1229,79 @@ const nodeDragItems = (model: Model, nodeId: NodeId): readonly NodeId[] => {
 
   const items = [...candidates].filter((id) => !hasDraggedAncestor(id))
 
-  return items.includes(nodeId)
+  const nodeIds = items.includes(nodeId)
     ? [nodeId, ...items.filter((id) => id !== nodeId)]
     : items
+
+  const origins = nodeIds.flatMap((id) => {
+    const resolved = graph.nodes.get(id)
+
+    if (resolved === undefined || resolved.hidden) {
+      return []
+    }
+
+    const parent =
+      resolved.parentId === undefined
+        ? undefined
+        : graph.nodes.get(resolved.parentId)
+
+    const position = nodeTopLeftToAnchor(
+      {
+        x: resolved.absolutePosition.x - (parent?.absolutePosition.x ?? 0),
+        y: resolved.absolutePosition.y - (parent?.absolutePosition.y ?? 0),
+      },
+      resolved.dimensions,
+      resolveNodeOrigin(resolved.node, model.document)
+    )
+
+    return [
+      {
+        nodeId: id,
+        x: position.x,
+        y: position.y,
+        absoluteX: resolved.absolutePosition.x,
+        absoluteY: resolved.absolutePosition.y,
+      },
+    ]
+  })
+
+  return { nodeIds, origins }
 }
 
-/** Each dragged node's position once the pointer is at `clientX`/`clientY`. */
+/**
+ * Each dragged node's position once the pointer is at `clientX`/`clientY`:
+ * its drag origin plus the pointer travel, so a frame costs O(dragged nodes)
+ * plus one id lookup per node.
+ */
 const nodeDragPositions = (
   model: Model,
   session: NodeDragSession,
   clientX: number,
   clientY: number
-): readonly { readonly nodeId: NodeId; readonly position: XYPosition }[] => {
+): readonly {
+  readonly nodeId: NodeId
+  readonly position: XYPosition
+  readonly positionAbsolute: XYPosition
+}[] => {
   const dx = (clientX - session.startX) / model.viewport.zoom
   const dy = (clientY - session.startY) / model.viewport.zoom
   const interactivity = selectInteractivity(model)
+  const nodes = new Map(model.document.nodes.map((node) => [node.id, node]))
 
-  const graph = createFlowGraph(
-    model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
-  )
+  return session.origins.flatMap(({ nodeId, x, y, absoluteX, absoluteY }) => {
+    const node = nodes.get(nodeId)
 
-  return session.nodeIds.flatMap((nodeId) => {
-    const node = model.document.nodes.find(({ id }) => id === nodeId)
-    const resolved = graph.nodes.get(nodeId)
-
-    if (
-      node === undefined ||
-      resolved === undefined ||
-      resolved.hidden ||
+    return node === undefined ||
+      node.hidden === true ||
       !isNodeDraggable(interactivity, node)
-    ) {
-      return []
-    }
-
-    const parent =
-      node.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
-
-    return [
-      {
-        nodeId,
-        position: nodeTopLeftToAnchor(
+      ? []
+      : [
           {
-            x:
-              resolved.absolutePosition.x +
-              dx -
-              (parent?.absolutePosition.x ?? 0),
-            y:
-              resolved.absolutePosition.y +
-              dy -
-              (parent?.absolutePosition.y ?? 0),
+            nodeId,
+            position: { x: x + dx, y: y + dy },
+            positionAbsolute: { x: absoluteX + dx, y: absoluteY + dy },
           },
-          resolved.dimensions,
-          resolveNodeOrigin(node, model.document)
-        ),
-      },
-    ]
+        ]
   })
 }
 
@@ -1283,7 +1312,10 @@ const nodeDragChange = (
   clientX: number,
   clientY: number
 ): CoreFlowChange | undefined => {
-  const positions = nodeDragPositions(model, session, clientX, clientY)
+  const positions = nodeDragPositions(model, session, clientX, clientY).map(
+    ({ nodeId, position }) => ({ nodeId, position })
+  )
+
   const [first] = positions
 
   if (first === undefined) {
@@ -1310,7 +1342,8 @@ const applyNodeDragChange = (
 
 /**
  * The document with an active node drag's live positions applied: the drag
- * preview, built with the same appliers the release commit uses.
+ * preview. It moves the same nodes to the same positions the release commit
+ * does, in one pass over the nodes and without building a graph.
  */
 export const selectLiveDocument = (model: Model): FlowDocument => {
   const session = model.pointerSession
@@ -1319,16 +1352,24 @@ export const selectLiveDocument = (model: Model): FlowDocument => {
     return model.document
   }
 
-  const change = nodeDragChange(
-    model,
-    session,
-    session.currentX,
-    session.currentY
+  const moved = new Map(
+    nodeDragPositions(model, session, session.currentX, session.currentY).map(
+      ({ nodeId, position }) => [nodeId, position]
+    )
   )
 
-  return change === undefined
-    ? model.document
-    : (applyNodeDragChange(model.document, change) ?? model.document)
+  if (moved.size === 0) {
+    return model.document
+  }
+
+  return {
+    ...model.document,
+    nodes: model.document.nodes.map((node) => {
+      const position = moved.get(node.id)
+
+      return position === undefined ? node : { ...node, position }
+    }),
+  }
 }
 
 /** The model as a reader sees it mid-drag: live positions, same everything else. */
@@ -1348,41 +1389,25 @@ export const selectNodeDragPositions = (
 ): readonly DraggedNodePosition[] | undefined => {
   const session = model.pointerSession
 
-  if (session?.kind !== 'node-drag') {
-    return undefined
-  }
-
-  const positions = nodeDragPositions(
-    model,
-    session,
-    at?.clientX ?? session.currentX,
-    at?.clientY ?? session.currentY
-  )
-
-  const moved = new Map(
-    positions.map(({ nodeId, position }) => [nodeId, position])
-  )
-
-  const document: FlowDocument = {
-    ...model.document,
-    nodes: model.document.nodes.map((node) => {
-      const position = moved.get(node.id)
-
-      return position === undefined ? node : { ...node, position }
-    }),
-  }
-
-  const graph = createFlowGraph(
-    document,
-    getFlowMeasuredNodes(document, model.measurements)
-  )
-
-  return positions.map(({ nodeId, position }) => ({
-    nodeId,
-    position,
-    positionAbsolute: graph.nodes.get(nodeId)?.absolutePosition ?? position,
-  }))
+  return session?.kind === 'node-drag'
+    ? nodeDragPositions(
+        model,
+        session,
+        at?.clientX ?? session.currentX,
+        at?.clientY ?? session.currentY
+      )
+    : undefined
 }
+
+/** Whether the pointer moved after the press; d3-drag then swallows the click. */
+const nodeDragMoved = (
+  session: NodeDragSession,
+  message: PointerReleased
+): boolean =>
+  session.currentX !== session.startX ||
+  session.currentY !== session.startY ||
+  message.clientX !== session.startX ||
+  message.clientY !== session.startY
 
 const finishNodeDrag = (
   model: Model,
@@ -1591,7 +1616,7 @@ const finishPointer = (model: Model, message: PointerReleased) => {
         ...model,
         pointerSession: null,
         pointerClickReceipt: null,
-        nodeClickSuppressed: true,
+        nodeClickSuppressed: nodeDragMoved(session, message),
       },
       session,
       message
@@ -1924,9 +1949,18 @@ const toggleNodeSelection = (
 
   const document = applySelectionSetChange(model.document, change)
 
+  // Controlled documents publish the proposal and keep the accepted document.
   return document === undefined
     ? noChange(model)
-    : report(model, { ...model, document }, change)
+    : report(
+        model,
+        {
+          ...model,
+          document:
+            model.documentMode === 'uncontrolled' ? document : model.document,
+        },
+        change
+      )
 }
 
 type ObserveMouseMessage = Extract<
@@ -2235,7 +2269,7 @@ const updateState = (
                     ...(model.nodeDragThreshold === 0
                       ? {
                           kind: 'node-drag' as const,
-                          nodeIds: nodeDragItems(model, node.id),
+                          ...nodeDragStart(model, node.id),
                           currentX: clientX,
                           currentY: clientY,
                         }
@@ -2423,7 +2457,7 @@ const updateState = (
             kind: 'node-drag' as const,
             pointerId: pending.pointerId,
             nodeId: pending.nodeId,
-            nodeIds: nodeDragItems(model, pending.nodeId),
+            ...nodeDragStart(model, pending.nodeId),
             startX: pending.startX,
             startY: pending.startY,
             currentX: moved.clientX,
@@ -2858,7 +2892,11 @@ const updateState = (
             // A cancelled drag moved the pointer; its trailing click is no select.
             nodeClickSuppressed:
               model.nodeClickSuppressed ||
-              model.pointerSession.kind === 'node-drag',
+              (model.pointerSession.kind === 'node-drag' &&
+                (model.pointerSession.currentX !==
+                  model.pointerSession.startX ||
+                  model.pointerSession.currentY !==
+                    model.pointerSession.startY)),
           },
           outMessage: OutMessage.GestureCancelled({
             kind: model.pointerSession.kind,
@@ -2892,7 +2930,9 @@ const updateState = (
         pendingResizeAcceptance: null,
         nodeClickSuppressed:
           model.nodeClickSuppressed ||
-          model.pointerSession?.kind === 'node-drag',
+          (model.pointerSession?.kind === 'node-drag' &&
+            (model.pointerSession.currentX !== model.pointerSession.startX ||
+              model.pointerSession.currentY !== model.pointerSession.startY)),
       }
 
       if (
