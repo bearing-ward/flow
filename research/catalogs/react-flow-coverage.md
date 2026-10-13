@@ -1,5 +1,7 @@
 # React Flow catalog coverage
 
+> **Superseded for status:** the per-host statuses below date from 2026-09-29. Current status, parity scope, stretch and intentional-gap classification, and delivery waves are in the [2026-10-13 parity audit](react-flow-parity-audit-2026-10-13.json). This map remains the dated discovery baseline and evidence index.
+
 For member-level correspondence of ReactFlow, Node, Edge, ReactFlowInstance, selected hooks, and callback families, see [the API correspondence matrix](../../docs/react-flow-api-correspondence.md). For accepted-state and lifecycle decisions across JS, Vue, and Foldkit, see [the state contract trace](../traces/public-state-contract.md). These are bounded mappings; they do not close broad API or framework coverage.
 
 Captured 2026-09-26 against Flow commit `9a583d7`, with pre-existing working-tree edits left intact. This is a discovery map for the definitive goal in [project progress](../PROGRESS.md). It maps sidebar entries to current building blocks and evidence, without claiming that a whole page's API or example has been reproduced.

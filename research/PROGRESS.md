@@ -11,7 +11,15 @@ Checked items work in the repository today. Unchecked items are still part of th
   - three real regressions: Vanilla left removed edges rendered after `update`, because a render pass aborted on its own measurement prune; Vanilla swallowed the first keyboard Enter after an Escape cancellation; and Foldkit ignored Escape during a Shift+Space keyboard selection.
 - Open gap: Foldkit rectangle selection and node resize never take pointer capture, so a real capture loss (for example, an interrupted touch) does not cancel them. Vue and xyflow do take capture for these gestures. The former Foldkit capture-loss rows for these gestures only passed against synthetic events and were removed.
 - Delivery loop from 2026-10-13: one plan of a page or less per feature, then implementation, targeted tests plus `bun run verify`, and one review pass before commit. No multi-judge reviews, hash ledgers, or recovery packets.
-- Next work: port the built-in UI that already works in Vanilla (Background, Controls, MiniMap, Panel, NodeResizer, EdgeLabelRenderer, and related components) to Vue and Foldkit, one component per slice. The [catalog coverage map](catalogs/react-flow-coverage.md) was last refreshed on 2026-09-29. At that point Vue had no public equivalent for 114 of 200 entries and Foldkit for 122.
+- Parity scope (decided 2026-10-13): parity means functional parity. An outcome counts once a developer or end user can achieve it with public Flow APIs in Vanilla, Vue and Foldkit. Stretch goals (Pro outcomes, the Workflow Editor templates and other long-tail entries) and intentional gaps (`useStoreApi()`, `ProOptions`) do not count toward parity.
+- Current gap: the [2026-10-13 parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) puts 185 of 200 catalog entries in scope. 93 of those are close equivalents in all three hosts; per host, Vanilla has 119, Vue 116 and Foldkit 99. The open in-scope entries are grouped into six waves:
+  1. renderer props contract;
+  2. events, changes and connection rules;
+  3. model fields and styling;
+  4. instance and store APIs;
+  5. UI catalog completion;
+  6. example gallery and integrations.
+- Next work: wave 1, the renderer props contract.
 
 ### Definitive project goal
 
@@ -26,6 +34,7 @@ Review upstream additions at milestone boundaries. Detailed mapping should accou
 - [ ] Example coverage: demonstrate every catalog example through supported APIs, including required optional integrations.
 - [ ] UI coverage: provide equivalents for every catalog component and template.
 - [ ] Framework coverage: prove mapped capabilities separately in plain JavaScript, Vue, Foldkit, and future supported adapters.
+- [ ] Functional parity: every in-scope entry in the [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) is achievable in all three hosts. Stretch entries and intentional gaps are excluded.
 - [ ] Parity evidence: connect each claim to reference comparisons, runnable examples, and applicable interaction, visual, accessibility, and lifecycle checks.
 - [ ] Upstream review: review catalog changes at milestone boundaries and keep omissions visible in the checklist.
 
