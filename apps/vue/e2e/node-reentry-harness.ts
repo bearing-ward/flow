@@ -190,6 +190,7 @@ export const terminalReentry = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: documentState,
         nodeDragThreshold: 0,
         selectNodesOnDrag: unmount,
@@ -304,6 +305,7 @@ export const physicalReentry = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         nodeDragThreshold: 0,
@@ -516,6 +518,7 @@ export const completionReentry = async (
   app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: documentState,
         documentMode: controlled ? 'controlled' : 'uncontrolled',
         nodeDragThreshold: 0,
@@ -690,6 +693,7 @@ export const reactiveDisposal = async (
 
       return () =>
         h(FlowCanvas, {
+          nodesResizable: true,
           document: reentryDocument(),
           documentMode: 'uncontrolled',
           nodeDragThreshold: 0,
@@ -878,6 +882,7 @@ export const continuationReentry = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: controlled ? 'controlled' : 'uncontrolled',
         viewportMode: controlled ? 'controlled' : 'uncontrolled',
@@ -1250,6 +1255,7 @@ export const disposalClaimsProof = async (
 
       return () =>
         h(FlowCanvas, {
+          nodesResizable: true,
           document: input,
           documentMode: controlled ? 'controlled' : 'uncontrolled',
           viewport: { x: 0, y: 0, zoom: 1 },
@@ -1394,6 +1400,7 @@ export const reactiveCompletionProof = async (
 
       return () =>
         h(FlowCanvas, {
+          nodesResizable: true,
           document: reentryDocument(),
           documentMode: controlled ? 'controlled' : 'uncontrolled',
           nodeDragThreshold: 0,
@@ -1650,6 +1657,7 @@ export const mountNativeTerminalProof = async (disposeOnLoss: boolean) => {
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         connectionDragThreshold: 0,
@@ -1790,6 +1798,7 @@ export const viewportOwnershipProof = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         viewport: { x: 0, y: 0, zoom: 1 },
@@ -1922,6 +1931,7 @@ export const keyboardPreviewProof = async (
   app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: parsed,
         documentMode: 'uncontrolled',
         connectionDragThreshold: 0,
@@ -2103,6 +2113,7 @@ export const semanticBoundaryProof = async (
   const render = () =>
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: input,
         documentMode: controlled ? 'controlled' : 'uncontrolled',
         nodeDragThreshold: 0,
@@ -2313,6 +2324,7 @@ export const disposalResourceProof = async (recursive: boolean) => {
 
       return () =>
         h(FlowCanvas, {
+          nodesResizable: true,
           document: reentryDocument(),
           documentMode: 'uncontrolled',
           onInit: (value) => {
@@ -2457,6 +2469,7 @@ export const retainedPressProof = async (promoted: boolean) => {
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         connectionDragThreshold: 5,
@@ -2598,6 +2611,7 @@ export const previewContinuationProof = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         connectionDragThreshold: 0,
@@ -2737,6 +2751,7 @@ export const selectionContinuationProof = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         nodeDragThreshold: 0,
@@ -2856,6 +2871,7 @@ export const retainedNodeCancellationProof = async () => {
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         nodeDragThreshold: 0,
@@ -2963,6 +2979,7 @@ export const viewportRequestProof = async (
   const draw = () =>
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         viewport,
@@ -3127,6 +3144,7 @@ export const viewportAcknowledgementProof = async (acknowledge: 1 | 2 | 65) => {
   const draw = () =>
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         viewport,
         viewportMode: 'controlled',
@@ -3198,6 +3216,7 @@ export const ordinaryViewportProof = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         viewport: { x: 0, y: 0, zoom: 1 },
@@ -3343,6 +3362,7 @@ export const continuationRoundFourViewport = async (
   const draw = () =>
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         viewport: supplied,
         viewportMode: mode,
@@ -3543,6 +3563,7 @@ export const continuationRoundFourReconnect = async (
   try {
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         connectionDragThreshold: 0,
@@ -3767,6 +3788,7 @@ export const continuationRoundFourRequestError = async (
   const app = createApp({
     render: () =>
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         style: { margin: '0', width: '100%', maxWidth: 'none', border: '0' },
         onInit: (value) => {
@@ -4138,6 +4160,7 @@ export const ownershipRoundFiveViewport = async (
   try {
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         viewportMode: 'uncontrolled',
@@ -4364,6 +4387,7 @@ export const ownershipRoundFiveConnection = async (
   try {
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         documentMode: 'uncontrolled',
         viewportMode: 'uncontrolled',
@@ -4468,6 +4492,7 @@ export const externalNestedViewportProof = async (switchMode: boolean) => {
   const draw = () =>
     renderVue(
       h(FlowCanvas, {
+        nodesResizable: true,
         document: reentryDocument(),
         viewport,
         viewportMode,

@@ -526,7 +526,12 @@ const app = createApp(
         h('div', { class: 'recipe-root' }, [
           h(
             FlowCanvas,
-            { defaultDocument: document, defaultViewport, nodeTypes },
+            {
+              defaultDocument: document,
+              defaultViewport,
+              nodeTypes,
+              nodesResizable: true,
+            },
             { default: () => [h(ToolOverlay), h(Toolbar)] }
           ),
         ])

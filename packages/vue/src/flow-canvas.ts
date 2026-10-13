@@ -1,5 +1,6 @@
 import {
   applyNodePositionChange,
+  applyNodePositionsChange,
   applyNodeBoundsChange,
   applyEdgeReconnectChange,
   applySelectionSetChange,
@@ -89,6 +90,7 @@ import type {
   FlowChange,
   FlowConnectionState,
   FlowFinalConnectionState,
+  FlowGraphNode,
   NodeChange,
   FlowConnection,
   ConnectionPreviewState,
@@ -132,6 +134,7 @@ import {
   onBeforeUnmount,
   onMounted,
   provide,
+  shallowReactive,
   shallowRef,
   nextTick,
   useId,
@@ -147,6 +150,10 @@ import type {
 } from 'vue'
 
 import {
+  FlowEdgeInteractionRegistryKey,
+  FlowEdgeScope,
+} from './edge-interaction.ts'
+import {
   createEdgeLabelRegistry,
   createRendererPropsCache,
   declaredRendererProps,
@@ -156,6 +163,17 @@ import { createFlowInteractivityState } from './interactivity.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyPressOptions } from './key-press-observer.ts'
 import { FlowMiniMapContextKey } from './minimap.ts'
+import {
+  dragGroupMembers,
+  dragGroupPositions,
+  isMultiSelectionEvent,
+  nodeClickControls,
+  selectionAfterEdgeClick,
+  selectionAfterNodeClick,
+  dragCarriedNodes,
+} from './node-drag-group.ts'
+import type { DragMember } from './node-drag-group.ts'
+import { collectNodeHandles, renderedViewportZoom } from './node-measurement.ts'
 import { FlowNodeToolbarContextKey } from './node-toolbar.ts'
 import { FlowEditorKey, FlowNodeIdKey } from './use-flow.ts'
 import type {
@@ -204,7 +222,11 @@ const interactionCompletionSpan = (change: FlowChange): string => {
     return FlowSpan.edgeReconnectComplete
   }
 
-  if (change.kind === 'node-position' || change.kind === 'node-bounds') {
+  if (
+    change.kind === 'node-position' ||
+    change.kind === 'node-positions' ||
+    change.kind === 'node-bounds'
+  ) {
     return FlowSpan.nodeDragComplete
   }
 
@@ -242,6 +264,8 @@ const NodeDragSessionSchema = S.Union([
 type DragSession = typeof NodeDragSessionSchema.Type & {
   readonly element: HTMLElement
   readonly captureTarget: HTMLElement
+  /** Every node the drag moves, set when the drag activates. */
+  readonly members?: readonly DragMember[]
 }
 
 const PendingHandleSchema = S.Struct({
@@ -734,6 +758,8 @@ export const FlowCanvas = defineComponent({
     nodesConnectable: { type: Boolean, default: true },
     /** Let nodes and edges be selected; an element's own `selectable` wins. */
     elementsSelectable: { type: Boolean, default: true },
+    /** Show resize controls on selected nodes, as a React Flow `NodeResizer` would. */
+    nodesResizable: { type: Boolean, default: false },
   },
   slots: Object as SlotsType<{
     default: Record<string, never>
@@ -879,6 +905,20 @@ export const FlowCanvas = defineComponent({
       }
     }) => true,
     selectionDragStop: (_payload: SelectionEndPayload) => true,
+    /** React Flow `onSelectionDragStart`: a drag of several selected nodes began. */
+    selectedNodesDragStart: (
+      _payload: { readonly nodes: readonly FlowNode[] },
+      _event?: PointerEvent
+    ) => true,
+    /** React Flow `onSelectionDrag`, with the dragged nodes at their drag positions. */
+    selectedNodesDrag: (
+      _payload: { readonly nodes: readonly FlowNode[] },
+      _event?: PointerEvent
+    ) => true,
+    /** React Flow `onSelectionDragStop`, with the drag outcome. */
+    selectedNodesDragStop: (
+      _payload: NodeEndPayload & { readonly nodes: readonly FlowNode[] }
+    ) => true,
     nodeClick: (_node: FlowNode, _event?: MouseEvent) => true,
     edgeClick: (_edge: FlowEdge, _event?: PointerEvent | KeyboardEvent) => true,
   },
@@ -1227,6 +1267,37 @@ export const FlowCanvas = defineComponent({
     const graph = computed(() =>
       createFlowGraph(activeDocument.value, measuredNodes.value)
     )
+
+    /**
+     * A pointer drag in progress: its members, every node they carry along
+     * (members and their descendants) and the flow-space delta so far.
+     */
+    const dragPreview = shallowRef<{
+      readonly members: ReadonlySet<FlowNode['id']>
+      readonly moved: ReadonlySet<FlowNode['id']>
+      readonly delta: XYPosition
+    }>()
+
+    /**
+     * The graph node rendering uses. Only nodes a drag carries are offset, so
+     * a pointer move does no work for the rest of the graph.
+     */
+    const renderGraphNode = (id: FlowNode['id']): FlowGraphNode | undefined => {
+      const graphNode = graph.value.nodes.get(id)
+      const preview = dragPreview.value
+
+      if (graphNode === undefined || preview?.moved.has(id) !== true) {
+        return graphNode
+      }
+
+      return {
+        ...graphNode,
+        absolutePosition: {
+          x: graphNode.absolutePosition.x + preview.delta.x,
+          y: graphNode.absolutePosition.y + preview.delta.y,
+        },
+      }
+    }
 
     const connectionMode = computed(() =>
       S.decodeUnknownSync(ConnectionModeSchema)(props.connectionMode)
@@ -1699,46 +1770,105 @@ export const FlowCanvas = defineComponent({
       })
     }
 
-    const collectNodeHandles = (
+    /**
+     * The node's laid-out box in flow units. A node rendered before its canvas
+     * joins the document has no layout yet, so that reading is skipped and the
+     * ResizeObserver's first delivery measures it; a connected node's box,
+     * including an empty or hidden one, is real. Client rects are divided by
+     * the zoom of the rendered viewport transform, which can lag the reactive
+     * viewport right after a viewport change.
+     */
+    const readNodeMeasurement = (
       node: FlowNode,
-      element: HTMLElement
-    ): readonly MeasuredHandle[] => {
-      const nodeBounds = element.getBoundingClientRect()
-      const { zoom } = activeViewport.value
-      const measurements: [string, MeasuredHandle][] = []
+      element: HTMLElement,
+      generation: number
+    ): NodeMeasurementInput | undefined => {
+      if (!element.isConnected) {
+        return undefined
+      }
 
-      for (const handleElement of element.querySelectorAll<HTMLElement>(
-        '[data-handle-id]'
-      )) {
-        const handle = node.handles?.find(
-          (candidate) => candidate.id === handleElement.dataset.handleId
-        )
+      const bounds = element.getBoundingClientRect()
+      const zoom = renderedViewportZoom(element, activeViewport.value.zoom)
 
-        if (
-          handle === undefined ||
-          handleElement.closest('[data-testid="flow-node"]') !== element ||
-          handleElement.getClientRects().length === 0
-        ) {
+      return {
+        nodeId: node.id,
+        generation,
+        width: bounds.width / zoom,
+        height: bounds.height / zoom,
+        handles: collectNodeHandles(node, element, bounds, zoom),
+      }
+    }
+
+    /** Last measured size reported through `nodesChange`, by node id. */
+    const reportedDimensions = new Map<
+      NodeId,
+      { readonly width: number; readonly height: number }
+    >()
+
+    let dimensionsFlushScheduled = false
+
+    /** React Flow `dimensions` NodeChanges for measured sizes that changed. */
+    const flushDimensionChanges = (): void => {
+      dimensionsFlushScheduled = false
+
+      if (stateDisposed) {
+        return
+      }
+
+      const measured = getFlowMeasuredNodes(
+        activeDocument.value,
+        measurementState
+      )
+
+      for (const nodeId of reportedDimensions.keys()) {
+        if (!measured.has(nodeId)) {
+          reportedDimensions.delete(nodeId)
+        }
+      }
+
+      const changes: NodeChange[] = []
+
+      for (const [nodeId, { width, height }] of measured) {
+        const previous = reportedDimensions.get(nodeId)
+
+        if (previous?.width === width && previous.height === height) {
           continue
         }
 
-        const bounds = handleElement.getBoundingClientRect()
-        measurements.push([
-          handle.id,
-          {
-            nodeId: node.id,
-            handleId: handle.id,
-            offset: {
-              x: (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom,
-              y: (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom,
-            },
-            width: bounds.width / zoom,
-            height: bounds.height / zoom,
-          },
-        ])
+        reportedDimensions.set(nodeId, { width, height })
+        changes.push({
+          id: nodeId,
+          type: 'dimensions',
+          dimensions: { width, height },
+        })
       }
 
-      return [...new Map(measurements).values()]
+      if (changes.length > 0) {
+        emit('nodesChange', changes)
+      }
+    }
+
+    const commitMeasurements = (
+      measurements: readonly NodeMeasurementInput[],
+      document: FlowDocument = activeDocument.value
+    ): void => {
+      const previousRevision = measurementState.revision
+      measurementState = applyNodeMeasurements(
+        document,
+        measurementState,
+        measurements
+      )
+
+      if (measurementState.revision === previousRevision) {
+        return
+      }
+
+      measurementRevision.value += 1
+
+      if (!dimensionsFlushScheduled) {
+        dimensionsFlushScheduled = true
+        queueMicrotask(flushDimensionChanges)
+      }
     }
 
     const isResizePreviewNode = (nodeId: string): boolean => {
@@ -1765,24 +1895,11 @@ export const FlowCanvas = defineComponent({
       measurementState = setNodeMeasurementGenerations(measurementState, [
         { nodeId: node.id, generation },
       ])
-      const bounds = element.getBoundingClientRect()
-      const previousRevision = measurementState.revision
-      measurementState = applyNodeMeasurements(
-        activeDocument.value,
-        measurementState,
-        [
-          {
-            nodeId: node.id,
-            generation,
-            width: bounds.width / activeViewport.value.zoom,
-            height: bounds.height / activeViewport.value.zoom,
-            handles: collectNodeHandles(node, element),
-          },
-        ]
-      )
 
-      if (measurementState.revision !== previousRevision) {
-        measurementRevision.value += 1
+      const measurement = readNodeMeasurement(node, element, generation)
+
+      if (measurement !== undefined) {
+        commitMeasurements([measurement])
       }
     }
 
@@ -1817,35 +1934,26 @@ export const FlowCanvas = defineComponent({
             continue
           }
 
-          const bounds = currentElement.getBoundingClientRect()
-
           const generation = nodeGenerations.get(node.id)
 
           if (generation === undefined) {
             continue
           }
 
-          measurements.push({
-            nodeId: node.id,
-            generation,
-            handles: collectNodeHandles(node, currentElement),
-            width: bounds.width / activeViewport.value.zoom,
-            height: bounds.height / activeViewport.value.zoom,
-          })
+          const measurement = readNodeMeasurement(
+            node,
+            currentElement,
+            generation
+          )
+
+          if (measurement !== undefined) {
+            measurements.push(measurement)
+          }
         }
       }
 
       if (measurements.length > 0) {
-        const previousRevision = measurementState.revision
-        measurementState = applyNodeMeasurements(
-          document,
-          measurementState,
-          measurements
-        )
-
-        if (measurementState.revision !== previousRevision) {
-          measurementRevision.value += 1
-        }
+        commitMeasurements(measurements, document)
       }
     })
 
@@ -2023,6 +2131,8 @@ export const FlowCanvas = defineComponent({
 
         if (change.kind === 'node-position') {
           next = applyNodePositionChange(activeDocument.value, change)
+        } else if (change.kind === 'node-positions') {
+          next = applyNodePositionsChange(activeDocument.value, change)
         } else if (change.kind === 'node-bounds') {
           next = applyNodeBoundsChange(activeDocument.value, change)
         } else if (change.kind === 'selection-set') {
@@ -2037,7 +2147,10 @@ export const FlowCanvas = defineComponent({
         }
 
         if (next !== undefined && hasSplitModel) {
-          if (change.kind === 'node-position') {
+          if (
+            change.kind === 'node-position' ||
+            change.kind === 'node-positions'
+          ) {
             emit('update:nodes', next.nodes)
           }
 
@@ -2051,8 +2164,11 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      if (change.kind === 'node-position') {
-        const updated = applyNodePositionChange(activeDocument.value, change)
+      if (change.kind === 'node-position' || change.kind === 'node-positions') {
+        const updated =
+          change.kind === 'node-position'
+            ? applyNodePositionChange(activeDocument.value, change)
+            : applyNodePositionsChange(activeDocument.value, change)
 
         if (updated !== undefined) {
           withStateCause('semantic-change', () => {
@@ -2138,10 +2254,26 @@ export const FlowCanvas = defineComponent({
 
     const pressedKeys = new Set<string>()
 
+    /** The dragged nodes at the given positions, or at drag start. */
+    const draggedNodes = (
+      active: DragSession,
+      positions?: ReadonlyMap<FlowNode['id'], XYPosition>
+    ): FlowNode[] =>
+      (active.members ?? []).flatMap(({ nodeId, origin }) => {
+        const current = activeDocument.value.nodes.find(
+          ({ id }) => id === nodeId
+        )
+
+        return current === undefined
+          ? []
+          : [{ ...current, position: positions?.get(nodeId) ?? origin }]
+      })
+
     const endNodeDrag = (
       active: DragSession,
       status: 'accepted' | 'proposed' | 'cancelled',
-      reason?: string
+      reason?: string,
+      positions?: ReadonlyMap<FlowNode['id'], XYPosition>
     ): void => {
       const { node } = active
 
@@ -2156,6 +2288,19 @@ export const FlowCanvas = defineComponent({
         emit('nodeDragEnd', { node, status, reason })
         emit('nodeDragStop', { node, status, reason })
       }
+
+      if ((active.members?.length ?? 0) < 2) {
+        return
+      }
+
+      const nodes = draggedNodes(active, positions)
+
+      emit(
+        'selectedNodesDragStop',
+        reason === undefined
+          ? { node, status, nodes }
+          : { node, status, reason, nodes }
+      )
     }
 
     const selectNodeForDrag = (node: FlowNode): void => {
@@ -2176,6 +2321,144 @@ export const FlowCanvas = defineComponent({
         .map(({ id }) => id)
 
       publish({ kind: 'selection-set', nodeIds: selectedNodeIds, edgeIds })
+    }
+
+    /** Client position of the last primary press on a node. */
+    let nodePress:
+      | {
+          readonly x: number
+          readonly y: number
+          /**
+           * The document at press. A threshold-0 drag can select on press
+           * (`selectNodesOnDrag`), so the click reads the selection from before.
+           */
+          readonly document: FlowDocument
+        }
+      | undefined
+
+    /**
+     * A click that did not move past the drag threshold selects the node.
+     * Controls inside the node, including handles and resize controls, keep
+     * their own click behaviour.
+     */
+    const selectNodeOnClick = (node: FlowNode, event: MouseEvent): void => {
+      const press = nodePress
+      nodePress = undefined
+
+      const { target, currentTarget } = event
+
+      const control =
+        target instanceof Element ? target.closest(nodeClickControls) : null
+
+      if (
+        stateDisposed ||
+        press === undefined ||
+        event.button !== 0 ||
+        Math.hypot(event.clientX - press.x, event.clientY - press.y) >
+          (nodeDragThreshold ?? defaultNodeDragThreshold) ||
+        (control !== null &&
+          currentTarget instanceof Element &&
+          currentTarget.contains(control))
+      ) {
+        return
+      }
+
+      const pressed = press.document.nodes.find(({ id }) => id === node.id)
+
+      const next =
+        pressed === undefined
+          ? undefined
+          : selectionAfterNodeClick(
+              press.document,
+              interactivity.value,
+              pressed,
+              isMultiSelectionEvent(event)
+            )
+
+      const current = activeDocument.value
+      const nodeIds = new Set(current.nodes.map(({ id }) => id))
+      const edgeIds = new Set(current.edges.map(({ id }) => id))
+
+      if (next === undefined || !nodeIds.has(node.id)) {
+        return
+      }
+
+      const selection = {
+        nodeIds: next.nodeIds.filter((id) => nodeIds.has(id)),
+        edgeIds: next.edgeIds.filter((id) => edgeIds.has(id)),
+      }
+
+      const unchanged =
+        current.nodes.every(
+          ({ id, selected }) =>
+            (selected === true) === selection.nodeIds.includes(id)
+        ) &&
+        current.edges.every(
+          ({ id, selected }) =>
+            (selected === true) === selection.edgeIds.includes(id)
+        )
+
+      if (!unchanged) {
+        publish({ kind: 'selection-set', ...selection })
+      }
+    }
+
+    const selectEdgeOnClick = (edge: FlowEdge, event: MouseEvent): void => {
+      const current = activeDocument.value.edges.find(
+        ({ id }) => id === edge.id
+      )
+
+      const next =
+        stateDisposed || current === undefined
+          ? undefined
+          : selectionAfterEdgeClick(
+              activeDocument.value,
+              interactivity.value,
+              current,
+              isMultiSelectionEvent(event)
+            )
+
+      if (next !== undefined) {
+        publish({ kind: 'selection-set', ...next })
+      }
+    }
+
+    /**
+     * Select the edge when the press is released on the same edge without
+     * moving, as a click would. The pane captures the pointer on press, so the
+     * browser's own click lands on the canvas, not on the edge.
+     */
+    const awaitEdgeClick = (edge: FlowEdge, press: PointerEvent): void => {
+      const view = canvas.value?.ownerDocument.defaultView
+
+      if (view === null || view === undefined) {
+        return
+      }
+
+      const release = (event: PointerEvent): void => {
+        if (event.pointerId !== press.pointerId) {
+          return
+        }
+
+        view.removeEventListener('pointerup', release, true)
+
+        const hit = view.document
+          .elementFromPoint(event.clientX, event.clientY)
+          ?.closest<SVGElement>('[data-flow-edge-hit]')
+
+        if (
+          !stateDisposed &&
+          hit?.dataset.flowEdgeHit === edge.id &&
+          Math.hypot(
+            event.clientX - press.clientX,
+            event.clientY - press.clientY
+          ) <= 1
+        ) {
+          selectEdgeOnClick(edge, event)
+        }
+      }
+
+      view.addEventListener('pointerup', release, true)
     }
 
     const activationKeyIsPressed = (key: string | undefined): boolean =>
@@ -3941,7 +4224,7 @@ export const FlowCanvas = defineComponent({
       }
 
       if (active.kind === 'node' || active.kind === 'node-pending') {
-        active.element.style.removeProperty('transform')
+        dragPreview.value = undefined
       }
 
       if (active.kind === 'resize' || active.kind === 'keyboard-resize') {
@@ -4434,6 +4717,7 @@ export const FlowCanvas = defineComponent({
           pendingInternals.clear()
         }
 
+        // eslint-disable-next-line complexity -- One refresh batch settles every waiter after measuring.
         const flush = (): void => {
           refreshScheduled = false
           const batch = [...pendingInternals]
@@ -4464,20 +4748,12 @@ export const FlowCanvas = defineComponent({
                 ) {
                   status = 'failed'
                 } else {
-                  const bounds = element.getBoundingClientRect()
+                  const sample = isResizePreviewNode(node.id)
+                    ? undefined
+                    : readNodeMeasurement(node, element, generation)
 
-                  const size = {
-                    width: bounds.width / activeViewport.value.zoom,
-                    height: bounds.height / activeViewport.value.zoom,
-                  }
-
-                  if (!isResizePreviewNode(node.id)) {
-                    samples.push({
-                      nodeId: node.id,
-                      generation,
-                      ...size,
-                      handles: collectNodeHandles(node, element),
-                    })
+                  if (sample !== undefined) {
+                    samples.push(sample)
                   }
 
                   status = 'requested'
@@ -4502,12 +4778,7 @@ export const FlowCanvas = defineComponent({
 
           try {
             if (!stateDisposed && samples.length > 0) {
-              measurementState = applyNodeMeasurements(
-                activeDocument.value,
-                measurementState,
-                samples
-              )
-              measurementRevision.value += 1
+              commitMeasurements(samples)
             }
           } catch (error) {
             recordFlowTelemetry(
@@ -4590,7 +4861,7 @@ export const FlowCanvas = defineComponent({
     onMounted(() => emit('init', editor))
 
     const nodePosition = (node: FlowNode): { x: number; y: number } =>
-      graph.value.nodes.get(node.id)?.absolutePosition ?? node.position
+      renderGraphNode(node.id)?.absolutePosition ?? node.position
 
     const visible = (node: FlowNode): boolean => {
       if (graph.value.nodes.get(node.id)?.hidden === true) {
@@ -5062,12 +5333,40 @@ export const FlowCanvas = defineComponent({
       }
 
       const { threshold: _threshold, ...fields } = pending
-      const active: DragSession = { ...fields, kind: 'node' }
+
+      const active: DragSession = {
+        ...fields,
+        kind: 'node',
+        members: dragGroupMembers(
+          activeDocument.value,
+          interactivity.value,
+          pending.node
+        ),
+      }
+
       session.value = active
+
+      const memberIds = new Set(
+        (active.members ?? []).map(({ nodeId }) => nodeId)
+      )
+
+      dragPreview.value = {
+        members: memberIds,
+        moved: dragCarriedNodes(activeDocument.value, memberIds),
+        delta: { x: 0, y: 0 },
+      }
       emit('nodeDragStart', active.node, event)
 
       if (!continueNode(active)) {
         return undefined
+      }
+
+      if ((active.members?.length ?? 0) > 1) {
+        emit('selectedNodesDragStart', { nodes: draggedNodes(active) }, event)
+
+        if (!continueNode(active)) {
+          return undefined
+        }
       }
 
       selectNodeForDrag(active.node)
@@ -5116,15 +5415,31 @@ export const FlowCanvas = defineComponent({
 
       const dy = (event.clientY - dragging.startY) / activeViewport.value.zoom
 
-      active.element.style.transform = `translate(${dx}px, ${dy}px)`
+      const positions = dragGroupPositions(dragging.members ?? [], {
+        x: dx,
+        y: dy,
+      })
+
+      if (dragPreview.value !== undefined) {
+        dragPreview.value = { ...dragPreview.value, delta: { x: dx, y: dy } }
+      }
+
       emit(
         'nodeDrag',
         {
-          node: active.node,
-          position: { x: active.originX + dx, y: active.originY + dy },
+          node: dragging.node,
+          position: { x: dragging.originX + dx, y: dragging.originY + dy },
         },
         event
       )
+
+      if ((dragging.members?.length ?? 0) > 1 && session.value === dragging) {
+        emit(
+          'selectedNodesDrag',
+          { nodes: draggedNodes(dragging, positions) },
+          event
+        )
+      }
     }
 
     watch(
@@ -6659,15 +6974,34 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      publish({
-        kind: 'node-position',
-        nodeId: active.node.id,
-        position: { x: active.originX + dx, y: active.originY + dy },
+      const nodeIds = new Set(activeDocument.value.nodes.map(({ id }) => id))
+
+      const members = (active.members ?? []).filter(({ nodeId }) =>
+        nodeIds.has(nodeId)
+      )
+
+      const positions = dragGroupPositions(members, { x: dx, y: dy })
+
+      // Commit every drag member; the anchor is not one when its ancestor moves.
+      const committed = members.flatMap(({ nodeId }) => {
+        const position = positions.get(nodeId)
+
+        return position === undefined ? [] : [{ nodeId, position }]
       })
+
+      const [only] = committed
+
+      if (committed.length === 1 && only !== undefined) {
+        publish({ kind: 'node-position', ...only })
+      } else if (committed.length > 1) {
+        publish({ kind: 'node-positions', positions: committed })
+      }
+
       endNodeDrag(
         active,
         documentControlMode() === 'controlled' ? 'proposed' : 'accepted',
-        'drag-complete'
+        'drag-complete',
+        positions
       )
     }
 
@@ -7335,9 +7669,9 @@ export const FlowCanvas = defineComponent({
         node.id,
         flowNodeRendererProps(node, {
           positionAbsolute: position,
-          // Vue drags one node at a time, so the dragged node is the session node.
           dragging:
-            session.value?.kind === 'node' && session.value.node.id === node.id,
+            session.value?.kind === 'node' &&
+            dragPreview.value?.members.has(node.id) === true,
           size:
             resizePreview?.change.size ??
             measuredNodes.value.get(node.id) ??
@@ -7402,6 +7736,7 @@ export const FlowCanvas = defineComponent({
       ]
     }
 
+    // eslint-disable-next-line complexity -- One node render resolves preview geometry, renderer props and its controls.
     const renderNode = (node: FlowNode): VNode | null => {
       if (graph.value.nodes.get(node.id)?.hidden === true || !visible(node)) {
         return null
@@ -7454,7 +7789,7 @@ export const FlowCanvas = defineComponent({
       )
 
       const resizeChildren =
-        node.selected === true
+        props.nodesResizable && node.selected === true
           ? (
               [
                 'top',
@@ -7641,7 +7976,14 @@ export const FlowCanvas = defineComponent({
           tabindex: node.focusable === false ? -1 : 0,
           ref: nodeRef(node),
           style,
-          onPointerdown: (event: PointerEvent) => onPointerDown(event, node),
+          onPointerdown: (event: PointerEvent) => {
+            nodePress = {
+              x: event.clientX,
+              y: event.clientY,
+              document: activeDocument.value,
+            }
+            onPointerDown(event, node)
+          },
           onMousedown: (event: MouseEvent) =>
             emit('nodeMouseDown', node, event),
           onMouseup: (event: MouseEvent) => emit('nodeMouseUp', node, event),
@@ -7651,7 +7993,10 @@ export const FlowCanvas = defineComponent({
             emit('nodeMouseEnter', node, event),
           onMouseleave: (event: MouseEvent) =>
             emit('nodeMouseLeave', node, event),
-          onClick: (event: MouseEvent) => emit('nodeClick', node, event),
+          onClick: (event: MouseEvent) => {
+            emit('nodeClick', node, event)
+            selectNodeOnClick(node, event)
+          },
           onDblclick: (event: MouseEvent) =>
             emit('nodeDoubleClick', node, event),
           onContextmenu: (event: MouseEvent) =>
@@ -7763,8 +8108,8 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const sourceNode = graph.value.nodes.get(resolved.sourceNode.id)
-      const targetNode = graph.value.nodes.get(resolved.targetNode.id)
+      const sourceNode = renderGraphNode(resolved.sourceNode.id)
+      const targetNode = renderGraphNode(resolved.targetNode.id)
 
       const sourceMeasured = measuredHandles.value
         .get(resolved.sourceNode.id)
@@ -7812,6 +8157,19 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    /** Paths custom edges draw, which their hit targets follow. */
+    const edgeInteractionPaths = shallowReactive(new Map<string, string>())
+
+    provide(FlowEdgeInteractionRegistryKey, {
+      set: (edgeId, path) => {
+        if (path === undefined) {
+          edgeInteractionPaths.delete(edgeId)
+        } else if (edgeInteractionPaths.get(edgeId) !== path) {
+          edgeInteractionPaths.set(edgeId, path)
+        }
+      },
+    })
+
     const renderEdgeHitTarget = (
       edge: FlowEdge,
       path: string,
@@ -7835,6 +8193,7 @@ export const FlowCanvas = defineComponent({
           if (event.button === 0) {
             event.preventDefault()
             emit('edgeClick', edge, event)
+            awaitEdgeClick(edge, event)
           }
         },
         onMousedown: (event: MouseEvent) => emit('edgeMouseDown', edge, event),
@@ -7892,8 +8251,8 @@ export const FlowCanvas = defineComponent({
 
     // eslint-disable-next-line complexity
     const renderEdge = (edge: FlowEdge): VNode | null => {
-      const source = graph.value.nodes.get(edge.source)
-      const target = graph.value.nodes.get(edge.target)
+      const source = renderGraphNode(edge.source)
+      const target = renderGraphNode(edge.target)
 
       if (
         edge.hidden === true ||
@@ -7941,15 +8300,22 @@ export const FlowCanvas = defineComponent({
 
         edgeChildren = [
           h(
-            Edge,
+            FlowEdgeScope,
+            { edgeId: edge.id, key: `scope-${edge.id}` },
             {
-              ...declaredRendererProps(Edge, rendererProps),
-              edge,
-              path: geometry.path,
-              markerStart,
-              markerEnd,
-            },
-            edgeSlots
+              default: () =>
+                h(
+                  Edge,
+                  {
+                    ...declaredRendererProps(Edge, rendererProps),
+                    edge,
+                    path: geometry.path,
+                    markerStart,
+                    markerEnd,
+                  },
+                  edgeSlots
+                ),
+            }
           ),
         ]
       } else if (LegacyEdge !== undefined) {
@@ -7968,7 +8334,9 @@ export const FlowCanvas = defineComponent({
         edgeChildren.push(
           renderEdgeHitTarget(
             edge,
-            path,
+            (Edge === undefined
+              ? undefined
+              : edgeInteractionPaths.get(edge.id)) ?? path,
             sourceNode.node.label,
             targetNode.node.label
           )
@@ -8183,8 +8551,8 @@ export const FlowCanvas = defineComponent({
         return undefined
       }
 
-      const sourceNode = graph.value.nodes.get(resolved.sourceNode.id)
-      const targetNode = graph.value.nodes.get(resolved.targetNode.id)
+      const sourceNode = renderGraphNode(resolved.sourceNode.id)
+      const targetNode = renderGraphNode(resolved.targetNode.id)
 
       if (
         sourceNode === undefined ||

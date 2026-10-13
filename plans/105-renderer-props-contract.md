@@ -55,7 +55,7 @@ The reference types are `packages/react/src/types/edges.ts` (`EdgeProps`, `Conne
   - Connection line paths per type match React Flow's `ConnectionLine` switch, with step using a smooth step at radius 0.
   - `toPosition` is the hovered handle's side only when the connection is valid, else the opposite of `fromPosition`, as in `XYHandle.ts:192` (`packages/core/src/domain/flow-renderer-props.ts`, unit-tested).
   - `fromNode` and `toNode` have the same shape, `FlowNodeBounds`, as React's are both `InternalNode`.
-  - Vue drags one node at a time, so the dragged node is the one reporting `dragging`, as in React.
+  - Vue reports `dragging` on every dragged node, as in React (Plan 112).
 - **Intentionally different.**
   - `animated` is omitted because Flow edges have no `animated` field.
   - `NodeProps` omits `sourcePosition`, `targetPosition` and `dragHandle`: Flow nodes declare handle sides on `handles` and have no drag-handle selector field (Vanilla marks drag handles with `data-flow-drag-handle`).
@@ -65,7 +65,7 @@ The reference types are `packages/react/src/types/edges.ts` (`EdgeProps`, `Conne
   - Vanilla and Foldkit nest edge props under `props`, because Vanilla's `source`/`target` were already endpoint points.
   - Vanilla delivers per-frame props only through the opt-in `updateProps`, to keep `update` off the drag path for renderers that rebuild DOM. React re-renders the component instead.
   - The label layer sits above edges in every host. In Foldkit it shares z-index 1 with the built-in label layer.
-  - Only the drag anchor reports `dragging` in Vanilla and Foldkit, so in a multi-node drag the other moved nodes report false; React marks every dragged node. Vue moves the dragged node by transform and Foldkit on release, so there `positionAbsolute` and edges update after the drop. Vanilla updates them per frame.
+  - Only the drag anchor reports `dragging` in Vanilla and Foldkit, so in a multi-node drag the other moved nodes report false; React marks every dragged node. Foldkit moves nodes on release, so there `positionAbsolute` and edges update after the drop. Vanilla and Vue (since Plan 112) update them per frame.
   - A Vue async component (`defineAsyncComponent`) receives only `node`, `edge` or `preview` until it has loaded; the next canvas render passes its declared props.
 - **Unverified.**
   - There is no live React runtime comparison.

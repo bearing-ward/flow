@@ -11,7 +11,7 @@ import {
   FlowPanel,
   useFlow,
 } from '@flow/vue'
-import type { FlowActions, FlowPosition } from '@flow/vue'
+import type { FlowPosition } from '@flow/vue'
 import { Effect, Schema as S } from 'effect'
 import { computed, createApp, defineComponent, h, onScopeDispose } from 'vue'
 import type { PropType } from 'vue'
@@ -147,20 +147,11 @@ const document = Effect.runSync(
   })
 )
 
-/** Select only the clicked node; the Vue canvas does not select on click. */
-const selectOnly = (flow: FlowActions, nodeId: string) =>
-  flow.setNodes((nodes) =>
-    nodes.map((node) => ({ ...node, selected: node.id === nodeId }))
-  )
-
-let flowActions: FlowActions | undefined
-
 /** Panel, toolbars, minimap, controls and background, all from the public entry. */
 const Overview = defineComponent({
   name: 'FeatureOverview',
   setup() {
     const flow = useFlow()
-    flowActions = flow
 
     // Fit the view once every node has a measurement.
     let frame = requestAnimationFrame(function fitWhenMeasured() {
@@ -241,13 +232,9 @@ const app = createApp(
             FlowCanvas,
             {
               defaultDocument: document,
+              nodesResizable: true,
               nodeTypes: { annotation: AnnotationNode },
               edgeTypes: { button: ButtonEdge },
-              onNodeClick: (node: FlowNode) => {
-                if (flowActions !== undefined) {
-                  void selectOnly(flowActions, node.id)
-                }
-              },
             },
             { default: () => h(Overview) }
           ),

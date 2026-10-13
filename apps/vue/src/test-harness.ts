@@ -301,6 +301,7 @@ interface CanvasHarnessProps {
   viewport: Viewport
   viewportMode: 'controlled' | 'uncontrolled'
   renderOnlyVisible: boolean
+  nodesResizable: boolean
   defaultEdgeOptions?: FlowDefaultEdgeOptions
   selectionMode: 'full' | 'partial'
   connectionMode?: ConnectionMode
@@ -577,6 +578,7 @@ const Component = defineComponent({
         viewportMode: viewportMode.value,
         ...gestureOptions.value,
         renderOnlyVisible: cullOffscreen.value,
+        nodesResizable: true,
         selectionMode: selectionMode.value,
         'onUpdate:viewport': (next: Viewport) => {
           viewportState.value = next
@@ -931,6 +933,7 @@ const api: TestApi = {
         return () =>
           h('div', [
             h(FlowCanvas, {
+              nodesResizable: true,
               document: left.value,
               documentMode: 'controlled',
               nodeComponent: Visual,
@@ -940,6 +943,7 @@ const api: TestApi = {
               },
             }),
             h(FlowCanvas, {
+              nodesResizable: true,
               document: right.value,
               documentMode: 'controlled',
               nodeComponent: Visual,
@@ -1064,6 +1068,7 @@ const api: TestApi = {
       setup() {
         return () =>
           h(FlowCanvas, {
+            nodesResizable: true,
             nodes: nodes.value,
             edges: edges.value,
             nodeComponent: SplitNode,
@@ -1188,6 +1193,7 @@ const api: TestApi = {
       setup() {
         return () =>
           h(FlowCanvas, {
+            nodesResizable: true,
             ...(mode === 'controlled'
               ? { document: documentState.value }
               : { defaultDocument: documentState.value }),
@@ -1375,6 +1381,7 @@ const api: TestApi = {
             h(
               FlowCanvas,
               {
+                nodesResizable: true,
                 document: leftDocument.value,
                 documentMode: 'controlled',
                 viewport: leftViewport.value,
@@ -1401,6 +1408,7 @@ const api: TestApi = {
             h(
               FlowCanvas,
               {
+                nodesResizable: true,
                 defaultDocument: rightDocument.value,
                 documentMode: 'uncontrolled',
                 defaultViewport: rightViewport.value,
@@ -2287,6 +2295,7 @@ const api: TestApi = {
               ? [
                   h('section', { 'data-testid': 'isolation-left-host' }, [
                     h(FlowCanvas, {
+                      nodesResizable: true,
                       document: leftDocument.value,
                       documentMode: 'controlled',
                       onChange: (change: { kind: string }) =>
@@ -2309,6 +2318,7 @@ const api: TestApi = {
               : [
                   h('section', { 'data-testid': 'isolation-right-host' }, [
                     h(FlowCanvas, {
+                      nodesResizable: true,
                       document: rightDocument.value,
                       documentMode: 'controlled',
                       onChange: (change: { kind: string }) =>

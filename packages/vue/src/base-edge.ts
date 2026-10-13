@@ -3,6 +3,8 @@ import { Schema as S } from 'effect'
 import { defineComponent, Fragment, h, onMounted, shallowRef, watch } from 'vue'
 import type { PropType, StyleValue } from 'vue'
 
+import { useEdgeInteractionPath } from './edge-interaction.ts'
+
 type EdgeLabel = string | number
 
 const isFiniteNumber = S.is(S.Finite)
@@ -132,6 +134,8 @@ export const FlowBaseEdge = defineComponent({
     className: { type: String, default: '' },
   },
   setup(props, { attrs }) {
+    useEdgeInteractionPath(() => props.path)
+
     return () =>
       h(Fragment, [
         h('path', {
