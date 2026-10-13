@@ -554,6 +554,21 @@ export {
   sameFlowNodeRendererProps,
 } from './domain/flow-renderer-props.ts'
 
+export {
+  getEdgePosition,
+  getFloatingConnectionStart,
+  getFloatingEdgeParams,
+  getNodeIntersection,
+  getSideMidpoint,
+  getSimpleFloatingEdgeParams,
+} from './domain/flow-floating-edge.ts'
+
+export type {
+  FlowFloatingConnectionStart,
+  FlowFloatingEdgeParams,
+  FlowFloatingRect,
+} from './domain/flow-floating-edge.ts'
+
 export type {
   FlowConnectionLinePathParams,
   FlowConnectionLineProps,
