@@ -2,6 +2,8 @@ import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { resolveEdgeHandles } from './flow-edge.schema.ts'
+import { isHandleConnectable } from './flow-interactivity.ts'
+import type { FlowInteractivityInput } from './flow-interactivity.ts'
 import { EdgeIdSchema, HandleIdSchema, NodeIdSchema } from './flow-values.ts'
 import type { FlowDocument, FlowEdge } from './flow.schema.ts'
 
@@ -50,6 +52,7 @@ export const ConnectionIssueSchema = S.Literals([
   'duplicate-connection',
   'same-handle',
   'unsupported-handle-combination',
+  'handle-not-connectable',
 ])
 
 export type ConnectionIssue = typeof ConnectionIssueSchema.Type
@@ -196,12 +199,52 @@ export const validateFlowConnection = (
     return yield* new InvalidFlowConnection({ ...connection, reason })
   }).pipe(Effect.withSpan(FlowSpan.connectionValidate))
 
+/**
+ * Whether a gesture may start at one handle and finish at another: React
+ * Flow's Handle `isConnectable`, `isConnectableStart` and `isConnectableEnd`,
+ * with node `connectable` and `nodesConnectable` as defaults. Programmatic
+ * edges are not subject to this check.
+ */
+export const handleGestureConnectable = (
+  document: FlowDocument,
+  gesture: {
+    readonly fromNodeId: string
+    readonly fromHandleId: string
+    readonly toNodeId: string
+    readonly toHandleId: string
+  },
+  interactivity?: FlowInteractivityInput
+): boolean => {
+  const endpoint = (nodeId: string, handleId: string) => {
+    const node = document.nodes.find((item) => item.id === nodeId)
+    const handle = node?.handles?.find((item) => item.id === handleId)
+
+    return node === undefined || handle === undefined
+      ? undefined
+      : { node, handle }
+  }
+
+  const from = endpoint(gesture.fromNodeId, gesture.fromHandleId)
+  const to = endpoint(gesture.toNodeId, gesture.toHandleId)
+
+  return (
+    (from === undefined ||
+      isHandleConnectable(interactivity, from.node, from.handle, 'start')) &&
+    (to === undefined ||
+      isHandleConnectable(interactivity, to.node, to.handle, 'end'))
+  )
+}
+
 /** Construct fresh gesture direction once, then validate the directed pair. */
 export const connectionFromHandleGesture = (
   {
     document,
+    interactivity,
     ...gesture
-  }: FlowHandleGesture & { readonly document: FlowDocument },
+  }: FlowHandleGesture & {
+    readonly document: FlowDocument
+    readonly interactivity?: FlowInteractivityInput | undefined
+  },
   mode: ConnectionMode = 'strict'
 ): Effect.Effect<FlowConnection, InvalidFlowConnection> => {
   const fromHandle = document.nodes
@@ -213,16 +256,23 @@ export const connectionFromHandleGesture = (
   const source = fromHandle?.kind === 'target' ? to : from
   const target = fromHandle?.kind === 'target' ? from : to
 
-  return validateFlowConnection(
-    document,
-    {
-      source: source.nodeId,
-      sourceHandle: source.handleId,
-      target: target.nodeId,
-      targetHandle: target.handleId,
-    },
-    mode
-  )
+  const connection = {
+    source: source.nodeId,
+    sourceHandle: source.handleId,
+    target: target.nodeId,
+    targetHandle: target.handleId,
+  }
+
+  if (!handleGestureConnectable(document, gesture, interactivity)) {
+    return Effect.fail(
+      new InvalidFlowConnection({
+        ...connection,
+        reason: 'handle-not-connectable',
+      })
+    ).pipe(Effect.withSpan(FlowSpan.connectionValidate))
+  }
+
+  return validateFlowConnection(document, connection, mode)
 }
 
 export const nextConnectionEdge = (
