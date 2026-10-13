@@ -598,6 +598,59 @@ export type {
   FlowFloatingRect,
 } from './domain/flow-floating-edge.ts'
 
+export {
+  getInternalNodeBounds,
+  getIntersectingNodes,
+  getRectOverlapArea,
+  isRectIntersecting,
+} from './domain/flow-intersection.ts'
+
+export type {
+  FlowIntersectionCandidate,
+  FlowIntersectionOptions,
+} from './domain/flow-intersection.ts'
+
+export {
+  getFreehandPath,
+  getNodesInsideLasso,
+  getPointsBounds,
+  getRectFromPoints,
+  isPointInPolygon,
+  polylineIntersectsRect,
+  polylinesIntersect,
+  segmentsIntersect,
+  translatePoints,
+} from './domain/flow-freeform.ts'
+
+export type { FlowLassoOptions } from './domain/flow-freeform.ts'
+
+export {
+  getDropParentId,
+  groupNodes,
+  reparentNode,
+} from './domain/flow-grouping.ts'
+
+export type {
+  FlowGroupNodesOptions,
+  FlowGroupNodesResult,
+  FlowNodeBoundsLookup,
+} from './domain/flow-grouping.ts'
+
+export {
+  applyFlowLayoutPositions,
+  getFlowLayoutInput,
+  layoutCenterToTopLeft,
+  orientFlowHandles,
+} from './domain/flow-layout.ts'
+
+export type {
+  FlowLayoutDirection,
+  FlowLayoutEdge,
+  FlowLayoutHandle,
+  FlowLayoutInput,
+  FlowLayoutNode,
+} from './domain/flow-layout.ts'
+
 export type {
   FlowConnectionLinePathParams,
   FlowConnectionLineProps,
