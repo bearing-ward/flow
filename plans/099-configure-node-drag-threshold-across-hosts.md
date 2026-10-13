@@ -10,7 +10,7 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-The user approved the shorter delivery loop. Batch 1 is a compact ownership design comparison followed by three serial repairs. The first two units have targeted green evidence, with a corrected pending-click test oracle. One fresh writer is completing acquisition and remaining proof work from the preserved partial candidate. Source acceptance remains blocked until the stable batch passes proof and review. Earlier candidate stages below are historical. The execution contract and live task metadata are under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`.
+The user approved the shorter delivery loop. Repair6 is complete and frozen. Root matched eight source hashes, 217 artifact hashes and both full-index diffs. The one complete current-feature run passed 92 units and 848 browser cases, with one Vue acknowledgement failure and no skipped or flaky cases. Builds, scoped types, lint and formatting passed. Root replayed the original public regressions successfully and reproduced a newly found custom-edge geometry overwrite. These two concrete concerns block integration. Comments review found no remaining targets. Reviewer C returned partial semantic coverage; reviewers A and B are active. Source remains frozen until their findings are consolidated for targeted correction. Earlier candidate stages below are historical. The execution contract and live task metadata are under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/`.
 
 The third source repair is the committed baseline at `5635acf1f8855b90ef412fbafc20329d77f58f5b`, tree `fd8078f46767371e1979182b9cf367860775488f`, in the isolated checkout. Core and Foldkit production remain unchanged by this repair. Vanilla and Vue completion ownership and disposal have migrated together; required Foldkit viewport publication histories now have dedicated tests.
 
@@ -57,8 +57,8 @@ Use one substantive source review and targeted closure. Demonstrated defects, vi
 ## Throughput checkpoint
 
 - Blocking first steps. Grounding, design closure and first implementation checks passed within their boundaries. The next correction follows the complete public-entry census and renewed ownership grounding.
-- Independent workstreams. The previous repair passed parent feature checks, but seven reproduced runtime groups and proof/comparison-contract gaps block acceptance. The comments review and source panel are complete. Authority grounding is complete. The compact comparison is complete and one serial repair writer is active under the approved batch policy. Root retains finding reconciliation, the next bounded repair, source acceptance, normalization and integration.
-- Shared mutable state. One writer owns the isolated source checkout. Root owns plans, progress, verification scope, the canonical trail and integration, and waits for the frozen handoff before acceptance checks.
+- Independent workstreams. The complete stable batch is frozen. Root runs the current-feature check while fresh read-only comments and source reviews inspect that exact candidate. Root retains finding reconciliation, public/native proof, source acceptance, normalization and integration.
+- Shared mutable state. No source writer is active. The isolated source remains frozen while root checks and reviewers run. Root owns plans, progress, verification scope, the canonical trail and integration.
 - Smallest safe decomposition. Private request, observation, frame and cleanup transitions must acquire authority before callbacks. Preserve existing claims/disposal and Foldkit publication while closing all seven defects and the literal-history gap.
 
 ## Conformity and deviations
