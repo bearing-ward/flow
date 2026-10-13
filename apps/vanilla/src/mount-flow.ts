@@ -5850,6 +5850,11 @@ export const createFlowHost = (
           return { pass, graph, visibleNodes, visibleEdges, removalNodes }
         }
 
+        // Project measurements against the incoming document before capturing
+        // the pass; otherwise pruning below invalidates the pass it belongs to.
+        measurementState = pruneFlowMeasurements(next, measurementState)
+        measurements = getFlowMeasuredNodes(next, measurementState)
+
         let { pass, graph, visibleNodes, visibleEdges, removalNodes } =
           captureVisibility()
 
@@ -8519,7 +8524,17 @@ export const createFlowHost = (
       const retirementCurrent = () =>
         projectionMatches(retirementPass, { kind: 'toolbar' })
 
-      suppressClickUntilPointerUp()
+      // Keyboard-owned sessions never receive a pointerup, so suppressing here
+      // would swallow the next keyboard-generated click.
+      if (
+        taken.some(
+          ({ actor }) =>
+            actor.kind !== 'activeClickConnection' &&
+            actor.kind !== 'activeKeyboardResize'
+        )
+      ) {
+        suppressClickUntilPointerUp()
+      }
 
       for (const resource of resources) {
         if (resource.kind === 'click-source') {

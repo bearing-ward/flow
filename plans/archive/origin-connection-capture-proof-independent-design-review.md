@@ -1,0 +1,34 @@
+# Independent isolated Foldkit capture proof design review
+
+Verdict: **APPROVE** the bounded delegation/scope design in main `plans/archive/origin-connection-capture-proof-delegation.md`, SHA-256 `7cf4d3914b6e2774e7401b30ebef313351e1150b14cee1a084050cfc36ed8b0b`, read completely on 2026-09-30. This authorizes the described separate proof executor and exactly one added Foldkit browser file after primary approval. It does not approve source, gates, missing proof cells, or broader081 acceptance. Approved capture/inactive-result packets and the existing shared repair budget remain unchanged.
+
+## Isolation and executable public path
+
+The detached baseline checkout plus main-executor-prepared exact source snapshot is a sound ownership boundary. Snapshot verification must include the binary tracked patch, each changed/new input's exact path/hash, and the canonical/amendment records before authoring tests. Record the consumed manifest identity; later main changes are not silently part of this evidence. Main retains product/fixture ownership, the helper owns only new `apps/foldkit/e2e/origin-connection-capture.e2e.ts` and its specified execution/provenance record, and transfer follows an exact frozen test-file hash. There is no shared writer or merge/commit permission.
+
+I personally inspected the current isolated `apps/foldkit/e2e/origin-connection-fixture.ts`: Schema-derived fixture options feed actual public createProgram and Runtime.embed, a unique DOM mount ID is generated, public changes/acceptedStates/interactionEvents are subscribed, the same versioned snapshot client reads accepted state, and the exported measurement observer submits public MeasureNode actions. Its exposed replace, origin proposal/acknowledgment and dispose methods provide legitimate public ownership/lifecycle input. The existing `origin-connection-contract.e2e.ts:64-92` dynamically imports this fixture through Vite and polls public readiness/current positive node and declared-handle measurements. Reuse that boundary; no internal setter or synthetic captured value is needed.
+
+The installed `apps/foldkit/playwright.config.ts` already matches `**/*.e2e.ts` and uses strict4178 with reuseExistingServer=false, so the proposed new file needs no helper configuration edit. The named build/package and Playwright command can target this file. All three ports must be confirmed free and4178 explicitly leased before browser work; only owned server teardown is allowed. Main remains responsible for saving the new file in focused081 scope and rerunning the whole required focused/full/release set after transfer.
+
+## Evidence obligations and limits
+
+The capture source's normalized descriptor at `packages/foldkit/src/graph.ts:3891-3931` and separate scoped entry at `:4176-4199` are the actual draft paths under proof. Trusted native pointer IDs, exact retained original elements and original native methods must prove ownership independently of instrumented outcomes. Cover pending-to-active continuity, actual delivered threshold displacement, native release/Escape/origin/removal/disposal, fresh recovery, and immediate reconnection. Capture fault cases belong at the native capability boundary, not in the reducer or fixture. Restore instrumentation even after a failed assertion.
+
+Unsupported capability, real inactive synthetic NotFound and normal set/query-false are separate listener-only cases. Instrumented getter/setter/query failures test failure boundaries rather than native successful capture. Include setter-acquires-then-throws, including a NotFound-shaped DOMException, and post-set query failure so best-effort rollback is independently observed. A permanently throwing release cannot be claimed to have released capture: restore the original method for test cleanup and distinguish that cleanup from product finalization. The packet correctly requires honest reporting rather than weakening the assertion or inventing success.
+
+Current/foreign/old/fallback loss routing and replacement identity must use retained actual elements and pointer IDs. Instrumented old-loss events prove routing only. Genuine loss requires native release on a successfully retained current owner. Observing ignored old loss alone does not prove an old resource finalizer ran after replacement without deleting/releasing it; if the public fixture cannot produce/observe that ordering, STOP that proof cell rather than invoke internals or infer it from source.
+
+Two concrete fixture limits require care:
+
+- The fixture hardcodes autoPanOnConnect=false. Unchanged pending viewport here proves only this configuration; it does not establish suppression with auto-pan enabled. The helper cannot change this fixture/options contract. An enabled-auto-pan obligation stays main-owned or is reported STOPPED/unavailable in this proof snapshot.
+- Fixture read() includes a direct hasPointerCapture call on the observed control. While that method is faulted, a read failure can come from the fixture itself. Use retained original native methods for capture observations, restore fault instrumentation before the public snapshot read, and distinguish fixture errors from Runtime/subscription failures. If this cannot isolate a required query fault, STOP/report it; no fixture edit is authorized.
+
+Actual rapid below-threshold clicks must settle with no pending session; no fabricated click or threshold override. Public accepted graph/viewport/proposal/notification observations must substantiate failure atomicity. If a logger-delivery claim is made, retain actual local logger evidence; absence of a page error alone is not logged-boundary proof. No collector/device/upstream parity follows.
+
+## Completion
+
+Report COMPLETE only for the exact required cells actually proved, with any unavailable required cell explicitly STOPPED; never fold a blocked case into a blanket complete matrix. Preserve raw failures, commands/logs, native versus instrumented evidence, input manifest identity, final one-file hash, and confirmed released port. A product invariant failure goes back to primary/main executor; the helper repairs no product or fixture and resets no gate counter.
+
+## Conformity and deviations
+
+**Conforming design:** isolated snapshot consumption, one test-file writer, real public Runtime/measurement/client paths and serial leased verification. **Intentional boundary:** native retained capture and instrumented routing/failure evidence are separately labeled, and best-effort native cleanup is not forced-release proof. **Unverified:** source implementation, enabled-auto-pan suppression in this fixed fixture, exact replacement/finalizer ordering until observed, all mounted results and complete081 gates/member acceptance. I edited only this review record and ran no builds, tests, browsers, gates or ports. Original generic/unnamed/accessibility/member obligations remain held.

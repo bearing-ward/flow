@@ -1031,6 +1031,8 @@ test('connection auto-pan reaches a distant target and commits an edge', async (
 
   await page.mouse.move(source.x, source.y)
   await page.mouse.down()
+  // Cross the default one-pixel connection drag threshold.
+  await page.mouse.move(source.x + 2, source.y)
   await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
   await page.mouse.move(canvas.x + canvas.width - 8, source.y)
   await expect

@@ -111,6 +111,8 @@ const reconnectTarget = async (page: Page, nodeId: string): Promise<void> => {
 
   await page.mouse.move(start.x, start.y)
   await page.mouse.down()
+  // Cross the default one-pixel connection drag threshold.
+  await page.mouse.move(start.x + 2, start.y)
   await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
   await page.mouse.move(target.x, target.y)
   await page.mouse.up()

@@ -20,9 +20,9 @@ Use ONLY `/Users/richardmcandrews/.codex/worktrees/typed-data-factory/flow`, HEA
 
 Approved architecture references, immutable originals:
 
-- `plans/marker-minimap-continuation-design.md`, `8f05f10bee7b1d926da68c82c429b87569ca7f21dc88f6df2cdd8dd16fe661e2`.
-- `plans/marker-minimap-nested-config-architecture-amendment.md`, `20836dfd558311b91f19099e7c1944fc8d46b166d7e6dde295e72e87a04ce55a`.
-- `plans/marker-minimap-nested-config-independent-architecture-review.md`, `3e8faf24c0e532bc62481ecb8ed6c42a49497d4904f3bee26962a01f06aa4bac`.
+- `plans/archive/marker-minimap-continuation-design.md`, `8f05f10bee7b1d926da68c82c429b87569ca7f21dc88f6df2cdd8dd16fe661e2`.
+- `plans/archive/marker-minimap-nested-config-architecture-amendment.md`, `20836dfd558311b91f19099e7c1944fc8d46b166d7e6dde295e72e87a04ce55a`.
+- `plans/archive/marker-minimap-nested-config-independent-architecture-review.md`, `3e8faf24c0e532bc62481ecb8ed6c42a49497d4904f3bee26962a01f06aa4bac`.
 - Frozen nested probe, `plans/marker-minimap-nested-config-probe.ts`, `e54e493d76f1d17a76709a47fa61da8af39cffffeab54b98753ef83071b4231c`; primary and final runtime output `2e76fde02b890a573d3faf58493bf20cdbb9b48fdba0a849201fd0eb123218e8`. This supplies parser/compiler feasibility, not current product proof. Do not copy or modify raw probes in the candidate.
 
 Before editing, the coordinator supplies a fresh managed isolated checkout with every selected candidate file assembled byte-for-byte and copies original evidence into its sibling evidence directory. Record exact baseline, initial status, selected manifest hash, assembled complete inventory and unchanged copied evidence hashes. Never copy ignored node_modules, dist, credentials or unrelated candidate files. Do not reconstruct the accepted source from main, old unaccepted worktrees, moving 086/089 or 088 utilities. Do not mutate the accepted source or another agent's checkout.
@@ -195,7 +195,7 @@ ALL criteria must hold before requesting source acceptance:
 
 STOP and report exact evidence if input/approval hashes drift; construction needs a cast, unchecked guard, fake fields or erased environment; the canonical authority becomes duplicated; JSON collapses own undefined/null/absence, leaks metadata, suspends or converts parse failure to success; ordinary Type/Encoded changes to wire fields; an existing Schema capability is lost; the graph/default/factory/legacy/host contract changes; a protected field/file must widen; native rendering/client/registry/persistence is required to claim this bounded outcome; copied evidence is unavailable; a failure has an unknown semantic/architecture cause, requires unapproved scope, or repeats without a diagnosed environmental/mechanical explanation; source scope, dependency, compiler or verification policy must expand; or a foreign shared listener blocks the required leased gate. Preserve all completed evidence and request a reviewed amendment rather than improvising.
 
-The current continuation permits diagnosed reversible mechanical/fixture repairs within this exact scope while retaining every failed receipt; there is no arbitrary two-attempt gate cap. Improve permits at most two formal SOURCE-review revisions per candidate. Do not rewrite historical stops or restart a rejected source candidate cosmetically. The initial plan draft SHA9842f7c3f3726cb300f2a79f476f9a8b8f0d76f0c637d530eaf6106751378c0d is preserved in plans/marker-configuration-foundation-first-plan-draft.md; this primary clarification changes only the failure-policy wording.
+The current continuation permits diagnosed reversible mechanical/fixture repairs within this exact scope while retaining every failed receipt; there is no arbitrary two-attempt gate cap. Improve permits at most two formal SOURCE-review revisions per candidate. Do not rewrite historical stops or restart a rejected source candidate cosmetically. The initial plan draft SHA9842f7c3f3726cb300f2a79f476f9a8b8f0d76f0c637d530eaf6106751378c0d is preserved in plans/archive/marker-configuration-foundation-first-plan-draft.md; this primary clarification changes only the failure-policy wording.
 
 ## Git workflow and maintenance
 

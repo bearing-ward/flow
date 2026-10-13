@@ -29,9 +29,9 @@ import {
   createFlowHost,
   acquireFlowHost,
   mountFlow,
-} from '../vanilla/dist/public.js'
+} from '../vanilla/src/public.ts'
 
-import '../vanilla/dist/style.css'
+import '../vanilla/src/style.css'
 import '../../packages/vue/dist/style.css'
 import '../../packages/foldkit/dist/style.css'
 

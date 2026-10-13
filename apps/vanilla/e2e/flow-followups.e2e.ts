@@ -276,6 +276,8 @@ const checkConnectionRadiusAtZoom = async (
 
   await page.mouse.move(source.x, source.y)
   await page.mouse.down()
+  // Cross the default one-pixel connection drag threshold.
+  await page.mouse.move(source.x + 2, source.y)
   await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
   await page.mouse.move(near.x, near.y)
   await expect(page.locator(validSelector)).toHaveClass(/connection-valid/u)

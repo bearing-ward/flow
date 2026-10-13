@@ -72,12 +72,12 @@
           "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
         },
         {
-          "path": "plans/origin-core-execution.md",
+          "path": "plans/archive/origin-core-execution.md",
           "kind": "new",
           "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
         },
         {
-          "path": "plans/origin-integration-execution.md",
+          "path": "plans/archive/origin-integration-execution.md",
           "kind": "new",
           "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
         }
@@ -222,8 +222,8 @@
     "origin": "Complete frozen079 tracked production and exact fixture diff, new origin files and histories; generated API and verification scope regenerated/merged.",
     "native": "Complete frozen077 diff, new Runtime fixtures and consumer probes; native schema and persistence patches applied over079 with no rejected hunks.",
     "historyRenames": {
-      "plans/079-migrate-origin-guard-fixtures.md": "plans/historical-origin-fixture-plan.md",
-      "plans/077-retain-versioned-native-schema-fields.md": "plans/native-schema-retention-history.md"
+      "plans/079-migrate-origin-guard-fixtures.md": "plans/archive/historical-origin-fixture-plan.md",
+      "plans/077-retain-versioned-native-schema-fields.md": "plans/archive/native-schema-retention-history.md"
     },
     "additionalScope": "Only approved080 unit dependencies, one public reconnection readiness case and accurate constructed-model evidence comment."
   },
@@ -348,12 +348,12 @@
         "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
       },
       {
-        "path": "plans/historical-origin-fixture-plan.md",
+        "path": "plans/archive/historical-origin-fixture-plan.md",
         "kind": "new",
         "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
       },
       {
-        "path": "plans/native-schema-retention-history.md",
+        "path": "plans/archive/native-schema-retention-history.md",
         "kind": "new",
         "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
       },
@@ -363,22 +363,22 @@
         "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
       },
       {
-        "path": "plans/origin-core-execution.md",
+        "path": "plans/archive/origin-core-execution.md",
         "kind": "new",
         "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
       },
       {
-        "path": "plans/origin-integration-execution.md",
+        "path": "plans/archive/origin-integration-execution.md",
         "kind": "new",
         "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
       },
       {
-        "path": "plans/origin-native-integration-design-review.md",
+        "path": "plans/archive/origin-native-integration-design-review.md",
         "kind": "new",
         "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
       },
       {
-        "path": "plans/origin-native-integration-execution.md",
+        "path": "plans/archive/origin-native-integration-execution.md",
         "kind": "new",
         "sha256": "3741338a227729c8a08dfab32ae3a12255cd5e80d1bfa877b686637a2328597a"
       }
@@ -410,7 +410,7 @@
     },
     "copiedReviewInputs": {
       "plans/080-integrate-origin-native-test-contracts.md": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a",
-      "plans/origin-native-integration-design-review.md": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+      "plans/archive/origin-native-integration-design-review.md": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
     }
   },
   "primaryRevision1": {
@@ -439,7 +439,7 @@
   "consumerRevisionIsExactDirectiveMove": true,
   "copiedReviewInputs": {
     "plans/080-integrate-origin-native-test-contracts.md": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14",
-    "plans/origin-native-integration-design-review.md": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
+    "plans/archive/origin-native-integration-design-review.md": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
   },
   "outputFiles": [
     {
@@ -558,12 +558,12 @@
       "sha256": "88a2fe21ef829b8aea165d5222dc3314846936f610c9667b28cc1ae87b465c14"
     },
     {
-      "path": "plans/historical-origin-fixture-plan.md",
+      "path": "plans/archive/historical-origin-fixture-plan.md",
       "kind": "new",
       "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
     },
     {
-      "path": "plans/native-schema-retention-history.md",
+      "path": "plans/archive/native-schema-retention-history.md",
       "kind": "new",
       "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
     },
@@ -573,27 +573,27 @@
       "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
     },
     {
-      "path": "plans/origin-core-execution.md",
+      "path": "plans/archive/origin-core-execution.md",
       "kind": "new",
       "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
     },
     {
-      "path": "plans/origin-integration-execution.md",
+      "path": "plans/archive/origin-integration-execution.md",
       "kind": "new",
       "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
     },
     {
-      "path": "plans/origin-native-integration-design-review.md",
+      "path": "plans/archive/origin-native-integration-design-review.md",
       "kind": "new",
       "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
     },
     {
-      "path": "plans/origin-native-integration-execution.md",
+      "path": "plans/archive/origin-native-integration-execution.md",
       "kind": "new",
       "sha256": "52cd2beadd4c77d090700e83d1994ff3e94ab48a91fa8abdc429288d0473aea5"
     },
     {
-      "path": "plans/origin-native-integration-initial-scope.md",
+      "path": "plans/archive/origin-native-integration-initial-scope.md",
       "kind": "new",
       "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
     }

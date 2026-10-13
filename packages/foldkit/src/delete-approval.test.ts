@@ -118,11 +118,25 @@ describe('Foldkit delete approval reducer', () => {
       acceptedDocumentRevision: narrowed.model.acceptedDocumentRevision,
       pendingApprovalCount: narrowed.model.pendingDeleteApprovals.length,
       commandCount: narrowed.commands?.length,
+      proposals: narrowed.outMessage?.flatMap((item) =>
+        item.kind === 'change' && item.change !== undefined
+          ? [
+              {
+                kind: item.change.kind,
+                accepted: item.acceptedState !== undefined,
+                controlMode: item.controlMode,
+              },
+            ]
+          : []
+      ),
     }).toStrictEqual({
       acceptedNodeCount: 5,
       acceptedDocumentRevision: 0,
       pendingApprovalCount: 0,
-      commandCount: 2,
+      commandCount: 1,
+      proposals: [
+        { kind: 'edit-proposal', accepted: false, controlMode: 'controlled' },
+      ],
     })
   })
 

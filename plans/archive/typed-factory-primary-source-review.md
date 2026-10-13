@@ -1,0 +1,23 @@
+# Plan 087 primary source review
+
+2026-10-02, main `841be137e253cf19c665269eaaa79edc19abf3c3`. Verdict: APPROVE exact Plan087 factory foundation. Primary reproduction/source audit and fresh independent source review passed.
+
+## Frozen input and review
+
+Candidate `/Users/richardmcandrews/.codex/worktrees/typed-data-factory/flow` is detached and uncommitted. External freeze `/Users/richardmcandrews/.codex/worktrees/typed-data-factory/typed-factory-evidence/final-freeze.json` SHA256 `2dee299d28a1b96442e3134cd4b46c380dd3dd2caeef9f28bcb46c7e96d90917` records 1492 complete candidate files, 122 evidence files, 147 paths changed from main and 23 delta paths versus the accepted085 input plus approved planning records. The primary rehashed every candidate/evidence file without mismatch and rehashed all1492 candidate files again after reproduction without mismatch.
+
+Source-delta patch SHA256 `c3b713ed5d5832cc0f37e1263828390f487d6be67aa42759f9629fe26cec0678`; provenance `f6e9a44c7a743af5e98585ecfd8f0a80ffbad1a90b5caea33cd27c3bf976820a`; execution `8d8708faf2b6d236ee494720173988fe5ee95303150d285123002c91573b7eb7`. Repository execution/provenance intentionally record final record-formatting gates as pending; external freeze has the actual completed outputs and hashes without a self-referential post-check edit. Historical failures remain preserved.
+
+The primary read complete new production modules, the delta against085 in the existing shared validator/public exports/runner/three compiler configs/documentation/saved scope, all963 lines of new units, all1061 lines of installed runtime probes and the full shared compiler fixture. Builders reuse authoritative fields, preserving optional/default/no-data variants, exact service channels and metadata. Definition invokes no codec or isolation. The existing integrity traversal retains its control flow, policy, first-failure order, logs and exact document identity.
+
+Production paths: exported factory to `packages/core/src/domain/flow-data-contract.ts:16`; variant builders at33/46 and document builder at59; Schema-derived failure/contract views at `flow-data-contract.schema.ts:11-66`; generic integrity entry at `flow.schema.ts:449` delegates the same physical-ID traversal. Actual public runtime/compiler fixture paths are `tests/consumer/typed-data-factory.runtime.ts` and `.types.ts`, copied into every real tarball consumer by `scripts/check-packed-consumer.ts:785`. The approved location amendment removes the root workspace-resolution problem without compiler/dependency changes or an acceptance symlink.
+
+Meaningful assertions cover correlated decoded/encoded node and edge pairs, brands, Date and private Counter state, independent RD/RE/RI services, service-free suspension, caller defaults/encoding strategies, every no-data branch, exact runtime absence/own-undefined, accepted metadata, whole-document encoded shapes and one ordered integrity traversal. Counter/Date mutation checks establish the supplied capability's independence. A deliberately shared singleton proves Schema alone cannot certify isolation. Installed compiler modes remain unchanged; root alone proves exact-optional assignment rejection.
+
+## Independent primary reproduction
+
+`bun run verify` in the frozen candidate exited0 in41.565 seconds. Focused profile, fullSuitefalse. Quality, architecture209sources, package builds/types, all765units/51files, docs/contracts/api-members/traces, three actual archive consumers and exactly one existing versioned-persistence test per Vanilla/Vue/Foldkit passed. Every archive executed140public factory assertions and compiled the28 intended negative cases. Log `/tmp/flow-087-primary-focused.log` SHA256 `ba5a1c359cfe8f0ad40e2d0ebdeba239947467fa379fdd21654c57ec984453e6`. All three strict browser ports were independently empty afterward; lease returned to086.
+
+## Conformity and deviations
+
+The bounded factory and shared integrity contracts conform to the reviewed087design, accepted085metadata and unchanged concrete reader policy. Effectful parser composition, trusted isolation and installed optional compiler modes are intentional adaptations. Independent source review `plans/archive/typed-factory-independent-source-review.md`, SHA256 `c6c7b6214c68266dfb50cd345a3f03d0b4adce74ac91ee683eeb208564859b47`, independently matched all candidate/evidence/accepted085 inventories, complete source/assertions and reconstructed patches. The primary read the full verdict and verified its hash before acceptance. Actors, typed transitions/hosts/renderers/persistence, all100original069members/300cells, full integration, CI/devices/collector and broad library parity remain open.

@@ -136,30 +136,52 @@ test('Foldkit touch-ready scene offers larger targets and completes a touch poin
     throw new Error('Missing touch drag target bounds')
   }
 
-  await node.dispatchEvent('pointerdown', {
-    bubbles: true,
-    button: 0,
-    pointerId: 71,
-    pointerType: 'touch',
-    clientX: box.x + box.width / 2,
-    clientY: box.y + box.height / 2,
-  })
   await page.evaluate(
-    ({ pointerId, clientX, clientY }) => {
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
+    ({ pointerId, start, end }) => {
+      const target = document.querySelector('[data-node-id="validate"]')
+
+      if (!(target instanceof HTMLElement)) {
+        throw new Error('Missing live touch drag node')
+      }
+
+      const originalCapture = HTMLElement.prototype.setPointerCapture
+      const originalHasCapture = HTMLElement.prototype.hasPointerCapture
+      // Synthetic touch pointers cannot hold real capture, so emulate it for
+      // the admission check that verifies capture after acquiring it.
+      HTMLElement.prototype.setPointerCapture = (id) => {
+        if (id !== pointerId) {
+          throw new Error('Unexpected synthetic pointer capture id')
+        }
+      }
+
+      HTMLElement.prototype.hasPointerCapture = (id) => id === pointerId
+
+      const touch = (type: string, point: { x: number; y: number }) =>
+        new PointerEvent(type, {
           bubbles: true,
+          cancelable: true,
+          button: 0,
           pointerId,
           pointerType: 'touch',
-          clientX,
-          clientY,
+          isPrimary: true,
+          clientX: point.x,
+          clientY: point.y,
         })
-      )
+
+      try {
+        target.dispatchEvent(touch('pointerdown', start))
+        // Move past the default one-pixel node drag threshold before release.
+        document.dispatchEvent(touch('pointermove', end))
+        document.dispatchEvent(touch('pointerup', end))
+      } finally {
+        HTMLElement.prototype.setPointerCapture = originalCapture
+        HTMLElement.prototype.hasPointerCapture = originalHasCapture
+      }
     },
     {
       pointerId: 71,
-      clientX: box.x + box.width / 2 + 16,
-      clientY: box.y + box.height / 2,
+      start: { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+      end: { x: box.x + box.width / 2 + 16, y: box.y + box.height / 2 },
     }
   )
 

@@ -1,0 +1,73 @@
+# Independent cold design review of the 091 reconnect control layer
+
+2026-10-02. Verdict: REVISE. Two bounded additions to the proposed native tests are required. The proposed production renderer and public test-host patches need no design change based on this review. This is a design verdict only. It authorizes no source edits, shared phase, lease transfer, SOURCE acceptance, commit, merge, push or member transition.
+
+## Exact input and reads
+
+I independently read every line of `plans/archive/live-options-foldkit-reconnect-control-layer-repair-design.md`, including all three complete patches and its release, STOP and conformity sections. The file is 516 lines and 40,337 bytes, SHA256 `9532033c96c3219c446035660aceede86386644d9acc3f602d7b8e4ef9a9c937`. Main and W HEAD both equal `841be137e253cf19c665269eaaa79edc19abf3c3`.
+
+W is `/Users/richardmcandrews/.codex/worktrees/live-connection-options/flow`. E is `/Users/richardmcandrews/.codex/worktrees/live-connection-options/live-connection-options-evidence`. Candidate source citations below are relative to W. Proposal citations are relative to the main checkout.
+
+I read these candidate files completely, not just their diff regions:
+
+| File | Lines | Bytes | Current SHA256 | Reconstructed proposed SHA256 |
+| --- | --- | --- | --- | --- |
+| `packages/foldkit/src/graph.ts` | 4,066 | 116,660 | `83c4fd4484e18d5f1406c206bda06a93c9cab39f50152530dfe7d8ae710e15b1` | `004ead24c763acbc9e1db18a4b1b9b29b826d2bbac85f3509d688a40f04bc79c` |
+| `apps/foldkit/src/live-connection-options-test.ts` | 270 | 6,930 | `2b18d205a90facbea645734bd48fa76bb104bf199e867b719aa132ebe8ac2dd0` | `b942c51e8d01df202825136356fd9b62954e10fe610ca29822a4bb624aeb6cd8` |
+| `apps/foldkit/e2e/live-connection-options.e2e.ts` | 1,174 | 33,985 | `c82606b15ee06e515ffed2acabb87c95450626ec85ee739e8a95840b215189b0` | `cef15119d07ff30e68f402aa074f214caa12ab52cb1bd7ea5ce176805c14a4f9` |
+
+Read-only in-memory application of every unified patch matched all old contexts and all three advertised proposed hashes. The reconstructed proposed files have 4,087, 300 and 1,424 lines respectively. No proposed source was written. The existing e2e file has thirteen literal test declarations plus the four activation-loop cases, preserving all seventeen original cases. The patch retains their complete old bodies and assertions, adding only the two named guard/observer calls in the reconnect branch and the new helpers/eight cases.
+
+I fully read applicable `AGENTS.md`, `docs/standards.md`, improve SKILL.md, audit playbook, plan template and closing-the-loop, plus the TypeScript, type-system and unslop skills. Improve rule hashes are `1599aa29e9b16424cb767779efac53fa56e3f38be92dff4ac587393a1ad5070a`, `587c1b927070f3c28139ad95ac34cc21a7da32618cfeb966cb774e58a865d4c8`, `7be76dd3c29442288fa7cee4432fc6e95c2fdbf748c9b356344bf647c5f8722e` and `5d526bb378e1783bbeb68d7af527776cbe98cde27a1aeccbd13e818e5b73b454` respectively. Candidate AGENTS/standards hashes are `ecd02ae0f1afb52141a9dcba2564653fd0857e05a33579eeb4835c9dd1b96e4b` and `900c20dde3c23d173866db1853a8070cb9893bab7687ccb767e57aedb8bfd430`.
+
+I also fully read Foldkit style.css and the native fixture HTML/config, read the actual public entry/composition, replacement/lifecycle, reconnect semantic and z-order paths, and inspected the cited existing lifecycle and Vanilla/Vue control regions. Protected hashes in the proposal's table matched current candidate bytes.
+
+## Immutable failure evidence
+
+Latest freeze `E/reconnect-physical-hit-diagnostic-04-final-failure-freeze.json` is 439,374 bytes, SHA256 `e09fb6154c62b4f207fc89e84d373cea3f96013e76b4632d9f39696bf40d46bf`. I independently checked every path's bytes and SHA256 in both full manifests against current and outside copies. Current source 1,516/1,516, outside source 1,516/1,516, current evidence 669/669 and outside evidence 669/669 matched, with zero mismatches. Outside roots are the freeze's `preserved-091-reconnect-physical-hit-diagnostic-04-final/source` and `/evidence`. This is byte integrity, not runtime acceptance or a new complete original-baseline/history audit.
+
+I fully read the findings and summary and parsed the complete raw JSON. Raw 374,122 bytes/hash `2ef9fe95c944ce9e9add5e11cc834dca85ff7876eaeeb7d5d345c4d64d08cbc7`, summary 8,026 bytes/hash `eaa224c8589962f1116ad6e459633e6b44799ef0807b06d8759a0bbe22e176d8`, findings 4,674 bytes/hash `20442d43183e2c3a0edf274c2c0d5aa0d4fee079786930809b02124a4c8412d0`. I inspected the four public responses, options/events/geometry and complete ancestor/style/composed-path records. Actual trusted down at 99.5,163 reaches the selected edge hit path. The intended control inherits pointer-events none inside the label parent's z-index 1; the selected SVG has z-index 1000. No reconnect preview appears, while move lifecycle events do. Diagnostic asynchronous public reads remain a timing difference from the old official immediate sequence.
+
+## Required revisions
+
+### [TEST-COVERAGE-091-CONTROL-01] Require the actual competitor in the eight layer cases
+
+- Evidence: proposal `plans/archive/live-options-foldkit-reconnect-control-layer-repair-design.md:243` queries the competitor optionally; `:262` returns null if absent; `:296` gates both equal-layer and label assertions on non-null competitor. The new cases at `:400` require two accepted edges but do not require two rendered SVGs. The mandatory competing-SVG acceptance is stated at `:474` and `:500`.
+- Impact: a candidate that retains two accepted edges but omits the competitor SVG can pass these new tests and silently skip the two-label ownership assertions. That does not prove routing over an actual equal-level selectable competing edge.
+- Effort: S. Risk LOW, additive assertions within the proposed e2e regions. Confidence HIGH from the complete proposed bytes.
+- Fix sketch: give the new layer cases an explicit requirement for the competitor, while the retained original reconnect case can legitimately have none. Require exactly one rendered primary SVG and one rendered competitor SVG, assert the competitor is unselected with a real selectable hit path and the same computed level, and assert the two labels and their ownership unconditionally in these eight cases. Checking the two real hit-path `d` values match would also prove the intended overlap. Require these observations on the initial down and fresh retry; do not inject SVGs, CSS or events. Keep the public decoded graph construction unchanged.
+
+### [TEST-COVERAGE-091-CONTROL-02] Assert the complete cancelled-then-proposed reconnect lifecycle
+
+- Evidence: proposed `:424` checks one configuration-replacement terminal before the cancellation mouseup. Proposed `:425` then releases the mouse; `:427` reads retryBefore without rechecking the terminal count. Proposed `:435` checks only preview kind, and `:450` through `:461` check preview disappearance, one semantic proposal, snapshot/options/owner and capture after retry, with no successful reconnect lifecycle assertion. Actual host `apps/foldkit/src/live-connection-options-test.ts:107` records strings as `${phase}:${name}:${outcome ?? ''}:${reason ?? ''}`. Existing production `packages/foldkit/src/application.ts:1722`, `:1878`, `:1886`, `:1895`, `:1921` and `:2168` defines the reconnect names, controlled `proposed` outcome, proposal event, terminal and configuration-replacement reason.
+- Impact: the tests can pass if cancellation mouseup adds a second terminal or if the successful retry omits, duplicates or mislabels its `onReconnect`/`onReconnectEnd` events. One `edge-reconnect` change kind and absent preview do not prove complete public lifecycle. This contradicts the proposal's complete-lifecycle and missing/doubled-terminal acceptance at `:500` and `:502`.
+- Effort: S. Risk LOW, existing public events already supply the observations. Confidence HIGH.
+- Fix sketch: after cancellation mouseup require exactly one reconnect terminal, `end:onReconnectEnd:cancelled:configuration-replacement`, unchanged proposals and null preview. After real retry completion require the complete reconnect terminal list to equal exactly that cancellation followed by `end:onReconnectEnd:proposed:`. Require exactly two `start:onReconnectStart:` records overall and exactly one `proposal:onReconnect:proposed:` record, while retaining all existing proposal/snapshot/owner/options/capture and no-viewport-start assertions. Match the retried public preview to `kind: reconnect`, `edgeId: edge` and the exercised endpoint. These are current controlled production expectations; do not add semantic or lifecycle changes to make a weakened expectation pass.
+
+Both findings require a plans-only exact successor with a fresh hash and proposed e2e hash. Keep the production and test-host proposed hashes unchanged unless a separate evidenced problem is found. Preserve the original seventeen complete case bodies and assertion order, then perform root and cold design review of the successor before releasing SAME091.
+
+## Production and test path assessment
+
+Production begins with public createProgram at `packages/foldkit/src/public.ts:2`, reaches `application.ts:2891`, creates the actual Graph view at `:2915`, and installs lifted Graph subscriptions at `:2945`. The existing real HTML buttons at `graph.ts:2928` retain selected and canReconnectEdge eligibility at `:2914` and `:2924`, geometry, ARIA, type, data IDs and keyboard handlers. The accepted transformed viewport is `:3365`. The proposed new absolute parent has no own z-index or transform, so it does not isolate each button from sibling edge SVG stacking. Each button uses the corresponding edge's existing selected/user level plus one and pointer-events auto. The existing class's button transform remains intact; it does not invalidate the parent policy.
+
+Trusted input still bubbles to canvas `graph.ts:3341`, through beginPointer `:2225`, target decode `:2150`, reconnect dispatch `:2265` and the existing PointerDown eligibility/state branch `:1267`. The actual public preview follows `connectionPreviewState:2540` and native SVG `:3268`; actual document pointerup at `:3470` feeds completion `:1030` and core reconnectFlowEdge. Controlled document completion remains a proposal at `:1077`. No private Model, manufactured event target or lifecycle bypass is proposed.
+
+The test route differs intentionally. Runtime.embed/createProgram at `apps/foldkit/src/live-connection-options-test.ts:71` provides the real controlled owner and ports. The new helper decodes an actual document and sends public HostAction.ReplaceDocument. The original selected c/edge-out to a/in edge and a real unselected selectable competitor share endpoints, handles and geometry. Their computed levels both equal the tested base plus 1000. Existing acceptedLatest retains viewport 5,-7,1, and the helper restores the same accepted node label. No fake graph representation or CSS masking is used. Both source-to-b/out and target-to-b/in retry destinations are real supported endpoint changes under reconnectFlowEdge's existing validation. The observer verifies a trusted exact-button down rather than dispatching directly to a control. It makes no positive pointer-capture acquisition promise.
+
+Labels keep their original keyed markup, collection order, ownership attributes, CSS and parent policy; only interactive controls leave that collection. No node/edge SVG z-index, core finite Schema acceptance, sorting, public ports, Model, semantic reducer, manifests, pins or verification configuration changes are proposed. Core `flow.schema.ts:138` accepts finite z values; `flow-visibility.schema.ts:148` preserves selected/user arithmetic and stable ties. The contract is bounded to -20,0,37,2000 in these tests. Fractional/extreme finite browser coercion and unrelated higher-z elements remain unverified, correctly without a clamp or global maximum.
+
+Existing direct dispatch at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:869` and `:1033` protects different lifecycle behavior and remains synthetic physical-routing evidence. The new real mouse cases supply the missing trusted boundary. Vanilla `apps/vanilla/src/edge-renderer.ts:373`/`:416` and Vue `packages/vue/src/flow-canvas.ts:4839` use SVG controls with explicit interactive CSS; their source establishes a comparison, not paired runtime parity.
+
+## Acceptance limits and operations
+
+The proposal preserves the focused exact091 baseline, five checks and four browser suites per host in current verification.config.json. Its commands match package.json and the Foldkit strict4178 configuration. The selected native suites, three real archive consumers and required `bun run verify` remain necessary future execution. `verify --list` proves scope only. `verify:full` remains a later integration/release gate before broad parity claims. Original51 and added8 native/member cells remain OPEN, formal SOURCE rounds remain zero, and no failed or unrun case becomes accepted through this review.
+
+I ran reads, searches, Git HEAD reads, JSON parsing, hashes and in-memory patch reconstruction only. I did not run tests, compiler, build, quality/architecture gates, browser, runtime probes, servers, port/process inspections, installs, source/evidence mutation, Git mutation or another agent. Only this designated review file was written. Full historical provenance, future native execution, archives, SOURCE review, independent reproduction, CI, devices and collector delivery are outside this cold design verdict.
+
+## Conformity and deviations
+
+Conforming target: preserve the existing public reconnection route, controlled accepted state, labels, endpoint semantics and lifecycle, and prove actual trusted input at both endpoints. Current source/evidence supports the diagnosed obstruction and bounded repair shape. The two test gaps above must be closed before the design is approved.
+
+Intentionally different: independent HTML button descendants in a non-stacking overlay, each at its own selected/user edge level plus one. This retains the existing HTML/keyboard implementation while correcting its label-parent hit policy. Ordinary integer levels, equal-level actual SVG overlap and the configured controlled fixture are the proposed test boundary. Added observational calls also change test timing and establish future-run evidence only.
+
+Unverified: all proposed repaired runtime behavior, every required future gate, full suite, broad field/handle parity, integration, native devices, CI, performance and collector delivery. REVISE is about the completeness of two native assertions; it grants no production success claim or source release.

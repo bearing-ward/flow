@@ -34,7 +34,7 @@ Inherited117 paths may be copied unchanged. New deltas may touch only:
 - `packages/foldkit/src/application.test.ts`: actual existing EditResponseSchema and DeleteResultSchema packet decode/encode regressions only. Use public core edit/delete helpers to construct genuine results, not a private Runtime setter. Label these as protocol units rather than mounted runtime evidence.
 - `verification.config.json`: focused activeWork084; checks docs,contracts,consumer; all three hosts select only existing public-edits.e2e.ts and versioned-persistence.e2e.ts.
 - Regenerated `docs/api-reference.md` only if the existing generator changes it for this authoritative result contract.
-- Owned `plans/084-preserve-origin-through-edits.md`, `plans/edit-origin-preservation-execution.md`, `plans/edit-origin-preservation-provenance.json` and copied exact design review.
+- Owned `plans/084-preserve-origin-through-edits.md`, `plans/archive/edit-origin-preservation-execution.md`, `plans/edit-origin-preservation-provenance.json` and copied exact design review.
 
 No adapter production source or browser source/test edits; only the named packet-unit addition is allowed. No HMR runner, lifecycle client/observer, dependency/lock/compiler/lint policy, imported research, generated research summary, frozen oracle or main/index edits. Do not change legacy saved payloads, integrity priorities, deletion eligibility, failure/error schemas or public methods. No casts,any,test-only API, weakened assertions/skips/timeouts. Primary owns the main index.
 

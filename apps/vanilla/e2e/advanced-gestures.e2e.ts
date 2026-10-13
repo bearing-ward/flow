@@ -2,6 +2,7 @@ import type * as CoreModule from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
 import { runSerially } from '../../shared-e2e/run-serially.ts'
 import type { FlowDocumentInput } from '../src/mount-flow.ts'
 
@@ -541,21 +542,15 @@ const cancelGesture = async (
       )
   } else if (cancellation === 'blur') {
     await page.evaluate(() => globalThis.dispatchEvent(new Event('blur')))
-  } else if (
-    cancellation === 'pointercancel' ||
-    cancellation === 'capture-loss'
-  ) {
-    const type =
-      cancellation === 'pointercancel' ? 'pointercancel' : 'lostpointercapture'
-
+  } else if (cancellation === 'capture-loss') {
+    await releasePointerCapture(page)
+  } else if (cancellation === 'pointercancel') {
     await page
       .getByTestId('flow-canvas')
-      .evaluate(
-        (canvas, eventType) =>
-          canvas.dispatchEvent(
-            new PointerEvent(eventType, { bubbles: true, pointerId: 1 })
-          ),
-        type
+      .evaluate((canvas) =>
+        canvas.dispatchEvent(
+          new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 })
+        )
       )
   } else if (cancellation === 'node-removal') {
     await page.evaluate((gestureMode) => {
@@ -1338,20 +1333,15 @@ for (const cancellation of [
         )
     } else if (cancellation === 'blur') {
       await page.evaluate(() => globalThis.dispatchEvent(new Event('blur')))
-    } else if (
-      cancellation === 'pointercancel' ||
-      cancellation === 'capture-loss'
-    ) {
+    } else if (cancellation === 'capture-loss') {
+      await releasePointerCapture(page)
+    } else if (cancellation === 'pointercancel') {
       await page
         .getByTestId('flow-canvas')
-        .evaluate(
-          (canvas, name) =>
-            canvas.dispatchEvent(
-              new PointerEvent(name, { bubbles: true, pointerId: 1 })
-            ),
-          cancellation === 'pointercancel'
-            ? 'pointercancel'
-            : 'lostpointercapture'
+        .evaluate((canvas) =>
+          canvas.dispatchEvent(
+            new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 })
+          )
         )
     } else if (cancellation === 'node-removal') {
       // SAFETY: The public schema decoder validates this raw document or options value before use in the test.
@@ -2300,14 +2290,16 @@ test('keyboard activates focused source and target handles in click mode', async
   await source.focus()
   await expect(source).toBeFocused()
   await page.keyboard.press('Enter')
-  await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
+  // Keyboard activation has no pointer yet, so the preview line is zero-length.
+  await expect(page.getByTestId('flow-connection-preview')).toHaveCount(1)
   await expect(source).toHaveClass(/connecting/u)
   await expect(source).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('flow-connection-preview')).toHaveCount(0)
 
   await page.keyboard.press('Enter')
-  await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
+  // Keyboard activation has no pointer yet, so the preview line is zero-length.
+  await expect(page.getByTestId('flow-connection-preview')).toHaveCount(1)
   await page.keyboard.press('Tab')
   await expect(
     page.locator('.flow-node[data-node-id="rejected"]')
@@ -2362,15 +2354,7 @@ test('lost pointer capture cancels a node drag without publishing a change', asy
   await page.mouse.down()
   await page.mouse.move(start.x + 80, start.y + 40)
   await expect(node).toHaveClass(/dragging/u)
-  await page.evaluate(() => {
-    const activeNode = globalThis.document.querySelector<HTMLElement>(
-      '.flow-node[data-node-id="source"]'
-    )
-
-    activeNode?.dispatchEvent(
-      new PointerEvent('lostpointercapture', { bubbles: true, pointerId: 1 })
-    )
-  })
+  await releasePointerCapture(page)
 
   await expect(node).not.toHaveClass(/dragging/u)
   await expect.poll(() => position(page, 'source')).toStrictEqual(original)

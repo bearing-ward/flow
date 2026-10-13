@@ -942,6 +942,10 @@ const Demo = defineComponent({
           viewportObservation.value = `end:${status}`
         },
         isValidConnection,
+        onConnectStart: () => {
+          connectionGestureActive = true
+          appendConnectionEvent('started')
+        },
         onChange: (change: FlowChange) => {
           if (change.kind === 'edge-add') {
             appendConnectionEvent(
@@ -958,17 +962,6 @@ const Demo = defineComponent({
           class: {
             'flow-vue-touch-ready': touchReady.value,
             'flow-vue-drag-handle-enabled': dragHandleEnabled.value,
-          },
-          onPointerdown: (event: PointerEvent) => {
-            const { target } = event
-
-            if (
-              target instanceof Element &&
-              target.closest('[data-handle-kind="source"]') !== null
-            ) {
-              connectionGestureActive = true
-              appendConnectionEvent('started')
-            }
           },
           onPointerup: () => {
             if (connectionGestureActive) {

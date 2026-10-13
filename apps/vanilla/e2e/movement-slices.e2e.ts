@@ -2,6 +2,8 @@ import type * as CoreModule from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
+
 const readViewportX = (page: Page) =>
   page.locator('.flow-viewport').evaluate((element) => {
     if (!(element instanceof HTMLElement)) {
@@ -352,10 +354,7 @@ for (const cancellation of [
         bubbles: true,
       })
     } else if (cancellation === 'capture-loss') {
-      await alpha.dispatchEvent('lostpointercapture', {
-        pointerId: 1,
-        bubbles: true,
-      })
+      await releasePointerCapture(page)
     } else if (cancellation === 'node-removal') {
       await page.evaluate(() =>
         globalThis.flowController?.update({

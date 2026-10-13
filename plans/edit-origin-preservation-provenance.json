@@ -361,7 +361,7 @@
       "sha256": "a4923d90cde0c019d35b6ce6cf8b7ca706010756034d5652dcade33eecd37cf1"
     },
     {
-      "path": "plans/complete-persistence-execution.md",
+      "path": "plans/archive/complete-persistence-execution.md",
       "kind": "new",
       "sha256": "84a72124a0971df7d97d221b0c3c9903f2d0dd7188c3c93077eb1006aaa9dcd0"
     },
@@ -371,52 +371,52 @@
       "sha256": "bb7062d2f992d53024cac0256b3c56e6396242a43fd35dd8845f4f95e6d1c17c"
     },
     {
-      "path": "plans/directed-connection-design-supplement.md",
+      "path": "plans/archive/directed-connection-design-supplement.md",
       "kind": "new",
       "sha256": "1123d5c95ab7ecaf4b9ab68fbb181a18cf6197454db92bf302c21a6e0fe32745"
     },
     {
-      "path": "plans/directed-handle-core-execution.md",
+      "path": "plans/archive/directed-handle-core-execution.md",
       "kind": "new",
       "sha256": "a941962f71a57379585551e6cf9c70bd646afb97436ee95672fcab87c5454b79"
     },
     {
-      "path": "plans/directed-handle-primary-source-review.md",
+      "path": "plans/archive/directed-handle-primary-source-review.md",
       "kind": "new",
       "sha256": "f1ec1ef66ea47004842af96ea33c66f93f5231ce732efe8af9e04f9ce2ffa729"
     },
     {
-      "path": "plans/historical-origin-fixture-plan.md",
+      "path": "plans/archive/historical-origin-fixture-plan.md",
       "kind": "new",
       "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
     },
     {
-      "path": "plans/measured-handle-acceptance-design.md",
+      "path": "plans/archive/measured-handle-acceptance-design.md",
       "kind": "new",
       "sha256": "beb5ef046f4d8ab627724548f74587f2fe7b383ca0a3b02f5b25d295978b7ecf"
     },
     {
-      "path": "plans/measured-handle-primary-source-review.md",
+      "path": "plans/archive/measured-handle-primary-source-review.md",
       "kind": "new",
       "sha256": "54a52db3a27d53cf7ccb7116f3d3af308086effd6344924c85231c71c5a86017"
     },
     {
-      "path": "plans/native-schema-retention-history.md",
+      "path": "plans/archive/native-schema-retention-history.md",
       "kind": "new",
       "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
     },
     {
-      "path": "plans/ordered-legacy-independent-design-review.md",
+      "path": "plans/archive/ordered-legacy-independent-design-review.md",
       "kind": "new",
       "sha256": "faae003e8cdf71431f951752af6ba9ce7084f8189f959c5c6617b4abf34d09ee"
     },
     {
-      "path": "plans/ordered-legacy-integration-execution.md",
+      "path": "plans/archive/ordered-legacy-integration-execution.md",
       "kind": "new",
       "sha256": "d59717d93c8c87385f8c8adf5a39169e6272b9712b55692d7dab4675b8311c58"
     },
     {
-      "path": "plans/ordered-legacy-primary-design-review.md",
+      "path": "plans/archive/ordered-legacy-primary-design-review.md",
       "kind": "new",
       "sha256": "eb352774e515f7bfc36c51a2b51b31f5253b47fd1fe621d54d0a538827a59892"
     },
@@ -426,42 +426,42 @@
       "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
     },
     {
-      "path": "plans/origin-connection-execution-design.md",
+      "path": "plans/archive/origin-connection-execution-design.md",
       "kind": "new",
       "sha256": "08ca42d60ceb96d06b5491e1a2d7fac3f0f13b8e6a63137ec02fc693c6c0a550"
     },
     {
-      "path": "plans/origin-connection-reference-execution.md",
+      "path": "plans/archive/origin-connection-reference-execution.md",
       "kind": "new",
       "sha256": "84b2f0f60b4ce31d9318545cfaaa12b6edfc9a83bf59dae7c713201f2368f857"
     },
     {
-      "path": "plans/origin-connection-reference-primary-review.md",
+      "path": "plans/archive/origin-connection-reference-primary-review.md",
       "kind": "new",
       "sha256": "c957686bce8a3f3cecb1cd4018dcebb61a2ef337e9bf7d5068da35a05e7a13a8"
     },
     {
-      "path": "plans/origin-core-execution.md",
+      "path": "plans/archive/origin-core-execution.md",
       "kind": "new",
       "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
     },
     {
-      "path": "plans/origin-integration-execution.md",
+      "path": "plans/archive/origin-integration-execution.md",
       "kind": "new",
       "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
     },
     {
-      "path": "plans/origin-native-integration-design-review.md",
+      "path": "plans/archive/origin-native-integration-design-review.md",
       "kind": "new",
       "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
     },
     {
-      "path": "plans/origin-native-integration-execution.md",
+      "path": "plans/archive/origin-native-integration-execution.md",
       "kind": "new",
       "sha256": "52cd2beadd4c77d090700e83d1994ff3e94ab48a91fa8abdc429288d0473aea5"
     },
     {
-      "path": "plans/origin-native-integration-initial-scope.md",
+      "path": "plans/archive/origin-native-integration-initial-scope.md",
       "kind": "new",
       "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
     },
@@ -471,17 +471,17 @@
       "sha256": "b03a46b0cb7399be77c03426ac826fb514bcffe09ef5f60a77cadba61f2c7fcb"
     },
     {
-      "path": "plans/origin-native-primary-source-review.md",
+      "path": "plans/archive/origin-native-primary-source-review.md",
       "kind": "new",
       "sha256": "eddc450e151511e33bbe52b9585a6d5151dc2333f2f623e47dfbe7aa6bb9bf3c"
     },
     {
-      "path": "plans/persistence-output-isolation-design-review.md",
+      "path": "plans/archive/persistence-output-isolation-design-review.md",
       "kind": "new",
       "sha256": "9b8ca8b86e49063667c63afcac694b2f04b6f7067d78b4273c5defe10f7b41ef"
     },
     {
-      "path": "plans/planning-artifact-names.md",
+      "path": "plans/archive/planning-artifact-names.md",
       "kind": "new",
       "sha256": "9bc0d0f138f4b8b3eddfb3f2b1f9710ff3b7e75f791ee5cd0d4e461a51a73650"
     },
@@ -788,11 +788,11 @@
       "sha256": "9d88ad5738b55eb66e6f40c93d0073a1cd965cec49683ba0b3300dda38a68622"
     },
     {
-      "path": "plans/edit-origin-preservation-independent-design-review.md",
+      "path": "plans/archive/edit-origin-preservation-independent-design-review.md",
       "sha256": "8077d771ee9436384a628e5568f7178ce4a27b43f6b9be14e9e14cbb2c34d8a7"
     },
     {
-      "path": "plans/edit-origin-preservation-execution.md",
+      "path": "plans/archive/edit-origin-preservation-execution.md",
       "sha256": "bf1a782be55d9635a21f5f0485919d6b582717bd0fbf078b855b72b7b1e28ee6"
     }
   ],
@@ -1176,7 +1176,7 @@
       "sha256": "a4923d90cde0c019d35b6ce6cf8b7ca706010756034d5652dcade33eecd37cf1"
     },
     {
-      "path": "plans/complete-persistence-execution.md",
+      "path": "plans/archive/complete-persistence-execution.md",
       "sha256": "84a72124a0971df7d97d221b0c3c9903f2d0dd7188c3c93077eb1006aaa9dcd0"
     },
     {
@@ -1184,43 +1184,43 @@
       "sha256": "bb7062d2f992d53024cac0256b3c56e6396242a43fd35dd8845f4f95e6d1c17c"
     },
     {
-      "path": "plans/directed-connection-design-supplement.md",
+      "path": "plans/archive/directed-connection-design-supplement.md",
       "sha256": "1123d5c95ab7ecaf4b9ab68fbb181a18cf6197454db92bf302c21a6e0fe32745"
     },
     {
-      "path": "plans/directed-handle-core-execution.md",
+      "path": "plans/archive/directed-handle-core-execution.md",
       "sha256": "a941962f71a57379585551e6cf9c70bd646afb97436ee95672fcab87c5454b79"
     },
     {
-      "path": "plans/directed-handle-primary-source-review.md",
+      "path": "plans/archive/directed-handle-primary-source-review.md",
       "sha256": "f1ec1ef66ea47004842af96ea33c66f93f5231ce732efe8af9e04f9ce2ffa729"
     },
     {
-      "path": "plans/historical-origin-fixture-plan.md",
+      "path": "plans/archive/historical-origin-fixture-plan.md",
       "sha256": "bea9d10291ffbdb72c462befd68b5215c83306b5a3b52d13a1a914d63d0636c4"
     },
     {
-      "path": "plans/measured-handle-acceptance-design.md",
+      "path": "plans/archive/measured-handle-acceptance-design.md",
       "sha256": "beb5ef046f4d8ab627724548f74587f2fe7b383ca0a3b02f5b25d295978b7ecf"
     },
     {
-      "path": "plans/measured-handle-primary-source-review.md",
+      "path": "plans/archive/measured-handle-primary-source-review.md",
       "sha256": "54a52db3a27d53cf7ccb7116f3d3af308086effd6344924c85231c71c5a86017"
     },
     {
-      "path": "plans/native-schema-retention-history.md",
+      "path": "plans/archive/native-schema-retention-history.md",
       "sha256": "55b3690e8c3486c26b29736725ab9a47afdf7728e05fc0875395411fcaa0e927"
     },
     {
-      "path": "plans/ordered-legacy-independent-design-review.md",
+      "path": "plans/archive/ordered-legacy-independent-design-review.md",
       "sha256": "faae003e8cdf71431f951752af6ba9ce7084f8189f959c5c6617b4abf34d09ee"
     },
     {
-      "path": "plans/ordered-legacy-integration-execution.md",
+      "path": "plans/archive/ordered-legacy-integration-execution.md",
       "sha256": "d59717d93c8c87385f8c8adf5a39169e6272b9712b55692d7dab4675b8311c58"
     },
     {
-      "path": "plans/ordered-legacy-primary-design-review.md",
+      "path": "plans/archive/ordered-legacy-primary-design-review.md",
       "sha256": "eb352774e515f7bfc36c51a2b51b31f5253b47fd1fe621d54d0a538827a59892"
     },
     {
@@ -1228,35 +1228,35 @@
       "sha256": "4a7276d7286c041e6c65e88fc7cc0671cac1cf4d3f58ff8810c0c794be2e5ecf"
     },
     {
-      "path": "plans/origin-connection-execution-design.md",
+      "path": "plans/archive/origin-connection-execution-design.md",
       "sha256": "08ca42d60ceb96d06b5491e1a2d7fac3f0f13b8e6a63137ec02fc693c6c0a550"
     },
     {
-      "path": "plans/origin-connection-reference-execution.md",
+      "path": "plans/archive/origin-connection-reference-execution.md",
       "sha256": "84b2f0f60b4ce31d9318545cfaaa12b6edfc9a83bf59dae7c713201f2368f857"
     },
     {
-      "path": "plans/origin-connection-reference-primary-review.md",
+      "path": "plans/archive/origin-connection-reference-primary-review.md",
       "sha256": "c957686bce8a3f3cecb1cd4018dcebb61a2ef337e9bf7d5068da35a05e7a13a8"
     },
     {
-      "path": "plans/origin-core-execution.md",
+      "path": "plans/archive/origin-core-execution.md",
       "sha256": "0e04d25de565b65898fcdd2db4f5639e9e1499b44e6d29511976208e96104046"
     },
     {
-      "path": "plans/origin-integration-execution.md",
+      "path": "plans/archive/origin-integration-execution.md",
       "sha256": "6edcb11f8fbc4e8cdfc35004c6700bea1ba884e396f6bf9a354c6fb8ba55ec3f"
     },
     {
-      "path": "plans/origin-native-integration-design-review.md",
+      "path": "plans/archive/origin-native-integration-design-review.md",
       "sha256": "e6d771ad091f4065a538605f39c3c1dee4106d3b02cb66d50c61c9369b411386"
     },
     {
-      "path": "plans/origin-native-integration-execution.md",
+      "path": "plans/archive/origin-native-integration-execution.md",
       "sha256": "52cd2beadd4c77d090700e83d1994ff3e94ab48a91fa8abdc429288d0473aea5"
     },
     {
-      "path": "plans/origin-native-integration-initial-scope.md",
+      "path": "plans/archive/origin-native-integration-initial-scope.md",
       "sha256": "3c32cdcc3548fd3f1369779a53790f4c027b8522bf5f926d46340f729c39682a"
     },
     {
@@ -1264,15 +1264,15 @@
       "sha256": "b03a46b0cb7399be77c03426ac826fb514bcffe09ef5f60a77cadba61f2c7fcb"
     },
     {
-      "path": "plans/origin-native-primary-source-review.md",
+      "path": "plans/archive/origin-native-primary-source-review.md",
       "sha256": "eddc450e151511e33bbe52b9585a6d5151dc2333f2f623e47dfbe7aa6bb9bf3c"
     },
     {
-      "path": "plans/persistence-output-isolation-design-review.md",
+      "path": "plans/archive/persistence-output-isolation-design-review.md",
       "sha256": "9b8ca8b86e49063667c63afcac694b2f04b6f7067d78b4273c5defe10f7b41ef"
     },
     {
-      "path": "plans/planning-artifact-names.md",
+      "path": "plans/archive/planning-artifact-names.md",
       "sha256": "9bc0d0f138f4b8b3eddfb3f2b1f9710ff3b7e75f791ee5cd0d4e461a51a73650"
     },
     {
@@ -1376,11 +1376,11 @@
       "sha256": "9d88ad5738b55eb66e6f40c93d0073a1cd965cec49683ba0b3300dda38a68622"
     },
     {
-      "path": "plans/edit-origin-preservation-independent-design-review.md",
+      "path": "plans/archive/edit-origin-preservation-independent-design-review.md",
       "sha256": "8077d771ee9436384a628e5568f7178ce4a27b43f6b9be14e9e14cbb2c34d8a7"
     },
     {
-      "path": "plans/edit-origin-preservation-execution.md",
+      "path": "plans/archive/edit-origin-preservation-execution.md",
       "sha256": "bf1a782be55d9635a21f5f0485919d6b582717bd0fbf078b855b72b7b1e28ee6"
     }
   ],

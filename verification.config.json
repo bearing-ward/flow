@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan099 accepted with prior current-feature and final targeted closure evidence; broad reconciliation remains deferred by user",
+  "activeWork": "Main recovery 2026-10-13: green full baseline; next slice ports Vanilla built-in UI to Vue and Foldkit",
   "checks": [],
   "browserTests": {
     "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],

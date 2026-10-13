@@ -2,7 +2,7 @@
 
 > Executor instructions: This bounded follow-on is for the SAME086 executor in `/Users/richardmcandrews/.codex/worktrees/native-parity-acceptance/flow`, called N below. Do not implement until primary and independent DESIGN approval explicitly authorize this document. Do not create another executor, worktree or lease. Read every approved input in full and preserve its exact raw bytes. The reviewer maintains the main index. No commit, merge, push, publication or cleanup.
 >
-> Drift check: N HEAD must remain `841be137e253cf19c665269eaaa79edc19abf3c3`. Compare the scoped hashes in `plans/reconnect-drag-threshold-source-audit.md` and the excerpts below with actual N. The separately approved two Vanilla fixture repairs and the already approved auto-pan cancellation test correction are expected differences, recorded in their own receipts. Preserve a complete pre093 source/evidence freeze before implementing093. Never modify prior failure/freeze inventories.
+> Drift check: N HEAD must remain `841be137e253cf19c665269eaaa79edc19abf3c3`. Compare the scoped hashes in `plans/archive/reconnect-drag-threshold-source-audit.md` and the excerpts below with actual N. The separately approved two Vanilla fixture repairs and the already approved auto-pan cancellation test correction are expected differences, recorded in their own receipts. Preserve a complete pre093 source/evidence freeze before implementing093. Never modify prior failure/freeze inventories.
 
 ## Status
 

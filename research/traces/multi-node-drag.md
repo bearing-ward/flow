@@ -28,7 +28,7 @@ The shared Playwright suite verifies that a Shift pane rectangle selects three v
 
 The vanilla node pointer-down path snapshots visible selected nodes when the active node is selected; with more than one selected node, it creates a group drag at `apps/vanilla/src/mount-flow.ts:1177` and `apps/vanilla/src/mount-flow.ts:1212`. Pointer movement applies every transient node position and reconciles edge geometry at `apps/vanilla/src/mount-flow.ts:1263`. Pointer release publishes the group change once at `apps/vanilla/src/mount-flow.ts:1291`; uncontrolled mode applies it immediately, while controlled mode restores authoritative node positions until acknowledgement at `apps/vanilla/src/mount-flow.ts:943`.
 
-The Flow browser test mounts two selected nodes and one unselected node, drags the first selected node, checks that both selected DOM transforms move by the same offset during the gesture, and checks one final `node-positions` change while the unselected node stays put at `apps/vanilla/e2e/movement-slices.e2e.ts:149`. The targeted Playwright run passed this case. It does not exercise a controlled pointer drag or the reference selection-bounds overlay.
+The Flow browser test mounts two selected nodes and one unselected node, drags the first selected node, checks that both selected DOM transforms move by the same offset during the gesture, and checks one final `node-positions` change while the unselected node stays put at `apps/vanilla/e2e/movement-slices.e2e.ts:151`. The targeted Playwright run passed this case. It does not exercise a controlled pointer drag or the reference selection-bounds overlay.
 
 ## Conformity and deviations
 

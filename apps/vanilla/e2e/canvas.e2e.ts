@@ -116,6 +116,11 @@ const dragBetweenHandles = async (
     sourceBox.y + sourceBox.height / 2
   )
   await page.mouse.down()
+  // Cross the default one-pixel connection drag threshold.
+  await page.mouse.move(
+    sourceBox.x + sourceBox.width / 2 + 2,
+    sourceBox.y + sourceBox.height / 2
+  )
   await expectPage(page.getByTestId('flow-connection-preview')).toBeVisible()
   await page.mouse.move(
     targetBox.x + targetBox.width / 2,
@@ -151,6 +156,11 @@ const dragEdgeEndpoint = async (
     anchorBox.y + anchorBox.height / 2
   )
   await page.mouse.down()
+  // Cross the default one-pixel connection drag threshold.
+  await page.mouse.move(
+    anchorBox.x + anchorBox.width / 2 + 2,
+    anchorBox.y + anchorBox.height / 2
+  )
   await expectPage(page.getByTestId('flow-connection-preview')).toBeVisible()
   await page.mouse.move(
     handleBox.x + handleBox.width / 2,
@@ -520,6 +530,8 @@ playwrightTest(
 
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
     await page.mouse.down()
+    // Cross the default one-pixel connection drag threshold.
+    await page.mouse.move(box.x + box.width / 2 + 2, box.y + box.height / 2)
     await expectPage(page.getByTestId('flow-connection-preview')).toBeVisible()
     await page.evaluate(() => {
       const canvas = globalThis.document.querySelector('.flow-canvas')
@@ -1344,6 +1356,8 @@ playwrightTest(
 
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
     await page.mouse.down()
+    // Cross the default one-pixel connection drag threshold.
+    await page.mouse.move(box.x + box.width / 2 + 2, box.y + box.height / 2)
     await expectPage(page.getByTestId('flow-connection-preview')).toBeVisible()
     await page.evaluate(() => {
       globalThis.flowController?.update({
@@ -1391,6 +1405,11 @@ playwrightTest(
       sourceBox.y + sourceBox.height / 2
     )
     await page.mouse.down()
+    // Cross the default one-pixel connection drag threshold.
+    await page.mouse.move(
+      sourceBox.x + sourceBox.width / 2 + 2,
+      sourceBox.y + sourceBox.height / 2
+    )
     const line = page.getByTestId('flow-connection-preview').locator('line')
     expectPage(Number(await line.getAttribute('x1'))).toBeCloseTo(249, 1)
     expectPage(Number(await line.getAttribute('y1'))).toBeCloseTo(142, 1)

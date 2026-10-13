@@ -18,16 +18,16 @@ The authoritative FlowDocumentSchema at `packages/core/src/domain/flow.schema.ts
 
 The frozen core/application tests pass63/2files in the primary reproduction. Original eight core and all prior application assertions are unchanged. New tests prove explicit/unclamped/[0,0] and absent/own-undefined origins, all transaction families, accepted/denied/protected deletion, rollback, structural sharing/input immutability, actual result encode/decode, and production EditResponseSchema/DeleteResultSchema packet retention. The original four failing-before-fix regressions remain historical evidence. Actual public production callers use prepareFlowEdit in Vanilla mount-flow.ts:8978, Vue flow-canvas.ts:2181-2183 and Foldkit graph.ts:669,719 on the accepted082-based snapshot. Graph meaning and Effect workflows remain in core; application/framework composition stays in its current adapter.
 
-Final084 `bun run check` fails exactly three issues: require-readable-spacing before the untouched-reference assertion at flow-edit.test.ts:428, plus formatting of copied plans/edit-origin-preservation-execution.md and edit-origin-preservation-provenance.json. The final owned reports were written after its earlier check. Correct copied bytes in this fresh checkout, preserving originals and assertions. Never count a report written after the last quality check as verified.
+Final084 `bun run check` fails exactly three issues: require-readable-spacing before the untouched-reference assertion at flow-edit.test.ts:428, plus formatting of copied plans/archive/edit-origin-preservation-execution.md and edit-origin-preservation-provenance.json. The final owned reports were written after its earlier check. Correct copied bytes in this fresh checkout, preserving originals and assertions. Never count a report written after the last quality check as verified.
 
 ## Hard scope
 
 All124 input paths may be copied unchanged. New edits are limited to:
 
 - `packages/core/src/domain/flow-edit.test.ts`: whitespace only for the exact remaining spacing diagnostic; retain all test bodies/assertions and names.
-- Copied `plans/edit-origin-preservation-execution.md` and `plans/edit-origin-preservation-provenance.json`: formatting only; historical contents/statuses/hashes remain historical.
+- Copied `plans/archive/edit-origin-preservation-execution.md` and `plans/edit-origin-preservation-provenance.json`: formatting only; historical contents/statuses/hashes remain historical.
 - `verification.config.json`: change activeWork to085; preserve focused profile, docs/contracts/consumer checks and the six existing public-edits.e2e.ts/versioned-persistence.e2e.ts host files.
-- Owned `plans/085-accept-origin-edit-resumption.md`, `plans/origin-edit-resumption-execution.md`, `plans/origin-edit-resumption-provenance.json`, and exact copied independent design review.
+- Owned `plans/085-accept-origin-edit-resumption.md`, `plans/archive/origin-edit-resumption-execution.md`, `plans/origin-edit-resumption-provenance.json`, and exact copied independent design review.
 
 No other source, adapter or browser tests, origin/lifecycle/HMR implementation, manifests/lockfile/dependencies, compiler/lint policies, imported research, frozen evidence or old candidate edits. No casts,any,private Runtime setters, extra graph authority, weakened assertions/skips/timeouts or dependency changes. Primary owns main/index/acceptance updates. Existing generated API documentation is unchanged; `bun run docs:check` proves its consistency without editing it.
 

@@ -12,6 +12,7 @@ import {
   currentNativeConnectionCases,
   interactionLifecycleFixture,
 } from '../../shared-e2e/interaction-lifecycle-contract.ts'
+import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
 
 const mountLifecycleScenario = async (
   page: Page,
@@ -325,8 +326,27 @@ const cancelGesture = async (
       return false
     }
 
-    case 'pointer-cancel':
     case 'capture-loss': {
+      await releasePointerCapture(
+        page,
+        await page.evaluate(() => {
+          // SAFETY: The canvas listener stores the pointer ID of this active gesture.
+          const state = globalThis as typeof globalThis & {
+            __interactionPointerId: number | undefined
+          }
+
+          if (state.__interactionPointerId === undefined) {
+            throw new Error('Missing active pointer ID')
+          }
+
+          return state.__interactionPointerId
+        })
+      )
+
+      return false
+    }
+
+    case 'pointer-cancel': {
       await page.evaluate((reason) => {
         // SAFETY: The canvas listener stores the pointer ID of this active gesture.
         const state = globalThis as typeof globalThis & {

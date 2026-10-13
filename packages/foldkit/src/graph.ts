@@ -5096,11 +5096,16 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
     { active: Schema.Boolean },
     {
       modelToDependencies: (model) => ({
+        // Pointer-owned gestures cancel through the native escape handler;
+        // keyboard-owned sessions, including Shift+Space rectangle selection
+        // (pointerId -2), have no native owner and cancel here.
         active:
           model.pointerSession === null &&
-          model.gestureSession === null &&
-          (model.keyboardConnectionSession !== null ||
-            model.keyboardResizeSession !== null),
+          (model.gestureSession === null
+            ? model.keyboardConnectionSession !== null ||
+              model.keyboardResizeSession !== null
+            : model.gestureSession.kind === 'selection' &&
+              model.gestureSession.pointerId === -2),
       }),
       dependenciesToStream: ({ active }) =>
         active

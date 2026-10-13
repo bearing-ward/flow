@@ -141,7 +141,7 @@ Refresh individual assertions when upstream defaults, schemas, lifecycle or expo
 
 ## Bounded architecture prerequisite checkpoint, 2026-09-30
 
-The complete proposed matrix is recorded in [marker-minimap-design.md](marker-minimap-design.md). It preserves all30groups,101original members and303host cells. Root read the complete artifact, checked pinned marker and MiniMap sources, and requested two planning corrections: consume075's accepted reusable client independently of stopped064 observer integration, and require separate approval for the proposed native marker-definition registry. The corrected artifact now records both. A cold independent review is pending. No source implementation or semantic closure is approved.
+The complete proposed matrix is recorded in [marker-minimap-design.md](archive/marker-minimap-design.md). It preserves all30groups,101original members and303host cells. Root read the complete artifact, checked pinned marker and MiniMap sources, and requested two planning corrections: consume075's accepted reusable client independently of stopped064 observer integration, and require separate approval for the proposed native marker-definition registry. The corrected artifact now records both. A cold independent review is pending. No source implementation or semantic closure is approved.
 
 Marker color presence needs its own versioned-codec amendment: an own undefined color uses symbol-default none while an absent color can inherit the global value. That proposal is separate from075's reviewed role/origin predicate and does not change its approved failure-code enum or codec. Source remains blocked on checked075 and explicit review of that amendment; final style/generic/measurement assertions retain074/069/065 dependencies.
 

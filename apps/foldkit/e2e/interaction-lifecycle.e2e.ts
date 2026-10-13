@@ -9,6 +9,7 @@ import {
   interactionLifecycleFixture,
   interactionReconnectionCases,
 } from '../../shared-e2e/interaction-lifecycle-contract.ts'
+import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
 import { createFoldkitConformanceAdapter } from './conformance.ts'
 
 const connectionFixture = conformanceFixtures.find(
@@ -22,6 +23,36 @@ const movementFixture = conformanceFixtures.find(
 if (connectionFixture === undefined || movementFixture === undefined) {
   throw new Error('Missing Foldkit interaction lifecycle fixtures')
 }
+
+interface Point {
+  readonly x: number
+  readonly y: number
+}
+
+const centerOf = (box: {
+  readonly x: number
+  readonly y: number
+  readonly width: number
+  readonly height: number
+}): Point => ({ x: box.x + box.width / 2, y: box.y + box.height / 2 })
+
+/**
+ * Presses the real mouse (pointer 1, which holds genuine capture) and moves
+ * past the default one-pixel drag threshold so the gesture becomes active.
+ */
+const pressPastThreshold = async (page: Page, start: Point): Promise<void> => {
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  // Cross the default one-pixel connection and node drag thresholds.
+  await page.mouse.move(start.x + 2, start.y)
+}
+
+const dispatchPointerCancel = (page: Page, pointerId = 1): Promise<void> =>
+  page.evaluate((id) => {
+    document.dispatchEvent(
+      new PointerEvent('pointercancel', { bubbles: true, pointerId: id })
+    )
+  }, pointerId)
 
 test('Foldkit connection success and rejection settle once through the rendered host', async ({
   page,
@@ -462,27 +493,53 @@ test('Foldkit completes a synthetic touch connection through production handles'
     throw new Error('Missing Foldkit touch connection handles')
   }
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 301,
-    pointerType: 'touch',
-    clientX: sourceBox.x + sourceBox.width / 2,
-    clientY: sourceBox.y + sourceBox.height / 2,
-  })
   await page.evaluate(
-    ({ x, y }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
+    ({ pointerId, selector, start, end }) => {
+      const sourceHandle = document.querySelector(selector)
+
+      if (!(sourceHandle instanceof HTMLElement)) {
+        throw new Error('Missing live Foldkit touch source handle')
+      }
+
+      const originalCapture = HTMLElement.prototype.setPointerCapture
+      const originalHasCapture = HTMLElement.prototype.hasPointerCapture
+      // Synthetic touch pointers cannot hold real capture, so emulate it for
+      // the admission check that verifies capture after acquiring it.
+      HTMLElement.prototype.setPointerCapture = (id) => {
+        if (id !== pointerId) {
+          throw new Error('Unexpected synthetic pointer capture id')
+        }
+      }
+
+      HTMLElement.prototype.hasPointerCapture = (id) => id === pointerId
+
+      const touch = (type: string, point: { x: number; y: number }) =>
+        new PointerEvent(type, {
           bubbles: true,
-          pointerId: 301,
+          cancelable: true,
+          button: 0,
+          pointerId,
           pointerType: 'touch',
-          clientX: x,
-          clientY: y,
+          isPrimary: true,
+          clientX: point.x,
+          clientY: point.y,
         })
-      ),
+
+      try {
+        sourceHandle.dispatchEvent(touch('pointerdown', start))
+        // Move past the default one-pixel threshold before releasing.
+        document.dispatchEvent(touch('pointermove', end))
+        document.dispatchEvent(touch('pointerup', end))
+      } finally {
+        HTMLElement.prototype.setPointerCapture = originalCapture
+        HTMLElement.prototype.hasPointerCapture = originalHasCapture
+      }
+    },
     {
-      x: targetBox.x + targetBox.width / 2,
-      y: targetBox.y + targetBox.height / 2,
+      pointerId: 301,
+      selector: `[data-node-id="${accepted.sourceNodeId}"] [data-handle-id="${accepted.sourceHandleId}"]`,
+      start: centerOf(sourceBox),
+      end: centerOf(targetBox),
     }
   )
 
@@ -538,24 +595,8 @@ test('Foldkit production preview renderer updates, proposes, and cleans up', asy
     y: targetBox.y + targetBox.height / 2,
   }
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 401,
-    clientX: start.x,
-    clientY: start.y,
-  })
-  await page.evaluate(
-    ({ point, pointerId }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointermove', {
-          bubbles: true,
-          pointerId,
-          clientX: point.x,
-          clientY: point.y,
-        })
-      ),
-    { point: end, pointerId: 401 }
-  )
+  await pressPastThreshold(page, start)
+  await page.mouse.move(end.x, end.y)
 
   const probe = page.locator('.flow-foldkit-connection-preview-probe')
 
@@ -585,12 +626,7 @@ test('Foldkit production preview renderer updates, proposes, and cleans up', asy
     await page.evaluate(() => window.__flowFoldkitTest?.readConnectionPreview())
   ).toMatchObject({ kind: 'connect', valid: true })
 
-  await target.dispatchEvent('pointerup', {
-    button: 0,
-    pointerId: 401,
-    clientX: end.x,
-    clientY: end.y,
-  })
+  await page.mouse.up()
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-add'])
   await expect(probe).toHaveCount(0)
   expect(
@@ -601,29 +637,21 @@ test('Foldkit production preview renderer updates, proposes, and cleans up', asy
 
   expect(controlledSnapshot.edgeIds).toEqual([])
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 402,
-    clientX: start.x,
-    clientY: start.y,
-  })
+  await pressPastThreshold(page, start)
   await expect(probe).toBeVisible()
   await page.locator('.flow-foldkit-canvas').focus()
   await page.keyboard.press('Escape')
   await expect(probe).toHaveCount(0)
+  await page.mouse.up()
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-add'])
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 403,
-    clientX: start.x,
-    clientY: start.y,
-  })
+  await pressPastThreshold(page, start)
   await expect(probe).toBeVisible()
   const cleanup = await adapter.destroy()
 
   expect(cleanup.mountedElements).toBe(0)
   await expect(probe).toHaveCount(0)
+  await page.mouse.up()
 })
 
 test('Foldkit preview snapshots stay scoped to the Runtime owning the gesture', async ({
@@ -672,25 +700,8 @@ test('Foldkit preview snapshots stay scoped to the Runtime owning the gesture', 
     y: targetBounds.y + targetBounds.height / 2,
   }
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 701,
-    clientX: start.x,
-    clientY: start.y,
-  })
-
-  await page.evaluate(
-    ({ point, pointerId }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointermove', {
-          bubbles: true,
-          pointerId,
-          clientX: point.x,
-          clientY: point.y,
-        })
-      ),
-    { point: end, pointerId: 701 }
-  )
+  await pressPastThreshold(page, start)
+  await page.mouse.move(end.x, end.y)
 
   await expect(
     page.locator(
@@ -714,18 +725,8 @@ test('Foldkit preview snapshots stay scoped to the Runtime owning the gesture', 
 
   expect(idle?.connectionPreview).toBeNull()
 
-  await page.evaluate(
-    ({ point, pointerId }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointercancel', {
-          bubbles: true,
-          pointerId,
-          clientX: point.x,
-          clientY: point.y,
-        })
-      ),
-    { point: end, pointerId: 701 }
-  )
+  await dispatchPointerCancel(page)
+  await page.mouse.up()
 })
 
 test('Foldkit discards reconnectable handle sessions after dynamic handle replacement', async ({
@@ -741,12 +742,7 @@ test('Foldkit discards reconnectable handle sessions after dynamic handle replac
     throw new Error('Missing original Foldkit source handle')
   }
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 31,
-    clientX: sourceBox.x + sourceBox.width / 2,
-    clientY: sourceBox.y + sourceBox.height / 2,
-  })
+  await pressPastThreshold(page, centerOf(sourceBox))
   await page.evaluate((fixture) => {
     const nextDocument = {
       ...fixture.document,
@@ -766,16 +762,8 @@ test('Foldkit discards reconnectable handle sessions after dynamic handle replac
     window.__flowFoldkitTest?.replaceDocument(nextDocument)
   }, connectionFixture)
 
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 31,
-        clientX: 520,
-        clientY: 120,
-      })
-    )
-  )
+  await page.mouse.move(520, 120)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
 
   const nextSource = page.locator(
@@ -790,18 +778,9 @@ test('Foldkit discards reconnectable handle sessions after dynamic handle replac
     throw new Error('Missing replacement Foldkit connection handles')
   }
 
-  await nextSource.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 32,
-    clientX: nextSourceBox.x + nextSourceBox.width / 2,
-    clientY: nextSourceBox.y + nextSourceBox.height / 2,
-  })
-  await target.dispatchEvent('pointerup', {
-    bubbles: true,
-    pointerId: 32,
-    clientX: targetBox.x + targetBox.width / 2,
-    clientY: targetBox.y + targetBox.height / 2,
-  })
+  await pressPastThreshold(page, centerOf(nextSourceBox))
+  await page.mouse.move(centerOf(targetBox).x, centerOf(targetBox).y)
+  await page.mouse.up()
 
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-add'])
   const cleanup = await adapter.destroy()
@@ -866,12 +845,7 @@ test('Foldkit reconnects an edge endpoint through the selected edge controls', a
     )
   }
 
-  await sourceControl.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 70,
-    clientX: controlBox.x + controlBox.width / 2,
-    clientY: controlBox.y + controlBox.height / 2,
-  })
+  await pressPastThreshold(page, centerOf(controlBox))
   await page.evaluate((scenario) => {
     const nextDocument = {
       ...scenario.document,
@@ -890,16 +864,8 @@ test('Foldkit reconnects an edge endpoint through the selected edge controls', a
 
     window.__flowFoldkitTest?.replaceDocument(nextDocument)
   }, fixture)
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 70,
-        clientX: 500,
-        clientY: 500,
-      })
-    )
-  )
+  await page.mouse.move(500, 500)
+  await page.mouse.up()
 
   expect(await adapter.changeKinds()).toEqual([])
 
@@ -919,18 +885,12 @@ test('Foldkit reconnects an edge endpoint through the selected edge controls', a
     throw new Error('Missing refreshed Foldkit reconnect control')
   }
 
-  await refreshedSourceControl.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 72,
-    clientX: refreshedControlBox.x + refreshedControlBox.width / 2,
-    clientY: refreshedControlBox.y + refreshedControlBox.height / 2,
-  })
-  await replacedHandle.dispatchEvent('pointerup', {
-    bubbles: true,
-    pointerId: 72,
-    clientX: replacedHandleBox.x + replacedHandleBox.width / 2,
-    clientY: replacedHandleBox.y + replacedHandleBox.height / 2,
-  })
+  await pressPastThreshold(page, centerOf(refreshedControlBox))
+  await page.mouse.move(
+    centerOf(replacedHandleBox).x,
+    centerOf(replacedHandleBox).y
+  )
+  await page.mouse.up()
 
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-reconnect'])
 
@@ -1030,18 +990,9 @@ test('Foldkit keeps controlled edge reconnection as a proposal', async ({
     throw new Error('Missing controlled Foldkit reconnection handles')
   }
 
-  await sourceControl.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 71,
-    clientX: controlBox.x + controlBox.width / 2,
-    clientY: controlBox.y + controlBox.height / 2,
-  })
-  await nextHandle.dispatchEvent('pointerup', {
-    bubbles: true,
-    pointerId: 71,
-    clientX: handleBox.x + handleBox.width / 2,
-    clientY: handleBox.y + handleBox.height / 2,
-  })
+  await pressPastThreshold(page, centerOf(controlBox))
+  await page.mouse.move(centerOf(handleBox).x, centerOf(handleBox).y)
+  await page.mouse.up()
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-reconnect'])
   expect(await adapter.snapshot()).toStrictEqual(before)
 
@@ -1126,87 +1077,44 @@ test('Foldkit cancels reconnect on blur and capture loss, then permits a retry',
     '[data-node-id="source-next"] [data-handle-id="out-next"]'
   )
 
-  const begin = async (pointerId: number) => {
+  const begin = async () => {
     const box = await sourceControl.boundingBox()
 
     if (box === null) {
       throw new Error('Missing Foldkit reconnection endpoint')
     }
 
-    await sourceControl.dispatchEvent('pointerdown', {
-      button: 0,
-      pointerId,
-      clientX: box.x + box.width / 2,
-      clientY: box.y + box.height / 2,
-    })
+    await pressPastThreshold(page, centerOf(box))
     await expect(page.locator('.flow-foldkit-connection-preview')).toBeVisible()
   }
 
-  await begin(73)
+  const releaseAway = async () => {
+    await page.mouse.move(100, 330)
+    await page.mouse.up()
+  }
+
+  await begin()
   await page.evaluate(() => window.dispatchEvent(new Event('blur')))
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 73,
-        clientX: 100,
-        clientY: 330,
-      })
-    )
-  )
+  await releaseAway()
   expect(await adapter.changeKinds()).toEqual([])
   await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
 
-  await begin(74)
-  await sourceControl.dispatchEvent('lostpointercapture', {
-    bubbles: true,
-    pointerId: 74,
-  })
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 74,
-        clientX: 100,
-        clientY: 330,
-      })
-    )
-  )
+  await begin()
+  await releasePointerCapture(page)
+  await releaseAway()
   expect(await adapter.changeKinds()).toEqual([])
   await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
 
-  await begin(76)
+  await begin()
   await page.locator('[data-testid="flow-canvas"]').focus()
   await page.keyboard.press('Escape')
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 76,
-        clientX: 100,
-        clientY: 330,
-      })
-    )
-  )
+  await releaseAway()
   expect(await adapter.changeKinds()).toEqual([])
   await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
 
-  await begin(77)
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointercancel', { bubbles: true, pointerId: 77 })
-    )
-  )
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 77,
-        clientX: 100,
-        clientY: 330,
-      })
-    )
-  )
+  await begin()
+  await dispatchPointerCancel(page)
+  await releaseAway()
   expect(await adapter.changeKinds()).toEqual([])
   await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
 
@@ -1216,16 +1124,12 @@ test('Foldkit cancels reconnect on blur and capture loss, then permits a retry',
     throw new Error('Missing Foldkit replacement source handle')
   }
 
-  await begin(75)
+  await begin()
   await expect(
     page.locator('svg.flow-foldkit-edge[data-edge-id="reconnect-cancel-edge"]')
   ).toHaveAttribute('data-source-id', 'source')
-  await nextHandle.dispatchEvent('pointerup', {
-    bubbles: true,
-    pointerId: 75,
-    clientX: targetBox.x + targetBox.width / 2,
-    clientY: targetBox.y + targetBox.height / 2,
-  })
+  await page.mouse.move(centerOf(targetBox).x, centerOf(targetBox).y)
+  await page.mouse.up()
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-reconnect'])
   const finalSnapshot = await adapter.snapshot()
   expect(finalSnapshot.edgeIds).toEqual(['reconnect-cancel-edge'])
@@ -1331,73 +1235,19 @@ test('Foldkit applies loose connection normalization and the configured radius',
     throw new Error('Missing Foldkit connection handles')
   }
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 190,
-    clientX: sourceBox.x + sourceBox.width / 2,
-    clientY: sourceBox.y + sourceBox.height / 2,
-  })
-  await page.evaluate(
-    ({ x, y }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
-          bubbles: true,
-          pointerId: 190,
-          clientX: x,
-          clientY: y,
-        })
-      ),
-    {
-      x: targetBox.x + targetBox.width / 2 + 40,
-      y: targetBox.y + targetBox.height / 2,
-    }
-  )
+  await pressPastThreshold(page, centerOf(sourceBox))
+  await page.mouse.move(centerOf(targetBox).x + 40, centerOf(targetBox).y)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 191,
-    clientX: sourceBox.x + sourceBox.width / 2,
-    clientY: sourceBox.y + sourceBox.height / 2,
-  })
-  await page.evaluate(
-    ({ x, y }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
-          bubbles: true,
-          pointerId: 191,
-          clientX: x,
-          clientY: y,
-        })
-      ),
-    {
-      x: sourceBox.x + sourceBox.width / 2,
-      y: sourceBox.y + sourceBox.height / 2,
-    }
-  )
+  await pressPastThreshold(page, centerOf(sourceBox))
+  await page.mouse.move(centerOf(sourceBox).x, centerOf(sourceBox).y)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 192,
-    clientX: sourceBox.x + sourceBox.width / 2,
-    clientY: sourceBox.y + sourceBox.height / 2,
-  })
-  await page.evaluate(
-    ({ x, y }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
-          bubbles: true,
-          pointerId: 192,
-          clientX: x,
-          clientY: y,
-        })
-      ),
-    {
-      x: targetBox.x + targetBox.width / 2,
-      y: targetBox.y + targetBox.height / 2,
-    }
-  )
+  await pressPastThreshold(page, centerOf(sourceBox))
+  await page.mouse.move(centerOf(targetBox).x, centerOf(targetBox).y)
+  await page.mouse.up()
   await expect.poll(() => adapter.changeKinds()).toEqual(['edge-add'])
   expect(
     await page.evaluate(() => window.__flowFoldkitTest?.changes()[0])
@@ -1442,27 +1292,9 @@ test('Foldkit applies loose connection normalization and the configured radius',
     throw new Error('Missing strict fixture connection handle')
   }
 
-  await strictHandle.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 194,
-    clientX: strictBox.x + strictBox.width / 2,
-    clientY: strictBox.y + strictBox.height / 2,
-  })
-  await page.evaluate(
-    ({ x, y }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
-          bubbles: true,
-          pointerId: 194,
-          clientX: x,
-          clientY: y,
-        })
-      ),
-    {
-      x: strictBox.x + strictBox.width / 2,
-      y: strictBox.y + strictBox.height / 2,
-    }
-  )
+  await pressPastThreshold(page, centerOf(strictBox))
+  await page.mouse.move(centerOf(strictBox).x, centerOf(strictBox).y)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
   await adapter.destroy()
 })
@@ -1508,30 +1340,14 @@ test('Foldkit connectionRadius stays in screen pixels across viewport zoom', asy
       throw new Error('Missing Foldkit zoomed connection handles')
     }
 
-    await source.dispatchEvent('pointerdown', {
-      button: 0,
-      pointerId: 250,
-      clientX: sourceBounds.x + sourceBounds.width / 2,
-      clientY: sourceBounds.y + sourceBounds.height / 2,
-    })
+    await pressPastThreshold(page, centerOf(sourceBounds))
 
     const releasePoint = {
       x: targetBounds.x + targetBounds.width / 2 - offset,
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    await page.evaluate(
-      ({ x, y }) =>
-        document.dispatchEvent(
-          new PointerEvent('pointermove', {
-            bubbles: true,
-            pointerId: 250,
-            clientX: x,
-            clientY: y,
-          })
-        ),
-      releasePoint
-    )
+    await page.mouse.move(releasePoint.x, releasePoint.y)
     await expect
       .poll(() =>
         page.evaluate(async () => {
@@ -1544,18 +1360,7 @@ test('Foldkit connectionRadius stays in screen pixels across viewport zoom', asy
         })
       )
       .toBe(expectedChangeKinds.length === 0 ? null : 'target')
-    await page.evaluate(
-      ({ x, y }) =>
-        document.dispatchEvent(
-          new PointerEvent('pointerup', {
-            bubbles: true,
-            pointerId: 250,
-            clientX: x,
-            clientY: y,
-          })
-        ),
-      releasePoint
-    )
+    await page.mouse.up()
     await expect.poll(() => adapter.changeKinds()).toEqual(expectedChangeKinds)
     await adapter.destroy()
   }
@@ -1578,29 +1383,17 @@ test('Foldkit auto-pans an active connection gesture near the canvas edge', asyn
     throw new Error('Missing Foldkit source handle')
   }
 
-  await source.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 193,
-    clientX: sourceBox.x + sourceBox.width / 2,
-    clientY: sourceBox.y + sourceBox.height / 2,
-  })
-  await page.evaluate(() => {
-    const canvas = document.querySelector<HTMLElement>('.flow-foldkit-canvas')
+  const canvasBox = await page.locator('.flow-foldkit-canvas').boundingBox()
 
-    if (canvas === null) {
-      throw new Error('Missing Foldkit canvas')
-    }
+  if (canvasBox === null) {
+    throw new Error('Missing Foldkit canvas')
+  }
 
-    const bounds = canvas.getBoundingClientRect()
-    document.dispatchEvent(
-      new PointerEvent('pointermove', {
-        bubbles: true,
-        pointerId: 193,
-        clientX: bounds.right - 1,
-        clientY: bounds.top + bounds.height / 2,
-      })
-    )
-  })
+  await pressPastThreshold(page, centerOf(sourceBox))
+  await page.mouse.move(
+    canvasBox.x + canvasBox.width - 1,
+    canvasBox.y + canvasBox.height / 2
+  )
   await expect
     .poll(async () => {
       const state = await adapter.readState({})
@@ -1608,14 +1401,8 @@ test('Foldkit auto-pans an active connection gesture near the canvas edge', asyn
       return state.snapshot.viewport.x
     })
     .not.toBe(0)
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointercancel', {
-        bubbles: true,
-        pointerId: 193,
-      })
-    )
-  )
+  await dispatchPointerCancel(page)
+  await page.mouse.up()
   await adapter.destroy()
 })
 
@@ -1745,20 +1532,9 @@ test('Foldkit pointer cancellation discards a drag and permits a fresh drag', as
 
   const startX = box.x + box.width / 2
   const startY = box.y + box.height / 2
-  await node.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 41,
-    clientX: startX,
-    clientY: startY,
-  })
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointercancel', {
-        bubbles: true,
-        pointerId: 41,
-      })
-    )
-  )
+  await pressPastThreshold(page, { x: startX, y: startY })
+  await dispatchPointerCancel(page)
+  await page.mouse.up()
 
   expect(await adapter.changeKinds()).toEqual([])
   const cancelledSnapshot = await adapter.snapshot()
@@ -1833,14 +1609,7 @@ test('Foldkit consumes every shared cancellation/retry case through production h
       throw new Error(`Missing handles for ${cancellationCase.reason} fixture`)
     }
 
-    const pointerId = 121
-
-    await source.dispatchEvent('pointerdown', {
-      button: 0,
-      pointerId,
-      clientX: sourceBox.x + sourceBox.width / 2,
-      clientY: sourceBox.y + sourceBox.height / 2,
-    })
+    await pressPastThreshold(page, centerOf(sourceBox))
 
     if (reason === 'escape') {
       await page.locator('[data-testid="flow-canvas"]').focus()
@@ -1848,20 +1617,9 @@ test('Foldkit consumes every shared cancellation/retry case through production h
     } else if (reason === 'blur') {
       await page.evaluate(() => window.dispatchEvent(new Event('blur')))
     } else if (reason === 'pointer-cancel') {
-      await page.evaluate((id) => {
-        document.dispatchEvent(
-          new PointerEvent('pointercancel', { bubbles: true, pointerId: id })
-        )
-      }, pointerId)
+      await dispatchPointerCancel(page)
     } else if (reason === 'capture-loss') {
-      await page.evaluate((id) => {
-        document.dispatchEvent(
-          new PointerEvent('lostpointercapture', {
-            bubbles: true,
-            pointerId: id,
-          })
-        )
-      }, pointerId)
+      await releasePointerCapture(page)
     } else if (reason === 'removal') {
       await page.evaluate((document) => {
         const replacement = {
@@ -1889,22 +1647,8 @@ test('Foldkit consumes every shared cancellation/retry case through production h
       expect(cleanup.acceptedStatesAfterDestroy).toBe(0)
     }
 
-    await page.evaluate(
-      ({ id, x, y }) =>
-        document.dispatchEvent(
-          new PointerEvent('pointerup', {
-            bubbles: true,
-            pointerId: id,
-            clientX: x,
-            clientY: y,
-          })
-        ),
-      {
-        id: pointerId,
-        x: targetBox.x + targetBox.width / 2,
-        y: targetBox.y + targetBox.height / 2,
-      }
-    )
+    await page.mouse.move(centerOf(targetBox).x, centerOf(targetBox).y)
+    await page.mouse.up()
 
     expect(await adapter.changeKinds()).toEqual([])
     const acceptedChanges = await acceptedGestureStates()
@@ -2034,32 +1778,11 @@ test('Foldkit ignores cancellation from a different pointer and completes the ac
 
   const startX = box.x + box.width / 2
   const startY = box.y + box.height / 2
-  await node.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 51,
-    clientX: startX,
-    clientY: startY,
-  })
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointercancel', {
-        bubbles: true,
-        pointerId: 52,
-      })
-    )
-  )
-  await page.evaluate(
-    ({ x, y }) =>
-      document.dispatchEvent(
-        new PointerEvent('pointerup', {
-          bubbles: true,
-          pointerId: 51,
-          clientX: x + 32,
-          clientY: y + 20,
-        })
-      ),
-    { x: startX, y: startY }
-  )
+  await pressPastThreshold(page, { x: startX, y: startY })
+  // The real mouse is pointer 1; cancellation from another pointer is ignored.
+  await dispatchPointerCancel(page, 52)
+  await page.mouse.move(startX + 32, startY + 20)
+  await page.mouse.up()
 
   await expect.poll(() => adapter.changeKinds()).toEqual(['node-position'])
 
@@ -2094,53 +1817,19 @@ test('Foldkit clears active gestures on blur and document replacement', async ({
 
   const x = box.x + box.width / 2
   const y = box.y + box.height / 2
-  await node.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 61,
-    clientX: x,
-    clientY: y,
-  })
+  await pressPastThreshold(page, { x, y })
   await page.evaluate(() => window.dispatchEvent(new Event('blur')))
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 61,
-        clientX: 500,
-        clientY: 500,
-      })
-    )
-  )
+  await page.mouse.move(500, 500)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
 
-  await node.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 63,
-    clientX: x,
-    clientY: y,
-  })
-  await node.dispatchEvent('lostpointercapture', {
-    bubbles: true,
-    pointerId: 63,
-  })
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 63,
-        clientX: 500,
-        clientY: 500,
-      })
-    )
-  )
+  await pressPastThreshold(page, { x, y })
+  await releasePointerCapture(page)
+  await page.mouse.move(500, 500)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
 
-  await node.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 62,
-    clientX: x,
-    clientY: y,
-  })
+  await pressPastThreshold(page, { x, y })
   await page.evaluate((fixture) => {
     const nextDocument = {
       ...fixture.document,
@@ -2153,16 +1842,8 @@ test('Foldkit clears active gestures on blur and document replacement', async ({
 
     window.__flowFoldkitTest?.replaceDocument(nextDocument)
   }, movementFixture)
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 62,
-        clientX: 500,
-        clientY: 500,
-      })
-    )
-  )
+  await page.mouse.move(500, 500)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
 
   const cleanup = await adapter.destroy()
@@ -2184,23 +1865,10 @@ test('Foldkit discards active gestures on unmount and leaves key and wheel input
 
   const startX = box.x + box.width / 2
   const startY = box.y + box.height / 2
-  await node.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 64,
-    clientX: startX,
-    clientY: startY,
-  })
+  await pressPastThreshold(page, { x: startX, y: startY })
   const cleanup = await adapter.destroy()
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointerup', {
-        bubbles: true,
-        pointerId: 64,
-        clientX: 500,
-        clientY: 500,
-      })
-    )
-  )
+  await page.mouse.move(500, 500)
+  await page.mouse.up()
   expect(cleanup.mountedElements).toBe(0)
   expect(cleanup.changesAfterDestroy).toBe(0)
 
@@ -2669,17 +2337,11 @@ test('Foldkit cancels a resize without publishing or applying geometry', async (
     throw new Error('Missing right resize control')
   }
 
-  await control.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 88,
-    clientX: box.x + box.width / 2,
-    clientY: box.y + box.height / 2,
-  })
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointercancel', { bubbles: true, pointerId: 88 })
-    )
-  )
+  await page.mouse.move(centerOf(box).x, centerOf(box).y)
+  await page.mouse.down()
+  await page.mouse.move(centerOf(box).x + 8, centerOf(box).y)
+  await dispatchPointerCancel(page)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
   expect(await adapter.acceptedStates()).toEqual([])
   await expect(page.locator('[data-node-id="move"]')).toHaveCSS(
@@ -2688,43 +2350,21 @@ test('Foldkit cancels a resize without publishing or applying geometry', async (
   )
 
   // oxlint-disable no-await-in-loop
-  for (const [reason, pointerId] of [
-    ['blur', 89],
-    ['capture-loss', 90],
-    ['escape', 91],
-  ] as const) {
-    await control.dispatchEvent('pointerdown', {
-      button: 0,
-      pointerId,
-      clientX: box.x + box.width / 2,
-      clientY: box.y + box.height / 2,
-    })
+  // Foldkit resize gestures hold no pointer capture, so there is no genuine
+  // capture loss to cancel them; a synthetic lostpointercapture is ignored.
+  for (const reason of ['blur', 'escape'] as const) {
+    await page.mouse.move(centerOf(box).x, centerOf(box).y)
+    await page.mouse.down()
+    await page.mouse.move(centerOf(box).x + 8, centerOf(box).y)
 
     if (reason === 'blur') {
       await page.evaluate(() => window.dispatchEvent(new Event('blur')))
-    } else if (reason === 'capture-loss') {
-      await page.evaluate(
-        (id) =>
-          document.dispatchEvent(
-            new PointerEvent('lostpointercapture', {
-              bubbles: true,
-              pointerId: id,
-            })
-          ),
-        pointerId
-      )
     } else {
       await page.locator('[data-testid="flow-canvas"]').focus()
       await page.keyboard.press('Escape')
     }
 
-    await page.evaluate(
-      (id) =>
-        document.dispatchEvent(
-          new PointerEvent('pointerup', { bubbles: true, pointerId: id })
-        ),
-      pointerId
-    )
+    await page.mouse.up()
     expect(await adapter.changeKinds()).toEqual([])
     expect(await adapter.acceptedStates()).toEqual([])
     await expect(page.locator('[data-node-id="move"]')).toHaveCSS(
@@ -2842,61 +2482,36 @@ test('Foldkit cancels a rectangle selection without publishing a change', async 
     throw new Error('Missing Foldkit selection canvas')
   }
 
-  await canvas.dispatchEvent('pointerdown', {
-    button: 0,
-    pointerId: 73,
-    clientX: box.x + 70,
-    clientY: box.y + 80,
-  })
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new PointerEvent('pointercancel', { bubbles: true, pointerId: 73 })
-    )
-  )
+  // Real input must start on empty pane; (70, 80) lies inside node "near".
+  await page.mouse.move(box.x + 300, box.y + 250)
+  await page.mouse.down()
+  await page.mouse.move(box.x + 260, box.y + 200)
+  await expect(canvas.locator('.flow-foldkit-selection-rect')).toBeVisible()
+  await dispatchPointerCancel(page)
+  await page.mouse.up()
   expect(await adapter.changeKinds()).toEqual([])
   expect(await adapter.acceptedStates()).toEqual([])
   await expect(canvas.locator('.flow-foldkit-selection-rect')).toHaveCount(0)
 
   // oxlint-disable no-await-in-loop
-  for (const [reason, pointerId] of [
-    ['blur', 74],
-    ['capture-loss', 75],
-    ['escape', 76],
-  ] as const) {
-    await canvas.dispatchEvent('pointerdown', {
-      button: 0,
-      pointerId,
-      clientX: box.x + 70,
-      clientY: box.y + 80,
-    })
+  // Foldkit rectangle selection holds no pointer capture, so there is no
+  // genuine capture loss to cancel it; a synthetic lostpointercapture is ignored.
+  for (const reason of ['blur', 'escape'] as const) {
+    await page.mouse.move(box.x + 300, box.y + 250)
+    await page.mouse.down()
+    // Real input renders an empty rectangle until the pointer moves.
+    await page.mouse.move(box.x + 260, box.y + 200)
 
     await expect(canvas.locator('.flow-foldkit-selection-rect')).toBeVisible()
 
     if (reason === 'blur') {
       await page.evaluate(() => window.dispatchEvent(new Event('blur')))
-    } else if (reason === 'capture-loss') {
-      await page.evaluate(
-        (id) =>
-          document.dispatchEvent(
-            new PointerEvent('lostpointercapture', {
-              bubbles: true,
-              pointerId: id,
-            })
-          ),
-        pointerId
-      )
     } else {
       await canvas.focus()
       await page.keyboard.press('Escape')
     }
 
-    await page.evaluate(
-      (id) =>
-        document.dispatchEvent(
-          new PointerEvent('pointerup', { bubbles: true, pointerId: id })
-        ),
-      pointerId
-    )
+    await page.mouse.up()
     expect(await adapter.changeKinds()).toEqual([])
     expect(await adapter.acceptedStates()).toEqual([])
     await expect(canvas.locator('.flow-foldkit-selection-rect')).toHaveCount(0)
@@ -2972,14 +2587,7 @@ test('Foldkit reconnect cancels on removal, replacement, and unmount, then retri
         throw new Error('Missing reconnect endpoint')
       }
 
-      const pointerId = 510
-
-      await sourceControl.dispatchEvent('pointerdown', {
-        button: 0,
-        pointerId,
-        clientX: sourceBox.x + sourceBox.width / 2,
-        clientY: sourceBox.y + sourceBox.height / 2,
-      })
+      await pressPastThreshold(page, centerOf(sourceBox))
       await expect(
         page.locator('.flow-foldkit-connection-preview')
       ).toBeVisible()
@@ -3022,13 +2630,7 @@ test('Foldkit reconnect cancels on removal, replacement, and unmount, then retri
         expect(cleanup.acceptedStatesAfterDestroy).toBe(0)
       }
 
-      await page.evaluate(
-        (id) =>
-          document.dispatchEvent(
-            new PointerEvent('pointerup', { bubbles: true, pointerId: id })
-          ),
-        pointerId
-      )
+      await page.mouse.up()
 
       expect(await adapter.changeKinds()).toEqual([])
       const acceptedStates = await adapter.acceptedStates()
@@ -3063,18 +2665,12 @@ test('Foldkit reconnect cancels on removal, replacement, and unmount, then retri
         throw new Error('Missing reconnect retry handles')
       }
 
-      await retrySource.dispatchEvent('pointerdown', {
-        button: 0,
-        pointerId: 511,
-        clientX: retrySourceBox.x + retrySourceBox.width / 2,
-        clientY: retrySourceBox.y + retrySourceBox.height / 2,
-      })
-      await retryTarget.dispatchEvent('pointerup', {
-        bubbles: true,
-        pointerId: 511,
-        clientX: retryTargetBox.x + retryTargetBox.width / 2,
-        clientY: retryTargetBox.y + retryTargetBox.height / 2,
-      })
+      await pressPastThreshold(page, centerOf(retrySourceBox))
+      await page.mouse.move(
+        centerOf(retryTargetBox).x,
+        centerOf(retryTargetBox).y
+      )
+      await page.mouse.up()
 
       await expect
         .poll(() => adapter.changeKinds(), {

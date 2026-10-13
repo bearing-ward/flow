@@ -520,9 +520,11 @@ test('Vue can disable click-activated connections', async ({ page }) => {
   )
 
   expect(events).not.toContain('clickConnectStart')
+  // Like xyflow's XYHandle, a press that never crosses the drag threshold
+  // never starts a connection, so it reports no connection end either.
   expect(
-    events?.filter((event) => event === 'connectEnd:rejected')
-  ).toHaveLength(1)
+    events?.filter((event) => event.startsWith('connectEnd'))
+  ).toHaveLength(0)
 })
 
 test('Vue click-connect aliases bracket the published connection', async ({

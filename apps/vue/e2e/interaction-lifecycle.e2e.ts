@@ -15,6 +15,7 @@ import {
   interactionLifecycleFixture,
   interactionReconnectionCases,
 } from '../../shared-e2e/interaction-lifecycle-contract.ts'
+import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
 import { createVueConformanceAdapter } from './conformance.ts'
 
 const lifecycleFixture = (
@@ -146,12 +147,7 @@ test('Vue cancellation retry cases clear stale connections before a fresh commit
       }
 
       case 'capture-loss': {
-        await page
-          .getByTestId('flow-canvas')
-          .dispatchEvent('lostpointercapture', {
-            pointerId: 1,
-            bubbles: true,
-          })
+        await releasePointerCapture(page)
         break
       }
 
@@ -603,56 +599,56 @@ test('Vue production pointer handlers complete a synthetic touch connection', as
         throw new Error('Missing live touch connection targets')
       }
 
-      const originalCapture = HTMLElement.prototype.setPointerCapture
+      // Synthetic touch pointers cannot hold real capture, so emulate it for
+      // the admission check that verifies capture after acquiring it. Native
+      // input is admitted through a queue, so emulation stays installed until
+      // the outcome has settled and is restored below.
+      const restore = {
+        setPointerCapture: HTMLElement.prototype.setPointerCapture,
+        hasPointerCapture: HTMLElement.prototype.hasPointerCapture,
+        releasePointerCapture: HTMLElement.prototype.releasePointerCapture,
+      }
+
+      Object.assign(window, { __flowRestorePointerCapture: restore })
       HTMLElement.prototype.setPointerCapture = (pointerId) => {
         if (pointerId !== 42) {
           throw new Error('Unexpected synthetic pointer capture id')
         }
       }
 
-      try {
-        sourceHandle.dispatchEvent(
-          new PointerEvent('pointerdown', {
-            bubbles: true,
-            cancelable: true,
-            pointerId: 42,
-            pointerType: 'touch',
-            isPrimary: true,
-            button: 0,
-            buttons: 1,
-            clientX: start.x,
-            clientY: start.y,
-          })
-        )
-        canvas.dispatchEvent(
-          new PointerEvent('pointermove', {
-            bubbles: true,
-            cancelable: true,
-            pointerId: 42,
-            pointerType: 'touch',
-            isPrimary: true,
-            button: 0,
-            buttons: 1,
-            clientX: end.x,
-            clientY: end.y,
-          })
-        )
-        canvas.dispatchEvent(
-          new PointerEvent('pointerup', {
-            bubbles: true,
-            cancelable: true,
-            pointerId: 42,
-            pointerType: 'touch',
-            isPrimary: true,
-            button: 0,
-            buttons: 0,
-            clientX: end.x,
-            clientY: end.y,
-          })
-        )
-      } finally {
-        HTMLElement.prototype.setPointerCapture = originalCapture
+      HTMLElement.prototype.hasPointerCapture = (pointerId) => pointerId === 42
+      HTMLElement.prototype.releasePointerCapture = (pointerId) => {
+        if (pointerId !== 42) {
+          throw new Error('Unexpected synthetic pointer release id')
+        }
       }
+
+      sourceHandle.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 42,
+          pointerType: 'touch',
+          isPrimary: true,
+          button: 0,
+          buttons: 1,
+          clientX: start.x,
+          clientY: start.y,
+        })
+      )
+      canvas.dispatchEvent(
+        new PointerEvent('pointermove', {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 42,
+          pointerType: 'touch',
+          isPrimary: true,
+          button: 0,
+          buttons: 1,
+          clientX: end.x,
+          clientY: end.y,
+        })
+      )
     },
     {
       sourceSelector: `[data-node-id="${connectionCase.connection.source}"] [data-handle-id="${connectionCase.connection.sourceHandle}"]`,
@@ -668,8 +664,52 @@ test('Vue production pointer handlers complete a synthetic touch connection', as
     }
   )
 
-  expect(await adapter.snapshot()).toMatchObject({
-    edgeIds: [connectionCase.expectedEdgeId],
+  await page.evaluate(
+    ({ end }) => {
+      const canvas = document.querySelector('[data-testid="flow-canvas"]')
+
+      if (!(canvas instanceof HTMLElement)) {
+        throw new Error('Missing live touch connection canvas')
+      }
+
+      canvas.dispatchEvent(
+        new PointerEvent('pointerup', {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 42,
+          pointerType: 'touch',
+          isPrimary: true,
+          button: 0,
+          buttons: 0,
+          clientX: end.x,
+          clientY: end.y,
+        })
+      )
+    },
+    {
+      end: {
+        x: targetBounds.x + targetBounds.width / 2,
+        y: targetBounds.y + targetBounds.height / 2,
+      },
+    }
+  )
+  await expect
+    .poll(async () => {
+      const { edgeIds } = await adapter.snapshot()
+
+      return edgeIds
+    })
+    .toEqual([connectionCase.expectedEdgeId])
+  await page.evaluate(() => {
+    // SAFETY: The dispatch step above stored the native capture methods here.
+    const { __flowRestorePointerCapture: restore } = window as typeof window & {
+      __flowRestorePointerCapture: Pick<
+        HTMLElement,
+        'setPointerCapture' | 'hasPointerCapture' | 'releasePointerCapture'
+      >
+    }
+
+    Object.assign(HTMLElement.prototype, restore)
   })
   expect(await adapter.changeKinds()).toContain('edge-add')
   expect(
@@ -737,6 +777,11 @@ test('Vue custom connection preview receives candidate state and clears at termi
     sourceBounds.y + sourceBounds.height / 2
   )
   await page.mouse.down()
+  // Cross the default one-pixel connection drag threshold.
+  await page.mouse.move(
+    sourceBounds.x + sourceBounds.width / 2 + 2,
+    sourceBounds.y + sourceBounds.height / 2
+  )
 
   const initialPreviewStates = await page.evaluate(
     () => window.__flowVueTest?.connectionPreviewStates() ?? []
@@ -1471,12 +1516,7 @@ test('Vue reconnect cancellation sources clear stale proposals before a fresh co
       }
 
       case 'capture-loss': {
-        await page
-          .getByTestId('flow-canvas')
-          .dispatchEvent('lostpointercapture', {
-            pointerId: 1,
-            bubbles: true,
-          })
+        await releasePointerCapture(page)
         break
       }
 
@@ -2168,12 +2208,7 @@ test('Vue selection cancellation sources clear the preview and allow a fresh sel
       }
 
       case 'capture-loss': {
-        await page
-          .getByTestId('flow-canvas')
-          .dispatchEvent('lostpointercapture', {
-            pointerId: 1,
-            bubbles: true,
-          })
+        await releasePointerCapture(page)
         break
       }
 
@@ -2349,12 +2384,7 @@ test('Vue resize cancellation sources clear transient geometry before a fresh co
       }
 
       case 'capture-loss': {
-        await page
-          .getByTestId('flow-canvas')
-          .dispatchEvent('lostpointercapture', {
-            pointerId: 1,
-            bubbles: true,
-          })
+        await releasePointerCapture(page)
         break
       }
 

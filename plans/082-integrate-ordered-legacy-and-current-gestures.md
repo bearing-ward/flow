@@ -40,7 +40,7 @@ The reviewed three fresh commit routes already call `connectionFromHandleGesture
 - `apps/shared-e2e/interaction-lifecycle-contract.ts`, the distinct current native case projection.
 - `apps/vanilla/e2e/interaction-lifecycle.e2e.ts` and `apps/vue/e2e/interaction-lifecycle.e2e.ts`, only the current-case import/exhaustive loop and assertions needed for exact current semantics.
 - `apps/foldkit/e2e/interaction-lifecycle.e2e.ts`, only the public target-target acceptance/duplicate/measured-render test.
-- `docs/public-api.md`, `docs/react-flow-api-correspondence.md`, `research/traces/complete-versioned-persistence.md`, `research/PROGRESS.md`, `verification.config.json`, `plans/ordered-legacy-integration-execution.md`, `plans/ordered-legacy-integration-provenance.json`.
+- `docs/public-api.md`, `docs/react-flow-api-correspondence.md`, `research/traces/complete-versioned-persistence.md`, `research/PROGRESS.md`, `verification.config.json`, `plans/archive/ordered-legacy-integration-execution.md`, `plans/ordered-legacy-integration-provenance.json`.
 
 Copying complete frozen input is allowed before edits and separately hashed. No other source edits, public exports, new error types, manifest/lockfile changes, imported/generated/frozen fixture edits or member/parent closure. Stop for primary scope review if a new actual dependency is needed. Main plan/index and old candidate are never changed by the executor.
 
