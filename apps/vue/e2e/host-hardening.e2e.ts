@@ -685,3 +685,26 @@ test('empty and collapsed nodes are measured at zero size', async ({
     })
   expect(await fixture(page, (api) => api.internal('y')?.width)).toBe(0)
 })
+
+test('handle clicks connect on click without selecting their nodes', async ({
+  page,
+}) => {
+  await mount(page)
+
+  await handle(page, 'a', 'out').click()
+  await handle(page, 'd', 'in').click()
+  await expect
+    .poll(() =>
+      fixture(
+        page,
+        (api) =>
+          api
+            .flow()
+            .edges.value.filter(
+              ({ source, target }) => source === 'a' && target === 'd'
+            ).length
+      )
+    )
+    .toBe(1)
+  expect(await selectedIds(page)).toEqual({ nodes: [], edges: [] })
+})

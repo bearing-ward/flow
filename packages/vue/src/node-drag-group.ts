@@ -100,8 +100,23 @@ export const dragCarriedNodes = (
 }
 
 /** Interactive descendants whose clicks do not select their node. */
-export const nodeClickControls =
+const nodeClickControls =
   'button, input, select, textarea, a[href], [contenteditable=""], [contenteditable="true"], [data-handle-id]'
+
+/** Whether `target` is, or is inside, a control within `nodeElement`. */
+export const isNodeControl = (
+  target: EventTarget | null,
+  nodeElement: EventTarget | null
+): boolean => {
+  const control =
+    target instanceof Element ? target.closest(nodeClickControls) : null
+
+  return (
+    control !== null &&
+    nodeElement instanceof Element &&
+    nodeElement.contains(control)
+  )
+}
 
 /** The modifier that adds to or toggles a selection: Meta or Control. */
 export const isMultiSelectionEvent = (
