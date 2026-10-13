@@ -306,7 +306,7 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
     const provenance = S.decodeUnknownSync(
       S.Struct({
         revision: S.Literal('de36b4f64fe80d99886c0b7a9fb505258b872ac9'),
-        bun: S.Literal('1.3.14'),
+        bun: S.Literal('1.4.3'),
         effect: S.Literal('4.0.0-rc.116'),
         typescript: S.Literal('5.9.3'),
         sourceHashes: S.Record(S.String, S.String),

@@ -1,6 +1,6 @@
 {
   "revision": "de36b4f64fe80d99886c0b7a9fb505258b872ac9",
-  "bun": "1.3.14",
+  "bun": "1.4.3",
   "effect": "4.0.0-rc.116",
   "typescript": "5.9.3",
   "packageHash": "26101c75bc93ddfda7f644fcf637c9e51eb49fc1cd46ff8ec9203bc66079518e",
@@ -41,7 +41,7 @@
     "packages/core/src/domain/flow-snapshot.ts": "7b6edd3dde543e7e1ba3483ebf90863795fcd1bd257f841cd042a79f3a67542b"
   },
   "artifactHashes": {
-    "baseline-reader-writer.js": "5fddef8419c2e15a65e898a1e6578a1ec960a6574076ac2612845f93194f2998",
+    "baseline-reader-writer.js": "fda2d686e025fb455a637617d5689e437325d17cb102d682ee548808f06de590",
     "baseline-reader-writer.d.ts": "e45afbda20d9b92e9a8d079b8a5ecff5901c9d15be772eff4fc9772acd9c07bf",
     "representative.json": "394ecd864ebe6af28b92b06a9b450d26115f68d0190262fdb2b976981a150fab",
     "declarations/domain/duplicate-edge-id.d.ts": "1942be309b83354a7e5af91fd40f9de98b389bc557376f293331bbb8f84c5532",
