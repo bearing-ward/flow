@@ -121,6 +121,46 @@ export const edgeToolbarAnchor = (
   }
 }
 
+export type FlowEdgeToolbarAlignX = 'left' | 'center' | 'right'
+
+export type FlowEdgeToolbarAlignY = 'top' | 'center' | 'bottom'
+
+export interface FlowEdgeToolbarPlacement {
+  /** Screen-space point inside the canvas where the toolbar is aligned. */
+  readonly position: XYPosition
+  /** Percent of the toolbar's own size to translate back by on each axis. */
+  readonly translate: XYPosition
+}
+
+const edgeToolbarTranslateX: Record<FlowEdgeToolbarAlignX, number> = {
+  left: 0,
+  center: -50,
+  right: -100,
+}
+
+const edgeToolbarTranslateY: Record<FlowEdgeToolbarAlignY, number> = {
+  top: 0,
+  center: -50,
+  bottom: -100,
+}
+
+/**
+ * Places a fixed-size edge toolbar at a flow-space point, matching xyflow's
+ * `getEdgeToolbarTransform` geometry in screen space instead of `scale(1/zoom)`.
+ */
+export const edgeToolbarPlacement = (
+  point: XYPosition,
+  viewport: Viewport,
+  alignX: FlowEdgeToolbarAlignX = 'center',
+  alignY: FlowEdgeToolbarAlignY = 'center'
+): FlowEdgeToolbarPlacement => ({
+  position: toScreen(point, viewport),
+  translate: {
+    x: edgeToolbarTranslateX[alignX],
+    y: edgeToolbarTranslateY[alignY],
+  },
+})
+
 export const flowToolbarAnchors = (
   graph: FlowGraphView,
   viewport: Viewport

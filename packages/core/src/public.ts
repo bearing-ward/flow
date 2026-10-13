@@ -388,11 +388,15 @@ export type {
 
 export {
   edgeToolbarAnchor,
+  edgeToolbarPlacement,
   flowToolbarAnchors,
   nodeToolbarAnchor,
 } from './domain/flow-toolbar-anchor.ts'
 
 export type {
+  FlowEdgeToolbarAlignX,
+  FlowEdgeToolbarAlignY,
+  FlowEdgeToolbarPlacement,
   FlowNodeToolbarAnchorOptions,
   FlowToolbarAlign,
   FlowToolbarAnchor,

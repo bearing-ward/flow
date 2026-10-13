@@ -1,10 +1,10 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Main recovery 2026-10-13: green full baseline; next slice ports Vanilla built-in UI to Vue and Foldkit",
+  "activeWork": "Plan 101: Vue FlowEdgeToolbar",
   "checks": [],
   "browserTests": {
-    "vanilla": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
-    "vue": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"],
-    "foldkit": ["node-threshold.e2e.ts", "connection-threshold.e2e.ts"]
+    "vanilla": [],
+    "vue": ["edge-toolbar.e2e.ts", "node-toolbar.e2e.ts"],
+    "foldkit": []
   }
 }

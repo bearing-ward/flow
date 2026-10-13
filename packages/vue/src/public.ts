@@ -6,6 +6,8 @@ export { FlowMiniMap } from './minimap.ts'
 
 export { FlowViewportPortal } from './viewport-portal.ts'
 
+export { FlowEdgeToolbar } from './edge-toolbar.ts'
+
 export { FlowNodeToolbar } from './node-toolbar.ts'
 
 export {

@@ -53,7 +53,8 @@
   pointer-events: none;
 }
 
-.flow-vue-node-toolbar {
+.flow-vue-node-toolbar,
+.flow-vue-edge-toolbar {
   position: absolute;
   width: max-content;
   max-width: calc(100% - 16px);

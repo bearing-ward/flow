@@ -10,7 +10,7 @@ Use [project progress](research/PROGRESS.md) for the current checklist and open 
 
 The core validates and queries nested graph documents, computes geometry and edge paths, and provides a versioned persistence envelope. The vanilla host adds custom node and edge renderers, measurement, selection, movement, connections, viewport interactions, backgrounds, controls, minimap, and anchored toolbars. Its JavaScript facade supports mount, update, commands, subscriptions, and destruction. These capabilities have local tests; they do not establish full xyflow feature or visual parity.
 
-The Vue host exports `FlowViewportPortal` for graph-positioned slot content that follows its canvas pan and zoom transform, and `FlowNodeToolbar` for fixed-size screen-space controls anchored to measured nodes. Each portal/overlay target is owned by its `FlowCanvas`; see the reusable UI trace and Vue E2Es for their tested scope.
+The Vue host exports `FlowViewportPortal` for graph-positioned slot content that follows its canvas pan and zoom transform, `FlowNodeToolbar` for fixed-size screen-space controls anchored to measured nodes, and `FlowEdgeToolbar` for the same kind of controls anchored to a flow-space point on an edge. Each portal/overlay target is owned by its `FlowCanvas`; see the reusable UI trace and Vue E2Es for their tested scope.
 
 ## Commands
 

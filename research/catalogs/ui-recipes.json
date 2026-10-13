@@ -1621,7 +1621,24 @@
       "zoomBehavior": "screen-sized; anchor follows graph coordinate through pan/zoom",
       "keyboard": "Caller actions retain native focus order and canvas interaction exclusions.",
       "focusRestoration": "preserve focus while anchor updates; restore to trigger if action removes toolbar",
-      "lifetime": "canvas scoped; remove listeners/observers on disposal"
+      "lifetime": "canvas scoped; remove listeners/observers on disposal",
+      "hostEvidence": {
+        "vue": {
+          "status": "partial",
+          "export": "@flow/vue: FlowEdgeToolbar from packages/vue/src/public.ts",
+          "implementation": "packages/vue/src/edge-toolbar.ts; per-canvas graph and screen target shared with FlowNodeToolbar in packages/vue/src/flow-canvas.ts",
+          "anchor": "packages/core/src/domain/flow-toolbar-anchor.ts:151-162",
+          "styles": "packages/vue/src/style.css:56-62",
+          "test": "apps/vue/e2e/edge-toolbar.e2e.ts",
+          "fixture": "apps/vue/src/edge-toolbar-test.ts",
+          "evidenceStatus": "tested",
+          "tests": [
+            "Vue FlowEdgeToolbar anchors fixed-size content to a flow point and follows edge state"
+          ],
+          "testedOutcome": "The focused mounted Vue E2E passes. It verifies centered and right/bottom alignment at a flow point, following through two combined pan/zoom transforms (zoom 2 and 0.5) with fixed toolbar dimensions, the edge.zIndex + 1 style value, selection-driven default visibility, explicit visibility, hidden and removed edge omission, child click delivery, and per-canvas target ownership.",
+          "remaining": "Partial: no pinned React runtime or screenshot comparison ran. Rendering in the screen-space toolbar layer instead of scale(1/zoom) inside the edge label layer is an intentional difference with matching geometry; that layer stacks above all nodes, so edge.zIndex + 1 orders toolbars only among themselves, unlike React where nodes can cover the toolbar. Hidden or missing edges render no toolbar even when forced visible. Painted stacking against nodes and edges is not tested. Foldkit edge toolbars, focus restoration after self-removal, and narrow-screen behavior remain unverified."
+        }
+      }
     },
     {
       "id": "node-resizer",

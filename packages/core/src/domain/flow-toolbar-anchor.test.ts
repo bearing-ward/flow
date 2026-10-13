@@ -2,7 +2,11 @@ import { Effect } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import { createFlowGraph } from './flow-graph.ts'
-import { flowToolbarAnchors, nodeToolbarAnchor } from './flow-toolbar-anchor.ts'
+import {
+  edgeToolbarPlacement,
+  flowToolbarAnchors,
+  nodeToolbarAnchor,
+} from './flow-toolbar-anchor.ts'
 import { decodeFlowDocument } from './flow.schema.ts'
 
 describe('flow toolbar anchors', () => {
@@ -91,5 +95,43 @@ describe('flow toolbar anchors', () => {
         offset: 8,
       })?.position
     ).toStrictEqual({ x: 233, y: 127 })
+  })
+
+  it('places edge toolbars at a fixed screen size like xyflow getEdgeToolbarTransform', () => {
+    const point = { x: 100, y: 50 }
+
+    expect(edgeToolbarPlacement(point, { x: 0, y: 0, zoom: 1 })).toStrictEqual({
+      position: { x: 100, y: 50 },
+      translate: { x: -50, y: -50 },
+    })
+    expect(
+      edgeToolbarPlacement(point, { x: 20, y: -10, zoom: 2 }).position
+    ).toStrictEqual({ x: 220, y: 90 })
+    expect(
+      edgeToolbarPlacement(point, { x: 0, y: 0, zoom: 0.5 }).position
+    ).toStrictEqual({ x: 50, y: 25 })
+
+    const xs = ['left', 'center', 'right'] as const
+    const ys = ['top', 'center', 'bottom'] as const
+
+    expect(
+      xs.flatMap((alignX) =>
+        ys.map(
+          (alignY) =>
+            edgeToolbarPlacement(point, { x: 0, y: 0, zoom: 1 }, alignX, alignY)
+              .translate
+        )
+      )
+    ).toStrictEqual([
+      { x: 0, y: 0 },
+      { x: 0, y: -50 },
+      { x: 0, y: -100 },
+      { x: -50, y: 0 },
+      { x: -50, y: -50 },
+      { x: -50, y: -100 },
+      { x: -100, y: 0 },
+      { x: -100, y: -50 },
+      { x: -100, y: -100 },
+    ])
   })
 })
