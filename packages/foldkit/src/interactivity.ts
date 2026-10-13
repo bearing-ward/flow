@@ -1,6 +1,6 @@
-import { resolveFlowInteractivity } from '@flow/core'
+import { FlowAttribute, FlowSpan, resolveFlowInteractivity } from '@flow/core'
 import type { FlowInteractivity, FlowInteractivityInput } from '@flow/core'
-import { Exit } from 'effect'
+import { Effect, Exit } from 'effect'
 import type { Runtime } from 'foldkit'
 
 import { HostAction } from './application.ts'
@@ -30,7 +30,13 @@ export const createFoldkitInteractivity = (
   return {
     get: () => current,
     set: (next) => {
-      const resolved = { ...current, ...next }
+      const resolved: FlowInteractivity = {
+        nodesDraggable: next.nodesDraggable ?? current.nodesDraggable,
+        nodesConnectable: next.nodesConnectable ?? current.nodesConnectable,
+        elementsSelectable:
+          next.elementsSelectable ?? current.elementsSelectable,
+      }
+
       const sent = handle.actions.send(HostAction.SetInteractivity(resolved))
 
       if (Exit.isFailure(sent)) {
@@ -38,6 +44,19 @@ export const createFoldkitInteractivity = (
       }
 
       current = resolved
+
+      const attributes = {
+        [FlowAttribute.nodesDraggable]: resolved.nodesDraggable,
+        [FlowAttribute.nodesConnectable]: resolved.nodesConnectable,
+        [FlowAttribute.elementsSelectable]: resolved.elementsSelectable,
+      }
+
+      Effect.runSync(
+        Effect.logDebug('Changed flow interactivity').pipe(
+          Effect.annotateLogs(attributes),
+          Effect.withSpan(FlowSpan.interactivityChange, { attributes })
+        )
+      )
 
       for (const listener of listeners) {
         listener(current)
