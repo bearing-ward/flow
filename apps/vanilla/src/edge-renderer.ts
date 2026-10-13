@@ -225,6 +225,17 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   edgeLabelRenderer.dataset.testid = 'flow-edge-label-renderer'
   viewport.append(edgeLabelRenderer)
 
+  // The label layer is a live element, so it is non-enumerable: the rest of
+  // the render context stays plain data that callers can clone or serialize.
+  const withEdgeLabelRenderer = (
+    context: Omit<FlowEdgeRenderContext, 'edgeLabelRenderer'>
+  ): FlowEdgeRenderContext =>
+    // SAFETY: defineProperty adds the one omitted field, completing the context.
+    Object.defineProperty({ ...context }, 'edgeLabelRenderer', {
+      value: edgeLabelRenderer,
+      enumerable: false,
+    }) as FlowEdgeRenderContext
+
   const anchorLayer = globalThis.document.createElementNS(svgNamespace, 'svg')
   anchorLayer.classList.add('flow-edge-anchor-layer')
   anchorLayer.dataset.testid = 'flow-edge-anchor-layer'
@@ -736,7 +747,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
             resolved.targetHandle.side
           )
 
-        const context: FlowEdgeRenderContext = {
+        const context = withEdgeLabelRenderer({
           props: flowEdgeRendererProps({
             edge,
             source,
@@ -755,8 +766,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           ...endpoints,
           pathData,
           labelAnchor,
-          edgeLabelRenderer,
-        }
+        })
 
         const { path, visual } = entry.elements
 
