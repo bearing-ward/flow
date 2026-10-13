@@ -1,6 +1,6 @@
 # Plan 109: Example integrations and recipes
 
-Status: in progress, 2026-10-13.
+Status: complete, 2026-10-13.
 
 ## Goal
 
@@ -30,4 +30,23 @@ References: the pinned `examples/react/src/examples/Layouting`, `Intersection`, 
 
 ## Conformity and deviations
 
-To be completed with the results.
+- **Conforming.**
+  - `getIntersectingNodes` and `isRectIntersecting` follow React Flow's overlap rule for `getIntersectingNodes` and `isNodeIntersecting` (`packages/react/src/hooks/useReactFlow.ts:210`). Unit tests cover it.
+  - Dagre Tree follows the pinned `Layouting` example: TB and LR layouts, with handles that move with the direction. It uses measured sizes where the example uses a fixed 150x50.
+  - Computing Flows follows the pinned `UseNodesData` flow: text input, then uppercase, then result.
+  - In every host, the layout engines read measured node sizes from the host's internal-node API, and ELK reads measured handle boxes as fixed ports.
+- **Intentionally different.**
+  - Zero-area rectangles never intersect. React counts a zero-area rect as contained.
+  - Partial lasso also takes a node that the lasso outline crosses. React tests only node corners.
+  - Freehand draws a smoothed quadratic path. React's Pro example uses `perfect-freehand`.
+  - Whiteboard tools use an app-owned overlay with pointer capture, not pane events. This works the same in all hosts, including Foldkit.
+  - Several handles on one side are spaced by page CSS, because every host stacks same-side handles at one point.
+  - No host has an `animated` edge flag, so Feature Overview animates a custom edge with a CSS dash.
+- **Host gaps found.** The host files were out of scope, so these are not fixed here.
+  - Vanilla: `onNodeClick` does not fire for the click that selects a node, so Dynamic Layouting detects the click itself. `createFlowBackground` is typed against `FlowController`, not the `JavaScriptFlowController` that `mountFlow` returns. Drag payload types are not exported.
+  - Vue: a node click does not select the node, so pages select through `@nodeClick` plus `setNodes`. Right after mount, `getInternalNode` can report `measured` with a 0x0 size and no handles. Handle offsets measured just after `fitView` can use a stale zoom, so the ELK ports scene stays at zoom 1.
+  - Foldkit: a node click does not select the node, so pages select through `onNodeClick` interaction events. Node views cannot write data, so text input goes through the typed edit port from page code. That path works.
+  - No host emits an event when measured sizes change, so Auto Layout and Dynamic Layouting poll internal nodes once per animation frame.
+  - Vue and Foldkit commit drags on release, so reparenting and force-layout pinning run after the drop.
+- **Unverified.** The Pro and whiteboard examples and the ELK and force layouts are not in the pinned artifacts. The recipes follow the public example descriptions, and there is no runtime comparison with React.
+- **Test boundary.** `packages/core/src/domain/flow-{intersection,freeform,grouping,layout}.test.ts` and `apps/{vanilla,vue,foldkit}/e2e/{layout,whiteboard,subflows,computing-flows,feature-overview}-recipes.e2e.ts`.
