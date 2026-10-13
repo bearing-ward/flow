@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 113,
+    "inScopeCloseAllHosts": 121,
     "inScopeCloseByHost": {
-      "vanilla": 136,
-      "vue": 129,
-      "foldkit": 117
+      "vanilla": 142,
+      "vue": 133,
+      "foldkit": 126
     }
   },
   "waves": {
@@ -1412,14 +1412,15 @@
     {
       "section": "examples overview",
       "name": "Feature Overview",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "No gallery route combining all features per host",
       "effort": "M",
-      "theme": "gallery"
+      "theme": "gallery",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples nodes",
@@ -1803,12 +1804,13 @@
       "name": "Computing Flows",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Foldkit node views cannot write node data",
       "effort": "M",
-      "theme": "computing-flows"
+      "theme": "computing-flows",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples interaction",
@@ -1957,26 +1959,28 @@
     {
       "section": "examples grouping",
       "name": "Selection Grouping · Pro",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "No group-selection reparent helper",
       "effort": "M",
-      "theme": "subflows"
+      "theme": "subflows",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples grouping",
       "name": "Parent Child Relation · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Drop-to-reparent needs intersection helper",
       "effort": "M",
-      "theme": "subflows"
+      "theme": "subflows",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples grouping",
@@ -1995,36 +1999,39 @@
       "name": "Dagre Tree",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "dagre integration; Foldkit measured-size access",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
       "name": "Elkjs Tree",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "elkjs integration; Foldkit measured-size access",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
       "name": "Elkjs Multiple Handles",
       "vanilla": "C",
       "vue": "P",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Measured handle positions outside Vanilla",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
@@ -2060,19 +2067,21 @@
       "wave": 6,
       "missing": "Layout engine integration on measure/change",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
       "name": "Force Layout · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "d3-force continuous position updates",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
@@ -2084,7 +2093,8 @@
       "wave": 6,
       "missing": "Layout engine integration with add-node placeholders",
       "effort": "M",
-      "theme": "layout-integration"
+      "theme": "layout-integration",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples layout",
@@ -2156,43 +2166,47 @@
       "wave": 6,
       "missing": "No freeform pane tool overlay/hit-test recipe",
       "effort": "M",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples whiteboard",
       "name": "Lasso Selection",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No freeform lasso selection",
       "effort": "M",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples whiteboard",
       "name": "Rectangle",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Foldkit lacks pane pointer-down/up events",
       "effort": "S",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples whiteboard",
       "name": "Freehand Draw · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No freehand stroke capture tool",
       "effort": "M",
-      "theme": "whiteboard"
+      "theme": "whiteboard",
+      "updatedBy": ["Plan 109"]
     },
     {
       "section": "examples misc",
