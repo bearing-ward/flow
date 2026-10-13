@@ -3,9 +3,18 @@ import {
   getFlowLayoutInput,
   orientFlowHandles,
 } from '@flow/core'
-import type { FlowLayoutDirection, FlowLayoutInput, FlowNode } from '@flow/core'
+import type {
+  FlowLayoutDirection,
+  FlowLayoutInput,
+  FlowNode,
+  NodeChange,
+} from '@flow/core'
 import { mountFlow } from '@flow/vanilla'
-import type { FlowNodeRenderer, JavaScriptFlowController } from '@flow/vanilla'
+import type {
+  FlowCanvasEventPayload,
+  FlowNodeRenderer,
+  JavaScriptFlowController,
+} from '@flow/vanilla'
 
 import {
   dagreLayout,
@@ -18,12 +27,7 @@ import { startForceLayout } from './layout-recipes-force.ts'
 import type { ForceLayoutControl } from './layout-recipes-force.ts'
 
 import './layout-recipes.css'
-import {
-  createRecipePage,
-  everyFrame,
-  pageButton,
-  sceneParameter,
-} from './recipe-page.ts'
+import { createRecipePage, pageButton, sceneParameter } from './recipe-page.ts'
 import type { RecipeCanvasOwner } from './recipe-page.ts'
 
 /*
@@ -117,28 +121,49 @@ const applyLayout = async (
   await controller.fitView({ padding: 0.1 })
 }
 
+/** The active scene's layout trigger, fed by the canvas `onNodesChange`. */
+interface LayoutTriggerOwner {
+  current: (() => void) | undefined
+}
+
+const layoutTrigger: LayoutTriggerOwner = { current: undefined }
+
 /**
- * Re-run `run` whenever the laid-out node set, edge set or a measured node
- * size changes, once every visible node is measured.
+ * Re-run `run` whenever the canvas reports a measured node size (React
+ * Flow `dimensions` change, including first measurement) or a removal, once
+ * every visible node is measured and the node or edge set or a size differs
+ * from the last layout.
  */
 const layoutOnChange = (
   run: (input: FlowLayoutInput) => Promise<void>
-): (() => void) => {
+): void => {
   let laidOut = ''
   let busy = false
+  let again = false
 
   const runExclusive = async (input: FlowLayoutInput): Promise<void> => {
     try {
       await run(input)
     } finally {
       busy = false
+
+      if (again) {
+        again = false
+        layoutTrigger.current?.()
+      }
     }
   }
 
-  return everyFrame(() => {
+  const check = (): void => {
     const controller = flow.current
 
-    if (controller === undefined || busy) {
+    if (controller === undefined) {
+      return
+    }
+
+    if (busy) {
+      again = true
+
       return
     }
 
@@ -160,7 +185,16 @@ const layoutOnChange = (
     laidOut = signature
     busy = true
     void runExclusive(input)
-  })
+  }
+
+  layoutTrigger.current = check
+}
+
+/** Layout-relevant node changes: a new measured size or a removed node. */
+const onNodesChange = (changes: readonly NodeChange[]): void => {
+  if (changes.some(({ type }) => type === 'dimensions' || type === 'remove')) {
+    layoutTrigger.current?.()
+  }
 }
 
 interface Scene {
@@ -351,63 +385,6 @@ const promote = (node: FlowNode, id: string, label: string): FlowNode => {
   return { ...regular, label }
 }
 
-interface PendingTap {
-  readonly nodeId: string
-  readonly pointerId: number
-  readonly x: number
-  readonly y: number
-}
-
-const tappedNodeId = (target: EventTarget | null): string | undefined =>
-  target instanceof Element
-    ? target.closest<HTMLElement>('.flow-node')?.dataset.nodeId
-    : undefined
-
-/**
- * Report a press and release on one node without movement. The host's
- * `onNodeClick` misses the click that first selects a node (the browser
- * dispatches no `click` for it), so the recipe reads the pointer pair.
- */
-const listenForNodeTaps = (onTap: (nodeId: string) => void): void => {
-  let pending: PendingTap | undefined
-
-  canvas.addEventListener(
-    'pointerdown',
-    (event) => {
-      const nodeId = tappedNodeId(event.target)
-
-      pending =
-        nodeId === undefined || event.button !== 0
-          ? undefined
-          : {
-              nodeId,
-              pointerId: event.pointerId,
-              x: event.clientX,
-              y: event.clientY,
-            }
-    },
-    { capture: true }
-  )
-
-  canvas.addEventListener(
-    'pointerup',
-    (event) => {
-      const tap = pending
-
-      pending = undefined
-
-      if (
-        tap?.pointerId === event.pointerId &&
-        tappedNodeId(event.target) === tap.nodeId &&
-        Math.hypot(event.clientX - tap.x, event.clientY - tap.y) < 3
-      ) {
-        onTap(tap.nodeId)
-      }
-    },
-    { capture: true }
-  )
-}
-
 const dynamicLayoutScene = (): Scene => {
   let created = 1
   let regular = 1
@@ -429,7 +406,11 @@ const dynamicLayoutScene = (): Scene => {
     }
   }
 
-  const onNodeTap = (nodeId: string): void => {
+  const onNodeClick = ({ nodeId }: FlowCanvasEventPayload): void => {
+    if (nodeId === undefined) {
+      return
+    }
+
     const controller = flow.current
     const node = controller?.getNode(nodeId)
 
@@ -499,10 +480,12 @@ const dynamicLayoutScene = (): Scene => {
       ],
       edges: [treeEdge('root', 'p1', 'pe-p1')],
     },
-    options: { nodeRenderers: { [placeholderType]: placeholderNode } },
+    options: {
+      nodeRenderers: { [placeholderType]: placeholderNode },
+      onNodeClick,
+    },
     start: () => {
       layoutOnChange((input) => applyLayout(dagreLayout(input, 'TB'), 'TB'))
-      listenForNodeTaps(onNodeTap)
     },
   }
 }
@@ -576,6 +559,7 @@ page.root.dataset.scene = sceneName
 
 const controller = mountFlow(canvas, scene.document, {
   documentMode: 'uncontrolled',
+  onNodesChange,
   viewport: {
     mode: 'uncontrolled',
     initial: { x: 0, y: 0, zoom: 1 },

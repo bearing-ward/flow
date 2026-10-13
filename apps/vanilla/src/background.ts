@@ -58,7 +58,7 @@ const backgroundStyleName = (name: string): string =>
 /** Mount a canvas-aligned SVG pattern in a caller-owned element. */
 export const createFlowBackground = (
   container: HTMLElement,
-  controller: FlowController,
+  controller: Pick<FlowController, 'getViewport' | 'subscribeViewport'>,
   input: FlowBackgroundOptions = {}
 ): FlowBackgroundMount => {
   const options = S.decodeUnknownSync(BackgroundOptionsSchema)(input)

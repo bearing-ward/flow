@@ -238,7 +238,7 @@ export const nodeThresholdContract = (host: 'vanilla' | 'vue' | 'foldkit') => {
     await page.mouse.up()
     const result = await read(page)
     expect(result.events).toEqual([])
-    expect(result.nodeClicks).toEqual(host === 'vanilla' ? [] : ['source'])
+    expect(result.nodeClicks).toEqual(['source'])
 
     if (host === 'foldkit') {
       expect(

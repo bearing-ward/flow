@@ -221,6 +221,7 @@ import type {
 import { createFlowGraphCache } from './flow-graph-cache.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
+import { createMeasuredDimensionsTracker } from './measured-dimensions.ts'
 
 const noActiveGestures = (): boolean => false
 
@@ -300,6 +301,8 @@ const flowDocumentEquivalence = S.toEquivalence(FlowDocumentSchema)
 type KeyboardResizeKey = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
 
 const noopUnsubscribe = (): boolean => false
+
+const ignoreNodeChanges = (): void => undefined
 
 const mountedViewportPortalElements = new WeakSet<HTMLElement>()
 
@@ -382,6 +385,8 @@ export const FlowMountOptionsSchema = S.Struct({
   nodesConnectable: S.optional(S.Boolean),
   nodesDraggable: S.optional(S.Boolean),
   elementsSelectable: S.optional(S.Boolean),
+  /** Show resize controls on selected nodes. Defaults to `true`. */
+  nodeResizeControls: S.optional(S.Boolean),
   panOnScroll: S.optional(S.Boolean),
   panOnScrollSpeed: S.optional(S.Finite.check(S.isGreaterThan(0))),
   panOnScrollMode: S.optional(S.Literals(['free', 'horizontal', 'vertical'])),
@@ -790,6 +795,13 @@ export interface FlowEdgeRendererInstance {
   readonly updateProps?:
     | ((props: FlowEdgeRendererProps, context: FlowEdgeRenderContext) => void)
     | undefined
+  /**
+   * The SVG path the host hit target follows, for edges drawn away from the
+   * handle route, such as floating edges. Without it the host uses the
+   * `createFlowBaseEdge` interaction path drawn in the visual, then the
+   * handle route.
+   */
+  readonly interactionPath?: (() => string | undefined) | undefined
   readonly destroy: () => void
 }
 
@@ -850,6 +862,8 @@ export interface FlowHostOptions {
   readonly nodesConnectable?: boolean | undefined
   readonly nodesDraggable?: boolean | undefined
   readonly elementsSelectable?: boolean | undefined
+  /** Show resize controls on selected nodes. Defaults to `true`. */
+  readonly nodeResizeControls?: boolean | undefined
   readonly onNodesChange?: FlowNodesChangeListener | undefined
   readonly onEdgesChange?: FlowEdgesChangeListener | undefined
   readonly panOnScroll?: boolean | undefined
@@ -1611,7 +1625,15 @@ const resizeDirections: readonly NodeResizeDirection[] = [
   'bottom-left',
 ]
 
-const renderNodeResizeHandle = (element: HTMLElement, node: FlowNode): void => {
+/**
+ * Resize controls on a selected node. `enabled` is the `nodeResizeControls`
+ * mount option, React Flow's opt-in `NodeResizer`.
+ */
+const renderNodeResizeHandle = (
+  element: HTMLElement,
+  node: FlowNode,
+  enabled: boolean
+): void => {
   const existing = new Map(
     [
       ...element.querySelectorAll<HTMLButtonElement>(
@@ -1620,7 +1642,7 @@ const renderNodeResizeHandle = (element: HTMLElement, node: FlowNode): void => {
     ].map((handle) => [handle.dataset.direction, handle])
   )
 
-  if (node.selected !== true) {
+  if (node.selected !== true || !enabled) {
     for (const handle of existing.values()) {
       handle.remove()
     }
@@ -1634,6 +1656,11 @@ const renderNodeResizeHandle = (element: HTMLElement, node: FlowNode): void => {
 
     handle.type = 'button'
     handle.className = `flow-node-resize-handle flow-node-resize-${direction}`
+    // A mid-side control moves out past that side's connection handles.
+    handle.classList.toggle(
+      'flow-node-resize-clear',
+      node.handles?.some(({ side }) => side === direction) === true
+    )
     handle.dataset.testid = 'flow-node-resize-handle'
     handle.dataset.direction = direction
     const label = `Resize ${node.label} from ${direction.replaceAll('-', ' ')}`
@@ -2173,6 +2200,40 @@ export const createFlowHost = (
         : undefined
     }
 
+    const measuredDimensions = createMeasuredDimensionsTracker()
+    let measuredDimensionsPending = false
+
+    /** Bound to the boundary callback reporter once it is defined below. */
+    let reportMeasuredDimensions: (
+      changes: Parameters<FlowNodesChangeListener>[0]
+    ) => void = ignoreNodeChanges
+
+    /**
+     * React Flow `dimensions` node changes. Measurement lands from render
+     * passes, observers and refreshes; one microtask reports the net size
+     * changes, so a controlled `onNodesChange` never re-enters a render pass.
+     */
+    const scheduleMeasuredDimensions = (): void => {
+      if (measuredDimensionsPending || options.onNodesChange === undefined) {
+        return
+      }
+
+      measuredDimensionsPending = true
+      globalThis.queueMicrotask(() => {
+        measuredDimensionsPending = false
+
+        if (destroyed) {
+          return
+        }
+
+        const changes = measuredDimensions.changes(measurements)
+
+        if (changes.length > 0) {
+          reportMeasuredDimensions(changes)
+        }
+      })
+    }
+
     let nextMeasurementGeneration = -1
 
     const pendingMeasurementGenerations = new Map<
@@ -2234,6 +2295,7 @@ export const createFlowHost = (
         },
       ])
       measurements = getFlowMeasuredNodes(document, measurementState)
+      scheduleMeasuredDimensions()
     }
 
     const recordNodeMeasurement = (
@@ -2389,6 +2451,7 @@ export const createFlowHost = (
         restoredMeasurements
       )
       measurements = getFlowMeasuredNodes(document, measurementState)
+      scheduleMeasuredDimensions()
 
       return true
     }
@@ -2981,6 +3044,19 @@ export const createFlowHost = (
       }
     }
 
+    reportMeasuredDimensions = (changes) => {
+      const { onNodesChange } = options
+
+      if (onNodesChange !== undefined) {
+        reportBoundaryCallback(
+          'Nodes change',
+          'measurement',
+          onNodesChange,
+          changes
+        )
+      }
+    }
+
     /** React Flow `onNodesChange` / `onEdgesChange` deltas for one published change. */
     const notifyElementChanges = (base: FlowDocument, change: FlowChange) => {
       const { onNodesChange, onEdgesChange } = options
@@ -3498,6 +3574,42 @@ export const createFlowHost = (
       }
 
       return position
+    }
+
+    /**
+     * True when appending `element` after `previous` would not change the
+     * node order: it already follows the previously placed node, or, for the
+     * first node, only node elements follow it. Node drags keep the original
+     * append-everything order, so this only applies while no node moves.
+     */
+    const nodeElementInPlace = (
+      element: HTMLElement,
+      previous: HTMLElement | null
+    ): boolean => {
+      if (
+        element.parentElement !== viewport ||
+        interactionSlots.activeDrag !== null ||
+        interactionSlots.activeNodeResize !== null ||
+        activeKeyboardResize !== null
+      ) {
+        return false
+      }
+
+      if (previous !== null) {
+        return element.previousElementSibling === previous
+      }
+
+      for (
+        let sibling = element.nextElementSibling;
+        sibling !== null;
+        sibling = sibling.nextElementSibling
+      ) {
+        if (!sibling.classList.contains('flow-node')) {
+          return false
+        }
+      }
+
+      return true
     }
 
     const isDraggingNode = (nodeId: NodeId): boolean =>
@@ -4054,6 +4166,7 @@ export const createFlowHost = (
             acceptedMeasurements
           )
           measurements = getFlowMeasuredNodes(document, measurementState)
+          scheduleMeasuredDimensions()
           const pass = captureProjection()
           projectionCurrent = () => projectionMatches(pass, { kind: 'graph' })
           renderGraphPositions(pass)
@@ -6514,6 +6627,10 @@ export const createFlowHost = (
           measurements = getFlowMeasuredNodes(next, measurementState)
         }
 
+        // Moving a node element detaches it, and Chrome then drops the pending
+        // click; nodes that already sit in order stay put (see nodeElementInPlace).
+        let placedNodeElement: HTMLElement | null = null
+
         for (const graphNode of graph.orderedNodes) {
           const { node } = graphNode
 
@@ -6647,7 +6764,11 @@ export const createFlowHost = (
           )
 
           applyNodeInteractionState(entry.element, node)
-          renderNodeResizeHandle(entry.element, node)
+          renderNodeResizeHandle(
+            entry.element,
+            node,
+            options.nodeResizeControls !== false
+          )
 
           if (
             !(
@@ -6655,7 +6776,11 @@ export const createFlowHost = (
               entry.element.parentElement === viewport
             )
           ) {
-            viewport.append(entry.element)
+            if (!nodeElementInPlace(entry.element, placedNodeElement)) {
+              viewport.append(entry.element)
+            }
+
+            placedNodeElement = entry.element
           }
 
           if (entry.element.dataset.measuredWidth !== undefined) {
@@ -7242,7 +7367,11 @@ export const createFlowHost = (
           }
 
           renderNodeHandles(handles, node, interactivity)
-          renderNodeResizeHandle(element, node)
+          renderNodeResizeHandle(
+            element,
+            node,
+            options.nodeResizeControls !== false
+          )
 
           // eslint-disable-next-line complexity -- Activation checks the existing phase, geometry and callback ownership.
           const activateNodeDrag = (event: PointerEvent): boolean => {
@@ -11703,6 +11832,7 @@ export const createFlowHost = (
                 samples
               )
               measurements = getFlowMeasuredNodes(document, measurementState)
+              scheduleMeasuredDimensions()
               renderGraphEdges()
             }
           } catch (error) {

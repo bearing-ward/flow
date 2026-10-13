@@ -42,6 +42,7 @@ import type {
 } from '@flow/core'
 import {
   createFlow,
+  createFlowBackground,
   createFlowBaseHandle,
   createFlowBaseNode,
   createFlowControlButton,
@@ -57,6 +58,9 @@ import {
 import type {
   FlowBaseHandleOptions,
   FlowBaseNodeOptions,
+  FlowCanvasEventPayload,
+  FlowNodeDragPayload,
+  FlowNodeDragStopPayload,
   JavaScriptFlowController,
 } from '@flow/vanilla'
 import { Effect, Schema as S } from 'effect'
@@ -99,6 +103,24 @@ export const controllerPromise: Promise<JavaScriptFlowController> = createFlow(
   document,
   { ...options, onChange }
 )
+
+/** Public UI helpers accept the controller `mountFlow` and `createFlow` return. */
+export const mountBackground = async (): Promise<() => void> => {
+  const controller = await controllerPromise
+  const background = createFlowBackground(globalThis.document.body, controller)
+
+  return background.destroy
+}
+
+export const onNodeDrag = (drag: FlowNodeDragPayload): number =>
+  drag.positions.length
+
+export const onNodeDragStop = (drag: FlowNodeDragStopPayload): string =>
+  drag.outcome
+
+export const onNodeClick = (
+  event: FlowCanvasEventPayload
+): string | undefined => event.nodeId
 
 export const snapshot: FlowSnapshot = {
   document,

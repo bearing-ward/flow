@@ -84,11 +84,3 @@
   opacity: 0;
   transform: none;
 }
-
-/*
- * Vanilla shows resize handles on every selected node. These recipes do not
- * resize nodes, and the right resize handle would cover the source handle.
- */
-.edge-recipes-page .flow-node-resize-handle {
-  display: none;
-}
