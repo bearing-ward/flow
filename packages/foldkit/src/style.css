@@ -278,6 +278,12 @@
   z-index: 1;
   pointer-events: none;
 }
+.flow-foldkit-edge-label-renderer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
 .flow-foldkit-edge-label {
   position: absolute;
   transform: translate(-50%, -50%);

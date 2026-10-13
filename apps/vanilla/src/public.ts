@@ -63,8 +63,19 @@ export type {
   FlowNodeRendererInstance,
   FlowEdgeRenderer,
   FlowEdgeRenderContext,
+  FlowEdgeRenderEndpoints,
+  FlowConnectionPreviewRenderer,
   FlowEdgeRendererInstance,
 } from './mount-flow.ts'
+
+export type {
+  FlowConnectionLineProps,
+  FlowConnectionLineType,
+  FlowEdgeRendererProps,
+  FlowNodeBounds,
+  FlowNodeRendererProps,
+  FlowPosition,
+} from '@flow/core'
 
 export type {
   FlowKeyCode,

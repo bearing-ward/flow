@@ -120,6 +120,10 @@ import {
   finishFlowInteraction,
   replaceFlowInteraction,
   startFlowInteraction,
+  FlowConnectionLineTypeSchema,
+  flowConnectionLineProps,
+  flowNodeRendererProps,
+  sameFlowNodeRendererProps,
 } from '@flow/core'
 import type {
   ActiveNodeDrag,
@@ -184,6 +188,11 @@ import type {
   FlowNodeConnection,
   FlowStateChange,
   FlowStateChangeCause,
+  FlowConnectionLineProps,
+  FlowConnectionLineType,
+  FlowEdgeRendererProps,
+  FlowGraphView,
+  FlowNodeRendererProps,
 } from '@flow/core'
 import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 
@@ -359,6 +368,7 @@ export const FlowMountOptionsSchema = S.Struct({
   zoomOnPinch: S.optional(S.Boolean),
   keyboardActivation: S.optional(S.Boolean),
   connectionMode: S.optional(ConnectionModeSchema),
+  connectionLineType: S.optional(FlowConnectionLineTypeSchema),
   autoPanOnConnect: S.optional(S.Boolean),
   snapGrid: S.optional(SnapGridSchema),
   connectionRadius: S.optional(ConnectionRadiusSchema),
@@ -626,28 +636,47 @@ export type FlowConnectionValidator = (
   connection: FlowConnectionCandidate
 ) => boolean
 
+/**
+ * Draws a custom connection preview. `line` carries React Flow style
+ * ConnectionLineComponentProps once the origin handle resolves.
+ */
 export type FlowConnectionPreviewRenderer = (
   preview: ConnectionPreviewState | null,
-  container: SVGSVGElement
+  container: SVGSVGElement,
+  line: FlowConnectionLineProps | null
 ) => void
 
 export interface FlowNodeRendererInstance {
-  readonly update: (node: FlowNode) => void
+  /** `props` carries React Flow style NodeProps such as `selected` and `dragging`. */
+  readonly update: (node: FlowNode, props: FlowNodeRendererProps) => void
   readonly destroy: () => void
 }
 
 export type FlowNodeRenderer = (
   node: FlowNode,
-  content: HTMLElement
+  content: HTMLElement,
+  props: FlowNodeRendererProps
 ) => FlowNodeRendererInstance
 
-export interface FlowEdgeRenderContext {
+/** Endpoint geometry a custom edge `geometry` hook receives. */
+export interface FlowEdgeRenderEndpoints {
   readonly source: XYPosition
   readonly target: XYPosition
   readonly sourceSide: FlowHandle['side']
   readonly targetSide: FlowHandle['side']
+}
+
+/**
+ * Custom edge render context: endpoint geometry, the resolved path, and React
+ * Flow style EdgeProps in `props` (pass them to `getBezierPath` and friends).
+ * `edgeLabelRenderer` is a per-canvas HTML layer in flow coordinates above
+ * the edges that follows pan and zoom, like React Flow's `<EdgeLabelRenderer />`.
+ */
+export interface FlowEdgeRenderContext extends FlowEdgeRenderEndpoints {
   readonly pathData: string
   readonly labelAnchor: XYPosition
+  readonly props: FlowEdgeRendererProps
+  readonly edgeLabelRenderer: HTMLElement
 }
 
 type SessionPointerIds = readonly [number, ...number[]]
@@ -731,7 +760,7 @@ interface FitViewControlHandle {
 export interface FlowEdgeRenderer {
   readonly geometry?: (
     edge: FlowEdge,
-    endpoints: Omit<FlowEdgeRenderContext, 'pathData' | 'labelAnchor'>
+    endpoints: FlowEdgeRenderEndpoints
   ) => { readonly pathData: string; readonly labelAnchor: XYPosition }
   readonly render?: (
     edge: FlowEdge,
@@ -828,6 +857,8 @@ export interface FlowHostOptions {
   readonly onEdgeMouseLeave?: FlowCanvasEventListener | undefined
   readonly onError?: ((error: Error) => void) | undefined
   readonly connectionMode?: ConnectionMode | undefined
+  /** Built-in connection line path; unset keeps the straight preview line. */
+  readonly connectionLineType?: FlowConnectionLineType | undefined
   readonly autoPanOnConnect?: boolean | undefined
   readonly snapGrid?: SnapGrid | undefined
   readonly connectionRadius?: ConnectionRadius | undefined
@@ -1876,6 +1907,59 @@ export const createFlowHost = (
       get size(): number {
         return [...this].length
       },
+    }
+
+    const draggingNodeIds = new Set<NodeId>()
+
+    const sentNodeRendererProps = new WeakMap<
+      NodeEntry,
+      FlowNodeRendererProps
+    >()
+
+    const nodeRendererPropsFor = (
+      node: FlowNode,
+      graph: FlowGraphView
+    ): FlowNodeRendererProps =>
+      flowNodeRendererProps(node, {
+        positionAbsolute:
+          graph.nodes.get(node.id)?.absolutePosition ?? node.position,
+        dragging: draggingNodeIds.has(node.id),
+        size: measurements.get(node.id) ?? node.size,
+        nodesConnectable: options.nodesConnectable,
+      })
+
+    /** Push changed NodeProps to a custom renderer between document updates. */
+    const refreshNodeRendererProps = (
+      entry: NodeEntry,
+      node: FlowNode | undefined,
+      graph: FlowGraphView
+    ): void => {
+      if (entry.renderer.kind !== 'custom' || node === undefined) {
+        return
+      }
+
+      const props = nodeRendererPropsFor(node, graph)
+
+      if (sameFlowNodeRendererProps(sentNodeRendererProps.get(entry), props)) {
+        return
+      }
+
+      sentNodeRendererProps.set(entry, props)
+
+      try {
+        entry.renderer.instance.update(node, props)
+      } catch (error) {
+        runTelemetry(
+          Effect.logWarning('Node renderer update failed').pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.nodeId]: node.id,
+              [FlowAttribute.failureName]: 'NodeRendererUpdateError',
+              [FlowAttribute.failureMessage]:
+                error instanceof Error ? error.message : String(error),
+            })
+          )
+        )
+      }
     }
 
     const installNodeReservation = (
@@ -3204,6 +3288,7 @@ export const createFlowHost = (
           resolved !== undefined
         ) {
           applyNodePosition(slot.entry.element, resolved.absolutePosition)
+          refreshNodeRendererProps(slot.entry, resolved.node, graph)
         }
       }
 
@@ -4126,6 +4211,16 @@ export const createFlowHost = (
       }
     }
 
+    const connectionLineOrigin = ():
+      | { readonly nodeId: NodeId; readonly handleId: string }
+      | undefined => {
+      const active = interactionSlots.activeConnection ?? activeClickConnection
+
+      return active === null
+        ? undefined
+        : { nodeId: active.source, handleId: active.sourceHandle }
+    }
+
     const publishConnectionPreview = (
       preview: ConnectionPreviewState | null,
       element = connectionPreview
@@ -4155,12 +4250,28 @@ export const createFlowHost = (
         }
       }
 
+      const line =
+        value === null
+          ? null
+          : (flowConnectionLineProps({
+              graph: graphFor(),
+              preview: value,
+              connectionLineType: options.connectionLineType ?? 'straight',
+              origin: connectionLineOrigin(),
+            }) ?? null)
+
+      if (options.connectionLineType !== undefined && line !== null) {
+        element
+          ?.querySelector('.flow-connection-preview-path')
+          ?.setAttribute('d', line.path)
+      }
+
       if (element === null || options.connectionPreview === undefined) {
         return
       }
 
       try {
-        options.connectionPreview(value, element)
+        options.connectionPreview(value, element, line)
       } catch (error) {
         runTelemetry(
           Effect.logWarning('Connection preview renderer failed').pipe(
@@ -4417,11 +4528,29 @@ export const createFlowHost = (
       line.setAttribute('x2', String(start.x))
       line.setAttribute('y2', String(start.y))
 
-      if (options.connectionPreview !== undefined) {
+      if (
+        options.connectionPreview !== undefined ||
+        options.connectionLineType !== undefined
+      ) {
         line.setAttribute('display', 'none')
       }
 
       preview.append(line)
+
+      if (
+        options.connectionPreview === undefined &&
+        options.connectionLineType !== undefined
+      ) {
+        const typedLine = globalThis.document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        )
+
+        typedLine.classList.add('flow-connection-preview-path')
+        typedLine.dataset.connectionLineType = options.connectionLineType
+        preview.append(typedLine)
+      }
+
       viewport.append(preview)
       connectionPreview = preview
       connectionLine = line
@@ -6066,7 +6195,9 @@ export const createFlowHost = (
 
             try {
               if (entry.renderer.kind === 'custom') {
-                entry.renderer.instance.update(node)
+                const rendererProps = nodeRendererPropsFor(node, graph)
+                sentNodeRendererProps.set(entry, rendererProps)
+                entry.renderer.instance.update(node, rendererProps)
               } else if (previousNode?.label !== node.label) {
                 renderDefaultNodeContents(entry.content, node)
               }
@@ -6695,7 +6826,14 @@ export const createFlowHost = (
             return undefined
           }
 
-          const instance = renderer?.(node, content)
+          const initialRendererProps = nodeRendererPropsFor(
+            node,
+            candidatePass.graph
+          )
+
+          const instance = renderer?.(node, content, initialRendererProps)
+
+          sentNodeRendererProps.set(nodeEntry, initialRendererProps)
 
           if (instance === undefined) {
             nodeEntry.renderer = { kind: 'default' }
@@ -6791,6 +6929,8 @@ export const createFlowHost = (
 
             interactionSessions = activation.sessions
             element.classList.add('dragging')
+            draggingNodeIds.add(node.id)
+            refreshNodeRendererProps(nodeEntry, findNode(node.id), graphFor())
             runTelemetry(
               Effect.logDebug('Started node drag').pipe(
                 Effect.annotateLogs({
@@ -7333,6 +7473,8 @@ export const createFlowHost = (
             }
 
             element.classList.remove('dragging')
+            draggingNodeIds.delete(node.id)
+            refreshNodeRendererProps(nodeEntry, findNode(node.id), graphFor())
             suppressClickThroughDispatch()
             runEffect(browser.releasePointer(element, event.pointerId))
 
@@ -8476,7 +8618,17 @@ export const createFlowHost = (
             applyViewport(viewport, renderedViewport)
           }
 
-          entries.get(dragAnchorId(drag))?.element.classList.remove('dragging')
+          const draggedEntry = entries.get(dragAnchorId(drag))
+          draggedEntry?.element.classList.remove('dragging')
+          draggingNodeIds.delete(dragAnchorId(drag))
+
+          if (draggedEntry !== undefined) {
+            refreshNodeRendererProps(
+              draggedEntry,
+              findNode(dragAnchorId(drag)),
+              graphFor()
+            )
+          }
 
           const ids =
             'positions' in drag

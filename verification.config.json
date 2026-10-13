@@ -1,10 +1,23 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 104: Vanilla and Foldkit BaseEdge and EdgeText",
+  "activeWork": "Plan 105: Custom renderer props contract",
   "checks": [],
   "browserTests": {
-    "vanilla": ["base-edge.e2e.ts", "renderer-contract.e2e.ts"],
-    "vue": ["base-edge.e2e.ts"],
-    "foldkit": ["base-edge.e2e.ts", "canvas-ui-contract.e2e.ts"]
+    "vanilla": [
+      "renderer-props.e2e.ts",
+      "base-edge.e2e.ts",
+      "renderer-contract.e2e.ts"
+    ],
+    "vue": [
+      "renderer-props.e2e.ts",
+      "base-edge.e2e.ts",
+      "renderer-contract.e2e.ts",
+      "connection.e2e.ts"
+    ],
+    "foldkit": [
+      "renderer-props.e2e.ts",
+      "base-edge.e2e.ts",
+      "canvas-ui-contract.e2e.ts"
+    ]
   }
 }

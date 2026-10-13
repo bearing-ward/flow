@@ -50,7 +50,26 @@ export {
   prepareVersionedSavedSession,
 } from './graph.ts'
 
-export type { GraphInteractionOptions } from './graph.ts'
+export type {
+  FoldkitConnectionPreviewRenderer,
+  FoldkitEdgeGeometry,
+  FoldkitEdgeLabelRenderer,
+  FoldkitEdgeRenderer,
+  FoldkitEdgeTypes,
+  FoldkitNodeRenderer,
+  FoldkitNodeTypes,
+  FoldkitRendererRegistry,
+  GraphInteractionOptions,
+} from './graph.ts'
+
+export type {
+  FlowConnectionLineProps,
+  FlowConnectionLineType,
+  FlowEdgeRendererProps,
+  FlowNodeBounds,
+  FlowNodeRendererProps,
+  FlowPosition,
+} from '@flow/core'
 
 export {
   alignFlowBackgroundToViewport,
