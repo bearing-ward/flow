@@ -386,6 +386,13 @@ export type {
   GeometryRect,
 } from './domain/flow-change-compatibility.ts'
 
+export { edgeTextLayout } from './domain/flow-edge-text.ts'
+
+export type {
+  FlowEdgeTextBounds,
+  FlowEdgeTextLayout,
+} from './domain/flow-edge-text.ts'
+
 export {
   edgeToolbarAnchor,
   edgeToolbarPlacement,

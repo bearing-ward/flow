@@ -353,6 +353,16 @@
   z-index: 1;
 }
 
+.flow-vue-edge-textbg {
+  fill: #ffffff;
+}
+
+.flow-vue-edge-text {
+  fill: #1e293b;
+  font-size: 10px;
+  pointer-events: none;
+}
+
 .flow-vue-edge-path {
   stroke-linecap: round;
   stroke-linejoin: round;

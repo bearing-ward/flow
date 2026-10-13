@@ -8,7 +8,7 @@ Review, judgment, checkpoint, and execution notes from earlier work moved to [ar
 
 Main was red after Plan 099 because broad tests were deferred. One stale Foldkit delete-approval assertion still counted owner proposals as commands; Plan 099 had moved them to the batched publication lane. The shared connection-threshold harness also imported the Vanilla package `dist`, which the Vanilla app build had already emptied, and it now imports Vanilla source. The next slice ports Vanilla built-in UI to Vue and Foldkit; see [project progress](../research/PROGRESS.md).
 
-Plans under the lean loop: [Plan 101](101-add-vue-edge-toolbar.md), Vue `FlowEdgeToolbar`, complete 2026-10-13 (focused verify); [Plan 102](102-add-foldkit-node-and-edge-toolbars.md), Foldkit `mountFlowNodeToolbar` and `mountFlowEdgeToolbar`, complete 2026-10-13 (focused verify).
+Plans under the lean loop: [Plan 101](101-add-vue-edge-toolbar.md), Vue `FlowEdgeToolbar`, complete 2026-10-13 (focused verify); [Plan 102](102-add-foldkit-node-and-edge-toolbars.md), Foldkit `mountFlowNodeToolbar` and `mountFlowEdgeToolbar`, complete 2026-10-13 (focused verify); [Plan 103](103-add-vue-base-edge-and-edge-text.md), Vue `FlowBaseEdge` and `FlowEdgeText`, complete 2026-10-13 (focused verify).
 
 The [2026-09-30 integration and cleanup record](integration-cleanup.md) records the approved commits, combined verification, measurement-race test repair, and recoverable archives. Plan completion statuses below retain their bounded acceptance requirements.
 

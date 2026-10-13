@@ -1,10 +1,10 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 102: Foldkit node and edge toolbars",
+  "activeWork": "Plan 103: Vue FlowBaseEdge and FlowEdgeText",
   "checks": [],
   "browserTests": {
     "vanilla": [],
-    "vue": [],
-    "foldkit": ["toolbars.e2e.ts", "canvas-ui-contract.e2e.ts"]
+    "vue": ["base-edge.e2e.ts", "renderer-contract.e2e.ts"],
+    "foldkit": []
   }
 }
