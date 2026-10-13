@@ -1,5 +1,8 @@
 import {
   decodeFlowDocument,
+  flowMeasurementsFromInternalNodes,
+  getEdgePolylines,
+  getEdgesGeometry,
   getFreehandPath,
   getInternalNodeBounds,
   getNodesInsideLasso,
@@ -124,31 +127,24 @@ const measuredCandidates = (flow: FlowActions) =>
     return internal === undefined ? [] : [getInternalNodeBounds(internal)]
   })
 
-/** Rendered edge paths sampled in flow coordinates; the path `d` is in flow space. */
-const sampleEdgePaths = (
-  root: Element
-): readonly { readonly id: string; readonly points: XYPosition[] }[] =>
-  [...root.querySelectorAll<SVGGElement>('g[data-edge-id]')].flatMap(
-    (group) => {
-      const id = group.dataset.edgeId
-      const path = group.querySelector('path.flow-vue-edge-path')
+/** Rendered edge paths as flow-space polylines, from the public geometry query. */
+const edgePolylines = (
+  flow: FlowActions
+): readonly {
+  readonly id: string
+  readonly polylines: readonly (readonly XYPosition[])[]
+}[] => {
+  const flowDocument = flow.document.value
 
-      if (id === undefined || !(path instanceof SVGPathElement)) {
-        return []
-      }
-
-      const total = path.getTotalLength()
-      const steps = Math.max(2, Math.ceil(total / 6))
-      const points: XYPosition[] = []
-
-      for (let step = 0; step <= steps; step += 1) {
-        const { x, y } = path.getPointAtLength((total * step) / steps)
-        points.push({ x, y })
-      }
-
-      return [{ id, points }]
-    }
+  const measurements = flowMeasurementsFromInternalNodes(
+    flowDocument.nodes.map(({ id }) => flow.getInternalNode(id))
   )
+
+  return getEdgesGeometry(flowDocument, { measurements }).map((geometry) => ({
+    id: geometry.id,
+    polylines: getEdgePolylines(geometry),
+  }))
+}
 
 let drawingCount = 0
 
@@ -189,18 +185,16 @@ const ToolOverlay = defineComponent({
 
     const updateEraserMarks = (): void => {
       const trail = toFlow(screenPoints.value)
-      const canvas = overlay.value?.closest('.flow-vue-canvas')
 
       const nodes = measuredCandidates(flow)
         .filter(({ bounds }) => polylineIntersectsRect(trail, bounds))
         .map(({ id }) => id)
 
-      const edges =
-        canvas === null || canvas === undefined
-          ? []
-          : sampleEdgePaths(canvas)
-              .filter(({ points }) => polylinesIntersect(trail, points))
-              .map(({ id }) => id)
+      const edges = edgePolylines(flow)
+        .filter(({ polylines }) =>
+          polylines.some((points) => polylinesIntersect(trail, points))
+        )
+        .map(({ id }) => id)
 
       marked.value = { nodes, edges }
     }

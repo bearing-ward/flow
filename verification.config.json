@@ -1,28 +1,10 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 109 example integrations and recipes",
+  "activeWork": "Plan 110 core instance helpers, edge geometry and intersection recipes",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
-    "vanilla": [
-      "computing-flows-recipes.e2e.ts",
-      "feature-overview-recipes.e2e.ts",
-      "layout-recipes.e2e.ts",
-      "subflows-recipes.e2e.ts",
-      "whiteboard-recipes.e2e.ts"
-    ],
-    "vue": [
-      "computing-flows-recipes.e2e.ts",
-      "feature-overview-recipes.e2e.ts",
-      "layout-recipes.e2e.ts",
-      "subflows-recipes.e2e.ts",
-      "whiteboard-recipes.e2e.ts"
-    ],
-    "foldkit": [
-      "computing-flows-recipes.e2e.ts",
-      "feature-overview-recipes.e2e.ts",
-      "layout-recipes.e2e.ts",
-      "subflows-recipes.e2e.ts",
-      "whiteboard-recipes.e2e.ts"
-    ]
+    "vanilla": ["intersection-recipes.e2e.ts", "whiteboard-recipes.e2e.ts"],
+    "vue": ["intersection-recipes.e2e.ts", "whiteboard-recipes.e2e.ts"],
+    "foldkit": ["intersection-recipes.e2e.ts", "whiteboard-recipes.e2e.ts"]
   }
 }

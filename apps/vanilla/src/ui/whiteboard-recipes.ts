@@ -1,4 +1,7 @@
 import {
+  flowMeasurementsFromInternalNodes,
+  getEdgePolylines,
+  getEdgesGeometry,
   getFreehandPath,
   getInternalNodeBounds,
   getNodesInsideLasso,
@@ -21,7 +24,7 @@ import './whiteboard-recipes.css'
  * Whiteboard recipes: a pane tool overlay owns pointer input while a tool is
  * active. Lasso selects, the eraser deletes what its trail crosses, and the
  * rectangle and freehand tools create nodes. Hit tests use measured node
- * bounds and the rendered edge paths, in flow coordinates.
+ * bounds and the public edge-geometry query, in flow coordinates.
  */
 
 const svgNamespace = 'http://www.w3.org/2000/svg'
@@ -219,40 +222,31 @@ const nodeCandidates = (): readonly FlowIntersectionCandidate[] =>
     return internal === undefined ? [] : [getInternalNodeBounds(internal)]
   })
 
-/** Rendered edge paths sampled into flow-space polylines. */
+/** Rendered edge paths as flow-space polylines, from the public geometry query. */
 const edgePolylines = (): readonly {
   readonly id: string
-  readonly points: readonly XYPosition[]
-}[] =>
-  [
-    ...canvas.querySelectorAll<SVGPathElement>(
-      '.flow-edge-group path.flow-edge-path[data-edge-id]'
-    ),
-  ].flatMap((path) => {
-    const id = path.dataset.edgeId
+  readonly polylines: readonly (readonly XYPosition[])[]
+}[] => {
+  const { document: flowDocument } = controller.getSnapshot()
 
-    if (id === undefined) {
-      return []
-    }
+  const measurements = flowMeasurementsFromInternalNodes(
+    flowDocument.nodes.map(({ id }) => controller.getInternalNode(id))
+  )
 
-    const length = path.getTotalLength()
-    const count = Math.max(2, Math.ceil(length / 6))
-
-    const points = Array.from({ length: count + 1 }, (_, index) => {
-      const point = path.getPointAtLength((length * index) / count)
-
-      return { x: point.x, y: point.y }
-    })
-
-    return [{ id, points }]
-  })
+  return getEdgesGeometry(flowDocument, { measurements }).map((geometry) => ({
+    id: geometry.id,
+    polylines: getEdgePolylines(geometry),
+  }))
+}
 
 const eraserHits = (trail: readonly XYPosition[]) => ({
   nodeIds: nodeCandidates()
     .filter(({ bounds }) => polylineIntersectsRect(trail, bounds))
     .map(({ id }) => id),
   edgeIds: edgePolylines()
-    .filter(({ points }) => polylinesIntersect(trail, points))
+    .filter(({ polylines }) =>
+      polylines.some((points) => polylinesIntersect(trail, points))
+    )
     .map(({ id }) => id),
 })
 
