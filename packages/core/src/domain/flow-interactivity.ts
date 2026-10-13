@@ -11,7 +11,12 @@ export interface FlowInteractivity {
   readonly elementsSelectable: boolean
 }
 
-export type FlowInteractivityInput = Partial<FlowInteractivity>
+/** Optional switches; an unset or undefined switch keeps its default. */
+export interface FlowInteractivityInput {
+  readonly nodesDraggable?: boolean | undefined
+  readonly nodesConnectable?: boolean | undefined
+  readonly elementsSelectable?: boolean | undefined
+}
 
 export const defaultFlowInteractivity: FlowInteractivity = {
   nodesDraggable: true,

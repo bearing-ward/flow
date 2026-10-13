@@ -10,6 +10,17 @@ export {
 
 export { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
 
+export { createFlowEdgesState, createFlowNodesState } from './flow-changes.ts'
+
+export type {
+  FlowConnectionEndDetails,
+  FlowEdgesChangeListener,
+  FlowEdgesState,
+  FlowNodesChangeListener,
+  FlowNodesState,
+  FlowReconnectDetails,
+} from './flow-changes.ts'
+
 export { BrowserCapabilityError } from './browser-capability-error.ts'
 
 export { CanvasUIOptionsError } from './mount-flow.ts'
@@ -66,7 +77,20 @@ export type {
   FlowEdgeRenderEndpoints,
   FlowConnectionPreviewRenderer,
   FlowEdgeRendererInstance,
+  FlowConnectEndPayload,
+  FlowReconnectEndPayload,
+  FlowSelectionDragPayload,
+  FlowSelectionDragStopPayload,
 } from './mount-flow.ts'
+
+export type {
+  EdgeChange,
+  FlowConnectionState,
+  FlowFinalConnectionState,
+  FlowInteractivity,
+  FlowInteractivityInput,
+  NodeChange,
+} from '@flow/core'
 
 export type {
   FlowConnectionLineProps,

@@ -211,6 +211,8 @@ test('arrow keys move the selected group by 5 or 20 flow units', async ({
   await expect(gamma).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 650, 180)')
 })
 
+// Plan 108: as in React Flow, a pointer drag that starts on a node that is
+// not draggable pans the canvas instead of dragging the selection.
 test('locked selected nodes stay selectable while movable group members retain spacing', async ({
   page,
 }) => {
@@ -228,11 +230,15 @@ test('locked selected nodes stay selectable while movable group members retain s
   await page.mouse.move(box.x + 90, box.y + 60)
   await page.mouse.up()
   await expect(alpha).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 100, 180)')
-  await expect(beta).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 410, 220)')
+  await expect(beta).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 350, 180)')
+  await expect(page.getByTestId('flow-viewport')).toHaveCSS(
+    'transform',
+    'matrix(1, 0, 0, 1, 60, 40)'
+  )
   await alpha.focus()
   await page.keyboard.press('ArrowRight')
   await expect(alpha).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 100, 180)')
-  await expect(beta).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 415, 220)')
+  await expect(beta).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 355, 180)')
 })
 
 test('custom node descriptions follow keyed document updates and removal', async ({
