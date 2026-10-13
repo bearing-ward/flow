@@ -80,6 +80,46 @@ export const measureNodeHandles = (
 
 const svgNamespace = 'http://www.w3.org/2000/svg'
 
+/**
+ * The path a custom edge is drawn along: the renderer's own
+ * `interactionPath`, else the `createFlowBaseEdge` interaction path in its
+ * visual. `undefined` keeps the handle route.
+ */
+const customInteraction = (
+  instance: FlowEdgeRendererInstance,
+  visual: SVGGElement,
+  reportFailure: (label: string, error: Error) => void
+): { readonly path: string; readonly width?: number } | undefined => {
+  let returned: string | undefined
+
+  try {
+    returned = instance.interactionPath?.()
+  } catch (error) {
+    // A failing renderer callback keeps the handle route for this edge.
+    reportFailure(
+      'Edge interaction path',
+      error instanceof Error ? error : new Error(String(error))
+    )
+
+    return undefined
+  }
+
+  if (returned !== undefined && returned.length > 0) {
+    return { path: returned }
+  }
+
+  const drawn = visual.querySelector('.flow-edge-interaction')
+  const path = drawn?.getAttribute('d')
+
+  if (drawn === null || path === null || path === undefined || path === '') {
+    return undefined
+  }
+
+  const width = Number(drawn.getAttribute('stroke-width'))
+
+  return Number.isFinite(width) && width > 0 ? { path, width } : { path }
+}
+
 const defaultStroke = '#64748b'
 
 let nextMarkerScope = 0
@@ -202,7 +242,8 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     dependency: ProjectionDependency
   ) => boolean,
   hostClosing: () => boolean,
-  cleanupFailures: unknown[]
+  cleanupFailures: unknown[],
+  reportCallbackFailure: (label: string, error: Error) => void
 ) => {
   nextMarkerScope += 1
   const markerScope = nextMarkerScope
@@ -832,9 +873,21 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         const { anchorGroup, group, hit, sourceAnchor, targetAnchor } =
           entry.elements
 
+        const interaction =
+          entry.renderer.kind === 'custom'
+            ? customInteraction(
+                entry.renderer.instance,
+                visual,
+                reportCallbackFailure
+              )
+            : undefined
+
         path.setAttribute('d', pathData)
-        hit.setAttribute('d', pathData)
-        hit.setAttribute('stroke-width', String(edge.interactionWidth ?? 20))
+        hit.setAttribute('d', interaction?.path ?? pathData)
+        hit.setAttribute(
+          'stroke-width',
+          String(edge.interactionWidth ?? interaction?.width ?? 20)
+        )
         sourceAnchor.setAttribute('cx', String(source.x))
         sourceAnchor.setAttribute('cy', String(source.y))
         targetAnchor.setAttribute('cx', String(target.x))

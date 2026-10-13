@@ -401,6 +401,20 @@ body,
   cursor: nesw-resize;
 }
 
+/* A side with connection handles keeps its resize control clear of them. */
+.flow-node-resize-top.flow-node-resize-clear {
+  top: -20px;
+}
+.flow-node-resize-right.flow-node-resize-clear {
+  right: -20px;
+}
+.flow-node-resize-bottom.flow-node-resize-clear {
+  bottom: -20px;
+}
+.flow-node-resize-left.flow-node-resize-clear {
+  left: -20px;
+}
+
 .flow-node.resizing {
   user-select: none;
 }

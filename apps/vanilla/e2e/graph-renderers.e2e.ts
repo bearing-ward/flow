@@ -54,6 +54,7 @@ test('initial renderer failure cleans up mounted entries and preserves the error
         },
         {
           documentMode: 'uncontrolled',
+          nodesResizable: true,
           nodeRenderers: {
             working: () => ({
               update: () => {
@@ -92,6 +93,7 @@ test('initial renderer failure cleans up mounted entries and preserves the error
       { nodes: [], edges: [] },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -152,6 +154,7 @@ test('controlled update cancels a group drag when a participant is removed', asy
 
     const controller = mountFlow(root, graph, {
       documentMode: 'controlled',
+      nodesResizable: true,
       viewport: {
         mode: 'uncontrolled',
         initial: { x: 0, y: 0, zoom: 1 },
@@ -255,6 +258,7 @@ test('controlled group drag completes when every participant remains', async ({
       },
       {
         documentMode: 'controlled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -333,6 +337,7 @@ test('custom drag handle gates pointer movement and keeps its visual state stabl
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         nodeRenderers: {
           custom: (
             node: { data?: { text?: string } },
@@ -600,6 +605,7 @@ for (const documentMode of ['uncontrolled', 'controlled'] as const) {
         },
         {
           documentMode: mode,
+          nodesResizable: true,
           nodeRenderers: {
             interactive: (_node: FlowNode, content: HTMLElement) => {
               const counts = { button: 0, link: 0 }
@@ -888,6 +894,7 @@ test('nested nodes move in absolute space and publish local positions', async ({
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -985,6 +992,7 @@ test('overlapping nodes follow graph order and controlled zIndex updates retain 
 
     globalThis.flowController = mountFlow(root, graph, {
       documentMode: 'controlled',
+      nodesResizable: true,
       nodeRenderers: {
         focusable: (_node: FlowNode, content: HTMLElement) => {
           const button = globalThis.document.createElement('button')
@@ -1172,6 +1180,7 @@ test('controlled parent updates reposition unchanged descendants and edge endpoi
 
     const controller = mountFlow(root, document, {
       documentMode: 'controlled',
+      nodesResizable: true,
       nodeRenderers: {
         'child-custom': (_node: FlowNode, content: HTMLElement) => {
           // SAFETY: This intersection adds only optional test-hook fields; reads are guarded or follow assignment in this test.
@@ -1318,6 +1327,7 @@ test('parent updates place a previously culled child when it becomes visible', a
 
     globalThis.flowController = mountFlow(root, graph, {
       documentMode: 'controlled',
+      nodesResizable: true,
       renderOnlyVisible: true,
       viewport: {
         mode: 'uncontrolled',
@@ -1441,6 +1451,7 @@ test('typed node and edge renderers keep host interactions and clean up by key',
       },
       {
         documentMode: 'controlled',
+        nodesResizable: true,
         connectOnClick: true,
         renderOnlyVisible: true,
         nodeRenderers: { alpha: renderNode('alpha'), beta: renderNode('beta') },
@@ -1786,6 +1797,7 @@ test('toolbar anchors follow viewport, drag, culling, and graph removal', async 
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         renderOnlyVisible: true,
         onToolbarAnchors: (
           anchors: NonNullable<typeof testGlobal.toolbarAnchors>
@@ -2040,6 +2052,7 @@ test('node drag updates only incident custom edge renderers', async ({
       { nodes, edges },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         edgeRenderers: {
           counted: {
             render: (

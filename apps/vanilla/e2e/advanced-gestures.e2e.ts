@@ -89,6 +89,7 @@ const mountScenario = async (page: Page, scenario: Scenario): Promise<void> => {
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         nodeExtent: kind.startsWith('extent')
           ? { minX: 0, minY: 0, maxX: 500, maxY: 400 }
           : undefined,
@@ -209,6 +210,7 @@ const mountCancellationScenario = async (page: Page): Promise<void> => {
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -344,6 +346,7 @@ const mountResizeScenario = async (
 
       const controller = mountFlow(root, document, {
         documentMode: mode,
+        nodesResizable: true,
         nodeExtent,
         renderOnlyVisible: mountOptions.renderOnlyVisible,
         ui: mountOptions.derivedUI ? { minimap: true } : undefined,

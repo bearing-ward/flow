@@ -67,6 +67,7 @@ const mountLifecycleScenario = async (
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         connectOnClick: true,
         viewport: {
           mode: 'uncontrolled',
@@ -204,6 +205,7 @@ const mountCancellationHost = async (
 
       const controller = mountFlow(root, fixtureDocument, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         selectionMode: mode,
         viewport: {
           mode: 'uncontrolled',
@@ -624,6 +626,7 @@ test('replacing an edge endpoint handle cancels reconnection before stale releas
       },
       {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -745,6 +748,7 @@ test('click connections remain isolated between two production hosts', async ({
 
     const options = {
       documentMode: 'uncontrolled' as const,
+      nodesResizable: true,
       connectOnClick: true,
       viewport: {
         mode: 'uncontrolled' as const,
@@ -837,6 +841,7 @@ test('shared selection fixture drives the production Vanilla pointer path', asyn
 
         const controller = mountFlow(root, fixtureDocument, {
           documentMode: 'uncontrolled',
+          nodesResizable: true,
           selectionMode: mode,
           viewport: {
             mode: 'uncontrolled',
@@ -914,6 +919,7 @@ test('shared resize fixture drives the production Vanilla pointer path', async (
 
       const controller = mountFlow(root, fixtureDocument, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -1047,6 +1053,7 @@ test('shared connection cases drive the production Vanilla pointer path', async 
 
         globalThis.flowController = mountFlow(root, documentInput, {
           documentMode: 'uncontrolled',
+          nodesResizable: true,
           connectionMode: mode === 'loose' ? mode : undefined,
           viewport: {
             mode: 'uncontrolled',
@@ -1143,6 +1150,7 @@ test('Vanilla connection creation applies defaults below connection fields', asy
 
     globalThis.flowController = mountFlow(root, documentInput, {
       documentMode: 'uncontrolled',
+      nodesResizable: true,
       defaultEdgeOptions: { label: 'Default connection', strokeWidth: 4 },
       viewport: {
         mode: 'uncontrolled',
@@ -1194,6 +1202,7 @@ test('custom connection preview receives production candidate state and cleanup'
 
     const controller = mountFlow(root, nextDocument, {
       documentMode: 'controlled',
+      nodesResizable: true,
       viewport: {
         mode: 'uncontrolled',
         initial: { x: 0, y: 0, zoom: 1 },

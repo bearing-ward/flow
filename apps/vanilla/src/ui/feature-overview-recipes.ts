@@ -188,6 +188,8 @@ const controller = mountFlow(
   },
   {
     documentMode: 'uncontrolled',
+    // React Flow's Feature Overview resizes its group with a NodeResizer.
+    nodesResizable: true,
     viewport: {
       mode: 'uncontrolled',
       initial: { x: 0, y: 0, zoom: 1 },

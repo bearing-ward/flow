@@ -450,6 +450,8 @@ const program = Effect.gen(function* program() {
 
   const host = yield* createFlowHost(root, document, {
     documentMode: 'uncontrolled',
+    // The playground demonstrates node resizing (React Flow's NodeResizer).
+    nodesResizable: true,
     autoPanOnConnect: true,
     connectOnClick: true,
     connectionRadius: 20,

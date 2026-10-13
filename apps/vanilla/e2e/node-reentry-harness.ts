@@ -83,6 +83,7 @@ export const physicalReentry = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     connectionDragThreshold: threshold,
     selectNodesOnDrag: actor === 'selection',
@@ -177,6 +178,7 @@ export const terminalDispatchReentry = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     connectionDragThreshold: threshold,
     selectNodesOnDrag: false,
@@ -248,6 +250,7 @@ export const escapeDispatchProof = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     viewport: {
       mode: 'uncontrolled',
       initial: { x: 0, y: 0, zoom: 1 },
@@ -346,6 +349,7 @@ export const previewFanoutProof = async () => {
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     viewport: {
       mode: 'uncontrolled',
       initial: { x: 0, y: 0, zoom: 1 },
@@ -461,6 +465,7 @@ export const viewportContinuationProof = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     panOnDrag: true,
     panOnScroll: true,
     zoomOnDoubleClick: true,
@@ -597,6 +602,7 @@ export const aggregateEntryProof = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     connectionDragThreshold: 5,
     connectOnClick: true,
@@ -734,6 +740,7 @@ export const mountNativeCaptureProof = async () => {
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     selectNodesOnDrag: false,
     viewport: {
@@ -840,6 +847,7 @@ export const frozenFrameProof = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     connectionDragThreshold: 0,
     autoPanOnConnect: true,
@@ -945,6 +953,7 @@ export const suppressionTimerProof = async () => {
 
   const controller = await createFlow(root, documentState, {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     selectNodesOnDrag: false,
     viewport: {
@@ -1051,6 +1060,7 @@ export const matchingLossProof = async () => {
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     nodeDragThreshold: 0,
     selectNodesOnDrag: false,
     viewport: {
@@ -1169,6 +1179,7 @@ export const continuationRoundFourNode = async (
         toolbarAnchors = structuredClone(value)
       },
       documentMode: 'uncontrolled',
+      nodesResizable: true,
       nodeDragThreshold: route === 'combined-pending' ? 8 : 0,
       connectionDragThreshold: 0,
       connectOnClick: true,
@@ -1608,6 +1619,7 @@ export const continuationRoundFourAcquisition = async (
   const controller = await Effect.runPromise(
     createFlowHost(root, reentryDocument(), {
       documentMode: 'uncontrolled',
+      nodesResizable: true,
       nodeDragThreshold: 0,
       selectNodesOnDrag: false,
       viewport: {
@@ -2200,6 +2212,7 @@ export const continuationRoundFourRenderer = async (
     controller = await Effect.runPromise(
       createFlowHost(root, off, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         ui: { minimap: true },
         onToolbarAnchors: (value) => {
           toolbars = structuredClone(value)
@@ -2666,6 +2679,7 @@ export const continuationRoundFourReadyRenderer = async (
     controller = await Effect.runPromise(
       createFlowHost(root, initial, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         renderOnlyVisible: true,
         viewport: {
           mode: 'uncontrolled',
@@ -2892,6 +2906,7 @@ export const continuationRoundFourMountError = async (
     await Effect.runPromise(
       createFlowHost(root, input, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         viewport: {
           mode: 'uncontrolled',
           initial: { x: 0, y: 0, zoom: 1 },
@@ -2971,6 +2986,7 @@ export const continuationRoundFourResizeRestoration = async (
 
   const controller = await createFlow(root, reentryDocument(), {
     documentMode: 'uncontrolled',
+    nodesResizable: true,
     viewport: {
       mode: 'uncontrolled',
       initial: { x: 0, y: 0, zoom: 1 },
@@ -3190,6 +3206,7 @@ export const ownershipRoundFiveProjection = async (
   try {
     controller = await createFlow(root, input, {
       documentMode: 'uncontrolled',
+      nodesResizable: true,
       renderOnlyVisible: visibility,
       panOnScroll: true,
       panOnScrollSpeed: 1,
@@ -3617,6 +3634,7 @@ export const ownershipRoundSixAcquisition = async (
     controller = await Effect.runPromise(
       createFlowHost(root, off, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         renderOnlyVisible: true,
         viewport: {
           mode: 'uncontrolled',
@@ -3788,6 +3806,7 @@ export const ownershipRoundSevenGeometry = async (
     controller = await Effect.runPromise(
       createFlowHost(root, input, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         renderOnlyVisible: false,
         edgeRenderers: { probe: renderer },
         runEffect: scopes.run,
@@ -4056,6 +4075,7 @@ export const ownershipRoundSevenCurrency = async (
     controller = await Effect.runPromise(
       createFlowHost(root, input, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         renderOnlyVisible: false,
         edgeRenderers: { probe: renderer },
         defaultEdgeOptions: { type: 'probe' },
@@ -4314,6 +4334,7 @@ export const ownershipRoundSevenNumeric = async () => {
     controller = await Effect.runPromise(
       createFlowHost(root, input, {
         documentMode: 'uncontrolled',
+        nodesResizable: true,
         renderOnlyVisible: false,
         nodeDragThreshold: 0,
         selectNodesOnDrag: false,

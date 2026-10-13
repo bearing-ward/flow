@@ -81,6 +81,9 @@ export type {
   FlowReconnectEndPayload,
   FlowSelectionDragPayload,
   FlowSelectionDragStopPayload,
+  FlowNodeDragPayload,
+  FlowNodeDragStopPayload,
+  FlowCanvasEventPayload,
 } from './mount-flow.ts'
 
 export type {
