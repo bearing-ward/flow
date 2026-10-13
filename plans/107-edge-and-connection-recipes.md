@@ -52,7 +52,8 @@ References: `examples/react/src/examples/FloatingEdges` and `EasyConnect` in the
   - Vanilla edges follow a drag live through the opt-in `updateProps` from Plan 105b.
   - Vue and Foldkit floating edges update after the drop. Both hosts commit node moves on release, and their built-in edges behave the same way, so the tests assert during-drag stability and post-drop geometry there.
   - In Vue, multi-connection extra edges are added on `connectEnd`.
-  - The Vue recipe hides the resize handle that covers a selected node's right-hand handle.
+  - Product gap, not just a recipe choice: on a selected node, the always-on resize control covers the right-hand connection handle in every host. The recipes hide resize handles: Vanilla on the whole page, Vue in its recipe, Foldkit in the multi-connection-line scene. A user copying a recipe without that CSS cannot start a connection from a selected node's right handle. Closing this belongs to the configurable NodeResizer slice (wave 5), where resize controls appear only when a resizer is added, as in React Flow.
+  - Vue and Foldkit floating edges, and built-in edges too, update after the drop. During a Vue drag the node moves with a DOM transform while its edges stay put until release. That visible mismatch is untested, and it is why the floating-edge entries stay partial (P) in those hosts. A dedicated live-drag-geometry slice follows wave 2.
 - **Unverified.**
   - The Simple Floating Edges, Edge Markers and Multi Connection Line references are not in the pinned artifacts. The scenes follow the public example descriptions, and there is no runtime comparison with React.
 - **Host change.** Vue `edge-label-renderer.ts` now renders each label in its own view, which updates with its edge. Before this, a node-data-only change never reached the HTML label.

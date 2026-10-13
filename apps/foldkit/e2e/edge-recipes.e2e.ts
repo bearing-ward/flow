@@ -186,9 +186,13 @@ test('Animated SVG Edge moves a shape and parks it under reduced motion', async 
     (await path.getAttribute('d')) ?? ''
   )
   const first = await centerOf(mover)
-  await page.waitForTimeout(400)
-  const second = await centerOf(mover)
-  expect(Math.hypot(second.x - first.x, second.y - first.y)).toBeGreaterThan(2)
+  await expect
+    .poll(async () => {
+      const second = await centerOf(mover)
+
+      return Math.hypot(second.x - first.x, second.y - first.y)
+    })
+    .toBeGreaterThan(2)
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect(motion).toHaveCount(0)

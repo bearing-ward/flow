@@ -188,9 +188,13 @@ test('animated-svg-edge: shape animates along the path and parks under reduced m
   await expect(motion).toHaveAttribute('repeatCount', 'indefinite')
 
   const first = centerOf(await boxOf(traveler))
-  await page.waitForTimeout(400)
-  const second = centerOf(await boxOf(traveler))
-  expect(Math.hypot(second.x - first.x, second.y - first.y)).toBeGreaterThan(2)
+  await expect
+    .poll(async () => {
+      const second = centerOf(await boxOf(traveler))
+
+      return Math.hypot(second.x - first.x, second.y - first.y)
+    })
+    .toBeGreaterThan(2)
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect(motion).toHaveCount(0)

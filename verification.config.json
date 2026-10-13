@@ -1,23 +1,26 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 107: Edge and connection recipes",
-  "checks": ["docs", "examples"],
+  "activeWork": "Merge of Plan 107 edge and connection recipes",
+  "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
+      "base-edge.e2e.ts",
       "edge-recipes.e2e.ts",
       "renderer-props.e2e.ts",
-      "base-edge.e2e.ts"
+      "ui-controls.e2e.ts"
     ],
     "vue": [
+      "base-edge.e2e.ts",
+      "connection.e2e.ts",
       "edge-recipes.e2e.ts",
       "renderer-props.e2e.ts",
-      "base-edge.e2e.ts",
-      "connection.e2e.ts"
+      "ui-controls.e2e.ts"
     ],
     "foldkit": [
+      "base-edge.e2e.ts",
       "edge-recipes.e2e.ts",
       "renderer-props.e2e.ts",
-      "base-edge.e2e.ts"
+      "ui-controls.e2e.ts"
     ]
   }
 }

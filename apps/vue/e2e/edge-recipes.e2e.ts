@@ -271,7 +271,7 @@ test('animated-svg-edge animates along the path and respects reduced motion', as
   expectNear(await moverCenter(page), parked, 0.5)
 })
 
-test('floating-edges attach to the facing borders while a node drags', async ({
+test('floating-edges attach to the facing borders after a node drag', async ({
   page,
 }) => {
   await open(page, 'floating-edges')
