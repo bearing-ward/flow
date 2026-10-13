@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 107,
+    "inScopeCloseAllHosts": 113,
     "inScopeCloseByHost": {
-      "vanilla": 130,
-      "vue": 125,
-      "foldkit": 111
+      "vanilla": 136,
+      "vue": 129,
+      "foldkit": 117
     }
   },
   "waves": {
@@ -1484,14 +1484,15 @@
     {
       "section": "examples nodes",
       "name": "Easy Connect",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Whole-node handles plus floating edge attachment",
       "effort": "M",
-      "theme": "floating-edges"
+      "theme": "floating-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples nodes",
@@ -1713,37 +1714,40 @@
       "section": "examples edges",
       "name": "Floating Edges",
       "vanilla": "C",
-      "vue": "C",
+      "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
-      "theme": "floating-edges"
+      "theme": "floating-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
       "name": "Edge Markers",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Only arrow/arrowclosed; no custom SVG markers",
       "effort": "M",
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
       "name": "Multi Connection Line",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Preview renderer is single-source only",
       "effort": "M",
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
@@ -1761,13 +1765,14 @@
       "section": "examples edges",
       "name": "Simple Floating Edges",
       "vanilla": "C",
-      "vue": "C",
+      "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
-      "theme": "floating-edges"
+      "theme": "floating-edges",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "examples edges",
@@ -2360,38 +2365,41 @@
     {
       "section": "ui components",
       "name": "Edge with Button",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "BaseEdge/EdgeText exist; no button-edge recipe or tests",
       "effort": "S",
-      "theme": "ui-edge"
+      "theme": "ui-edge",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "ui components",
       "name": "Edge with Node Data",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "No endpoint-data edge recipe; BaseEdge primitives only",
       "effort": "M",
-      "theme": "ui-edge"
+      "theme": "ui-edge",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "ui components",
       "name": "Animated SVG Edge",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "No animated edge recipe with reduced-motion handling",
       "effort": "S",
-      "theme": "ui-edge"
+      "theme": "ui-edge",
+      "updatedBy": ["Plan 107"]
     },
     {
       "section": "ui components",
