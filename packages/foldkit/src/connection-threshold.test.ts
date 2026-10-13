@@ -178,7 +178,10 @@ describe('connectionDragThreshold application transitions, constructed models', 
     ]) {
       const result = step(pending, message)
       expect(result.model.graph.pointerSession).toBeNull()
-      expect(events(result)).toStrictEqual([])
+      // Replacing the document may change the selection; that is not a gesture.
+      expect(
+        events(result).filter(({ name }) => name !== 'onSelectionChange')
+      ).toStrictEqual([])
       expect(events(step(result.model, move(40, 40)))).toStrictEqual([])
     }
   })

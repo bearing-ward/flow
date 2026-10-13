@@ -754,14 +754,26 @@ describe('round one repair regressions', () => {
           ready: traffic.model.lifecycleReady,
         }).toStrictEqual({ events: [], ready: false })
         const started = step(traffic.model, activate)
+
+        const start =
+          kind === 'node'
+            ? {
+                name: 'onNodeDragStart',
+                phase: 'start',
+                inputKind: 'pointer',
+                nodeId: 'source',
+                nodeIds: ['source'],
+              }
+            : {
+                name: 'onConnectStart',
+                phase: 'start',
+                inputKind: kind === 'keyboard' ? 'keyboard' : 'pointer',
+                nodeId: 'source',
+              }
+
         expect(events(started)).toStrictEqual([
           { name: 'onInit', phase: 'event', inputKind: 'runtime' },
-          {
-            name: kind === 'node' ? 'onNodeDragStart' : 'onConnectStart',
-            phase: 'start',
-            inputKind: kind === 'keyboard' ? 'keyboard' : 'pointer',
-            nodeId: 'source',
-          },
+          start,
         ])
         expect(
           events(step(started.model, Message.IgnoreInput()))
@@ -826,12 +838,14 @@ describe('round one repair regressions', () => {
           phase: 'start',
           inputKind: 'pointer',
           nodeId: 'source',
+          nodeIds: ['source'],
         },
         {
           name: 'onNodeDrag',
           phase: 'progress',
           inputKind: 'pointer',
           nodeId: 'source',
+          nodeIds: ['source'],
           x: 16,
           y: 20,
         },
@@ -840,6 +854,7 @@ describe('round one repair regressions', () => {
           phase: 'progress',
           inputKind: 'pointer',
           nodeId: 'source',
+          nodeIds: ['source'],
           x: 11,
           y: 20,
         },
@@ -849,6 +864,7 @@ describe('round one repair regressions', () => {
           inputKind: 'pointer',
           outcome: 'accepted',
           nodeId: 'source',
+          nodeIds: ['source'],
         },
       ])
       expect(fixture.model().graph.document.nodes[0]?.position).toStrictEqual({
@@ -867,12 +883,14 @@ describe('round one repair regressions', () => {
           phase: 'start',
           inputKind: 'pointer',
           nodeId: 'source',
+          nodeIds: ['source'],
         },
         {
           name: 'onNodeDrag',
           phase: 'progress',
           inputKind: 'pointer',
           nodeId: 'source',
+          nodeIds: ['source'],
           x: 16,
           y: 20,
         },
@@ -883,6 +901,7 @@ describe('round one repair regressions', () => {
           outcome: 'cancelled',
           reason: 'cancelled',
           nodeId: 'source',
+          nodeIds: ['source'],
         },
       ])
       retainedChecks.push(
@@ -913,6 +932,15 @@ describe('round one repair regressions', () => {
             outcome: 'cancelled',
             reason: 'cancelled',
             nodeId: 'source',
+            connectionState: {
+              isValid: null,
+              fromNodeId: 'source',
+              fromHandleId: 'out',
+              fromHandleType: 'source',
+              toNodeId: null,
+              toHandleId: null,
+              toHandleType: null,
+            },
           },
         ],
         retainedChecks: [true, true, true],

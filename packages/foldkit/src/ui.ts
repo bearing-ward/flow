@@ -1,8 +1,15 @@
-import { selectFlowMiniMapProjection } from '@flow/core'
-import type { FlowGraphView, ViewportPaddingSchema } from '@flow/core'
+import {
+  flowInteractivityFor,
+  isFlowInteractive,
+  selectFlowMiniMapProjection,
+} from '@flow/core'
+import type {
+  FlowGraphView,
+  FlowInteractivity,
+  ViewportPaddingSchema,
+} from '@flow/core'
 
 import type { ViewportClient } from './application.ts'
-import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
 
 const stopCanvasClick = (event: MouseEvent): void => event.stopPropagation()
 
@@ -197,6 +204,15 @@ export interface FlowControlsOptions {
   readonly onFitView?: () => void
   /** Called with the next interactive state after the lock button toggles. */
   readonly onInteractiveChange?: (interactive: boolean) => void
+  /**
+   * The Runtime's interaction switches, usually `createFoldkitInteractivity`.
+   * The lock starts from them and sets all three together. Without it the
+   * lock only reports its state through `onInteractiveChange`.
+   */
+  readonly interactivity?: {
+    readonly get: () => FlowInteractivity
+    readonly set: (next: FlowInteractivity) => void
+  }
 }
 
 export interface FlowControlsMount {
@@ -639,17 +655,16 @@ export const createFlowControls = (
     })
   }
 
-  const lock = createFlowInteractivityLock(
-    () =>
-      group.closest<HTMLElement>('.flow-foldkit-canvas') ??
-      // Detached controls own no canvas, so they gate nothing.
-      owner.createElement('div')
-  )
+  let interactiveState =
+    options.interactivity === undefined
+      ? true
+      : isFlowInteractive(options.interactivity.get())
+
+  const isInteractive = (): boolean => interactiveState
 
   let lockButton: HTMLButtonElement | undefined
 
-  const setInteractive = (interactive: boolean): void => {
-    lock.setInteractive(interactive)
+  const renderLock = (interactive: boolean): void => {
     group.dataset.interactive = String(interactive)
     lockButton?.setAttribute('aria-pressed', String(!interactive))
 
@@ -658,9 +673,17 @@ export const createFlowControls = (
     }
   }
 
+  // React Flow Controls sets nodesDraggable, nodesConnectable and
+  // elementsSelectable together.
+  const setInteractive = (interactive: boolean): void => {
+    interactiveState = interactive
+    options.interactivity?.set(flowInteractivityFor(interactive))
+    renderLock(interactive)
+  }
+
   if (options.showInteractive !== false) {
     lockButton = button('Toggle interactivity', () => {
-      const next = !lock.isInteractive()
+      const next = !isInteractive()
       setInteractive(next)
       options.onInteractiveChange?.(next)
 
@@ -668,7 +691,7 @@ export const createFlowControls = (
     })
   }
 
-  setInteractive(true)
+  renderLock(interactiveState)
 
   for (const child of options.children ?? []) {
     group.append(child)
@@ -678,11 +701,9 @@ export const createFlowControls = (
 
   return {
     element: group,
-    isInteractive: lock.isInteractive,
+    isInteractive,
     setInteractive,
     dispose: () => {
-      lock.release()
-
       for (const stop of listeners) {
         stop()
       }

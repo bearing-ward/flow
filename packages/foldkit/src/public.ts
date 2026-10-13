@@ -14,7 +14,30 @@ export {
   ViewportResponseSchema,
   ViewportEventSchema,
   MeasurementResultSchema,
+  ElementChangesSchema,
 } from './application.ts'
+
+export { applyFoldkitElementChanges } from './element-changes.ts'
+
+export { createFoldkitInteractivity } from './interactivity.ts'
+
+export type { FoldkitInteractivity } from './interactivity.ts'
+
+export {
+  createFoldkitConnectionObserver,
+  FoldkitConnectionStateSchema,
+} from './connection-observer.ts'
+
+export type {
+  FoldkitConnectionObserver,
+  FoldkitConnectionStateSource,
+} from './connection-observer.ts'
+
+export type { FoldkitIsValidConnection } from './connection-rules.ts'
+
+export { MouseDetailSchema } from './mouse-observation.ts'
+
+export type { MouseDetail } from './mouse-observation.ts'
 
 export type {
   ViewportClient,
@@ -43,6 +66,7 @@ export type {
 } from './snapshot-client.ts'
 
 export {
+  ConnectionEndStateSchema,
   defaultInteractionOptions,
   InteractionEventSchema,
   Message,

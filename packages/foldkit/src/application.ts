@@ -42,6 +42,12 @@ import {
   NodeIdSchema,
   FlowAttribute,
   FlowSpan,
+  EdgeChangeSchema,
+  NodeChangeSchema,
+  flowChangeElementChanges,
+  flowSelectionEqual,
+  resolveEdgeHandles,
+  selectFlowSelection,
 } from '@flow/core'
 import type { FlowDocument, Viewport, SelectionModeSchema } from '@flow/core'
 import {
@@ -68,6 +74,8 @@ import {
   Update,
 } from 'foldkit'
 
+import { FoldkitConnectionStateSchema } from './connection-observer.ts'
+import { registerConnectionRule } from './connection-rules.ts'
 import {
   DeleteApprovalRequestedSchema,
   DeleteApprovalResponseSchema,
@@ -163,6 +171,12 @@ export const HostAction = FoldMessage.defineMessageUnion({
   MeasureNode: {
     requestId: Schema.String,
     measurement: NodeMeasurementInputSchema,
+  },
+  /** Change `nodesDraggable`, `nodesConnectable` and `elementsSelectable` at runtime. */
+  SetInteractivity: {
+    nodesDraggable: Schema.optional(Schema.Boolean),
+    nodesConnectable: Schema.optional(Schema.Boolean),
+    elementsSelectable: Schema.optional(Schema.Boolean),
   },
 })
 
@@ -294,6 +308,15 @@ export const InteractionEventsSchema = Schema.Array(
   Graph.InteractionEventSchema
 )
 
+/**
+ * React Flow `onNodesChange`/`onEdgesChange` deltas for one semantic change,
+ * derived from the document the change was proposed against.
+ */
+export const ElementChangesSchema = Schema.Struct({
+  nodes: Schema.Array(NodeChangeSchema),
+  edges: Schema.Array(EdgeChangeSchema),
+})
+
 const ViewportAnimationStateSchema = Schema.Struct({
   requestId: Schema.String,
   from: ViewportSchema,
@@ -370,6 +393,8 @@ export const ports = {
     viewportResults: Port.outbound(ViewportResponseSchema),
     viewportEvents: Port.outbound(ViewportEventSchema),
     interactionEvents: Port.outbound(InteractionEventsSchema),
+    elementChanges: Port.outbound(ElementChangesSchema),
+    connectionStates: Port.outbound(FoldkitConnectionStateSchema),
   },
 }
 
@@ -662,10 +687,15 @@ const ChangePublicationSchema = Schema.Struct({
     })
   ),
   controlMode: Schema.optional(Schema.Literals(['controlled', 'uncontrolled'])),
+  elementChanges: Schema.optional(ElementChangesSchema),
 })
 
 const PublicationSchema = Schema.Union([
   ChangePublicationSchema,
+  Schema.Struct({
+    kind: Schema.Literal('connection'),
+    state: FoldkitConnectionStateSchema,
+  }),
   Schema.Struct({
     kind: Schema.Literal('interaction'),
     events: InteractionEventsSchema,
@@ -714,6 +744,12 @@ const emitPublication = (
     )
   }
 
+  if (item.kind === 'connection') {
+    return Port.emit(ports.outbound.connectionStates, item.state).pipe(
+      Effect.as(AppMessage.ChangePublished())
+    )
+  }
+
   if (item.kind === 'edit-failure') {
     return respondEdit(item.response).pipe(
       Effect.andThen(
@@ -723,7 +759,14 @@ const emitPublication = (
     )
   }
 
-  const { change, acceptedState, cancellation, lifecycle, controlMode } = item
+  const {
+    change,
+    acceptedState,
+    cancellation,
+    lifecycle,
+    controlMode,
+    elementChanges,
+  } = item
 
   return Effect.gen(function* publishFlowChanges() {
     if (lifecycle !== undefined) {
@@ -760,6 +803,10 @@ const emitPublication = (
         Effect.withSpan(interactionCompletionSpan(change), { attributes })
       )
       yield* Port.emit(ports.outbound.changes, change)
+    }
+
+    if (elementChanges !== undefined) {
+      yield* Port.emit(ports.outbound.elementChanges, elementChanges)
     }
 
     if (acceptedState !== undefined) {
@@ -1199,14 +1246,123 @@ const interactionEventName = (
 
 const interactionEntity = (
   active: ActiveGestureTelemetry
-): Pick<Graph.InteractionEvent, 'nodeId' | 'edgeId'> => {
+): Pick<Graph.InteractionEvent, 'nodeId' | 'edgeId' | 'nodeIds'> => {
   if (active.entityId === undefined) {
     return {}
   }
 
-  return active.kind === 'reconnection'
-    ? { edgeId: active.entityId }
+  if (active.kind === 'reconnection') {
+    return { edgeId: active.entityId }
+  }
+
+  // React Flow drag handlers receive every dragged node; Foldkit drags one.
+  return active.kind === 'node-drag' || active.kind === 'resize'
+    ? { nodeId: active.entityId, nodeIds: [active.entityId] }
     : { nodeId: active.entityId }
+}
+
+type GraphModel = Graph.Model
+
+const handleEndpoint = (
+  graph: GraphModel,
+  nodeId: string | null,
+  handleId: string | null
+) => {
+  const handle =
+    nodeId === null || handleId === null
+      ? undefined
+      : graph.document.nodes
+          .find(({ id }) => id === nodeId)
+          ?.handles?.find(({ id }) => id === handleId)
+
+  return handle === undefined || nodeId === null
+    ? undefined
+    : { nodeId, handleId: handle.id, type: handle.kind }
+}
+
+const reconnectOrigin = (
+  graph: GraphModel,
+  edgeId: string,
+  endpoint: 'source' | 'target'
+) => {
+  const edge = graph.document.edges.find(({ id }) => id === edgeId)
+  const resolved = edge && resolveEdgeHandles(graph.document, edge)
+
+  if (edge === undefined || resolved === undefined) {
+    return
+  }
+
+  return endpoint === 'target'
+    ? handleEndpoint(graph, edge.source, resolved.sourceHandle.id)
+    : handleEndpoint(graph, edge.target, resolved.targetHandle.id)
+}
+
+const connectionOrigin = (graph: GraphModel) => {
+  const pointer = graph.pointerSession
+  const keyboard = graph.keyboardConnectionSession
+
+  if (pointer?.kind === 'connection') {
+    return handleEndpoint(graph, pointer.nodeId, pointer.sourceHandleId)
+  }
+
+  if (pointer?.kind === 'reconnection') {
+    return reconnectOrigin(graph, pointer.edgeId, pointer.endpoint)
+  }
+
+  if (keyboard?.kind === 'connection') {
+    return handleEndpoint(graph, keyboard.sourceNodeId, keyboard.sourceHandleId)
+  }
+
+  return keyboard?.kind === 'reconnection'
+    ? reconnectOrigin(graph, keyboard.edgeId, keyboard.endpoint)
+    : undefined
+}
+
+const connectionDrop = (graph: GraphModel, message: Graph.GraphMessageData) => {
+  if (Predicate.isTagged('PointerReleased')(message)) {
+    return handleEndpoint(graph, message.targetNodeId, message.targetHandleId)
+  }
+
+  return Predicate.isTagged('ActivateHandle')(message) ||
+    Predicate.isTagged('ClickHandle')(message)
+    ? handleEndpoint(graph, message.nodeId, message.handleId)
+    : undefined
+}
+
+/**
+ * Serializable `FinalConnectionState` for `onConnectEnd`/`onReconnectEnd`,
+ * plus the release client position React passes as the event.
+ */
+const connectionEndPayload = (
+  previous: GraphModel,
+  message: Graph.GraphMessageData,
+  connected: boolean,
+  cancelled: boolean
+): Pick<Graph.InteractionEvent, 'connectionState' | 'clientX' | 'clientY'> => {
+  const origin = connectionOrigin(previous)
+
+  const position = Predicate.isTagged('PointerReleased')(message)
+    ? { clientX: message.clientX, clientY: message.clientY }
+    : {}
+
+  if (origin === undefined) {
+    return position
+  }
+
+  const drop = cancelled ? undefined : connectionDrop(previous, message)
+
+  return {
+    ...position,
+    connectionState: {
+      isValid: drop === undefined ? null : connected,
+      fromNodeId: origin.nodeId,
+      fromHandleId: origin.handleId,
+      fromHandleType: origin.type,
+      toNodeId: drop?.nodeId ?? null,
+      toHandleId: drop?.handleId ?? null,
+      toHandleType: drop?.type ?? null,
+    },
+  }
 }
 
 const lifecycleMessagePhase = (
@@ -1373,10 +1529,21 @@ const foldkitLifecycleEvents = (
       ...interactionEntity(before),
     }
 
-    let terminalEvent: Graph.InteractionEvent = terminal
+    let terminalEvent: Graph.InteractionEvent =
+      before.kind === 'connection' || before.kind === 'reconnection'
+        ? {
+            ...terminal,
+            ...connectionEndPayload(
+              previous,
+              message,
+              semanticChange !== undefined,
+              phase === 'cancel'
+            ),
+          }
+        : terminal
 
     if (phase === 'cancel') {
-      terminalEvent = { ...terminal, reason: cancellationReason }
+      terminalEvent = { ...terminalEvent, reason: cancellationReason }
     }
 
     const proposalChange = Schema.decodeUnknownOption(FlowChangeSchema)(
@@ -1448,6 +1615,24 @@ const nativeBarrierFor = (
     ? { kind: message._tag }
     : undefined
 
+/** Attach the React Flow style deltas each semantic change proposes. */
+const withElementChanges = (
+  document: FlowDocument,
+  items: PublicationBatch
+): PublicationBatch =>
+  items.map((item) => {
+    if (item.kind !== 'change' || item.change === undefined) {
+      return item
+    }
+
+    const elementChanges = flowChangeElementChanges(document, item.change)
+
+    return elementChanges.nodes.length === 0 &&
+      elementChanges.edges.length === 0
+      ? item
+      : { ...item, elementChanges }
+  })
+
 const graphFold = (
   model: Model,
   message: Graph.GraphMessageData,
@@ -1498,7 +1683,7 @@ const graphFold = (
   const reduction: AppReduction = {
     ...result,
     outMessage: [
-      ...(result.outMessage ?? []),
+      ...withElementChanges(model.graph.document, result.outMessage ?? []),
       ...(started && after !== undefined
         ? [
             {
@@ -1564,6 +1749,8 @@ const routeAction = (model: Model, action: HostActionData) =>
       graphFold(model, Graph.Message.SetAllowedTargets({ targets })),
     DispatchCommand: ({ command }) =>
       graphFold(model, Graph.Message.DispatchCommand({ command })),
+    SetInteractivity: ({ _tag: _action, ...switches }) =>
+      graphFold(model, Graph.Message.SetInteractivity(switches), 'full'),
     MeasureNode: ({ requestId, measurement }) => {
       const result = graphFold(
         model,
@@ -1907,6 +2094,44 @@ const getViewportProposal = (model: Model, request: ViewportRequest) => {
   return { current, proposed, point, status, mutating, changed }
 }
 
+const isConnecting = (graph: GraphModel): boolean =>
+  graph.pointerSession?.kind === 'connection' ||
+  graph.pointerSession?.kind === 'reconnection'
+
+/** `useConnection` updates while a pointer connection or reconnection runs. */
+const connectionStatePublication = (
+  previous: GraphModel,
+  current: GraphModel
+): PublicationBatch =>
+  previous.pointerSession !== current.pointerSession &&
+  (isConnecting(previous) || isConnecting(current))
+    ? [{ kind: 'connection', state: Graph.selectConnectionState(current) }]
+    : []
+
+/** React Flow `onSelectionChange`, from the accepted document's selection. */
+const selectionChangePublication = (
+  previous: FlowDocument,
+  current: FlowDocument
+): PublicationItem | undefined => {
+  const before = selectFlowSelection(previous)
+  const after = selectFlowSelection(current)
+
+  return flowSelectionEqual(before, after)
+    ? undefined
+    : {
+        kind: 'interaction',
+        events: [
+          {
+            name: 'onSelectionChange',
+            phase: 'event',
+            inputKind: 'runtime',
+            nodeIds: after.nodes.map(({ id }) => id),
+            edgeIds: after.edges.map(({ id }) => id),
+          },
+        ],
+      }
+}
+
 export const update = (model: Model, message: AppMessageData): AppReduction => {
   const updateResult = AppMessage.match(message, {
     GraphMessage: ({ message: graphMessage }) => {
@@ -1918,28 +2143,42 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
 
       const lifecycleEvents: Graph.InteractionEvent[] = []
 
-      if (
-        'name' in graphMessage &&
-        'nodeId' in graphMessage &&
-        'edgeId' in graphMessage
-      ) {
-        lifecycleEvents.push({
+      if (Predicate.isTagged('ObserveMouse')(graphMessage)) {
+        const observed: Graph.InteractionEvent = {
           name: graphMessage.name,
           phase: 'event',
           inputKind: 'pointer',
           nodeId: graphMessage.nodeId,
           edgeId: graphMessage.edgeId,
-        })
+          ...graphMessage.pointer,
+        }
+
+        lifecycleEvents.push(observed)
+
+        // Every canvas context menu still reports the legacy selection event.
+        if (
+          graphMessage.name === 'onNodeContextMenu' ||
+          graphMessage.name === 'onEdgeContextMenu' ||
+          graphMessage.name === 'onPaneContextMenu'
+        ) {
+          lifecycleEvents.push({ ...observed, name: 'onSelectionContextMenu' })
+        }
       } else if (Predicate.isTagged('SelectEdge')(graphMessage)) {
         lifecycleEvents.push({
           name: 'onEdgeClick',
           phase: 'event',
           inputKind: 'pointer',
           edgeId: graphMessage.edgeId,
+          ...graphMessage.pointer,
         })
       }
 
       const events: Graph.InteractionEvent[] = [...lifecycleEvents]
+
+      const connectionState = connectionStatePublication(
+        model.graph,
+        readyModel.graph
+      )
 
       const viewportEvents = viewportPanEvents(
         model.graph,
@@ -1969,6 +2208,7 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
           ...(events.length === 0
             ? []
             : [{ kind: 'interaction' as const, events }]),
+          ...connectionState,
         ],
         commands: [
           ...(result.commands ?? []),
@@ -2587,15 +2827,30 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
     JSON.stringify(updateResult.model.graph.document) !==
     JSON.stringify(model.graph.document)
 
-  return acceptedDocumentChanged
-    ? {
-        ...updateResult,
-        model: {
-          ...updateResult.model,
-          acceptedDocumentRevision: model.acceptedDocumentRevision + 1,
-        },
-      }
-    : updateResult
+  if (!acceptedDocumentChanged) {
+    return updateResult
+  }
+
+  const selection = selectionChangePublication(
+    model.graph.document,
+    updateResult.model.graph.document
+  )
+
+  const revised = {
+    ...updateResult,
+    model: {
+      ...updateResult.model,
+      acceptedDocumentRevision: model.acceptedDocumentRevision + 1,
+    },
+  }
+
+  if (selection === undefined) {
+    return revised
+  }
+
+  const published = 'outMessage' in updateResult ? updateResult.outMessage : []
+
+  return { ...revised, outMessage: [...(published ?? []), selection] }
 }
 
 export const initialModel = (
@@ -2858,6 +3113,7 @@ export const createProgram = (
 ) => {
   rendererInstanceNumber += 1
   const instanceId = `flow-foldkit-runtime-${rendererInstanceNumber}`
+  registerConnectionRule(instanceId, interactionOptions.isValidConnection)
 
   const initialGraph = Graph.initialModel(
     document,

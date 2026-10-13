@@ -5,6 +5,7 @@ import {
 } from '@flow/core'
 import type {
   FlowEditTransactionInput,
+  FlowInteractivity,
   FlowGraphView,
   FlowNode,
   MeasuredNode,
@@ -14,6 +15,7 @@ import type {
 import {
   HostAction,
   createFlowControls,
+  createFoldkitInteractivity,
   createFoldkitNodeMeasurementObserver,
   createProgram,
   createViewportClient,
@@ -33,6 +35,7 @@ export interface FoldkitUiControlsFixture {
   readonly edgeCount: () => number
   readonly applyEdit: (transaction: FlowEditTransactionInput) => void
   readonly interactiveCalls: () => readonly boolean[]
+  readonly interactivity: () => FlowInteractivity
   readonly disposeAll: () => void
 }
 
@@ -86,7 +89,8 @@ export const mountFoldkitUiControlsFixture = (
       {},
       limits,
       'full',
-      defaultInteractionOptions
+      // Pointer drags over nodes that cannot be dragged pan the pane.
+      { ...defaultInteractionOptions, panOnDrag: true }
     )
   )
 
@@ -146,7 +150,10 @@ export const mountFoldkitUiControlsFixture = (
       )
     }
 
+    const interactivity = createFoldkitInteractivity(active.ports)
+
     const controls = createFlowControls(pane.ownerDocument, viewportClient, {
+      interactivity,
       onInteractiveChange: (interactive) => interactiveCalls.push(interactive),
     })
 
@@ -211,6 +218,7 @@ export const mountFoldkitUiControlsFixture = (
       edgeCount: () => current.edges.length,
       applyEdit,
       interactiveCalls: () => interactiveCalls,
+      interactivity: interactivity.get,
       disposeAll: () => {
         stopStates()
         stopFrames()

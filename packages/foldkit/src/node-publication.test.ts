@@ -579,6 +579,11 @@ describe('publication instance and pre-consumption disposal', () => {
   })
 })
 
+const positionDelta = (x: number) => ({
+  nodes: [{ id: 'source', type: 'position', position: { x, y: 0 } }],
+  edges: [],
+})
+
 describe('round three actual updater held viewport history', () => {
   afterEach(() => vi.unstubAllGlobals())
 
@@ -746,6 +751,7 @@ describe('round three actual updater held viewport history', () => {
             cause: 'semantic-change',
           },
           controlMode: 'uncontrolled',
+          elementChanges: positionDelta(10),
         }
 
         const acceptedViewport = {
@@ -778,6 +784,7 @@ describe('round three actual updater held viewport history', () => {
             cause: 'semantic-change',
           },
           controlMode: 'uncontrolled',
+          elementChanges: positionDelta(30),
         }
 
         expect(mutationAttempts).toStrictEqual(

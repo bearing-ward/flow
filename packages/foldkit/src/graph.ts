@@ -83,6 +83,14 @@ import {
   flowEdgeRendererProps,
   flowNodeBounds,
   flowNodeRendererProps,
+  flowConnectionState,
+  handleGestureConnectable,
+  isEdgeSelectable,
+  isHandleConnectable,
+  isNodeConnectable,
+  isNodeDraggable,
+  isNodeSelectable,
+  resolveFlowInteractivity,
 } from '@flow/core'
 import type {
   FlowChange as CoreFlowChange,
@@ -123,6 +131,8 @@ import type {
   FlowEdgeRendererProps,
   FlowNodeRendererProps,
   FlowDefaultEdgeOptions,
+  FlowConnectionState,
+  FlowInteractivity,
 } from '@flow/core'
 import {
   Cause,
@@ -136,6 +146,19 @@ import {
 } from 'effect'
 import { Message as FoldMessage, Submodel, Subscription } from 'foldkit'
 import type { Html as FoldHtml, Update } from 'foldkit'
+
+import {
+  connectionPermitted,
+  connectionRuleAccepts,
+  connectionTargetOffered,
+} from './connection-rules.ts'
+import type { FoldkitIsValidConnection } from './connection-rules.ts'
+import {
+  MouseDetailSchema,
+  ObservedMouseNameSchema,
+  observeCanvasMouse,
+} from './mouse-observation.ts'
+import type { ObservedMouse } from './mouse-observation.ts'
 
 const PendingHandleSchema = Schema.Struct({
   nodeId: NodeIdSchema,
@@ -290,6 +313,9 @@ export const ModelSchema = Schema.Struct({
   zoomOnDoubleClick: Schema.Boolean,
   keyboardActivation: Schema.Boolean,
   connectOnClick: Schema.Boolean,
+  nodesDraggable: Schema.Boolean,
+  nodesConnectable: Schema.Boolean,
+  elementsSelectable: Schema.Boolean,
   defaultEdgeOptions: FlowDefaultEdgeOptionsSchema,
   measurements: FlowMeasurementStateSchema,
   pointerSession: Schema.NullOr(PointerSessionSchema),
@@ -309,6 +335,26 @@ const canvasForInstance = (instanceId: string): HTMLElement | null =>
 
 const canvasForModel = (model: Model): HTMLElement | null =>
   canvasForInstance(model.instanceId)
+
+/** The canvas switches `nodesDraggable`, `nodesConnectable` and `elementsSelectable`. */
+export const selectInteractivity = (
+  model: Pick<Model, keyof FlowInteractivity>
+): FlowInteractivity => ({
+  nodesDraggable: model.nodesDraggable,
+  nodesConnectable: model.nodesConnectable,
+  elementsSelectable: model.elementsSelectable,
+})
+
+/** Serializable `FinalConnectionState` summary for connection end events. */
+export const ConnectionEndStateSchema = Schema.Struct({
+  isValid: Schema.NullOr(Schema.Boolean),
+  fromNodeId: Schema.String,
+  fromHandleId: Schema.String,
+  fromHandleType: Schema.Literals(['source', 'target']),
+  toNodeId: Schema.NullOr(Schema.String),
+  toHandleId: Schema.NullOr(Schema.String),
+  toHandleType: Schema.NullOr(Schema.Literals(['source', 'target'])),
+})
 
 /** Serializable lifecycle records emitted by the Foldkit adapter. */
 export const InteractionEventSchema = Schema.Struct({
@@ -333,15 +379,19 @@ export const InteractionEventSchema = Schema.Struct({
     'onMove',
     'onMoveEnd',
     'onPaneClick',
+    'onPaneContextMenu',
     'onSelectionContextMenu',
+    'onSelectionChange',
     'onPaneMouseEnter',
     'onPaneMouseMove',
     'onPaneMouseLeave',
     'onNodeClick',
+    'onNodeContextMenu',
     'onNodeMouseEnter',
     'onNodeMouseMove',
     'onNodeMouseLeave',
     'onEdgeClick',
+    'onEdgeContextMenu',
     'onEdgeMouseEnter',
     'onEdgeMouseMove',
     'onEdgeMouseLeave',
@@ -365,6 +415,20 @@ export const InteractionEventSchema = Schema.Struct({
   x: Schema.optional(Schema.Finite),
   y: Schema.optional(Schema.Finite),
   change: Schema.optional(FlowChangeSchema),
+  /** Mouse fields: the serializable equivalent of the browser event. */
+  clientX: Schema.optional(Schema.Finite),
+  clientY: Schema.optional(Schema.Finite),
+  button: Schema.optional(Schema.Int),
+  altKey: Schema.optional(Schema.Boolean),
+  ctrlKey: Schema.optional(Schema.Boolean),
+  metaKey: Schema.optional(Schema.Boolean),
+  shiftKey: Schema.optional(Schema.Boolean),
+  /** Dragged node ids, or the selected node ids for `onSelectionChange`. */
+  nodeIds: Schema.optional(Schema.Array(Schema.String)),
+  /** Selected edge ids for `onSelectionChange`. */
+  edgeIds: Schema.optional(Schema.Array(Schema.String)),
+  /** `onConnectEnd`/`onReconnectEnd` final connection state. */
+  connectionState: Schema.optional(ConnectionEndStateSchema),
 })
 
 export type InteractionEvent = typeof InteractionEventSchema.Type
@@ -390,22 +454,15 @@ export type OutMessageData = typeof OutMessage.Type
 export const Message = FoldMessage.defineMessageUnion({
   IgnoreInput: {},
   ObserveMouse: {
-    name: Schema.Literals([
-      'onPaneClick',
-      'onSelectionContextMenu',
-      'onPaneMouseEnter',
-      'onPaneMouseMove',
-      'onPaneMouseLeave',
-      'onNodeClick',
-      'onNodeMouseEnter',
-      'onNodeMouseMove',
-      'onNodeMouseLeave',
-      'onEdgeMouseEnter',
-      'onEdgeMouseMove',
-      'onEdgeMouseLeave',
-    ]),
+    name: ObservedMouseNameSchema,
     nodeId: Schema.NullOr(Schema.String),
     edgeId: Schema.NullOr(Schema.String),
+    pointer: Schema.optional(MouseDetailSchema),
+  },
+  SetInteractivity: {
+    nodesDraggable: Schema.optional(Schema.Boolean),
+    nodesConnectable: Schema.optional(Schema.Boolean),
+    elementsSelectable: Schema.optional(Schema.Boolean),
   },
   ReplaceDocument: { document: FlowDocumentSchema },
   ReplaceViewport: { viewport: ViewportSchema },
@@ -491,7 +548,10 @@ export const Message = FoldMessage.defineMessageUnion({
   CancelGesture: {},
   MeasureNode: { measurement: NodeMeasurementInputSchema },
   PruneMeasurements: {},
-  SelectEdge: { edgeId: EdgeIdSchema },
+  SelectEdge: {
+    edgeId: EdgeIdSchema,
+    pointer: Schema.optional(MouseDetailSchema),
+  },
   ToggleNodeSelection: { nodeId: NodeIdSchema },
   ResizeByKeyboard: {
     nodeId: NodeIdSchema,
@@ -539,6 +599,18 @@ export interface GraphInteractionOptions {
   readonly keyboardActivation?: boolean
   readonly connectOnClick?: boolean
   readonly defaultEdgeOptions?: FlowDefaultEdgeOptions
+  /** React Flow `nodesDraggable`; a node's own `draggable` wins. Defaults to true. */
+  readonly nodesDraggable?: boolean
+  /** React Flow `nodesConnectable`; node and handle flags win. Defaults to true. */
+  readonly nodesConnectable?: boolean
+  /** React Flow `elementsSelectable`; element `selectable` wins. Defaults to true. */
+  readonly elementsSelectable?: boolean
+  /**
+   * React Flow `isValidConnection`. When set it replaces the static
+   * `allowedConnectionTargets` list. Registered by `createProgram`; it never
+   * enters the schema-checked model.
+   */
+  readonly isValidConnection?: FoldkitIsValidConnection
 }
 
 export const defaultInteractionOptions: GraphInteractionOptions = {
@@ -557,6 +629,9 @@ export const defaultInteractionOptions: GraphInteractionOptions = {
   keyboardActivation: true,
   connectOnClick: true,
   defaultEdgeOptions: {},
+  nodesDraggable: true,
+  nodesConnectable: true,
+  elementsSelectable: true,
 }
 
 export const selectSnapshot = (model: Model): FlowSnapshot => ({
@@ -898,8 +973,7 @@ const finishConnection = (
     source === undefined ||
     target === undefined ||
     sourceHandle === undefined ||
-    targetHandle === undefined ||
-    !model.allowedConnectionTargets.includes(target.id)
+    targetHandle === undefined
   ) {
     return { model: cleared }
   }
@@ -908,6 +982,7 @@ const finishConnection = (
     connectionFromHandleGesture(
       {
         document: model.document,
+        interactivity: selectInteractivity(model),
         fromNodeId: source.id,
         fromHandleId: sourceHandle.id,
         toNodeId: target.id,
@@ -917,7 +992,16 @@ const finishConnection = (
     )
   )
 
-  if (Exit.isFailure(validated)) {
+  if (
+    Exit.isFailure(validated) ||
+    !connectionPermitted(
+      model.instanceId,
+      model.allowedConnectionTargets,
+      target.id,
+      validated.value,
+      model.document
+    )
+  ) {
     return { model: cleared }
   }
 
@@ -970,6 +1054,43 @@ const completeKeyboardConnection = (
     })
   )
 
+/** A reconnection's new endpoint must accept connections and pass the rule. */
+const reconnectionAllowed = (
+  model: Model,
+  edge: FlowEdge,
+  nodeId: string,
+  handleId: string
+): boolean => {
+  const node = model.document.nodes.find(({ id }) => id === nodeId)
+  const handle = node?.handles?.find(({ id }) => id === handleId)
+
+  return (
+    node !== undefined &&
+    handle !== undefined &&
+    isHandleConnectable(selectInteractivity(model), node, handle, 'end') &&
+    connectionRuleAccepts(
+      model.instanceId,
+      {
+        source: edge.source,
+        sourceHandle: HandleIdSchema.make(edge.sourceHandle ?? ''),
+        target: edge.target,
+        targetHandle: HandleIdSchema.make(edge.targetHandle ?? ''),
+      },
+      model.document
+    )
+  )
+}
+
+/** Whether a click or keyboard connection may start from this handle. */
+const handleStartable = (
+  model: Model,
+  node: FlowNode | undefined,
+  handle: FlowHandle | undefined
+): boolean =>
+  node !== undefined &&
+  handle !== undefined &&
+  isHandleConnectable(selectInteractivity(model), node, handle, 'start')
+
 const completeKeyboardReconnection = (
   model: Model,
   session: Extract<
@@ -990,7 +1111,11 @@ const completeKeyboardReconnection = (
     )
   )
 
-  if (Exit.isFailure(exit) || exit.value === undefined) {
+  if (
+    Exit.isFailure(exit) ||
+    exit.value === undefined ||
+    !reconnectionAllowed(model, exit.value, targetNodeId, targetHandleId)
+  ) {
     return { model: { ...model, keyboardConnectionSession: null } }
   }
 
@@ -1035,7 +1160,11 @@ const finishNodeDrag = (
 
   const resolved = graph.nodes.get(node.id)
 
-  if (resolved === undefined || resolved.hidden || node.draggable === false) {
+  if (
+    resolved === undefined ||
+    resolved.hidden ||
+    !isNodeDraggable(selectInteractivity(model), node)
+  ) {
     return { model: cleared }
   }
 
@@ -1101,19 +1230,35 @@ const pendingEligible = (
     getFlowMeasuredNodes(model.document, model.measurements)
   )
 
-  const eligible = (identity: typeof PendingHandleSchema.Type): boolean =>
-    graph.nodes.get(identity.nodeId)?.hidden === false &&
-    model.document.nodes.find(({ id }) => id === identity.nodeId)
-      ?.connectable !== false &&
-    model.document.nodes
-      .find(({ id }) => id === identity.nodeId)
-      ?.handles?.some(
+  const interactivity = selectInteractivity(model)
+
+  const eligible = (identity: typeof PendingHandleSchema.Type): boolean => {
+    const node = model.document.nodes.find(({ id }) => id === identity.nodeId)
+
+    return (
+      graph.nodes.get(identity.nodeId)?.hidden === false &&
+      node !== undefined &&
+      node.handles?.some(
         ({ id, kind }) => id === identity.handleId && kind === identity.kind
       ) === true
+    )
+  }
+
+  const startable = (identity: typeof PendingHandleSchema.Type): boolean => {
+    const node = model.document.nodes.find(({ id }) => id === identity.nodeId)
+    const handle = node?.handles?.find(({ id }) => id === identity.handleId)
+
+    return (
+      node !== undefined &&
+      handle !== undefined &&
+      isHandleConnectable(interactivity, node, handle, 'start')
+    )
+  }
 
   if (pending.kind === 'connection-pending') {
     return (
       eligible(pending.from) &&
+      (model.keyboardConnectionSession !== null || startable(pending.from)) &&
       (model.connectionMode === 'loose' ||
         pending.from.kind === 'source' ||
         model.keyboardConnectionSession !== null)
@@ -1134,7 +1279,12 @@ const pendingEligible = (
     resolved.sourceHandle.id === pending.source.handleId &&
     resolved.targetHandle.id === pending.target.handleId &&
     eligible(pending.source) &&
-    eligible(pending.target)
+    eligible(pending.target) &&
+    [pending.source, pending.target].every((identity) => {
+      const node = model.document.nodes.find(({ id }) => id === identity.nodeId)
+
+      return node !== undefined && isNodeConnectable(interactivity, node)
+    })
   )
 }
 
@@ -1264,7 +1414,11 @@ const finishPointer = (model: Model, message: PointerReleased) => {
         )
       )
 
-      if (Exit.isFailure(result) || result.value === undefined) {
+      if (
+        Exit.isFailure(result) ||
+        result.value === undefined ||
+        !reconnectionAllowed(model, result.value, targetNodeId, targetHandleId)
+      ) {
         return { model: cleared }
       }
 
@@ -1591,6 +1745,30 @@ const updateState = (
         keyboardConnectionSession: null,
       },
     }),
+    SetInteractivity: (next) => {
+      const interactivity = {
+        nodesDraggable: next.nodesDraggable ?? model.nodesDraggable,
+        nodesConnectable: next.nodesConnectable ?? model.nodesConnectable,
+        elementsSelectable: next.elementsSelectable ?? model.elementsSelectable,
+      }
+
+      // A pending click or keyboard connection cannot finish once
+      // connections are switched off, so it ends with the switch.
+      return {
+        model: {
+          ...model,
+          ...interactivity,
+          keyboardConnectionSession: interactivity.nodesConnectable
+            ? model.keyboardConnectionSession
+            : null,
+          gestureSession:
+            !interactivity.elementsSelectable &&
+            model.gestureSession?.kind === 'selection'
+              ? null
+              : model.gestureSession,
+        },
+      }
+    },
     SetAllowedTargets: ({ targets }) => ({
       model: {
         ...model,
@@ -1686,9 +1864,8 @@ const updateState = (
         }
 
         if (handleId === null) {
-          return node.draggable === false
-            ? noChange(model)
-            : {
+          return isNodeDraggable(selectInteractivity(model), node)
+            ? {
                 model: {
                   ...model,
                   pointerClickReceipt: null,
@@ -1706,6 +1883,7 @@ const updateState = (
                   },
                 },
               }
+            : noChange(model)
         }
 
         const handle = node.handles?.find(({ id }) => id === handleId)
@@ -1905,8 +2083,10 @@ const updateState = (
 
       const pending = model.keyboardConnectionSession
 
+      const startable = handleStartable(model, node, handle)
+
       if (pending === null) {
-        return handle?.kind === 'source'
+        return handle?.kind === 'source' && startable
           ? {
               model: {
                 ...model,
@@ -1929,7 +2109,7 @@ const updateState = (
           : { model: { ...model, keyboardConnectionSession: null } }
       }
 
-      if (handle?.kind === 'source') {
+      if (handle?.kind === 'source' && startable) {
         return {
           model: {
             ...model,
@@ -2038,7 +2218,7 @@ const updateState = (
           }
         }
 
-        if (!model.selectionOnDrag) {
+        if (!model.selectionOnDrag || !model.elementsSelectable) {
           return noChange(model)
         }
 
@@ -2375,7 +2555,10 @@ const updateState = (
         (candidate) => candidate.id === edgeId
       )
 
-      if (edge === undefined || edge.selectable === false) {
+      if (
+        edge === undefined ||
+        !isEdgeSelectable(selectInteractivity(model), edge)
+      ) {
         return noChange(model)
       }
 
@@ -2391,9 +2574,11 @@ const updateState = (
         (candidate) => candidate.id === nodeId
       )
 
+      const interactivity = selectInteractivity(model)
+
       if (
         node === undefined ||
-        node.selectable === false ||
+        !isNodeSelectable(interactivity, node) ||
         node.hidden === true
       ) {
         return noChange(model)
@@ -2404,7 +2589,7 @@ const updateState = (
         nodeIds: model.document.nodes
           .filter(
             (candidate) =>
-              candidate.selectable !== false &&
+              isNodeSelectable(interactivity, candidate) &&
               candidate.hidden !== true &&
               (candidate.id === nodeId
                 ? candidate.selected !== true
@@ -2431,7 +2616,11 @@ const updateState = (
       if (key === ' ' && shift && nodeId !== null) {
         const node = model.document.nodes.find(({ id }) => id === nodeId)
 
-        if (node === undefined || node.selectable === false) {
+        if (
+          node === undefined ||
+          !model.elementsSelectable ||
+          !isNodeSelectable(selectInteractivity(model), node)
+        ) {
           return noChange(model)
         }
 
@@ -3219,7 +3408,11 @@ const connectionPreviewState = (
       nodeId === undefined ||
       handleId === undefined ||
       handle === undefined ||
-      !model.allowedConnectionTargets.includes(nodeId)
+      !connectionTargetOffered(
+        model.instanceId,
+        model.allowedConnectionTargets,
+        nodeId
+      )
     ) {
       return []
     }
@@ -3289,9 +3482,19 @@ const connectionPreviewState = (
           )
 
     const valid =
-      connection === null
+      connection === null || nearest === undefined
         ? null
-        : Exit.isSuccess(
+        : handleGestureConnectable(
+            model.document,
+            {
+              fromNodeId: session.nodeId,
+              fromHandleId: session.sourceHandleId,
+              toNodeId: nearest.nodeId,
+              toHandleId: nearest.handleId,
+            },
+            selectInteractivity(model)
+          ) &&
+          Exit.isSuccess(
             Effect.runSyncExit(
               validateFlowConnection(
                 model.document,
@@ -3299,6 +3502,13 @@ const connectionPreviewState = (
                 model.connectionMode
               )
             )
+          ) &&
+          connectionPermitted(
+            model.instanceId,
+            model.allowedConnectionTargets,
+            nearest.nodeId,
+            connection,
+            model.document
           )
 
     return { kind: 'connect', from, to, candidate: connection, valid }
@@ -3345,20 +3555,30 @@ const connectionPreviewState = (
           model.connectionMode
         )
 
-  const valid =
+  const reconnected =
     edge === undefined || nearest === undefined
-      ? null
-      : Exit.isSuccess(
-          Effect.runSyncExit(
-            reconnectFlowEdge(
-              model.document,
-              session.edgeId,
-              session.endpoint,
-              nearest.nodeId,
-              nearest.handleId,
-              model.connectionMode
-            )
+      ? undefined
+      : Effect.runSyncExit(
+          reconnectFlowEdge(
+            model.document,
+            session.edgeId,
+            session.endpoint,
+            nearest.nodeId,
+            nearest.handleId,
+            model.connectionMode
           )
+        )
+
+  const valid =
+    reconnected === undefined || nearest === undefined
+      ? null
+      : Exit.isSuccess(reconnected) &&
+        reconnected.value !== undefined &&
+        reconnectionAllowed(
+          model,
+          reconnected.value,
+          nearest.nodeId,
+          nearest.handleId
         )
 
   return {
@@ -3376,6 +3596,27 @@ export const selectConnectionPreview = (
   model: Model
 ): ConnectionPreviewSnapshot =>
   createConnectionPreviewSnapshot(connectionPreviewState(model))
+
+/** React Flow `ConnectionState` for the active pointer connection, as `useConnection` reads it. */
+export const selectConnectionState = (model: Model): FlowConnectionState => {
+  const session = model.pointerSession
+
+  if (session?.kind !== 'connection' && session?.kind !== 'reconnection') {
+    return flowConnectionState({
+      document: model.document,
+      preview: null,
+    })
+  }
+
+  return flowConnectionState({
+    document: model.document,
+    preview: selectConnectionPreview(model),
+    origin:
+      session.kind === 'connection'
+        ? { nodeId: session.nodeId, handleId: session.sourceHandleId }
+        : undefined,
+  })
+}
 
 const markerDefinition = (
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
@@ -3448,30 +3689,8 @@ const edgeVisuals = (
     h.Attribute('role', edge.selectable === false ? 'img' : 'button'),
     h.Attribute('tabindex', edge.focusable === false ? '-1' : '0'),
     h.AriaLabel(ariaLabel),
-    h.OnClick(Message.SelectEdge({ edgeId: edge.id }), {
-      propagation: 'Stop',
-    }),
-    h.OnMouseEnter(
-      Message.ObserveMouse({
-        name: 'onEdgeMouseEnter',
-        nodeId: null,
-        edgeId: edge.id,
-      })
-    ),
-    h.OnMouseMove(
-      Message.ObserveMouse({
-        name: 'onEdgeMouseMove',
-        nodeId: null,
-        edgeId: edge.id,
-      })
-    ),
-    h.OnMouseLeave(
-      Message.ObserveMouse({
-        name: 'onEdgeMouseLeave',
-        nodeId: null,
-        edgeId: edge.id,
-      })
-    ),
+    // Clicks and mouse movement are observed by the pointer resource, which
+    // reads client positions and modifier keys from the native event.
     h.OnKeyDownPreventDefault((key) =>
       key === 'Enter' || key === ' '
         ? Option.some(Message.SelectEdge({ edgeId: edge.id }))
@@ -3620,7 +3839,11 @@ const connectionReleaseTarget = (
         targetNodeId === undefined ||
         targetHandleId === undefined ||
         targetHandle === undefined ||
-        !allowedConnectionTargets.includes(targetNodeId)
+        !connectionTargetOffered(
+          model.instanceId,
+          allowedConnectionTargets,
+          targetNodeId
+        )
       ) {
         return []
       }
@@ -3770,7 +3993,10 @@ const nodeFrame = (
 ): typeof NodeFrameSchema.Type | undefined => {
   const node = model.document.nodes.find(({ id }) => id === nodeId)
 
-  if (node === undefined || node.draggable === false) {
+  if (
+    node === undefined ||
+    !isNodeDraggable(selectInteractivity(model), node)
+  ) {
     return undefined
   }
 
@@ -4180,11 +4406,8 @@ export const createPointerResource = (initial: Model) => {
       return deliveryState === 'queued' ? Option.some(message) : Option.none()
     }
 
-    const delivery = Message.ObserveMouse({
-      name: message.name,
-      nodeId: message.nodeId,
-      edgeId: message.edgeId,
-    })
+    const { _tag: _observed, ...observation } = message
+    const delivery = Message.ObserveMouse(observation)
 
     observations.set(delivery, 'queued')
     Queue.offerUnsafe(queue, delivery)
@@ -4344,6 +4567,57 @@ export const createPointerResource = (initial: Model) => {
     return Option.some(message)
   }
 
+  const nodePanGesture = (
+    raw: Pick<PointerEvent, 'pointerId' | 'clientX' | 'clientY' | 'target'>,
+    canvas: HTMLElement
+  ): GestureDownMessage | undefined => {
+    if (
+      !current.panOnDrag ||
+      !(raw.target instanceof Element) ||
+      raw.target.closest(
+        '[data-flow-no-pan], .flow-flow__nopan, .flow-foldkit-nopan'
+      ) !== null
+    ) {
+      return undefined
+    }
+
+    const point = flowPoint(raw.clientX, raw.clientY, current.viewport, canvas)
+
+    return Message.GestureDown({
+      pointerId: raw.pointerId,
+      clientX: point.x,
+      clientY: point.y,
+      nodeId: null,
+      direction: null,
+      allowPan: true,
+      screenX: raw.clientX,
+      screenY: raw.clientY,
+    })
+  }
+
+  const observeMouse = (record: ObservedMouse): void => {
+    if (closed) {
+      return
+    }
+
+    const message =
+      record.kind === 'select-edge'
+        ? Message.SelectEdge({
+            edgeId: EdgeIdSchema.make(record.edgeId),
+            pointer: record.pointer,
+          })
+        : Message.ObserveMouse({
+            name: record.name,
+            nodeId: record.nodeId,
+            edgeId: record.edgeId,
+            pointer: record.pointer,
+          })
+
+    // Node clicks follow the pointer release already queued here.
+    observations.set(message, 'queued')
+    Queue.offerUnsafe(queue, message)
+  }
+
   const admissionOpen = (): boolean =>
     ready && !closed && nativeCurrent?.native !== 'pressed'
 
@@ -4409,6 +4683,25 @@ export const createPointerResource = (initial: Model) => {
       const frame = isNode ? nodeFrame(current, down.nodeId) : undefined
 
       if (isNode && frame === undefined) {
+        // A node that cannot be dragged does not block the pane: with
+        // panOnDrag the press pans the viewport, as in React Flow.
+        const pan = nodePanGesture(raw, canvas)
+
+        if (pan === undefined) {
+          return Option.none()
+        }
+
+        origin = {
+          kind: 'observed',
+          down: pan,
+          coordinateCanvas: canvas,
+          native: 'pressed',
+          admission: 'awaiting',
+        }
+        nativeCurrent = origin
+        outstanding.add(origin)
+        offer(origin, pan)
+
         return Option.none()
       }
 
@@ -4644,7 +4937,15 @@ export const createPointerResource = (initial: Model) => {
       document.addEventListener('keydown', escape, true)
       document.addEventListener('click', click, true)
       window.addEventListener('blur', blur)
+
+      const stopMouse = observeCanvasMouse(
+        document,
+        () => canvasForModel(current),
+        observeMouse
+      )
+
       removeListeners = () => {
+        stopMouse()
         document.removeEventListener('pointermove', move, true)
         document.removeEventListener('pointerup', up, true)
         document.removeEventListener('pointercancel', pointerCancel, true)
@@ -4662,6 +4963,26 @@ export const createPointerResource = (initial: Model) => {
   )
 
   return { begin, prepare, reconcile, acquire, close }
+}
+
+/** React Flow Handle classes: `connectable`, `connectablestart`, `connectableend`. */
+const handleConnectabilityClasses = (
+  interactivity: FlowInteractivity,
+  node: FlowNode,
+  handle: FlowHandle
+): readonly string[] => {
+  const connectable =
+    handle.connectable ?? isNodeConnectable(interactivity, node)
+
+  return [
+    ...(connectable ? ['connectable'] : []),
+    ...(isHandleConnectable(interactivity, node, handle, 'start')
+      ? ['connectablestart']
+      : []),
+    ...(isHandleConnectable(interactivity, node, handle, 'end')
+      ? ['connectableend']
+      : []),
+  ]
 }
 
 const nodeRendererProps = (
@@ -4822,9 +5143,17 @@ const graphView = (
                 zIndex: String(node.zIndex ?? 0),
               }
 
+        const interactivity = selectInteractivity(model)
+
         const handles = (node.handles ?? []).map((handle) =>
           h.button([
-            h.Class(`flow-foldkit-handle flow-foldkit-handle-${handle.side}`),
+            h.Class(
+              [
+                'flow-foldkit-handle',
+                `flow-foldkit-handle-${handle.side}`,
+                ...handleConnectabilityClasses(interactivity, node, handle),
+              ].join(' ')
+            ),
             h.DataAttribute('handle-id', handle.id),
             h.DataAttribute('handle-side', handle.side),
             h.AriaLabel(`${handle.kind} handle ${handle.id}`),
@@ -4924,6 +5253,7 @@ const graphView = (
                 h.button([
                   h.Class('flow-foldkit-select-node'),
                   h.Attribute('type', 'button'),
+                  h.AriaDisabled(!isNodeSelectable(interactivity, node)),
                   h.AriaLabel(`Toggle selection for ${node.label}`),
                   h.OnClick(Message.ToggleNodeSelection({ nodeId: node.id })),
                 ]),
@@ -4951,35 +5281,6 @@ const graphView = (
             h.DataAttribute('node-id', node.id),
             h.Attribute('tabindex', node.focusable === false ? '-1' : '0'),
             h.Style(style),
-            h.OnClick(
-              Message.ObserveMouse({
-                name: 'onNodeClick',
-                nodeId: node.id,
-                edgeId: null,
-              }),
-              { propagation: 'Stop' }
-            ),
-            h.OnMouseEnter(
-              Message.ObserveMouse({
-                name: 'onNodeMouseEnter',
-                nodeId: node.id,
-                edgeId: null,
-              })
-            ),
-            h.OnMouseMove(
-              Message.ObserveMouse({
-                name: 'onNodeMouseMove',
-                nodeId: node.id,
-                edgeId: null,
-              })
-            ),
-            h.OnMouseLeave(
-              Message.ObserveMouse({
-                name: 'onNodeMouseLeave',
-                nodeId: node.id,
-                edgeId: null,
-              })
-            ),
           ],
           [...contents, ...handles, ...resizeHandles, ...selectionControl]
         )
@@ -5150,34 +5451,6 @@ const graphView = (
         h.DataAttribute('flow-instance', model.instanceId),
         h.DataAttribute('testid', 'flow-canvas'),
         h.Tabindex(0),
-        h.OnClick(
-          Message.ObserveMouse({
-            name: 'onPaneClick',
-            nodeId: null,
-            edgeId: null,
-          })
-        ),
-        h.OnMouseEnter(
-          Message.ObserveMouse({
-            name: 'onPaneMouseEnter',
-            nodeId: null,
-            edgeId: null,
-          })
-        ),
-        h.OnMouseMove(
-          Message.ObserveMouse({
-            name: 'onPaneMouseMove',
-            nodeId: null,
-            edgeId: null,
-          })
-        ),
-        h.OnMouseLeave(
-          Message.ObserveMouse({
-            name: 'onPaneMouseLeave',
-            nodeId: null,
-            edgeId: null,
-          })
-        ),
         h.OnPointerDown(
           (
             _,
@@ -5475,42 +5748,14 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
           : Stream.empty,
     }
   ),
-  selectionContextMenu: entry(
-    { enabled: Schema.Boolean },
-    {
-      modelToDependencies: () => ({ enabled: true }),
-      dependenciesToStream: () =>
-        Subscription.fromEventFilterMapPreventDefault({
-          target: document,
-          type: 'contextmenu',
-          filterMapEvent: (event): Option.Option<GraphMessageData> => {
-            const { target } = event
-
-            const canvas =
-              target instanceof Element
-                ? target.closest('.flow-foldkit-canvas')
-                : null
-
-            if (canvas === null || !(target instanceof Element)) {
-              return Option.none()
-            }
-
-            const node = target.closest<HTMLElement>('[data-node-id]')
-            const edge = target.closest<HTMLElement>('[data-edge-id]')
-
-            return Option.some(
-              Message.ObserveMouse({
-                name: 'onSelectionContextMenu',
-                nodeId: node?.dataset.nodeId ?? null,
-                edgeId: edge?.dataset.edgeId ?? null,
-              })
-            )
-          },
-        }),
-    }
-  ),
 }))
 // oxlint-enable anti-slop(require-readable-spacing)
+
+/** Host callbacks stay outside the schema-checked model. */
+const withoutCallbacks = ({
+  isValidConnection: _callback,
+  ...options
+}: GraphInteractionOptions) => options
 
 export const initialModel = (
   document: FlowDocument,
@@ -5528,8 +5773,9 @@ export const initialModel = (
   documentMode,
   viewportMode,
   allowedConnectionTargets: allowedTargets,
-  ...defaultInteractionOptions,
-  ...interactionOptions,
+  ...withoutCallbacks(defaultInteractionOptions),
+  ...withoutCallbacks(interactionOptions),
+  ...resolveFlowInteractivity(interactionOptions),
   connectionDragThreshold: Schema.decodeUnknownSync(
     ConnectionDragThresholdSchema
   )(
