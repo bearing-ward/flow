@@ -1,8 +1,7 @@
+import { flowInteractivityFor, isFlowInteractive } from '@flow/core'
 import * as S from 'effect/Schema'
 
 import type { FitViewOptions, FlowController } from './mount-flow.ts'
-import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
-import { controllerCanvas } from './ui/overlay.ts'
 
 const ControlsOptionsSchema = S.Struct({
   showZoom: S.optional(S.Boolean),
@@ -60,7 +59,19 @@ interface RestoredButton {
 
 /** Mount accessible controls that operate only through the public controller. */
 export const createFlowControls = (
-  controller: FlowController,
+  controller: Pick<
+    FlowController,
+    | 'overlayPortal'
+    | 'getViewport'
+    | 'getViewportLimits'
+    | 'subscribeViewport'
+    | 'zoomIn'
+    | 'zoomOut'
+    | 'fitView'
+    | 'getInteractivity'
+    | 'setInteractivity'
+    | 'subscribeInteractivity'
+  >,
   input: FlowControlsOptions = {}
 ): FlowControlsMount => {
   const options = {
@@ -120,10 +131,12 @@ export const createFlowControls = (
     addAction('interactive')
   }
 
-  const lock = createFlowInteractivityLock(() => controllerCanvas(controller))
+  // React Flow Controls: interactive while any switch is on; the lock sets all three.
+  const isInteractive = (): boolean =>
+    isFlowInteractive(controller.getInteractivity())
 
-  const setInteractive = (interactive: boolean): void => {
-    lock.setInteractive(interactive)
+  const renderInteractive = (): void => {
+    const interactive = isInteractive()
     group.dataset.interactive = String(interactive)
 
     const button = buttons.get('interactive')
@@ -134,7 +147,13 @@ export const createFlowControls = (
     }
   }
 
-  setInteractive(true)
+  const setInteractive = (interactive: boolean): void => {
+    controller.setInteractivity(flowInteractivityFor(interactive))
+    renderInteractive()
+  }
+
+  renderInteractive()
+  const stopInteractivity = controller.subscribeInteractivity(renderInteractive)
 
   const restored: RestoredButton[] = (options.children ?? []).map(
     (element) => ({
@@ -203,7 +222,7 @@ export const createFlowControls = (
       }
 
       case 'interactive': {
-        const next = !lock.isInteractive()
+        const next = !isInteractive()
         setInteractive(next)
         options.onInteractiveChange?.(next)
         break
@@ -223,7 +242,7 @@ export const createFlowControls = (
 
   return {
     element: group,
-    isInteractive: lock.isInteractive,
+    isInteractive,
     setInteractive,
     destroy: () => {
       if (destroyed) {
@@ -231,7 +250,7 @@ export const createFlowControls = (
       }
 
       destroyed = true
-      lock.release()
+      stopInteractivity()
       unsubscribe()
       group.removeEventListener('click', onClick)
       group.remove()

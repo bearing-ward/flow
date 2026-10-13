@@ -56,6 +56,12 @@ export const FlowHandleSchema = S.Struct({
   id: HandleIdSchema,
   kind: S.Literals(['source', 'target']),
   side: S.Literals(['top', 'right', 'bottom', 'left']),
+  /** React Flow Handle `isConnectable`; defaults to the node's connectability. */
+  connectable: S.optional(S.Boolean),
+  /** React Flow Handle `isConnectableStart`: a connection may start here. */
+  connectableStart: S.optional(S.Boolean),
+  /** React Flow Handle `isConnectableEnd`: a connection may finish here. */
+  connectableEnd: S.optional(S.Boolean),
 })
 
 export type FlowHandle = typeof FlowHandleSchema.Type

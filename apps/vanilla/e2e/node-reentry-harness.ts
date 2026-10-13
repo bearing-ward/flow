@@ -32,6 +32,20 @@ import type {
   FlowEdgeRenderer,
 } from '../src/mount-flow.ts'
 
+/**
+ * These ownership proofs predate Plan 105's renderer props, which have their
+ * own e2e coverage; record the original context fields only.
+ */
+const withoutRendererProps = <Context extends object>(context: Context) => {
+  if (!('props' in context)) {
+    return context
+  }
+
+  const { props: _props, ...rest } = context
+
+  return rest
+}
+
 const heldResizeObserver = (NativeObserver: typeof ResizeObserver) =>
   class extends NativeObserver {
     constructor(deliverResize: ResizeObserverCallback) {
@@ -2103,7 +2117,7 @@ export const continuationRoundFourRenderer = async (
       hooks.push({
         hook: 'factory-enter',
         edge: structuredClone(edge),
-        context: structuredClone(context),
+        context: structuredClone(withoutRendererProps(context)),
         container: name,
       })
 
@@ -2122,7 +2136,7 @@ export const continuationRoundFourRenderer = async (
           hooks.push({
             hook: 'update',
             edge: structuredClone(edgeInput),
-            context: structuredClone(contextInput),
+            context: structuredClone(withoutRendererProps(contextInput)),
             instance,
             container: name,
           }),
@@ -2598,7 +2612,7 @@ export const continuationRoundFourReadyRenderer = async (
       hooks.push({
         hook: 'factory',
         edge: structuredClone(edge),
-        context: structuredClone(context),
+        context: structuredClone(withoutRendererProps(context)),
         instance,
       })
 
@@ -2615,7 +2629,7 @@ export const continuationRoundFourReadyRenderer = async (
           hooks.push({
             hook: 'update',
             edge: structuredClone(edgeInput),
-            context: structuredClone(contextInput),
+            context: structuredClone(withoutRendererProps(contextInput)),
             instance,
           })
 
@@ -2915,7 +2929,7 @@ export const continuationRoundFourMountError = async (
               hooks.push({
                 hook: 'factory',
                 edge: structuredClone(edge),
-                context: structuredClone(context),
+                context: structuredClone(withoutRendererProps(context)),
               })
               throw sentinel
             },
@@ -3128,7 +3142,7 @@ export const ownershipRoundFiveProjection = async (
         hook: 'edge-factory',
         id: edge.id,
         input: structuredClone(edge),
-        context: structuredClone(context),
+        context: structuredClone(withoutRendererProps(context)),
       })
 
       return {
@@ -3137,7 +3151,7 @@ export const ownershipRoundFiveProjection = async (
             hook: 'edge-update',
             id: value.id,
             input: structuredClone(value),
-            context: structuredClone(nextContext),
+            context: structuredClone(withoutRendererProps(nextContext)),
           })
           reenter('edge-update')
         },
@@ -3732,7 +3746,7 @@ export const ownershipRoundSevenGeometry = async (
     hooks.push({
       hook: 'render',
       edge: structuredClone(edge),
-      context: structuredClone(context),
+      context: structuredClone(withoutRendererProps(context)),
     })
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -3746,7 +3760,7 @@ export const ownershipRoundSevenGeometry = async (
         hooks.push({
           hook: 'update',
           edge: structuredClone(nextEdge),
-          context: structuredClone(nextContext),
+          context: structuredClone(withoutRendererProps(nextContext)),
         })
         path.setAttribute('d', nextContext.pathData)
       },
@@ -3945,7 +3959,10 @@ export const ownershipRoundSevenCurrency = async (
     _edge,
     context
   ) => {
-    hooks.push({ hook: 'current-geometry', context: structuredClone(context) })
+    hooks.push({
+      hook: 'current-geometry',
+      context: structuredClone(context),
+    })
 
     return currentGeometry
   }
@@ -3973,7 +3990,7 @@ export const ownershipRoundSevenCurrency = async (
 
       hooks.push({
         hook,
-        context: structuredClone(context),
+        context: structuredClone(withoutRendererProps(context)),
       })
 
       if (!armed) {
@@ -3995,7 +4012,10 @@ export const ownershipRoundSevenCurrency = async (
       return { pathData: 'M 90 91 L 92 93', labelAnchor: { x: 94, y: 95 } }
     },
     render: (_edge, context, visual) => {
-      hooks.push({ hook: 'original-render', context: structuredClone(context) })
+      hooks.push({
+        hook: 'original-render',
+        context: structuredClone(withoutRendererProps(context)),
+      })
 
       const path = document.createElementNS(
         'http://www.w3.org/2000/svg',
@@ -4010,7 +4030,7 @@ export const ownershipRoundSevenCurrency = async (
         update: (_next, nextContext) => {
           hooks.push({
             hook: 'original-update',
-            context: structuredClone(nextContext),
+            context: structuredClone(withoutRendererProps(nextContext)),
           })
           path.setAttribute('d', nextContext.pathData)
         },
@@ -4239,7 +4259,10 @@ export const ownershipRoundSevenNumeric = async () => {
 
   const renderer: FlowEdgeRenderer = {
     geometry: (_edge, context) => {
-      hooks.push({ hook: 'geometry', context: structuredClone(context) })
+      hooks.push({
+        hook: 'geometry',
+        context: structuredClone(withoutRendererProps(context)),
+      })
 
       return {
         pathData: `M ${context.source.x} ${context.source.y} L ${context.target.x} ${context.target.y}`,
@@ -4247,7 +4270,10 @@ export const ownershipRoundSevenNumeric = async () => {
       }
     },
     render: (_edge, context, visual) => {
-      hooks.push({ hook: 'render', context: structuredClone(context) })
+      hooks.push({
+        hook: 'render',
+        context: structuredClone(withoutRendererProps(context)),
+      })
 
       const path = document.createElementNS(
         'http://www.w3.org/2000/svg',
@@ -4260,7 +4286,10 @@ export const ownershipRoundSevenNumeric = async () => {
 
       return {
         update: (_next, nextContext) => {
-          hooks.push({ hook: 'update', context: structuredClone(nextContext) })
+          hooks.push({
+            hook: 'update',
+            context: structuredClone(withoutRendererProps(nextContext)),
+          })
           path.setAttribute('d', nextContext.pathData)
         },
         destroy: () => {

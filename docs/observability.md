@@ -22,6 +22,7 @@ The current slice creates these spans:
 | `flow.edge.reconnect.start` | Accepted selected-edge endpoint gesture |
 | `flow.edge.reconnect.complete` | Validated endpoint replacement and semantic change |
 | `flow.host.mount` | Plain-DOM host creation |
+| `flow.interactivity.change` | Runtime `nodesDraggable`, `nodesConnectable` or `elementsSelectable` change |
 | `flow.geometry.measure` | One `ResizeObserver` delivery |
 | `flow.node.drag.start` | Accepted pointer drag |
 | `flow.node.drag.complete` | Final semantic position change |
@@ -56,6 +57,7 @@ The current slice creates these spans:
 - `flow.edges.added`, `flow.edges.updated`, `flow.edges.removed`, and `flow.edges.deferred`
 - `flow.cancellation.reason`
 - `flow.change.kind` and `flow.input.kind`
+- `flow.interactivity.nodes-draggable`, `flow.interactivity.nodes-connectable`, and `flow.interactivity.elements-selectable`
 - `flow.viewport.zoom.clamped`
 - `flow.browser.capability` and `flow.browser.operation`
 

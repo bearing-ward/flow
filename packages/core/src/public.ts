@@ -386,6 +386,49 @@ export type {
   GeometryRect,
 } from './domain/flow-change-compatibility.ts'
 
+export {
+  applyFlowChangeToDocument,
+  applyFlowElementChanges,
+  flowChangeElementChanges,
+  flowEdgeChanges,
+  flowElementChanges,
+  flowNodeChanges,
+} from './domain/flow-element-changes.ts'
+
+export type { FlowElementChanges } from './domain/flow-element-changes.ts'
+
+export {
+  defaultFlowInteractivity,
+  flowInteractivityFor,
+  isEdgeSelectable,
+  isFlowInteractive,
+  isHandleConnectable,
+  isNodeConnectable,
+  isNodeDraggable,
+  isNodeSelectable,
+  resolveFlowInteractivity,
+} from './domain/flow-interactivity.ts'
+
+export type {
+  FlowInteractivity,
+  FlowInteractivityInput,
+} from './domain/flow-interactivity.ts'
+
+export {
+  flowConnectionState,
+  flowFinalConnectionState,
+  flowNoConnection,
+} from './domain/flow-connection-state.ts'
+
+export type {
+  FlowConnectionHandle,
+  FlowConnectionInProgress,
+  FlowConnectionState,
+  FlowConnectionStateInput,
+  FlowFinalConnectionState,
+  FlowNoConnection,
+} from './domain/flow-connection-state.ts'
+
 export { edgeTextLayout } from './domain/flow-edge-text.ts'
 
 export type {
@@ -540,6 +583,7 @@ export {
   InvalidFlowConnection,
   connectionFromHandleGesture,
   findConnectionIssue,
+  handleGestureConnectable,
   normalizeFlowConnection,
   nextConnectionEdge,
   validateFlowConnection,

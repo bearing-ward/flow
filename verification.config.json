@@ -3,8 +3,21 @@
   "activeWork": "Plan 110 core instance helpers, edge geometry and intersection recipes",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
-    "vanilla": ["intersection-recipes.e2e.ts", "whiteboard-recipes.e2e.ts"],
-    "vue": ["intersection-recipes.e2e.ts", "whiteboard-recipes.e2e.ts"],
-    "foldkit": ["intersection-recipes.e2e.ts", "whiteboard-recipes.e2e.ts"]
+    "vanilla": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "node-threshold.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ],
+    "vue": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ],
+    "foldkit": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ]
   }
 }

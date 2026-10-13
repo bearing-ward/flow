@@ -2,6 +2,7 @@ import { createFlowGraph, getBezierPath, NodeIdSchema } from '@flow/core'
 import type { FlowDocument, FlowNode, MeasuredNode, NodeId } from '@flow/core'
 import {
   createFlowMiniMap,
+  createFoldkitInteractivity,
   flowBaseEdge,
   mountFlowCanvasUI,
   mountFlowNodeToolbar,
@@ -136,6 +137,9 @@ const host = mountRecipeHost({
   },
 })
 
+// The Controls lock reads and sets the Runtime's interaction switches.
+const interactivity = createFoldkitInteractivity(host.runtime.ports)
+
 const measurements = new Map<NodeId, MeasuredNode>()
 
 const graphOf = (document: FlowDocument) =>
@@ -201,6 +205,7 @@ const mountCanvasUi = (): void => {
   miniMap?.dispose()
 
   canvasUi = mountFlowCanvasUI(pane, host.viewportClient, {
+    interactivity,
     position: 'bottom-left',
     background: { variant: 'dots', gap: 16 },
   })

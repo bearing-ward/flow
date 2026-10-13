@@ -1,8 +1,17 @@
-import { selectFlowMiniMapProjection } from '@flow/core'
-import type { FlowGraphView, ViewportPaddingSchema } from '@flow/core'
+import {
+  flowInteractivityFor,
+  isFlowInteractive,
+  selectFlowMiniMapProjection,
+} from '@flow/core'
+import type {
+  FlowGraphView,
+  FlowInteractivity,
+  FlowInteractivityInput,
+  ViewportPaddingSchema,
+} from '@flow/core'
+import { Effect } from 'effect'
 
 import type { ViewportClient } from './application.ts'
-import { createFlowInteractivityLock } from './ui/interactivity-lock.ts'
 
 const stopCanvasClick = (event: MouseEvent): void => event.stopPropagation()
 
@@ -197,6 +206,23 @@ export interface FlowControlsOptions {
   readonly onFitView?: () => void
   /** Called with the next interactive state after the lock button toggles. */
   readonly onInteractiveChange?: (interactive: boolean) => void
+  /**
+   * The Runtime's interaction switches, usually `createFoldkitInteractivity`.
+   * The lock starts from them, follows every published change and sets all
+   * three together.
+   *
+   * Without it the lock cannot reach the Runtime: the button only toggles
+   * its own pressed state and reports it through `onInteractiveChange`, so
+   * the app must apply the switches itself. Creating such a lock logs a
+   * warning.
+   */
+  readonly interactivity?: {
+    readonly get: () => FlowInteractivity
+    readonly set: (next: FlowInteractivityInput) => void
+    readonly subscribe: (
+      listener: (interactivity: FlowInteractivity) => void
+    ) => () => void
+  }
 }
 
 export interface FlowControlsMount {
@@ -639,17 +665,16 @@ export const createFlowControls = (
     })
   }
 
-  const lock = createFlowInteractivityLock(
-    () =>
-      group.closest<HTMLElement>('.flow-foldkit-canvas') ??
-      // Detached controls own no canvas, so they gate nothing.
-      owner.createElement('div')
-  )
+  let interactiveState =
+    options.interactivity === undefined
+      ? true
+      : isFlowInteractive(options.interactivity.get())
+
+  const isInteractive = (): boolean => interactiveState
 
   let lockButton: HTMLButtonElement | undefined
 
-  const setInteractive = (interactive: boolean): void => {
-    lock.setInteractive(interactive)
+  const renderLock = (interactive: boolean): void => {
     group.dataset.interactive = String(interactive)
     lockButton?.setAttribute('aria-pressed', String(!interactive))
 
@@ -658,9 +683,34 @@ export const createFlowControls = (
     }
   }
 
+  // React Flow Controls sets nodesDraggable, nodesConnectable and
+  // elementsSelectable together.
+  const setInteractive = (interactive: boolean): void => {
+    interactiveState = interactive
+    options.interactivity?.set(flowInteractivityFor(interactive))
+    renderLock(interactive)
+  }
+
+  if (options.interactivity === undefined) {
+    if (options.showInteractive !== false) {
+      Effect.runSync(
+        Effect.logWarning(
+          'Foldkit Controls lock has no interactivity client; it only reports onInteractiveChange'
+        )
+      )
+    }
+  } else {
+    listeners.push(
+      options.interactivity.subscribe((next) => {
+        interactiveState = isFlowInteractive(next)
+        renderLock(interactiveState)
+      })
+    )
+  }
+
   if (options.showInteractive !== false) {
     lockButton = button('Toggle interactivity', () => {
-      const next = !lock.isInteractive()
+      const next = !isInteractive()
       setInteractive(next)
       options.onInteractiveChange?.(next)
 
@@ -668,7 +718,7 @@ export const createFlowControls = (
     })
   }
 
-  setInteractive(true)
+  renderLock(interactiveState)
 
   for (const child of options.children ?? []) {
     group.append(child)
@@ -678,11 +728,9 @@ export const createFlowControls = (
 
   return {
     element: group,
-    isInteractive: lock.isInteractive,
+    isInteractive,
     setInteractive,
     dispose: () => {
-      lock.release()
-
       for (const stop of listeners) {
         stop()
       }

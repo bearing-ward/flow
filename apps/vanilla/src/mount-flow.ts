@@ -124,6 +124,16 @@ import {
   flowConnectionLineProps,
   flowNodeRendererProps,
   sameFlowNodeRendererProps,
+  flowChangeElementChanges,
+  flowConnectionState,
+  flowFinalConnectionState,
+  flowNoConnection,
+  handleGestureConnectable,
+  isEdgeSelectable,
+  isHandleConnectable,
+  isNodeDraggable,
+  isNodeSelectable,
+  resolveFlowInteractivity,
 } from '@flow/core'
 import type {
   ActiveNodeDrag,
@@ -193,12 +203,21 @@ import type {
   FlowEdgeRendererProps,
   FlowGraphView,
   FlowNodeRendererProps,
+  FlowConnectionState,
+  FlowInteractivity,
+  FlowInteractivityInput,
 } from '@flow/core'
 import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 
 import { createCanvasUI } from './canvas-ui.ts'
 import { createEdgeRenderer, measureNodeHandles } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
+import type {
+  FlowConnectionEndDetails,
+  FlowEdgesChangeListener,
+  FlowNodesChangeListener,
+  FlowReconnectDetails,
+} from './flow-changes.ts'
 import { createFlowGraphCache } from './flow-graph-cache.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
@@ -361,6 +380,8 @@ export const FlowMountOptionsSchema = S.Struct({
     S.Literals(['shift', 'alt', 'control', 'meta', 'none'])
   ),
   nodesConnectable: S.optional(S.Boolean),
+  nodesDraggable: S.optional(S.Boolean),
+  elementsSelectable: S.optional(S.Boolean),
   panOnScroll: S.optional(S.Boolean),
   panOnScrollSpeed: S.optional(S.Finite.check(S.isGreaterThan(0))),
   panOnScrollMode: S.optional(S.Literals(['free', 'horizontal', 'vertical'])),
@@ -534,6 +555,18 @@ export interface FlowNodeDragPayload {
 export interface FlowNodeDragStopPayload extends FlowNodeDragPayload {
   readonly outcome: 'proposed' | 'cancelled'
   readonly reason?: string | undefined
+}
+
+/**
+ * Group drag payload, React Flow's `SelectionDragHandler`: `nodes` are the
+ * dragged selected nodes at their drag positions.
+ */
+export type FlowSelectionDragPayload = FlowNodeDragPayload & {
+  readonly nodes: readonly FlowNode[]
+}
+
+export type FlowSelectionDragStopPayload = FlowNodeDragStopPayload & {
+  readonly nodes: readonly FlowNode[]
 }
 
 export interface FlowConnectStartPayload {
@@ -815,6 +848,10 @@ export interface FlowHostOptions {
     | 'none'
     | undefined
   readonly nodesConnectable?: boolean | undefined
+  readonly nodesDraggable?: boolean | undefined
+  readonly elementsSelectable?: boolean | undefined
+  readonly onNodesChange?: FlowNodesChangeListener | undefined
+  readonly onEdgesChange?: FlowEdgesChangeListener | undefined
   readonly panOnScroll?: boolean | undefined
   readonly panOnScrollSpeed?: number | undefined
   readonly panOnScrollMode?: 'free' | 'horizontal' | 'vertical' | undefined
@@ -836,15 +873,24 @@ export interface FlowHostOptions {
   readonly onConnect?:
     | ((connection: FlowConnectionCandidate) => void)
     | undefined
+  /** The end payload, then React Flow's final connection state and release. */
   readonly onConnectEnd?:
-    | ((connection: FlowConnectEndPayload) => void)
+    | ((
+        connection: FlowConnectEndPayload,
+        details: FlowConnectionEndDetails
+      ) => void)
     | undefined
   readonly onReconnectStart?:
     | ((reconnect: FlowReconnectStartPayload) => void)
     | undefined
-  readonly onReconnect?: ((reconnect: FlowEdge) => void) | undefined
+  readonly onReconnect?:
+    | ((reconnect: FlowEdge, details: FlowReconnectDetails) => void)
+    | undefined
   readonly onReconnectEnd?:
-    | ((reconnect: FlowReconnectEndPayload) => void)
+    | ((
+        reconnect: FlowReconnectEndPayload,
+        details: FlowConnectionEndDetails
+      ) => void)
     | undefined
   readonly onSelectionStart?:
     | ((selection: FlowSelectionRectPayload) => void)
@@ -968,6 +1014,18 @@ export interface FlowController {
   readonly getConnectionPreview: () => ConnectionPreviewSnapshot
   readonly subscribeConnectionPreview: (
     listener: (preview: ConnectionPreviewSnapshot) => void
+  ) => () => void
+  /** React Flow `useConnection` state for the current connection gesture. */
+  readonly getConnection: () => FlowConnectionState
+  readonly subscribeConnection: (
+    listener: (state: FlowConnectionState) => void
+  ) => () => void
+  /** Current `nodesDraggable`, `nodesConnectable` and `elementsSelectable`. */
+  readonly getInteractivity: () => FlowInteractivity
+  /** Change interaction switches at runtime; unset fields keep their value. */
+  readonly setInteractivity: (next: FlowInteractivityInput) => void
+  readonly subscribeInteractivity: (
+    listener: (interactivity: FlowInteractivity) => void
   ) => () => void
   readonly subscribeSelection: (
     listener: (selection: FlowSelection) => void
@@ -1094,6 +1152,10 @@ export type ViewportInput = typeof ViewportSchema.Encoded
 
 export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly onInit?: ((controller: JavaScriptFlowController) => void) | undefined
+  /** React Flow `onNodesChange`: node deltas next to the `FlowChange` stream. */
+  readonly onNodesChange?: FlowNodesChangeListener | undefined
+  /** React Flow `onEdgesChange`: edge deltas next to the `FlowChange` stream. */
+  readonly onEdgesChange?: FlowEdgesChangeListener | undefined
   readonly onMoveStart?: FlowViewportLifecycleListener | undefined
   readonly onMove?: FlowViewportLifecycleListener | undefined
   readonly onMoveEnd?: FlowViewportLifecycleListener | undefined
@@ -1102,21 +1164,46 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly onNodeDragStop?:
     | ((drag: FlowNodeDragStopPayload) => void)
     | undefined
+  /** React Flow `onSelectionDragStart`: a drag of several selected nodes began. */
+  readonly onSelectionDragStart?:
+    | ((drag: FlowSelectionDragPayload) => void)
+    | undefined
+  /**
+   * React Flow `onSelectionDrag`. Named `Move` because `onSelectionDrag`
+   * already reports selection rectangle progress in this host.
+   */
+  readonly onSelectionDragMove?:
+    | ((drag: FlowSelectionDragPayload) => void)
+    | undefined
+  /** React Flow `onSelectionDragStop`, with the drag outcome. */
+  readonly onSelectionDragStop?:
+    | ((drag: FlowSelectionDragStopPayload) => void)
+    | undefined
   readonly onConnectStart?:
     | ((connection: FlowConnectStartPayload) => void)
     | undefined
   readonly onConnect?:
     | ((connection: FlowConnectionCandidate) => void)
     | undefined
+  /** The end payload, then React Flow's final connection state and release. */
   readonly onConnectEnd?:
-    | ((connection: FlowConnectEndPayload) => void)
+    | ((
+        connection: FlowConnectEndPayload,
+        details: FlowConnectionEndDetails
+      ) => void)
     | undefined
   readonly onReconnectStart?:
     | ((reconnect: FlowReconnectStartPayload) => void)
     | undefined
-  readonly onReconnect?: ((reconnect: FlowEdge) => void) | undefined
+  /** The new edge, then React Flow's `(oldEdge, newConnection)` as details. */
+  readonly onReconnect?:
+    | ((reconnect: FlowEdge, details: FlowReconnectDetails) => void)
+    | undefined
   readonly onReconnectEnd?:
-    | ((reconnect: FlowReconnectEndPayload) => void)
+    | ((
+        reconnect: FlowReconnectEndPayload,
+        details: FlowConnectionEndDetails
+      ) => void)
     | undefined
   readonly onSelectionStart?:
     | ((selection: FlowSelectionRectPayload) => void)
@@ -1178,6 +1265,11 @@ export interface JavaScriptFlowController {
   readonly mountViewportPortal: FlowController['mountViewportPortal']
   readonly getConnectionPreview: FlowController['getConnectionPreview']
   readonly subscribeConnectionPreview: FlowController['subscribeConnectionPreview']
+  readonly getConnection: FlowController['getConnection']
+  readonly subscribeConnection: FlowController['subscribeConnection']
+  readonly getInteractivity: FlowController['getInteractivity']
+  readonly setInteractivity: FlowController['setInteractivity']
+  readonly subscribeInteractivity: FlowController['subscribeInteractivity']
   readonly subscribeSelection: FlowController['subscribeSelection']
   readonly observeKeyPress: FlowController['observeKeyPress']
   readonly getSnapshot: () => FlowSnapshot
@@ -1473,7 +1565,25 @@ const measurementFailure = (cause: unknown, nodeId: string) =>
     Effect.withSpan(FlowSpan.geometryMeasure)
   )
 
-const renderNodeHandles = (handles: HTMLElement, node: FlowNode): void => {
+/** React Flow's Handle classes: `connectable`, `connectablestart`, `connectableend`. */
+const markHandleConnectability = (
+  button: HTMLElement,
+  node: FlowNode,
+  handle: FlowHandle,
+  interactivity: FlowInteractivity
+): void => {
+  const start = isHandleConnectable(interactivity, node, handle, 'start')
+  const end = isHandleConnectable(interactivity, node, handle, 'end')
+  button.classList.toggle('connectable', start || end)
+  button.classList.toggle('connectablestart', start)
+  button.classList.toggle('connectableend', end)
+}
+
+const renderNodeHandles = (
+  handles: HTMLElement,
+  node: FlowNode,
+  interactivity: FlowInteractivity
+): void => {
   handles.replaceChildren()
 
   for (const handle of node.handles ?? []) {
@@ -1485,6 +1595,7 @@ const renderNodeHandles = (handles: HTMLElement, node: FlowNode): void => {
     button.dataset.kind = handle.kind
     button.dataset.testid = 'flow-handle'
     button.setAttribute('aria-label', `${handle.kind} handle ${handle.id}`)
+    markHandleConnectability(button, node, handle, interactivity)
     handles.append(button)
   }
 }
@@ -1743,6 +1854,14 @@ export const createFlowHost = (
   return Effect.gen(function* buildFlowHost() {
     const browser = yield* FlowBrowser
     const { documentMode, runEffect } = options
+    let interactivity: FlowInteractivity = resolveFlowInteractivity(options)
+
+    const interactivityListeners = new Set<(next: FlowInteractivity) => void>()
+
+    // The last in-progress connection, kept for the end payload after the preview clears.
+    let lastConnectionState: FlowConnectionState = flowNoConnection
+    // The browser event ending the current gesture, read by end notifications.
+    let connectionEndEvent: MouseEvent | KeyboardEvent | undefined
     const hostScope = runEffect(Scope.make('sequential'))
 
     const runTelemetryEffect =
@@ -1946,7 +2065,7 @@ export const createFlowHost = (
           graph.nodes.get(node.id)?.absolutePosition ?? node.position,
         dragging: draggingNodeIds.has(node.id),
         size: measurements.get(node.id) ?? node.size,
-        nodesConnectable: options.nodesConnectable,
+        ...interactivity,
       })
 
     /** Push changed NodeProps to an opted-in custom renderer between document updates. */
@@ -2859,6 +2978,35 @@ export const createFlowHost = (
             )
           )
         }
+      }
+    }
+
+    /** React Flow `onNodesChange` / `onEdgesChange` deltas for one published change. */
+    const notifyElementChanges = (base: FlowDocument, change: FlowChange) => {
+      const { onNodesChange, onEdgesChange } = options
+
+      if (onNodesChange === undefined && onEdgesChange === undefined) {
+        return
+      }
+
+      const { nodes, edges } = flowChangeElementChanges(base, change)
+
+      if (onNodesChange !== undefined && nodes.length > 0) {
+        reportBoundaryCallback(
+          'Nodes change',
+          'semantic-change',
+          onNodesChange,
+          nodes
+        )
+      }
+
+      if (onEdgesChange !== undefined && edges.length > 0) {
+        reportBoundaryCallback(
+          'Edges change',
+          'semantic-change',
+          onEdgesChange,
+          edges
+        )
       }
     }
 
@@ -4027,7 +4175,10 @@ export const createFlowHost = (
       while (parentId !== undefined) {
         const parent = findNode(parentId)
 
-        if (parent?.selected === true && parent.draggable !== false) {
+        if (
+          parent?.selected === true &&
+          isNodeDraggable(interactivity, parent)
+        ) {
           return true
         }
 
@@ -4042,9 +4193,17 @@ export const createFlowHost = (
         (candidate) =>
           candidate.selected === true &&
           candidate.hidden !== true &&
-          candidate.draggable !== false &&
+          isNodeDraggable(interactivity, candidate) &&
           !hasSelectedAncestor(candidate)
       )
+
+    const nodeIsDraggable = (id: NodeId): boolean => {
+      const candidate = findNode(id)
+
+      return (
+        candidate !== undefined && isNodeDraggable(interactivity, candidate)
+      )
+    }
 
     const handleCenterInFlow = (
       element: HTMLElement,
@@ -4226,7 +4385,17 @@ export const createFlowHost = (
           document,
           rawCandidate,
           options.connectionMode ?? 'strict'
-        ) !== undefined
+        ) !== undefined ||
+        !handleGestureConnectable(
+          document,
+          {
+            fromNodeId: source.source,
+            fromHandleId: source.sourceHandle,
+            toNodeId: targetNode.id,
+            toHandleId: targetHandle.id,
+          },
+          interactivity
+        )
       ) {
         return false
       }
@@ -4246,6 +4415,78 @@ export const createFlowHost = (
       return active === null
         ? undefined
         : { nodeId: active.source, handleId: active.sourceHandle }
+    }
+
+    const currentConnectionState = (): FlowConnectionState =>
+      flowConnectionState({
+        document,
+        preview: connectionPreviewState,
+        origin: connectionLineOrigin(),
+      })
+
+    /** Apply runtime switches, restyle handles and push node props. */
+    const applyInteractivity = (next: FlowInteractivityInput): void => {
+      const resolved: FlowInteractivity = {
+        nodesDraggable: next.nodesDraggable ?? interactivity.nodesDraggable,
+        nodesConnectable:
+          next.nodesConnectable ?? interactivity.nodesConnectable,
+        elementsSelectable:
+          next.elementsSelectable ?? interactivity.elementsSelectable,
+      }
+
+      if (
+        resolved.nodesDraggable === interactivity.nodesDraggable &&
+        resolved.nodesConnectable === interactivity.nodesConnectable &&
+        resolved.elementsSelectable === interactivity.elementsSelectable
+      ) {
+        return
+      }
+
+      interactivity = resolved
+
+      for (const button of canvas.querySelectorAll<HTMLElement>(
+        '.flow-handle'
+      )) {
+        const owner = document.nodes.find(
+          ({ id }) => id === button.dataset.nodeId
+        )
+
+        const handle = owner?.handles?.find(
+          ({ id }) => id === button.dataset.handleId
+        )
+
+        if (owner !== undefined && handle !== undefined) {
+          markHandleConnectability(button, owner, handle, interactivity)
+        }
+      }
+
+      const graph = graphFor()
+
+      for (const [id, entry] of entries) {
+        refreshNodeRendererProps(entry, findNode(id), graph)
+      }
+
+      const attributes = {
+        [FlowAttribute.nodesDraggable]: interactivity.nodesDraggable,
+        [FlowAttribute.nodesConnectable]: interactivity.nodesConnectable,
+        [FlowAttribute.elementsSelectable]: interactivity.elementsSelectable,
+      }
+
+      runTelemetry(
+        Effect.logDebug('Changed flow interactivity').pipe(
+          Effect.annotateLogs(attributes),
+          Effect.withSpan(FlowSpan.interactivityChange, { attributes })
+        )
+      )
+
+      for (const listener of interactivityListeners) {
+        reportBoundaryCallback(
+          'Interactivity change',
+          'interactivity',
+          listener,
+          interactivity
+        )
+      }
     }
 
     const connectionLineGraph = createFlowGraphCache()
@@ -4278,6 +4519,10 @@ export const createFlowHost = (
     ): void => {
       const value = createConnectionPreviewSnapshot(preview)
       connectionPreviewState = value
+
+      if (value !== null) {
+        lastConnectionState = currentConnectionState()
+      }
 
       const previewListeners = [...connectionPreviewListeners]
 
@@ -4501,6 +4746,8 @@ export const createFlowHost = (
     }
 
     const notifyConnectStart = (connection: FlowConnectStartPayload): void => {
+      connectionEndEvent = undefined
+
       if (options.onConnectStart !== undefined) {
         reportBoundaryCallback(
           'Connection start',
@@ -4511,12 +4758,39 @@ export const createFlowHost = (
       }
     }
 
+    /** React Flow `FinalConnectionState`, release position and event for end payloads. */
+    const connectionEndDetails = (): FlowConnectionEndDetails => {
+      const event = connectionEndEvent
+      const connectionState = flowFinalConnectionState(lastConnectionState)
+      lastConnectionState = flowNoConnection
+      connectionEndEvent = undefined
+
+      if (!(event instanceof MouseEvent)) {
+        return { connectionState, event }
+      }
+
+      const clientPosition = { x: event.clientX, y: event.clientY }
+
+      return {
+        connectionState,
+        clientPosition,
+        position: screenToFlowPosition(
+          pointerInCanvas(event),
+          renderedViewport
+        ),
+        event,
+      }
+    }
+
     const notifyConnectEnd = (connection: FlowConnectEndPayload): void => {
-      if (options.onConnectEnd !== undefined) {
+      const details = connectionEndDetails()
+      const { onConnectEnd } = options
+
+      if (onConnectEnd !== undefined) {
         reportBoundaryCallback(
           'Connection end',
           connection.inputKind,
-          options.onConnectEnd,
+          (payload: FlowConnectEndPayload) => onConnectEnd(payload, details),
           connection
         )
       }
@@ -4536,11 +4810,15 @@ export const createFlowHost = (
     }
 
     const notifyReconnectEnd = (reconnect: FlowReconnectEndPayload): void => {
-      if (options.onReconnectEnd !== undefined) {
+      const details = connectionEndDetails()
+      const { onReconnectEnd } = options
+
+      if (onReconnectEnd !== undefined) {
         reportBoundaryCallback(
           'Reconnection end',
           'pointer-reconnect',
-          options.onReconnectEnd,
+          (payload: FlowReconnectEndPayload) =>
+            onReconnectEnd(payload, details),
           reconnect
         )
       }
@@ -4840,7 +5118,7 @@ export const createFlowHost = (
       )
 
       if (
-        node?.connectable === false ||
+        (node?.connectable === false && handle?.connectable !== true) ||
         handle === undefined ||
         createFlowGraph(next, measurements, renderedNodePositions).nodes.get(
           identity.nodeId
@@ -4894,8 +5172,16 @@ export const createFlowHost = (
       }
 
       if (pending.kind === 'connection-pending') {
+        const fromNode = next.nodes.find(({ id }) => id === pending.from.nodeId)
+
+        const fromHandle = fromNode?.handles?.find(
+          ({ id }) => id === pending.from.handleId
+        )
+
         return (
-          options.nodesConnectable !== false &&
+          fromNode !== undefined &&
+          fromHandle !== undefined &&
+          isHandleConnectable(interactivity, fromNode, fromHandle, 'start') &&
           (options.connectionMode === 'loose' ||
             pending.from.kind === 'source') &&
           pendingHandleElement(pending.from, next) !== undefined
@@ -5084,7 +5370,7 @@ export const createFlowHost = (
       }
 
       if (
-        options.nodesConnectable === false ||
+        !isHandleConnectable(interactivity, node, handle, 'start') ||
         event.button !== 0 ||
         (options.connectionMode !== 'loose' && handle.kind !== 'source') ||
         pendingConnection !== null ||
@@ -5771,6 +6057,45 @@ export const createFlowHost = (
     const cancelViewportPan = (reason: string): void =>
       cancelActorKind('activeViewportPan', reason)
 
+    /** Start a viewport pan for a pointer that began elsewhere, such as on a fixed node. */
+    const beginPanFromPointer = (
+      event: PointerEvent,
+      start: XYPosition
+    ): boolean => {
+      if (
+        destroyed ||
+        interactionSlots.activeViewportPan !== null ||
+        interactionSlots.activePinch !== null ||
+        interactionSlots.activeSelectionRect !== null
+      ) {
+        return false
+      }
+
+      const admittedPan = beginViewportPan(
+        renderedViewport,
+        start,
+        event.pointerId
+      )
+
+      interactionSlots.activeViewportPan = admittedPan
+      beginUserViewportObservation()
+
+      if (destroyed || interactionSlots.activeViewportPan !== admittedPan) {
+        return false
+      }
+
+      if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
+        cancelViewportPan('pointer-capture-failed')
+
+        return false
+      }
+
+      canvas.classList.add('panning')
+      suppressClickUntilPointerUp()
+
+      return true
+    }
+
     const notifyCancelViewportPan = (
       pan: ActiveViewportPan,
       reason: string
@@ -6294,7 +6619,7 @@ export const createFlowHost = (
               JSON.stringify(previousNode?.handles ?? []) !==
               JSON.stringify(node.handles ?? [])
             ) {
-              renderNodeHandles(entry.handles, node)
+              renderNodeHandles(entry.handles, node, interactivity)
             }
 
             applyDeclaredNodeSize(entry.element, node)
@@ -6422,6 +6747,7 @@ export const createFlowHost = (
         }
 
         let publishedChange = change
+        const changeBase = document
 
         switch (change.kind) {
           case 'node-position': {
@@ -6720,6 +7046,8 @@ export const createFlowHost = (
 
         executeMutation(() => {
           try {
+            notifyElementChanges(changeBase, publishedChange)
+
             for (const listener of listeners) {
               listener(publishedChange)
             }
@@ -6913,7 +7241,7 @@ export const createFlowHost = (
             return undefined
           }
 
-          renderNodeHandles(handles, node)
+          renderNodeHandles(handles, node, interactivity)
           renderNodeResizeHandle(element, node)
 
           // eslint-disable-next-line complexity -- Activation checks the existing phase, geometry and callback ownership.
@@ -6931,10 +7259,7 @@ export const createFlowHost = (
 
             const drag = interactionSlots.activeDrag
 
-            if (
-              !('positions' in drag) &&
-              findNode(drag.nodeId)?.draggable === false
-            ) {
+            if (!('positions' in drag) && !nodeIsDraggable(drag.nodeId)) {
               return false
             }
 
@@ -7006,7 +7331,7 @@ export const createFlowHost = (
             return (
               !destroyed &&
               interactionSlots.activeDrag === drag &&
-              findNode(dragAnchorId(drag))?.draggable !== false &&
+              nodeIsDraggable(dragAnchorId(drag)) &&
               graphFor().nodes.get(dragAnchorId(drag))?.hidden === false &&
               element.isConnected
             )
@@ -7291,6 +7616,10 @@ export const createFlowHost = (
             )
           }
 
+          // Whether this press may become a pan if the node is not draggable:
+          // the pane's activation modifier and no-pan opt-outs apply here too.
+          let panHandOffAllowed = false
+
           const startNodeDragFromPointer = (event: PointerEvent): void => {
             if (destroyed) {
               return
@@ -7315,7 +7644,9 @@ export const createFlowHost = (
             }
 
             const selectedNodes =
-              current.selected === true ? selectedMovableNodes() : []
+              current.selected === true && nodeIsDraggable(current.id)
+                ? selectedMovableNodes()
+                : []
 
             interactionSlots.activeDrag = selectedNodes.some(
               (candidate) => candidate.id !== current.id
@@ -7336,6 +7667,17 @@ export const createFlowHost = (
                   event.pointerId
                 )
             dragPointerStart = { x: event.clientX, y: event.clientY }
+
+            panHandOffAllowed =
+              isPanButtonEnabled(options.panOnDrag, event.button) &&
+              isActivationModifierPressed(
+                event,
+                options.panActivationModifier ?? 'none'
+              ) &&
+              !(
+                event.target instanceof Element &&
+                event.target.closest('.nopan, [data-flow-no-pan]') !== null
+              )
             dragPointer = pointerInCanvas(event)
 
             if (!runEffect(browser.capturePointer(element, event.pointerId))) {
@@ -7402,6 +7744,40 @@ export const createFlowHost = (
             startNodeDragFromPointer(event)
           }
 
+          /**
+           * A node that is not draggable does not block panning, as in React
+           * Flow: past the drag threshold its pointer becomes a viewport pan.
+           */
+          const handOffNodePointerToPan = (event: PointerEvent): boolean => {
+            const drag = interactionSlots.activeDrag
+            const start = dragPointer
+
+            if (
+              drag === null ||
+              'positions' in drag ||
+              drag.nodeId !== node.id ||
+              dragPointerStart === null ||
+              start === null ||
+              nodeIsDraggable(drag.nodeId) ||
+              !panHandOffAllowed ||
+              !nodeDragActivated(
+                Math.max(nodeDragThreshold, 1),
+                dragPointerStart.x,
+                dragPointerStart.y,
+                event.clientX,
+                event.clientY
+              )
+            ) {
+              return false
+            }
+
+            cancelActiveDrag('pan-handoff')
+            dragPointerStart = null
+            dragPointer = null
+
+            return beginPanFromPointer(event, start)
+          }
+
           const onPointerMove = (event: PointerEvent): void => {
             if (destroyed) {
               return
@@ -7415,6 +7791,10 @@ export const createFlowHost = (
               interactionSlots.activeDrag?.pointerId !== event.pointerId ||
               dragAnchorId(interactionSlots.activeDrag) !== node.id
             ) {
+              return
+            }
+
+            if (handOffNodePointerToPan(event)) {
               return
             }
 
@@ -7532,12 +7912,12 @@ export const createFlowHost = (
               }
 
               if (
-                current.selectable !== false &&
+                isNodeSelectable(interactivity, current) &&
                 (event.metaKey || event.ctrlKey)
               ) {
                 operations.toggleNodeSelection(current)
               } else if (
-                current.selectable !== false &&
+                isNodeSelectable(interactivity, current) &&
                 current.selected !== true
               ) {
                 operations.publishChange({
@@ -8015,6 +8395,7 @@ export const createFlowHost = (
       interactionSlots.activeSelectionRect !== null
 
     // eslint-disable-next-line complexity -- Keep capture admission and exact-owner continuation checks in the canvas entry.
+    // eslint-disable-next-line complexity -- Pane pointer entry orders pinch, reconnect, selection and pan admission.
     const onCanvasPointerDown = (event: PointerEvent): void => {
       if (destroyed) {
         return
@@ -8053,7 +8434,10 @@ export const createFlowHost = (
         return
       }
 
-      if (isSelectionActivationEnabled(options, event)) {
+      if (
+        interactivity.elementsSelectable &&
+        isSelectionActivationEnabled(options, event)
+      ) {
         const pointerStart = pointerInCanvas(event)
 
         if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
@@ -9089,6 +9473,7 @@ export const createFlowHost = (
           connectionFromHandleGesture(
             {
               document,
+              interactivity,
               fromNodeId: started.source,
               fromHandleId: started.sourceHandle,
               toNodeId: targetNode.id,
@@ -9255,6 +9640,7 @@ export const createFlowHost = (
 
       const started = interactionSlots.activeConnection
       const pointerStart = connectionPointerStart
+      connectionEndEvent = event
 
       const panned =
         renderedViewport.x !== authoritativeViewport.x ||
@@ -9359,6 +9745,7 @@ export const createFlowHost = (
       suppressClickThroughDispatch()
 
       const active = interactionSlots.activeReconnection
+      connectionEndEvent = event
 
       const handleElement = canvas.ownerDocument
         .elementFromPoint(event.clientX, event.clientY)
@@ -9385,6 +9772,7 @@ export const createFlowHost = (
       }
 
       clearReconnection()
+      const oldEdge = document.edges.find(({ id }) => id === active.edgeId)
 
       const result = runEffect(
         Effect.result(
@@ -9424,11 +9812,19 @@ export const createFlowHost = (
         edge: result.success,
       })
 
-      if (options.onReconnect !== undefined) {
+      const { onReconnect } = options
+
+      if (onReconnect !== undefined && oldEdge !== undefined) {
+        const { source, sourceHandle, target, targetHandle } = result.success
+
         reportBoundaryCallback(
           'Reconnection proposal',
           'pointer-reconnect',
-          options.onReconnect,
+          (edge: FlowEdge) =>
+            onReconnect(edge, {
+              oldEdge,
+              newConnection: { source, sourceHandle, target, targetHandle },
+            }),
           result.success
         )
       }
@@ -9470,10 +9866,6 @@ export const createFlowHost = (
         return true
       }
 
-      if (options.nodesConnectable === false) {
-        return true
-      }
-
       const node = document.nodes.find(
         (candidate) => candidate.id === handleElement.dataset.nodeId
       )
@@ -9482,7 +9874,12 @@ export const createFlowHost = (
         (candidate) => candidate.id === handleElement.dataset.handleId
       )
 
-      if (node === undefined || handle === undefined) {
+      if (
+        node === undefined ||
+        handle === undefined ||
+        (activeClickConnection === null &&
+          !isHandleConnectable(interactivity, node, handle, 'start'))
+      ) {
         return true
       }
 
@@ -9573,9 +9970,13 @@ export const createFlowHost = (
         }
       }
 
+      connectionEndEvent = event
+
       if (onHandleClick(target)) {
         return
       }
+
+      connectionEndEvent = undefined
 
       cancelClickConnection('canvas-click')
 
@@ -9594,9 +9995,15 @@ export const createFlowHost = (
             edgeGroup.focus()
           }
 
-          if (edge.selectable !== false && (event.metaKey || event.ctrlKey)) {
+          if (
+            isEdgeSelectable(interactivity, edge) &&
+            (event.metaKey || event.ctrlKey)
+          ) {
             operations.toggleEdgeSelection(edge)
-          } else if (edge.selectable !== false && edge.selected !== true) {
+          } else if (
+            isEdgeSelectable(interactivity, edge) &&
+            edge.selected !== true
+          ) {
             operations.publishChange({
               kind: 'edge-selection',
               edgeId: edge.id,
@@ -9627,9 +10034,15 @@ export const createFlowHost = (
             nodeElement.focus()
           }
 
-          if (node.selectable !== false && (event.metaKey || event.ctrlKey)) {
+          if (
+            isNodeSelectable(interactivity, node) &&
+            (event.metaKey || event.ctrlKey)
+          ) {
             operations.toggleNodeSelection(node)
-          } else if (node.selectable !== false && node.selected !== true) {
+          } else if (
+            isNodeSelectable(interactivity, node) &&
+            node.selected !== true
+          ) {
             operations.publishChange({
               kind: 'node-selection',
               nodeId: node.id,
@@ -9941,6 +10354,7 @@ export const createFlowHost = (
             ...document,
             nodes: document.nodes.map((candidate) => ({
               ...candidate,
+              draggable: isNodeDraggable(interactivity, candidate),
               position: adoptedPosition(candidate),
             })),
           }
@@ -10096,9 +10510,15 @@ export const createFlowHost = (
         } else if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
 
-          if (node.selectable !== false && (event.metaKey || event.ctrlKey)) {
+          if (
+            isNodeSelectable(interactivity, node) &&
+            (event.metaKey || event.ctrlKey)
+          ) {
             operations.toggleNodeSelection(node)
-          } else if (node.selectable !== false && node.selected !== true) {
+          } else if (
+            isNodeSelectable(interactivity, node) &&
+            node.selected !== true
+          ) {
             operations.publishChange({
               kind: 'node-selection',
               nodeId: node.id,
@@ -10151,9 +10571,15 @@ export const createFlowHost = (
       } else if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
 
-        if (edge.selectable !== false && (event.metaKey || event.ctrlKey)) {
+        if (
+          isEdgeSelectable(interactivity, edge) &&
+          (event.metaKey || event.ctrlKey)
+        ) {
           operations.toggleEdgeSelection(edge)
-        } else if (edge.selectable !== false && edge.selected !== true) {
+        } else if (
+          isEdgeSelectable(interactivity, edge) &&
+          edge.selected !== true
+        ) {
           operations.publishChange({
             kind: 'edge-selection',
             edgeId: edge.id,
@@ -10839,6 +11265,27 @@ export const createFlowHost = (
         connectionPreviewListeners.add(listener)
 
         return () => connectionPreviewListeners.delete(listener)
+      },
+      getConnection: () =>
+        destroyed ? flowNoConnection : currentConnectionState(),
+      subscribeConnection: (listener) =>
+        controller.subscribeConnectionPreview(() =>
+          listener(currentConnectionState())
+        ),
+      getInteractivity: () => interactivity,
+      setInteractivity: (next) => {
+        if (!destroyed) {
+          applyInteractivity(next)
+        }
+      },
+      subscribeInteractivity: (listener) => {
+        if (destroyed) {
+          return noopUnsubscribe
+        }
+
+        interactivityListeners.add(listener)
+
+        return () => interactivityListeners.delete(listener)
       },
       subscribeSelection: (listener): (() => void) => {
         if (destroyed) {
@@ -11624,6 +12071,11 @@ export const acquireFlowHost = (
     (host) => Effect.promise(() => host.destroyAsync())
   )
 
+/** Late-bound host that drag listeners read their dragged nodes from. */
+interface DraggedNodesSource {
+  current: FlowController | undefined
+}
+
 export const mountFlow = (
   root: HTMLElement,
   input: FlowDocumentInput,
@@ -11642,16 +12094,59 @@ export const mountFlow = (
 
   const document = Effect.runSync(decodeFlowDocument(input))
 
+  // Bound once the host exists; drag listeners only run after mounting.
+  const draggedNodesSource: DraggedNodesSource = { current: undefined }
+
+  /** Node drag listener that also reports group drags as selection drags. */
+  const withSelectionDrag = <P extends FlowNodeDragPayload>(
+    nodeListener: ((drag: P) => void) | undefined,
+    selectionListener:
+      | ((drag: P & { readonly nodes: readonly FlowNode[] }) => void)
+      | undefined
+  ): ((drag: P) => void) | undefined => {
+    if (nodeListener === undefined && selectionListener === undefined) {
+      return undefined
+    }
+
+    return (drag) => {
+      nodeListener?.(drag)
+
+      if (selectionListener === undefined || drag.nodeIds.length < 2) {
+        return
+      }
+
+      selectionListener({
+        ...drag,
+        nodes: drag.positions.flatMap(({ nodeId, position }) => {
+          const node = draggedNodesSource.current?.getNode(nodeId)
+
+          return node === undefined ? [] : [{ ...node, position }]
+        }),
+      })
+    }
+  }
+
   const host = Effect.runSync(
     createFlowHost(root, document, {
       ...options,
       defaultEdgeOptions,
+      onNodesChange: inputOptions.onNodesChange,
+      onEdgesChange: inputOptions.onEdgesChange,
       onMoveStart: inputOptions.onMoveStart,
       onMove: inputOptions.onMove,
       onMoveEnd: inputOptions.onMoveEnd,
-      onNodeDragStart: inputOptions.onNodeDragStart,
-      onNodeDrag: inputOptions.onNodeDrag,
-      onNodeDragStop: inputOptions.onNodeDragStop,
+      onNodeDragStart: withSelectionDrag(
+        inputOptions.onNodeDragStart,
+        inputOptions.onSelectionDragStart
+      ),
+      onNodeDrag: withSelectionDrag(
+        inputOptions.onNodeDrag,
+        inputOptions.onSelectionDragMove
+      ),
+      onNodeDragStop: withSelectionDrag(
+        inputOptions.onNodeDragStop,
+        inputOptions.onSelectionDragStop
+      ),
       onConnectStart: inputOptions.onConnectStart,
       onConnect: inputOptions.onConnect,
       onConnectEnd: inputOptions.onConnectEnd,
@@ -11693,6 +12188,7 @@ export const mountFlow = (
     }).pipe(Effect.provide(FlowBrowserLive))
   )
 
+  draggedNodesSource.current = host
   let deleteSequence = 0
   let controllerDisposed = false
   const pendingDeleteRejectors = new Set<(error: Error) => void>()
@@ -11702,6 +12198,11 @@ export const mountFlow = (
     mountViewportPortal: host.mountViewportPortal,
     getConnectionPreview: host.getConnectionPreview,
     subscribeConnectionPreview: host.subscribeConnectionPreview,
+    getConnection: host.getConnection,
+    subscribeConnection: host.subscribeConnection,
+    getInteractivity: host.getInteractivity,
+    setInteractivity: host.setInteractivity,
+    subscribeInteractivity: host.subscribeInteractivity,
     subscribeSelection: host.subscribeSelection,
     observeKeyPress: host.observeKeyPress,
     getSnapshot: host.getSnapshot,

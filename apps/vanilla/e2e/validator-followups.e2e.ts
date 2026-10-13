@@ -124,6 +124,13 @@ test('validator rejection and failure preserve the edge during reconnection', as
 }) => {
   await mountValidatorScenario(page, true)
   const path = page.getByTestId('flow-edge-path')
+  // Read the baseline only after measurement settles; earlier paths use
+  // declared geometry and can differ by subpixels from the measured redraw.
+  await expect
+    .poll(() =>
+      page.evaluate(() => globalThis.flowController?.nodesInitialized())
+    )
+    .toBe(true)
   const initialPath = await path.getAttribute('d')
 
   await reconnectTarget(page, 'blocked')

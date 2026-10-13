@@ -7,6 +7,11 @@ import {
 } from './flow-edge-path.ts'
 import { edgeLabelPosition, resolveEdgeHandles } from './flow-edge.schema.ts'
 import type { FlowGraphNode, FlowGraphView } from './flow-graph.ts'
+import {
+  isNodeConnectable,
+  isNodeDraggable,
+  isNodeSelectable,
+} from './flow-interactivity.ts'
 import type {
   EdgeId,
   FlowEdge,
@@ -233,6 +238,10 @@ export interface FlowNodeRendererPropsInput {
     | undefined
   /** The canvas-level `nodesConnectable` option. */
   readonly nodesConnectable?: boolean | undefined
+  /** The canvas-level `nodesDraggable` option. */
+  readonly nodesDraggable?: boolean | undefined
+  /** The canvas-level `elementsSelectable` option. */
+  readonly elementsSelectable?: boolean | undefined
 }
 
 const nodeRendererPropKeys = [
@@ -276,12 +285,11 @@ export const flowNodeRendererProps = (
     label: node.label,
     parentId: node.parentId,
     selected: node.selected === true,
-    selectable: node.selectable !== false,
-    draggable: node.draggable !== false,
+    selectable: isNodeSelectable(input, node),
+    draggable: isNodeDraggable(input, node),
     deletable: node.deletable !== false,
     dragging: input.dragging,
-    isConnectable:
-      input.nodesConnectable !== false && node.connectable !== false,
+    isConnectable: isNodeConnectable(input, node),
     zIndex: node.zIndex ?? 0,
     positionAbsoluteX: input.positionAbsolute.x,
     positionAbsoluteY: input.positionAbsolute.y,

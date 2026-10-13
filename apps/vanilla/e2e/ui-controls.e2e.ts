@@ -219,7 +219,8 @@ test('Vanilla UI catalog controls drive the viewport, lock, toolbars, search and
     globalThis.uiControls?.controller.setViewport({ x: 0, y: 0, zoom: 1 })
   )
 
-  // Lock toggle blocks drag and connect, and reports the change.
+  // Lock toggle turns the runtime switches off and reports the change.
+  // Dragging a locked node pans the canvas instead, as in React Flow.
   const lock = page.getByRole('button', { name: 'Toggle interactivity' })
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
   await lock.click()
@@ -228,10 +229,28 @@ test('Vanilla UI catalog controls drive the viewport, lock, toolbars, search and
     await page.evaluate(() => globalThis.uiControls?.interactiveCalls)
   ).toEqual([false])
 
+  expect(
+    await page.evaluate(() =>
+      globalThis.uiControls?.controller.getInteractivity()
+    )
+  ).toEqual({
+    nodesDraggable: false,
+    nodesConnectable: false,
+    elementsSelectable: false,
+  })
+
   const before = await nodePosition(page, 'a')
+
+  const viewportBefore = await page.evaluate(() =>
+    globalThis.uiControls?.controller.getViewport()
+  )
+
   await drag(page, centre(await boxOf(nodeA)), { x: 300, y: 80 })
   await page.mouse.up()
   expect(await nodePosition(page, 'a')).toEqual(before)
+  expect(
+    await page.evaluate(() => globalThis.uiControls?.controller.getViewport())
+  ).not.toEqual(viewportBefore)
 
   const source = page.locator('[data-node-id="a"] [data-handle-id="out"]')
   const target = page.locator('[data-node-id="b"] [data-handle-id="in"]')
@@ -417,9 +436,18 @@ test('Vanilla UI catalog controls drive the viewport, lock, toolbars, search and
   await devtools.getByRole('button', { name: 'Node inspector' }).click()
   await expect(inspector).toBeHidden()
 
-  // Disposal removes overlays, releases the lock and restores toolbar content.
+  // Disposal removes overlays and restores toolbar content. As in React
+  // Flow, the switches keep the state the lock left them in.
   await lock.click()
   await page.evaluate(() => globalThis.uiControls?.destroyAll())
+  expect(
+    await page.evaluate(
+      () => globalThis.uiControls?.controller.getInteractivity().nodesDraggable
+    )
+  ).toBe(false)
+  await page.evaluate(() =>
+    globalThis.uiControls?.controller.setInteractivity({ nodesDraggable: true })
+  )
   await expect(page.locator('.flow-ui-overlay')).toHaveCount(0)
   await expect(page.locator('.flow-toolbar-layer')).toHaveCount(0)
   await expect(

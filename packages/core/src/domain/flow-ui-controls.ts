@@ -369,6 +369,9 @@ const lockedKeys = new Set([
 ])
 
 /**
+ * @deprecated Controls now set the runtime `FlowInteractivity` switches
+ * (Plan 108); hosts no longer gate DOM events. Kept for compatibility.
+ *
  * Whether a locked canvas blocks an event. Locking stands in for React Flow's
  * nodesDraggable, nodesConnectable and elementsSelectable all being false:
  * element gestures and activation keys are blocked; the pane, its pan and
