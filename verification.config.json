@@ -10,7 +10,11 @@
       "interaction-lifecycle.e2e.ts",
       "canvas.e2e.ts"
     ],
-    "vue": ["events-and-changes.e2e.ts", "ui-controls.e2e.ts", "connection.e2e.ts"],
+    "vue": [
+      "events-and-changes.e2e.ts",
+      "ui-controls.e2e.ts",
+      "connection.e2e.ts"
+    ],
     "foldkit": ["events-and-changes.e2e.ts", "ui-controls.e2e.ts"]
   }
 }

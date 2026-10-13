@@ -18,7 +18,9 @@ Reference: `packages/system/src/types/general.ts` (`OnConnectEnd`, `ConnectionSt
 - **Every host.**
   - Deltas are delivered next to the existing `FlowChange` stream (Vanilla `onNodesChange`/`onEdgesChange` options; Vue `nodesChange`/`edgesChange` emits; Foldkit outbound ports), with `useNodesState`/`useEdgesState` equivalents.
   - Runtime switches: options or props plus a runtime setter. Controls' lock calls the setter, starts from the current switches, and the DOM event gates are deleted.
-  - Connection end payloads carry `connectionState` and the release `clientPosition`; a connection state getter plus subscription is public.
+  - Connection end callbacks get a second argument, `FlowConnectionEndDetails` (`connectionState`, release `clientPosition`, and the browser `event`); a connection state getter plus subscription is public (Vanilla `getConnection`/`subscribeConnection`, Vue `useConnection()`).
+- **Vanilla.** `onReconnect(edge, { oldEdge, newConnection })`; group drags report `onSelectionDragStart`/`onSelectionDragMove`/`onSelectionDragStop` with the dragged `nodes`.
+- **Vue.** Node and edge mouse emits pass the browser event as a second argument; `error` also covers the `edit`, `delete`, `state-listener` and `connection-observer` boundaries.
 - **Foldkit.** An `isValidConnection` callback, node, edge and pane context menu events, a selection change event, and serializable mouse event fields on interaction events.
 
 ## Tests
@@ -33,5 +35,10 @@ Reference: `packages/system/src/types/general.ts` (`OnConnectEnd`, `ConnectionSt
   - Deltas describe semantic changes, not per-frame drags or measurements: no `dimensions` changes, and positions arrive with the host's existing drag commits, without `dragging`. Node `size` changes arrive as `replace`, because `applyNodeChanges` writes `measured`, not `size`.
   - Handle connectability lives on handle data in the document, since Flow handles are data rather than components. Per-handle `isValidConnection`/`onConnect` are covered by the canvas callbacks, which receive handle ids.
   - Vanilla `onReconnect` keeps its first argument, the new edge, and adds `{ oldEdge, newConnection }` as a second argument, to stay compatible.
+  - Connection end details arrive as a second callback argument instead of new payload fields, so existing strict payload contracts (`node-threshold.e2e.ts`) keep passing. This is close to React's `onConnectEnd(event, connectionState)`.
+  - Vanilla's group-drag progress callback is `onSelectionDragMove`, because `onSelectionDrag` already reports selection rectangle progress there. Flow has no `NodesSelection` box, so selection drags are drags of several selected nodes.
+  - A keyboard arrow move from a focused node that is not draggable still moves the other selected, draggable nodes. React ignores arrows on a non-draggable node. This is unchanged behaviour (`movement-slices.e2e.ts`).
+  - Disposing Controls keeps the switches as the lock left them, as React's Controls do; Plan 106's gate released on disposal.
+  - Vue drags one node at a time, so it has no selection drag; `SelectionDragHandler` stays partial there.
   - Foldkit events are serializable records with client coordinates, button and modifier keys instead of DOM events.
 - **Unverified.** There is no live React runtime comparison.
