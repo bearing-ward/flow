@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 145,
+    "inScopeCloseAllHosts": 154,
     "inScopeCloseByHost": {
       "vanilla": 161,
       "vue": 159,
-      "foldkit": 147
+      "foldkit": 156
     }
   },
   "waves": {
@@ -1357,13 +1357,13 @@
       "name": "SelectionDragHandler",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Selection drag payload lacks dragged nodes",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108", "Plan 112"]
+      "updatedBy": ["Plan 108", "Plan 112", "Plan 113"]
     },
     {
       "section": "api-reference types",
@@ -1430,13 +1430,13 @@
       "name": "Feature Overview",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No gallery route combining all features per host",
       "effort": "M",
       "theme": "gallery",
-      "updatedBy": ["Plan 109", "Plan 112"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"]
     },
     {
       "section": "examples nodes",
@@ -1469,12 +1469,13 @@
       "name": "Custom Nodes",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Foldkit node views cannot dispatch app data edits",
       "effort": "S",
-      "theme": "custom-nodes"
+      "theme": "custom-nodes",
+      "updatedBy": ["Plan 113"]
     },
     {
       "section": "examples nodes",
@@ -1518,13 +1519,13 @@
       "name": "Intersections",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "No getIntersectingNodes/isNodeIntersecting helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110"]
+      "updatedBy": ["Plan 110", "Plan 113"]
     },
     {
       "section": "examples nodes",
@@ -1555,13 +1556,13 @@
       "name": "Proximity Connect",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Foldkit lacks node-bounds query during drag",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110"]
+      "updatedBy": ["Plan 110", "Plan 113"]
     },
     {
       "section": "examples nodes",
@@ -1688,13 +1689,13 @@
       "name": "Edge Intersection",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "No path intersection helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110"]
+      "updatedBy": ["Plan 110", "Plan 113"]
     },
     {
       "section": "examples edges",
@@ -1737,13 +1738,13 @@
       "name": "Floating Edges",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107", "Plan 112"]
+      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"]
     },
     {
       "section": "examples edges",
@@ -1788,13 +1789,13 @@
       "name": "Simple Floating Edges",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107", "Plan 112"]
+      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"]
     },
     {
       "section": "examples edges",
@@ -1832,7 +1833,7 @@
       "missing": "Foldkit node views cannot write node data",
       "effort": "M",
       "theme": "computing-flows",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 113"]
     },
     {
       "section": "examples interaction",
@@ -1986,13 +1987,13 @@
       "name": "Selection Grouping · Pro",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No group-selection reparent helper",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109", "Plan 112"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"]
     },
     {
       "section": "examples grouping",

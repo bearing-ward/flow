@@ -19,6 +19,10 @@ export {
 
 export { applyFoldkitElementChanges } from './element-changes.ts'
 
+export { updateNodeData } from './node-data.ts'
+
+export type { UpdateNodeDataOptions } from './node-data.ts'
+
 export { createFoldkitInteractivity } from './interactivity.ts'
 
 export type { FoldkitInteractivity } from './interactivity.ts'
@@ -77,6 +81,7 @@ export {
 export type {
   FoldkitConnectionPreviewRenderer,
   FoldkitEdgeGeometry,
+  FoldkitEdgeInteraction,
   FoldkitEdgeLabelRenderer,
   FoldkitEdgeRenderer,
   FoldkitEdgeTypes,

@@ -52,6 +52,7 @@ const initial = (threshold?: number) =>
   initialModel(document, { x: 0, y: 0, zoom: 1 }, [], undefined, 'full', {
     ...defaultInteractionOptions,
     connectionDragThreshold: threshold,
+    nodesResizable: true,
   })
 
 const down = (reconnect = false) =>

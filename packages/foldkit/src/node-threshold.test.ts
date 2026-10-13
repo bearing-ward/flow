@@ -52,9 +52,19 @@ const step = (
   message: typeof Message.Type
 ) => update(model, wrapGraphMessage({ message }))
 
+// Lifecycle order only; live drag payloads are covered by live-drag.test.ts.
 const events = (result: ReturnType<typeof update>) =>
   result.outMessage?.flatMap((item) =>
-    item.kind === 'interaction' ? item.events : []
+    item.kind === 'interaction'
+      ? item.events.map(
+          ({
+            position: _position,
+            positionAbsolute: _positionAbsolute,
+            nodePositions: _nodePositions,
+            ...event
+          }) => event
+        )
+      : []
   ) ?? []
 
 const semantic = (result: ReturnType<typeof update>) =>

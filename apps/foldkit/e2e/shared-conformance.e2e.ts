@@ -165,8 +165,11 @@ test('Foldkit adapter satisfies every shared conformance fixture', async ({
           fixture.id === 'controlled-acknowledgement' &&
           action.kind === 'drag-node'
         ) {
-          const snapshot = await adapter.snapshot()
-          expect(snapshot.positions).toEqual([{ id: 'move', x: 80, y: 100 }])
+          // The live drag preview reverts to the accepted position on the
+          // next render after the controlled proposal.
+          await expect
+            .poll(() => adapter.snapshot().then(({ positions }) => positions))
+            .toEqual([{ id: 'move', x: 80, y: 100 }])
           expect(await adapter.changeKinds()).toEqual(['node-position'])
         }
       })

@@ -217,8 +217,12 @@ const createLayoutController = (
   target.onAccepted(() => {
     void request()
   })
-  target.onMeasured(() => {
-    void request()
+  // React Flow `dimensions` node changes: lay out again when a measured size
+  // changes, including each node's first measurement.
+  target.runtime.ports.elementChanges.subscribe(({ nodes }) => {
+    if (nodes.some(({ type }) => type === 'dimensions')) {
+      void request()
+    }
   })
   void request()
 

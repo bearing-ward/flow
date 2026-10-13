@@ -1,4 +1,5 @@
 import type { FlowNode } from '@flow/core'
+import { updateNodeData } from '@flow/foldkit'
 import type { FoldkitNodeRenderer } from '@flow/foldkit'
 import { Option, Schema as S } from 'effect'
 
@@ -26,7 +27,7 @@ const source = { id: 'out', kind: 'source', side: 'right' } as const
 
 const target = { id: 'in', kind: 'target', side: 'left' } as const
 
-/** Text node: an input bound to the node's own `data.text`. */
+/** Text node: an input that writes the node's own `data.text`. */
 const textNode: FoldkitNodeRenderer = (node, h) =>
   h.div(
     [h.Class('compute-node')],
@@ -37,6 +38,7 @@ const textNode: FoldkitNodeRenderer = (node, h) =>
         h.DataAttribute('testid', `text-input-${node.id}`),
         h.AriaLabel(`Text for ${node.id}`),
         h.Value(textOf(node.data)),
+        h.OnInput((text) => updateNodeData(node.id, { text })),
       ]),
     ]
   )
@@ -210,8 +212,8 @@ const renderStatus = (): void => {
 }
 
 /**
- * Foldkit node views cannot write node data, so the page computes derived
- * data from accepted state and writes it back through typed edits when stale.
+ * Foldkit node views are pure and run no effects, so the page derives the
+ * uppercase and result data from accepted state and writes it back when stale.
  */
 const sync = async (): Promise<void> => {
   if (syncing) {
@@ -240,23 +242,6 @@ const sync = async (): Promise<void> => {
 
 host.onAccepted(() => {
   void sync()
-})
-
-// A text node writes its own data: the page maps input events back to the node.
-host.frame.addEventListener('input', (event) => {
-  const input = event.target
-
-  if (!(input instanceof HTMLInputElement)) {
-    return
-  }
-
-  const nodeId = input.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
-
-  if (nodeId !== undefined) {
-    void host.edit([
-      { kind: 'update-node-data', nodeId, data: { text: input.value } },
-    ])
-  }
 })
 
 host

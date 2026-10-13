@@ -109,6 +109,15 @@ test('injected emitter defect reaches installed Runtime crash reporting with the
   })
 })
 
+/** Lifecycle order only; live drag payloads are covered by live-drag.e2e.ts. */
+const withoutDragPayload = <T extends object>(event: T) => {
+  const payload = new Set(['position', 'positionAbsolute', 'nodePositions'])
+
+  return Object.fromEntries(
+    Object.entries(event).filter(([key]) => !payload.has(key))
+  )
+}
+
 const releaseSnapshot = (x: number) => ({
   document: {
     nodes: [{ id: 'source', label: 'Release', position: { x, y: 70 } }],
@@ -249,7 +258,15 @@ for (const mode of [
       Match.orElse(() => [start, progress, proposal])
     )
 
-    expect(result).toEqual({
+    expect({
+      ...result,
+      observations: result.observations.map(
+        (observation: { readonly event?: object }) =>
+          observation.event === undefined
+            ? observation
+            : { ...observation, event: withoutDragPayload(observation.event) }
+      ),
+    }).toEqual({
       observations: expected,
       capturedAtStart: true,
       disposed: mode === 'proposal-dispose' || mode === 'queued-dispose',
@@ -295,9 +312,9 @@ for (const sourceKind of ['click', 'keyboard'] as const) {
     const lifecycle = async () => {
       const receipt = await read()
 
-      return receipt.rawEvents.filter(
-        (event: { phase: string }) => event.phase !== 'event'
-      )
+      return receipt.rawEvents
+        .filter((event: { phase: string }) => event.phase !== 'event')
+        .map(withoutDragPayload)
     }
 
     const source = page.locator(
@@ -341,8 +358,16 @@ for (const sourceKind of ['click', 'keyboard'] as const) {
       })
       .toBe(1)
     expect(await lifecycle()).toEqual([connectionStart])
+
+    // The sub-threshold press is a click, which selects the node.
+    const selectSource = {
+      kind: 'selection-set',
+      nodeIds: ['source'],
+      edgeIds: [],
+    }
+
     const pendingReceipt = await read()
-    expect(pendingReceipt.changes).toEqual([])
+    expect(pendingReceipt.changes).toEqual([selectSource])
     await page.mouse.move(box.x + 30, box.y + 20)
     await page.mouse.down()
     await page.mouse.move(box.x + 36, box.y + 20)
@@ -377,6 +402,7 @@ for (const sourceKind of ['click', 'keyboard'] as const) {
     await expect.poll(lifecycle).toEqual(released)
     const releaseReceipt = await read()
     expect(releaseReceipt.changes).toEqual([
+      selectSource,
       { kind: 'node-position', nodeId: 'source', position: { x: 61, y: 70 } },
     ])
     await page.mouse.move(box.x + 31, box.y + 20)

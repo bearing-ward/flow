@@ -37,7 +37,15 @@ const document = Effect.runSync(
 )
 
 const measured = (mode: 'controlled' | 'uncontrolled' = 'controlled') => {
-  let model = Graph.initialModel(document, { x: 0, y: 0, zoom: 1 }, [], mode)
+  let model = Graph.initialModel(
+    document,
+    { x: 0, y: 0, zoom: 1 },
+    [],
+    mode,
+    'uncontrolled',
+    'full',
+    { ...Graph.defaultInteractionOptions, nodesResizable: true }
+  )
 
   for (const measurement of [
     { nodeId: parentId, width: 300, height: 190, generation: 1 },

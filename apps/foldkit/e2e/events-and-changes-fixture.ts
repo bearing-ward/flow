@@ -192,6 +192,7 @@ export const mountFoldkitEventsFixture = (
       'full',
       {
         ...defaultInteractionOptions,
+        nodesResizable: true,
         ...switches,
         panOnDrag: scenario === 'switches' || scenario === 'fixed',
         // Validation and Preventing Cycles in one callback.

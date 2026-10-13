@@ -532,6 +532,10 @@ test('Foldkit interaction events carry mouse fields, dragged node ids and select
     nodeId: 'a',
     clientX: expect.any(Number),
   })
+  // A plain click selects the clicked node (Shift is not a multi-select key).
+  await expect
+    .poll(() => lastEvent(page, 'onSelectionChange'))
+    .toMatchObject({ nodeIds: ['a'], edgeIds: [] })
 
   const pane = await inCanvas(page, 700, 340)
   await page.mouse.click(pane.x, pane.y)
@@ -554,11 +558,13 @@ test('Foldkit interaction events carry mouse fields, dragged node ids and select
     nodeIds: ['a'],
   })
 
-  await nodeA.locator('.flow-foldkit-select-node').click()
+  await page
+    .locator('.flow-foldkit-node[data-node-id="b"] .flow-foldkit-select-node')
+    .click()
   await expect
     .poll(() => lastEvent(page, 'onSelectionChange'))
     .toMatchObject({
-      nodeIds: ['a'],
+      nodeIds: ['a', 'b'],
       edgeIds: [],
     })
 

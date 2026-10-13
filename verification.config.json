@@ -1,14 +1,60 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 114 core model fields, styling and canvas options",
+  "activeWork": "Plan 114 core model fields, styling and canvas options (merged with Plans 111-113, 112b scope)",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
+      "advanced-gestures.e2e.ts",
       "canvas.e2e.ts",
+      "edge-geometry-recipes.e2e.ts",
+      "edge-recipes.e2e.ts",
+      "events-and-changes.e2e.ts",
+      "host-hardening.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "layout-recipes.e2e.ts",
+      "nested-resize-containment.e2e.ts",
       "node-threshold.e2e.ts",
-      "renderer-props.e2e.ts"
+      "renderer-props.e2e.ts",
+      "ui-controls.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
     ],
-    "vue": ["connection.e2e.ts", "renderer-props.e2e.ts"],
-    "foldkit": ["public-state.e2e.ts", "renderer-props.e2e.ts"]
+    "vue": [
+      "connection.e2e.ts",
+      "edge-geometry-recipes.e2e.ts",
+      "edge-recipes.e2e.ts",
+      "events-and-changes.e2e.ts",
+      "feature-overview-recipes.e2e.ts",
+      "host-hardening.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "layout-recipes.e2e.ts",
+      "node-threshold.e2e.ts",
+      "renderer-props.e2e.ts",
+      "subflows-recipes.e2e.ts",
+      "ui-controls.e2e.ts",
+      "whiteboard-recipes.e2e.ts",
+      "connection-threshold.e2e.ts",
+      "activation-callbacks.e2e.ts"
+    ],
+    "foldkit": [
+      "computing-flows-recipes.e2e.ts",
+      "connection-threshold.e2e.ts",
+      "edge-geometry-recipes.e2e.ts",
+      "edge-recipes.e2e.ts",
+      "events-and-changes.e2e.ts",
+      "feature-overview-recipes.e2e.ts",
+      "handle-connections.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "layout-recipes.e2e.ts",
+      "live-drag.e2e.ts",
+      "node-threshold.e2e.ts",
+      "public-state.e2e.ts",
+      "renderer-props.e2e.ts",
+      "shared-conformance.e2e.ts",
+      "subflows-recipes.e2e.ts",
+      "ui-controls.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ]
   }
 }
