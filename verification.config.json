@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Host hardening Plans 111-113 merged",
+  "activeWork": "Plan 112b Vue click-connect regression",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
@@ -32,7 +32,9 @@
       "renderer-props.e2e.ts",
       "subflows-recipes.e2e.ts",
       "ui-controls.e2e.ts",
-      "whiteboard-recipes.e2e.ts"
+      "whiteboard-recipes.e2e.ts",
+      "connection-threshold.e2e.ts",
+      "activation-callbacks.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",

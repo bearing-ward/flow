@@ -167,7 +167,7 @@ import {
   dragGroupMembers,
   dragGroupPositions,
   isMultiSelectionEvent,
-  nodeClickControls,
+  isNodeControl,
   selectionAfterEdgeClick,
   selectionAfterNodeClick,
   dragCarriedNodes,
@@ -2333,6 +2333,12 @@ export const FlowCanvas = defineComponent({
            * (`selectNodesOnDrag`), so the click reads the selection from before.
            */
           readonly document: FlowDocument
+          /**
+           * Whether the press began on a control inside the node. A pending
+           * connection captures the pointer on the node, so the click that
+           * follows a handle press targets the node, not the handle.
+           */
+          readonly onControl: boolean
         }
       | undefined
 
@@ -2345,20 +2351,14 @@ export const FlowCanvas = defineComponent({
       const press = nodePress
       nodePress = undefined
 
-      const { target, currentTarget } = event
-
-      const control =
-        target instanceof Element ? target.closest(nodeClickControls) : null
-
       if (
         stateDisposed ||
         press === undefined ||
+        press.onControl ||
         event.button !== 0 ||
         Math.hypot(event.clientX - press.x, event.clientY - press.y) >
           (nodeDragThreshold ?? defaultNodeDragThreshold) ||
-        (control !== null &&
-          currentTarget instanceof Element &&
-          currentTarget.contains(control))
+        isNodeControl(event.target, event.currentTarget)
       ) {
         return
       }
@@ -7981,6 +7981,7 @@ export const FlowCanvas = defineComponent({
               x: event.clientX,
               y: event.clientY,
               document: activeDocument.value,
+              onControl: isNodeControl(event.target, event.currentTarget),
             }
             onPointerDown(event, node)
           },
