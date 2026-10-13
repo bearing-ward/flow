@@ -107,6 +107,7 @@ const buttonEdge: FlowEdgeRenderer = {
 
     return {
       update: (_next, nextContext) => paint(nextContext.props),
+      updateProps: paint,
       destroy: () => {
         mount.dispose()
         button.remove()
@@ -148,6 +149,7 @@ const dataEdge: FlowEdgeRenderer = {
 
     return {
       update: (_next, nextContext) => paint(nextContext.props),
+      updateProps: paint,
       destroy: () => {
         mount.dispose()
         label.remove()
@@ -205,6 +207,10 @@ const animatedSvgEdge: FlowEdgeRenderer = {
         ;({ props } = nextContext)
         paint()
       },
+      updateProps: (next) => {
+        props = next
+        paint()
+      },
       destroy: () => {
         reducedMotion.removeEventListener('change', paint)
         mount.dispose()
@@ -240,6 +246,8 @@ const floatingEdge = (
       return {
         update: (_next, nextContext) =>
           mount.update(options(nextContext.props)),
+        // Drag frames only deliver fresh props here, so the edge follows live.
+        updateProps: (props) => mount.update(options(props)),
         destroy: () => mount.dispose(),
       }
     },
@@ -336,11 +344,17 @@ const markerEdge: FlowEdgeRenderer = {
       })
     }
 
+    let current = edge
+
     visual.append(definitions, mount.element)
     paint(edge, context.props)
 
     return {
-      update: (next, nextContext) => paint(next, nextContext.props),
+      update: (next, nextContext) => {
+        current = next
+        paint(next, nextContext.props)
+      },
+      updateProps: (props) => paint(current, props),
       destroy: () => {
         definitions.remove()
         mount.dispose()

@@ -1,6 +1,6 @@
 # Plan 107: Edge and connection recipes
 
-Status: in progress, 2026-10-13.
+Status: complete, 2026-10-13.
 
 ## Goal
 
@@ -38,4 +38,22 @@ References: `examples/react/src/examples/FloatingEdges` and `EasyConnect` in the
 
 ## Conformity and deviations
 
-Filled in when the hosts land.
+- **Conforming.**
+  - The floating-edge intersection and side math matches the pinned `FloatingEdges/utils.ts` and `EasyConnect/utils.tsx`. Unit tests cover it.
+  - Button, data and animated edges follow the React Flow UI component behavior: delete from the label layer, a label from the source node's data, and `<animateMotion>` along the edge path.
+  - Easy Connect connects from the node body, rejects drops on the pane and self-connections, and creates floating edges.
+  - Multi Connection Line draws one preview line per selected node to the pointer and creates one edge per selected node.
+- **Intentionally different.**
+  - The recipes are app code in each host's `ui-recipes/edge-recipes` page, not packaged components.
+  - `getNodeIntersection` aims at the other node's true center. React offsets the other node's top-left by the intersecting node's half size, which only matches for nodes of equal size.
+  - Easy Connect uses loose connection mode with one body-sized handle per node, not React's stacked source and target handles.
+  - Custom markers come from a custom edge that owns its `<marker>` defs. The edge marker model still has only `arrow` and `arrowclosed`, and React's marker `color`, `width` and `strokeWidth` options are not on `FlowEdge`.
+  - Animated SVG Edge drops the animation under `prefers-reduced-motion`, which React Flow UI does not do.
+  - Vanilla edges follow a drag live through the opt-in `updateProps` from Plan 105b.
+  - Vue and Foldkit floating edges update after the drop. Both hosts commit node moves on release, and their built-in edges behave the same way, so the tests assert during-drag stability and post-drop geometry there.
+  - In Vue, multi-connection extra edges are added on `connectEnd`.
+  - The Vue recipe hides the resize handle that covers a selected node's right-hand handle.
+- **Unverified.**
+  - The Simple Floating Edges, Edge Markers and Multi Connection Line references are not in the pinned artifacts. The scenes follow the public example descriptions, and there is no runtime comparison with React.
+- **Host change.** Vue `edge-label-renderer.ts` now renders each label in its own view, which updates with its edge. Before this, a node-data-only change never reached the HTML label.
+- **Test boundary.** `apps/{vanilla,vue,foldkit}/e2e/edge-recipes.e2e.ts`, one test per scene.
