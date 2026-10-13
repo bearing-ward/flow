@@ -407,4 +407,36 @@ test.describe('Vanilla events, changes and connection rules', () => {
         { id: 'c', position: { x: 100, y: 280 } },
       ])
   })
+
+  test('a fixed node pans only with the pane activation modifier and outside no-pan content', async ({
+    page,
+  }) => {
+    await mount(page, {
+      recipe: 'controlled',
+      nodesDraggable: false,
+      panActivationModifier: 'shift',
+    })
+
+    const viewport = () =>
+      page.evaluate(() => globalThis.eventsFixture?.controller.getViewport())
+
+    const start = await grip(node(page, 'a'))
+
+    // Without the modifier the press neither drags nor pans.
+    await drag(page, start, { x: start.x + 60, y: start.y + 30 })
+    expect(await viewport()).toEqual({ x: 0, y: 0, zoom: 1 })
+
+    await page.keyboard.down('Shift')
+    await drag(page, start, { x: start.x + 60, y: start.y + 30 })
+    await page.keyboard.up('Shift')
+    await expect.poll(viewport).toEqual({ x: 60, y: 30, zoom: 1 })
+
+    // A press on .nopan content inside the node never pans.
+    const hold = await centre(page.getByText('hold-c'))
+    await page.keyboard.down('Shift')
+    await drag(page, hold, { x: hold.x + 40, y: hold.y + 20 })
+    await page.keyboard.up('Shift')
+    expect(await viewport()).toEqual({ x: 60, y: 30, zoom: 1 })
+    expect(await nodePosition(page, 'a')).toEqual({ x: 60, y: 60 })
+  })
 })

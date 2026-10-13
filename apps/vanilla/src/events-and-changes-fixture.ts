@@ -38,6 +38,7 @@ export interface EventsFixtureOptions {
   readonly nodesDraggable?: boolean
   readonly nodesConnectable?: boolean
   readonly elementsSelectable?: boolean
+  readonly panActivationModifier?: 'shift' | 'none'
 }
 
 export interface EventsFixture {
@@ -142,6 +143,7 @@ export const mountEventsFixture = (
     nodesDraggable: options.nodesDraggable,
     nodesConnectable: options.nodesConnectable,
     elementsSelectable: options.elementsSelectable,
+    panActivationModifier: options.panActivationModifier,
     onNodesChange: (changes) => {
       nodeChanges.push([...changes])
       nodes.onChange(changes)
@@ -217,7 +219,11 @@ export const mountEventsFixture = (
         button.addEventListener('click', () => {
           buttonCount += 1
         })
-        content.replaceChildren(label, button)
+        // A no-pan region: a press here never becomes a canvas pan.
+        const hold = globalThis.document.createElement('span')
+        hold.className = 'nopan'
+        hold.textContent = `hold-${node.id}`
+        content.replaceChildren(label, button, hold)
 
         return {
           update: (next) => {

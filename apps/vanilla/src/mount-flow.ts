@@ -7616,6 +7616,10 @@ export const createFlowHost = (
             )
           }
 
+          // Whether this press may become a pan if the node is not draggable:
+          // the pane's activation modifier and no-pan opt-outs apply here too.
+          let panHandOffAllowed = false
+
           const startNodeDragFromPointer = (event: PointerEvent): void => {
             if (destroyed) {
               return
@@ -7663,6 +7667,17 @@ export const createFlowHost = (
                   event.pointerId
                 )
             dragPointerStart = { x: event.clientX, y: event.clientY }
+
+            panHandOffAllowed =
+              isPanButtonEnabled(options.panOnDrag, event.button) &&
+              isActivationModifierPressed(
+                event,
+                options.panActivationModifier ?? 'none'
+              ) &&
+              !(
+                event.target instanceof Element &&
+                event.target.closest('.nopan, [data-flow-no-pan]') !== null
+              )
             dragPointer = pointerInCanvas(event)
 
             if (!runEffect(browser.capturePointer(element, event.pointerId))) {
@@ -7744,7 +7759,7 @@ export const createFlowHost = (
               dragPointerStart === null ||
               start === null ||
               nodeIsDraggable(drag.nodeId) ||
-              !isPanButtonEnabled(options.panOnDrag, 0) ||
+              !panHandOffAllowed ||
               !nodeDragActivated(
                 Math.max(nodeDragThreshold, 1),
                 dragPointerStart.x,

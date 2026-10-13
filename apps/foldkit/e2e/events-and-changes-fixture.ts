@@ -32,7 +32,11 @@ type InteractionEvent = typeof InteractionEventSchema.Type
 
 type ElementChanges = typeof ElementChangesSchema.Type
 
-export type FoldkitEventsScenario = 'controlled' | 'editor' | 'switches'
+export type FoldkitEventsScenario =
+  | 'controlled'
+  | 'editor'
+  | 'switches'
+  | 'fixed'
 
 export type FoldkitDropMode = 'none' | 'add' | 'temporary'
 
@@ -43,6 +47,7 @@ export interface FoldkitEventsFixture {
   readonly connectionStates: () => readonly FlowConnectionState[]
   readonly connection: () => FlowConnectionState
   readonly setInteractivity: (next: Partial<FlowInteractivity>) => void
+  readonly setAllowedTargets: (targets: readonly string[]) => void
   readonly interactivity: () => FlowInteractivity
   readonly setDropMode: (mode: FoldkitDropMode) => void
   readonly acceptTemporary: () => void
@@ -161,12 +166,15 @@ export const mountFoldkitEventsFixture = (
   container: HTMLElement,
   scenario: FoldkitEventsScenario
 ): FoldkitEventsFixture => {
-  let document = Effect.runSync(decodeFlowDocument(documents[scenario]))
+  let document = Effect.runSync(
+    decodeFlowDocument(documents[scenario === 'fixed' ? 'switches' : scenario])
+  )
 
   let viewport: Viewport = { x: 0, y: 0, zoom: 1 }
 
+  // The fixed scenario creates the program with nodes that cannot be dragged.
   const switches = {
-    nodesDraggable: true,
+    nodesDraggable: scenario !== 'fixed',
     nodesConnectable: true,
     elementsSelectable: true,
   }
@@ -185,7 +193,7 @@ export const mountFoldkitEventsFixture = (
       {
         ...defaultInteractionOptions,
         ...switches,
-        panOnDrag: scenario === 'switches',
+        panOnDrag: scenario === 'switches' || scenario === 'fixed',
         // Validation and Preventing Cycles in one callback.
         isValidConnection: (connection, current) =>
           scenario !== 'editor' ||
@@ -233,7 +241,7 @@ export const mountFoldkitEventsFixture = (
     viewport
   )
 
-  const interactivity = createFoldkitInteractivity(active.ports, switches)
+  const interactivity = createFoldkitInteractivity(active.ports)
   const events: InteractionEvent[] = []
   const deltas: ElementChanges[] = []
   const connectionStates: FlowConnectionState[] = []
@@ -509,6 +517,10 @@ export const mountFoldkitEventsFixture = (
     connectionStates: () => connectionStates,
     connection: connection.getConnection,
     setInteractivity: (next) => interactivity.set(next),
+    setAllowedTargets: (targets) =>
+      send(
+        active.ports.actions.send(HostAction.SetAllowedTargets({ targets }))
+      ),
     interactivity: interactivity.get,
     setDropMode: (mode) => {
       dropMode = mode

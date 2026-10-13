@@ -31,6 +31,7 @@ import {
   createFlowMiniMap,
   mountFlowCanvasUI,
   defaultInteractionOptions,
+  createFoldkitInteractivity,
 } from '@flow/foldkit'
 import type {
   EditResponse,
@@ -292,6 +293,9 @@ const observers = createFoldkitObservers(
   canvas.ownerDocument
 )
 
+// The Controls lock reads and sets the Runtime's interaction switches.
+const interactivity = createFoldkitInteractivity(runtime.ports)
+
 const viewportClient = createViewportClient(
   runtime.ports,
   () => {
@@ -355,6 +359,7 @@ const reconcileCanvasUI = (): void => {
       fitViewOptions: { padding: 0.12 },
       minZoom: 0.5,
       maxZoom: 1.5,
+      interactivity,
     })
     canvasUiMount.element.dataset.testid = 'foldkit-public-controls'
 

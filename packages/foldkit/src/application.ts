@@ -182,6 +182,13 @@ export const HostAction = FoldMessage.defineMessageUnion({
 
 export type HostActionData = typeof HostAction.Type
 
+/** The Runtime's current interaction switches, published after every `SetInteractivity`. */
+export const FoldkitInteractivitySchema = Schema.Struct({
+  nodesDraggable: Schema.Boolean,
+  nodesConnectable: Schema.Boolean,
+  elementsSelectable: Schema.Boolean,
+})
+
 export const SnapshotRequestSchema = Schema.Struct({
   requestId: Schema.String,
   nodeId: Schema.optional(Schema.String),
@@ -395,6 +402,7 @@ export const ports = {
     interactionEvents: Port.outbound(InteractionEventsSchema),
     elementChanges: Port.outbound(ElementChangesSchema),
     connectionStates: Port.outbound(FoldkitConnectionStateSchema),
+    interactivityStates: Port.outbound(FoldkitInteractivitySchema),
   },
 }
 
@@ -697,6 +705,10 @@ const PublicationSchema = Schema.Union([
     state: FoldkitConnectionStateSchema,
   }),
   Schema.Struct({
+    kind: Schema.Literal('interactivity'),
+    state: FoldkitInteractivitySchema,
+  }),
+  Schema.Struct({
     kind: Schema.Literal('interaction'),
     events: InteractionEventsSchema,
   }),
@@ -746,6 +758,21 @@ const emitPublication = (
 
   if (item.kind === 'connection') {
     return Port.emit(ports.outbound.connectionStates, item.state).pipe(
+      Effect.as(AppMessage.ChangePublished())
+    )
+  }
+
+  if (item.kind === 'interactivity') {
+    const attributes = {
+      [FlowAttribute.nodesDraggable]: item.state.nodesDraggable,
+      [FlowAttribute.nodesConnectable]: item.state.nodesConnectable,
+      [FlowAttribute.elementsSelectable]: item.state.elementsSelectable,
+    }
+
+    return Effect.logDebug('Published flow interactivity').pipe(
+      Effect.annotateLogs(attributes),
+      Effect.withSpan(FlowSpan.interactivityChange, { attributes }),
+      Effect.andThen(Port.emit(ports.outbound.interactivityStates, item.state)),
       Effect.as(AppMessage.ChangePublished())
     )
   }
@@ -1636,7 +1663,8 @@ const withElementChanges = (
 const graphFold = (
   model: Model,
   message: Graph.GraphMessageData,
-  route: 'full' | 'node-cancellation' = 'node-cancellation'
+  route: 'full' | 'node-cancellation' = 'node-cancellation',
+  fullCancellationReason = 'cancelled'
 ): AppReduction => {
   const result = foldGraph(model, message)
 
@@ -1655,7 +1683,8 @@ const graphFold = (
       ? (cancellation.cancellation?.reason ?? message._tag)
       : message._tag
 
-  const cancellationReason = route === 'full' ? 'cancelled' : originatingReason
+  const cancellationReason =
+    route === 'full' ? fullCancellationReason : originatingReason
 
   const events =
     route === 'full' ||
@@ -1739,18 +1768,91 @@ const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
   }),
 }))
 
+const keyboardConnectionOnly = (graph: GraphModel): GraphModel => ({
+  ...graph,
+  pointerSession: null,
+  gestureSession: null,
+  keyboardResizeSession: null,
+})
+
+/** Pair a click or keyboard connection a host action ended with its terminal. */
+const withEndedKeyboardConnection = (
+  model: Model,
+  result: AppReduction,
+  message: Graph.GraphMessageData,
+  reason: string
+): AppReduction => {
+  if (
+    model.graph.keyboardConnectionSession === null ||
+    result.model.graph.keyboardConnectionSession !== null
+  ) {
+    return result
+  }
+
+  const events = foldkitLifecycleEvents(
+    keyboardConnectionOnly(model.graph),
+    keyboardConnectionOnly(result.model.graph),
+    message,
+    result,
+    reason
+  )
+
+  return events.length === 0
+    ? result
+    : {
+        ...result,
+        outMessage: [
+          ...(result.outMessage ?? []),
+          { kind: 'interaction' as const, events },
+        ],
+      }
+}
+
 const routeAction = (model: Model, action: HostActionData) =>
   HostAction.match(action, {
     ReplaceDocument: ({ document }) =>
       graphFold(model, Graph.Message.ReplaceDocument({ document }), 'full'),
     ReplaceViewport: ({ viewport }) =>
       graphFold(model, Graph.Message.ReplaceViewport({ viewport })),
-    SetAllowedTargets: ({ targets }) =>
-      graphFold(model, Graph.Message.SetAllowedTargets({ targets })),
+    // Replacing the targets keeps pointer and pane lifecycles silent, but a
+    // click or keyboard connection it ends gets a cancelled onConnectEnd.
+    SetAllowedTargets: ({ targets }) => {
+      const message = Graph.Message.SetAllowedTargets({ targets })
+
+      return withEndedKeyboardConnection(
+        model,
+        graphFold(model, message),
+        message,
+        'allowed-targets-changed'
+      )
+    },
     DispatchCommand: ({ command }) =>
       graphFold(model, Graph.Message.DispatchCommand({ command })),
-    SetInteractivity: ({ _tag: _action, ...switches }) =>
-      graphFold(model, Graph.Message.SetInteractivity(switches), 'full'),
+    // Merges a partial patch, ends a click or keyboard connection that can no
+    // longer finish, and publishes the resulting switches. An empty patch
+    // just publishes the current switches.
+    SetInteractivity: ({ _tag: _action, ...switches }) => {
+      const result = graphFold(
+        model,
+        Graph.Message.SetInteractivity(switches),
+        'full',
+        'interactivity-changed'
+      )
+
+      const { nodesDraggable, nodesConnectable, elementsSelectable } =
+        result.model.graph
+
+      return {
+        ...result,
+        outMessage: [
+          ...(result.outMessage ?? []),
+          {
+            kind: 'interactivity' as const,
+            state: { nodesDraggable, nodesConnectable, elementsSelectable },
+          },
+        ],
+      }
+    },
     MeasureNode: ({ requestId, measurement }) => {
       const result = graphFold(
         model,
@@ -3130,6 +3232,16 @@ export const createProgram = (
 
   const publication = createProgramPublication(pointerResource)
 
+  // The rule lives as long as the Runtime's program stream; disposing the
+  // Runtime interrupts it and removes the rule.
+  const programStream = Stream.unwrap(
+    Effect.sync(() => {
+      registerConnectionRule(instanceId, interactionOptions.isValidConnection)
+
+      return publication.stream
+    })
+  ).pipe(Stream.ensuring(Effect.sync(() => registerConnectionRule(instanceId))))
+
   const graphView = Graph.makeView(
     rendererRegistry,
     instanceId,
@@ -3163,7 +3275,7 @@ export const createProgram = (
             modelToDependencies: (model) => ({
               instanceId: model.graph.instanceId,
             }),
-            dependenciesToStream: () => publication.stream,
+            dependenciesToStream: () => programStream,
           }
         ),
       })),

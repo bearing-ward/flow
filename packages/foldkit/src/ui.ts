@@ -6,8 +6,10 @@ import {
 import type {
   FlowGraphView,
   FlowInteractivity,
+  FlowInteractivityInput,
   ViewportPaddingSchema,
 } from '@flow/core'
+import { Effect } from 'effect'
 
 import type { ViewportClient } from './application.ts'
 
@@ -206,12 +208,20 @@ export interface FlowControlsOptions {
   readonly onInteractiveChange?: (interactive: boolean) => void
   /**
    * The Runtime's interaction switches, usually `createFoldkitInteractivity`.
-   * The lock starts from them and sets all three together. Without it the
-   * lock only reports its state through `onInteractiveChange`.
+   * The lock starts from them, follows every published change and sets all
+   * three together.
+   *
+   * Without it the lock cannot reach the Runtime: the button only toggles
+   * its own pressed state and reports it through `onInteractiveChange`, so
+   * the app must apply the switches itself. Creating such a lock logs a
+   * warning.
    */
   readonly interactivity?: {
     readonly get: () => FlowInteractivity
-    readonly set: (next: FlowInteractivity) => void
+    readonly set: (next: FlowInteractivityInput) => void
+    readonly subscribe: (
+      listener: (interactivity: FlowInteractivity) => void
+    ) => () => void
   }
 }
 
@@ -679,6 +689,23 @@ export const createFlowControls = (
     interactiveState = interactive
     options.interactivity?.set(flowInteractivityFor(interactive))
     renderLock(interactive)
+  }
+
+  if (options.interactivity === undefined) {
+    if (options.showInteractive !== false) {
+      Effect.runSync(
+        Effect.logWarning(
+          'Foldkit Controls lock has no interactivity client; it only reports onInteractiveChange'
+        )
+      )
+    }
+  } else {
+    listeners.push(
+      options.interactivity.subscribe((next) => {
+        interactiveState = isFlowInteractive(next)
+        renderLock(interactiveState)
+      })
+    )
   }
 
   if (options.showInteractive !== false) {

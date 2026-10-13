@@ -298,13 +298,15 @@ test('Foldkit runtime switches gate drag, connect and select without blocking pa
   await expect(lock).toHaveAttribute('aria-pressed', 'true')
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
-  expect(
-    await page.evaluate(() => window.__flowFoldkitEvents?.interactivity())
-  ).toEqual({
-    nodesDraggable: true,
-    nodesConnectable: true,
-    elementsSelectable: true,
-  })
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__flowFoldkitEvents?.interactivity())
+    )
+    .toEqual({
+      nodesDraggable: true,
+      nodesConnectable: true,
+      elementsSelectable: true,
+    })
   expect(
     await page.evaluate(() => window.__flowFoldkitEvents?.interactiveCalls())
   ).toEqual([true])
@@ -573,4 +575,93 @@ test('Foldkit interaction events carry mouse fields, dragged node ids and select
   await expect
     .poll(() => lastEvent(page, 'onSelectionChange'))
     .toMatchObject({ edgeIds: ['bc'] })
+})
+
+const interactivityOf = (page: Page) =>
+  page.evaluate(() => window.__flowFoldkitEvents?.interactivity())
+
+const lastEnd = (page: Page) =>
+  page.evaluate(() =>
+    window.__flowFoldkitEvents
+      ?.events()
+      .findLast((event) => event.name === 'onConnectEnd')
+  )
+
+test('Foldkit switches come from the Runtime and the lock follows app changes', async ({
+  page,
+}) => {
+  // The program starts with nodesDraggable false; the client gets no initial value.
+  await mount(page, 'fixed')
+  await expect
+    .poll(() => interactivityOf(page))
+    .toEqual({
+      nodesDraggable: false,
+      nodesConnectable: true,
+      elementsSelectable: true,
+    })
+
+  // A partial patch keeps the Runtime's other switches.
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.setInteractivity({ elementsSelectable: false })
+  )
+  await expect
+    .poll(() => interactivityOf(page))
+    .toEqual({
+      nodesDraggable: false,
+      nodesConnectable: true,
+      elementsSelectable: false,
+    })
+
+  await page.evaluate(() => window.__flowFoldkitEvents?.mountControls())
+
+  const lock = page.getByRole('button', { name: 'Toggle interactivity' })
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+
+  // The lock re-renders when the app changes the switches itself.
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.setInteractivity({ nodesConnectable: false })
+  )
+  await expect(lock).toHaveAttribute('aria-pressed', 'true')
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.setInteractivity({ nodesDraggable: true })
+  )
+  await expect(lock).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('Foldkit ends a pending click connection when switches or targets change', async ({
+  page,
+}) => {
+  await mount(page, 'switches')
+
+  const starts = () => eventCount(page, 'onConnectStart')
+
+  await handle(page, 'a', 'out').click()
+  await expect.poll(starts).toBe(1)
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.setInteractivity({ nodesConnectable: false })
+  )
+  await expect
+    .poll(() => lastEnd(page))
+    .toMatchObject({
+      phase: 'end',
+      outcome: 'cancelled',
+      reason: 'interactivity-changed',
+    })
+
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.setInteractivity({ nodesConnectable: true })
+  )
+  await handle(page, 'a', 'out').click()
+  await expect.poll(starts).toBe(2)
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.setAllowedTargets(['b'])
+  )
+  await expect
+    .poll(() => lastEnd(page))
+    .toMatchObject({
+      phase: 'end',
+      outcome: 'cancelled',
+      reason: 'allowed-targets-changed',
+    })
+  expect(await eventCount(page, 'onConnectEnd')).toBe(2)
 })
