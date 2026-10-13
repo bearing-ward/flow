@@ -1,5 +1,9 @@
 # Plan 099. Configure node drag activation across hosts
 
+## Status
+
+Done for bounded Plan099 feature acceptance. Broad verification, reference parity and the overall API/example/UI goal remain open.
+
 ## Goal
 
 Expose an idiomatic public `nodeDragThreshold` in Vue and Foldkit alongside the existing Vanilla option. Ground the exact comparison, default, coordinate space and lifecycle policy before choosing the implementation. Keep node meaning in core and native activation in each host.
@@ -10,7 +14,9 @@ The maintainer authorized progress toward the API, example and UI goal through p
 
 ## Current phase
 
-The user approved the shorter delivery loop. Root completed the stable repair6 check, passing 92 units and 848 browser cases with one Vue failure, no skipped or flaky cases, and passing builds/scoped quality. All three source reviewers and the comments reviewer completed. Root confirmed three production defects: Vue external accepted status, custom-edge geometry during viewport projection, and renderer currency when edge type comes from defaults. One required numeric mutation-in-place proof is also missing. Comments review found no remaining targets. A fresh sole writer is closing these four local items with named checks. Original public regression lanes passed and their evidence is reused. Source acceptance and integration remain open. Broad checks and another wholesale feature run are deferred. Earlier candidate stages below are historical. The binding verdict and writer brief are in `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/node-review-verdict-round6.md` and `node-repair-brief-round7.md`.
+The cross-host node threshold and reentrant ownership batch is accepted within its named boundaries. Root matched the final source and evidence, read the complete production review and clear targeted closure, and replayed the three final public defects successfully. The stable repair6 check passed 92 units and 848 browser cases with one Vue status failure. The final affected check passed 33 Vanilla and 49 Vue cases with zero skips or flaky results, closing that failure and the additional defects. Required numeric mutation-in-place proof is present. Three older Vue fixture type diagnostics are fixed; scoped fixture typechecking passes and emitted JavaScript is unchanged. Root's trusted native Chromium checks passed pending click, active node drag/release and a following connection in all three hosts. T3 preview's native interaction was unavailable, so these recordings use the repository Playwright workflow. The accepted source is normalized over current main for local integration. Broad profiles, final wholesale feature rerun, packed/reference sweeps, CI and other engines/devices remain unverified. Evidence is under `/Users/richardmcandrews/.codex/recovery/flow-parity-20261011/node-parent-repair7-acceptance/`.
+
+## Historical development receipts
 
 The third source repair is the committed baseline at `5635acf1f8855b90ef412fbafc20329d77f58f5b`, tree `fd8078f46767371e1979182b9cf367860775488f`, in the isolated checkout. Core and Foldkit production remain unchanged by this repair. Vanilla and Vue completion ownership and disposal have migrated together; required Foldkit viewport publication histories now have dedicated tests.
 
@@ -56,11 +62,11 @@ Use one substantive source review and targeted closure. Demonstrated defects, vi
 
 ## Throughput checkpoint
 
-- Blocking first steps. Grounding, design closure and first implementation checks passed within their boundaries. The next correction follows the complete public-entry census and renewed ownership grounding.
-- Independent workstreams. The substantive review is complete. One writer closes the three reproduced defects and agreed proof gap. Root reuses completed checks and owns targeted review, public/native proof, source acceptance, normalization and integration.
-- Shared mutable state. One source writer owns the isolated checkout. Root does not edit or test that source until the next frozen handoff. Root owns plans, progress, verification scope, the canonical trail and integration.
-- Smallest safe decomposition. Private request, observation, frame and cleanup transitions must acquire authority before callbacks. Preserve existing claims/disposal and Foldkit publication while closing all seven defects and the literal-history gap.
+- Completed units. The three ownership units and four targeted closure items are accepted. The inherited Vue fixture type errors are also closed without runtime changes.
+- Independent workstreams. Production review, targeted closure review, public replay and native ordinary-input checks are complete. Broad reconciliation remains deferred.
+- Shared mutable state. No source writer is active. Root owns exact-tree normalization, local integration, archived evidence and cleanup.
+- Next work. Continue related capability batches with named changed-behavior checks and one stable affected-feature check. Reuse this batch's grounding and receipts.
 
 ## Conformity and deviations
 
-Conforming by pinned-source inspection only. The selected default and activation comparison correspond to the inspected XYDrag path; no mounted reference result is claimed. Flow's pointer-down geometry, host preview/control policies and framework ownership are intentional differences. Shared publication history, Vue invalid-frame cancellation and the bounded origin correction are explicit compatibility changes. Dedicated ordinary native behavior and named earlier regressions passed. Seven current runtime defects and the literal-history gap prevent source acceptance. Broad parity remains unverified and deferred.
+Conforming within the named Flow feature boundary. All three hosts validate the shared default and raw client-space activation comparison, preserve ordinary pending-click policy, and pass their dedicated controls. The final ownership defects and required literal proof gaps are closed by source review and named instrumented checks. Trusted native Chromium ordinary gestures passed across all three hosts. Flow's pointer-down geometry and framework lifecycle remain intentional differences from pinned source. Mounted React Flow runtime parity, native recursive starvation, other engines/devices, broad suites and release acceptance remain unverified and deferred.

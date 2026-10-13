@@ -46,6 +46,13 @@ import {
   normalizeFlowConnection,
   nearestConnectionTarget,
   ConnectionModeSchema,
+  NodeDragThresholdSchema,
+  NodeOriginSchema,
+  FlowNodeSchema,
+  resolveNodeOrigin,
+  defaultNodeDragThreshold,
+  decodeNodeDragThreshold,
+  nodeDragActivated,
   ConnectionDragThresholdSchema,
   defaultConnectionDragThreshold,
   connectionDragActivated,
@@ -175,16 +182,35 @@ const interactionCompletionSpan = (change: FlowChange): string => {
     : FlowSpan.editPrepare
 }
 
-interface DragSession {
-  readonly kind: 'node'
-  readonly pointerId: number
-  readonly node: FlowNode
+const NodeFrameSchema = S.Struct({
+  origin: NodeOriginSchema,
+  parentIds: S.Array(NodeIdSchema),
+  parentX: S.Finite,
+  parentY: S.Finite,
+})
+
+const NodeDragFields = {
+  pointerId: S.Number,
+  node: FlowNodeSchema,
+  startX: S.Finite,
+  startY: S.Finite,
+  originX: S.Finite,
+  originY: S.Finite,
+  frame: NodeFrameSchema,
+}
+
+const NodeDragSessionSchema = S.Union([
+  S.Struct({
+    ...NodeDragFields,
+    kind: S.Literal('node-pending'),
+    threshold: NodeDragThresholdSchema,
+  }),
+  S.Struct({ ...NodeDragFields, kind: S.Literal('node') }),
+])
+
+type DragSession = typeof NodeDragSessionSchema.Type & {
   readonly element: HTMLElement
   readonly captureTarget: HTMLElement
-  readonly startX: number
-  readonly startY: number
-  readonly originX: number
-  readonly originY: number
 }
 
 const PendingHandleSchema = S.Struct({
@@ -216,11 +242,11 @@ const PendingConnectionSchema = S.Union([
   }),
 ])
 
-type PendingConnection = typeof PendingConnectionSchema.Type & {
+type PendingConnectionData = typeof PendingConnectionSchema.Type & {
   readonly captureTarget: HTMLElement | SVGElement
 }
 
-interface ConnectionSession {
+interface ConnectionData {
   readonly kind: 'connection'
   readonly pointerId: number
   readonly captureTarget: HTMLElement | SVGElement
@@ -240,6 +266,22 @@ const snapshotEquivalence = S.toEquivalence(FlowSnapshotSchema)
 const documentEquivalence = S.toEquivalence(FlowDocumentSchema)
 
 const viewportEquivalence = S.toEquivalence(ViewportSchema)
+
+const decodeViewportRequestTarget = S.decodeUnknownSync(
+  ViewportSchema.check(
+    S.makeFilter((value) => {
+      if (!Number.isFinite(value.x)) {
+        return { path: ['x'], issue: 'Viewport request x must be finite' }
+      }
+
+      if (!Number.isFinite(value.y)) {
+        return { path: ['y'], issue: 'Viewport request y must be finite' }
+      }
+
+      return true
+    })
+  )
+)
 
 const viewportKey = (viewport: Viewport): string =>
   `${viewport.x},${viewport.y},${viewport.zoom}`
@@ -333,15 +375,6 @@ interface NodePositionStyle {
   width?: string
   height?: string
 }
-
-type Session =
-  | DragSession
-  | ConnectionSession
-  | PendingConnection
-  | PanSession
-  | SelectionSession
-  | ResizeSession
-  | KeyboardResizeSession
 
 const FitBoundsOptionsSchema = S.Struct({
   duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
@@ -514,6 +547,23 @@ const edgeLabelAnchor = (
   return S.is(EdgeLabelAnchorSchema)(anchor) ? anchor : undefined
 }
 
+interface ConnectionEndPayload {
+  readonly status: 'accepted' | 'proposed' | 'rejected' | 'cancelled'
+  readonly reason: string
+  readonly connection?: FlowConnection
+}
+
+interface NodeEndPayload {
+  readonly node: FlowNode
+  readonly status: Exclude<ConnectionEndPayload['status'], 'rejected'>
+  readonly reason?: string
+}
+
+interface SelectionEndPayload {
+  readonly status: NodeEndPayload['status']
+  readonly reason: string
+}
+
 // SAFETY: FlowCanvas decodes document, node, and edge props before graph use; Vue's PropType supplies their static contracts.
 export const FlowCanvas = defineComponent({
   name: 'FlowCanvas',
@@ -574,6 +624,7 @@ export const FlowCanvas = defineComponent({
       type: String as PropType<ConnectionMode>,
       default: 'strict',
     },
+    nodeDragThreshold: { type: Number, default: defaultNodeDragThreshold },
     connectionDragThreshold: {
       type: Number,
       default: defaultConnectionDragThreshold,
@@ -647,16 +698,8 @@ export const FlowCanvas = defineComponent({
       readonly node: FlowNode
       readonly position: { readonly x: number; readonly y: number }
     }) => true,
-    nodeDragEnd: (_payload: {
-      readonly node: FlowNode
-      readonly status: 'accepted' | 'proposed' | 'cancelled'
-      readonly reason?: string
-    }) => true,
-    nodeDragStop: (_payload: {
-      readonly node: FlowNode
-      readonly status: 'accepted' | 'proposed' | 'cancelled'
-      readonly reason?: string
-    }) => true,
+    nodeDragEnd: (_payload: NodeEndPayload) => true,
+    nodeDragStop: (_payload: NodeEndPayload) => true,
     connectStart: (_payload: {
       readonly node: FlowNode
       readonly handleId: FlowHandle['id']
@@ -665,11 +708,7 @@ export const FlowCanvas = defineComponent({
     connectProgress: (_payload: { readonly preview: ConnectionPreviewState }) =>
       true,
     connect: (_connection: FlowConnection) => true,
-    connectEnd: (_payload: {
-      readonly status: 'accepted' | 'proposed' | 'rejected' | 'cancelled'
-      readonly reason: string
-      readonly connection?: FlowConnection
-    }) => true,
+    connectEnd: (_payload: ConnectionEndPayload) => true,
     reconnectStart: (_payload: {
       readonly edge: FlowEdge
       readonly endpoint: 'source' | 'target'
@@ -682,11 +721,7 @@ export const FlowCanvas = defineComponent({
       readonly edge: FlowEdge
       readonly connection: FlowConnection
     }) => true,
-    reconnectEnd: (_payload: {
-      readonly status: 'accepted' | 'proposed' | 'rejected' | 'cancelled'
-      readonly reason: string
-      readonly connection?: FlowConnection
-    }) => true,
+    reconnectEnd: (_payload: ConnectionEndPayload) => true,
     selectionStart: (_payload: {
       readonly position: { readonly x: number; readonly y: number }
       readonly activation: 'pointer' | 'keyboard'
@@ -699,10 +734,7 @@ export const FlowCanvas = defineComponent({
         readonly height: number
       }
     }) => true,
-    selectionEnd: (_payload: {
-      readonly status: 'accepted' | 'proposed' | 'cancelled'
-      readonly reason: string
-    }) => true,
+    selectionEnd: (_payload: SelectionEndPayload) => true,
     selectionChange: (_payload: {
       readonly nodes: readonly FlowNode[]
       readonly edges: readonly FlowEdge[]
@@ -757,10 +789,9 @@ export const FlowCanvas = defineComponent({
       readonly node: FlowNode
       readonly handleId: FlowHandle['id']
     }) => true,
-    clickConnectEnd: (_payload: {
-      readonly status: 'accepted' | 'proposed' | 'rejected' | 'cancelled'
-      readonly reason: string
-    }) => true,
+    clickConnectEnd: (
+      _payload: Pick<ConnectionEndPayload, 'status' | 'reason'>
+    ) => true,
     selectionDragStart: (_payload: {
       readonly position: { readonly x: number; readonly y: number }
     }) => true,
@@ -772,10 +803,7 @@ export const FlowCanvas = defineComponent({
         readonly height: number
       }
     }) => true,
-    selectionDragStop: (_payload: {
-      readonly status: 'accepted' | 'proposed' | 'cancelled'
-      readonly reason: string
-    }) => true,
+    selectionDragStop: (_payload: SelectionEndPayload) => true,
     nodeClick: (_node: FlowNode) => true,
     edgeClick: (_edge: FlowEdge) => true,
   },
@@ -1093,39 +1121,380 @@ export const FlowCanvas = defineComponent({
       S.decodeUnknownSync(ConnectionRadiusSchema)(props.connectionRadius)
     )
 
+    type ConnectionLifecycle =
+      | {
+          readonly kind: 'connect'
+          readonly activation: 'pointer' | 'keyboard' | 'click'
+          readonly node: FlowNode
+          readonly handleId: FlowHandle['id']
+        }
+      | {
+          readonly kind: 'reconnect'
+          readonly activation: 'pointer' | 'keyboard'
+          readonly edge: FlowEdge
+          readonly endpoint: 'source' | 'target'
+        }
+
+    interface ConnectionPress {
+      readonly pointerId: PendingConnectionData['pointerId']
+      readonly captureTarget: PendingConnectionData['captureTarget']
+      state: 'held' | 'released'
+    }
+
+    type ViewportTerminalHolder =
+      | { readonly kind: 'instant-family'; readonly family: InstantFamily }
+      | { readonly kind: 'pan'; readonly owner: PanOwner }
+      | { readonly kind: 'connection'; readonly owner: ConnectionOwner }
+      | { readonly kind: 'request'; readonly request: ViewportRequestOwner }
+
+    interface InstantFamily {
+      readonly observation: ViewportObservation
+      readonly running: Set<InstantCall>
+      completion:
+        | { readonly kind: 'accepted' }
+        | { readonly kind: 'proposed'; readonly viewport: Viewport }
+    }
+
+    interface InstantCall {
+      state: 'live' | 'finished'
+      family: InstantFamily | null
+    }
+
+    interface ViewportObservation {
+      state:
+        | {
+            readonly kind: 'unstarted'
+            readonly start: Viewport
+            terminal: ViewportTerminalHolder | null
+          }
+        | {
+            readonly kind: 'viewport-started' | 'both-started'
+            readonly last: Viewport
+            terminal: ViewportTerminalHolder | null
+          }
+        | { readonly kind: 'ended' }
+    }
+
+    interface ConnectionOwner {
+      state:
+        | {
+            readonly kind: 'live'
+            readonly residence:
+              | { readonly kind: 'pointer'; readonly press: ConnectionPress }
+              | { readonly kind: 'retained' | 'keyboard' }
+            readonly lifecycle: ConnectionLifecycle
+            autoPan: ViewportObservation | null
+          }
+        | { readonly kind: 'completing'; readonly claim: ConnectionClaim }
+        | { readonly kind: 'ended' }
+      validationFailure: 'unreported' | 'reported'
+    }
+
+    interface RetainedSource {
+      readonly kind: 'retained'
+      readonly owner: ConnectionOwner
+      readonly data: ConnectionData
+    }
+
+    type PendingSource =
+      | { readonly kind: 'fresh' }
+      | { readonly kind: 'retained'; readonly source: RetainedSource }
+
+    type PendingConnection =
+      | (Extract<PendingConnectionData, { kind: 'connection-pending' }> & {
+          readonly press: ConnectionPress
+          readonly sourceAssociation: PendingSource
+        })
+      | (Extract<PendingConnectionData, { kind: 'reconnection-pending' }> & {
+          readonly press: ConnectionPress
+          readonly sourceAssociation: { readonly kind: 'fresh' }
+        })
+
+    type ActiveSource =
+      | { readonly kind: 'own'; readonly owner: ConnectionOwner }
+      | { readonly kind: 'retained'; readonly source: RetainedSource }
+
+    type PhysicalConnection = ConnectionData & {
+      readonly route: 'pointer'
+      readonly press: ConnectionPress
+      readonly source: ActiveSource
+    }
+
+    type KeyboardReconnection = ConnectionData & {
+      readonly route: 'keyboard'
+      readonly owner: ConnectionOwner
+      readonly reconnect: NonNullable<ConnectionData['reconnect']>
+    }
+
+    type ConnectionSession = PhysicalConnection | KeyboardReconnection
+
+    type CompletionTarget = NonNullable<ReturnType<typeof connectionTargetAt>>
+
+    interface ConnectionClaim {
+      readonly owner: ConnectionOwner
+      readonly lifecycle: ConnectionLifecycle
+      readonly source: ConnectionData
+      readonly target: CompletionTarget | null
+      readonly resources: {
+        readonly press: ConnectionPress | null
+        readonly autoPan: ViewportObservation | null
+        readonly physicalView: PendingConnection | ConnectionSession | undefined
+        readonly retainedView: RetainedSource | undefined
+      }
+    }
+
+    type ConnectionResult =
+      | {
+          readonly kind: 'success'
+          readonly status: 'accepted' | 'proposed'
+          readonly reason: 'valid-connection' | 'valid-reconnection'
+          readonly connection: FlowConnection
+        }
+      | { readonly kind: 'rejected' | 'cancelled'; readonly reason: string }
+
+    type ConnectionCompletionInput =
+      | {
+          readonly kind: 'pointer'
+          readonly active: PhysicalConnection
+          readonly release: PointerEvent
+        }
+      | {
+          readonly kind: 'pending'
+          readonly pending: PendingConnection
+          readonly release: PointerEvent
+        }
+      | {
+          readonly kind: 'retained-keyboard'
+          readonly source: RetainedSource
+          readonly target: CompletionTarget
+        }
+      | {
+          readonly kind: 'physical-reconnect-target'
+          readonly active: PhysicalConnection & {
+            readonly reconnect: NonNullable<ConnectionData['reconnect']>
+          }
+          readonly target: CompletionTarget
+        }
+      | {
+          readonly kind: 'keyboard-reconnect'
+          readonly active: KeyboardReconnection
+          readonly target: CompletionTarget
+        }
+
+    type CompletionRoute =
+      | { readonly kind: 'quiet'; readonly pending: PendingConnection }
+      | {
+          readonly kind: 'fresh-click'
+          readonly pending: PendingConnection
+          readonly candidate: ConnectionData
+          readonly target: CompletionTarget | undefined
+        }
+      | {
+          readonly kind: 'physical'
+          readonly active: PhysicalConnection
+          readonly physicalView: PhysicalConnection
+          readonly target: CompletionTarget | undefined
+        }
+      | {
+          readonly kind: 'retained-target'
+          readonly pending: PendingConnection
+          readonly candidate: ConnectionData
+          readonly source: RetainedSource
+          readonly target: CompletionTarget | undefined
+        }
+      | {
+          readonly kind: 'retained-keyboard'
+          readonly source: RetainedSource
+          readonly target: CompletionTarget
+        }
+      | {
+          readonly kind: 'keyboard-reconnect'
+          readonly active: KeyboardReconnection
+          readonly target: CompletionTarget
+        }
+
+    interface SelectionOwner {
+      state:
+        | { readonly kind: 'live' }
+        | { readonly kind: 'completing'; readonly claim: SelectionClaim }
+        | { readonly kind: 'ended' }
+    }
+
+    type OwnedSelection = SelectionSession & { readonly owner: SelectionOwner }
+
+    interface SelectionClaim {
+      readonly owner: SelectionOwner
+      readonly active: OwnedSelection
+    }
+
+    interface PanOwner {
+      state:
+        | { readonly kind: 'live'; readonly observation: ViewportObservation }
+        | { readonly kind: 'ended' }
+    }
+
+    type OwnedPan = PanSession & { readonly owner: PanOwner }
+
+    type Session =
+      | DragSession
+      | ConnectionSession
+      | PendingConnection
+      | OwnedPan
+      | OwnedSelection
+      | ResizeSession
+      | KeyboardResizeSession
+
+    interface ViewportRequestOwner {
+      readonly requestId: ViewportOperationResult['requestId']
+      readonly result: {
+        readonly promise: Promise<ViewportOperationResult>
+        readonly resolve: (result: ViewportOperationResult) => void
+        readonly reject: (cause: unknown) => void
+        exposure: 'constructing' | 'returned' | 'abandoned'
+      }
+      state:
+        | { readonly kind: 'incoming' }
+        | {
+            readonly kind: 'active'
+            readonly write: ViewportWrite
+            frame: RequestFrame
+          }
+        | { readonly kind: 'settling'; readonly taken: TakenRequestSettlement }
+        | { readonly kind: 'settled'; readonly result: ViewportOperationResult }
+        | { readonly kind: 'aborted'; readonly cause: unknown }
+    }
+
+    type RequestFrame =
+      | { readonly kind: 'none' }
+      | {
+          readonly kind: 'registering'
+          readonly registration: RequestRegistration
+        }
+      | {
+          readonly kind: 'scheduled'
+          readonly registration: RequestRegistration
+          readonly handle: number
+        }
+      | {
+          readonly kind: 'executing'
+          readonly registration: RequestRegistration
+        }
+
+    interface RequestRegistration {
+      state: 'acquiring' | 'scheduled' | 'executing' | 'revoked'
+    }
+
+    interface TakenRequestSettlement {
+      readonly owner: ViewportRequestOwner
+      readonly result: ViewportOperationResult
+      readonly frame: RequestFrame
+      readonly ports: readonly TerminalPort[]
+      progress:
+        | { readonly kind: 'cancel-frame' }
+        | { readonly kind: 'resolve' }
+        | { readonly kind: 'mounted-pair'; nextPort: number }
+        | { readonly kind: 'done' }
+      failure:
+        | { readonly kind: 'none' }
+        | { readonly kind: 'cause'; readonly cause: unknown }
+    }
+
+    type ConnectionMovement =
+      | { readonly kind: 'physical'; readonly active: PhysicalConnection }
+      | { readonly kind: 'retained'; readonly source: RetainedSource }
+
+    type ConnectionPreviewOwner =
+      | ConnectionMovement
+      | { readonly kind: 'keyboard'; readonly active: KeyboardReconnection }
+
+    // eslint-disable-next-line prefer-const -- The mutually recursive preview and completion entries bind before listeners are installed.
+    let currentConnectionPreviewOwner: () => ConnectionPreviewOwner | undefined
+
+    // eslint-disable-next-line prefer-const -- The mutually recursive preview and completion entries bind before listeners are installed.
+    let connectionPreviewState: (
+      initiating: ConnectionPreviewOwner
+    ) => ConnectionPreviewState | null
+
+    type ValidationOwner =
+      | {
+          readonly kind: 'preview'
+          readonly initiating: ConnectionPreviewOwner
+        }
+      | { readonly kind: 'completion'; readonly claim: ConnectionClaim }
+
+    type ViewportInitiator =
+      | { readonly kind: 'pan'; readonly active: OwnedPan }
+      | {
+          readonly kind: 'connection'
+          readonly continuation: ConnectionMovement
+        }
+      | { readonly kind: 'request'; readonly request: ViewportRequestOwner }
+      | {
+          readonly kind: 'instant'
+          readonly operation: InstantCall
+        }
+
+    interface WriteReservation {
+      readonly initiator: ViewportInitiator
+      state: 'reserved' | 'bound' | 'revoked'
+    }
+
+    interface ViewportWrite {
+      readonly reservation: WriteReservation
+      readonly observation: ViewportObservation
+    }
+
+    interface ProducingWrite {
+      readonly write: ViewportWrite
+      readonly key: string
+      readonly request: ViewportRequestOwner | undefined
+    }
+
+    type ViewportStep = 'current' | 'superseded-live' | 'revoked'
+
+    const pendingConnectionClaims = new Set<ConnectionClaim>()
+    let currentViewportWrite: WriteReservation | undefined
+    let producingViewportWrite: ProducingWrite | undefined
+    let viewportObservation: ViewportObservation | undefined
+
     const session = shallowRef<Session>()
+
+    let nodeDragThreshold: number | undefined = decodeNodeDragThreshold(
+      props.nodeDragThreshold
+    )
 
     let connectionDragThreshold: number | undefined = S.decodeUnknownSync(
       ConnectionDragThresholdSchema
     )(props.connectionDragThreshold)
 
-    let connectionCapture:
-      | { readonly owner: HTMLElement | SVGElement; readonly pointerId: number }
-      | undefined
+    const releaseConnectionPress = (press: ConnectionPress): void => {
+      if (press.state !== 'held') {
+        return
+      }
 
-    const releaseConnectionCapture = (): void => {
-      const lease = connectionCapture
-      connectionCapture = undefined
+      press.state = 'released'
 
-      if (lease?.owner.hasPointerCapture(lease.pointerId)) {
-        lease.owner.releasePointerCapture(lease.pointerId)
+      if (press.captureTarget.hasPointerCapture(press.pointerId)) {
+        press.captureTarget.releasePointerCapture(press.pointerId)
       }
     }
 
-    const acquireConnectionCapture = (
-      owner: HTMLElement | SVGElement,
-      pointerId: number
-    ): boolean => {
-      try {
-        owner.setPointerCapture(pointerId)
+    const acquireConnectionPress = (
+      captureTarget: PendingConnectionData['captureTarget'],
+      pointerId: PendingConnectionData['pointerId']
+    ): ConnectionPress | undefined => {
+      if (stateDisposed) {
+        return undefined
+      }
 
-        if (!owner.hasPointerCapture(pointerId)) {
-          return false
+      try {
+        captureTarget.setPointerCapture(pointerId)
+
+        if (!captureTarget.hasPointerCapture(pointerId)) {
+          return undefined
         }
 
-        connectionCapture = { owner, pointerId }
-
-        return true
+        return { captureTarget, pointerId, state: 'held' }
       } catch (error) {
         recordFlowTelemetry(
           'Vue connection capture failed',
@@ -1136,11 +1505,11 @@ export const FlowCanvas = defineComponent({
           }
         )
 
-        return false
+        return undefined
       }
     }
 
-    const clickConnection = shallowRef<ConnectionSession>()
+    const clickConnection = shallowRef<RetainedSource>()
     const canvasWidth = shallowRef(960)
     const canvasHeight = shallowRef(640)
 
@@ -1294,6 +1663,10 @@ export const FlowCanvas = defineComponent({
     }
 
     const resizeObserver = new ResizeObserver((entries) => {
+      if (stateDisposed) {
+        return
+      }
+
       const document = activeDocument.value
       const measurements: NodeMeasurementInput[] = []
 
@@ -1414,6 +1787,10 @@ export const FlowCanvas = defineComponent({
       }
 
       const callback = (element: Element | ComponentPublicInstance | null) => {
+        if (stateDisposed) {
+          return
+        }
+
         if (element instanceof HTMLElement) {
           if (nodeElements.get(node.id) === element) {
             return
@@ -1476,6 +1853,10 @@ export const FlowCanvas = defineComponent({
 
     // eslint-disable-next-line complexity
     const publish = (change: FlowChange): void => {
+      if (stateDisposed) {
+        return
+      }
+
       recordFlowTelemetry(
         'Completed Vue interaction proposal',
         interactionCompletionSpan(change),
@@ -1500,7 +1881,15 @@ export const FlowCanvas = defineComponent({
         }
       }
 
+      if (stateDisposed) {
+        return
+      }
+
       emit('change', change)
+
+      if (stateDisposed) {
+        return
+      }
 
       if (hasSplitModel || props.documentMode === 'controlled') {
         let next: FlowDocument | undefined
@@ -1592,16 +1981,8 @@ export const FlowCanvas = defineComponent({
 
     let nextViewportRequestId = 0
 
-    let activeViewportRequest:
-      | {
-          readonly requestId: number
-          readonly cancelFrame: () => void
-          readonly settle: (result: ViewportOperationResult) => void
-        }
-      | undefined
+    let activeViewportRequest: ViewportRequestOwner | undefined
 
-    let viewportObservationActive = false
-    let viewportGestureActive = false
     const pendingViewportAcknowledgements: string[] = []
 
     const rememberViewportProposal = (viewport: Viewport): void => {
@@ -1628,71 +2009,18 @@ export const FlowCanvas = defineComponent({
       return true
     }
 
-    let connectionAutoPanActive = false
     const pressedKeys = new Set<string>()
 
-    let activeConnectionLifecycle:
-      | {
-          readonly kind: 'connect'
-          readonly activation: 'pointer' | 'keyboard' | 'click'
-          readonly node: FlowNode
-          readonly handleId: FlowHandle['id']
-        }
-      | {
-          readonly kind: 'reconnect'
-          readonly activation: 'pointer' | 'keyboard'
-          readonly edge: FlowEdge
-          readonly endpoint: 'source' | 'target'
-        }
-      | undefined
-
-    let activeNodeDrag: FlowNode | undefined
-    let nodeDragSelectionApplied = false
-    let activeSelection = false
-    let validatorFailureReported = false
-
-    const endConnectionLifecycle = (
-      status: 'accepted' | 'proposed' | 'rejected' | 'cancelled',
-      reason: string,
-      connection?: FlowConnection
-    ): void => {
-      const active = activeConnectionLifecycle
-
-      if (active === undefined) {
-        return
-      }
-
-      activeConnectionLifecycle = undefined
-
-      if (connection === undefined) {
-        if (active.kind === 'connect') {
-          emit('connectEnd', { status, reason })
-        } else {
-          emit('reconnectEnd', { status, reason })
-        }
-      } else if (active.kind === 'connect') {
-        emit('connectEnd', { status, reason, connection })
-      } else {
-        emit('reconnectEnd', { status, reason, connection })
-      }
-
-      if (active.kind === 'connect' && active.activation === 'click') {
-        emit('clickConnectEnd', { status, reason })
-      }
-    }
-
     const endNodeDrag = (
+      active: DragSession,
       status: 'accepted' | 'proposed' | 'cancelled',
       reason?: string
     ): void => {
-      const node = activeNodeDrag
+      const { node } = active
 
-      if (node === undefined) {
+      if (active.kind !== 'node') {
         return
       }
-
-      activeNodeDrag = undefined
-      nodeDragSelectionApplied = false
 
       if (reason === undefined) {
         emit('nodeDragEnd', { node, status })
@@ -1703,29 +2031,10 @@ export const FlowCanvas = defineComponent({
       }
     }
 
-    const endSelection = (
-      status: 'accepted' | 'proposed' | 'cancelled',
-      reason: string
-    ): void => {
-      if (!activeSelection) {
-        return
-      }
-
-      activeSelection = false
-      emit('selectionEnd', { status, reason })
-      emit('selectionDragStop', { status, reason })
-    }
-
     const selectNodeForDrag = (node: FlowNode): void => {
-      if (
-        !props.selectNodesOnDrag ||
-        node.selectable === false ||
-        nodeDragSelectionApplied
-      ) {
+      if (!props.selectNodesOnDrag || node.selectable === false) {
         return
       }
-
-      nodeDragSelectionApplied = true
 
       const selectedNodeIds = activeDocument.value.nodes
         .filter((candidate) => candidate.selectable !== false)
@@ -1742,17 +2051,76 @@ export const FlowCanvas = defineComponent({
     const activationKeyIsPressed = (key: string | undefined): boolean =>
       key === undefined || pressedKeys.has(key)
 
+    const connectionOwner = (active: ConnectionSession): ConnectionOwner => {
+      if (active.route === 'keyboard') {
+        return active.owner
+      }
+
+      return active.source.kind === 'own'
+        ? active.source.owner
+        : active.source.source.owner
+    }
+
+    const previewOwnerLive = (initiating: ConnectionPreviewOwner): boolean => {
+      if (stateDisposed) {
+        return false
+      }
+
+      if (initiating.kind === 'retained') {
+        return (
+          clickConnection.value === initiating.source &&
+          initiating.source.owner.state.kind === 'live'
+        )
+      }
+
+      return (
+        session.value === initiating.active &&
+        connectionOwner(initiating.active).state.kind === 'live'
+      )
+    }
+
+    const claimLive = (claim: ConnectionClaim): boolean =>
+      !stateDisposed &&
+      claim.owner.state.kind === 'completing' &&
+      claim.owner.state.claim === claim
+
+    const validationLive = (owner: ValidationOwner): boolean =>
+      owner.kind === 'completion'
+        ? claimLive(owner.claim)
+        : previewOwnerLive(owner.initiating)
+
     const validateConnectionAtBoundary = (
-      candidate: FlowConnection
+      candidate: FlowConnection,
+      authority: ValidationOwner
     ): boolean => {
+      if (!validationLive(authority)) {
+        return false
+      }
+
+      let owner: ConnectionOwner
+
+      if (authority.kind === 'completion') {
+        ;({ owner } = authority.claim)
+      } else if (authority.initiating.kind === 'retained') {
+        ;({ owner } = authority.initiating.source)
+      } else {
+        owner = connectionOwner(authority.initiating.active)
+      }
+
       try {
-        return props.isValidConnection(candidate)
+        const valid = props.isValidConnection(candidate)
+
+        return validationLive(authority) && valid
       } catch (error) {
+        if (!validationLive(authority)) {
+          return false
+        }
+
         const failure =
           error instanceof Error ? error : new Error(String(error))
 
-        if (!validatorFailureReported) {
-          validatorFailureReported = true
+        if (owner.validationFailure === 'unreported') {
+          owner.validationFailure = 'reported'
           recordFlowFailure(
             'Vue connection validator failed',
             FlowSpan.editFailure,
@@ -1761,6 +2129,11 @@ export const FlowCanvas = defineComponent({
               [FlowAttribute.failureMessage]: failure.message,
             }
           )
+
+          if (!validationLive(authority)) {
+            return false
+          }
+
           emit('error', {
             name: failure.name,
             message: failure.message,
@@ -1787,54 +2160,550 @@ export const FlowCanvas = defineComponent({
       }
     }
 
-    const beginViewportObservation = (viewport: Viewport): void => {
-      if (viewportObservationActive) {
+    // eslint-disable-next-line unicorn/consistent-function-scoping -- The observation type and its owners are private to this mounted canvas.
+    const newViewportObservation = (start: Viewport): ViewportObservation => ({
+      state: { kind: 'unstarted', start, terminal: null },
+    })
+
+    const viewportInitiatorLive = (initiator: ViewportInitiator): boolean => {
+      if (stateDisposed) {
+        return false
+      }
+
+      switch (initiator.kind) {
+        case 'pan': {
+          return initiator.active.owner.state.kind === 'live'
+        }
+
+        case 'connection': {
+          return previewOwnerLive(initiator.continuation)
+        }
+
+        case 'request': {
+          return (
+            (initiator.request.state.kind === 'incoming' ||
+              initiator.request.state.kind === 'active') &&
+            activeViewportRequest === initiator.request
+          )
+        }
+
+        case 'instant': {
+          return initiator.operation.state === 'live'
+        }
+
+        default: {
+          const exhausted: never = initiator
+
+          return exhausted
+        }
+      }
+    }
+
+    const viewportStep = (write: ViewportWrite): ViewportStep => {
+      if (!viewportInitiatorLive(write.reservation.initiator)) {
+        return 'revoked'
+      }
+
+      return currentViewportWrite === write.reservation
+        ? 'current'
+        : 'superseded-live'
+    }
+
+    const beginViewportObservation = (write: ViewportWrite): ViewportStep => {
+      const { observation } = write
+
+      if (viewportStep(write) !== 'current') {
+        return viewportStep(write)
+      }
+
+      if (observation.state.kind === 'unstarted') {
+        const viewport = observation.state.start
+        observation.state = {
+          kind: 'viewport-started',
+          last: viewport,
+          terminal: observation.state.terminal,
+        }
+        emit('viewportStart', viewport)
+      }
+
+      if (viewportStep(write) !== 'current') {
+        return viewportStep(write)
+      }
+
+      if (observation.state.kind === 'viewport-started') {
+        const viewport = observation.state.last
+        observation.state = {
+          kind: 'both-started',
+          last: viewport,
+          terminal: observation.state.terminal,
+        }
+        emit('moveStart', viewport)
+      }
+
+      return viewportStep(write)
+    }
+
+    const changeViewportObservation = (
+      write: ViewportWrite,
+      viewport: Viewport
+    ): ViewportStep => {
+      if (
+        viewportStep(write) !== 'current' ||
+        write.observation.state.kind === 'ended'
+      ) {
+        return viewportStep(write)
+      }
+
+      if (write.observation.state.kind !== 'unstarted') {
+        write.observation.state = { ...write.observation.state, last: viewport }
+      }
+
+      emit('viewportChange', viewport)
+
+      if (viewportStep(write) !== 'current') {
+        return viewportStep(write)
+      }
+
+      emit('move', viewport)
+
+      return viewportStep(write)
+    }
+
+    const cancelRequestFrame = (frame: RequestFrame): void => {
+      if (frame.kind === 'none') {
         return
       }
 
-      viewportObservationActive = true
-      emit('viewportStart', viewport)
-      emit('moveStart', viewport)
+      frame.registration.state = 'revoked'
+
+      if (frame.kind === 'scheduled') {
+        cancelAnimationFrame(frame.handle)
+      }
     }
 
-    const changeViewportObservation = (viewport: Viewport): void => {
-      emit('viewportChange', viewport)
-      emit('move', viewport)
+    const deliverTerminal = (port: TerminalPort): void => {
+      switch (port.kind) {
+        case 'viewportEnd': {
+          emit('viewportEnd', port.viewport, port.status)
+          break
+        }
+
+        case 'moveEnd': {
+          emit('moveEnd', port.viewport, port.status)
+          break
+        }
+
+        case 'connectEnd': {
+          emit('connectEnd', port.payload)
+          break
+        }
+
+        case 'reconnectEnd': {
+          emit('reconnectEnd', port.payload)
+          break
+        }
+
+        case 'clickConnectEnd': {
+          emit('clickConnectEnd', {
+            status: port.payload.status,
+            reason: port.payload.reason,
+          })
+          break
+        }
+
+        case 'nodeDragEnd': {
+          emit('nodeDragEnd', port.payload)
+          break
+        }
+
+        case 'nodeDragStop': {
+          emit('nodeDragStop', port.payload)
+          break
+        }
+
+        case 'selectionEnd': {
+          emit('selectionEnd', port.payload)
+          break
+        }
+
+        case 'selectionDragStop': {
+          emit('selectionDragStop', port.payload)
+          break
+        }
+
+        default: {
+          const exhausted: never = port
+
+          return exhausted
+        }
+      }
     }
 
-    const endViewportObservation = (
+    const takeObservationPorts = (
+      observation: ViewportObservation | null | undefined,
       viewport: Viewport,
       status: ViewportOperationResult['status']
+    ): TerminalPort[] => {
+      if (observation === null || observation === undefined) {
+        return []
+      }
+
+      const phase = observation.state.kind
+      observation.state = { kind: 'ended' }
+
+      if (viewportObservation === observation) {
+        viewportObservation = undefined
+      }
+
+      if (phase === 'both-started') {
+        return [
+          { kind: 'viewportEnd', viewport, status },
+          { kind: 'moveEnd', viewport, status },
+        ]
+      }
+
+      return phase === 'viewport-started'
+        ? [{ kind: 'viewportEnd', viewport, status }]
+        : []
+    }
+
+    const takeOwnedObservationPorts = (
+      observation: ViewportObservation | null,
+      holder: ViewportTerminalHolder,
+      viewport: Viewport,
+      status: ViewportOperationResult['status']
+    ): TerminalPort[] => {
+      if (observation === null || observation.state.kind === 'ended') {
+        return []
+      }
+
+      const current = observation.state.terminal
+
+      const owns =
+        current !== null &&
+        ((current.kind === 'instant-family' &&
+          holder.kind === 'instant-family' &&
+          current.family === holder.family) ||
+          (current.kind === 'pan' &&
+            holder.kind === 'pan' &&
+            current.owner === holder.owner) ||
+          (current.kind === 'connection' &&
+            holder.kind === 'connection' &&
+            current.owner === holder.owner) ||
+          (current.kind === 'request' &&
+            holder.kind === 'request' &&
+            current.request === holder.request))
+
+      return owns ? takeObservationPorts(observation, viewport, status) : []
+    }
+
+    const finishInstantCall = (
+      operation: InstantCall,
+      normal: boolean
     ): void => {
-      if (!viewportObservationActive) {
+      operation.state = 'finished'
+      const { family } = operation
+
+      if (family === null) {
         return
       }
 
-      viewportObservationActive = false
-      emit('viewportEnd', viewport, status)
-      emit('moveEnd', viewport, status)
+      family.running.delete(operation)
+      const { observation } = family
+
+      if (
+        observation.state.kind === 'ended' ||
+        observation.state.terminal?.kind !== 'instant-family' ||
+        observation.state.terminal.family !== family
+      ) {
+        return
+      }
+
+      if (!normal) {
+        observation.state.terminal = null
+
+        return
+      }
+
+      if (family.running.size > 0 || stateDisposed) {
+        return
+      }
+
+      const completion =
+        props.viewportMode === 'controlled'
+          ? family.completion
+          : ({ kind: 'accepted' } satisfies InstantFamily['completion'])
+
+      const ports = takeOwnedObservationPorts(
+        observation,
+        { kind: 'instant-family', family },
+        completion.kind === 'proposed'
+          ? completion.viewport
+          : activeViewport.value,
+        completion.kind
+      )
+
+      for (const port of ports) {
+        deliverTerminal(port)
+      }
+    }
+
+    const takeRequestSettlement = (
+      request: ViewportRequestOwner | undefined,
+      status: ViewportOperationResult['status'],
+      viewport: Viewport
+    ): TakenRequestSettlement | undefined => {
+      if (
+        request === undefined ||
+        (request.state.kind !== 'incoming' && request.state.kind !== 'active')
+      ) {
+        return undefined
+      }
+
+      const active = request.state
+
+      const taken: TakenRequestSettlement = {
+        owner: request,
+        result: { requestId: request.requestId, status, viewport },
+        frame: active.kind === 'active' ? active.frame : { kind: 'none' },
+        ports:
+          active.kind === 'active'
+            ? takeOwnedObservationPorts(
+                active.write.observation,
+                { kind: 'request', request },
+                viewport,
+                status
+              )
+            : [],
+        progress: { kind: 'cancel-frame' },
+        failure: { kind: 'none' },
+      }
+
+      request.state = { kind: 'settling', taken }
+
+      if (activeViewportRequest === request) {
+        activeViewportRequest = undefined
+      }
+
+      return taken
+    }
+
+    const resolveTakenRequest = (taken: TakenRequestSettlement): void => {
+      if (taken.progress.kind !== 'resolve') {
+        return
+      }
+
+      taken.progress = { kind: 'mounted-pair', nextPort: 0 }
+      taken.owner.state = { kind: 'settled', result: taken.result }
+      taken.owner.result.resolve(taken.result)
+    }
+
+    const deliverRequestSettlement = (
+      taken: TakenRequestSettlement | undefined
+    ): void => {
+      if (taken === undefined) {
+        return
+      }
+
+      if (taken.progress.kind === 'cancel-frame') {
+        taken.progress = { kind: 'resolve' }
+
+        try {
+          cancelRequestFrame(taken.frame)
+        } catch (error) {
+          taken.failure = { kind: 'cause', cause: error }
+        } finally {
+          resolveTakenRequest(taken)
+        }
+      }
+
+      resolveTakenRequest(taken)
+
+      while (
+        taken.progress.kind === 'mounted-pair' &&
+        taken.progress.nextPort < taken.ports.length
+      ) {
+        const port = taken.ports[taken.progress.nextPort]
+        taken.progress.nextPort += 1
+
+        if (port !== undefined) {
+          deliverTerminal(port)
+        }
+      }
+
+      taken.progress = { kind: 'done' }
+
+      if (taken.failure.kind === 'cause') {
+        throw taken.failure.cause
+      }
     }
 
     const settleViewportRequest = (
+      request: ViewportRequestOwner | undefined,
       status: ViewportOperationResult['status'],
-      viewport = activeViewport.value
-    ): void => {
-      const request = activeViewportRequest
+      viewport: Viewport
+    ): void =>
+      deliverRequestSettlement(takeRequestSettlement(request, status, viewport))
 
-      if (request === undefined) {
+    const acquireViewportWrite = (
+      initiator: ViewportInitiator
+    ): WriteReservation | undefined => {
+      if (!viewportInitiatorLive(initiator)) {
+        return undefined
+      }
+
+      const reservation: WriteReservation = { initiator, state: 'reserved' }
+      const previous = activeViewportRequest
+      currentViewportWrite = reservation
+
+      if (initiator.kind !== 'request' || previous !== initiator.request) {
+        settleViewportRequest(previous, 'superseded', activeViewport.value)
+      }
+
+      return reservation
+    }
+
+    const bindTerminalHolder = (
+      observation: ViewportObservation,
+      initiator: ViewportInitiator
+    ): void => {
+      if (observation.state.kind !== 'ended') {
+        const { terminal } = observation.state
+
+        if (initiator.kind === 'request') {
+          observation.state.terminal = {
+            kind: 'request',
+            request: initiator.request,
+          }
+        } else if (initiator.kind === 'instant') {
+          if (terminal === null || terminal.kind === 'instant-family') {
+            const family: InstantFamily = terminal?.family ?? {
+              observation,
+              running: new Set(),
+              completion: { kind: 'accepted' },
+            }
+
+            family.running.add(initiator.operation)
+            initiator.operation.family = family
+            observation.state.terminal = { kind: 'instant-family', family }
+          }
+        } else if (terminal === null || terminal.kind === 'instant-family') {
+          observation.state.terminal =
+            initiator.kind === 'pan'
+              ? { kind: 'pan', owner: initiator.active.owner }
+              : {
+                  kind: 'connection',
+                  owner:
+                    initiator.continuation.kind === 'retained'
+                      ? initiator.continuation.source.owner
+                      : connectionOwner(initiator.continuation.active),
+                }
+        }
+      }
+    }
+
+    const bindViewportObservation = (
+      reservation: WriteReservation
+    ): ViewportWrite | undefined => {
+      if (
+        currentViewportWrite !== reservation ||
+        !viewportInitiatorLive(reservation.initiator)
+      ) {
+        return undefined
+      }
+
+      const { initiator } = reservation
+      let existing: ViewportObservation | null | undefined
+
+      if (
+        initiator.kind === 'pan' &&
+        initiator.active.owner.state.kind === 'live'
+      ) {
+        existing = initiator.active.owner.state.observation
+      } else if (initiator.kind === 'connection') {
+        const owner =
+          initiator.continuation.kind === 'retained'
+            ? initiator.continuation.source.owner
+            : connectionOwner(initiator.continuation.active)
+
+        if (owner.state.kind !== 'live') {
+          return undefined
+        }
+
+        existing = owner.state.autoPan
+      } else {
+        existing = viewportObservation
+      }
+
+      const observation =
+        existing !== undefined &&
+        existing !== null &&
+        existing.state.kind !== 'ended'
+          ? existing
+          : newViewportObservation(activeViewport.value)
+
+      const write: ViewportWrite = {
+        reservation,
+        observation,
+      }
+
+      bindTerminalHolder(observation, initiator)
+
+      reservation.state = 'bound'
+      viewportObservation = observation
+
+      if (
+        initiator.kind === 'pan' &&
+        initiator.active.owner.state.kind === 'live'
+      ) {
+        initiator.active.owner.state = { kind: 'live', observation }
+      } else if (initiator.kind === 'connection') {
+        const owner =
+          initiator.continuation.kind === 'retained'
+            ? initiator.continuation.source.owner
+            : connectionOwner(initiator.continuation.active)
+
+        if (owner.state.kind === 'live') {
+          owner.state.autoPan = observation
+        }
+      }
+
+      return write
+    }
+
+    const updateViewportValue = (
+      write: ViewportWrite,
+      next: Viewport
+    ): void => {
+      if (viewportStep(write) !== 'current') {
         return
       }
 
-      activeViewportRequest = undefined
-      request.cancelFrame()
-      request.settle({ requestId: request.requestId, status, viewport })
-      endViewportObservation(viewport, status)
-    }
-
-    const updateViewportValue = (next: Viewport): void => {
       if (props.viewportMode === 'controlled') {
-        rememberViewportProposal(next)
-        emit('update:viewport', next)
+        const previous = producingViewportWrite
+        const { initiator } = write.reservation
+        producingViewportWrite = {
+          write,
+          key: viewportKey(next),
+          request: initiator.kind === 'request' ? initiator.request : undefined,
+        }
+
+        if (
+          initiator.kind === 'instant' &&
+          initiator.operation.family !== null
+        ) {
+          initiator.operation.family.completion = {
+            kind: 'proposed',
+            viewport: next,
+          }
+        }
+
+        try {
+          rememberViewportProposal(next)
+          emit('update:viewport', next)
+        } finally {
+          producingViewportWrite = previous
+        }
       } else {
         withStateCause('viewport-update', () => {
           ownedViewport.value = next
@@ -1842,41 +2711,64 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const writeViewport = (
+      next: Viewport,
+      initiator: ViewportInitiator
+    ): ViewportStep => {
+      const reservation = acquireViewportWrite(initiator)
+
+      if (reservation === undefined) {
+        return 'revoked'
+      }
+
+      const write = bindViewportObservation(reservation)
+
+      if (write === undefined) {
+        return viewportInitiatorLive(initiator) ? 'superseded-live' : 'revoked'
+      }
+
+      if (beginViewportObservation(write) !== 'current') {
+        return viewportStep(write)
+      }
+
+      if (changeViewportObservation(write, next) !== 'current') {
+        return viewportStep(write)
+      }
+
+      updateViewportValue(write, next)
+
+      return viewportStep(write)
+    }
+
     const updateViewport = (next: Viewport): void => {
-      settleViewportRequest('superseded')
-      beginViewportObservation(activeViewport.value)
-      changeViewportObservation(next)
-      updateViewportValue(next)
+      const operation: InstantCall = { state: 'live', family: null }
+      let normal = false
 
-      if (!viewportGestureActive) {
-        endViewportObservation(
-          next,
-          props.viewportMode === 'controlled' ? 'proposed' : 'accepted'
-        )
+      try {
+        writeViewport(next, { kind: 'instant', operation })
+        normal = true
+      } finally {
+        finishInstantCall(operation, normal)
       }
     }
 
-    const stopConnectionAutoPan = (
-      status: ViewportOperationResult['status']
-    ): void => {
-      if (!connectionAutoPanActive) {
-        return
+    const autoPanConnection = (
+      continuation: ConnectionMovement,
+      clientX: number,
+      clientY: number
+    ): boolean => {
+      if (!previewOwnerLive(continuation)) {
+        return false
       }
 
-      connectionAutoPanActive = false
-      viewportGestureActive = false
-      endViewportObservation(activeViewport.value, status)
-    }
-
-    const autoPanConnection = (clientX: number, clientY: number): void => {
       if (!props.autoPanOnConnect) {
-        return
+        return true
       }
 
       const bounds = canvas.value?.getBoundingClientRect()
 
       if (bounds === undefined) {
-        return
+        return true
       }
 
       const delta = selectionAutoPanDelta(
@@ -1886,37 +2778,108 @@ export const FlowCanvas = defineComponent({
       )
 
       if (delta.x === 0 && delta.y === 0) {
-        return
+        return true
       }
 
-      if (!connectionAutoPanActive) {
-        connectionAutoPanActive = true
-        viewportGestureActive = true
-        beginViewportObservation(activeViewport.value)
+      const owner =
+        continuation.kind === 'retained'
+          ? continuation.source.owner
+          : connectionOwner(continuation.active)
+
+      if (owner.state.kind !== 'live') {
+        return false
       }
 
-      updateViewport(panViewport(activeViewport.value, delta))
+      return (
+        writeViewport(panViewport(activeViewport.value, delta), {
+          kind: 'connection',
+          continuation,
+        }) === 'current' && previewOwnerLive(continuation)
+      )
     }
 
     watch(
       () => props.viewport,
       (next, previous) => {
         if (
-          props.viewportMode === 'controlled' &&
-          next !== undefined &&
-          next !== previous
+          stateDisposed ||
+          props.viewportMode !== 'controlled' ||
+          next === undefined ||
+          next === previous
         ) {
-          const hadPendingRequest = activeViewportRequest !== undefined
-          settleViewportRequest('superseded', next)
+          return
+        }
 
-          if (consumeViewportAcknowledgement(next)) {
-            return
+        const request = activeViewportRequest
+        const hadPendingRequest = request !== undefined
+        const producing = producingViewportWrite
+
+        if (
+          producing !== undefined &&
+          producing.key === viewportKey(next) &&
+          producing.request === request &&
+          viewportStep(producing.write) === 'current' &&
+          producing.write.observation.state.kind !== 'ended'
+        ) {
+          consumeViewportAcknowledgement(next)
+
+          return
+        }
+
+        settleViewportRequest(request, 'superseded', next)
+
+        if (consumeViewportAcknowledgement(next)) {
+          return
+        }
+
+        if (stateDisposed) {
+          return
+        }
+
+        if (!hadPendingRequest) {
+          const operation: Extract<
+            ViewportInitiator,
+            { kind: 'instant' }
+          >['operation'] = { state: 'live', family: null }
+
+          const observation = newViewportObservation(
+            previous ?? activeViewport.value
+          )
+
+          const reservation: WriteReservation = {
+            initiator: { kind: 'instant', operation },
+            state: 'bound',
           }
 
-          if (!hadPendingRequest) {
-            beginViewportObservation(previous ?? activeViewport.value)
-            changeViewportObservation(next)
-            endViewportObservation(next, 'accepted')
+          const write: ViewportWrite = {
+            reservation,
+            observation,
+          }
+
+          const family: InstantFamily = {
+            observation,
+            running: new Set([operation]),
+            completion: { kind: 'accepted' },
+          }
+
+          operation.family = family
+
+          if (observation.state.kind !== 'ended') {
+            observation.state.terminal = { kind: 'instant-family', family }
+          }
+
+          currentViewportWrite = reservation
+          viewportObservation = observation
+          let normal = false
+
+          try {
+            if (beginViewportObservation(write) === 'current') {
+              changeViewportObservation(write, next)
+            }
+
+            normal = true
+          } finally {
+            finishInstantCall(operation, normal)
           }
         }
       },
@@ -1992,109 +2955,232 @@ export const FlowCanvas = defineComponent({
       target: Viewport,
       validOptions: ViewportAnimationOptions
     ): Promise<ViewportOperationResult> => {
-      const validTarget = S.decodeUnknownSync(ViewportSchema)(target)
+      const validTarget = decodeViewportRequestTarget(target)
       const requestId = allocateViewportRequestId()
-      settleViewportRequest('superseded')
 
-      if (!viewportInitialized()) {
+      if (stateDisposed) {
         return Promise.resolve({
           requestId,
-          status: 'unavailable',
+          status: 'disposed',
           viewport: activeViewport.value,
         })
       }
 
-      if (viewportEquivalence(activeViewport.value, validTarget)) {
-        return Promise.resolve({
-          requestId,
-          status: 'unchanged',
-          viewport: validTarget,
-        })
+      const deferred = Promise.withResolvers<ViewportOperationResult>()
+
+      const request: ViewportRequestOwner = {
+        requestId,
+        result: { ...deferred, exposure: 'constructing' },
+        state: { kind: 'incoming' },
       }
 
-      if (props.viewportMode === 'controlled') {
-        beginViewportObservation(activeViewport.value)
-        changeViewportObservation(validTarget)
-        rememberViewportProposal(validTarget)
-        emit('update:viewport', validTarget)
-        endViewportObservation(validTarget, 'proposed')
+      const previous = activeViewportRequest
+      activeViewportRequest = request
 
-        return Promise.resolve({
-          requestId,
-          status: 'proposed',
-          viewport: validTarget,
-        })
+      const exposeRequest = (): Promise<ViewportOperationResult> => {
+        request.result.exposure = 'returned'
+
+        return request.result.promise
       }
 
-      const start = activeViewport.value
+      const owned = (): boolean =>
+        activeViewportRequest === request &&
+        (request.state.kind === 'incoming' || request.state.kind === 'active')
 
-      const prefersReducedMotion =
-        globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ===
-        true
-
-      const duration = prefersReducedMotion
-        ? 0
-        : Math.max(0, validOptions.duration ?? 0)
-
-      if (duration === 0) {
-        beginViewportObservation(start)
-        changeViewportObservation(validTarget)
-        updateViewportValue(validTarget)
-        endViewportObservation(validTarget, 'accepted')
-
-        return Promise.resolve({
-          requestId,
-          status: 'accepted',
-          viewport: validTarget,
-        })
-      }
-
-      beginViewportObservation(start)
-
-      const { promise, resolve } =
-        Promise.withResolvers<ViewportOperationResult>()
-
-      let frame = 0
-      let startedAt: number | undefined
-
-      const cancelFrame = (): void => {
-        if (frame !== 0) {
-          cancelAnimationFrame(frame)
-        }
-      }
-
-      activeViewportRequest = { requestId, cancelFrame, settle: resolve }
-
-      const tick = (timestamp: number): void => {
-        if (activeViewportRequest?.requestId !== requestId || stateDisposed) {
+      const abort = (cause: unknown): void => {
+        if (!owned()) {
           return
         }
 
-        startedAt ??= timestamp
-        const progress = Math.min(1, (timestamp - startedAt) / duration)
+        const frame: RequestFrame =
+          request.state.kind === 'active'
+            ? request.state.frame
+            : { kind: 'none' }
 
-        const current = interpolateViewport(
-          start,
-          validTarget,
-          progress,
-          validOptions.easing
-        )
-
-        changeViewportObservation(current)
-        withStateCause('viewport-update', () => {
-          ownedViewport.value = current
-        })
-
-        if (progress >= 1) {
-          settleViewportRequest('accepted', validTarget)
-        } else {
-          frame = requestAnimationFrame(tick)
-        }
+        request.state = { kind: 'aborted', cause }
+        activeViewportRequest = undefined
+        cancelRequestFrame(frame)
       }
 
-      frame = requestAnimationFrame(tick)
+      try {
+        settleViewportRequest(previous, 'superseded', activeViewport.value)
 
-      return promise
+        if (!owned()) {
+          return exposeRequest()
+        }
+
+        if (!viewportInitialized()) {
+          settleViewportRequest(request, 'unavailable', activeViewport.value)
+
+          return exposeRequest()
+        }
+
+        if (viewportEquivalence(activeViewport.value, validTarget)) {
+          settleViewportRequest(request, 'unchanged', validTarget)
+
+          return exposeRequest()
+        }
+
+        const start = activeViewport.value
+
+        const duration =
+          globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')
+            .matches === true
+            ? 0
+            : Math.max(0, validOptions.duration ?? 0)
+
+        if (!owned()) {
+          return exposeRequest()
+        }
+
+        const reservation = acquireViewportWrite({ kind: 'request', request })
+
+        const write =
+          reservation === undefined
+            ? undefined
+            : bindViewportObservation(reservation)
+
+        if (write === undefined) {
+          return exposeRequest()
+        }
+
+        request.state = { kind: 'active', write, frame: { kind: 'none' } }
+
+        if (beginViewportObservation(write) !== 'current') {
+          return exposeRequest()
+        }
+
+        if (props.viewportMode === 'controlled' || duration === 0) {
+          if (changeViewportObservation(write, validTarget) !== 'current') {
+            return exposeRequest()
+          }
+
+          updateViewportValue(write, validTarget)
+
+          if (viewportStep(write) === 'current') {
+            settleViewportRequest(
+              request,
+              props.viewportMode === 'controlled' ? 'proposed' : 'accepted',
+              validTarget
+            )
+          }
+
+          return exposeRequest()
+        }
+
+        let startedAt: number | undefined
+
+        const schedule = (): void => {
+          if (
+            request.state.kind !== 'active' ||
+            viewportStep(write) !== 'current'
+          ) {
+            return
+          }
+
+          const registration: RequestRegistration = { state: 'acquiring' }
+          request.state.frame = { kind: 'registering', registration }
+          let early: number | undefined
+
+          const deliver = (timestamp: number): void => {
+            if (registration.state === 'acquiring') {
+              early = timestamp
+
+              return
+            }
+
+            if (
+              registration.state !== 'scheduled' ||
+              request.state.kind !== 'active' ||
+              viewportStep(write) !== 'current'
+            ) {
+              return
+            }
+
+            registration.state = 'executing'
+            request.state.frame = { kind: 'executing', registration }
+
+            try {
+              startedAt ??= timestamp
+              const progress = Math.min(1, (timestamp - startedAt) / duration)
+
+              const current = interpolateViewport(
+                start,
+                validTarget,
+                progress,
+                validOptions.easing
+              )
+
+              if (changeViewportObservation(write, current) !== 'current') {
+                return
+              }
+
+              updateViewportValue(write, current)
+
+              if (viewportStep(write) !== 'current') {
+                return
+              }
+
+              if (progress >= 1) {
+                settleViewportRequest(request, 'accepted', validTarget)
+              } else {
+                schedule()
+              }
+            } finally {
+              if (
+                request.state.kind === 'active' &&
+                request.state.frame.kind === 'executing' &&
+                request.state.frame.registration === registration
+              ) {
+                request.state.frame = { kind: 'none' }
+              }
+
+              registration.state = 'revoked'
+            }
+          }
+
+          let handle: number
+
+          try {
+            handle = requestAnimationFrame(deliver)
+          } catch (error) {
+            if (request.result.exposure === 'returned' && owned()) {
+              abort(error)
+              request.result.reject(error)
+
+              return
+            }
+
+            throw error
+          }
+
+          if (
+            registration.state !== 'acquiring' ||
+            request.state.kind !== 'active' ||
+            viewportStep(write) !== 'current'
+          ) {
+            registration.state = 'revoked'
+            cancelAnimationFrame(handle)
+
+            return
+          }
+
+          registration.state = 'scheduled'
+          request.state.frame = { kind: 'scheduled', registration, handle }
+
+          if (early !== undefined) {
+            deliver(early)
+          }
+        }
+
+        schedule()
+
+        return exposeRequest()
+      } catch (error) {
+        request.result.exposure = 'abandoned'
+        abort(error)
+        throw error
+      }
     }
 
     const setViewport = (
@@ -2227,7 +3313,7 @@ export const FlowCanvas = defineComponent({
       })
     }
 
-    const drainEditMutations = async (): Promise<void> => {
+    const drainSerialEditMutations = async (): Promise<void> => {
       if (editMutationDepth > 0 || drainingEditMutations || stateDisposed) {
         return
       }
@@ -2243,7 +3329,6 @@ export const FlowCanvas = defineComponent({
           const mutation = pendingEditMutations.shift()
 
           if (mutation !== undefined) {
-            // Owner mutations are serialized to preserve accepted revision order.
             // oxlint-disable-next-line no-await-in-loop
             await mutation()
           }
@@ -2262,7 +3347,7 @@ export const FlowCanvas = defineComponent({
         editMutationDepth -= 1
 
         if (editMutationDepth === 0) {
-          void drainEditMutations()
+          void drainSerialEditMutations()
         }
       }
     }
@@ -2339,7 +3424,7 @@ export const FlowCanvas = defineComponent({
       })
 
       if (editMutationDepth === 0) {
-        void drainEditMutations()
+        void drainSerialEditMutations()
       }
 
       return pending.promise
@@ -2388,29 +3473,250 @@ export const FlowCanvas = defineComponent({
       element.style.height = `${change.size.height}px`
     }
 
-    // eslint-disable-next-line complexity -- one cleanup boundary settles every Vue session kind.
-    const cleanupPreview = (
-      active: Session | undefined = session.value,
-      reason = 'superseded',
-      terminal = true
-    ): void => {
-      if (terminal && active !== undefined) {
-        if (active.kind === 'connection') {
-          endConnectionLifecycle('cancelled', reason)
-        } else if (active.kind === 'node') {
-          endNodeDrag('cancelled', reason)
-        } else if (active.kind === 'selection') {
-          endSelection('cancelled', reason)
+    type TerminalPort =
+      | {
+          readonly kind: 'viewportEnd' | 'moveEnd'
+          readonly viewport: Viewport
+          readonly status: ViewportOperationResult['status']
         }
-      } else if (terminal) {
-        endConnectionLifecycle('cancelled', reason)
+      | {
+          readonly kind: 'connectEnd' | 'reconnectEnd' | 'clickConnectEnd'
+          readonly payload: ConnectionEndPayload
+        }
+      | {
+          readonly kind: 'nodeDragEnd' | 'nodeDragStop'
+          readonly payload: NodeEndPayload
+        }
+      | {
+          readonly kind: 'selectionEnd' | 'selectionDragStop'
+          readonly payload: SelectionEndPayload
+        }
+
+    type DisposalResource =
+      | {
+          readonly kind: 'request-frame'
+          readonly taken: TakenRequestSettlement
+        }
+      | { readonly kind: 'key-observer'; readonly dispose: () => void }
+      | {
+          readonly kind: 'unobserve-canvas'
+          readonly observer: ResizeObserver
+          readonly element: HTMLElement
+        }
+      | {
+          readonly kind: 'disconnect-observer'
+          readonly observer: ResizeObserver
+        }
+      | {
+          readonly kind: 'remove-keydown'
+          readonly target: typeof globalThis
+          readonly listener: typeof onKeyDown
+        }
+      | {
+          readonly kind: 'remove-keyup'
+          readonly target: typeof globalThis
+          readonly listener: typeof onWindowKeyUp
+        }
+      | {
+          readonly kind: 'remove-blur'
+          readonly target: typeof globalThis
+          readonly listener: typeof onWindowBlur
+        }
+      | { readonly kind: 'connection-capture'; readonly press: ConnectionPress }
+      | {
+          readonly kind: 'session-capture'
+          readonly target: DragSession['captureTarget']
+          readonly pointerId: DragSession['pointerId']
+        }
+      | {
+          readonly kind: 'remove-node-transform'
+          readonly element: HTMLElement
+        }
+      | {
+          readonly kind: 'resize-style'
+          readonly element: HTMLElement
+          readonly property: 'left' | 'top' | 'width' | 'height'
+          readonly value: string
+        }
+      | { readonly kind: 'clear-session-view'; readonly view: Session }
+      | { readonly kind: 'clear-retained-view'; readonly view: RetainedSource }
+
+    type InternalsSettler = NonNullable<
+      ReturnType<typeof pendingInternals.get>
+    >[number]
+
+    type DisposalStep =
+      | { readonly kind: 'resource'; readonly resource: DisposalResource }
+      | { readonly kind: 'terminal'; readonly port: TerminalPort }
+      | { readonly kind: 'connection-claim'; readonly claim: ConnectionClaim }
+      | {
+          readonly kind: 'request-settlement'
+          readonly taken: TakenRequestSettlement
+        }
+      | {
+          readonly kind: 'internals-settlement'
+          readonly settle: InternalsSettler
+          readonly result: Parameters<InternalsSettler>[0]
+        }
+
+    interface CapturedDisposal {
+      readonly steps: DisposalStep[]
+      next: number
+    }
+
+    let capturedDisposal: CapturedDisposal | undefined
+
+    const finishConnectionClaim = (
+      claim: ConnectionClaim,
+      result: ConnectionResult,
+      packet?: CapturedDisposal
+    ): void => {
+      if (
+        claim.owner.state.kind !== 'completing' ||
+        claim.owner.state.claim !== claim
+      ) {
+        return
       }
 
-      if (active?.kind === 'node') {
+      claim.owner.state = { kind: 'ended' }
+      pendingConnectionClaims.delete(claim)
+
+      const payload: ConnectionEndPayload =
+        result.kind === 'success'
+          ? {
+              status: result.status,
+              reason: result.reason,
+              connection: result.connection,
+            }
+          : { status: result.kind, reason: result.reason }
+
+      const ports: TerminalPort[] = [
+        {
+          kind:
+            claim.lifecycle.kind === 'connect' ? 'connectEnd' : 'reconnectEnd',
+          payload,
+        },
+      ]
+
+      if (
+        claim.lifecycle.kind === 'connect' &&
+        claim.lifecycle.activation === 'click'
+      ) {
+        ports.push({
+          kind: 'clickConnectEnd',
+          payload: { status: payload.status, reason: payload.reason },
+        })
+      }
+
+      if (packet === undefined) {
+        for (const port of ports) {
+          deliverTerminal(port)
+        }
+      } else {
+        packet.steps.splice(
+          packet.next,
+          0,
+          ...ports.map((port): DisposalStep => ({ kind: 'terminal', port }))
+        )
+      }
+    }
+
+    const claimConnection = (
+      owner: ConnectionOwner,
+      source: ConnectionData,
+      target: CompletionTarget | null,
+      physicalView: PendingConnection | ConnectionSession | undefined,
+      retainedView: RetainedSource | undefined
+    ): ConnectionClaim | undefined => {
+      if (owner.state.kind !== 'live') {
+        return undefined
+      }
+
+      const live = owner.state
+
+      let press =
+        live.residence.kind === 'pointer' ? live.residence.press : null
+
+      if (
+        physicalView !== undefined &&
+        (physicalView.kind !== 'connection' || physicalView.route === 'pointer')
+      ) {
+        ;({ press } = physicalView)
+      }
+
+      const claim: ConnectionClaim = {
+        owner,
+        lifecycle: live.lifecycle,
+        source,
+        target,
+        resources: {
+          press,
+          autoPan: live.autoPan,
+          physicalView,
+          retainedView,
+        },
+      }
+
+      owner.state = { kind: 'completing', claim }
+      pendingConnectionClaims.add(claim)
+
+      return claim
+    }
+
+    const clearClaimPresentation = (claim: ConnectionClaim): void => {
+      if (claim.resources.press !== null) {
+        releaseConnectionPress(claim.resources.press)
+      }
+
+      if (!claimLive(claim)) {
+        return
+      }
+
+      if (session.value === claim.resources.physicalView) {
+        session.value = undefined
+      }
+
+      if (!claimLive(claim)) {
+        return
+      }
+
+      if (clickConnection.value === claim.resources.retainedView) {
+        clickConnection.value = undefined
+      }
+    }
+
+    const detachSessionView = (active: Session): void => {
+      if (session.value !== active) {
+        return
+      }
+
+      if (
+        active.kind === 'connection-pending' ||
+        active.kind === 'reconnection-pending' ||
+        (active.kind === 'connection' && active.route === 'pointer')
+      ) {
+        releaseConnectionPress(active.press)
+      } else if (active.captureTarget.hasPointerCapture?.(active.pointerId)) {
+        active.captureTarget.releasePointerCapture?.(active.pointerId)
+      }
+
+      if (stateDisposed) {
+        return
+      }
+
+      if (session.value === active) {
+        session.value = undefined
+      }
+
+      if (stateDisposed) {
+        return
+      }
+
+      if (active.kind === 'node' || active.kind === 'node-pending') {
         active.element.style.removeProperty('transform')
       }
 
-      if (active?.kind === 'resize' || active?.kind === 'keyboard-resize') {
+      if (active.kind === 'resize' || active.kind === 'keyboard-resize') {
         previewNodeBounds(active.element, {
           kind: 'node-bounds',
           nodeId: active.node.id,
@@ -2419,45 +3725,203 @@ export const FlowCanvas = defineComponent({
           childPositions: [],
         })
       }
+    }
 
-      if (session.value === active) {
-        session.value = undefined
+    const takeSelection = (
+      active: OwnedSelection
+    ): SelectionClaim | undefined => {
+      if (stateDisposed || active.owner.state.kind !== 'live') {
+        return undefined
       }
 
+      const claim: SelectionClaim = { owner: active.owner, active }
+      active.owner.state = { kind: 'completing', claim }
+      detachSessionView(active)
+
+      return claim
+    }
+
+    const finishSelection = (
+      claim: SelectionClaim,
+      status: SelectionEndPayload['status'],
+      reason: string
+    ): void => {
       if (
-        active?.kind === 'connection' ||
-        active?.kind === 'connection-pending' ||
-        active?.kind === 'reconnection-pending'
+        claim.owner.state.kind !== 'completing' ||
+        claim.owner.state.claim !== claim
       ) {
-        releaseConnectionCapture()
-      } else if (active?.captureTarget.hasPointerCapture?.(active.pointerId)) {
-        active.captureTarget.releasePointerCapture?.(active.pointerId)
+        return
+      }
+
+      claim.owner.state = { kind: 'ended' }
+      emit('selectionEnd', { status, reason })
+      emit('selectionDragStop', { status, reason })
+    }
+
+    const cancelConnectionClaim = (
+      claim: ConnectionClaim,
+      reason: string
+    ): void => {
+      if (!claimLive(claim)) {
+        return
+      }
+
+      clearClaimPresentation(claim)
+
+      if (!claimLive(claim)) {
+        return
+      }
+
+      if (claim.resources.autoPan !== null) {
+        for (const port of takeOwnedObservationPorts(
+          claim.resources.autoPan,
+          { kind: 'connection', owner: claim.owner },
+          activeViewport.value,
+          'superseded'
+        )) {
+          deliverTerminal(port)
+        }
+      }
+
+      if (claimLive(claim)) {
+        finishConnectionClaim(claim, { kind: 'cancelled', reason })
+      }
+    }
+
+    // eslint-disable-next-line complexity -- All existing session variants detach their exact presentation before their terminal callback.
+    const cleanupPreview = (
+      active: Session | undefined = session.value,
+      reason = 'superseded'
+    ): void => {
+      if (stateDisposed || active === undefined || session.value !== active) {
+        return
+      }
+
+      if (active.kind === 'connection') {
+        const retained =
+          active.route === 'pointer' && active.source.kind === 'retained'
+            ? active.source.source
+            : undefined
+
+        const claim = claimConnection(
+          connectionOwner(active),
+          retained?.data ?? active,
+          null,
+          active,
+          retained
+        )
+
+        if (claim === undefined) {
+          return
+        }
+
+        cancelConnectionClaim(claim, reason)
+
+        return
+      }
+
+      if (active.kind === 'selection') {
+        const claim = takeSelection(active)
+
+        if (claim !== undefined && !stateDisposed) {
+          finishSelection(claim, 'cancelled', reason)
+        }
+
+        return
+      }
+
+      if (active.kind === 'pan') {
+        if (active.owner.state.kind !== 'live') {
+          return
+        }
+
+        const ports = takeOwnedObservationPorts(
+          active.owner.state.observation,
+          { kind: 'pan', owner: active.owner },
+          activeViewport.value,
+          'superseded'
+        )
+
+        active.owner.state = { kind: 'ended' }
+        detachSessionView(active)
+
+        if (!stateDisposed) {
+          for (const port of ports) {
+            deliverTerminal(port)
+          }
+        }
+
+        return
+      }
+
+      detachSessionView(active)
+
+      if (
+        !stateDisposed &&
+        (active.kind === 'node' || active.kind === 'node-pending')
+      ) {
+        endNodeDrag(active, 'cancelled', reason)
+      }
+    }
+
+    const cancelRetained = (retained: RetainedSource, reason: string): void => {
+      const claim = claimConnection(
+        retained.owner,
+        retained.data,
+        null,
+        undefined,
+        retained
+      )
+
+      if (claim !== undefined) {
+        cancelConnectionClaim(claim, reason)
       }
     }
 
     const cancelActiveSession = (reason = 'superseded'): void => {
-      const active = session.value
+      if (stateDisposed) {
+        return
+      }
 
-      if (active !== undefined) {
-        recordFlowTelemetry(
-          'Cancelled Vue interaction session',
-          FlowSpan.gestureCancel,
-          {
-            [FlowAttribute.cancellationReason]: reason,
-            [FlowAttribute.inputKind]: active.kind,
-          }
+      const active = session.value
+      const retained = clickConnection.value
+      let activeClaim: ConnectionClaim | undefined
+
+      if (active?.kind === 'connection') {
+        const source =
+          active.route === 'pointer' && active.source.kind === 'retained'
+            ? active.source.source
+            : undefined
+
+        activeClaim = claimConnection(
+          connectionOwner(active),
+          source?.data ?? active,
+          null,
+          active,
+          source
         )
       }
 
-      if (active?.kind === 'pan') {
-        viewportGestureActive = false
-        endViewportObservation(activeViewport.value, 'superseded')
+      const retainedClaim =
+        retained !== undefined && retained.owner !== activeClaim?.owner
+          ? claimConnection(
+              retained.owner,
+              retained.data,
+              null,
+              undefined,
+              retained
+            )
+          : undefined
+
+      if (activeClaim !== undefined) {
+        cancelConnectionClaim(activeClaim, reason)
+      } else if (active !== undefined) {
+        cleanupPreview(active, reason)
       }
 
-      cleanupPreview(active, reason)
-      stopConnectionAutoPan('superseded')
-      endConnectionLifecycle('cancelled', reason)
-      clickConnection.value = undefined
+      if (retainedClaim !== undefined) {
+        cancelConnectionClaim(retainedClaim, reason)
+      }
     }
 
     watch(
@@ -2478,6 +3942,7 @@ export const FlowCanvas = defineComponent({
           id: node.id,
           handles: (node.handles ?? []).map(({ id, kind }) => `${kind}:${id}`),
         })),
+      // eslint-disable-next-line complexity -- This watcher settles the existing node, selection and connection ownership slots together.
       (nodes, previousNodes) => {
         const active = session.value
         const pending = clickConnection.value
@@ -2489,7 +3954,7 @@ export const FlowCanvas = defineComponent({
           ({ id }) => !currentNodeIds.has(id)
         )
 
-        const sourceStillExists = (connection: ConnectionSession): boolean =>
+        const sourceStillExists = (connection: ConnectionData): boolean =>
           nodes.some(
             ({ id, handles }) =>
               id === connection.sourceNode.id &&
@@ -2539,6 +4004,7 @@ export const FlowCanvas = defineComponent({
 
         if (
           (active?.kind === 'node' ||
+            active?.kind === 'node-pending' ||
             active?.kind === 'resize' ||
             active?.kind === 'keyboard-resize') &&
           !nodeIds.includes(active.node.id)
@@ -2558,12 +4024,14 @@ export const FlowCanvas = defineComponent({
               active.reconnect.handleSignature !== currentHandleSignature))
         ) {
           cleanupPreview(active, 'configuration-replacement')
-          stopConnectionAutoPan('superseded')
         }
 
-        if (pending !== undefined && !sourceStillExists(pending)) {
-          endConnectionLifecycle('cancelled', 'node-removed')
-          clickConnection.value = undefined
+        if (
+          pending !== undefined &&
+          clickConnection.value === pending &&
+          !sourceStillExists(pending.data)
+        ) {
+          cancelRetained(pending, 'node-removed')
         }
       }
     )
@@ -2616,20 +4084,17 @@ export const FlowCanvas = defineComponent({
       },
       withEditMutation,
       connectionPreview: computed(() => {
-        const active = session.value
+        const initiating = currentConnectionPreviewOwner()
 
-        const connection =
-          active?.kind === 'connection' ? active : clickConnection.value
-
-        if (connection === undefined) {
+        if (initiating === undefined) {
           return null
         }
 
-        return createConnectionPreviewSnapshot(
-          // The lazy computed getter runs after setup finishes and the local helper is initialized.
-          // eslint-disable-next-line no-use-before-define
-          connectionPreviewState(connection)
-        )
+        const preview = connectionPreviewState(initiating)
+
+        return preview === null
+          ? null
+          : createConnectionPreviewSnapshot(preview)
       }),
       subscribeState,
       subscribeSelection,
@@ -2952,7 +4417,7 @@ export const FlowCanvas = defineComponent({
 
     const pendingAsReconnection = (
       pending: Extract<PendingConnection, { kind: 'reconnection-pending' }>
-    ): ConnectionSession | undefined => {
+    ): ConnectionData | undefined => {
       const edge = activeDocument.value.edges.find(
         ({ id }) => id === pending.edgeId
       )
@@ -3005,7 +4470,7 @@ export const FlowCanvas = defineComponent({
 
     const pendingAsConnection = (
       pending: PendingConnection
-    ): ConnectionSession | undefined => {
+    ): ConnectionData | undefined => {
       if (
         stateDisposed ||
         !pending.captureTarget.isConnected ||
@@ -3021,7 +4486,7 @@ export const FlowCanvas = defineComponent({
           source === undefined ||
           (connectionMode.value === 'strict' &&
             source.handle.kind !== 'source' &&
-            clickConnection.value === undefined)
+            pending.sourceAssociation.kind === 'fresh')
         ) {
           return undefined
         }
@@ -3040,52 +4505,121 @@ export const FlowCanvas = defineComponent({
       return pendingAsReconnection(pending)
     }
 
-    const promoteConnection = (pending: PendingConnection): void => {
-      const active = pendingAsConnection(pending)
+    const newConnectionOwner = (
+      lifecycle: ConnectionLifecycle,
+      residence: Extract<
+        ConnectionOwner['state'],
+        { kind: 'live' }
+      >['residence']
+    ): ConnectionOwner => ({
+      state: { kind: 'live', lifecycle, residence, autoPan: null },
+      validationFailure: 'unreported',
+    })
 
-      if (active === undefined) {
+    const promoteConnection = (
+      pending: PendingConnection
+    ): PhysicalConnection | undefined => {
+      if (stateDisposed || session.value !== pending) {
+        return undefined
+      }
+
+      const data = pendingAsConnection(pending)
+
+      if (data === undefined) {
         cleanupPreview(pending)
 
-        return
+        return undefined
+      }
+
+      let source: ActiveSource
+      let lifecycle: ConnectionLifecycle | undefined
+
+      if (pending.sourceAssociation.kind === 'retained') {
+        if (
+          pending.sourceAssociation.source.owner.state.kind !== 'live' ||
+          clickConnection.value !== pending.sourceAssociation.source
+        ) {
+          cleanupPreview(pending)
+
+          return undefined
+        }
+
+        source = { kind: 'retained', source: pending.sourceAssociation.source }
+      } else {
+        if (pending.kind === 'reconnection-pending') {
+          const edge = activeDocument.value.edges.find(
+            ({ id }) => id === pending.edgeId
+          )
+
+          if (edge === undefined) {
+            cleanupPreview(pending)
+
+            return undefined
+          }
+
+          lifecycle = {
+            kind: 'reconnect',
+            activation: 'pointer',
+            edge,
+            endpoint: pending.endpoint,
+          }
+        } else {
+          lifecycle = {
+            kind: 'connect',
+            activation: 'pointer',
+            node: data.sourceNode,
+            handleId: data.sourceHandle,
+          }
+        }
+
+        source = {
+          kind: 'own',
+          owner: newConnectionOwner(lifecycle, {
+            kind: 'pointer',
+            press: pending.press,
+          }),
+        }
+      }
+
+      const geometry =
+        source.kind === 'retained'
+          ? {
+              ...data,
+              sourceNode: source.source.data.sourceNode,
+              sourceHandle: source.source.data.sourceHandle,
+              start: source.source.data.start,
+            }
+          : data
+
+      const active: PhysicalConnection = {
+        ...geometry,
+        route: 'pointer',
+        press: pending.press,
+        source,
       }
 
       session.value = active
-      validatorFailureReported = false
 
-      if (pending.kind === 'reconnection-pending') {
-        const edge = activeDocument.value.edges.find(
-          ({ id }) => id === pending.edgeId
-        )
+      if (!previewOwnerLive({ kind: 'physical', active })) {
+        return undefined
+      }
 
-        if (edge === undefined) {
-          cleanupPreview(active)
-
-          return
-        }
-
-        activeConnectionLifecycle = {
-          kind: 'reconnect',
-          activation: 'pointer',
-          edge,
-          endpoint: pending.endpoint,
-        }
+      if (lifecycle?.kind === 'reconnect') {
         emit('reconnectStart', {
-          edge,
-          endpoint: pending.endpoint,
+          edge: lifecycle.edge,
+          endpoint: lifecycle.endpoint,
           activation: 'pointer',
         })
-      } else if (activeConnectionLifecycle === undefined) {
-        activeConnectionLifecycle = {
-          kind: 'connect',
-          activation: 'pointer',
-          node: active.sourceNode,
-          handleId: active.sourceHandle,
-        }
+      } else if (lifecycle?.kind === 'connect') {
         emit('connectStart', {
-          node: active.sourceNode,
-          handleId: active.sourceHandle,
+          node: lifecycle.node,
+          handleId: lifecycle.handleId,
           activation: 'pointer',
         })
+      }
+
+      if (!previewOwnerLive({ kind: 'physical', active })) {
+        return undefined
       }
 
       recordFlowTelemetry(
@@ -3098,21 +4632,52 @@ export const FlowCanvas = defineComponent({
           [FlowAttribute.inputKind]: 'pointer',
         }
       )
+
+      return previewOwnerLive({ kind: 'physical', active }) ? active : undefined
     }
 
     const admitConnection = (
-      pending: PendingConnection,
+      data: PendingConnectionData,
       event: PointerEvent
     ): void => {
-      if (!acquireConnectionCapture(pending.captureTarget, pending.pointerId)) {
+      if (stateDisposed) {
         return
       }
+
+      const retained = clickConnection.value
+      const press = acquireConnectionPress(data.captureTarget, data.pointerId)
+
+      if (press === undefined) {
+        return
+      }
+
+      if (stateDisposed || session.value !== undefined) {
+        releaseConnectionPress(press)
+
+        return
+      }
+
+      const pending: PendingConnection =
+        data.kind === 'reconnection-pending'
+          ? { ...data, press, sourceAssociation: { kind: 'fresh' } }
+          : {
+              ...data,
+              press,
+              sourceAssociation:
+                retained === undefined || retained.owner.state.kind !== 'live'
+                  ? { kind: 'fresh' }
+                  : { kind: 'retained', source: retained },
+            }
 
       session.value = pending
       event.preventDefault()
       event.stopPropagation()
 
-      if (pending.threshold === 0) {
+      if (
+        !stateDisposed &&
+        session.value === pending &&
+        pending.threshold === 0
+      ) {
         promoteConnection(pending)
       }
     }
@@ -3167,8 +4732,230 @@ export const FlowCanvas = defineComponent({
       { flush: 'sync' }
     )
 
+    const nodeFrame = (
+      id: FlowNode['id']
+    ): typeof NodeFrameSchema.Type | undefined => {
+      const resolved = graph.value.nodes.get(id)
+
+      if (
+        resolved === undefined ||
+        resolved.hidden ||
+        resolved.node.draggable === false
+      ) {
+        return undefined
+      }
+
+      const parentIds: FlowNode['id'][] = []
+      let { parentId } = resolved
+
+      while (parentId !== undefined) {
+        parentIds.push(parentId)
+        parentId = graph.value.nodes.get(parentId)?.parentId
+      }
+
+      const parent =
+        resolved.parentId === undefined
+          ? undefined
+          : graph.value.nodes.get(resolved.parentId)
+
+      const origin = resolveNodeOrigin(resolved.node, activeDocument.value)
+
+      return {
+        origin: [origin[0], origin[1]],
+        parentIds,
+        parentX: parent?.absolutePosition.x ?? 0,
+        parentY: parent?.absolutePosition.y ?? 0,
+      }
+    }
+
+    const nodeStillValid = (active: DragSession): boolean => {
+      const frame = nodeFrame(active.node.id)
+
+      return (
+        frame !== undefined &&
+        active.element.isConnected &&
+        canvas.value?.contains(active.element) === true &&
+        canvas.value.querySelector(
+          `[data-node-id="${CSS.escape(active.node.id)}"]`
+        ) === active.element &&
+        JSON.stringify(frame) === JSON.stringify(active.frame)
+      )
+    }
+
+    const continueNode = (active: DragSession): boolean => {
+      if (stateDisposed || session.value !== active) {
+        return false
+      }
+
+      if (nodeStillValid(active)) {
+        return true
+      }
+
+      cleanupPreview(active, 'node-frame-invalid')
+
+      return false
+    }
+
+    const promoteNode = (pending: DragSession): DragSession | undefined => {
+      if (pending.kind !== 'node-pending' || !continueNode(pending)) {
+        return undefined
+      }
+
+      const { threshold: _threshold, ...fields } = pending
+      const active: DragSession = { ...fields, kind: 'node' }
+      session.value = active
+      emit('nodeDragStart', active.node)
+
+      if (!continueNode(active)) {
+        return undefined
+      }
+
+      selectNodeForDrag(active.node)
+
+      if (!continueNode(active)) {
+        return undefined
+      }
+
+      recordFlowTelemetry('Started Vue node drag', FlowSpan.nodeDragStart, {
+        [FlowAttribute.nodeId]: active.node.id,
+        [FlowAttribute.inputKind]: 'pointer',
+        [FlowAttribute.controlMode]: documentControlMode(),
+      })
+
+      return active
+    }
+
+    const moveNode = (active: Session, event: PointerEvent): void => {
+      if (active.kind !== 'node' && active.kind !== 'node-pending') {
+        return
+      }
+
+      if (!continueNode(active)) {
+        return
+      }
+
+      let dragging: DragSession | undefined = active
+
+      if (active.kind === 'node-pending') {
+        dragging = nodeDragActivated(
+          active.threshold,
+          active.startX,
+          active.startY,
+          event.clientX,
+          event.clientY
+        )
+          ? promoteNode(active)
+          : undefined
+      }
+
+      if (dragging === undefined || !continueNode(dragging)) {
+        return
+      }
+
+      const dx = (event.clientX - dragging.startX) / activeViewport.value.zoom
+
+      const dy = (event.clientY - dragging.startY) / activeViewport.value.zoom
+
+      active.element.style.transform = `translate(${dx}px, ${dy}px)`
+      emit('nodeDrag', {
+        node: active.node,
+        position: { x: active.originX + dx, y: active.originY + dy },
+      })
+    }
+
+    watch(
+      () => props.nodeDragThreshold,
+      (value) => {
+        nodeDragThreshold = undefined
+
+        const decoded = S.decodeUnknownExit(NodeDragThresholdSchema)(
+          value === undefined ? defaultNodeDragThreshold : value
+        )
+
+        if (Exit.isFailure(decoded)) {
+          const active = session.value
+
+          if (active?.kind === 'node' || active?.kind === 'node-pending') {
+            cleanupPreview(active, 'invalid-configuration')
+          }
+
+          decodeNodeDragThreshold(value)
+
+          return
+        }
+
+        nodeDragThreshold = decoded.value
+      },
+      { flush: 'sync' }
+    )
+    watch(
+      graph,
+      () => {
+        const active = session.value
+
+        if (active?.kind === 'node' || active?.kind === 'node-pending') {
+          continueNode(active)
+        }
+      },
+      { flush: 'sync' }
+    )
+
+    const admitNode = (
+      node: FlowNode,
+      currentTarget: HTMLElement,
+      event: PointerEvent
+    ): void => {
+      if (stateDisposed || nodeDragThreshold === undefined) {
+        return
+      }
+
+      const frame = nodeFrame(node.id)
+
+      if (frame === undefined) {
+        return
+      }
+
+      try {
+        currentTarget.setPointerCapture(event.pointerId)
+
+        if (!currentTarget.hasPointerCapture(event.pointerId)) {
+          return
+        }
+      } catch (error) {
+        recordFlowFailure(
+          'Vue node capture failed',
+          FlowSpan.browserPointerCapture,
+          {
+            [FlowAttribute.failureMessage]: String(error),
+          }
+        )
+
+        return
+      }
+
+      const pending: DragSession = {
+        kind: 'node-pending',
+        threshold: nodeDragThreshold,
+        pointerId: event.pointerId,
+        node,
+        element: currentTarget,
+        captureTarget: currentTarget,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: node.position.x,
+        originY: node.position.y,
+        frame,
+      }
+
+      session.value = pending
+
+      if (pending.threshold === 0) {
+        promoteNode(pending)
+      }
+    }
+
     const onPointerDown = (event: PointerEvent, node: FlowNode): void => {
-      if (event.button !== 0 || session.value !== undefined) {
+      if (stateDisposed || event.button !== 0 || session.value !== undefined) {
         return
       }
 
@@ -3205,68 +4992,51 @@ export const FlowCanvas = defineComponent({
           return
         }
 
-        session.value = {
-          kind: 'node',
-          pointerId: event.pointerId,
-          node,
-          element: currentTarget,
-          captureTarget: currentTarget,
-          startX: event.clientX,
-          startY: event.clientY,
-          originX: node.position.x,
-          originY: node.position.y,
-        }
-        activeNodeDrag = node
-        emit('nodeDragStart', node)
-
-        recordFlowTelemetry('Started Vue node drag', FlowSpan.nodeDragStart, {
-          [FlowAttribute.nodeId]: node.id,
-          [FlowAttribute.inputKind]: 'pointer',
-          [FlowAttribute.controlMode]: documentControlMode(),
-        })
-      } else {
-        const sourceHandle = node.handles?.find(({ id }) => id === handleId)
-
-        if (
-          sourceHandle === undefined ||
-          connectionDragThreshold === undefined ||
-          (connectionMode.value === 'strict' &&
-            sourceHandle.kind !== 'source' &&
-            clickConnection.value === undefined)
-        ) {
-          return
-        }
-
-        admitConnection(
-          {
-            kind: 'connection-pending',
-            pointerId: event.pointerId,
-            startX: event.clientX,
-            startY: event.clientY,
-            threshold: connectionDragThreshold,
-            captureTarget: currentTarget,
-            from: {
-              nodeId: node.id,
-              handleId: sourceHandle.id,
-              kind: sourceHandle.kind,
-            },
-          },
-          event
-        )
+        admitNode(node, currentTarget, event)
 
         return
       }
 
-      currentTarget.setPointerCapture?.(event.pointerId)
+      const sourceHandle = node.handles?.find(({ id }) => id === handleId)
+
+      if (
+        sourceHandle === undefined ||
+        connectionDragThreshold === undefined ||
+        (connectionMode.value === 'strict' &&
+          sourceHandle.kind !== 'source' &&
+          clickConnection.value === undefined)
+      ) {
+        return
+      }
+
+      admitConnection(
+        {
+          kind: 'connection-pending',
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          threshold: connectionDragThreshold,
+          captureTarget: currentTarget,
+          from: {
+            nodeId: node.id,
+            handleId: sourceHandle.id,
+            kind: sourceHandle.kind,
+          },
+        },
+        event
+      )
     }
 
+    // eslint-disable-next-line complexity -- Validation, reconstruction and proposal retain their public callback ordering in one completion boundary.
     const finishReconnection = (
-      active: ConnectionSession,
+      claim: ConnectionClaim,
       targetNodeId: string,
       targetHandleId: string
-    ): 'accepted' | 'proposed' | 'rejected' => {
+    ): ConnectionResult => {
+      const active = claim.source
+
       if (active.reconnect === undefined) {
-        return 'rejected'
+        return { kind: 'rejected', reason: 'invalid-target' }
       }
 
       const edge = activeDocument.value.edges.find(
@@ -3292,7 +5062,7 @@ export const FlowCanvas = defineComponent({
         targetHandle === undefined ||
         resolved === undefined
       ) {
-        return 'rejected'
+        return { kind: 'rejected', reason: 'invalid-target' }
       }
 
       const connection: FlowConnection =
@@ -3331,9 +5101,13 @@ export const FlowCanvas = defineComponent({
 
       if (
         Exit.isFailure(validation) ||
-        !validateConnectionAtBoundary(normalized)
+        !validateConnectionAtBoundary(normalized, { kind: 'completion', claim })
       ) {
-        return 'rejected'
+        return { kind: 'rejected', reason: 'invalid-target' }
+      }
+
+      if (!claimLive(claim)) {
+        return { kind: 'cancelled', reason: 'superseded' }
       }
 
       const result = Effect.runSyncExit(
@@ -3348,10 +5122,59 @@ export const FlowCanvas = defineComponent({
       )
 
       if (Exit.isSuccess(result) && result.value !== undefined) {
+        if (
+          result.value.source !== normalized.source ||
+          result.value.target !== normalized.target ||
+          result.value.sourceHandle !== normalized.sourceHandle ||
+          result.value.targetHandle !== normalized.targetHandle
+        ) {
+          return { kind: 'rejected', reason: 'invalid-target' }
+        }
+
         const status =
           documentControlMode() === 'controlled' ? 'proposed' : 'accepted'
 
         emit('reconnect', { edge: result.value, connection: normalized })
+
+        if (!claimLive(claim)) {
+          return { kind: 'cancelled', reason: 'superseded' }
+        }
+
+        const currentEdge = activeDocument.value.edges.find(
+          (candidate) => candidate.id === edge.id
+        )
+
+        const currentNormalized = normalizeFlowConnection(
+          activeDocument.value,
+          normalized,
+          connectionMode.value
+        )
+
+        const currentValidation = Effect.runSyncExit(
+          validateFlowConnection(
+            {
+              ...activeDocument.value,
+              edges: activeDocument.value.edges.filter(
+                (candidate) => candidate.id !== edge.id
+              ),
+            },
+            normalized,
+            connectionMode.value
+          )
+        )
+
+        if (
+          currentEdge === undefined ||
+          !canReconnectEdge(currentEdge, active.reconnect.endpoint) ||
+          Exit.isFailure(currentValidation) ||
+          currentNormalized.source !== normalized.source ||
+          currentNormalized.target !== normalized.target ||
+          currentNormalized.sourceHandle !== normalized.sourceHandle ||
+          currentNormalized.targetHandle !== normalized.targetHandle
+        ) {
+          return { kind: 'rejected', reason: 'invalid-target' }
+        }
+
         publish({
           kind: 'edge-reconnect',
           edge: {
@@ -3362,20 +5185,25 @@ export const FlowCanvas = defineComponent({
             targetHandle: normalized.targetHandle,
           },
         })
-        endConnectionLifecycle(status, 'valid-reconnection', normalized)
 
-        return status
+        return {
+          kind: 'success',
+          status,
+          reason: 'valid-reconnection',
+          connection: normalized,
+        }
       }
 
-      return 'rejected'
+      return { kind: 'rejected', reason: 'invalid-target' }
     }
 
     const proposeConnection = (
+      claim: ConnectionClaim,
       sourceNode: FlowNode,
       sourceHandleId: string,
       targetNodeId: string,
       targetHandleId: string
-    ): 'accepted' | 'proposed' | 'rejected' => {
+    ): ConnectionResult => {
       const sourceHandle = sourceNode.handles?.find(
         ({ id }) => id === sourceHandleId
       )
@@ -3393,7 +5221,7 @@ export const FlowCanvas = defineComponent({
         targetNode === undefined ||
         targetHandle === undefined
       ) {
-        return 'rejected'
+        return { kind: 'rejected', reason: 'invalid-target' }
       }
 
       const validated = Effect.runSyncExit(
@@ -3411,15 +5239,50 @@ export const FlowCanvas = defineComponent({
 
       if (
         Exit.isFailure(validated) ||
-        !validateConnectionAtBoundary(validated.value)
+        !validateConnectionAtBoundary(validated.value, {
+          kind: 'completion',
+          claim,
+        })
       ) {
-        return 'rejected'
+        return { kind: 'rejected', reason: 'invalid-target' }
+      }
+
+      if (!claimLive(claim)) {
+        return { kind: 'cancelled', reason: 'superseded' }
       }
 
       const status =
         documentControlMode() === 'controlled' ? 'proposed' : 'accepted'
 
       emit('connect', validated.value)
+
+      if (!claimLive(claim)) {
+        return { kind: 'cancelled', reason: 'superseded' }
+      }
+
+      const rechecked = Effect.runSyncExit(
+        connectionFromHandleGesture(
+          {
+            document: activeDocument.value,
+            fromNodeId: sourceNode.id,
+            fromHandleId: sourceHandle.id,
+            toNodeId: targetNode.id,
+            toHandleId: targetHandle.id,
+          },
+          connectionMode.value
+        )
+      )
+
+      if (
+        Exit.isFailure(rechecked) ||
+        rechecked.value.source !== validated.value.source ||
+        rechecked.value.target !== validated.value.target ||
+        rechecked.value.sourceHandle !== validated.value.sourceHandle ||
+        rechecked.value.targetHandle !== validated.value.targetHandle
+      ) {
+        return { kind: 'rejected', reason: 'invalid-target' }
+      }
+
       publish({
         kind: 'edge-add',
         edge: applyDefaultEdgeOptions(
@@ -3427,15 +5290,19 @@ export const FlowCanvas = defineComponent({
           defaultEdgeOptions.value
         ),
       })
-      endConnectionLifecycle(status, 'valid-connection', validated.value)
 
-      return status
+      return {
+        kind: 'success',
+        status,
+        reason: 'valid-connection',
+        connection: validated.value,
+      }
     }
 
     const connectionTargetAt = (
       clientX: number,
       clientY: number,
-      source: ConnectionSession
+      source: ConnectionData
     ): { readonly nodeId: string; readonly handleId: string } | undefined => {
       const targetElement = canvas.value?.ownerDocument
         .elementFromPoint(clientX, clientY)
@@ -3521,12 +5388,47 @@ export const FlowCanvas = defineComponent({
         : { nodeId: target.nodeId, handleId: target.handleId }
     }
 
-    const connectionPreviewState = (
-      active: ConnectionSession
-    ): ConnectionPreviewState => {
+    currentConnectionPreviewOwner = (): ConnectionPreviewOwner | undefined => {
+      const active = session.value
+      const retained = clickConnection.value
+
+      if (stateDisposed) {
+        return undefined
+      }
+
+      if (
+        active?.kind === 'connection' &&
+        connectionOwner(active).state.kind === 'live'
+      ) {
+        return active.route === 'pointer'
+          ? { kind: 'physical', active }
+          : { kind: 'keyboard', active }
+      }
+
+      return retained !== undefined && retained.owner.state.kind === 'live'
+        ? { kind: 'retained', source: retained }
+        : undefined
+    }
+
+    connectionPreviewState = (
+      initiating: ConnectionPreviewOwner
+    ): ConnectionPreviewState | null => {
+      if (!previewOwnerLive(initiating)) {
+        return null
+      }
+
+      const active =
+        initiating.kind === 'retained'
+          ? initiating.source.data
+          : initiating.active
+
       const bounds = canvas.value?.getBoundingClientRect()
 
       if (bounds === undefined) {
+        if (!previewOwnerLive(initiating)) {
+          return null
+        }
+
         return active.reconnect === undefined
           ? {
               kind: 'connect',
@@ -3609,11 +5511,18 @@ export const FlowCanvas = defineComponent({
 
         if (Exit.isSuccess(result)) {
           normalized = result.value
-          valid = validateConnectionAtBoundary(result.value)
+          valid = validateConnectionAtBoundary(result.value, {
+            kind: 'preview',
+            initiating,
+          })
         } else {
           normalized = candidate
           valid = false
         }
+      }
+
+      if (!previewOwnerLive(initiating)) {
+        return null
       }
 
       return active.reconnect === undefined
@@ -3635,83 +5544,372 @@ export const FlowCanvas = defineComponent({
           }
     }
 
-    // eslint-disable-next-line complexity
-    const finishConnection = (
-      event: PointerEvent,
-      active: ConnectionSession
+    const resolveCompletion = (
+      input: ConnectionCompletionInput
+    ): CompletionRoute | undefined => {
+      if (input.kind === 'retained-keyboard') {
+        if (
+          clickConnection.value !== input.source ||
+          input.source.owner.state.kind !== 'live'
+        ) {
+          return undefined
+        }
+
+        return input
+      }
+
+      if (input.kind === 'pending') {
+        const { pending } = input
+
+        if (session.value !== pending) {
+          return undefined
+        }
+
+        const candidate = pendingAsConnection(pending)
+
+        if (
+          candidate === undefined ||
+          pending.kind === 'reconnection-pending'
+        ) {
+          return { kind: 'quiet', pending }
+        }
+
+        if (pending.sourceAssociation.kind === 'retained') {
+          const { source } = pending.sourceAssociation
+
+          if (
+            clickConnection.value !== source ||
+            source.owner.state.kind !== 'live'
+          ) {
+            return { kind: 'quiet', pending }
+          }
+
+          return {
+            kind: 'retained-target',
+            pending,
+            candidate,
+            source,
+            target: connectionTargetAt(
+              input.release.clientX,
+              input.release.clientY,
+              source.data
+            ),
+          }
+        }
+
+        return {
+          kind: 'fresh-click',
+          pending,
+          candidate,
+          target: connectionTargetAt(
+            input.release.clientX,
+            input.release.clientY,
+            candidate
+          ),
+        }
+      }
+
+      if (input.kind === 'keyboard-reconnect') {
+        return session.value === input.active ? input : undefined
+      }
+
+      const physicalView = session.value
+
+      if (
+        physicalView?.kind !== 'connection' ||
+        physicalView.route !== 'pointer' ||
+        physicalView.press !== input.active.press ||
+        connectionOwner(physicalView) !== connectionOwner(input.active)
+      ) {
+        return undefined
+      }
+
+      const source =
+        input.active.source.kind === 'retained'
+          ? input.active.source.source.data
+          : input.active
+
+      const target =
+        input.kind === 'pointer'
+          ? connectionTargetAt(
+              input.release.clientX,
+              input.release.clientY,
+              source
+            )
+          : input.target
+
+      return { kind: 'physical', active: input.active, physicalView, target }
+    }
+
+    const completionAuthority = (
+      route: Exclude<CompletionRoute, { kind: 'quiet' }>
+    ) => {
+      switch (route.kind) {
+        case 'fresh-click': {
+          return {
+            source: route.candidate,
+            owner: undefined,
+            physicalView: route.pending,
+            retainedView: undefined,
+          }
+        }
+
+        case 'retained-target': {
+          return {
+            source: route.source.data,
+            owner: route.source.owner,
+            physicalView: route.pending,
+            retainedView: route.source,
+          }
+        }
+
+        case 'retained-keyboard': {
+          return {
+            source: route.source.data,
+            owner: route.source.owner,
+            physicalView: undefined,
+            retainedView: route.source,
+          }
+        }
+
+        case 'keyboard-reconnect': {
+          return {
+            source: route.active,
+            owner: route.active.owner,
+            physicalView: route.active,
+            retainedView: undefined,
+          }
+        }
+
+        case 'physical': {
+          const retainedView =
+            route.active.source.kind === 'retained'
+              ? route.active.source.source
+              : undefined
+
+          return {
+            source: retainedView?.data ?? route.active,
+            owner: connectionOwner(route.active),
+            physicalView: route.physicalView,
+            retainedView,
+          }
+        }
+
+        default: {
+          const exhausted: never = route
+
+          return exhausted
+        }
+      }
+    }
+
+    const retainSameHandle = (
+      source: ConnectionData,
+      owner: ConnectionOwner | undefined,
+      physicalView: PendingConnection | ConnectionSession | undefined,
+      freshPending: boolean
     ): void => {
-      stopConnectionAutoPan(
+      const lifecycle: ConnectionLifecycle = {
+        kind: 'connect',
+        activation: 'click',
+        node: source.sourceNode,
+        handleId: source.sourceHandle,
+      }
+
+      const transferOwner =
+        owner ?? newConnectionOwner(lifecycle, { kind: 'retained' })
+
+      if (transferOwner.state.kind !== 'live') {
+        return
+      }
+
+      const previous = transferOwner.state
+      transferOwner.state = {
+        ...previous,
+        residence: { kind: 'retained' },
+        lifecycle,
+      }
+
+      const retained: RetainedSource = {
+        kind: 'retained',
+        owner: transferOwner,
+        data: source,
+      }
+
+      if (
+        physicalView !== undefined &&
+        (physicalView.kind !== 'connection' || physicalView.route === 'pointer')
+      ) {
+        releaseConnectionPress(physicalView.press)
+      }
+
+      if (stateDisposed || transferOwner.state.kind !== 'live') {
+        return
+      }
+
+      clickConnection.value = retained
+
+      if (stateDisposed || transferOwner.state.kind !== 'live') {
+        return
+      }
+
+      if (session.value === physicalView) {
+        session.value = undefined
+      }
+
+      if (!previewOwnerLive({ kind: 'retained', source: retained })) {
+        return
+      }
+
+      for (const port of takeOwnedObservationPorts(
+        previous.autoPan,
+        { kind: 'connection', owner: transferOwner },
+        activeViewport.value,
         props.viewportMode === 'controlled' ? 'proposed' : 'accepted'
-      )
+      )) {
+        deliverTerminal(port)
+      }
 
-      cleanupPreview(active, 'completed', false)
+      if (!previewOwnerLive({ kind: 'retained', source: retained })) {
+        return
+      }
 
-      const source = clickConnection.value ?? active
-      const target = connectionTargetAt(event.clientX, event.clientY, source)
+      if (freshPending) {
+        emit('connectStart', {
+          node: source.sourceNode,
+          handleId: source.sourceHandle,
+          activation: 'click',
+        })
+      }
 
-      if (target === undefined) {
-        endConnectionLifecycle('rejected', 'no-target')
+      if (!previewOwnerLive({ kind: 'retained', source: retained })) {
+        return
+      }
+
+      if (
+        freshPending ||
+        (previous.lifecycle.kind === 'connect' &&
+          previous.lifecycle.activation !== 'click')
+      ) {
+        emit('clickConnectStart', {
+          node: source.sourceNode,
+          handleId: source.sourceHandle,
+        })
+      }
+    }
+
+    // eslint-disable-next-line complexity -- One domain entry distinguishes quiet release, same-handle transfer and terminal claims without advancing callback-sensitive semantic reads.
+    const completeConnection = (input: ConnectionCompletionInput): void => {
+      if (stateDisposed) {
+        return
+      }
+
+      const route = resolveCompletion(input)
+
+      if (route === undefined) {
+        return
+      }
+
+      if (route.kind === 'quiet') {
+        detachSessionView(route.pending)
 
         return
       }
 
-      if (active.reconnect !== undefined) {
-        const status = finishReconnection(
-          active,
-          target.nodeId,
-          target.handleId
-        )
+      const { source, owner, physicalView, retainedView } =
+        completionAuthority(route)
 
-        endConnectionLifecycle(
-          status,
-          status === 'rejected' ? 'invalid-target' : 'valid-reconnection'
-        )
+      const { target } = route
+      const freshPending = route.kind === 'fresh-click'
+
+      const sameHandle =
+        target !== undefined &&
+        target.nodeId === source.sourceNode.id &&
+        target.handleId === source.sourceHandle &&
+        source.reconnect === undefined
+
+      if (freshPending && (!sameHandle || !props.connectOnClick)) {
+        if (physicalView !== undefined) {
+          detachSessionView(physicalView)
+        }
 
         return
       }
 
       if (
-        target.nodeId === source.sourceNode.id &&
-        target.handleId === source.sourceHandle
+        sameHandle &&
+        props.connectOnClick &&
+        input.kind !== 'retained-keyboard'
       ) {
-        if (!props.connectOnClick) {
-          endConnectionLifecycle('rejected', 'click-connect-disabled')
-
-          return
-        }
-
-        clickConnection.value = source
-
-        if (
-          activeConnectionLifecycle?.kind === 'connect' &&
-          activeConnectionLifecycle.activation !== 'click'
-        ) {
-          activeConnectionLifecycle = {
-            ...activeConnectionLifecycle,
-            activation: 'click',
-          }
-          emit('clickConnectStart', {
-            node: source.sourceNode,
-            handleId: source.sourceHandle,
-          })
-        }
+        retainSameHandle(source, owner, physicalView, freshPending)
 
         return
       }
 
-      clickConnection.value = undefined
+      if (owner === undefined) {
+        return
+      }
 
-      const status = proposeConnection(
-        source.sourceNode,
-        source.sourceHandle,
-        target.nodeId,
-        target.handleId
+      const claim = claimConnection(
+        owner,
+        source,
+        target ?? null,
+        physicalView,
+        retainedView
       )
 
-      endConnectionLifecycle(
-        status,
-        status === 'rejected' ? 'invalid-target' : 'valid-connection'
-      )
+      if (claim === undefined) {
+        return
+      }
+
+      clearClaimPresentation(claim)
+
+      if (!claimLive(claim)) {
+        return
+      }
+
+      if (claim.resources.autoPan !== null) {
+        for (const port of takeOwnedObservationPorts(
+          claim.resources.autoPan,
+          { kind: 'connection', owner: claim.owner },
+          activeViewport.value,
+          props.viewportMode === 'controlled' ? 'proposed' : 'accepted'
+        )) {
+          deliverTerminal(port)
+        }
+      }
+
+      if (!claimLive(claim)) {
+        return
+      }
+
+      let result: ConnectionResult
+
+      if (target === undefined) {
+        result = { kind: 'rejected', reason: 'no-target' }
+      } else if (sameHandle) {
+        result = {
+          kind: 'rejected',
+          reason:
+            input.kind === 'retained-keyboard'
+              ? 'invalid-target'
+              : 'click-connect-disabled',
+        }
+      } else if (source.reconnect === undefined) {
+        result = proposeConnection(
+          claim,
+          source.sourceNode,
+          source.sourceHandle,
+          target.nodeId,
+          target.handleId
+        )
+      } else {
+        result = finishReconnection(claim, target.nodeId, target.handleId)
+      }
+
+      if (claimLive(claim)) {
+        finishConnectionClaim(claim, result)
+      }
     }
 
     const startReconnection = (
@@ -3720,12 +5918,22 @@ export const FlowCanvas = defineComponent({
       event: PointerEvent
     ): void => {
       const captureTarget = event.currentTarget
-      const resolved = resolveEdgeHandles(activeDocument.value, edge)
+
+      const currentEdge = activeDocument.value.edges.find(
+        ({ id }) => id === edge.id
+      )
+
+      if (currentEdge === undefined) {
+        return
+      }
+
+      const resolved = resolveEdgeHandles(activeDocument.value, currentEdge)
 
       if (
+        stateDisposed ||
         event.button !== 0 ||
-        edge.selected !== true ||
-        !canReconnectEdge(edge, endpoint) ||
+        currentEdge.selected !== true ||
+        !canReconnectEdge(currentEdge, endpoint) ||
         session.value !== undefined ||
         clickConnection.value !== undefined ||
         resolved === undefined ||
@@ -3743,15 +5951,15 @@ export const FlowCanvas = defineComponent({
           startY: event.clientY,
           threshold: connectionDragThreshold,
           captureTarget,
-          edgeId: edge.id,
+          edgeId: currentEdge.id,
           endpoint,
           source: {
-            nodeId: edge.source,
+            nodeId: currentEdge.source,
             handleId: resolved.sourceHandle.id,
             kind: resolved.sourceHandle.kind,
           },
           target: {
-            nodeId: edge.target,
+            nodeId: currentEdge.target,
             handleId: resolved.targetHandle.id,
             kind: resolved.targetHandle.kind,
           },
@@ -3897,6 +6105,10 @@ export const FlowCanvas = defineComponent({
       element: HTMLElement,
       direction: NodeResizeDirection
     ): void => {
+      if (stateDisposed) {
+        return
+      }
+
       event.preventDefault()
       event.stopPropagation()
 
@@ -3947,52 +6159,11 @@ export const FlowCanvas = defineComponent({
       captureTarget.setPointerCapture?.(event.pointerId)
     }
 
-    const finishPendingConnection = (
-      event: PointerEvent,
-      active: PendingConnection
-    ): void => {
-      const candidate = pendingAsConnection(active)
-      cleanupPreview(active)
-
-      if (active.kind === 'reconnection-pending' || candidate === undefined) {
-        return
-      }
-
-      const source = clickConnection.value ?? candidate
-      const target = connectionTargetAt(event.clientX, event.clientY, source)
-
-      if (target === undefined) {
-        return
-      }
-
-      if (clickConnection.value !== undefined) {
-        finishConnection(event, candidate)
-      } else if (
-        props.connectOnClick &&
-        target.nodeId === source.sourceNode.id &&
-        target.handleId === source.sourceHandle
-      ) {
-        clickConnection.value = source
-        validatorFailureReported = false
-        activeConnectionLifecycle = {
-          kind: 'connect',
-          activation: 'click',
-          node: source.sourceNode,
-          handleId: source.sourceHandle,
-        }
-        emit('connectStart', {
-          node: source.sourceNode,
-          handleId: source.sourceHandle,
-          activation: 'click',
-        })
-        emit('clickConnectStart', {
-          node: source.sourceNode,
-          handleId: source.sourceHandle,
-        })
-      }
-    }
-
     const prepareConnectionMove = (event: PointerEvent): boolean => {
+      if (stateDisposed) {
+        return false
+      }
+
       const active = session.value
 
       if (
@@ -4021,15 +6192,18 @@ export const FlowCanvas = defineComponent({
           return false
         }
 
-        promoteConnection(active)
-
-        return !stateDisposed && session.value?.kind === 'connection'
+        return promoteConnection(active) !== undefined
       }
 
       return true
     }
 
+    // eslint-disable-next-line complexity -- The native release entry dispatches the closed session union and preserves branch-specific terminal ordering.
     const onPointerUp = (event: PointerEvent): void => {
+      if (stateDisposed) {
+        return
+      }
+
       const active = session.value
 
       if (
@@ -4044,27 +6218,51 @@ export const FlowCanvas = defineComponent({
         active.kind === 'connection-pending' ||
         active.kind === 'reconnection-pending'
       ) {
-        finishPendingConnection(event, active)
+        completeConnection({ kind: 'pending', pending: active, release: event })
 
         return
       }
 
       if (active.kind === 'connection') {
-        finishConnection(event, active)
+        if (active.route === 'pointer') {
+          completeConnection({ kind: 'pointer', active, release: event })
+        }
 
         return
       }
 
       if (active.kind === 'pan') {
-        updateViewport(
+        if (active.owner.state.kind !== 'live') {
+          return
+        }
+
+        const result = writeViewport(
           panViewport(active.viewportStart, {
             x: event.clientX - active.startX,
             y: event.clientY - active.startY,
-          })
+          }),
+          { kind: 'pan', active }
         )
-        cleanupPreview(active)
-        viewportGestureActive = false
-        endViewportObservation(activeViewport.value, 'accepted')
+
+        if (result === 'revoked' || active.owner.state.kind !== 'live') {
+          return
+        }
+
+        const ports = takeOwnedObservationPorts(
+          active.owner.state.observation,
+          { kind: 'pan', owner: active.owner },
+          activeViewport.value,
+          'accepted'
+        )
+
+        active.owner.state = { kind: 'ended' }
+        detachSessionView(active)
+
+        if (!stateDisposed) {
+          for (const port of ports) {
+            deliverTerminal(port)
+          }
+        }
 
         return
       }
@@ -4085,15 +6283,20 @@ export const FlowCanvas = defineComponent({
             height: Math.abs(active.start.y - end.y),
           }
 
-          cleanupPreview(active, 'selection-complete', false)
+          const claim = takeSelection(active)
+
+          if (claim === undefined || stateDisposed) {
+            return
+          }
+
           publish(selectionInRect(graph.value, rect, props.selectionMode))
-          endSelection(
+          finishSelection(
+            claim,
             documentControlMode() === 'controlled' ? 'proposed' : 'accepted',
             'selection-complete'
           )
         } else {
-          endSelection('cancelled', 'no-selection-movement')
-          cleanupPreview(active, 'no-selection-movement', false)
+          cleanupPreview(active, 'no-selection-movement')
         }
 
         return
@@ -4110,23 +6313,32 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      cleanupPreview(active, 'drag-complete', false)
+      if (!continueNode(active)) {
+        return
+      }
+
+      detachSessionView(active)
+
+      if (active.kind === 'node-pending') {
+        return
+      }
+
       const dx = (event.clientX - active.startX) / activeViewport.value.zoom
       const dy = (event.clientY - active.startY) / activeViewport.value.zoom
 
-      if (Math.hypot(dx, dy) < 8) {
-        endNodeDrag('cancelled', 'movement-threshold-not-reached')
+      if (!nodeStillValid(active)) {
+        endNodeDrag(active, 'cancelled', 'node-frame-invalid')
 
         return
       }
 
-      selectNodeForDrag(active.node)
       publish({
         kind: 'node-position',
         nodeId: active.node.id,
         position: { x: active.originX + dx, y: active.originY + dy },
       })
       endNodeDrag(
+        active,
         documentControlMode() === 'controlled' ? 'proposed' : 'accepted',
         'drag-complete'
       )
@@ -4134,6 +6346,10 @@ export const FlowCanvas = defineComponent({
 
     // eslint-disable-next-line complexity -- handles keyboard selection as one session lifecycle.
     const onKeyDown = (event: KeyboardEvent): void => {
+      if (stateDisposed) {
+        return
+      }
+
       const { target } = event
 
       if (
@@ -4169,15 +6385,20 @@ export const FlowCanvas = defineComponent({
           }
 
           if (Math.hypot(rect.width, rect.height) >= 2) {
-            cleanupPreview(active, 'selection-complete', false)
+            const claim = takeSelection(active)
+
+            if (claim === undefined || stateDisposed) {
+              return
+            }
+
             publish(selectionInRect(graph.value, rect, props.selectionMode))
-            endSelection(
+            finishSelection(
+              claim,
               documentControlMode() === 'controlled' ? 'proposed' : 'accepted',
               'selection-complete'
             )
           } else {
-            endSelection('cancelled', 'selection-below-minimum-size')
-            cleanupPreview(active, 'selection-below-minimum-size', false)
+            cleanupPreview(active, 'selection-below-minimum-size')
           }
 
           return
@@ -4188,13 +6409,25 @@ export const FlowCanvas = defineComponent({
         if (delta !== undefined) {
           event.preventDefault()
           event.stopPropagation()
-          session.value = {
+
+          const updated: OwnedSelection = {
             ...active,
             pointer: {
               x: active.pointer.x + delta.x,
               y: active.pointer.y + delta.y,
             },
           }
+
+          session.value = updated
+
+          if (
+            stateDisposed ||
+            session.value !== updated ||
+            active.owner.state.kind !== 'live'
+          ) {
+            return
+          }
+
           emit('selectionProgress', {
             rect: {
               x: Math.min(active.start.x, active.pointer.x + delta.x),
@@ -4203,6 +6436,15 @@ export const FlowCanvas = defineComponent({
               height: Math.abs(active.start.y - active.pointer.y - delta.y),
             },
           })
+
+          if (
+            stateDisposed ||
+            session.value !== updated ||
+            active.owner.state.kind !== 'live'
+          ) {
+            return
+          }
+
           emit('selectionDrag', {
             rect: {
               x: Math.min(active.start.x, active.pointer.x + delta.x),
@@ -4246,8 +6488,9 @@ export const FlowCanvas = defineComponent({
             y: graphNode.absolutePosition.y + graphNode.dimensions.height / 2,
           }
 
-          session.value = {
+          const admitted: OwnedSelection = {
             kind: 'selection',
+            owner: { state: { kind: 'live' } },
             pointerId: -1,
             captureTarget: nodeElement,
             startX: 0,
@@ -4255,8 +6498,23 @@ export const FlowCanvas = defineComponent({
             start,
             pointer: start,
           }
-          activeSelection = true
+
+          session.value = admitted
+
+          if (stateDisposed || session.value !== admitted) {
+            return
+          }
+
           emit('selectionStart', { position: start, activation: 'keyboard' })
+
+          if (
+            stateDisposed ||
+            session.value !== admitted ||
+            admitted.owner.state.kind !== 'live'
+          ) {
+            return
+          }
+
           emit('selectionDragStart', { position: start })
 
           recordFlowTelemetry(
@@ -4298,6 +6556,10 @@ export const FlowCanvas = defineComponent({
     }
 
     const onWindowBlur = (): void => {
+      if (stateDisposed) {
+        return
+      }
+
       pressedKeys.clear()
       cancelActiveSession('blur')
     }
@@ -4323,6 +6585,10 @@ export const FlowCanvas = defineComponent({
     )
 
     const onWindowKeyUp = (event: KeyboardEvent): void => {
+      if (stateDisposed) {
+        return
+      }
+
       pressedKeys.delete(event.key)
       pressedKeys.delete(event.code)
       const active = session.value
@@ -4339,7 +6605,12 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    // eslint-disable-next-line complexity -- The public pointer admission entry preserves the existing selection, pan and interactive-target policies.
     const onCanvasPointerDown = (event: PointerEvent): void => {
+      if (stateDisposed) {
+        return
+      }
+
       const { target, currentTarget } = event
 
       if (
@@ -4358,8 +6629,7 @@ export const FlowCanvas = defineComponent({
       const panKeyRequired = props.panActivationKeyCode
       const panKeyActive = activationKeyIsPressed(panKeyRequired)
 
-      const isSelection =
-        event.button === 0 && (event.shiftKey || props.selectionOnDrag)
+      const isSelection = event.shiftKey || props.selectionOnDrag
 
       if (
         excludedFromDrag ||
@@ -4384,6 +6654,7 @@ export const FlowCanvas = defineComponent({
       session.value = isSelection
         ? {
             kind: 'selection',
+            owner: { state: { kind: 'live' } },
             pointerId: event.pointerId,
             captureTarget: currentTarget,
             startX,
@@ -4393,6 +6664,12 @@ export const FlowCanvas = defineComponent({
           }
         : {
             kind: 'pan',
+            owner: {
+              state: {
+                kind: 'live',
+                observation: newViewportObservation(activeViewport.value),
+              },
+            },
             pointerId: event.pointerId,
             captureTarget: currentTarget,
             startX,
@@ -4400,9 +6677,16 @@ export const FlowCanvas = defineComponent({
             viewportStart: activeViewport.value,
           }
 
+      const admitted = session.value
+      currentTarget.setPointerCapture?.(event.pointerId)
+
       if (isSelection) {
-        activeSelection = true
         emit('selectionStart', { position: flowPoint, activation: 'pointer' })
+
+        if (stateDisposed || session.value !== admitted) {
+          return
+        }
+
         emit('selectionDragStart', { position: flowPoint })
       }
 
@@ -4417,16 +6701,35 @@ export const FlowCanvas = defineComponent({
         )
       }
 
-      if (!isSelection) {
-        viewportGestureActive = true
-        beginViewportObservation(activeViewport.value)
+      if (
+        admitted?.kind === 'pan' &&
+        admitted.owner.state.kind === 'live' &&
+        !stateDisposed &&
+        session.value === admitted
+      ) {
+        const reservation = acquireViewportWrite({
+          kind: 'pan',
+          active: admitted,
+        })
+
+        const write =
+          reservation === undefined
+            ? undefined
+            : bindViewportObservation(reservation)
+
+        if (write !== undefined) {
+          beginViewportObservation(write)
+        }
       }
 
-      currentTarget.setPointerCapture?.(event.pointerId)
       event.preventDefault()
     }
 
     const onWheel = (event: WheelEvent): void => {
+      if (stateDisposed) {
+        return
+      }
+
       const { target } = event
 
       if (
@@ -4500,6 +6803,7 @@ export const FlowCanvas = defineComponent({
       event: KeyboardEvent
     ): void => {
       if (
+        stateDisposed ||
         (event.key !== 'Enter' && event.key !== ' ') ||
         event.metaKey ||
         event.ctrlKey ||
@@ -4520,13 +6824,23 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      if (reconnect?.kind === 'connection' && reconnect.reconnect) {
-        const status = finishReconnection(reconnect, node.id, handle.id)
-        cleanupPreview(reconnect, 'keyboard-reconnect-complete', false)
-        endConnectionLifecycle(
-          status,
-          status === 'rejected' ? 'invalid-target' : 'valid-reconnection'
-        )
+      if (
+        reconnect?.kind === 'connection' &&
+        reconnect.reconnect !== undefined
+      ) {
+        if (reconnect.route === 'keyboard') {
+          completeConnection({
+            kind: 'keyboard-reconnect',
+            active: reconnect,
+            target: { nodeId: node.id, handleId: handle.id },
+          })
+        } else {
+          completeConnection({
+            kind: 'physical-reconnect-target',
+            active: { ...reconnect, reconnect: reconnect.reconnect },
+            target: { nodeId: node.id, handleId: handle.id },
+          })
+        }
 
         return
       }
@@ -4538,36 +6852,11 @@ export const FlowCanvas = defineComponent({
       const pending = clickConnection.value
 
       if (pending !== undefined) {
-        const pendingHandle = pending.sourceNode.handles?.find(
-          ({ id }) => id === pending.sourceHandle
-        )
-
-        const canComplete =
-          pendingHandle !== undefined &&
-          (connectionMode.value === 'loose' ||
-            (pendingHandle.kind === 'source' && handle.kind === 'target'))
-
-        clickConnection.value = undefined
-
-        if (
-          canComplete &&
-          (node.id !== pending.sourceNode.id ||
-            handle.id !== pending.sourceHandle)
-        ) {
-          const status = proposeConnection(
-            pending.sourceNode,
-            pending.sourceHandle,
-            node.id,
-            handle.id
-          )
-
-          endConnectionLifecycle(
-            status,
-            status === 'rejected' ? 'invalid-target' : 'valid-connection'
-          )
-        } else {
-          endConnectionLifecycle('rejected', 'invalid-target')
-        }
+        completeConnection({
+          kind: 'retained-keyboard',
+          source: pending,
+          target: { nodeId: node.id, handleId: handle.id },
+        })
 
         return
       }
@@ -4605,7 +6894,7 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      clickConnection.value = {
+      const data: ConnectionData = {
         kind: 'connection',
         pointerId: -1,
         captureTarget: event.currentTarget,
@@ -4615,20 +6904,35 @@ export const FlowCanvas = defineComponent({
         pointer: start,
       }
 
-      if (activeConnectionLifecycle === undefined) {
-        validatorFailureReported = false
-        activeConnectionLifecycle = {
-          kind: 'connect',
-          activation: 'click',
-          node,
-          handleId: handle.id,
-        }
-        emit('connectStart', {
-          node,
-          handleId: handle.id,
-          activation: 'keyboard',
-        })
-        emit('clickConnectStart', { node, handleId: handle.id })
+      const retained: RetainedSource = {
+        kind: 'retained',
+        data,
+        owner: newConnectionOwner(
+          { kind: 'connect', activation: 'click', node, handleId: handle.id },
+          { kind: 'retained' }
+        ),
+      }
+
+      clickConnection.value = retained
+
+      if (!previewOwnerLive({ kind: 'retained', source: retained })) {
+        return
+      }
+
+      emit('connectStart', {
+        node,
+        handleId: handle.id,
+        activation: 'keyboard',
+      })
+
+      if (!previewOwnerLive({ kind: 'retained', source: retained })) {
+        return
+      }
+
+      emit('clickConnectStart', { node, handleId: handle.id })
+
+      if (!previewOwnerLive({ kind: 'retained', source: retained })) {
+        return
       }
 
       recordFlowTelemetry(
@@ -5189,6 +7493,7 @@ export const FlowCanvas = defineComponent({
                 // eslint-disable-next-line complexity, no-loop-func -- one callback coordinates this block-scoped edge's keyboard lifecycle.
                 onKeydown: (event: KeyboardEvent) => {
                   if (
+                    stateDisposed ||
                     (event.key !== 'Enter' && event.key !== ' ') ||
                     event.metaKey ||
                     event.ctrlKey ||
@@ -5299,6 +7604,16 @@ export const FlowCanvas = defineComponent({
 
                   session.value = {
                     kind: 'connection',
+                    route: 'keyboard',
+                    owner: newConnectionOwner(
+                      {
+                        kind: 'reconnect',
+                        activation: 'keyboard',
+                        edge,
+                        endpoint,
+                      },
+                      { kind: 'keyboard' }
+                    ),
                     pointerId: -1,
                     captureTarget,
                     sourceNode: resolved.sourceNode,
@@ -5310,13 +7625,6 @@ export const FlowCanvas = defineComponent({
                       endpoint,
                       handleSignature,
                     },
-                  }
-                  validatorFailureReported = false
-                  activeConnectionLifecycle = {
-                    kind: 'reconnect',
-                    activation: 'keyboard',
-                    edge,
-                    endpoint,
                   }
                   emit('reconnectStart', {
                     edge,
@@ -5432,61 +7740,483 @@ export const FlowCanvas = defineComponent({
       )
     }
 
-    onBeforeUnmount(() => {
+    // eslint-disable-next-line complexity -- The complete raw authority and resource packet must be captured without callback-capable intermediate helpers.
+    const captureDisposal = (): CapturedDisposal => {
       stateDisposed = true
-      settleViewportRequest('disposed')
-      stopConnectionAutoPan('disposed')
-      viewportGestureActive = false
-      endViewportObservation(activeViewport.value, 'disposed')
+      const active = session.value
+      const retained = clickConnection.value
+      const originalClaims = [...pendingConnectionClaims]
+      const viewport = activeViewport.value
+      const request = activeViewportRequest
+      const observation = viewportObservation
+      const resources: DisposalResource[] = []
+      const notifications: DisposalStep[] = []
+      const clears: DisposalResource[] = []
+      const liveClaims: ConnectionClaim[] = []
+      const livePorts: TerminalPort[] = []
 
-      for (const [nodeId, resolve] of pendingInternals) {
-        for (const settle of resolve) {
-          settle({ nodeId: NodeIdSchema.make(nodeId), status: 'disposed' })
+      const taken = takeRequestSettlement(request, 'disposed', viewport)
+
+      if (taken !== undefined) {
+        resources.push({ kind: 'request-frame', taken })
+        notifications.push(
+          { kind: 'request-settlement', taken },
+          ...taken.ports.map((port): DisposalStep => ({
+            kind: 'terminal',
+            port,
+          }))
+        )
+      }
+
+      activeViewportRequest = undefined
+      currentViewportWrite = undefined
+
+      for (const dispose of keyPressDisposers) {
+        resources.push({ kind: 'key-observer', dispose })
+      }
+
+      keyPressDisposers.clear()
+
+      if (canvas.value !== undefined) {
+        resources.push({
+          kind: 'unobserve-canvas',
+          observer: resizeObserver,
+          element: canvas.value,
+        })
+      }
+
+      resources.push(
+        { kind: 'disconnect-observer', observer: resizeObserver },
+        { kind: 'remove-keydown', target: globalThis, listener: onKeyDown },
+        { kind: 'remove-keyup', target: globalThis, listener: onWindowKeyUp },
+        { kind: 'remove-blur', target: globalThis, listener: onWindowBlur }
+      )
+
+      if (active !== undefined) {
+        clears.push({ kind: 'clear-session-view', view: active })
+
+        if (active.kind === 'connection') {
+          const owner = connectionOwner(active)
+
+          const source =
+            active.route === 'pointer' && active.source.kind === 'retained'
+              ? active.source.source
+              : undefined
+
+          const claim = claimConnection(
+            owner,
+            source?.data ?? active,
+            null,
+            active,
+            source
+          )
+
+          if (claim !== undefined) {
+            liveClaims.push(claim)
+          }
+
+          if (active.route === 'pointer') {
+            resources.push({ kind: 'connection-capture', press: active.press })
+          }
+        } else if (
+          active.kind === 'connection-pending' ||
+          active.kind === 'reconnection-pending'
+        ) {
+          resources.push({ kind: 'connection-capture', press: active.press })
+        } else {
+          resources.push({
+            kind: 'session-capture',
+            target: active.captureTarget,
+            pointerId: active.pointerId,
+          })
+
+          if (active.kind === 'node' || active.kind === 'node-pending') {
+            resources.push({
+              kind: 'remove-node-transform',
+              element: active.element,
+            })
+
+            if (active.kind === 'node') {
+              const payload: NodeEndPayload = {
+                node: active.node,
+                status: 'cancelled',
+                reason: 'superseded',
+              }
+
+              livePorts.push(
+                { kind: 'nodeDragEnd', payload },
+                { kind: 'nodeDragStop', payload }
+              )
+            }
+          } else if (
+            active.kind === 'selection' &&
+            active.owner.state.kind === 'live'
+          ) {
+            active.owner.state = { kind: 'ended' }
+
+            const payload: SelectionEndPayload = {
+              status: 'cancelled',
+              reason: 'superseded',
+            }
+
+            livePorts.push(
+              { kind: 'selectionEnd', payload },
+              { kind: 'selectionDragStop', payload }
+            )
+          } else if (
+            active.kind === 'pan' &&
+            active.owner.state.kind === 'live'
+          ) {
+            const panObservation = active.owner.state.observation
+            active.owner.state = { kind: 'ended' }
+            livePorts.push(
+              ...takeObservationPorts(panObservation, viewport, 'disposed')
+            )
+          } else if (
+            active.kind === 'resize' ||
+            active.kind === 'keyboard-resize'
+          ) {
+            const position = resizePreviewGraph({
+              kind: 'node-bounds',
+              nodeId: active.node.id,
+              position: active.position,
+              size: active.size,
+              childPositions: [],
+            }).nodes.get(active.node.id)?.absolutePosition
+
+            if (position !== undefined) {
+              resources.push(
+                {
+                  kind: 'resize-style',
+                  element: active.element,
+                  property: 'left',
+                  value: `${position.x}px`,
+                },
+                {
+                  kind: 'resize-style',
+                  element: active.element,
+                  property: 'top',
+                  value: `${position.y}px`,
+                },
+                {
+                  kind: 'resize-style',
+                  element: active.element,
+                  property: 'width',
+                  value: `${active.size.width}px`,
+                },
+                {
+                  kind: 'resize-style',
+                  element: active.element,
+                  property: 'height',
+                  value: `${active.size.height}px`,
+                }
+              )
+            }
+          }
+        }
+      }
+
+      if (retained !== undefined) {
+        clears.push({ kind: 'clear-retained-view', view: retained })
+
+        const physical =
+          active?.kind === 'connection-pending' &&
+          active.sourceAssociation.kind === 'retained' &&
+          active.sourceAssociation.source === retained
+            ? active
+            : undefined
+
+        const claim = claimConnection(
+          retained.owner,
+          retained.data,
+          null,
+          physical,
+          retained
+        )
+
+        if (claim !== undefined) {
+          liveClaims.push(claim)
+        }
+      }
+
+      for (const claim of [...liveClaims, ...originalClaims]) {
+        if (claim.resources.press !== null) {
+          resources.push({
+            kind: 'connection-capture',
+            press: claim.resources.press,
+          })
+        }
+
+        if (claim.resources.physicalView !== undefined) {
+          clears.push({
+            kind: 'clear-session-view',
+            view: claim.resources.physicalView,
+          })
+        }
+
+        if (claim.resources.retainedView !== undefined) {
+          clears.push({
+            kind: 'clear-retained-view',
+            view: claim.resources.retainedView,
+          })
+        }
+
+        notifications.push(
+          ...takeObservationPorts(
+            claim.resources.autoPan,
+            viewport,
+            'disposed'
+          ).map((port): DisposalStep => ({ kind: 'terminal', port }))
+        )
+      }
+
+      notifications.push(
+        ...takeObservationPorts(observation, viewport, 'disposed').map(
+          (port): DisposalStep => ({ kind: 'terminal', port })
+        )
+      )
+
+      for (const [nodeId, settlers] of pendingInternals) {
+        for (const settle of settlers) {
+          notifications.push({
+            kind: 'internals-settlement',
+            settle,
+            result: { nodeId: NodeIdSchema.make(nodeId), status: 'disposed' },
+          })
         }
       }
 
       pendingInternals.clear()
-
-      for (const dispose of keyPressDisposers) {
-        dispose()
-      }
-
-      keyPressDisposers.clear()
+      nodeElements.clear()
+      nodeRefCallbacks.clear()
+      pendingGenerations.clear()
       stateListeners.clear()
       stateQueue.length = 0
-
-      if (canvas.value !== undefined) {
-        resizeObserver.unobserve(canvas.value)
-      }
-
-      resizeObserver.disconnect()
-      globalThis.removeEventListener('keydown', onKeyDown, true)
-      globalThis.removeEventListener('blur', onWindowBlur)
-      globalThis.removeEventListener('keyup', onWindowKeyUp, true)
-      cleanupPreview()
       pressedKeys.clear()
-    })
+
+      return {
+        next: 0,
+        steps: [
+          ...resources.map((resource): DisposalStep => ({
+            kind: 'resource',
+            resource,
+          })),
+          ...clears.map((resource): DisposalStep => ({
+            kind: 'resource',
+            resource,
+          })),
+          ...notifications,
+          ...liveClaims.map((claim): DisposalStep => ({
+            kind: 'connection-claim',
+            claim,
+          })),
+          ...livePorts.map((port): DisposalStep => ({
+            kind: 'terminal',
+            port,
+          })),
+          ...originalClaims.map((claim): DisposalStep => ({
+            kind: 'connection-claim',
+            claim,
+          })),
+        ],
+      }
+    }
+
+    const applyDisposalResource = (resource: DisposalResource): void => {
+      switch (resource.kind) {
+        case 'request-frame': {
+          resource.taken.progress = { kind: 'resolve' }
+          cancelRequestFrame(resource.taken.frame)
+          break
+        }
+
+        case 'key-observer': {
+          resource.dispose()
+          break
+        }
+
+        case 'unobserve-canvas': {
+          resource.observer.unobserve(resource.element)
+          break
+        }
+
+        case 'disconnect-observer': {
+          resource.observer.disconnect()
+          break
+        }
+
+        case 'remove-keydown': {
+          resource.target.removeEventListener(
+            'keydown',
+            resource.listener,
+            true
+          )
+          break
+        }
+
+        case 'remove-keyup': {
+          resource.target.removeEventListener('keyup', resource.listener, true)
+          break
+        }
+
+        case 'remove-blur': {
+          resource.target.removeEventListener('blur', resource.listener)
+          break
+        }
+
+        case 'connection-capture': {
+          releaseConnectionPress(resource.press)
+          break
+        }
+
+        case 'session-capture': {
+          if (resource.target.hasPointerCapture?.(resource.pointerId)) {
+            resource.target.releasePointerCapture?.(resource.pointerId)
+          }
+
+          break
+        }
+
+        case 'remove-node-transform': {
+          resource.element.style.removeProperty('transform')
+          break
+        }
+
+        case 'resize-style': {
+          resource.element.style.setProperty(resource.property, resource.value)
+          break
+        }
+
+        case 'clear-session-view': {
+          if (session.value === resource.view) {
+            session.value = undefined
+          }
+
+          break
+        }
+
+        case 'clear-retained-view': {
+          if (clickConnection.value === resource.view) {
+            clickConnection.value = undefined
+          }
+
+          break
+        }
+
+        default: {
+          const exhausted: never = resource
+
+          return exhausted
+        }
+      }
+    }
+
+    const disposeComponent = (): void => {
+      capturedDisposal ??= captureDisposal()
+      const packet = capturedDisposal
+
+      while (packet.next < packet.steps.length) {
+        const step = packet.steps[packet.next]
+        packet.next += 1
+
+        if (step === undefined) {
+          continue
+        }
+
+        switch (step.kind) {
+          case 'resource': {
+            let failure: { cause: unknown } | undefined
+
+            try {
+              applyDisposalResource(step.resource)
+            } catch (error) {
+              failure = { cause: error }
+            } finally {
+              if (failure !== undefined) {
+                disposeComponent()
+              }
+            }
+
+            if (failure !== undefined) {
+              throw failure.cause
+            }
+
+            break
+          }
+
+          case 'terminal': {
+            deliverTerminal(step.port)
+            break
+          }
+
+          case 'connection-claim': {
+            finishConnectionClaim(
+              step.claim,
+              { kind: 'cancelled', reason: 'superseded' },
+              packet
+            )
+            break
+          }
+
+          case 'request-settlement': {
+            resolveTakenRequest(step.taken)
+            break
+          }
+
+          case 'internals-settlement': {
+            step.settle(step.result)
+            break
+          }
+
+          default: {
+            const exhausted: never = step
+
+            return exhausted
+          }
+        }
+      }
+    }
+
+    onBeforeUnmount(disposeComponent)
 
     return () => {
-      const connection =
-        session.value?.kind === 'connection'
-          ? session.value
-          : clickConnection.value
+      const renderOwner = currentConnectionPreviewOwner()
 
-      const connectionPreview =
-        connection === undefined
-          ? []
-          : [
-              props.connectionPreview === undefined
-                ? h('path', {
-                    class: 'flow-vue-connection-preview',
-                    'data-testid': 'flow-connection-preview',
-                    d: straightEdgePath(connection.start, connection.pointer),
-                  })
-                : h(props.connectionPreview, {
-                    preview: connectionPreviewState(connection),
-                  }),
-            ]
+      const renderPreview =
+        renderOwner === undefined || props.connectionPreview === undefined
+          ? null
+          : connectionPreviewState(renderOwner)
+
+      if (stateDisposed) {
+        return null
+      }
+
+      let connection: ConnectionData | undefined
+
+      if (renderOwner !== undefined && previewOwnerLive(renderOwner)) {
+        connection =
+          renderOwner.kind === 'retained'
+            ? renderOwner.source.data
+            : renderOwner.active
+      }
+
+      const connectionPreview = []
+
+      if (connection !== undefined) {
+        if (props.connectionPreview === undefined) {
+          connectionPreview.push(
+            h('path', {
+              class: 'flow-vue-connection-preview',
+              'data-testid': 'flow-connection-preview',
+              d: straightEdgePath(connection.start, connection.pointer),
+            })
+          )
+        } else if (renderPreview !== null) {
+          connectionPreview.push(
+            h(props.connectionPreview, { preview: renderPreview })
+          )
+        }
+      }
 
       const connectionKeyboardStatus =
         connection?.pointerId === -1
@@ -5562,6 +8292,10 @@ export const FlowCanvas = defineComponent({
         'div',
         {
           ref: (element: Element | ComponentPublicInstance | null) => {
+            if (stateDisposed) {
+              return
+            }
+
             if (element instanceof HTMLElement && canvas.value !== element) {
               if (canvas.value !== undefined) {
                 resizeObserver.unobserve(canvas.value)
@@ -5576,6 +8310,7 @@ export const FlowCanvas = defineComponent({
           },
           class: 'flow-vue-canvas',
           'data-testid': 'flow-canvas',
+          // eslint-disable-next-line complexity -- Movement dispatches the closed session union with owner checks after observable effects.
           onPointermove: (event: PointerEvent) => {
             if (!prepareConnectionMove(event)) {
               return
@@ -5583,27 +8318,43 @@ export const FlowCanvas = defineComponent({
 
             const active = session.value
 
+            const retained = clickConnection.value
+
             if (
               active === undefined &&
-              clickConnection.value !== undefined &&
+              retained !== undefined &&
               canvas.value !== undefined
             ) {
-              autoPanConnection(event.clientX, event.clientY)
-
-              const bounds = canvas.value.getBoundingClientRect()
-              const viewport = activeViewport.value
-              const pending = clickConnection.value
-
-              clickConnection.value = {
-                ...pending,
-                pointer: {
-                  x: (event.clientX - bounds.left - viewport.x) / viewport.zoom,
-                  y: (event.clientY - bounds.top - viewport.y) / viewport.zoom,
-                },
+              const continuation: ConnectionMovement = {
+                kind: 'retained',
+                source: retained,
               }
-              emit('connectProgress', {
-                preview: connectionPreviewState(clickConnection.value),
-              })
+
+              if (
+                !autoPanConnection(continuation, event.clientX, event.clientY)
+              ) {
+                return
+              }
+
+              const pointer = clientToFlow(event.clientX, event.clientY)
+
+              const updated: RetainedSource = {
+                ...retained,
+                data: { ...retained.data, pointer },
+              }
+
+              clickConnection.value = updated
+
+              const initiating: ConnectionPreviewOwner = {
+                kind: 'retained',
+                source: updated,
+              }
+
+              const preview = connectionPreviewState(initiating)
+
+              if (preview !== null && previewOwnerLive(initiating)) {
+                emit('connectProgress', { preview })
+              }
 
               return
             }
@@ -5617,19 +8368,32 @@ export const FlowCanvas = defineComponent({
             }
 
             if (active.kind === 'pan') {
-              updateViewport(
-                panViewport(active.viewportStart, {
-                  x: event.clientX - active.startX,
-                  y: event.clientY - active.startY,
-                })
-              )
+              if (active.owner.state.kind === 'live') {
+                writeViewport(
+                  panViewport(active.viewportStart, {
+                    x: event.clientX - active.startX,
+                    y: event.clientY - active.startY,
+                  }),
+                  { kind: 'pan', active }
+                )
+              }
 
               return
             }
 
             if (active.kind === 'selection') {
               const pointer = pointerInFlow(event)
-              session.value = { ...active, pointer }
+              const updated: OwnedSelection = { ...active, pointer }
+              session.value = updated
+
+              if (
+                stateDisposed ||
+                session.value !== updated ||
+                active.owner.state.kind !== 'live'
+              ) {
+                return
+              }
+
               emit('selectionProgress', {
                 rect: {
                   x: Math.min(active.start.x, pointer.x),
@@ -5638,6 +8402,15 @@ export const FlowCanvas = defineComponent({
                   height: Math.abs(active.start.y - pointer.y),
                 },
               })
+
+              if (
+                stateDisposed ||
+                session.value !== updated ||
+                active.owner.state.kind !== 'live'
+              ) {
+                return
+              }
+
               emit('selectionDrag', {
                 rect: {
                   x: Math.min(active.start.x, pointer.x),
@@ -5661,58 +8434,47 @@ export const FlowCanvas = defineComponent({
             }
 
             if (active.kind === 'connection') {
-              autoPanConnection(event.clientX, event.clientY)
+              if (active.route !== 'pointer') {
+                return
+              }
 
-              const bounds = canvas.value?.getBoundingClientRect()
+              const continuation: ConnectionMovement = {
+                kind: 'physical',
+                active,
+              }
 
-              if (bounds !== undefined) {
-                const viewport = activeViewport.value
+              if (
+                !autoPanConnection(continuation, event.clientX, event.clientY)
+              ) {
+                return
+              }
 
-                session.value = {
-                  ...active,
-                  pointer: {
-                    x:
-                      (event.clientX - bounds.left - viewport.x) /
-                      viewport.zoom,
-                    y:
-                      (event.clientY - bounds.top - viewport.y) / viewport.zoom,
-                  },
-                }
-                const updated = session.value
+              const updated: PhysicalConnection = {
+                ...active,
+                pointer: clientToFlow(event.clientX, event.clientY),
+              }
 
-                if (updated?.kind === 'connection') {
-                  const preview = connectionPreviewState(updated)
+              session.value = updated
 
-                  if (updated.reconnect === undefined) {
-                    emit('connectProgress', { preview })
-                  } else {
-                    emit('reconnectProgress', { preview })
-                  }
+              const initiating: ConnectionPreviewOwner = {
+                kind: 'physical',
+                active: updated,
+              }
+
+              const preview = connectionPreviewState(initiating)
+
+              if (preview !== null && previewOwnerLive(initiating)) {
+                if (updated.reconnect === undefined) {
+                  emit('connectProgress', { preview })
+                } else {
+                  emit('reconnectProgress', { preview })
                 }
               }
 
               return
             }
 
-            if (active.kind !== 'node') {
-              return
-            }
-
-            const dx =
-              (event.clientX - active.startX) / activeViewport.value.zoom
-
-            const dy =
-              (event.clientY - active.startY) / activeViewport.value.zoom
-
-            if (Math.hypot(dx, dy) >= 8) {
-              selectNodeForDrag(active.node)
-            }
-
-            active.element.style.transform = `translate(${dx}px, ${dy}px)`
-            emit('nodeDrag', {
-              node: active.node,
-              position: { x: active.originX + dx, y: active.originY + dy },
-            })
+            moveNode(active, event)
           },
           onPointerdown: onCanvasPointerDown,
           onMousedown: (event: MouseEvent) => {
@@ -5808,13 +8570,24 @@ export const FlowCanvas = defineComponent({
           onPointerup: onPointerUp,
           onWheel,
           onPointercancel: (event: PointerEvent) => {
-            if (session.value?.pointerId === event.pointerId) {
+            if (
+              !stateDisposed &&
+              session.value?.pointerId === event.pointerId
+            ) {
               cancelActiveSession('pointer-cancel')
             }
           },
           onLostpointercapture: (event: PointerEvent) => {
             if (
+              !stateDisposed &&
               session.value?.pointerId === event.pointerId &&
+              ((session.value.kind !== 'connection-pending' &&
+                session.value.kind !== 'reconnection-pending') ||
+                session.value.press.state === 'held') &&
+              (session.value.kind !== 'connection' ||
+                (connectionOwner(session.value).state.kind === 'live' &&
+                  (session.value.route !== 'pointer' ||
+                    session.value.press.state === 'held'))) &&
               event.target === session.value.captureTarget &&
               !session.value.captureTarget.hasPointerCapture(event.pointerId)
             ) {
@@ -5856,6 +8629,10 @@ export const FlowCanvas = defineComponent({
               h('div', {
                 class: 'flow-vue-viewport-portal-target',
                 ref: (element: Element | ComponentPublicInstance | null) => {
+                  if (stateDisposed) {
+                    return
+                  }
+
                   viewportPortalTarget.value =
                     element instanceof HTMLElement ? element : null
                 },
@@ -5878,6 +8655,10 @@ export const FlowCanvas = defineComponent({
           h('div', {
             class: 'flow-vue-node-toolbar-layer',
             ref: (element: Element | ComponentPublicInstance | null) => {
+              if (stateDisposed) {
+                return
+              }
+
               toolbarOverlayTarget.value =
                 element instanceof HTMLElement ? element : null
             },

@@ -36,6 +36,11 @@ import '../../packages/vue/dist/style.css'
 import '../../packages/foldkit/dist/style.css'
 
 export interface Options {
+  geometry?: boolean
+  group?: boolean
+  acknowledgeNode?: boolean
+  parentOrigin?: boolean
+  nodeThreshold?: number | undefined
   threshold?: number | undefined
   zoom?: number
   click?: boolean
@@ -95,6 +100,10 @@ let state: () => Promise<FlowSnapshot | null> = () => Promise.resolve(null)
 
 type ThresholdInput = number | string | null | undefined
 
+let setNodeThreshold: (value: ThresholdInput) => void = () => {
+  throw new Error('Vue is not mounted')
+}
+
 let setThreshold: (value: ThresholdInput) => void = () => {
   throw new Error('Vue is not mounted')
 }
@@ -108,6 +117,8 @@ let events: string[] = []
 let changes: FlowChange[] = []
 
 let captureEvents: string[] = []
+
+let nodeClicks: string[] = []
 
 let errors: string[] = []
 
@@ -152,6 +163,7 @@ export const frames = (count = 6): Promise<boolean> =>
     })
   )
 
+// eslint-disable-next-line complexity -- the fixture supports the three public host constructors.
 export const mount = async (
   host: 'vanilla' | 'vue' | 'foldkit',
   options: Options = {}
@@ -167,6 +179,45 @@ export const mount = async (
   root.replaceChildren()
   root.style.cssText = 'width:960px;height:640px;position:relative'
   fixture = initialDocument()
+
+  if (options.geometry) {
+    fixture = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            id: 'parent',
+            label: '',
+            position: options.parentOrigin
+              ? { x: 150, y: 250 }
+              : { x: 100, y: 200 },
+            size: { width: 100, height: 100 },
+            origin: options.parentOrigin ? [0.5, 0.5] : [0, 0],
+          },
+          {
+            id: 'source',
+            label: '',
+            selectable: false,
+            parentId: 'parent',
+            position: { x: 30, y: 40 },
+            size: { width: 20, height: 10 },
+            origin: [0.5, 0.5],
+          },
+        ],
+        edges: [],
+      })
+    )
+  }
+
+  if (options.group) {
+    fixture = {
+      ...fixture,
+      nodes: fixture.nodes.map((node) => ({
+        ...node,
+        selected: node.id === 'source' || node.id === 'source-next',
+        origin: [0.5, 0.5],
+      })),
+    }
+  }
 
   if (!options.edge) {
     fixture = { ...fixture, edges: [] }
@@ -186,15 +237,36 @@ export const mount = async (
   errors = []
   validations = 0
   captureEvents = []
+  nodeClicks = []
   captureAtStart = []
   owner = null
   pointerId = -1
   const viewport = { x: 80, y: 80, zoom: options.zoom ?? 1 }
 
+  const observeChange = (change: FlowChange) => {
+    changes.push(change)
+
+    if (options.acknowledgeNode && change.kind === 'node-position') {
+      fixture = {
+        ...fixture,
+        nodes: fixture.nodes.map((node) =>
+          node.id === change.nodeId
+            ? { ...node, position: change.position }
+            : node
+        ),
+      }
+      replace(fixture)
+    }
+  }
+
   const record = (name: string) => {
     events.push(name)
 
-    if (name === 'connectStart' || name === 'reconnectStart') {
+    if (
+      name === 'connectStart' ||
+      name === 'reconnectStart' ||
+      name === 'nodeStart'
+    ) {
       captureAtStart.push(owner?.hasPointerCapture(pointerId) ?? false)
 
       if (options.reentrant === 'dispose') {
@@ -211,7 +283,8 @@ export const mount = async (
     ;({ pointerId } = event)
     const { target } = event
     owner =
-      host === 'vue' && target instanceof Element
+      (host === 'vue' || options.nodeThreshold !== undefined) &&
+      target instanceof Element
         ? (target.closest('[data-testid="flow-edge-reconnect-anchor"]') ??
           target.closest('[data-node-id]'))
         : root.querySelector('[data-testid="flow-canvas"]')
@@ -229,11 +302,22 @@ export const mount = async (
     }
   }
 
+  const clickTarget = (event: MouseEvent) => {
+    if (event.target instanceof Element) {
+      nodeClicks.push(
+        event.target.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ??
+          'pane'
+      )
+    }
+  }
+
+  root.addEventListener('click', clickTarget, true)
   root.addEventListener('pointerdown', down, true)
   root.addEventListener('gotpointercapture', got, true)
   root.addEventListener('lostpointercapture', lost, true)
 
   const clear = () => {
+    root.removeEventListener('click', clickTarget, true)
     root.removeEventListener('pointerdown', down, true)
     root.removeEventListener('gotpointercapture', got, true)
     root.removeEventListener('lostpointercapture', lost, true)
@@ -242,6 +326,7 @@ export const mount = async (
   if (host === 'vanilla') {
     const controller = mountFlow(root, fixture, {
       documentMode: options.controlled ? 'controlled' : 'uncontrolled',
+      nodeDragThreshold: options.nodeThreshold,
       connectionDragThreshold: options.threshold,
       connectOnClick: options.click ?? false,
       connectionMode: options.loose ? 'loose' : 'strict',
@@ -255,6 +340,9 @@ export const mount = async (
 
         return true
       },
+      onNodeDragStart: () => record('nodeStart'),
+      onNodeDrag: () => record('nodeMove'),
+      onNodeDragStop: () => record('nodeStop'),
       onConnectStart: () => record('connectStart'),
       onConnectEnd: () => record('connectEnd'),
       onConnect: () => record('connect'),
@@ -263,7 +351,7 @@ export const mount = async (
       onReconnect: () => record('reconnect'),
     })
 
-    controller.subscribe((change) => changes.push(change))
+    controller.subscribe(observeChange)
     dispose = () => {
       controller.destroy()
       clear()
@@ -276,6 +364,7 @@ export const mount = async (
   } else if (host === 'vue') {
     const documentState = shallowRef(fixture)
     const threshold = shallowRef(options.threshold)
+    const nodeThreshold = shallowRef(options.nodeThreshold)
     const component = shallowRef<{ editor: FlowEditor }>()
 
     const app = createApp({
@@ -288,7 +377,7 @@ export const mount = async (
           viewportMode: 'uncontrolled',
           connectOnClick: options.click ?? false,
           connectionMode: options.loose ? 'loose' : 'strict',
-          onChange: (change: FlowChange) => changes.push(change),
+          onChange: observeChange,
           isValidConnection: () => {
             validations += 1
 
@@ -297,6 +386,9 @@ export const mount = async (
           onViewportStart: () => viewportEvents.push('start'),
           onViewportChange: () => viewportEvents.push('change'),
           onViewportEnd: () => viewportEvents.push('end'),
+          onNodeDragStart: () => record('nodeStart'),
+          onNodeDrag: () => record('nodeMove'),
+          onNodeDragStop: () => record('nodeStop'),
           onConnectStart: () => record('connectStart'),
           onConnectEnd: () => record('connectEnd'),
           onConnect: () => record('connect'),
@@ -306,6 +398,10 @@ export const mount = async (
           onConnectProgress: () => record('connectProgress'),
           onReconnectProgress: () => record('reconnectProgress'),
         } satisfies InstanceType<typeof FlowCanvas>['$props']
+
+        if (nodeThreshold.value !== undefined) {
+          Object.assign(properties, { nodeDragThreshold: nodeThreshold.value })
+        }
 
         if (threshold.value !== undefined) {
           Object.assign(properties, {
@@ -326,6 +422,10 @@ export const mount = async (
 
     replace = (document) => {
       documentState.value = document
+    }
+
+    setNodeThreshold = (value) => {
+      Reflect.set(nodeThreshold, 'value', value)
     }
 
     setThreshold = (value) => {
@@ -354,6 +454,7 @@ export const mount = async (
       {
         ...defaultInteractionOptions,
         panOnDrag: options.pan ?? false,
+        nodeDragThreshold: options.nodeThreshold,
         connectionDragThreshold: options.threshold,
         connectOnClick: options.click ?? false,
         connectionMode: options.loose ? 'loose' : 'strict',
@@ -366,7 +467,7 @@ export const mount = async (
       viewportEvents.push(event.kind)
     )
     active.ports.changes.subscribe((change) =>
-      changes.push(Schema.decodeUnknownSync(FlowChangeSchema)(change))
+      observeChange(Schema.decodeUnknownSync(FlowChangeSchema)(change))
     )
     active.ports.interactionEvents.subscribe((items) => {
       rawEvents.push(...items)
@@ -374,6 +475,9 @@ export const mount = async (
       for (const event of items) {
         const names = new Map<string, string>(
           Object.entries({
+            onNodeDragStart: 'nodeStart',
+            onNodeDrag: 'nodeMove',
+            onNodeDragStop: 'nodeStop',
             onConnectStart: 'connectStart',
             onConnectEnd: 'connectEnd',
             onConnect: 'connect',
@@ -437,6 +541,24 @@ export const mount = async (
       ';position:relative;width:960px;height:640px;overflow:hidden;touch-action:none'
   }
 
+  if (options.geometry) {
+    const sizing = document.createElement('style')
+    sizing.textContent = `
+      #app [data-node-id] { box-sizing: border-box !important; padding: 0 !important; border: 0 !important; min-width: 0 !important; min-height: 0 !important; }
+      #app [data-node-id="source"] { width: 20px !important; height: 10px !important; }
+      #app [data-node-id="parent"] { width: 100px !important; height: 100px !important; }
+    `
+    root.append(sizing)
+
+    for (const node of root.querySelectorAll<HTMLElement>('[data-node-id]')) {
+      node.style.boxSizing = 'border-box'
+      node.style.padding = '0'
+      node.style.border = '0'
+      node.style.minWidth = '0'
+      node.style.minHeight = '0'
+    }
+  }
+
   await frames()
 }
 
@@ -449,6 +571,7 @@ export const read = async () => {
     events: [...events],
     changes: [...changes],
     captureEvents: [...captureEvents],
+    nodeClicks: [...nodeClicks],
     captureAtStart: [...captureAtStart],
     captured: owner?.hasPointerCapture(pointerId) ?? false,
     pointerId,
@@ -562,7 +685,15 @@ const failedCapture = () => {
   throw new DOMException('Feature capture failure', 'NotFoundError')
 }
 
-export const captureFailure = (enabled: boolean) => {
+const refusedCapture = () => false
+
+export const captureFailure = (enabled: boolean | 'false') => {
+  if (enabled === 'false') {
+    Element.prototype.setPointerCapture = refusedCapture
+
+    return
+  }
+
   Element.prototype.setPointerCapture = enabled ? failedCapture : nativeCapture
 }
 
@@ -623,6 +754,8 @@ export const invalidVanillaHost = (value: ThresholdInput) => {
   })
 }
 
+export const restoreEdgeSelection = () => replace(fixture)
+
 export const acknowledge = () => {
   const proposal = changes.findLast(
     (change) => change.kind === 'edge-reconnect'
@@ -679,4 +812,126 @@ export const overlapLabel = async () => {
     ),
   })
   await frames()
+}
+
+export const nodeThreshold = (value: ThresholdInput) => setNodeThreshold(value)
+
+export const nodeMutation = async (
+  kind:
+    | 'position'
+    | 'selection'
+    | 'origin'
+    | 'hidden'
+    | 'draggable'
+    | 'remove'
+    | 'ancestor-move'
+    | 'ancestor-hidden'
+    | 'ancestry'
+) => {
+  const snapshot = await state()
+
+  if (snapshot === null) {
+    throw new Error('Missing mounted state')
+  }
+
+  replace({
+    ...snapshot.document,
+    nodes: snapshot.document.nodes.flatMap((node) => {
+      if (node.id === 'parent' && kind === 'ancestor-move') {
+        return [
+          { ...node, position: { x: node.position.x + 1, y: node.position.y } },
+        ]
+      }
+
+      if (node.id === 'parent' && kind === 'ancestor-hidden') {
+        return [{ ...node, hidden: true }]
+      }
+
+      if (node.id === 'source' && kind === 'ancestry') {
+        const { parentId: _parentId, ...rootNode } = node
+
+        return [rootNode]
+      }
+
+      if (node.id !== 'source' || kind.startsWith('ancestor')) {
+        return [node]
+      }
+
+      if (kind === 'remove') {
+        return []
+      }
+
+      if (kind === 'position') {
+        return [{ ...node, position: { x: 65, y: 70 } }]
+      }
+
+      if (kind === 'selection') {
+        return [{ ...node, selected: true }]
+      }
+
+      if (kind === 'origin') {
+        return [{ ...node, origin: [0.5, 0.5] }]
+      }
+
+      if (kind === 'hidden') {
+        return [{ ...node, hidden: true }]
+      }
+
+      return [{ ...node, draggable: false }]
+    }),
+    edges: [],
+  })
+  await nextTick()
+}
+
+export const invalidNodeConstructors = async (
+  host: 'vanilla' | 'vue' | 'foldkit'
+) => {
+  const rejected: boolean[] = []
+  const values = [-1, null, '5', true, false, Number.NaN, Infinity, -Infinity]
+
+  for (const value of values) {
+    const options: Options = { nodeThreshold: 1 }
+    Reflect.set(options, 'nodeThreshold', value)
+
+    try {
+      // eslint-disable-next-line no-await-in-loop -- Each invalid mount owns and releases the same fixture container.
+      await mount(host, options)
+      rejected.push(errors.length > 0)
+    } catch {
+      rejected.push(true)
+    }
+
+    if (host === 'vanilla') {
+      const root = document.querySelector<HTMLElement>('#app')
+
+      if (root === null) {
+        throw new Error('Missing root')
+      }
+
+      const hostOptions = {
+        documentMode: 'uncontrolled' as const,
+        runEffect: Effect.runSync,
+        nodeDragThreshold: 1,
+        viewport: {
+          mode: 'uncontrolled' as const,
+          initial: { x: 0, y: 0, zoom: 1 },
+          limits: { minZoom: 0.5, maxZoom: 2 },
+        },
+      }
+
+      Reflect.set(hostOptions, 'nodeDragThreshold', value)
+
+      for (const constructor of [createFlowHost, acquireFlowHost]) {
+        try {
+          constructor(root, fixture, hostOptions)
+          rejected.push(false)
+        } catch {
+          rejected.push(true)
+        }
+      }
+    }
+  }
+
+  return rejected
 }

@@ -1,7 +1,6 @@
 import {
   bezierEdgePath,
   applyDefaultEdgeOptions,
-  createFlowGraph,
   edgeAttachmentPosition,
   inferHandleMeasurement,
   edgeLabelPosition,
@@ -24,10 +23,13 @@ import type {
   MeasuredNode,
   NodeId,
   XYPosition,
+  Viewport,
 } from '@flow/core'
+import { Effect, Exit, Scope } from 'effect'
 
 import type {
   FlowEdgeRenderContext,
+  FlowHostOptions,
   FlowEdgeRenderer,
   FlowEdgeRendererInstance,
 } from './mount-flow.ts'
@@ -88,11 +90,115 @@ interface EdgeElements {
   readonly targetAnchor: SVGCircleElement
 }
 
-export const createEdgeRenderer = (
+interface EdgeEntry {
+  readonly elements: EdgeElements
+  readonly scope: Scope.Closeable
+  readonly type: string | undefined
+  label: HTMLDivElement | undefined
+  geometry:
+    | {
+        readonly edge: FlowDocument['edges'][number]
+        readonly context: FlowEdgeRenderContext
+      }
+    | undefined
+  state: 'owned' | 'retired'
+  renderer:
+    | { readonly kind: 'awaiting-factory' }
+    | { readonly kind: 'default' }
+    | { readonly kind: 'custom'; readonly instance: FlowEdgeRendererInstance }
+}
+
+type ReadyEdgeEntry = EdgeEntry & {
+  renderer: Exclude<
+    EdgeEntry['renderer'],
+    { readonly kind: 'awaiting-factory' }
+  >
+}
+
+type EdgeSlot =
+  | { readonly kind: 'ready'; readonly entry: ReadyEdgeEntry }
+  | {
+      readonly kind: 'reserved'
+      readonly entry: EdgeEntry
+      readonly operation: 'geometry' | 'remove'
+    }
+
+type ExpectedEdgeSlot =
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'present'; readonly slot: EdgeSlot }
+
+type InitialEdgeReservation = Extract<
+  EdgeSlot,
+  { readonly kind: 'reserved' }
+> & { readonly operation: 'geometry'; readonly old: undefined }
+
+type EdgeSlotInstall =
+  | {
+      readonly expected: Extract<ExpectedEdgeSlot, { readonly kind: 'absent' }>
+      readonly next: InitialEdgeReservation
+    }
+  | {
+      readonly expected: Extract<ExpectedEdgeSlot, { readonly kind: 'present' }>
+      readonly next: EdgeSlot
+    }
+
+type ProjectionDependency =
+  | { readonly kind: 'node'; readonly id: NodeId }
+  | { readonly kind: 'edge'; readonly id: EdgeId }
+  | {
+      readonly kind: 'graph' | 'visibility' | 'viewport' | 'toolbar' | 'minimap'
+    }
+
+interface Projection<Origin, NodeSlot, UIHandle> {
+  readonly origin: Origin
+  readonly graph: FlowGraphView
+  readonly inputs: {
+    readonly document: FlowDocument
+    readonly measurements: ReadonlyMap<NodeId, MeasuredNode>
+    readonly positions: ReadonlyMap<NodeId, XYPosition>
+    readonly viewport: Viewport
+    readonly pane: {
+      readonly x: number
+      readonly y: number
+      readonly width: number
+      readonly height: number
+    }
+    readonly renderOnlyVisible: boolean
+    readonly nodeRenderers: ReadonlyMap<
+      string,
+      NonNullable<FlowHostOptions['nodeRenderers']>[string]
+    >
+    readonly edgeRenderers: ReadonlyMap<
+      string,
+      {
+        readonly geometry: FlowEdgeRenderer['geometry']
+        readonly render: FlowEdgeRenderer['render']
+      }
+    >
+    readonly defaults: FlowDefaultEdgeOptions | undefined
+    readonly ui: FlowHostOptions['ui']
+    readonly uiHandle: UIHandle
+  }
+  readonly cohort: {
+    readonly nodes: ReadonlyMap<NodeId, NodeSlot>
+    readonly edges: ReadonlyMap<EdgeId, EdgeSlot>
+  }
+  readonly entryClaims: {
+    readonly nodes: Map<NodeId, NodeSlot>
+    readonly edges: Map<EdgeId, EdgeSlot>
+  }
+}
+
+export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   viewport: HTMLElement,
-  renderers: Readonly<Record<string, FlowEdgeRenderer>> | undefined,
-  defaultEdgeOptions: FlowDefaultEdgeOptions | undefined,
-  readMeasurements: () => ReadonlyMap<NodeId, MeasuredNode>
+  rendererScope: Scope.Scope,
+  runEffect: <A>(effect: Effect.Effect<A>) => A,
+  matches: (
+    pass: Projection<Origin, NodeSlot, UIHandle>,
+    dependency: ProjectionDependency
+  ) => boolean,
+  hostClosing: () => boolean,
+  cleanupFailures: unknown[]
 ) => {
   nextMarkerScope += 1
   const markerScope = nextMarkerScope
@@ -113,13 +219,92 @@ export const createEdgeRenderer = (
   viewport.append(anchorLayer)
   viewport.append(labelLayer)
 
-  const edges = new Map<EdgeId, EdgeElements>()
-  const labels = new Map<EdgeId, HTMLDivElement>()
+  const slots = new Map<EdgeId, EdgeSlot>()
+  let closed = false
 
-  const customRenderers = new Map<
-    EdgeId,
-    { readonly type: string; readonly renderer: FlowEdgeRendererInstance }
-  >()
+  const installReservation = (
+    id: EdgeId,
+    transition: EdgeSlotInstall,
+    pass: Projection<Origin, NodeSlot, UIHandle>
+  ): boolean => {
+    if (closed || hostClosing()) {
+      return false
+    }
+
+    const slotMatches =
+      transition.expected.kind === 'absent'
+        ? !slots.has(id)
+        : slots.get(id) === transition.expected.slot
+
+    if (!slotMatches) {
+      return false
+    }
+
+    slots.set(id, transition.next)
+    pass.entryClaims.edges.set(id, transition.next)
+
+    return true
+  }
+
+  const reserveGeometry = (
+    id: EdgeId,
+    expected: EdgeSlot | undefined,
+    entry: EdgeEntry,
+    pass: Projection<Origin, NodeSlot, UIHandle>
+  ): Extract<EdgeSlot, { readonly kind: 'reserved' }> | undefined => {
+    if (expected === undefined) {
+      const initial: InitialEdgeReservation = {
+        kind: 'reserved',
+        operation: 'geometry',
+        old: undefined,
+        entry,
+      }
+
+      return installReservation(
+        id,
+        {
+          expected: { kind: 'absent' },
+          next: initial,
+        },
+        pass
+      )
+        ? initial
+        : undefined
+    }
+
+    const present: Extract<EdgeSlot, { readonly kind: 'reserved' }> = {
+      kind: 'reserved',
+      operation: 'geometry',
+      entry,
+    }
+
+    return installReservation(
+      id,
+      {
+        expected: { kind: 'present', slot: expected },
+        next: present,
+      },
+      pass
+    )
+      ? present
+      : undefined
+  }
+
+  const closeEntry = (entry: EdgeEntry): void => {
+    if (entry.state === 'retired') {
+      return
+    }
+
+    entry.state = 'retired'
+
+    try {
+      runEffect(Scope.close(entry.scope, Exit.void))
+    } finally {
+      entry.elements.group.remove()
+      entry.elements.anchorGroup.remove()
+      entry.label?.remove()
+    }
+  }
 
   const markers = new Map<string, SVGMarkerElement>()
   let visibleEdgeIds: ReadonlySet<EdgeId> | null = null
@@ -164,14 +349,91 @@ export const createEdgeRenderer = (
     return id
   }
 
-  // Reconciliation covers element reuse, visibility, path variants, and SVG decorations.
+  const allocateEntry = (edge: FlowDocument['edges'][number]): EdgeEntry => {
+    const group = globalThis.document.createElementNS(svgNamespace, 'g')
+    group.classList.add('flow-edge-group')
+    group.dataset.edgeId = edge.id
+    group.dataset.testid = 'flow-edge-group'
+
+    const anchorGroup = globalThis.document.createElementNS(svgNamespace, 'g')
+
+    anchorGroup.classList.add('flow-edge-anchor-group')
+    anchorGroup.dataset.edgeId = edge.id
+
+    const path = globalThis.document.createElementNS(svgNamespace, 'path')
+    path.classList.add('flow-edge-path')
+    path.dataset.edgeId = edge.id
+    path.dataset.testid = 'flow-edge-path'
+
+    const hit = globalThis.document.createElementNS(svgNamespace, 'path')
+    hit.classList.add('flow-edge-hit')
+    hit.dataset.testid = 'flow-edge-hit'
+
+    const visual = globalThis.document.createElementNS(svgNamespace, 'g')
+    visual.classList.add('flow-edge-custom-visual')
+    visual.setAttribute('aria-hidden', 'true')
+    visual.setAttribute('pointer-events', 'none')
+
+    const sourceAnchor = globalThis.document.createElementNS(
+      svgNamespace,
+      'circle'
+    )
+
+    sourceAnchor.classList.add('flow-edge-reconnect-anchor')
+    sourceAnchor.dataset.endpoint = 'source'
+    sourceAnchor.dataset.testid = 'flow-edge-reconnect-anchor'
+    sourceAnchor.setAttribute('r', '8')
+
+    const targetAnchor = globalThis.document.createElementNS(
+      svgNamespace,
+      'circle'
+    )
+
+    targetAnchor.classList.add('flow-edge-reconnect-anchor')
+    targetAnchor.dataset.endpoint = 'target'
+    targetAnchor.dataset.testid = 'flow-edge-reconnect-anchor'
+    targetAnchor.setAttribute('r', '8')
+
+    group.append(path, hit, visual)
+    anchorGroup.append(sourceAnchor, targetAnchor)
+
+    const elements: EdgeElements = {
+      anchorGroup,
+      group,
+      hit,
+      path,
+      visual,
+      sourceAnchor,
+      targetAnchor,
+    }
+
+    const scope = runEffect(Scope.fork(rendererScope, 'sequential'))
+
+    return {
+      elements,
+      scope,
+      type: edge.type,
+      label: undefined,
+      geometry: undefined,
+      state: 'owned',
+      renderer: { kind: 'awaiting-factory' },
+    }
+  }
+
   // eslint-disable-next-line complexity
   const reconcile = (
-    document: FlowDocument,
-    renderedPositions: ReadonlyMap<NodeId, XYPosition>,
-    suppliedGraph?: FlowGraphView,
-    onlyEdges?: ReadonlySet<EdgeId>
+    pass: Projection<Origin, NodeSlot, UIHandle>,
+    onlyEdges?: ReadonlySet<EdgeId>,
+    projectionOnly = false
   ) => {
+    if (closed || hostClosing()) {
+      return { added: 0, updated: 0, removed: 0, deferred: 0 }
+    }
+
+    const { document, measurements } = pass.inputs
+    const { graph } = pass
+    const passCurrent = (): boolean => matches(pass, { kind: 'visibility' })
+
     const visible = new Set<EdgeId>()
     const visibleLabels = new Set<EdgeId>()
     const visibleMarkers = new Set<string>()
@@ -181,19 +443,13 @@ export const createEdgeRenderer = (
     let deferred = 0
     let previousGroup: SVGGElement | null = null
 
-    const graph =
-      suppliedGraph ?? createFlowGraph(document, new Map(), renderedPositions)
-
-    if (suppliedGraph === undefined) {
+    if (onlyEdges === undefined && !projectionOnly) {
       previousPositions = new Map(
-        [...graph.nodes].map(([nodeId, node]) => [
-          nodeId,
-          node.absolutePosition,
-        ])
+        [...graph.nodes].map(([id, node]) => [id, { ...node.absolutePosition }])
       )
       orderedEdges = orderFlowEdges(
         document.edges.map((edge) =>
-          applyDefaultEdgeOptions(edge, defaultEdgeOptions)
+          applyDefaultEdgeOptions(edge, pass.inputs.defaults)
         )
       )
       edgeById = new Map(orderedEdges.map((edge) => [edge.id, edge]))
@@ -214,8 +470,6 @@ export const createEdgeRenderer = (
         : orderedEdges.filter(
             (edge) => onlyEdges.has(edge.id) && edgeById.has(edge.id)
           )
-
-    const measurements = readMeasurements()
 
     for (const edge of edgesToPaint) {
       if (
@@ -327,7 +581,9 @@ export const createEdgeRenderer = (
       }
 
       const registeredRenderer =
-        edge.type === undefined ? undefined : renderers?.[edge.type]
+        edge.type === undefined
+          ? undefined
+          : pass.inputs.edgeRenderers.get(edge.type)
 
       const endpoints = {
         source,
@@ -336,255 +592,355 @@ export const createEdgeRenderer = (
         targetSide: resolved.targetHandle.side,
       }
 
-      const customGeometry = registeredRenderer?.geometry?.(edge, endpoints)
+      const expected = pass.entryClaims.edges.get(edge.id)
 
-      if (customGeometry !== undefined) {
-        const { pathData: customPathData } = customGeometry
-        pathData = customPathData
+      if (slots.get(edge.id) !== expected) {
+        return { added, updated, removed, deferred }
       }
 
-      const context: FlowEdgeRenderContext = {
-        ...endpoints,
-        pathData,
-        labelAnchor:
-          customGeometry?.labelAnchor ??
-          edgeLabelPosition(
-            source,
-            target,
-            edge.path ?? 'straight',
-            resolved.sourceHandle.side,
-            resolved.targetHandle.side
-          ),
+      if (
+        projectionOnly &&
+        (expected === undefined ||
+          expected.entry.renderer.kind === 'awaiting-factory' ||
+          expected.entry.state !== 'owned')
+      ) {
+        continue
       }
 
-      let elements = edges.get(edge.id)
+      const reusable =
+        expected !== undefined &&
+        expected.entry.type === edge.type &&
+        expected.entry.renderer.kind !== 'awaiting-factory' &&
+        (expected.kind === 'ready' || projectionOnly)
 
-      if (elements === undefined) {
-        const group = globalThis.document.createElementNS(svgNamespace, 'g')
-        group.classList.add('flow-edge-group')
-        group.dataset.edgeId = edge.id
-        group.dataset.testid = 'flow-edge-group'
+      const entry = reusable ? expected.entry : allocateEntry(edge)
 
-        const anchorGroup = globalThis.document.createElementNS(
-          svgNamespace,
-          'g'
-        )
+      const reservation = projectionOnly
+        ? expected
+        : reserveGeometry(edge.id, expected, entry, pass)
 
-        anchorGroup.classList.add('flow-edge-anchor-group')
-        anchorGroup.dataset.edgeId = edge.id
-
-        const path = globalThis.document.createElementNS(svgNamespace, 'path')
-        path.classList.add('flow-edge-path')
-        path.dataset.edgeId = edge.id
-        path.dataset.testid = 'flow-edge-path'
-
-        const hit = globalThis.document.createElementNS(svgNamespace, 'path')
-        hit.classList.add('flow-edge-hit')
-        hit.dataset.testid = 'flow-edge-hit'
-
-        const visual = globalThis.document.createElementNS(svgNamespace, 'g')
-        visual.classList.add('flow-edge-custom-visual')
-        visual.setAttribute('aria-hidden', 'true')
-        visual.setAttribute('pointer-events', 'none')
-
-        const sourceAnchor = globalThis.document.createElementNS(
-          svgNamespace,
-          'circle'
-        )
-
-        sourceAnchor.classList.add('flow-edge-reconnect-anchor')
-        sourceAnchor.dataset.endpoint = 'source'
-        sourceAnchor.dataset.testid = 'flow-edge-reconnect-anchor'
-        sourceAnchor.setAttribute('r', '8')
-
-        const targetAnchor = globalThis.document.createElementNS(
-          svgNamespace,
-          'circle'
-        )
-
-        targetAnchor.classList.add('flow-edge-reconnect-anchor')
-        targetAnchor.dataset.endpoint = 'target'
-        targetAnchor.dataset.testid = 'flow-edge-reconnect-anchor'
-        targetAnchor.setAttribute('r', '8')
-
-        group.append(path, hit, visual)
-        anchorGroup.append(sourceAnchor, targetAnchor)
-        elements = {
-          anchorGroup,
-          group,
-          hit,
-          path,
-          visual,
-          sourceAnchor,
-          targetAnchor,
-        }
-        edges.set(edge.id, elements)
-        added += 1
-      } else if (elements.path.getAttribute('d') !== pathData) {
-        updated += 1
-      }
-
-      const {
-        anchorGroup,
-        group,
-        hit,
-        path,
-        visual,
-        sourceAnchor,
-        targetAnchor,
-      } = elements
-
-      const currentRenderer = customRenderers.get(edge.id)
-
-      if (currentRenderer !== undefined && currentRenderer.type !== edge.type) {
-        currentRenderer.renderer.destroy()
-        customRenderers.delete(edge.id)
-        visual.replaceChildren()
-      }
-
-      if (edge.type === undefined || registeredRenderer?.render === undefined) {
-        path.removeAttribute('display')
-        currentRenderer?.renderer.destroy()
-        customRenderers.delete(edge.id)
-        visual.replaceChildren()
-      } else {
-        path.setAttribute('display', 'none')
-        const active = customRenderers.get(edge.id)
-
-        if (active === undefined) {
-          customRenderers.set(edge.id, {
-            type: edge.type,
-            renderer: registeredRenderer.render(edge, context, visual),
-          })
-        } else {
-          active.renderer.update(edge, context)
-        }
-      }
-
-      path.setAttribute('d', pathData)
-      hit.setAttribute('d', pathData)
-      hit.setAttribute('stroke-width', String(edge.interactionWidth ?? 20))
-      sourceAnchor.setAttribute('cx', String(source.x))
-      sourceAnchor.setAttribute('cy', String(source.y))
-      targetAnchor.setAttribute('cx', String(target.x))
-      targetAnchor.setAttribute('cy', String(target.y))
-      group.classList.toggle('selected', edge.selected === true)
-      anchorGroup.classList.toggle(
-        'selected',
-        edge.selected === true && edge.reconnectable !== false
-      )
-      sourceAnchor.classList.toggle(
-        'available',
-        edge.reconnectable !== false && edge.reconnectable !== 'target'
-      )
-      targetAnchor.classList.toggle(
-        'available',
-        edge.reconnectable !== false && edge.reconnectable !== 'source'
-      )
-      group.setAttribute('tabindex', edge.focusable === false ? '-1' : '0')
-      group.setAttribute('role', edge.selectable === false ? 'img' : 'button')
-      group.setAttribute('aria-roledescription', 'edge')
-
-      if (edge.selectable === false) {
-        group.removeAttribute('aria-pressed')
-      } else {
-        group.setAttribute('aria-pressed', String(edge.selected === true))
-      }
-
-      group.setAttribute(
-        'aria-label',
-        edge.ariaLabel ??
-          `Edge from ${resolved.sourceNode.label} to ${resolved.targetNode.label}`
-      )
-      const stroke = edge.stroke ?? defaultStroke
-      path.setAttribute('stroke', stroke)
-      path.setAttribute('stroke-width', String(edge.strokeWidth ?? 2))
-
-      for (const [attribute, kind] of [
-        ['marker-start', edge.markerStart],
-        ['marker-end', edge.markerEnd],
-      ] as const) {
-        if (kind === undefined) {
-          path.removeAttribute(attribute)
-
-          continue
+      if (reservation === undefined) {
+        if (!reusable) {
+          closeEntry(entry)
         }
 
-        const markerId = ensureMarker(kind, stroke)
-        visibleMarkers.add(markerId)
-        path.setAttribute(attribute, `url(#${markerId})`)
+        return { added, updated, removed, deferred }
       }
 
-      if (onlyEdges === undefined) {
-        const nextGroup: Element | null =
-          previousGroup === null
-            ? pathLayer.firstElementChild
-            : previousGroup.nextElementSibling
+      // eslint-disable-next-line no-loop-func -- This immediate entitlement check intentionally reads current host admission and exact slot identity.
+      const owns = (): boolean =>
+        !closed &&
+        !hostClosing() &&
+        slots.get(edge.id) === reservation &&
+        entry.state === 'owned' &&
+        matches(pass, { kind: 'edge', id: edge.id })
 
-        if (nextGroup !== group) {
-          if (nextGroup === null) {
-            pathLayer.append(group)
-          } else {
-            nextGroup.before(group)
+      const discardCalculation = (): void => {
+        if (!reusable) {
+          if (slots.get(edge.id) === reservation) {
+            slots.delete(edge.id)
+            pass.entryClaims.edges.delete(edge.id)
           }
-        }
 
-        previousGroup = group
-        anchorLayer.append(anchorGroup)
+          closeEntry(entry)
+        } else if (
+          !projectionOnly &&
+          slots.get(edge.id) === reservation &&
+          expected !== undefined
+        ) {
+          installReservation(
+            edge.id,
+            {
+              expected: { kind: 'present', slot: reservation },
+              next: expected,
+            },
+            pass
+          )
+        }
       }
 
-      visible.add(edge.id)
-
-      if (edge.label !== undefined && edge.label.length > 0) {
-        const position = context.labelAnchor
-
-        let label = labels.get(edge.id)
-
-        if (label === undefined) {
-          label = globalThis.document.createElement('div')
-          label.classList.add('flow-edge-label')
-          label.dataset.edgeId = edge.id
-          label.dataset.testid = 'flow-edge-label'
-          labels.set(edge.id, label)
+      try {
+        if (expected !== undefined && expected.entry !== entry) {
+          closeEntry(expected.entry)
         }
 
-        label.textContent = edge.label
-        label.setAttribute('x', String(position.x))
-        label.setAttribute('y', String(position.y))
-        label.style.left = `${position.x}px`
-        label.style.top = `${position.y}px`
+        if (!owns()) {
+          discardCalculation()
 
-        if (onlyEdges === undefined || label.parentElement === null) {
-          labelLayer.append(label)
+          return { added, updated, removed, deferred }
         }
 
-        visibleLabels.add(edge.id)
+        const completed =
+          expected?.kind === 'ready' ? entry.geometry : undefined
+
+        const retainedGeometry =
+          completed?.edge === edge &&
+          completed.context.source.x === source.x &&
+          completed.context.source.y === source.y &&
+          completed.context.target.x === target.x &&
+          completed.context.target.y === target.y &&
+          completed.context.sourceSide === endpoints.sourceSide &&
+          completed.context.targetSide === endpoints.targetSide
+            ? completed.context
+            : undefined
+
+        const customGeometry = projectionOnly
+          ? retainedGeometry
+          : registeredRenderer?.geometry?.(edge, endpoints)
+
+        if (!owns()) {
+          discardCalculation()
+
+          return { added, updated, removed, deferred }
+        }
+
+        if (customGeometry !== undefined) {
+          ;({ pathData } = customGeometry)
+        }
+
+        const context: FlowEdgeRenderContext = {
+          ...endpoints,
+          pathData,
+          labelAnchor:
+            customGeometry?.labelAnchor ??
+            edgeLabelPosition(
+              source,
+              target,
+              edge.path ?? 'straight',
+              resolved.sourceHandle.side,
+              resolved.targetHandle.side
+            ),
+        }
+
+        const { path, visual } = entry.elements
+
+        if (entry.renderer.kind === 'awaiting-factory') {
+          const instance = registeredRenderer?.render?.(edge, context, visual)
+
+          if (instance === undefined) {
+            entry.renderer = { kind: 'default' }
+          } else {
+            runEffect(
+              Scope.addFinalizer(
+                entry.scope,
+                Effect.sync(() => {
+                  try {
+                    instance.destroy()
+                  } catch (error) {
+                    if (hostClosing()) {
+                      cleanupFailures.push(error)
+                    } else {
+                      throw error
+                    }
+                  }
+                })
+              )
+            )
+            entry.renderer = { kind: 'custom', instance }
+          }
+
+          added += 1
+        } else if (entry.renderer.kind === 'custom' && !projectionOnly) {
+          entry.renderer.instance.update(edge, context)
+          updated += 1
+        }
+
+        if (!owns()) {
+          discardCalculation()
+
+          return { added, updated, removed, deferred }
+        }
+
+        if (entry.renderer.kind === 'custom') {
+          path.setAttribute('display', 'none')
+        } else {
+          path.removeAttribute('display')
+        }
+
+        const { anchorGroup, group, hit, sourceAnchor, targetAnchor } =
+          entry.elements
+
+        path.setAttribute('d', pathData)
+        hit.setAttribute('d', pathData)
+        hit.setAttribute('stroke-width', String(edge.interactionWidth ?? 20))
+        sourceAnchor.setAttribute('cx', String(source.x))
+        sourceAnchor.setAttribute('cy', String(source.y))
+        targetAnchor.setAttribute('cx', String(target.x))
+        targetAnchor.setAttribute('cy', String(target.y))
+        group.classList.toggle('selected', edge.selected === true)
+        anchorGroup.classList.toggle(
+          'selected',
+          edge.selected === true && edge.reconnectable !== false
+        )
+        sourceAnchor.classList.toggle(
+          'available',
+          edge.reconnectable !== false && edge.reconnectable !== 'target'
+        )
+        targetAnchor.classList.toggle(
+          'available',
+          edge.reconnectable !== false && edge.reconnectable !== 'source'
+        )
+        group.setAttribute('tabindex', edge.focusable === false ? '-1' : '0')
+        group.setAttribute('role', edge.selectable === false ? 'img' : 'button')
+        group.setAttribute('aria-roledescription', 'edge')
+
+        if (edge.selectable === false) {
+          group.removeAttribute('aria-pressed')
+        } else {
+          group.setAttribute('aria-pressed', String(edge.selected === true))
+        }
+
+        group.setAttribute(
+          'aria-label',
+          edge.ariaLabel ??
+            `Edge from ${resolved.sourceNode.label} to ${resolved.targetNode.label}`
+        )
+        const stroke = edge.stroke ?? defaultStroke
+        path.setAttribute('stroke', stroke)
+        path.setAttribute('stroke-width', String(edge.strokeWidth ?? 2))
+
+        for (const [attribute, kind] of [
+          ['marker-start', edge.markerStart],
+          ['marker-end', edge.markerEnd],
+        ] as const) {
+          if (kind === undefined) {
+            path.removeAttribute(attribute)
+
+            continue
+          }
+
+          const markerId = ensureMarker(kind, stroke)
+          visibleMarkers.add(markerId)
+          path.setAttribute(attribute, `url(#${markerId})`)
+        }
+
+        if (onlyEdges === undefined) {
+          const nextGroup: Element | null =
+            previousGroup === null
+              ? pathLayer.firstElementChild
+              : previousGroup.nextElementSibling
+
+          if (nextGroup !== group) {
+            if (nextGroup === null) {
+              pathLayer.append(group)
+            } else {
+              nextGroup.before(group)
+            }
+          }
+
+          previousGroup = group
+          anchorLayer.append(anchorGroup)
+        }
+
+        visible.add(edge.id)
+
+        if (edge.label !== undefined && edge.label.length > 0) {
+          const position = context.labelAnchor
+
+          let { label } = entry
+
+          if (label === undefined) {
+            label = globalThis.document.createElement('div')
+            label.classList.add('flow-edge-label')
+            label.dataset.edgeId = edge.id
+            label.dataset.testid = 'flow-edge-label'
+            entry.label = label
+          }
+
+          label.textContent = edge.label
+          label.setAttribute('x', String(position.x))
+          label.setAttribute('y', String(position.y))
+          label.style.left = `${position.x}px`
+          label.style.top = `${position.y}px`
+
+          if (onlyEdges === undefined || label.parentElement === null) {
+            labelLayer.append(label)
+          }
+
+          visibleLabels.add(edge.id)
+        } else {
+          entry.label?.remove()
+          entry.label = undefined
+        }
+
+        if (!projectionOnly && slots.get(edge.id) === reservation) {
+          entry.geometry = { edge, context }
+
+          const ready: ReadyEdgeEntry = Object.assign(entry, {
+            renderer: entry.renderer,
+          })
+
+          installReservation(
+            edge.id,
+            {
+              expected: { kind: 'present', slot: reservation },
+              next: { kind: 'ready', entry: ready },
+            },
+            pass
+          )
+        }
+      } catch (error) {
+        const primaryError = error
+
+        if (slots.get(edge.id) === reservation) {
+          slots.delete(edge.id)
+          pass.entryClaims.edges.delete(edge.id)
+        }
+
+        try {
+          closeEntry(entry)
+        } catch (cleanupError) {
+          // eslint-disable-next-line preserve-caught-error -- Preserve the primary geometry or renderer error and retain the caught cleanup error in errors[1].
+          throw new AggregateError(
+            [primaryError, cleanupError],
+            'Edge rendering and cleanup failed',
+            { cause: primaryError }
+          )
+        }
+
+        throw error
       }
     }
 
-    if (onlyEdges === undefined) {
-      for (const [edgeId, elements] of edges) {
+    if (onlyEdges === undefined && !projectionOnly) {
+      for (const [edgeId, slot] of pass.cohort.edges) {
         if (visible.has(edgeId)) {
           continue
         }
 
-        elements.group.remove()
-        elements.anchorGroup.remove()
-        customRenderers.get(edgeId)?.renderer.destroy()
-        customRenderers.delete(edgeId)
-        edges.delete(edgeId)
-        removed += 1
-      }
-    }
+        const reservation: Extract<EdgeSlot, { kind: 'reserved' }> = {
+          kind: 'reserved',
+          entry: slot.entry,
+          operation: 'remove',
+        }
 
-    if (onlyEdges === undefined) {
-      for (const [edgeId, label] of labels) {
-        if (visibleLabels.has(edgeId)) {
+        if (
+          !installReservation(
+            edgeId,
+            {
+              expected: { kind: 'present', slot },
+              next: reservation,
+            },
+            pass
+          )
+        ) {
           continue
         }
 
-        label.remove()
-        labels.delete(edgeId)
+        try {
+          closeEntry(slot.entry)
+        } finally {
+          if (slots.get(edgeId) === reservation) {
+            slots.delete(edgeId)
+            pass.entryClaims.edges.delete(edgeId)
+          }
+        }
+
+        removed += 1
+
+        if (!passCurrent()) {
+          return { added, updated, removed, deferred }
+        }
       }
     }
 
@@ -603,11 +959,10 @@ export const createEdgeRenderer = (
   }
 
   const updatePositions = (
-    document: FlowDocument,
-    graph: FlowGraphView,
-    renderedPositions: ReadonlyMap<NodeId, XYPosition>,
+    pass: Projection<Origin, NodeSlot, UIHandle>,
     movedNodeIds: ReadonlySet<NodeId>
   ) => {
+    const { graph } = pass
     const changed = new Set<NodeId>()
 
     for (const [nodeId, node] of graph.nodes) {
@@ -635,10 +990,11 @@ export const createEdgeRenderer = (
 
     return affected.size === 0
       ? { added: 0, updated: 0, removed: 0, deferred: 0 }
-      : reconcile(document, renderedPositions, graph, affected)
+      : reconcile(pass, affected)
   }
 
   return {
+    captureEntryCohort: (): ReadonlyMap<EdgeId, EdgeSlot> => new Map(slots),
     setVisibleEdges: (edgeIds: ReadonlySet<EdgeId> | null): void => {
       visibleEdgeIds = edgeIds
     },
@@ -647,16 +1003,18 @@ export const createEdgeRenderer = (
     destroy: (): void => {
       previousPositions.clear()
 
-      for (const { renderer } of customRenderers.values()) {
-        renderer.destroy()
+      closed = true
+      const captured = [...slots.values()]
+      slots.clear()
+
+      for (const slot of captured) {
+        closeEntry(slot.entry)
       }
 
-      customRenderers.clear()
-      edges.clear()
-      labels.clear()
       markers.clear()
       layer.remove()
       anchorLayer.remove()
+      labelLayer.remove()
     },
   }
 }

@@ -4,16 +4,20 @@ import {
   HandleIdSchema,
   EdgeIdSchema,
 } from '@flow/core'
-import { Effect, Fiber, Option, Predicate, Stream } from 'effect'
-import { beforeAll, afterAll, vi, describe, expect, it } from 'vitest'
+import { Effect } from 'effect'
+import {
+  beforeEach,
+  afterAll,
+  afterEach,
+  vi,
+  describe,
+  expect,
+  it,
+} from 'vitest'
 
 import { wrapGraphMessage, initialModel, update } from './application.ts'
-import {
-  Message,
-  defaultInteractionOptions,
-  createConnectionPointerResource,
-  subscriptions,
-} from './graph.ts'
+import { Message, defaultInteractionOptions } from './graph.ts'
+import { setupPointer, pointerEvent } from './node-threshold-fixture.ts'
 
 const document = Effect.runSync(
   decodeFlowDocument({
@@ -78,9 +82,9 @@ const step = (
 ) => update(model, wrapGraphMessage({ message }))
 
 const events = (result: ReturnType<typeof step>) =>
-  result.commands
-    ?.filter(({ name }) => name === 'PublishFoldkitInteractionEvents')
-    .flatMap(({ args }) => args?.events ?? []) ?? []
+  result.outMessage?.flatMap((item) =>
+    item.kind === 'interaction' ? item.events : []
+  ) ?? []
 
 const assertPromoted = (
   result: ReturnType<typeof step>,
@@ -91,13 +95,11 @@ const assertPromoted = (
     currentX: 90,
     currentY: 80,
   })
-  expect(
-    result.commands?.some(({ name }) => name === 'PublishFlowChanges')
-  ).toBeTruthy()
+  expect(result.outMessage?.some((item) => item.kind === 'change')).toBeTruthy()
 }
 
 describe('connectionDragThreshold application transitions, constructed models', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     vi.stubGlobal('document', { querySelector: () => null })
     vi.stubGlobal('CSS', { escape: (value: string) => value })
   })
@@ -303,8 +305,11 @@ describe('connectionDragThreshold application transitions, constructed models', 
       })
 
       expect(
-        completed.commands?.find(({ name }) => name === 'PublishFlowChanges')
-          ?.args?.change
+        completed.outMessage?.flatMap((item) =>
+          item.kind === 'change' && item.change !== undefined
+            ? [item.change]
+            : []
+        )[0]
       ).toStrictEqual(allowed ? expectedChange : undefined)
     }
   )
@@ -368,781 +373,234 @@ describe('connectionDragThreshold application transitions, constructed models', 
   )
 })
 
-class TestElement extends EventTarget {
-  captured = false
-  isConnected = true
-  bounds = { left: 0, top: 0 }
-  clientWidth = 800
-  clientHeight = 600
-  handles: TestElement[] = []
-  querySelectorAll() {
-    return this.handles
-  }
-  querySelector() {
-    return this.parent
-  }
-  dataset: DOMStringMap = {}
-  parent: TestElement | null = null
-  ownerDocument = { elementFromPoint: (): TestElement | null => null }
-  getBoundingClientRect() {
-    return this.bounds
-  }
-  setPointerCapture() {
-    this.captured = true
-  }
-  hasPointerCapture() {
-    return this.captured
-  }
-  releasePointerCapture() {
-    this.captured = false
-  }
-  contains(target: TestElement) {
-    return (
-      target === this ||
-      target.parent === this ||
-      target.parent?.parent === this
-    )
-  }
-  closest(selector: string): TestElement | null {
-    if (selector.includes('data-node-id')) {
-      return this.dataset.nodeId === undefined ? this.parent : this
-    }
+describe('connection owner migration with synthetic capture and queue barriers', () => {
+  afterEach(() => vi.unstubAllGlobals())
 
-    return selector.includes('data-handle-id') &&
-      this.dataset.handleId !== undefined
-      ? this
-      : null
-  }
-}
-
-const syntheticPointer = (type: string, x = 10, y = 20) =>
-  Object.defineProperties(new Event(type), {
-    pointerId: { value: 1 },
-    detail: { value: 1 },
-    clientX: { value: x },
-    clientY: { value: y },
-  })
-
-const setupResource = () => {
-  const owner = new TestElement()
-  const node = new TestElement()
-  node.dataset = { nodeId: 'source' }
-  node.parent = owner
-  const handle = new TestElement()
-  handle.dataset = { handleId: 'out' }
-  handle.parent = node
-  owner.ownerDocument.elementFromPoint = () => handle
-  const dom = new EventTarget()
-  const windowOwner = new EventTarget()
-  vi.stubGlobal('window', windowOwner)
-  Object.assign(dom, { querySelector: () => owner })
-  vi.stubGlobal('document', dom)
-  vi.stubGlobal('CSS', { escape: (value: string) => value })
-  vi.stubGlobal('Node', TestElement)
-  vi.stubGlobal('Element', TestElement)
-  vi.stubGlobal('HTMLElement', TestElement)
-  vi.stubGlobal('PointerEvent', Event)
-  const targetNode = new TestElement()
-  targetNode.dataset = { nodeId: 'target' }
-  targetNode.parent = owner
-  const targetHandle = new TestElement()
-  targetHandle.dataset = { handleId: 'in' }
-  targetHandle.parent = targetNode
-  owner.handles = [handle, targetHandle]
-  const base = initial(8)
-
-  const model = {
-    ...base,
-    graph: {
-      ...base.graph,
-      allowedConnectionTargets: ['target'],
-      document: { ...base.graph.document, edges: [] },
-    },
-  }
-
-  const resource = createConnectionPointerResource(model.graph)
-
-  return { owner, dom, windowOwner, model, resource }
-}
-
-describe('connectionDragThreshold repair native resource with controlled deferred reduction and synthetic DOM events', () => {
-  afterAll(() => vi.unstubAllGlobals())
-
-  it('unrelated update before down reduction preserves synchronous acquisition', () => {
-    const { owner, model, resource } = setupResource()
-
-    const admittedDown = Option.getOrThrow(
-      resource.begin(model.graph, Option.some(down()))
-    )
-
-    expect(owner.captured).toBeTruthy()
-    resource.reconcile(step(model, Message.PruneMeasurements({})).model.graph)
-    expect(owner.captured).toBeTruthy()
-    expect(
-      Option.isSome(
-        resource.prepare(wrapGraphMessage({ message: admittedDown }).message)
-      )
-    ).toBeTruthy()
-  })
-
-  it('rejected queued down retires acquisition and rejects late events', () => {
-    const { owner, model, resource } = setupResource()
-
-    const admittedDown = Option.getOrThrow(
-      resource.begin(model.graph, Option.some(down()))
-    )
-
-    const replaced = step(
-      model,
-      Message.ReplaceDocument({ document: { nodes: [], edges: [] } })
-    ).model
-
-    resource.reconcile(replaced.graph)
-    const rejected = step(replaced, admittedDown).model
-    resource.reconcile(rejected.graph, admittedDown)
-    expect(owner.captured).toBeFalsy()
-    expect(
-      Option.isNone(
-        resource.prepare(wrapGraphMessage({ message: admittedDown }).message)
-      )
-    ).toBeTruthy()
-  })
-
-  it.each([
-    Message.CancelGesture({}),
-    Message.PointerCancelled({ pointerId: 1 }),
-    Message.ReplaceDocument({ document: { nodes: [], edges: [] } }),
-    Message.ReplaceViewport({ viewport: { x: 1, y: 2, zoom: 1 } }),
-  ])('cancellation retires awaiting acquisition $_tag', (message) => {
-    const { owner, model, resource } = setupResource()
-
-    const admittedDown = Option.getOrThrow(
-      resource.begin(model.graph, Option.some(down()))
-    )
-
-    const cancelled = step(model, message)
-    resource.reconcile(cancelled.model.graph, message)
-    expect(owner.captured).toBeFalsy()
-    expect(
-      Option.isNone(
-        resource.prepare(wrapGraphMessage({ message: admittedDown }).message)
-      )
-    ).toBeTruthy()
-  })
-
-  it.each(['blur', 'pointercancel', 'Escape'])(
-    'native %s queues cancellation while down awaits admission',
+  it.each(['node', 'pane', 'connection'] as const)(
+    'queued %s release permits following connection down without releasing newer capture',
     async (kind) => {
-      const { owner, dom, windowOwner, model, resource } = setupResource()
-      const queued: (typeof Message.Type)[] = []
+      const fixture = setupPointer()
+      const stream = fixture.acquire()
 
-      const fiber = Effect.runFork(
-        Stream.runForEach(
-          resource.subscriptions.connectionPointerOwner.dependenciesToStream({
-            instanceId: model.graph.instanceId,
-          }),
-          (message) =>
-            Effect.sync(() => {
-              queued.push(message)
-            })
-        )
-      )
+      const target = {
+        node: fixture.node,
+        pane: fixture.canvas,
+        connection: fixture.handle,
+      }[kind]
 
-      try {
-        await Effect.runPromise(Effect.sleep('10 millis'))
+      fixture.begin(target)
+      fixture.dom.dispatchEvent(pointerEvent('pointerup'))
+      fixture.begin(fixture.handle)
+      expect(fixture.canvas.captured).toBeTruthy()
+      const messages = await fixture.collect(stream, 3)
 
-        const admittedDown = Option.getOrThrow(
-          resource.begin(model.graph, Option.some(down()))
-        )
-
-        if (kind === 'blur') {
-          windowOwner.dispatchEvent(new Event('blur'))
-        } else if (kind === 'Escape') {
-          dom.dispatchEvent(
-            Object.defineProperty(
-              new Event('keydown', { cancelable: true }),
-              'key',
-              { value: 'Escape' }
-            )
-          )
-        } else {
-          dom.dispatchEvent(syntheticPointer('pointercancel'))
-        }
-
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        expect(queued).toHaveLength(1)
-        let reduced = step(model, admittedDown).model
-        resource.reconcile(reduced.graph, admittedDown)
-
-        for (const message of queued) {
-          const result = step(reduced, message)
-          resource.reconcile(result.model.graph, message)
-          expect(events(result)).toStrictEqual([])
-          reduced = result.model
-        }
-
-        expect(owner.captured).toBeFalsy()
-        expect(reduced.graph.pointerSession).toBeNull()
-      } finally {
-        await Effect.runPromise(Fiber.interrupt(fiber))
+      for (const message of messages) {
+        fixture.process(message)
       }
+
+      expect(fixture.model().graph.pointerSession?.kind).toBe(
+        'connection-pending'
+      )
+      expect(fixture.canvas.captured).toBeTruthy()
+      await fixture.dispose()
+      expect(fixture.canvas.captured).toBeFalsy()
     }
   )
 
-  it.each([false, true])(
-    'routes release then click through one FIFO while reduction is deferred, down also deferred=%s',
-    async (deferDown) => {
-      const { owner, dom, model, resource } = setupResource()
-      const queued: (typeof Message.Type)[] = []
-      const entry = resource.subscriptions.connectionPointerOwner
-
-      const fiber = Effect.runFork(
-        Stream.runForEach(
-          entry.dependenciesToStream({ instanceId: model.graph.instanceId }),
-          (message) =>
-            Effect.sync(() => {
-              queued.push(message)
-            })
-        )
-      )
-
-      try {
-        await Effect.runPromise(Effect.sleep('10 millis'))
-
-        const admittedDown = Option.getOrThrow(
-          resource.begin(model.graph, Option.some(down()))
-        )
-
-        const admitted = step(model, admittedDown).model
-
-        if (!deferDown) {
-          resource.reconcile(admitted.graph, admittedDown)
-        }
-
-        dom.dispatchEvent(syntheticPointer('pointerup'))
-        const click = syntheticPointer('click')
-        Object.defineProperty(click, 'target', { value: owner })
-        const stopped = vi.spyOn(click, 'stopImmediatePropagation')
-        dom.dispatchEvent(click)
-        const replay = syntheticPointer('click')
-        Object.defineProperty(replay, 'target', { value: owner })
-        dom.dispatchEvent(replay)
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        expect(stopped).toHaveBeenCalledOnce()
-
-        const release = Message.PointerReleased({
-          pointerId: 1,
-          clientX: 10,
-          clientY: 20,
-          targetNodeId: 'source',
-          targetHandleId: 'out',
-        })
-
-        expect(queued).toStrictEqual([
-          release,
-          Message.RoutedPointerClick({ pointerId: 1 }),
-        ])
-
-        if (deferDown) {
-          resource.reconcile(admitted.graph, admittedDown)
-        }
-
-        let reduced = admitted
-        const lifecycle: ReturnType<typeof events> = []
-
-        for (const message of queued) {
-          const prepared = resource.prepare(
-            wrapGraphMessage({ message }).message
-          )
-
-          if (Option.isNone(prepared)) {
-            throw new Error('Unexpected rejected release/click')
-          }
-
-          const result = step(reduced, prepared.value)
-          resource.reconcile(result.model.graph, prepared.value)
-          lifecycle.push(...events(result))
-          reduced = result.model
-        }
-
-        const routed = { model: reduced }
-
-        expect(routed.model.graph.pointerClickReceipt).toBeNull()
-        expect(lifecycle).toStrictEqual([
-          {
-            name: 'onConnectStart',
-            phase: 'start',
-            inputKind: 'click',
-            nodeId: 'source',
-          },
-        ])
-        expect(
-          events(
-            step(routed.model, Message.RoutedPointerClick({ pointerId: 1 }))
-          )
-        ).toStrictEqual([])
-      } finally {
-        await Effect.runPromise(Fiber.interrupt(fiber))
-      }
-
-      expect(owner.captured).toBeFalsy()
-    }
-  )
-
-  it.each([false, true])(
-    'ordered crossing and near-handle release, implicit capture absent=%s',
-    async (implicitRelease) => {
-      const { owner, dom, model, resource } = setupResource()
-      const queued: (typeof Message.Type)[] = []
-      const pending = step(model, down()).model
-
-      const fiber = Effect.runFork(
-        Stream.runForEach(
-          Stream.mergeAll(
-            [
-              resource.subscriptions.connectionPointerOwner.dependenciesToStream(
-                { instanceId: model.graph.instanceId }
-              ),
-              subscriptions.pointerEvents.dependenciesToStream(
-                subscriptions.pointerEvents.modelToDependencies(pending.graph)
-              ),
-            ],
-            { concurrency: 'unbounded' }
-          ),
-          (message) =>
-            Effect.sync(() => {
-              queued.push(message)
-            })
-        )
-      )
-
-      try {
-        await Effect.runPromise(Effect.sleep('10 millis'))
-
-        const admittedDown = Option.getOrThrow(
-          resource.begin(model.graph, Option.some(down()))
-        )
-
-        let reduced = step(model, admittedDown).model
-        resource.reconcile(reduced.graph, admittedDown)
-        owner.ownerDocument.elementFromPoint = () => owner
-        dom.dispatchEvent(syntheticPointer('pointermove', 190, 24))
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        dom.dispatchEvent(syntheticPointer('pointerup', 190, 24))
-
-        if (implicitRelease) {
-          owner.captured = false
-        }
-
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        expect(
-          queued.flatMap((message) =>
-            Predicate.isTagged('IgnoreInput')(message) ? [] : [message._tag]
-          )
-        ).toStrictEqual(['ConnectionPointerMoved', 'PointerReleased'])
-        const lifecycle: ReturnType<typeof events> = []
-
-        for (const message of queued) {
-          const prepared = Option.getOrThrow(
-            resource.prepare(wrapGraphMessage({ message }).message)
-          )
-
-          const result = step(reduced, prepared)
-          resource.reconcile(result.model.graph, prepared)
-          lifecycle.push(...events(result))
-          reduced = result.model
-        }
-
-        expect(reduced.graph.document.edges).toMatchObject([
-          {
-            source: 'source',
-            sourceHandle: 'out',
-            target: 'target',
-            targetHandle: 'in',
-          },
-        ])
-        expect(lifecycle).toMatchObject([
-          { name: 'onConnectStart' },
-          { name: 'onConnectionPreview' },
-          { name: 'onConnect' },
-          { name: 'onConnectEnd', outcome: 'accepted' },
-        ])
-      } finally {
-        await Effect.runPromise(Fiber.interrupt(fiber))
-      }
-    }
-  )
-
-  it.each([
-    { nodeId: 'source', handleId: 'out', deferRelease: false },
-    { nodeId: 'source', handleId: 'out', deferRelease: true },
-    { nodeId: 'target', handleId: 'in', deferRelease: false },
-    { nodeId: 'target', handleId: 'in', deferRelease: true },
-  ])(
-    'old routed click preserves a new $nodeId lease with reused pointer ID, release also deferred=$deferRelease',
-    async ({ nodeId, handleId, deferRelease }) => {
-      const { owner, dom, model, resource } = setupResource()
-      const queued: (typeof Message.Type)[] = []
-
-      const fiber = Effect.runFork(
-        Stream.runForEach(
-          resource.subscriptions.connectionPointerOwner.dependenciesToStream({
-            instanceId: model.graph.instanceId,
-          }),
-          (message) =>
-            Effect.sync(() => {
-              queued.push(message)
-            })
-        )
-      )
-
-      try {
-        await Effect.runPromise(Effect.sleep('10 millis'))
-
-        const first = Option.getOrThrow(
-          resource.begin(model.graph, Option.some(down()))
-        )
-
-        let reduced = step(model, first).model
-        resource.reconcile(reduced.graph, first)
-        dom.dispatchEvent(syntheticPointer('pointerup'))
-        await Effect.runPromise(Effect.sleep('10 millis'))
-
-        if (!deferRelease) {
-          for (const message of queued.splice(0)) {
-            const prepared = Option.getOrThrow(
-              resource.prepare(wrapGraphMessage({ message }).message)
-            )
-
-            reduced = step(reduced, prepared).model
-            resource.reconcile(reduced.graph, prepared)
-          }
-        }
-
-        const click = syntheticPointer('click')
-        Object.defineProperty(click, 'target', { value: owner })
-        dom.dispatchEvent(click)
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        expect(queued).toHaveLength(deferRelease ? 2 : 1)
-
-        const second = Option.getOrThrow(
-          resource.begin(
-            reduced.graph,
-            Option.some(
-              Message.PointerDown({ ...down(), clientX: 11, nodeId, handleId })
-            )
-          )
-        )
-
-        for (const message of queued) {
-          const prepared = Option.getOrThrow(
-            resource.prepare(wrapGraphMessage({ message }).message)
-          )
-
-          const result = step(reduced, prepared)
-          expect(events(result)).toMatchObject(
-            Predicate.isTagged('RoutedPointerClick')(message)
-              ? [{ name: 'onConnectStart' }]
-              : []
-          )
-          reduced = result.model
-          resource.reconcile(reduced.graph, prepared)
-        }
-
-        expect(owner.captured).toBeTruthy()
-        expect(reduced.graph.pointerClickReceipt).toBeNull()
-
-        const prepared = Option.getOrThrow(
-          resource.prepare(wrapGraphMessage({ message: second }).message)
-        )
-
-        reduced = step(reduced, prepared).model
-        resource.reconcile(reduced.graph, prepared)
-        expect(reduced.graph.pointerSession?.kind).toBe('connection-pending')
-        expect(owner.captured).toBeTruthy()
-      } finally {
-        await Effect.runPromise(Fiber.interrupt(fiber))
-      }
-    }
-  )
-
-  it.each([
-    { previous: 'node', reconnect: false },
-    { previous: 'node', reconnect: true },
-    { previous: 'pane', reconnect: false },
-    { previous: 'pane', reconnect: true },
-  ])(
-    'round3 queued $previous release permits following connection down, reconnect=$reconnect',
-    async ({ previous, reconnect }) => {
-      const { owner, dom, model: base, resource } = setupResource()
-
-      const model = {
-        ...base,
-        graph: {
-          ...base.graph,
-          document: reconnect ? document : base.graph.document,
-          panOnDrag: true,
-        },
-      }
-
-      const previousDown =
-        previous === 'node'
-          ? Message.PointerDown({ ...down(), handleId: null })
-          : Message.GestureDown({
-              pointerId: 1,
-              clientX: 10,
-              clientY: 20,
-              screenX: 10,
-              screenY: 20,
-              nodeId: null,
-              direction: null,
-              allowPan: true,
-            })
-
-      let reduced = step(model, previousDown).model
-      resource.reconcile(reduced.graph, previousDown)
-
-      const previousKind =
-        reduced.graph.gestureSession?.kind ?? reduced.graph.pointerSession?.kind
-
-      const queued: (typeof Message.Type)[] = []
-
-      const fiber = Effect.runFork(
-        Stream.runForEach(
-          Stream.mergeAll(
-            [
-              resource.subscriptions.connectionPointerOwner.dependenciesToStream(
-                {
-                  instanceId: reduced.graph.instanceId,
-                }
-              ),
-              subscriptions.pointerEvents.dependenciesToStream(
-                subscriptions.pointerEvents.modelToDependencies(reduced.graph)
-              ),
-            ],
-            { concurrency: 'unbounded' }
-          ),
-          (message) =>
-            Effect.sync(() => {
-              queued.push(message)
-            })
-        )
-      )
-
-      try {
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        dom.dispatchEvent(syntheticPointer('pointerup'))
-        await Effect.runPromise(Effect.sleep('10 millis'))
-        expect({
-          previousKind,
-          tags: queued.map((message) => message._tag),
-        }).toStrictEqual({
-          previousKind: previous === 'node' ? 'node-drag' : 'viewport-pan',
-          tags: [previous === 'node' ? 'PointerReleased' : 'GestureReleased'],
-        })
-
-        const admitted = Option.getOrThrow(
-          resource.begin(reduced.graph, Option.some(down(reconnect)))
-        )
-
-        const captureStages = [owner.captured]
-
-        for (const message of [...queued, admitted]) {
-          const prepared = Option.getOrThrow(
-            resource.prepare(wrapGraphMessage({ message }).message)
-          )
-
-          reduced = step(reduced, prepared).model
-          resource.reconcile(reduced.graph, prepared)
-          captureStages.push(owner.captured)
-        }
-
-        expect({
-          gesture: reduced.graph.gestureSession,
-          pointerKind: reduced.graph.pointerSession?.kind,
-          captureStages,
-        }).toStrictEqual({
-          gesture: null,
-          pointerKind: reconnect
-            ? 'reconnection-pending'
-            : 'connection-pending',
-          captureStages: [true, true, true],
-        })
-        const crossing = step(reduced, move(20, 20))
-        resource.reconcile(crossing.model.graph)
-        expect({
-          lifecycle: events(crossing),
-          captured: owner.captured,
-        }).toMatchObject({
-          lifecycle: [
-            {
-              name: reconnect ? 'onReconnectStart' : 'onConnectStart',
-              inputKind: 'pointer',
-            },
-            {
-              name: reconnect ? 'onReconnectPreview' : 'onConnectionPreview',
-              x: 90,
-              y: 80,
-            },
-          ],
-          captured: true,
-        })
-        const cancelled = step(crossing.model, Message.CancelGesture({}))
-        resource.reconcile(cancelled.model.graph, Message.CancelGesture({}))
-        expect(owner.captured).toBeFalsy()
-      } finally {
-        await Effect.runPromise(Fiber.interrupt(fiber))
-      }
-    }
-  )
-
-  it.each([
-    { previous: 'node', reconnect: false },
-    { previous: 'node', reconnect: true },
-    { previous: 'pane', reconnect: false },
-    { previous: 'pane', reconnect: true },
-  ])(
-    'round3 active $previous rejects connection down and retires only its capture, reconnect=$reconnect',
-    ({ previous, reconnect }) => {
-      const { owner, model: base, resource } = setupResource()
-
-      const model = {
-        ...base,
-        graph: {
-          ...base.graph,
-          document: reconnect ? document : base.graph.document,
-          panOnDrag: true,
-        },
-      }
-
-      const previousDown =
-        previous === 'node'
-          ? Message.PointerDown({ ...down(), handleId: null })
-          : Message.GestureDown({
-              pointerId: 1,
-              clientX: 10,
-              clientY: 20,
-              screenX: 10,
-              screenY: 20,
-              nodeId: null,
-              direction: null,
-              allowPan: true,
-            })
-
-      const active = step(model, previousDown).model
-      resource.reconcile(active.graph, previousDown)
-
-      const admitted = Option.getOrThrow(
-        resource.begin(active.graph, Option.some(down(reconnect)))
-      )
-
-      expect(owner.captured).toBeTruthy()
-
-      const prepared = Option.getOrThrow(
-        resource.prepare(wrapGraphMessage({ message: admitted }).message)
-      )
-
-      const rejected = step(active, prepared)
-      resource.reconcile(rejected.model.graph, prepared)
-      expect({
-        graphPreserved: rejected.model.graph === active.graph,
-        events: events(rejected),
-        captured: owner.captured,
-        rejectedOrigin: Option.isNone(resource.prepare(admitted)),
-      }).toStrictEqual({
-        graphPreserved: true,
-        events: [],
-        captured: false,
-        rejectedOrigin: true,
-      })
-      const released = step(active, Message.CancelGesture({})).model
-      resource.reconcile(released.graph, Message.CancelGesture({}))
-
-      const retry = Option.getOrThrow(
-        resource.begin(released.graph, Option.some(down(reconnect)))
-      )
-
-      const accepted = step(released, retry).model
-      resource.reconcile(accepted.graph, retry)
-      expect({
-        kind: accepted.graph.pointerSession?.kind,
-        captured: owner.captured,
-      }).toStrictEqual({
-        kind: reconnect ? 'reconnection-pending' : 'connection-pending',
-        captured: true,
-      })
-      resource.reconcile(
-        step(accepted, Message.CancelGesture({})).model.graph,
-        Message.CancelGesture({})
-      )
-      expect(owner.captured).toBeFalsy()
-    }
-  )
-
-  it('qualified Escape queued after a native click settles the click source after receipt consumption', async () => {
-    const { owner, dom, model, resource } = setupResource()
-    const queued: (typeof Message.Type)[] = []
-
-    const fiber = Effect.runFork(
-      Stream.runForEach(
-        resource.subscriptions.connectionPointerOwner.dependenciesToStream({
-          instanceId: model.graph.instanceId,
-        }),
-        (message) =>
-          Effect.sync(() => {
-            queued.push(message)
-          })
-      )
+  it('genuinely pressed node blocks another physical admission', async () => {
+    const fixture = setupPointer()
+    const stream = fixture.acquire()
+    fixture.begin()
+    fixture.begin(fixture.handle)
+    fixture.dom.dispatchEvent(pointerEvent('pointerup'))
+    const messages = await fixture.collect(stream, 2)
+    expect(messages.map((message) => message._tag)).toStrictEqual([
+      'PointerDown',
+      'PointerReleased',
+    ])
+    expect(fixture.canvas.captured).toBeFalsy()
+    await fixture.dispose()
+  })
+})
+
+describe('connection receipt cancellation during deferred reduction', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('qualified Escape after a queued native click settles only its resulting click source', async () => {
+    const fixture = setupPointer()
+    const stream = fixture.acquire()
+    fixture.canvas.ownerDocument.elementFromPoint = () => fixture.handle
+    fixture.begin(fixture.handle)
+    fixture.dom.dispatchEvent(pointerEvent('pointerup'))
+    const click = pointerEvent('click')
+    Object.defineProperty(click, 'target', { value: fixture.canvas })
+    fixture.dom.dispatchEvent(click)
+
+    const escape = Object.defineProperty(
+      new Event('keydown', { cancelable: true }),
+      'key',
+      { value: 'Escape' }
     )
 
-    try {
-      await Effect.runPromise(Effect.sleep('10 millis'))
+    fixture.dom.dispatchEvent(escape)
+    expect(escape.defaultPrevented).toBeTruthy()
+    const messages = await fixture.collect(stream, 4)
 
-      const admitted = Option.getOrThrow(
-        resource.begin(model.graph, Option.some(down()))
-      )
+    const observed = messages.flatMap((message) => {
+      const result = fixture.process(message)
 
-      let reduced = step(model, admitted).model
-      resource.reconcile(reduced.graph, admitted)
-      dom.dispatchEvent(syntheticPointer('pointerup'))
-      const click = syntheticPointer('click')
-      Object.defineProperty(click, 'target', { value: owner })
-      dom.dispatchEvent(click)
-      dom.dispatchEvent(
-        Object.defineProperty(
-          new Event('keydown', { cancelable: true }),
-          'key',
-          { value: 'Escape' }
+      return result === undefined
+        ? []
+        : events(result).map((event) => event.name)
+    })
+
+    expect(observed).toStrictEqual(['onInit', 'onConnectStart', 'onConnectEnd'])
+    expect(fixture.model().graph.keyboardConnectionSession).toBeNull()
+    await fixture.dispose()
+  })
+})
+
+describe('migrated awaiting-connection and resize ownership', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it.each(['blur', 'pointercancel', 'Escape'] as const)(
+    'native %s settles queued down before attachment',
+    async (kind) => {
+      const fixture = setupPointer()
+      const stream = fixture.acquire()
+      fixture.begin(fixture.handle)
+
+      if (kind === 'blur') {
+        fixture.windowOwner.dispatchEvent(new Event('blur'))
+      } else if (kind === 'Escape') {
+        fixture.dom.dispatchEvent(
+          Object.defineProperty(
+            new Event('keydown', { cancelable: true }),
+            'key',
+            { value: 'Escape' }
+          )
         )
-      )
-      await Effect.runPromise(Effect.sleep('10 millis'))
-      expect(queued.map((message) => message._tag)).toStrictEqual([
-        'PointerReleased',
-        'RoutedPointerClick',
-        'CancelGesture',
-      ])
-      const lifecycle: ReturnType<typeof events> = []
+      } else {
+        fixture.dom.dispatchEvent(pointerEvent(kind))
+      }
+
+      const messages = await fixture.collect(stream, 2)
+
+      const emitted = messages.flatMap((message) => {
+        const result = fixture.process(message)
+
+        return result === undefined
+          ? []
+          : events(result).filter((event) => event.name !== 'onInit')
+      })
+
+      expect({
+        emitted,
+        session: fixture.model().graph.pointerSession,
+        captured: fixture.canvas.captured,
+      }).toStrictEqual({ emitted: [], session: null, captured: false })
+      await fixture.dispose()
+    }
+  )
+
+  it('unrelated reduction preserves awaiting capture and queued native down', async () => {
+    const fixture = setupPointer()
+    const stream = fixture.acquire()
+    fixture.begin(fixture.handle)
+    fixture.accept(step(fixture.model(), Message.PruneMeasurements({})).model)
+    const [queued] = await fixture.collect(stream, 1)
+
+    if (queued === undefined) {
+      throw new Error('Missing down')
+    }
+
+    expect(fixture.process(queued)?.model.graph.pointerSession?.kind).toBe(
+      'connection-pending'
+    )
+    expect(fixture.canvas.captured).toBeTruthy()
+    await fixture.dispose()
+  })
+
+  it('connection release before node down preserves the newer node capture', async () => {
+    const fixture = setupPointer()
+    const stream = fixture.acquire()
+    fixture.begin(fixture.handle)
+    fixture.dom.dispatchEvent(pointerEvent('pointerup'))
+    fixture.begin(fixture.node)
+    const messages = await fixture.collect(stream, 3)
+
+    for (const message of messages) {
+      fixture.process(message)
+    }
+
+    expect(fixture.model().graph.pointerSession?.kind).toBe('node-pending')
+    expect(fixture.node.captured).toBeTruthy()
+    await fixture.dispose()
+  })
+})
+
+describe('cross-kind native FIFO at nontrivial coordinates', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it.each(['handle', 'reconnect'] as const)(
+    'resize release then %s admission survives translated zoomed coordinates',
+    async (destination) => {
+      const fixture = setupPointer()
+      fixture.accept({
+        ...fixture.model(),
+        graph: {
+          ...fixture.model().graph,
+          viewport: { x: 80, y: 40, zoom: 2 },
+          document: {
+            ...document,
+            nodes: document.nodes.map((node) => ({ ...node, selected: true })),
+          },
+        },
+      })
+      const stream = fixture.acquire()
+      fixture.begin(fixture.resize)
+      const [downMessage] = await fixture.collect(stream, 1)
+
+      if (downMessage === undefined) {
+        throw new Error('Missing resize down')
+      }
+
+      fixture.process(downMessage)
+      expect(fixture.model().graph.gestureSession?.kind).toBe('resize')
+      fixture.dom.dispatchEvent(pointerEvent('pointerup'))
+      fixture.begin(fixture[destination])
+      const queued = await fixture.collect(stream, 2)
 
       for (const message of queued) {
-        const prepared = Option.getOrThrow(
-          resource.prepare(wrapGraphMessage({ message }).message)
-        )
-
-        const result = step(reduced, prepared)
-        lifecycle.push(...events(result))
-        reduced = result.model
-        resource.reconcile(reduced.graph, prepared)
+        fixture.process(message)
       }
 
-      expect(reduced.graph.keyboardConnectionSession).toBeNull()
-      expect(reduced.graph.pointerClickReceipt).toBeNull()
-      expect(lifecycle).toMatchObject([
-        { name: 'onConnectStart', inputKind: 'click' },
-        { name: 'onConnectEnd', inputKind: 'click', outcome: 'cancelled' },
-      ])
-      expect(owner.captured).toBeFalsy()
-    } finally {
-      await Effect.runPromise(Fiber.interrupt(fiber))
+      expect(fixture.model().graph.pointerSession?.kind).toBe(
+        destination === 'handle' ? 'connection-pending' : 'reconnection-pending'
+      )
+      expect(fixture.canvas.captured).toBeTruthy()
+      await fixture.dispose()
     }
+  )
+
+  it('old routed click cannot release a newer capture with the reused pointer ID', async () => {
+    const fixture = setupPointer()
+    const stream = fixture.acquire()
+    fixture.canvas.ownerDocument.elementFromPoint = () => fixture.handle
+    fixture.begin(fixture.handle)
+    fixture.dom.dispatchEvent(pointerEvent('pointerup'))
+    const click = pointerEvent('click')
+    Object.defineProperty(click, 'target', { value: fixture.canvas })
+    fixture.dom.dispatchEvent(click)
+    fixture.begin(fixture.targetHandle, 11, 20)
+    const queued = await fixture.collect(stream, 4)
+
+    for (const message of queued) {
+      fixture.process(message)
+    }
+
+    expect(fixture.canvas.captured).toBeTruthy()
+    expect(fixture.model().graph.pointerSession?.startX).toBe(11)
+    await fixture.dispose()
   })
 })

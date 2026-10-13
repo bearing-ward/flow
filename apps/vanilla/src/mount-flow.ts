@@ -1,4 +1,7 @@
 import {
+  FlowNodeSchema,
+  FlowEdgeSchema,
+  MeasuredNodeSchema,
   FlowAttribute,
   FlowCommandSchema,
   HandleIdSchema,
@@ -12,6 +15,11 @@ import {
   NodeExtentSchema,
   NodeResizeDirectionSchema,
   SnapGridSchema,
+  NodeDragThresholdSchema,
+  decodeNodeDragThreshold,
+  nodeDragActivated,
+  nodeTopLeftToAnchor,
+  resolveNodeOrigin,
   ConnectionDragThresholdSchema,
   defaultConnectionDragThreshold,
   connectionDragActivated,
@@ -176,8 +184,6 @@ import type {
   FlowNodeConnection,
   FlowStateChange,
   FlowStateChangeCause,
-  FlowNodeSchema,
-  FlowEdgeSchema,
 } from '@flow/core'
 import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
 
@@ -326,7 +332,7 @@ export const CanvasUISchema = S.Struct({
 export const FlowMountOptionsSchema = S.Struct({
   documentMode: FlowControlModeSchema,
   connectionDragThreshold: S.optional(ConnectionDragThresholdSchema),
-  nodeDragThreshold: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+  nodeDragThreshold: S.optional(NodeDragThresholdSchema),
   connectOnClick: S.optional(S.Boolean),
   panOnDrag: S.optional(
     S.Union([
@@ -1265,8 +1271,51 @@ interface NodeEntry {
   readonly release: () => void
   generation: number
   rendererType: string | undefined
-  renderer: FlowNodeRendererInstance | undefined
+  readonly rendererScope: Scope.Closeable
+  readonly browserScope: Scope.Closeable
+  state: 'owned' | 'retired'
+  renderer:
+    | { readonly kind: 'awaiting-factory' }
+    | { readonly kind: 'default' }
+    | { readonly kind: 'custom'; readonly instance: FlowNodeRendererInstance }
 }
+
+type ReadyNodeEntry = NodeEntry & {
+  renderer: Exclude<
+    NodeEntry['renderer'],
+    { readonly kind: 'awaiting-factory' }
+  >
+}
+
+type NodeEntrySlot =
+  | { readonly kind: 'ready'; readonly entry: ReadyNodeEntry }
+  | {
+      readonly kind: 'reserved'
+      readonly entry: NodeEntry
+      readonly operation: 'factory' | 'update' | 'remove'
+    }
+
+type ExpectedNodeSlot =
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'present'; readonly slot: NodeEntrySlot }
+
+type InitialNodeReservation = Extract<
+  NodeEntrySlot,
+  { readonly kind: 'reserved' }
+> & {
+  readonly operation: 'factory'
+  readonly old: undefined
+}
+
+type NodeSlotInstall =
+  | {
+      readonly expected: Extract<ExpectedNodeSlot, { readonly kind: 'absent' }>
+      readonly next: InitialNodeReservation
+    }
+  | {
+      readonly expected: Extract<ExpectedNodeSlot, { readonly kind: 'present' }>
+      readonly next: NodeEntrySlot
+    }
 
 export type NodeInternalsRefreshResult = CoreNodeInternalsRefreshResult
 
@@ -1502,13 +1551,6 @@ const isNodePointerTargetAllowed = (
   )
 }
 
-const isGestureForPointer = (
-  gesture: { readonly pointerId: number } | null,
-  pointerId: number | undefined
-): boolean =>
-  gesture !== null &&
-  (pointerId === undefined || gesture.pointerId === pointerId)
-
 const changeForFinishedDrag = (
   drag: ActiveNodeDrag | ActiveNodeGroupDrag,
   candidate: NodePositionChange | NodePositionsChange,
@@ -1539,11 +1581,103 @@ const changeForFinishedDrag = (
   return candidate
 }
 
+const copyNodeRead = (node: FlowNode): FlowNode => {
+  const { data: _data, ...values } = node
+
+  return { ...node, ...structuredClone(values) }
+}
+
+const pointMatches = (
+  left: XYPosition | undefined,
+  right: XYPosition | undefined
+): boolean => left?.x === right?.x && left?.y === right?.y
+
+const nodeGeometryMatches = (captured: FlowNode, current: FlowNode): boolean =>
+  pointMatches(captured.position, current.position) &&
+  captured.parentId === current.parentId &&
+  captured.size?.width === current.size?.width &&
+  captured.size?.height === current.size?.height &&
+  captured.origin?.[0] === current.origin?.[0] &&
+  captured.origin?.[1] === current.origin?.[1] &&
+  captured.hidden === current.hidden
+
+const attemptOptionalFailureReport = (report: () => void): boolean => {
+  try {
+    report()
+
+    return true
+  } catch {
+    return false
+  }
+}
+
+type CanvasTargetKind = FlowCanvasEventTarget['kind']
+
+type CanvasCandidateKey = Extract<
+  keyof FlowHostOptions,
+  `on${Capitalize<CanvasTargetKind>}${string}`
+>
+
+type CanvasCallbackKey = {
+  [Key in CanvasCandidateKey]: NonNullable<
+    FlowHostOptions[Key]
+  > extends FlowCanvasEventListener
+    ? FlowCanvasEventListener extends NonNullable<FlowHostOptions[Key]>
+      ? Key
+      : never
+    : never
+}[CanvasCandidateKey]
+
+type CanvasFamilyOf<Key> =
+  Key extends `on${Capitalize<CanvasTargetKind>}${infer Family}`
+    ? Family
+    : never
+
+type CanvasCallbackFamily = CanvasFamilyOf<CanvasCallbackKey>
+
+type CanvasCallbackKeys = {
+  readonly [Kind in CanvasTargetKind]: {
+    readonly [Family in CanvasCallbackFamily]: Extract<
+      CanvasCallbackKey,
+      `on${Capitalize<Kind>}${Family}`
+    >
+  }
+}
+
+const canvasCallbackKeys = {
+  pane: {
+    Click: 'onPaneClick',
+    DoubleClick: 'onPaneDoubleClick',
+    ContextMenu: 'onPaneContextMenu',
+    MouseEnter: 'onPaneMouseEnter',
+    MouseMove: 'onPaneMouseMove',
+    MouseLeave: 'onPaneMouseLeave',
+  },
+  node: {
+    Click: 'onNodeClick',
+    DoubleClick: 'onNodeDoubleClick',
+    ContextMenu: 'onNodeContextMenu',
+    MouseEnter: 'onNodeMouseEnter',
+    MouseMove: 'onNodeMouseMove',
+    MouseLeave: 'onNodeMouseLeave',
+  },
+  edge: {
+    Click: 'onEdgeClick',
+    DoubleClick: 'onEdgeDoubleClick',
+    ContextMenu: 'onEdgeContextMenu',
+    MouseEnter: 'onEdgeMouseEnter',
+    MouseMove: 'onEdgeMouseMove',
+    MouseLeave: 'onEdgeMouseLeave',
+  },
+} satisfies CanvasCallbackKeys
+
 export const createFlowHost = (
   root: HTMLElement,
   initialDocument: FlowDocument,
   options: FlowHostOptions
 ) => {
+  const nodeDragThreshold = decodeNodeDragThreshold(options.nodeDragThreshold)
+
   const connectionDragThreshold = S.decodeUnknownSync(
     ConnectionDragThresholdSchema
   )(
@@ -1556,8 +1690,8 @@ export const createFlowHost = (
 
   return Effect.gen(function* buildFlowHost() {
     const browser = yield* FlowBrowser
-    const hostScope = yield* Scope.make('sequential')
     const { documentMode, runEffect } = options
+    const hostScope = runEffect(Scope.make('sequential'))
 
     const runTelemetryEffect =
       options.runTelemetry ??
@@ -1622,10 +1756,15 @@ export const createFlowHost = (
     viewport.className = 'flow-viewport'
     viewport.dataset.testid = 'flow-viewport'
 
+    let destroyed = false
     let pendingConnection: PendingConnection | null = null
     let connectionCapture: number | null = null
 
     const acquireConnectionCapture = (pointerId: number): boolean => {
+      if (destroyed) {
+        return false
+      }
+
       if (!runEffect(browser.capturePointer(canvas, pointerId))) {
         return false
       }
@@ -1644,7 +1783,6 @@ export const createFlowHost = (
       }
     }
 
-    let destroyed = false
     const viewportPortalDisposers = new Set<() => void>()
 
     const mountViewportPortal = (element: HTMLElement): (() => void) => {
@@ -1707,13 +1845,6 @@ export const createFlowHost = (
 
     let measurements: ReadonlyMap<NodeId, MeasuredNode> = new Map()
 
-    const edgeRenderer = createEdgeRenderer(
-      viewport,
-      options.edgeRenderers,
-      options.defaultEdgeOptions,
-      () => measurements
-    )
-
     let authoritativeViewport = clampViewport(
       options.viewport.initial,
       viewportLimits
@@ -1722,7 +1853,96 @@ export const createFlowHost = (
     let renderedViewport = authoritativeViewport
     applyViewport(viewport, renderedViewport)
 
-    const entries = new Map<NodeId, NodeEntry>()
+    const nodeSlots = new Map<NodeId, NodeEntrySlot>()
+
+    const entries = {
+      get: (id: NodeId): ReadyNodeEntry | undefined => {
+        const slot = nodeSlots.get(id)
+
+        return slot?.kind === 'ready' ? slot.entry : undefined
+      },
+      *[Symbol.iterator](): Generator<[NodeId, ReadyNodeEntry]> {
+        for (const [id, slot] of nodeSlots) {
+          if (slot.kind === 'ready') {
+            yield [id, slot.entry]
+          }
+        }
+      },
+      *keys(): Generator<NodeId> {
+        for (const [id] of this) {
+          yield id
+        }
+      },
+      get size(): number {
+        return [...this].length
+      },
+    }
+
+    const installNodeReservation = (
+      id: NodeId,
+      transition: NodeSlotInstall,
+      pass?: HostProjection
+    ): boolean => {
+      if (destroyed) {
+        return false
+      }
+
+      const matches =
+        transition.expected.kind === 'absent'
+          ? !nodeSlots.has(id)
+          : nodeSlots.get(id) === transition.expected.slot
+
+      if (!matches) {
+        return false
+      }
+
+      nodeSlots.set(id, transition.next)
+      pass?.entryClaims.nodes.set(id, transition.next)
+
+      return true
+    }
+
+    const reserveNodeCandidate = (
+      nodeId: NodeId,
+      expected: NodeEntrySlot | undefined,
+      entry: NodeEntry,
+      pass: HostProjection
+    ): Extract<NodeEntrySlot, { readonly kind: 'reserved' }> | undefined => {
+      if (expected === undefined) {
+        const initial: InitialNodeReservation = {
+          kind: 'reserved',
+          operation: 'factory',
+          old: undefined,
+          entry,
+        }
+
+        return installNodeReservation(
+          nodeId,
+          {
+            expected: { kind: 'absent' },
+            next: initial,
+          },
+          pass
+        )
+          ? initial
+          : undefined
+      }
+
+      const replacement: Extract<NodeEntrySlot, { readonly kind: 'reserved' }> =
+        { kind: 'reserved', operation: 'factory', entry }
+
+      return installNodeReservation(
+        nodeId,
+        {
+          expected: { kind: 'present', slot: expected },
+          next: replacement,
+        },
+        pass
+      )
+        ? replacement
+        : undefined
+    }
+
     let nextMeasurementGeneration = -1
 
     const pendingMeasurementGenerations = new Map<
@@ -1813,6 +2033,134 @@ export const createFlowHost = (
             ? measured.height
             : (node.size?.height ?? 44),
       }
+    }
+
+    const captureResizeRestoration = (
+      nodeId: NodeId,
+      sizeStart: NodeDimensions
+    ) =>
+      document.nodes
+        .filter((node) => node.id === nodeId || node.parentId === nodeId)
+        .flatMap((node) => {
+          const entry = entries.get(node.id)
+
+          if (entry === undefined) {
+            return []
+          }
+
+          const position = renderedNodePositions.get(node.id)
+
+          const accepted = measurementState.nodes.find(
+            (value) =>
+              value.measurement.nodeId === node.id &&
+              value.generation === entry.generation
+          )
+
+          return [
+            {
+              nodeId: node.id,
+              entry,
+              position: position === undefined ? undefined : { ...position },
+              styles: [
+                'width',
+                'height',
+                'min-width',
+                'max-width',
+                'min-height',
+                'max-height',
+                'box-sizing',
+                'transform',
+              ].map((name) => ({
+                name,
+                value: entry.element.style.getPropertyValue(name),
+                priority: entry.element.style.getPropertyPriority(name),
+              })),
+              resizing: entry.element.classList.contains('resizing'),
+              dataResizing: entry.element.dataset.resizing,
+              dataSized: entry.element.dataset.sized,
+              measurement:
+                accepted === undefined
+                  ? {
+                      nodeId: node.id,
+                      generation: entry.generation,
+                      ...(node.id === nodeId
+                        ? sizeStart
+                        : dimensionsForNode(node)),
+                      handles: measureNodeHandles(
+                        node,
+                        entry.element,
+                        renderedViewport.zoom
+                      ),
+                    }
+                  : {
+                      ...structuredClone(accepted.measurement),
+                      generation: accepted.generation,
+                    },
+            },
+          ]
+        })
+
+    const resizeRestorations = new WeakMap<
+      ActiveNodeResize | ActiveKeyboardResize,
+      ReturnType<typeof captureResizeRestoration>
+    >()
+
+    const restoreResizePrimitives = (
+      resize: ActiveNodeResize | ActiveKeyboardResize
+    ): boolean => {
+      const captured = resizeRestorations.get(resize)
+
+      if (captured === undefined) {
+        return false
+      }
+
+      resizeRestorations.delete(resize)
+      const restoredMeasurements: NodeMeasurementInput[] = []
+
+      for (const item of captured) {
+        for (const style of item.styles) {
+          item.entry.element.style.setProperty(
+            style.name,
+            style.value,
+            style.priority
+          )
+        }
+
+        item.entry.element.classList.toggle('resizing', item.resizing)
+
+        if (item.dataResizing === undefined) {
+          delete item.entry.element.dataset.resizing
+        } else {
+          item.entry.element.dataset.resizing = item.dataResizing
+        }
+
+        if (item.dataSized === undefined) {
+          delete item.entry.element.dataset.sized
+        } else {
+          item.entry.element.dataset.sized = item.dataSized
+        }
+
+        if (entries.get(item.nodeId) !== item.entry) {
+          continue
+        }
+
+        if (item.position === undefined) {
+          renderedNodePositions.delete(item.nodeId)
+        } else {
+          renderedNodePositions.set(item.nodeId, item.position)
+        }
+
+        restoredMeasurements.push(item.measurement)
+      }
+
+      measurementState = applyNodeMeasurements(
+        document,
+        measurementState,
+        restoredMeasurements
+      )
+      measurements = getFlowMeasuredNodes(document, measurementState)
+
+      return true
     }
 
     const boundedPositionWithinParent = (
@@ -1930,9 +2278,441 @@ export const createFlowHost = (
     const keyPressDisposers = new Set<() => void>()
 
     const viewportListeners = new Set<(event: ViewportObservation) => void>()
-    const callbackStartedNodeDrags = new Set<number>()
+
+    const canvasUIHandle: CanvasUIHandle = { current: undefined }
+    let rootAttached = false
+    const cleanupFailures: unknown[] = []
+    yield* Scope.addFinalizer(
+      hostScope,
+      Effect.sync(() => {
+        nodeSlots.clear()
+        renderedNodePositions.clear()
+
+        listeners.clear()
+        stateListeners.clear()
+        connectionPreviewListeners.clear()
+        viewportListeners.clear()
+
+        for (const dispose of viewportPortalDisposers) {
+          try {
+            dispose()
+          } catch (error) {
+            cleanupFailures.push(error)
+          }
+        }
+
+        const restorePanelFocus = canvasUIHandle.current?.captureActiveFocus()
+
+        try {
+          if (rootAttached) {
+            root.replaceChildren()
+          }
+        } catch (error) {
+          cleanupFailures.push(error)
+        }
+
+        try {
+          canvasUIHandle.current?.destroy(restorePanelFocus)
+        } catch (error) {
+          cleanupFailures.push(error)
+        }
+
+        if (cleanupFailures.length > 0) {
+          attemptOptionalFailureReport(() => {
+            runTelemetry(
+              Effect.logError('Failed to fully clean up flow host').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.documentIssue]: cleanupFailures
+                    .map(String)
+                    .join('; '),
+                  [FlowAttribute.nodeCount]: cleanupFailures.length,
+                }),
+                Effect.withSpan(FlowSpan.hostDestroy)
+              )
+            )
+          })
+        }
+      })
+    )
+
+    const hostRendererScope = runEffect(Scope.fork(hostScope, 'sequential'))
+    const hostBrowserScope = runEffect(Scope.fork(hostScope, 'sequential'))
+
+    let interactionSessions: FlowInteractionSessions = []
+
+    const sessionFor = (
+      kind: FlowInteractionSession['kind']
+    ): FlowInteractionSession | undefined =>
+      interactionSessions.find((session) => session.kind === kind)
+
+    let nodeSample: NodeSample | undefined
+
+    let activeClickConnection: ActiveClickConnection | null = null
+
+    let activeViewportOperation:
+      | {
+          readonly requestId: number
+          readonly resolve: (result: ViewportOperationResult) => void
+          readonly target: Viewport
+          readonly from: Viewport
+          startedAt: number
+          readonly duration: number
+          readonly easing: 'linear' | 'ease-in-out'
+          frame: number | undefined
+        }
+      | undefined
+
+    const nodeSampleLive = (sample: NodeSample): boolean =>
+      !destroyed &&
+      nodeSample === sample &&
+      sessionFor('node-drag') === sample.session &&
+      sample.session.kind === 'node-drag' &&
+      sample.session.drag === sample.drag &&
+      sample.session.phase === 'active'
+
+    type PaintOrigin =
+      | {
+          readonly kind: 'semantic' | 'retired'
+          readonly document: FlowDocument
+        }
+      | { readonly kind: 'node'; readonly sample: NodeSample }
+      | {
+          readonly kind: 'viewport'
+          readonly document: FlowDocument
+          readonly owners: FlowInteractionSessions
+          readonly request: typeof activeViewportOperation
+          readonly retained: ActiveClickConnection | null
+        }
+
+    const nodeReadEqual = S.toEquivalence(FlowNodeSchema)
+    const edgeReadEqual = S.toEquivalence(FlowEdgeSchema)
+    const measurementReadEqual = S.toEquivalence(MeasuredNodeSchema)
+
+    const defaultsReadEqual = S.toEquivalence(
+      S.UndefinedOr(FlowDefaultEdgeOptionsSchema)
+    )
+
+    const uiReadEqual = S.toEquivalence(S.UndefinedOr(CanvasUISchema))
+
+    const originMatches = (origin: PaintOrigin): boolean => {
+      if (destroyed) {
+        return false
+      }
+
+      switch (origin.kind) {
+        case 'semantic':
+        case 'retired': {
+          return origin.document === document
+        }
+
+        case 'node': {
+          return nodeSampleLive(origin.sample)
+        }
+
+        case 'viewport': {
+          return (
+            origin.document === document &&
+            origin.owners === interactionSessions &&
+            origin.request === activeViewportOperation &&
+            origin.retained === activeClickConnection
+          )
+        }
+
+        default: {
+          const exhausted: never = origin
+
+          return exhausted
+        }
+      }
+    }
+
+    const measurementMatches = (pass: HostProjection, id: NodeId): boolean => {
+      const captured = pass.inputs.measurements.get(id)
+      const current = measurements.get(id)
+
+      return captured === undefined || current === undefined
+        ? captured === current
+        : measurementReadEqual(captured, current)
+    }
+
+    const nodeDependenciesMatch = (
+      pass: HostProjection,
+      id: NodeId
+    ): boolean => {
+      let currentId: NodeId | undefined = id
+
+      while (currentId !== undefined) {
+        const captured: FlowNode | undefined =
+          pass.graph.nodes.get(currentId)?.node
+
+        const idToRead = currentId
+        const current = document.nodes.find((node) => node.id === idToRead)
+
+        if (captured === undefined || current === undefined) {
+          return captured === current
+        }
+
+        if (
+          currentId === id &&
+          (captured.data !== current.data ||
+            !nodeReadEqual(
+              { ...captured, data: undefined },
+              { ...current, data: undefined }
+            ) ||
+            pass.inputs.nodeRenderers.get(captured.type ?? 'default') !==
+              options.nodeRenderers?.[current.type ?? 'default'])
+        ) {
+          return false
+        }
+
+        if (!nodeGeometryMatches(captured, current)) {
+          return false
+        }
+
+        if (
+          !pointMatches(
+            pass.inputs.positions.get(currentId),
+            renderedNodePositions.get(currentId)
+          )
+        ) {
+          return false
+        }
+
+        if (!measurementMatches(pass, currentId)) {
+          return false
+        }
+
+        currentId = captured.parentId
+      }
+
+      return (
+        pass.inputs.document.nodeOrigin?.[0] === document.nodeOrigin?.[0] &&
+        pass.inputs.document.nodeOrigin?.[1] === document.nodeOrigin?.[1]
+      )
+    }
+
+    const edgeDependenciesMatch = (
+      pass: HostProjection,
+      id: EdgeId
+    ): boolean => {
+      const captured = pass.inputs.document.edges.find((edge) => edge.id === id)
+      const current = document.edges.find((edge) => edge.id === id)
+
+      if (captured === undefined || current === undefined) {
+        return captured === current
+      }
+
+      const capturedType = applyDefaultEdgeOptions(
+        captured,
+        pass.inputs.defaults
+      ).type
+
+      const currentType = applyDefaultEdgeOptions(
+        current,
+        options.defaultEdgeOptions
+      ).type
+
+      const renderer =
+        capturedType === undefined
+          ? undefined
+          : pass.inputs.edgeRenderers.get(capturedType)
+
+      const actualRenderer =
+        currentType === undefined
+          ? undefined
+          : options.edgeRenderers?.[currentType]
+
+      return (
+        captured.data === current.data &&
+        edgeReadEqual(
+          { ...captured, data: undefined },
+          { ...current, data: undefined }
+        ) &&
+        defaultsReadEqual(pass.inputs.defaults, options.defaultEdgeOptions) &&
+        renderer?.geometry === actualRenderer?.geometry &&
+        renderer?.render === actualRenderer?.render &&
+        nodeDependenciesMatch(pass, captured.source) &&
+        nodeDependenciesMatch(pass, captured.target)
+      )
+    }
+
+    const projectionMatches = (
+      pass: HostProjection,
+      dependency: ProjectionDependency
+    ): boolean => {
+      if (!originMatches(pass.origin)) {
+        return false
+      }
+
+      if (dependency.kind === 'node') {
+        return nodeDependenciesMatch(pass, dependency.id)
+      }
+
+      if (dependency.kind === 'edge') {
+        return edgeDependenciesMatch(pass, dependency.id)
+      }
+
+      if (
+        dependency.kind !== 'viewport' &&
+        (pass.inputs.document.nodes.length !== document.nodes.length ||
+          pass.inputs.document.edges.length !== document.edges.length ||
+          !pass.inputs.document.nodes.every((node) =>
+            nodeDependenciesMatch(pass, node.id)
+          ) ||
+          !pass.inputs.document.edges.every((edge) =>
+            edgeDependenciesMatch(pass, edge.id)
+          ))
+      ) {
+        return false
+      }
+
+      if (dependency.kind === 'graph') {
+        return true
+      }
+
+      const { pane, viewport: captured } = pass.inputs
+      const rect = canvas.getBoundingClientRect()
+
+      if (
+        !pointMatches(captured, renderedViewport) ||
+        captured.zoom !== renderedViewport.zoom ||
+        pane.x !== rect.x ||
+        pane.y !== rect.y ||
+        pane.width !== canvas.clientWidth ||
+        pane.height !== canvas.clientHeight
+      ) {
+        return false
+      }
+
+      if (dependency.kind === 'visibility') {
+        return (
+          pass.inputs.renderOnlyVisible === (options.renderOnlyVisible === true)
+        )
+      }
+
+      if (dependency.kind === 'viewport') {
+        return true
+      }
+
+      return (
+        pass.inputs.uiHandle === canvasUIHandle.current &&
+        uiReadEqual(pass.inputs.ui, options.ui)
+      )
+    }
+
+    const edgeRenderer: ReturnType<
+      typeof createEdgeRenderer<
+        PaintOrigin,
+        NodeEntrySlot,
+        CanvasUIHandle['current']
+      >
+    > = createEdgeRenderer<
+      PaintOrigin,
+      NodeEntrySlot,
+      CanvasUIHandle['current']
+    >(
+      viewport,
+      hostRendererScope,
+      runEffect,
+      (pass, dependency) => projectionMatches(pass, dependency),
+      () => destroyed,
+      cleanupFailures
+    )
+
+    const captureProjection = (
+      target: FlowDocument = document,
+      origin?: PaintOrigin
+    ): HostProjection => {
+      const values: FlowDocument = {
+        ...target,
+        nodeOrigin:
+          target.nodeOrigin === undefined
+            ? undefined
+            : [target.nodeOrigin[0], target.nodeOrigin[1]],
+        nodes: target.nodes.map(copyNodeRead),
+        edges: target.edges.map((edge) => ({ ...edge })),
+      }
+
+      const positions = new Map(
+        [...renderedNodePositions].map(([id, point]) => [id, { ...point }])
+      )
+
+      const measured = new Map(
+        [...measurements].map(([id, value]) => [id, structuredClone(value)])
+      )
+
+      const rect = canvas.getBoundingClientRect()
+      const nodes = new Map(nodeSlots)
+      const edges = edgeRenderer.captureEntryCohort()
+
+      return {
+        origin: origin ?? { kind: 'semantic', document: target },
+        graph: createFlowGraph(values, measured, positions),
+        inputs: {
+          document: values,
+          measurements: measured,
+          positions,
+          viewport: { ...renderedViewport },
+          pane: {
+            x: rect.x,
+            y: rect.y,
+            width: canvas.clientWidth,
+            height: canvas.clientHeight,
+          },
+          renderOnlyVisible: options.renderOnlyVisible === true,
+          nodeRenderers: new Map(Object.entries(options.nodeRenderers ?? {})),
+          edgeRenderers: new Map(
+            Object.entries(options.edgeRenderers ?? {}).map(([key, value]) => [
+              key,
+              { geometry: value.geometry, render: value.render },
+            ])
+          ),
+          defaults:
+            options.defaultEdgeOptions === undefined
+              ? undefined
+              : { ...options.defaultEdgeOptions },
+          ui: options.ui === undefined ? undefined : { ...options.ui },
+          uiHandle: canvasUIHandle.current,
+        },
+        cohort: { nodes, edges },
+        entryClaims: { nodes: new Map(nodes), edges: new Map(edges) },
+      }
+    }
+
+    type HostProjection = Parameters<typeof edgeRenderer.reconcile>[0]
+
+    type ProjectionDependency = Parameters<
+      Parameters<
+        typeof createEdgeRenderer<
+          PaintOrigin,
+          NodeEntrySlot,
+          CanvasUIHandle['current']
+        >
+      >[3]
+    >[1]
+
+    yield* Scope.addFinalizer(
+      hostRendererScope,
+      Effect.sync(() => {
+        try {
+          edgeRenderer.destroy()
+        } catch (error) {
+          cleanupFailures.push(error)
+        }
+      })
+    )
+
+    const callbackStartedNodeDrags = new Set<
+      ActiveNodeDrag | ActiveNodeGroupDrag
+    >()
+
     let viewportObservationSource: ViewportObservation['source'] = 'user'
-    let userViewportObservationActive = false
+
+    interface VanillaObservation {
+      state: 'open' | 'ended'
+    }
+
+    let userViewportObservation: VanillaObservation | null = null
 
     const reportBoundaryCallback = <A>(
       label: string,
@@ -2019,22 +2799,33 @@ export const createFlowHost = (
       }
     }
 
-    const beginUserViewportObservation = (): void => {
-      if (userViewportObservationActive) {
-        return
+    const beginUserViewportObservation = (): VanillaObservation => {
+      if (userViewportObservation !== null) {
+        return userViewportObservation
       }
 
-      userViewportObservationActive = true
+      const owner: VanillaObservation = { state: 'open' }
+      userViewportObservation = owner
       emitViewportObservation('start', renderedViewport, 'user')
+
+      return owner
     }
 
-    const endUserViewportObservation = (): void => {
-      if (!userViewportObservationActive) {
+    const endUserViewportObservation = (
+      owner = userViewportObservation,
+      terminalViewport = renderedViewport
+    ): void => {
+      if (owner === null || owner.state !== 'open') {
         return
       }
 
-      userViewportObservationActive = false
-      emitViewportObservation('end', renderedViewport, 'user')
+      owner.state = 'ended'
+
+      if (userViewportObservation === owner) {
+        userViewportObservation = null
+      }
+
+      emitViewportObservation('end', terminalViewport, 'user')
     }
 
     const deferredMutations: (() => void)[] = []
@@ -2047,7 +2838,7 @@ export const createFlowHost = (
     let drainingMutations = false
 
     const reportStateListenerFailure = (cause: Cause.Cause<unknown>): void => {
-      try {
+      attemptOptionalFailureReport(() => {
         runTelemetry(
           Effect.logError('Accepted-state listener failed').pipe(
             Effect.annotateLogs({
@@ -2055,9 +2846,7 @@ export const createFlowHost = (
             })
           )
         )
-      } catch {
-        // Listener isolation must survive telemetry failures too.
-      }
+      })
     }
 
     const publishAcceptedState = (cause: FlowStateChangeCause): void => {
@@ -2155,18 +2944,11 @@ export const createFlowHost = (
       }
     }
 
-    let interactionSessions: FlowInteractionSessions = []
-
     const changePublisher = {
       publish: (_change: FlowChange): void => {
         throw new Error('Flow change publisher is not initialized')
       },
     }
-
-    const sessionFor = (
-      kind: FlowInteractionSession['kind']
-    ): FlowInteractionSession | undefined =>
-      interactionSessions.find((session) => session.kind === kind)
 
     const endSession = (
       kind: FlowInteractionSession['kind'],
@@ -2318,15 +3100,14 @@ export const createFlowHost = (
       overrides: ReadonlyMap<NodeId, XYPosition> = renderedNodePositions
     ) => createFlowGraph(target, measurements, overrides)
 
-    const canvasUIHandle: CanvasUIHandle = { current: undefined }
     const fitViewControlHandle: FitViewControlHandle = { current: undefined }
 
-    const updateCanvasMinimap = (): void => {
+    const updateCanvasMinimap = (pass = captureProjection()): void => {
       if (canvasUIHandle.current === undefined) {
         return
       }
 
-      const graph = graphFor()
+      const { graph } = pass
       const bounds = graphBounds(graph)
 
       if (bounds === undefined) {
@@ -2352,8 +3133,9 @@ export const createFlowHost = (
     const absolutePosition = (nodeId: NodeId): XYPosition =>
       graphFor().nodes.get(nodeId)?.absolutePosition ?? { x: 0, y: 0 }
 
-    const updateToolbarAnchors = (target: FlowDocument = document): void => {
-      const anchors = flowToolbarAnchors(graphFor(target), renderedViewport)
+    const updateToolbarAnchors = (pass = captureProjection()): void => {
+      const target = pass.inputs.document
+      const anchors = flowToolbarAnchors(pass.graph, pass.inputs.viewport)
       const visibleNodes = new Set<string>(entries.keys())
 
       const edgeIds = new Set<string>(
@@ -2369,6 +3151,11 @@ export const createFlowHost = (
         nodes: anchors.nodes.filter((anchor) => visibleNodes.has(anchor.id)),
         edges: anchors.edges.filter((anchor) => edgeIds.has(anchor.id)),
       })
+
+      if (!projectionMatches(pass, { kind: 'toolbar' })) {
+        return
+      }
+
       canvasUIHandle.current?.updateToolbars({
         nodes: anchors.nodes.filter((anchor) => visibleNodes.has(anchor.id)),
         edges: anchors.edges.filter((anchor) => edgeIds.has(anchor.id)),
@@ -2386,29 +3173,59 @@ export const createFlowHost = (
           ? undefined
           : graphFor().nodes.get(node.parentId)
 
-      return parent === undefined
-        ? absolute
-        : {
-            x: absolute.x - parent.absolutePosition.x,
-            y: absolute.y - parent.absolutePosition.y,
-          }
+      const resolved = graphFor().nodes.get(nodeId)
+
+      if (resolved === undefined || node === undefined) {
+        throw new Error(`Missing dragged node ${nodeId}`)
+      }
+
+      return nodeTopLeftToAnchor(
+        parent === undefined
+          ? absolute
+          : {
+              x: absolute.x - parent.absolutePosition.x,
+              y: absolute.y - parent.absolutePosition.y,
+            },
+        resolved.dimensions,
+        resolveNodeOrigin(node, document)
+      )
     }
 
-    const renderGraphPositions = (target: FlowDocument = document) => {
-      const graph = graphFor(target)
+    const renderGraphPositions = (pass = captureProjection()) => {
+      const { graph } = pass
 
-      for (const [nodeId, entry] of entries) {
+      for (const [nodeId, slot] of pass.entryClaims.nodes) {
         const resolved = graph.nodes.get(nodeId)
 
-        if (resolved !== undefined) {
-          applyNodePosition(entry.element, resolved.absolutePosition)
+        if (
+          nodeSlots.get(nodeId) === slot &&
+          slot.entry.renderer.kind !== 'awaiting-factory' &&
+          slot.entry.state === 'owned' &&
+          resolved !== undefined
+        ) {
+          applyNodePosition(slot.entry.element, resolved.absolutePosition)
         }
       }
 
-      updateToolbarAnchors(target)
-      updateCanvasMinimap()
+      updateToolbarAnchors(pass)
+
+      if (projectionMatches(pass, { kind: 'minimap' })) {
+        updateCanvasMinimap(pass)
+      }
 
       return graph
+    }
+
+    const renderGraphEdges = (pass = captureProjection()): boolean => {
+      renderGraphPositions(pass)
+
+      if (!projectionMatches(pass, { kind: 'graph' })) {
+        return false
+      }
+
+      edgeRenderer.reconcile(pass)
+
+      return projectionMatches(pass, { kind: 'graph' })
     }
 
     const restoreAdoptedPosition = (node: FlowNode): XYPosition => {
@@ -2447,13 +3264,42 @@ export const createFlowHost = (
 
     let dragPointerStart: XYPosition | null = null
     let dragPointer: XYPosition | null = null
-    let dragFrame: number | null = null
-    let dragFrameScope: Scope.Closeable | null = null
+
+    interface NodeSample {
+      readonly drag: NonNullable<FlowInteractionSlots['activeDrag']>
+      readonly session: NonNullable<ReturnType<typeof sessionFor>>
+      readonly pointerId: number
+      readonly rawClient: XYPosition
+      readonly canvasPoint: XYPosition
+    }
+
+    interface NodeFrameTicket {
+      readonly drag: NodeSample['drag']
+      readonly pointerId: number
+      readonly registrationScope: Scope.Closeable
+      state:
+        | {
+            readonly kind: 'registering'
+            latestSample: NodeSample
+            delivery:
+              | { readonly kind: 'none' }
+              | { readonly kind: 'early'; readonly timestamp: number }
+          }
+        | {
+            readonly kind: 'scheduled'
+            readonly handle: number
+            latestSample: NodeSample
+          }
+        | { readonly kind: 'executing'; readonly sample: NodeSample }
+        | { readonly kind: 'revoked' }
+    }
+
+    let nodeFrame: NodeFrameTicket | undefined
     let connectionPointer: XYPosition | null = null
     let connectionPointerStart: XYPosition | null = null
     let connectionFrame: number | null = null
     let hoveredConnectionHandle: HTMLElement | null = null
-    let activeClickConnection: ActiveClickConnection | null = null
+
     let connectionPreview: SVGSVGElement | null = null
     let connectionLine: SVGLineElement | null = null
     let connectionPreviewState: ConnectionPreviewState | null = null
@@ -2462,10 +3308,407 @@ export const createFlowHost = (
     let selectionPointer: XYPosition | null = null
     let selectionFrame: number | null = null
     let interactionMode: 'select' | 'pan' = 'select'
-    let suppressCanvasClick = false
+
+    interface ClickSuppressionReceipt {
+      readonly kind: 'click-suppression'
+    }
+
+    let clickSuppression: ClickSuppressionReceipt | null = null
+
+    const suppressClickThroughDispatch = (): void => {
+      const receipt: ClickSuppressionReceipt = { kind: 'click-suppression' }
+      clickSuppression = receipt
+      globalThis.setTimeout(() => {
+        if (clickSuppression === receipt) {
+          clickSuppression = null
+        }
+      }, 0)
+    }
 
     const suppressClickUntilPointerUp = (): void => {
-      suppressCanvasClick = true
+      clickSuppression = { kind: 'click-suppression' }
+    }
+
+    type VanillaRecords = FlowInteractionSlots & {
+      pendingConnection: PendingConnection | null
+      activeClickConnection: ActiveClickConnection | null
+      activeKeyboardResize: ActiveKeyboardResize | null
+      activeKeyboardNodeDrag: FlowNodeDragPayload | null
+    }
+
+    type VanillaActor = {
+      [K in keyof VanillaRecords]: {
+        readonly kind: K
+        readonly record: NonNullable<VanillaRecords[K]>
+      }
+    }[keyof VanillaRecords]
+
+    interface CapturedTouch {
+      readonly pointerId: number
+      readonly point: XYPosition
+    }
+
+    interface CaptureReceipt {
+      readonly target: HTMLElement
+      readonly pointerId: number
+    }
+
+    type VanillaResource =
+      | {
+          readonly kind: 'click-source'
+          readonly element: HTMLElement
+        }
+      | {
+          readonly kind: 'node-frame'
+          readonly ticket: NodeFrameTicket
+        }
+      | {
+          readonly kind: 'connection-frame' | 'selection-frame'
+          readonly handle: number
+        }
+      | {
+          readonly kind: 'preview'
+          readonly element: SVGSVGElement
+          readonly line: SVGLineElement | null
+          readonly hover: HTMLElement | null
+        }
+      | {
+          readonly kind: 'selection-overlay'
+          readonly element: HTMLDivElement
+          readonly point: XYPosition | null
+        }
+      | {
+          readonly kind: 'viewport'
+          readonly owner: VanillaObservation
+          readonly viewport: Viewport
+        }
+
+    interface CapturedActor {
+      readonly actor: VanillaActor
+      readonly captures: readonly CaptureReceipt[]
+      readonly resources: readonly VanillaResource[]
+    }
+
+    interface EntryOwners {
+      readonly actors: readonly CapturedActor[]
+      readonly touches: readonly CapturedTouch[]
+      readonly suppression: ClickSuppressionReceipt | null
+    }
+
+    interface DispatchEntry {
+      readonly event: PointerEvent | KeyboardEvent
+      readonly owners: EntryOwners
+      readonly matchedAtEntry: boolean
+    }
+
+    // eslint-disable-next-line prefer-const -- Cancellation binds once after its actor-specific terminal functions and before input listeners.
+    let cancelCaptured: (owners: EntryOwners, reason: string) => void
+
+    const terminalDispatches = new WeakMap<Event, DispatchEntry>()
+
+    const clickSourceElement = (
+      connection: ActiveClickConnection
+    ): HTMLElement | undefined =>
+      [
+        ...(entries
+          .get(connection.source)
+          ?.element.querySelectorAll<HTMLElement>('.flow-handle') ?? []),
+      ].find((element) => element.dataset.handleId === connection.sourceHandle)
+
+    const snapshotEntry = (pointerId?: number): EntryOwners => {
+      const actors: CapturedActor[] = []
+
+      const add = (
+        actor: VanillaActor,
+        target: HTMLElement | undefined,
+        pointerIds: readonly number[]
+      ): void => {
+        if (pointerId !== undefined && !pointerIds.includes(pointerId)) {
+          return
+        }
+
+        const resources: VanillaResource[] = []
+
+        if (
+          actor.kind === 'activeDrag' &&
+          nodeFrame !== undefined &&
+          nodeFrame.drag === actor.record
+        ) {
+          resources.push({ kind: 'node-frame', ticket: nodeFrame })
+        }
+
+        if (
+          actor.kind === 'activeConnection' ||
+          actor.kind === 'activeReconnection' ||
+          actor.kind === 'activeClickConnection'
+        ) {
+          if (connectionFrame !== null) {
+            resources.push({
+              kind: 'connection-frame',
+              handle: connectionFrame,
+            })
+          }
+
+          if (connectionPreview !== null) {
+            resources.push({
+              kind: 'preview',
+              element: connectionPreview,
+              line: connectionLine,
+              hover: hoveredConnectionHandle,
+            })
+          }
+        }
+
+        if (actor.kind === 'activeClickConnection') {
+          const source = clickSourceElement(actor.record)
+
+          if (source !== undefined) {
+            resources.push({ kind: 'click-source', element: source })
+          }
+        }
+
+        if (actor.kind === 'activeSelectionRect') {
+          if (selectionFrame !== null) {
+            resources.push({ kind: 'selection-frame', handle: selectionFrame })
+          }
+
+          if (selectionOverlay !== null) {
+            resources.push({
+              kind: 'selection-overlay',
+              element: selectionOverlay,
+              point: selectionPointer,
+            })
+          }
+        }
+
+        if (
+          (actor.kind === 'activeViewportPan' ||
+            actor.kind === 'activePinch') &&
+          userViewportObservation !== null
+        ) {
+          resources.push({
+            kind: 'viewport',
+            owner: userViewportObservation,
+            viewport: renderedViewport,
+          })
+        }
+
+        actors.push({
+          actor,
+          resources,
+          captures:
+            target === undefined
+              ? []
+              : pointerIds.map((id) => ({ target, pointerId: id })),
+        })
+      }
+
+      const drag = interactionSlots.activeDrag
+
+      if (drag !== null) {
+        add(
+          { kind: 'activeDrag', record: drag },
+          entries.get(dragAnchorId(drag))?.element,
+          [drag.pointerId]
+        )
+      }
+
+      const resize = interactionSlots.activeNodeResize
+
+      if (resize !== null) {
+        add(
+          { kind: 'activeNodeResize', record: resize },
+          entries.get(resize.nodeId)?.element,
+          [resize.pointerId]
+        )
+      }
+
+      if (activeKeyboardResize !== null) {
+        add(
+          { kind: 'activeKeyboardResize', record: activeKeyboardResize },
+          undefined,
+          []
+        )
+      }
+
+      if (pendingConnection !== null) {
+        add({ kind: 'pendingConnection', record: pendingConnection }, canvas, [
+          pendingConnection.pointerId,
+        ])
+      }
+
+      const connection = interactionSlots.activeConnection
+
+      if (connection !== null) {
+        add({ kind: 'activeConnection', record: connection }, canvas, [
+          connection.pointerId,
+        ])
+      }
+
+      const reconnect = interactionSlots.activeReconnection
+
+      if (reconnect !== null) {
+        add({ kind: 'activeReconnection', record: reconnect }, canvas, [
+          reconnect.pointerId,
+        ])
+      }
+
+      if (activeClickConnection !== null) {
+        add(
+          { kind: 'activeClickConnection', record: activeClickConnection },
+          undefined,
+          []
+        )
+      }
+
+      const pan = interactionSlots.activeViewportPan
+
+      if (pan !== null) {
+        add({ kind: 'activeViewportPan', record: pan }, canvas, [pan.pointerId])
+      }
+
+      const pinch = interactionSlots.activePinch
+
+      if (pinch !== null) {
+        add({ kind: 'activePinch', record: pinch }, canvas, [
+          pinch.firstPointerId,
+          pinch.secondPointerId,
+        ])
+      }
+
+      const selection = interactionSlots.activeSelectionRect
+
+      if (selection !== null) {
+        add({ kind: 'activeSelectionRect', record: selection }, canvas, [
+          selection.pointerId,
+        ])
+      }
+
+      if (activeKeyboardNodeDrag !== null) {
+        add(
+          { kind: 'activeKeyboardNodeDrag', record: activeKeyboardNodeDrag },
+          undefined,
+          []
+        )
+      }
+
+      return {
+        actors,
+        suppression: clickSuppression,
+        touches: touchPointers
+          .entries()
+          .filter(
+            ([id]) =>
+              pointerId === undefined ||
+              id === pointerId ||
+              actors.some(({ captures }) =>
+                captures.some((receipt) => receipt.pointerId === id)
+              )
+          )
+          .map(([id, point]) => ({ pointerId: id, point }))
+          .toArray(),
+      }
+    }
+
+    const actorOwned = (actor: VanillaActor): boolean => {
+      switch (actor.kind) {
+        case 'pendingConnection': {
+          return pendingConnection === actor.record
+        }
+
+        case 'activeClickConnection': {
+          return activeClickConnection === actor.record
+        }
+
+        case 'activeKeyboardResize': {
+          return activeKeyboardResize === actor.record
+        }
+
+        case 'activeKeyboardNodeDrag': {
+          return activeKeyboardNodeDrag === actor.record
+        }
+
+        default: {
+          return interactionSlots[actor.kind] === actor.record
+        }
+      }
+    }
+
+    const rememberDispatch = (event: PointerEvent | KeyboardEvent): void => {
+      if (event instanceof KeyboardEvent && event.key !== 'Escape') {
+        return
+      }
+
+      const owners = snapshotEntry(
+        event instanceof PointerEvent ? event.pointerId : undefined
+      )
+
+      const matching: EntryOwners =
+        event.type === 'lostpointercapture' && event instanceof PointerEvent
+          ? {
+              ...owners,
+              actors: owners.actors.filter(({ captures }) =>
+                captures.some(
+                  ({ target, pointerId }) =>
+                    pointerId === event.pointerId &&
+                    target === event.target &&
+                    !target.hasPointerCapture(pointerId)
+                )
+              ),
+            }
+          : owners
+
+      terminalDispatches.set(event, {
+        event,
+        owners: matching,
+        matchedAtEntry: matching.actors.length > 0,
+      })
+    }
+
+    const dispatchOwns = (event: Event, kind: VanillaActor['kind']): boolean =>
+      terminalDispatches
+        .get(event)
+        ?.owners.actors.some(
+          ({ actor }) => actor.kind === kind && actorOwned(actor)
+        ) === true
+
+    // eslint-disable-next-line func-style -- Reconciliation calls this private cancellation entry before its lexical declaration.
+    function cancelSelectionGesture(reason: string, pointerId?: number): void {
+      const owners = snapshotEntry(pointerId)
+      cancelCaptured(
+        {
+          ...owners,
+          actors: owners.actors.filter(
+            ({ actor }) => actor.kind === 'activeSelectionRect'
+          ),
+        },
+        reason
+      )
+    }
+
+    // eslint-disable-next-line func-style -- Actor cancellation entries are hoisted for earlier input and reconciliation callers.
+    function cancelActorKind(kind: VanillaActor['kind'], reason: string): void {
+      const owners = snapshotEntry()
+      cancelCaptured(
+        {
+          ...owners,
+          actors: owners.actors.filter(({ actor }) => actor.kind === kind),
+          touches: [],
+        },
+        reason
+      )
+    }
+
+    const cancelCapturedEscape = (event: KeyboardEvent): boolean => {
+      const entry = terminalDispatches.get(event)
+
+      if (entry === undefined || entry.event !== event) {
+        return false
+      }
+
+      cancelCaptured(entry.owners, 'escape')
+
+      return entry.matchedAtEntry
     }
 
     // eslint-disable-next-line prefer-const -- Assigned after the operations object is initialized.
@@ -2515,6 +3758,7 @@ export const createFlowHost = (
               nodeId: node.id,
               ...measurement,
             })
+            const measuredDocument = document
             runTelemetry(
               Effect.logDebug('Measured flow node geometry').pipe(
                 Effect.annotateLogs({
@@ -2530,11 +3774,18 @@ export const createFlowHost = (
               )
             )
 
-            if (!isDraggingNode(node.id)) {
+            if (
+              !destroyed &&
+              document === measuredDocument &&
+              entries.get(node.id) === currentEntry &&
+              !isDraggingNode(node.id)
+            ) {
               restoreAdoptedPosition(node)
             }
           }
         }
+
+        let projectionCurrent: (() => boolean) | undefined
 
         if (acceptedMeasurements.length > 0) {
           measurementState = applyNodeMeasurements(
@@ -2543,13 +3794,19 @@ export const createFlowHost = (
             acceptedMeasurements
           )
           measurements = getFlowMeasuredNodes(document, measurementState)
-          renderGraphPositions()
+          const pass = captureProjection()
+          projectionCurrent = () => projectionMatches(pass, { kind: 'graph' })
+          renderGraphPositions(pass)
+        }
+
+        if (projectionCurrent !== undefined && !projectionCurrent()) {
+          return
         }
 
         if (options.renderOnlyVisible === true) {
           reconcileVisible?.()
         } else {
-          edgeRenderer.reconcile(document, renderedNodePositions)
+          edgeRenderer.reconcile(captureProjection())
         }
 
         runTelemetry(
@@ -2567,7 +3824,7 @@ export const createFlowHost = (
         )
       })
       .pipe(
-        Scope.provide(hostScope),
+        Scope.provide(hostBrowserScope),
         Effect.tapError(() => Scope.close(hostScope, Exit.void))
       )
 
@@ -2587,11 +3844,65 @@ export const createFlowHost = (
     }
 
     const renderViewport = (next: Viewport): void => {
+      const drag = interactionSlots.activeDrag
+      const sample = nodeSample
+      const frame = nodeFrame
+      const connection = interactionSlots.activeConnection
+      const reconnect = interactionSlots.activeReconnection
+      const retained = activeClickConnection
+      const connectionPoint = connectionPointer
+      const connectionHandle = connectionFrame
+      const pan = interactionSlots.activeViewportPan
+      const pinch = interactionSlots.activePinch
+      const selection = interactionSlots.activeSelectionRect
+      const selectionPoint = selectionPointer
+      const selectionHandle = selectionFrame
+      const request = activeViewportOperation
+      const touches = new Map(touchPointers)
+
+      const ownerCurrent = (): boolean =>
+        drag === interactionSlots.activeDrag &&
+        sample === nodeSample &&
+        frame === nodeFrame &&
+        connection === interactionSlots.activeConnection &&
+        reconnect === interactionSlots.activeReconnection &&
+        retained === activeClickConnection &&
+        connectionPoint === connectionPointer &&
+        connectionHandle === connectionFrame &&
+        pan === interactionSlots.activeViewportPan &&
+        pinch === interactionSlots.activePinch &&
+        selection === interactionSlots.activeSelectionRect &&
+        selectionPoint === selectionPointer &&
+        selectionHandle === selectionFrame &&
+        request === activeViewportOperation &&
+        touches.size === touchPointers.size &&
+        [...touches].every(([id, point]) => touchPointers.get(id) === point)
+
       renderedViewport = constrainViewport(next)
       applyViewport(viewport, renderedViewport)
+
+      const paintPass = captureProjection(document, {
+        kind: 'viewport',
+        document,
+        owners: interactionSessions,
+        request,
+        retained,
+      })
+
+      const current = () => projectionMatches(paintPass, { kind: 'viewport' })
       emitViewportObservation('change', renderedViewport)
-      updateToolbarAnchors()
-      updateCanvasMinimap()
+
+      if (!ownerCurrent() || !current()) {
+        return
+      }
+
+      renderGraphPositions(paintPass)
+
+      if (!ownerCurrent() || !current()) {
+        return
+      }
+
+      edgeRenderer.reconcile(paintPass, undefined, true)
 
       if (options.renderOnlyVisible === true) {
         reconcileVisible?.()
@@ -2740,7 +4051,6 @@ export const createFlowHost = (
         source,
         point: { x: clientX, y: clientY },
         candidates,
-        // Candidate centers and the pointer are both client-space coordinates.
         radius: options.connectionRadius ?? 20,
         mode: options.connectionMode ?? 'strict',
       })
@@ -2817,9 +4127,11 @@ export const createFlowHost = (
     }
 
     const publishConnectionPreview = (
-      preview: ConnectionPreviewState | null
+      preview: ConnectionPreviewState | null,
+      element = connectionPreview
     ): void => {
-      connectionPreviewState = createConnectionPreviewSnapshot(preview)
+      const value = createConnectionPreviewSnapshot(preview)
+      connectionPreviewState = value
 
       const previewListeners = [...connectionPreviewListeners]
 
@@ -2829,7 +4141,7 @@ export const createFlowHost = (
         }
 
         try {
-          listener(connectionPreviewState)
+          listener(value)
         } catch (error) {
           runTelemetry(
             Effect.logWarning('Connection preview listener failed').pipe(
@@ -2843,15 +4155,12 @@ export const createFlowHost = (
         }
       }
 
-      if (
-        connectionPreview === null ||
-        options.connectionPreview === undefined
-      ) {
+      if (element === null || options.connectionPreview === undefined) {
         return
       }
 
       try {
-        options.connectionPreview(preview, connectionPreview)
+        options.connectionPreview(value, element)
       } catch (error) {
         runTelemetry(
           Effect.logWarning('Connection preview renderer failed').pipe(
@@ -3027,10 +4336,11 @@ export const createFlowHost = (
     }
 
     const removeConnectionPreview = (): void => {
-      publishConnectionPreview(null)
-      connectionPreview?.remove()
+      const element = connectionPreview
       connectionPreview = null
       connectionLine = null
+      element?.remove()
+      publishConnectionPreview(null, element)
     }
 
     const notifyConnectStart = (connection: FlowConnectStartPayload): void => {
@@ -3159,22 +4469,29 @@ export const createFlowHost = (
       }
 
       clearConnectionHover()
-      removeConnectionPreview()
+      const capturedPointerId = connectionCapture
+      connectionCapture = null
+      const element = connectionPreview
+      connectionPreview = null
+      connectionLine = null
 
-      releaseConnectionCapture()
+      if (capturedPointerId !== null) {
+        runEffect(browser.releasePointer(canvas, capturedPointerId))
+      }
+
+      element?.remove()
+      publishConnectionPreview(null, element)
 
       return connection
     }
 
-    const cancelConnection = (reason: string): void => {
-      const connection = clearConnection('cancelled')
+    const cancelConnection = (reason: string): void =>
+      cancelActorKind('activeConnection', reason)
 
-      if (connection === null) {
-        return
-      }
-
-      suppressClickUntilPointerUp()
-
+    const notifyCancelConnection = (
+      connection: ActiveConnection,
+      reason: string
+    ): void => {
       if (reason !== 'no-target') {
         renderViewport(authoritativeViewport)
       }
@@ -3212,7 +4529,6 @@ export const createFlowHost = (
 
       const connection = activeClickConnection
       activeClickConnection = null
-      removeConnectionPreview()
 
       const source = entries.get(connection.source)
 
@@ -3224,25 +4540,18 @@ export const createFlowHost = (
         }
       }
 
+      removeConnectionPreview()
+
       return connection
     }
 
-    const clickSourceElement = (
-      connection: ActiveClickConnection
-    ): HTMLElement | undefined =>
-      [
-        ...(entries
-          .get(connection.source)
-          ?.element.querySelectorAll<HTMLElement>('.flow-handle') ?? []),
-      ].find((element) => element.dataset.handleId === connection.sourceHandle)
+    const cancelClickConnection = (reason: string): void =>
+      cancelActorKind('activeClickConnection', reason)
 
-    const cancelClickConnection = (reason: string): void => {
-      const connection = clearClickConnection()
-
-      if (connection === null) {
-        return
-      }
-
+    const notifyCancelClickConnection = (
+      connection: ActiveClickConnection,
+      reason: string
+    ): void => {
       if (reason !== 'host-destroyed' && reason !== 'window-blur') {
         announceConnection(
           reason === 'source-removed'
@@ -3301,22 +4610,29 @@ export const createFlowHost = (
       const reconnect = interactionSlots.activeReconnection
       endSession('reconnection', reconnect.pointerId, terminal)
       interactionSlots.activeReconnection = null
-      removeConnectionPreview()
+      const capturedPointerId = connectionCapture
+      connectionCapture = null
+      const element = connectionPreview
+      connectionPreview = null
+      connectionLine = null
 
-      releaseConnectionCapture()
+      if (capturedPointerId !== null) {
+        runEffect(browser.releasePointer(canvas, capturedPointerId))
+      }
+
+      element?.remove()
+      publishConnectionPreview(null, element)
 
       return reconnect
     }
 
-    const cancelReconnection = (reason: string): void => {
-      const reconnect = clearReconnection('cancelled')
+    const cancelReconnection = (reason: string): void =>
+      cancelActorKind('activeReconnection', reason)
 
-      if (reconnect === null) {
-        return
-      }
-
-      suppressClickUntilPointerUp()
-
+    const notifyCancelReconnection = (
+      reconnect: ActiveEdgeReconnect,
+      reason: string
+    ): void => {
       const attributes = {
         [FlowAttribute.edgeId]: reconnect.edgeId,
         [FlowAttribute.edgeEndpoint]: reconnect.endpoint,
@@ -3505,6 +4821,10 @@ export const createFlowHost = (
       pending: PendingConnection,
       event: PointerEvent
     ): void => {
+      if (destroyed) {
+        return
+      }
+
       if (!acquireConnectionCapture(event.pointerId)) {
         return
       }
@@ -3522,6 +4842,10 @@ export const createFlowHost = (
       anchor: SVGCircleElement,
       event: PointerEvent
     ): void => {
+      if (destroyed) {
+        return
+      }
+
       const group = anchor.closest<SVGGElement>('.flow-edge-anchor-group')
       const { endpoint } = anchor.dataset
 
@@ -3580,6 +4904,10 @@ export const createFlowHost = (
       _handleElement: HTMLElement,
       event: PointerEvent
     ): void => {
+      if (destroyed) {
+        return
+      }
+
       if (
         options.nodesConnectable === false ||
         event.button !== 0 ||
@@ -3607,52 +4935,89 @@ export const createFlowHost = (
       )
     }
 
-    const tickConnectionAutoPan = (): void => {
-      connectionFrame = null
+    const scheduleConnectionFrame = (
+      active: NonNullable<FlowInteractionSlots['activeConnection']>
+    ): void => {
+      const handle = globalThis.requestAnimationFrame(() => {
+        if (
+          destroyed ||
+          connectionFrame !== handle ||
+          interactionSlots.activeConnection !== active
+        ) {
+          return
+        }
 
-      if (
-        interactionSlots.activeConnection === null ||
-        connectionPointer === null
-      ) {
-        return
+        connectionFrame = null
+        const pointer = connectionPointer
+
+        if (pointer === null) {
+          return
+        }
+
+        const delta = selectionAutoPanDelta(
+          pointer,
+          canvas.clientWidth,
+          canvas.clientHeight
+        )
+
+        if (delta.x === 0 && delta.y === 0) {
+          return
+        }
+
+        const previous = renderedViewport
+        renderViewport(panViewport(renderedViewport, delta))
+
+        if (
+          destroyed ||
+          interactionSlots.activeConnection !== active ||
+          connectionFrame !== null ||
+          connectionPointer !== pointer
+        ) {
+          return
+        }
+
+        if (
+          renderedViewport.x === previous.x &&
+          renderedViewport.y === previous.y
+        ) {
+          return
+        }
+
+        const bounds = canvas.getBoundingClientRect()
+        updatePointerConnectionPreview(
+          active,
+          bounds.left + pointer.x,
+          bounds.top + pointer.y
+        )
+
+        if (
+          !destroyed &&
+          interactionSlots.activeConnection === active &&
+          connectionFrame === null &&
+          connectionPointer === pointer
+        ) {
+          scheduleConnectionFrame(active)
+        }
+      })
+
+      connectionFrame = handle
+    }
+
+    const revokeNodeFrame = (ticket: NodeFrameTicket): void => {
+      ticket.state = { kind: 'revoked' }
+
+      if (nodeFrame === ticket) {
+        nodeFrame = undefined
       }
 
-      const delta = selectionAutoPanDelta(
-        connectionPointer,
-        canvas.clientWidth,
-        canvas.clientHeight
-      )
-
-      if (delta.x === 0 && delta.y === 0) {
-        return
-      }
-
-      const previous = renderedViewport
-      renderViewport(panViewport(renderedViewport, delta))
-
-      if (
-        renderedViewport.x === previous.x &&
-        renderedViewport.y === previous.y
-      ) {
-        return
-      }
-
-      const bounds = canvas.getBoundingClientRect()
-      updatePointerConnectionPreview(
-        interactionSlots.activeConnection,
-        bounds.left + connectionPointer.x,
-        bounds.top + connectionPointer.y
-      )
-      connectionFrame = globalThis.requestAnimationFrame(tickConnectionAutoPan)
+      runEffect(Scope.close(ticket.registrationScope, Exit.void))
     }
 
     const cancelNodeDragFrame = (): void => {
-      const scope = dragFrameScope
-      dragFrameScope = null
-      dragFrame = null
+      nodeSample = undefined
 
-      if (scope !== null) {
-        runEffect(Scope.close(scope, Exit.void))
+      if (nodeFrame !== undefined) {
+        revokeNodeFrame(nodeFrame)
       }
     }
 
@@ -3678,13 +5043,13 @@ export const createFlowHost = (
     }
 
     const notifyNodeDragStop = (
-      pointerId: number,
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
       payload: FlowNodeDragPayload,
       outcome: FlowNodeDragStopPayload['outcome'],
       reason?: string
     ): void => {
       if (
-        !callbackStartedNodeDrags.delete(pointerId) ||
+        !callbackStartedNodeDrags.delete(drag) ||
         options.onNodeDragStop === undefined
       ) {
         return
@@ -3699,9 +5064,15 @@ export const createFlowHost = (
     }
 
     const updateNodeDragPreview = (
-      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
+      sample: NodeSample,
       point: XYPosition
     ): void => {
+      if (!nodeSampleLive(sample)) {
+        return
+      }
+
+      const { drag } = sample
+
       if ('positions' in drag) {
         const change = boundedGroupChange(
           drag,
@@ -3712,11 +5083,16 @@ export const createFlowHost = (
           renderedNodePositions.set(nodeId, position)
         }
 
-        const graph = renderGraphPositions()
+        const paintPass = captureProjection(document, { kind: 'node', sample })
+        const current = () => projectionMatches(paintPass, { kind: 'graph' })
+        renderGraphPositions(paintPass)
+
+        if (!nodeSampleLive(sample) || !current()) {
+          return
+        }
+
         edgeRenderer.updatePositions(
-          document,
-          graph,
-          renderedNodePositions,
+          paintPass,
           new Set(change.positions.map(({ nodeId }) => nodeId))
         )
       } else {
@@ -3729,17 +5105,20 @@ export const createFlowHost = (
         )
 
         renderedNodePositions.set(drag.nodeId, position)
-        const graph = renderGraphPositions()
-        edgeRenderer.updatePositions(
-          document,
-          graph,
-          renderedNodePositions,
-          new Set([drag.nodeId])
-        )
+        const paintPass = captureProjection(document, { kind: 'node', sample })
+        const current = () => projectionMatches(paintPass, { kind: 'graph' })
+        renderGraphPositions(paintPass)
+
+        if (!nodeSampleLive(sample) || !current()) {
+          return
+        }
+
+        edgeRenderer.updatePositions(paintPass, new Set([drag.nodeId]))
       }
 
       if (
-        callbackStartedNodeDrags.has(drag.pointerId) &&
+        nodeSampleLive(sample) &&
+        callbackStartedNodeDrags.has(drag) &&
         options.onNodeDrag !== undefined
       ) {
         reportBoundaryCallback(
@@ -3751,167 +5130,190 @@ export const createFlowHost = (
       }
     }
 
-    const nodeDragAutoPan = {
-      tick: (): void => {
-        throw new Error('Node drag auto-pan is not initialized')
-      },
-      schedule: (): void => {
-        throw new Error('Node drag auto-pan is not initialized')
-      },
-    }
+    const scheduleNodeFrame = (sample: NodeSample): void => {
+      if (!nodeSampleLive(sample)) {
+        return
+      }
 
-    nodeDragAutoPan.tick = (): void => {
-      dragFrame = null
-      const drag = interactionSlots.activeDrag
-      const point = dragPointer
-      const nodeDragSession = sessionFor('node-drag')
+      const admissionPoint = sample.canvasPoint
 
       if (
-        drag === null ||
-        point === null ||
-        nodeDragSession?.kind !== 'node-drag' ||
-        nodeDragSession.phase !== 'active'
+        admissionPoint.x < 0 ||
+        admissionPoint.x > canvas.clientWidth ||
+        admissionPoint.y < 0 ||
+        admissionPoint.y > canvas.clientHeight
       ) {
         return
       }
 
-      if (
-        point.x < 0 ||
-        point.x > canvas.clientWidth ||
-        point.y < 0 ||
-        point.y > canvas.clientHeight
-      ) {
-        return
-      }
-
-      const delta = selectionAutoPanDelta(
-        point,
+      const admissionDelta = selectionAutoPanDelta(
+        admissionPoint,
         canvas.clientWidth,
         canvas.clientHeight
       )
 
-      if (delta.x === 0 && delta.y === 0) {
+      if (admissionDelta.x === 0 && admissionDelta.y === 0) {
         return
       }
 
-      const previous = renderedViewport
-      renderViewport(panViewport(renderedViewport, delta))
+      const previousFrame = nodeFrame
 
-      if (
-        renderedViewport.x === previous.x &&
-        renderedViewport.y === previous.y
-      ) {
-        return
+      if (previousFrame !== undefined) {
+        if (
+          previousFrame.drag === sample.drag &&
+          previousFrame.pointerId === sample.pointerId &&
+          (previousFrame.state.kind === 'scheduled' ||
+            previousFrame.state.kind === 'registering')
+        ) {
+          previousFrame.state.latestSample = sample
+
+          return
+        }
+
+        revokeNodeFrame(previousFrame)
+
+        if (!nodeSampleLive(sample)) {
+          return
+        }
       }
 
-      updateNodeDragPreview(drag, screenToFlowPosition(point, renderedViewport))
-      nodeDragAutoPan.schedule()
-    }
-
-    nodeDragAutoPan.schedule = (): void => {
-      const point = dragPointer
-      const nodeDragSession = sessionFor('node-drag')
-
-      if (
-        point === null ||
-        dragFrame !== null ||
-        nodeDragSession?.kind !== 'node-drag' ||
-        nodeDragSession.phase !== 'active'
-      ) {
-        return
-      }
-
-      if (
-        point.x < 0 ||
-        point.x > canvas.clientWidth ||
-        point.y < 0 ||
-        point.y > canvas.clientHeight
-      ) {
-        return
-      }
-
-      const delta = selectionAutoPanDelta(
-        point,
-        canvas.clientWidth,
-        canvas.clientHeight
+      const registrationScope = runEffect(
+        Scope.fork(hostBrowserScope, 'sequential')
       )
 
-      if (delta.x === 0 && delta.y === 0) {
-        return
+      const ticket: NodeFrameTicket = {
+        drag: sample.drag,
+        pointerId: sample.pointerId,
+        registrationScope,
+        state: {
+          kind: 'registering',
+          latestSample: sample,
+          delivery: { kind: 'none' },
+        },
       }
 
-      const frameScope = runEffect(Scope.make('sequential'))
-      dragFrameScope = frameScope
-      dragFrame = runEffect(
-        Scope.provide(
-          browser.requestAnimationFrame(() => {
-            if (dragFrameScope !== frameScope) {
-              return
-            }
+      nodeFrame = ticket
 
-            dragFrameScope = null
-            dragFrame = null
-            runEffect(Scope.close(frameScope, Exit.void))
-            nodeDragAutoPan.tick()
-          }),
-          frameScope
+      const deliver = (timestamp: number): void => {
+        if (ticket.state.kind === 'registering') {
+          ticket.state.delivery = { kind: 'early', timestamp }
+
+          return
+        }
+
+        if (nodeFrame !== ticket || ticket.state.kind !== 'scheduled') {
+          return
+        }
+
+        const executing = ticket.state.latestSample
+        ticket.state = { kind: 'executing', sample: executing }
+
+        try {
+          runEffect(Scope.close(registrationScope, Exit.void))
+        } catch (error) {
+          ticket.state = { kind: 'revoked' }
+
+          if (nodeFrame === ticket) {
+            nodeFrame = undefined
+          }
+
+          throw error
+        }
+
+        if (
+          nodeFrame !== ticket ||
+          ticket.state.kind !== 'executing' ||
+          !nodeSampleLive(executing)
+        ) {
+          return
+        }
+
+        const point = executing.canvasPoint
+
+        const delta = selectionAutoPanDelta(
+          point,
+          canvas.clientWidth,
+          canvas.clientHeight
         )
-      )
-    }
 
-    const cancelActiveDrag = (reason: string): void => {
-      if (interactionSlots.activeDrag === null) {
-        return
+        const previous = renderedViewport
+        renderViewport(panViewport(renderedViewport, delta))
+
+        if (
+          nodeFrame !== ticket ||
+          ticket.state.kind !== 'executing' ||
+          !nodeSampleLive(executing)
+        ) {
+          return
+        }
+
+        if (
+          renderedViewport.x === previous.x &&
+          renderedViewport.y === previous.y
+        ) {
+          return
+        }
+
+        updateNodeDragPreview(
+          executing,
+          screenToFlowPosition(point, renderedViewport)
+        )
+
+        if (
+          nodeFrame !== ticket ||
+          ticket.state.kind !== 'executing' ||
+          !nodeSampleLive(executing)
+        ) {
+          return
+        }
+
+        nodeFrame = undefined
+        ticket.state = { kind: 'revoked' }
+        scheduleNodeFrame(executing)
       }
 
-      const drag = interactionSlots.activeDrag
-      suppressClickUntilPointerUp()
-      const outcome = endSession('node-drag', drag.pointerId, 'cancelled')
-      const anchorId = dragAnchorId(drag)
-      const entry = entries.get(anchorId)
-      const node = findNode(anchorId)
+      try {
+        const handle = runEffect(
+          Scope.provide(
+            browser.requestAnimationFrame(deliver),
+            registrationScope
+          )
+        )
+
+        if (ticket.state.kind !== 'registering' || nodeFrame !== ticket) {
+          return
+        }
+
+        const { latestSample, delivery } = ticket.state
+        ticket.state = { kind: 'scheduled', handle, latestSample }
+
+        if (delivery.kind === 'early') {
+          deliver(delivery.timestamp)
+        }
+      } catch (error) {
+        revokeNodeFrame(ticket)
+        throw error
+      }
+    }
+
+    const onNodePointerCancel = (event: PointerEvent): void => {
+      const entry = terminalDispatches.get(event)
 
       if (entry !== undefined) {
-        entry.element.classList.remove('dragging')
-
-        for (const pointerId of pointerIdsFromOutcome(outcome, [
-          drag.pointerId,
-        ])) {
-          runEffect(browser.releasePointer(entry.element, pointerId))
-        }
-
-        if (node !== undefined) {
-          restoreAdoptedPosition(node)
-        }
+        cancelCaptured(entry.owners, 'pointer-cancel')
       }
+    }
 
-      interactionSlots.activeDrag = null
-      dragPointerStart = null
-      dragPointer = null
-      cancelNodeDragFrame()
+    const cancelActiveDrag = (reason: string): void =>
+      cancelActorKind('activeDrag', reason)
 
-      const movedIds =
-        'positions' in drag
-          ? drag.positions.map(({ nodeId }) => nodeId)
-          : [drag.nodeId]
-
-      for (const nodeId of movedIds) {
-        const authoritative = findNode(nodeId)
-
-        if (authoritative !== undefined) {
-          restoreAdoptedPosition(authoritative)
-        }
-      }
-
-      renderGraphPositions()
-      edgeRenderer.reconcile(document, renderedNodePositions)
-
-      notifyNodeDragStop(
-        drag.pointerId,
-        nodeDragCallbackPayload(drag),
-        'cancelled',
-        reason
-      )
+    const notifyCancelledDrag = (
+      drag: NonNullable<FlowInteractionSlots['activeDrag']>,
+      payload: FlowNodeDragPayload,
+      reason: string
+    ): void => {
+      const anchorId = dragAnchorId(drag)
+      notifyNodeDragStop(drag, payload, 'cancelled', reason)
 
       runTelemetry(
         Effect.logDebug('Cancelled node gesture').pipe(
@@ -3931,56 +5333,13 @@ export const createFlowHost = (
       )
     }
 
-    const cancelNodeResize = (reason: string): void => {
-      const resize = interactionSlots.activeNodeResize
+    const cancelNodeResize = (reason: string): void =>
+      cancelActorKind('activeNodeResize', reason)
 
-      if (resize === null) {
-        return
-      }
-
-      const outcome = endSession('node-resize', resize.pointerId, 'cancelled')
-      interactionSlots.activeNodeResize = null
-      const entry = entries.get(resize.nodeId)
-      const node = findNode(resize.nodeId)
-      suppressClickUntilPointerUp()
-
-      if (entry !== undefined) {
-        entry.element.classList.remove('resizing')
-        delete entry.element.dataset.resizing
-
-        if (node === undefined) {
-          entry.element.style.width = `${resize.sizeStart.width}px`
-          entry.element.style.height = `${resize.sizeStart.height}px`
-          entry.element.style.boxSizing = 'border-box'
-        } else {
-          applyDeclaredNodeSize(entry.element, node)
-        }
-
-        acceptMeasurement(resize.nodeId, {
-          nodeId: resize.nodeId,
-          ...resize.sizeStart,
-        })
-        renderedNodePositions.delete(resize.nodeId)
-
-        for (const child of document.nodes.filter(
-          (item) => item.parentId === resize.nodeId
-        )) {
-          renderedNodePositions.delete(child.id)
-        }
-
-        if (node !== undefined) {
-          recordNodeMeasurement(node, entry.element)
-        }
-
-        for (const pointerId of pointerIdsFromOutcome(outcome, [
-          resize.pointerId,
-        ])) {
-          runEffect(browser.releasePointer(entry.element, pointerId))
-        }
-      }
-
-      const graph = renderGraphPositions()
-      edgeRenderer.reconcile(document, renderedNodePositions, graph)
+    const notifyCancelledResize = (
+      resize: ActiveNodeResize,
+      reason: string
+    ): void => {
       runTelemetry(
         Effect.logDebug('Cancelled node resize').pipe(
           Effect.annotateLogs({
@@ -4068,34 +5427,20 @@ export const createFlowHost = (
       resize: ActiveKeyboardResize,
       focusFallback: boolean
     ): void => {
-      renderedNodePositions.delete(resize.nodeId)
+      restoreResizePrimitives(resize)
 
-      for (const child of document.nodes.filter(
-        (node) => node.parentId === resize.nodeId
-      )) {
-        renderedNodePositions.delete(child.id)
+      if (!renderGraphEdges()) {
+        return
       }
 
-      const node = findNode(resize.nodeId)
-      const entry = entries.get(resize.nodeId)
-
-      if (node !== undefined && entry !== undefined) {
-        entry.element.classList.remove('resizing')
-        delete entry.element.dataset.resizing
-        applyDeclaredNodeSize(entry.element, node)
-        const measured = browser.measure(entry.element)
-        acceptMeasurement(node.id, { nodeId: node.id, ...measured })
-        recordNodeMeasurement(node, entry.element)
-      }
-
-      const graph = renderGraphPositions()
-      edgeRenderer.reconcile(document, renderedNodePositions, graph)
+      const paintPass = captureProjection()
+      const current = () => projectionMatches(paintPass, { kind: 'toolbar' })
 
       if (options.renderOnlyVisible === true) {
         reconcileVisible?.()
       }
 
-      if (focusFallback && canvas.isConnected) {
+      if (current() && focusFallback && canvas.isConnected) {
         canvas.focus()
       }
     }
@@ -4128,25 +5473,25 @@ export const createFlowHost = (
         recordNodeMeasurement(node, entry.element)
       }
 
-      const graph = renderGraphPositions()
-      edgeRenderer.reconcile(document, renderedNodePositions, graph)
-
-      if (options.renderOnlyVisible === true) {
+      if (renderGraphEdges() && options.renderOnlyVisible === true) {
         reconcileVisible?.()
       }
     }
 
     const cancelKeyboardResize = (
       reason: string,
-      focusFallback = false
+      focusFallback = false,
+      captured?: ActiveKeyboardResize
     ): boolean => {
-      const resize = activeKeyboardResize
+      const resize = captured ?? activeKeyboardResize
 
       if (resize === null) {
         return false
       }
 
-      activeKeyboardResize = null
+      if (activeKeyboardResize === resize) {
+        activeKeyboardResize = null
+      }
 
       const controlWillDisappear =
         focusFallback &&
@@ -4248,23 +5593,13 @@ export const createFlowHost = (
       return true
     }
 
-    const cancelViewportPan = (reason: string): void => {
-      if (interactionSlots.activeViewportPan === null) {
-        return
-      }
+    const cancelViewportPan = (reason: string): void =>
+      cancelActorKind('activeViewportPan', reason)
 
-      const pan = interactionSlots.activeViewportPan
-      endUserViewportObservation()
-      suppressClickUntilPointerUp()
-      const outcome = endSession('pane-pan', pan.pointerId, 'cancelled')
-      interactionSlots.activeViewportPan = null
-      canvas.classList.remove('panning')
-
-      for (const pointerId of pointerIdsFromOutcome(outcome, [pan.pointerId])) {
-        runEffect(browser.releasePointer(canvas, pointerId))
-      }
-
-      renderViewport(authoritativeViewport)
+    const notifyCancelViewportPan = (
+      pan: ActiveViewportPan,
+      reason: string
+    ): void => {
       runTelemetry(
         Effect.logDebug('Cancelled viewport gesture').pipe(
           Effect.annotateLogs({
@@ -4367,8 +5702,6 @@ export const createFlowHost = (
           removedNodeIds.length > 0 &&
           interactionSlots.activeSelectionRect !== null
         ) {
-          // Reconciliation is invoked only after all host handlers initialize.
-          // eslint-disable-next-line no-use-before-define
           cancelSelectionGesture(
             'node-removed',
             interactionSlots.activeSelectionRect.pointerId
@@ -4441,96 +5774,86 @@ export const createFlowHost = (
           }
         }
 
-        const visibleNodes = new Set<NodeId>()
-        let visibleEdges: Set<(typeof next.edges)[number]['id']> | null = null
-        const visibleEdgeEndpointIds = new Set<NodeId>()
-        let graph = createFlowGraph(next, measurements, renderedNodePositions)
+        const captureVisibility = () => {
+          const visibleNodes = new Set<NodeId>()
+          let visibleEdges: Set<(typeof next.edges)[number]['id']> | null = null
+          const visibleEdgeEndpointIds = new Set<NodeId>()
+          const pass = captureProjection(next)
+          const { graph } = pass
 
-        if (options.renderOnlyVisible === true) {
-          const rect = viewportFlowRect(
-            renderedViewport,
-            canvas.clientWidth,
-            canvas.clientHeight
+          if (options.renderOnlyVisible === true) {
+            const rect = viewportFlowRect(
+              renderedViewport,
+              canvas.clientWidth,
+              canvas.clientHeight
+            )
+
+            visibleEdges = new Set()
+
+            for (const edge of next.edges) {
+              if (edgeIntersectsViewport(graph, edge, rect)) {
+                visibleEdges.add(edge.id)
+                visibleEdgeEndpointIds.add(edge.source)
+                visibleEdgeEndpointIds.add(edge.target)
+              }
+            }
+
+            for (const node of next.nodes) {
+              const graphNode = graph.nodes.get(node.id)
+
+              if (graphNode === undefined || graphNode.hidden) {
+                continue
+              }
+
+              if (
+                nodeIntersectsViewport(graph, node.id, rect) ||
+                visibleEdgeEndpointIds.has(node.id)
+              ) {
+                visibleNodes.add(node.id)
+              }
+            }
+          } else {
+            for (const node of next.nodes) {
+              if (graph.nodes.get(node.id)?.hidden === false) {
+                visibleNodes.add(node.id)
+              }
+            }
+          }
+
+          const pinResizeOwner = (id: NodeId | undefined): void => {
+            const owner = next.nodes.find((node) => node.id === id)
+
+            if (
+              id === undefined ||
+              owner === undefined ||
+              owner.hidden === true
+            ) {
+              return
+            }
+
+            visibleNodes.add(id)
+
+            for (const node of next.nodes) {
+              if (node.parentId === id && node.hidden !== true) {
+                visibleNodes.add(node.id)
+              }
+            }
+          }
+
+          pinResizeOwner(interactionSlots.activeNodeResize?.nodeId)
+          pinResizeOwner(activeKeyboardResize?.nodeId)
+
+          const removalNodes = [...pass.cohort.nodes].filter(
+            ([id]) => !nextIds.has(id) || !visibleNodes.has(id)
           )
 
-          visibleEdges = new Set()
-
-          for (const edge of next.edges) {
-            if (edgeIntersectsViewport(graph, edge, rect)) {
-              visibleEdges.add(edge.id)
-              visibleEdgeEndpointIds.add(edge.source)
-              visibleEdgeEndpointIds.add(edge.target)
-            }
-          }
-
-          for (const node of next.nodes) {
-            const graphNode = graph.nodes.get(node.id)
-
-            if (graphNode === undefined || graphNode.hidden) {
-              continue
-            }
-
-            if (
-              nodeIntersectsViewport(graph, node.id, rect) ||
-              visibleEdgeEndpointIds.has(node.id)
-            ) {
-              visibleNodes.add(node.id)
-            }
-          }
-        } else {
-          for (const node of next.nodes) {
-            if (graph.nodes.get(node.id)?.hidden === false) {
-              visibleNodes.add(node.id)
-            }
-          }
+          return { pass, graph, visibleNodes, visibleEdges, removalNodes }
         }
 
-        const resizingNodeId = interactionSlots.activeNodeResize?.nodeId
+        let { pass, graph, visibleNodes, visibleEdges, removalNodes } =
+          captureVisibility()
 
-        const resizingOwner =
-          resizingNodeId === undefined
-            ? undefined
-            : next.nodes.find((node) => node.id === resizingNodeId)
-
-        if (
-          resizingNodeId !== undefined &&
-          resizingOwner !== undefined &&
-          resizingOwner.hidden !== true
-        ) {
-          visibleNodes.add(resizingNodeId)
-
-          for (const node of next.nodes) {
-            if (node.parentId === resizingNodeId && node.hidden !== true) {
-              visibleNodes.add(node.id)
-            }
-          }
-        }
-
-        const keyboardResizingNodeId = activeKeyboardResize?.nodeId
-
-        const keyboardResizingOwner =
-          keyboardResizingNodeId === undefined
-            ? undefined
-            : next.nodes.find((node) => node.id === keyboardResizingNodeId)
-
-        if (
-          keyboardResizingNodeId !== undefined &&
-          keyboardResizingOwner !== undefined &&
-          keyboardResizingOwner.hidden !== true
-        ) {
-          visibleNodes.add(keyboardResizingNodeId)
-
-          for (const node of next.nodes) {
-            if (
-              node.parentId === keyboardResizingNodeId &&
-              node.hidden !== true
-            ) {
-              visibleNodes.add(node.id)
-            }
-          }
-        }
-
-        edgeRenderer.setVisibleEdges(visibleEdges)
+        const removalCohort = new Map(removalNodes)
 
         const previousNodes = new Map(
           previous?.nodes.map((node) => [node.id, node])
@@ -4550,7 +5873,6 @@ export const createFlowHost = (
 
           if (participantIds.some((nodeId) => !visibleNodes.has(nodeId))) {
             cancelActiveDrag('node-removed')
-            graph = createFlowGraph(next, measurements, renderedNodePositions)
           }
         }
 
@@ -4559,7 +5881,6 @@ export const createFlowHost = (
           !visibleNodes.has(interactionSlots.activeNodeResize.nodeId)
         ) {
           cancelNodeResize('node-removed')
-          graph = createFlowGraph(next, measurements, renderedNodePositions)
         }
 
         if (interactionSlots.activeConnection !== null) {
@@ -4605,6 +5926,21 @@ export const createFlowHost = (
 
         cancelStaleReconnection(next, previous)
 
+        if (!projectionMatches(pass, { kind: 'visibility' })) {
+          if (document !== next || destroyed) {
+            return
+          }
+
+          const currentDecision = captureVisibility()
+
+          ;({ pass, graph, visibleNodes, visibleEdges } = currentDecision)
+          removalNodes = currentDecision.removalNodes.filter(
+            ([id, slot]) => removalCohort.get(id) === slot
+          )
+        }
+
+        edgeRenderer.setVisibleEdges(visibleEdges)
+
         const focusedElement = globalThis.document.activeElement
 
         const focusedNode =
@@ -4612,15 +5948,54 @@ export const createFlowHost = (
             ? focusedElement.closest<HTMLElement>('.flow-node')
             : null
 
-        for (const [nodeId, entry] of entries) {
-          if (nextIds.has(nodeId) && visibleNodes.has(nodeId)) {
+        for (const [nodeId, capturedSlot] of removalNodes) {
+          const { entry } = capturedSlot
+          const expected = nodeSlots.get(nodeId)
+
+          if (expected !== capturedSlot) {
             continue
           }
 
-          resizeObserver.unobserve(entry.element)
-          entry.release()
-          entry.element.remove()
-          entries.delete(nodeId)
+          if (expected === undefined) {
+            continue
+          }
+
+          const reservation: Extract<NodeEntrySlot, { kind: 'reserved' }> = {
+            kind: 'reserved',
+            entry,
+            operation: 'remove',
+          }
+
+          if (
+            !installNodeReservation(
+              nodeId,
+              {
+                expected: { kind: 'present', slot: expected },
+                next: reservation,
+              },
+              pass
+            )
+          ) {
+            continue
+          }
+
+          let retiredCurrent = false
+
+          try {
+            entry.release()
+            retiredCurrent =
+              nodeSlots.get(nodeId) === reservation &&
+              projectionMatches(pass, { kind: 'visibility' })
+          } finally {
+            if (nodeSlots.get(nodeId) === reservation) {
+              nodeSlots.delete(nodeId)
+              pass.entryClaims.nodes.delete(nodeId)
+            }
+          }
+
+          if (!retiredCurrent) {
+            return
+          }
 
           if (!nextIds.has(nodeId) || hiddenNextIds.has(nodeId)) {
             renderedNodePositions.delete(nodeId)
@@ -4641,34 +6016,96 @@ export const createFlowHost = (
             continue
           }
 
-          let entry = entries.get(node.id)
+          const expected = pass.entryClaims.nodes.get(node.id)
 
-          if (entry === undefined) {
-            entry = operations.makeNodeEntry(node)
-            entries.set(node.id, entry)
+          if (nodeSlots.get(node.id) !== expected) {
+            return
+          }
+
+          let entry = expected?.kind === 'ready' ? expected.entry : undefined
+          const previousNode = previousNodes.get(node.id)
+          const nextRenderer = options.nodeRenderers?.[node.type ?? 'default']
+
+          const nextRendererType =
+            nextRenderer === undefined ? undefined : (node.type ?? 'default')
+
+          if (entry === undefined || entry.rendererType !== nextRendererType) {
+            const made = operations.makeNodeEntry(node, expected, pass)
+
+            if (made === undefined) {
+              return
+            }
+
+            ;({ entry, pass } = made)
+            ;({ graph } = pass)
             added += 1
-          } else if (!sameNode(previousNodes.get(node.id), node)) {
-            const previousNode = previousNodes.get(node.id)
+          } else if (expected !== undefined && !sameNode(previousNode, node)) {
+            const reservation: Extract<NodeEntrySlot, { kind: 'reserved' }> = {
+              kind: 'reserved',
+              entry,
+              operation: 'update',
+            }
 
-            const nextRenderer = options.nodeRenderers?.[node.type ?? 'default']
+            if (
+              !installNodeReservation(
+                node.id,
+                {
+                  expected: { kind: 'present', slot: expected },
+                  next: reservation,
+                },
+                pass
+              )
+            ) {
+              return
+            }
 
-            const nextRendererType =
-              nextRenderer === undefined ? undefined : (node.type ?? 'default')
-
-            if (entry.rendererType !== nextRendererType) {
-              entry.generation = advanceMeasurementGeneration(node.id)
-              entry.renderer?.destroy()
-              entry.content.replaceChildren()
-              entry.renderer = nextRenderer?.(node, entry.content)
-              entry.rendererType = nextRendererType
-
-              if (nextRenderer === undefined) {
+            try {
+              if (entry.renderer.kind === 'custom') {
+                entry.renderer.instance.update(node)
+              } else if (previousNode?.label !== node.label) {
                 renderDefaultNodeContents(entry.content, node)
               }
-            } else if (entry.renderer !== undefined) {
-              entry.renderer.update(node)
-            } else if (previousNode?.label !== node.label) {
-              renderDefaultNodeContents(entry.content, node)
+            } catch (error) {
+              const primaryError = error
+
+              if (nodeSlots.get(node.id) === reservation) {
+                nodeSlots.delete(node.id)
+              }
+
+              try {
+                entry.release()
+              } catch (cleanupError) {
+                // eslint-disable-next-line preserve-caught-error -- The renderer error stays primary; the caught cleanup error is retained in errors[1].
+                throw new AggregateError(
+                  [primaryError, cleanupError],
+                  'Node renderer and cleanup failed',
+                  { cause: primaryError }
+                )
+              }
+
+              throw error
+            }
+
+            if (
+              nodeSlots.get(node.id) !== reservation ||
+              entry.state !== 'owned' ||
+              !projectionMatches(pass, { kind: 'node', id: node.id })
+            ) {
+              if (
+                nodeSlots.get(node.id) === reservation &&
+                entry.state === 'owned'
+              ) {
+                installNodeReservation(
+                  node.id,
+                  {
+                    expected: { kind: 'present', slot: reservation },
+                    next: expected,
+                  },
+                  pass
+                )
+              }
+
+              return
             }
 
             if (
@@ -4680,10 +6117,27 @@ export const createFlowHost = (
 
             applyDeclaredNodeSize(entry.element, node)
 
+            if (
+              !installNodeReservation(
+                node.id,
+                {
+                  expected: { kind: 'present', slot: reservation },
+                  next: { kind: 'ready', entry },
+                },
+                pass
+              )
+            ) {
+              return
+            }
+
             updated += 1
           }
 
-          applyNodePosition(entry.element, graphNode.absolutePosition)
+          applyNodePosition(
+            entry.element,
+            graph.nodes.get(node.id)?.absolutePosition ??
+              graphNode.absolutePosition
+          )
 
           applyNodeInteractionState(entry.element, node)
           renderNodeResizeHandle(entry.element, node)
@@ -4711,7 +6165,16 @@ export const createFlowHost = (
           focusedEdge !== null &&
           !next.edges.some((edge) => edge.id === focusedEdge?.dataset.edgeId)
 
-        const edgeStats = edgeRenderer.reconcile(next, renderedNodePositions)
+        const edgePass = captureProjection(next)
+
+        const currentAfterEdges = () =>
+          projectionMatches(edgePass, { kind: 'graph' })
+
+        const edgeStats = edgeRenderer.reconcile(edgePass)
+
+        if (!currentAfterEdges()) {
+          return
+        }
 
         if (focusedEdgeRemoved) {
           canvas.focus()
@@ -4764,7 +6227,7 @@ export const createFlowHost = (
           pendingMeasurementGenerations.clear()
         }
 
-        updateToolbarAnchors(next)
+        updateToolbarAnchors(captureProjection(next))
       },
 
       // eslint-disable-next-line complexity -- The change union has one branch per public operation.
@@ -4797,8 +6260,7 @@ export const createFlowHost = (
                 restoreAdoptedPosition(authoritative)
               }
 
-              renderGraphPositions()
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              renderGraphEdges()
             }
 
             break
@@ -4824,8 +6286,7 @@ export const createFlowHost = (
                 }
               }
 
-              renderGraphPositions()
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              renderGraphEdges()
             }
 
             break
@@ -4864,8 +6325,7 @@ export const createFlowHost = (
                 recordNodeMeasurement(node, entry.element)
               }
 
-              renderGraphPositions()
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              renderGraphEdges()
             }
 
             break
@@ -4893,7 +6353,7 @@ export const createFlowHost = (
                 recordNodeMeasurement(node, entry.element)
               }
 
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              edgeRenderer.reconcile(captureProjection())
             }
 
             break
@@ -4933,7 +6393,7 @@ export const createFlowHost = (
 
             if (documentMode === 'uncontrolled') {
               document = updated
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              edgeRenderer.reconcile(captureProjection())
             }
 
             const attributes = {
@@ -5019,7 +6479,7 @@ export const createFlowHost = (
 
             if (documentMode === 'uncontrolled') {
               document = updated
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              edgeRenderer.reconcile(captureProjection())
             }
 
             break
@@ -5034,7 +6494,7 @@ export const createFlowHost = (
 
             if (documentMode === 'uncontrolled') {
               document = updated
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              edgeRenderer.reconcile(captureProjection())
               canvas.focus()
             }
 
@@ -5064,8 +6524,7 @@ export const createFlowHost = (
               document = candidateDocument
               operations.reconcile(document, previous)
             } else {
-              renderGraphPositions()
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              renderGraphEdges()
             }
 
             break
@@ -5123,7 +6582,13 @@ export const createFlowHost = (
         })
       },
 
-      makeNodeEntry(node: FlowNode): NodeEntry {
+      // eslint-disable-next-line complexity -- Acquisition must cover reserved, returned, superseded and closed owners before adoption.
+      makeNodeEntry(
+        node: FlowNode,
+        expected: NodeEntrySlot | undefined,
+        pass: HostProjection
+      ): { entry: ReadyNodeEntry; pass: HostProjection } | undefined {
+        const previousMeasurement = measurements.get(node.id)
         const generation = advanceMeasurementGeneration(node.id)
 
         const element = globalThis.document.createElement('article')
@@ -5140,664 +6605,17 @@ export const createFlowHost = (
         const rendererType =
           renderer === undefined ? undefined : (node.type ?? 'default')
 
-        const rendererInstance = renderer?.(node, content)
-
-        if (renderer === undefined) {
-          renderDefaultNodeContents(content, node)
-        }
-
-        renderNodeHandles(handles, node)
-        renderNodeResizeHandle(element, node)
         applyDeclaredNodeSize(element, node)
-        applyNodePosition(element, absolutePosition(node.id))
-
-        const activateNodeDrag = (event: PointerEvent): boolean => {
-          if (
-            interactionSlots.activeDrag === null ||
-            dragPointerStart === null
-          ) {
-            return false
-          }
-
-          const drag = interactionSlots.activeDrag
-
-          if (
-            !('positions' in drag) &&
-            findNode(drag.nodeId)?.draggable === false
-          ) {
-            return false
-          }
-
-          if ('positions' in drag && drag.positions.length === 0) {
-            return false
-          }
-
-          const dragSession = sessionFor('node-drag')
-
-          if (
-            dragSession?.kind === 'node-drag' &&
-            dragSession.phase === 'active'
-          ) {
-            return true
-          }
-
-          const position = pointerInCanvas(event)
-
-          const distance = Math.hypot(
-            position.x - dragPointerStart.x,
-            position.y - dragPointerStart.y
-          )
-
-          const threshold = options.nodeDragThreshold ?? 1
-
-          if (threshold > 0 && distance <= threshold) {
-            return false
-          }
-
-          const activation = activateFlowInteraction(
-            interactionSessions,
-            event.pointerId
-          )
-
-          if (activation.kind !== 'activated') {
-            return false
-          }
-
-          interactionSessions = activation.sessions
-          element.classList.add('dragging')
-          runTelemetry(
-            Effect.logDebug('Started node drag').pipe(
-              Effect.annotateLogs({
-                [FlowAttribute.nodeId]: node.id,
-                [FlowAttribute.pointerId]: event.pointerId,
-              }),
-              Effect.withSpan(FlowSpan.nodeDragStart, {
-                attributes: {
-                  [FlowAttribute.nodeId]: node.id,
-                  [FlowAttribute.pointerId]: event.pointerId,
-                },
-              })
-            )
-          )
-
-          callbackStartedNodeDrags.add(drag.pointerId)
-
-          if (options.onNodeDragStart !== undefined) {
-            reportBoundaryCallback(
-              'Node drag start',
-              'node-drag',
-              options.onNodeDragStart,
-              nodeDragCallbackPayload(drag)
-            )
-          }
-
-          return true
-        }
-
-        const resizeCandidate = (
-          resize: ActiveNodeResize,
-          event: PointerEvent
-        ): NodeBoundsChange | undefined => {
-          const current = findNode(resize.nodeId)
-
-          if (current === undefined) {
-            return undefined
-          }
-
-          const parent =
-            current.parentId === undefined
-              ? undefined
-              : graphFor().nodes.get(current.parentId)
-
-          const bounds =
-            current.parentId !== undefined &&
-            current.extent === 'parent' &&
-            parent !== undefined
-              ? {
-                  minX: 0,
-                  minY: 0,
-                  maxX: parent.dimensions.width,
-                  maxY: parent.dimensions.height,
-                }
-              : options.nodeExtent
-
-          const result = calculateNodeResize({
-            direction: resize.direction,
-            positionStart: resize.positionStart,
-            sizeStart: resize.sizeStart,
-            delta: {
-              x: pointerInFlow(event).x - resize.pointerStart.x,
-              y: pointerInFlow(event).y - resize.pointerStart.y,
-            },
-            minimumSize: { width: 40, height: 24 },
-            bounds,
-            childExtent: resize.childExtent,
-          })
-
-          if (result.boundsIssues.length > 0) {
-            return undefined
-          }
-
-          const childPositions = document.nodes
-            .filter((candidate) => candidate.parentId === current.id)
-            .map((child) => ({
-              nodeId: child.id,
-              position: {
-                x: child.position.x + result.childrenPositionDelta.x,
-                y: child.position.y + result.childrenPositionDelta.y,
-              },
-            }))
-
-          return {
-            kind: 'node-bounds',
-            nodeId: resize.nodeId,
-            position: result.position,
-            size: result.size,
-            childPositions,
-          }
-        }
-
-        const previewResize = (event: PointerEvent): boolean => {
-          const resize = interactionSlots.activeNodeResize
-
-          if (
-            resize === null ||
-            resize.pointerId !== event.pointerId ||
-            resize.nodeId !== node.id
-          ) {
-            return false
-          }
-
-          const change = resizeCandidate(resize, event)
-
-          if (change === undefined) {
-            return true
-          }
-
-          renderedNodePositions.set(node.id, change.position)
-
-          for (const child of change.childPositions) {
-            renderedNodePositions.set(child.nodeId, child.position)
-          }
-
-          element.style.width = `${change.size.width}px`
-          element.style.height = `${change.size.height}px`
-          element.style.boxSizing = 'border-box'
-          element.dataset.resizing = 'true'
-          acceptMeasurement(node.id, { nodeId: node.id, ...change.size })
-          recordNodeMeasurement(findNode(node.id) ?? node, element)
-          const graph = renderGraphPositions()
-          edgeRenderer.reconcile(document, renderedNodePositions, graph)
-
-          if (options.renderOnlyVisible === true) {
-            reconcileVisible?.()
-          }
-
-          return true
-        }
-
-        const finishNodeResize = (event: PointerEvent): boolean => {
-          const resize = interactionSlots.activeNodeResize
-
-          if (
-            resize === null ||
-            resize.pointerId !== event.pointerId ||
-            resize.nodeId !== node.id
-          ) {
-            return false
-          }
-
-          const change = resizeCandidate(resize, event)
-
-          if (change === undefined) {
-            cancelNodeResize('resize-bounds-conflict')
-
-            return true
-          }
-
-          const outcome = endSession('node-resize', event.pointerId, 'finished')
-
-          interactionSlots.activeNodeResize = null
-          element.classList.remove('resizing')
-          delete element.dataset.resizing
-
-          for (const pointerId of pointerIdsFromOutcome(outcome, [
-            event.pointerId,
-          ])) {
-            runEffect(browser.releasePointer(element, pointerId))
-          }
-
-          suppressCanvasClick = true
-          globalThis.setTimeout(() => {
-            suppressCanvasClick = false
-          }, 0)
-
-          if (
-            outcome.kind === 'finished' &&
-            outcome.semanticEvent === change.kind &&
-            (change.position.x !== resize.positionStart.x ||
-              change.position.y !== resize.positionStart.y ||
-              change.size.width !== resize.sizeStart.width ||
-              change.size.height !== resize.sizeStart.height)
-          ) {
-            operations.publishChange(change)
-          }
-
-          runTelemetry(
-            Effect.logDebug('Completed node resize').pipe(
-              Effect.annotateLogs({
-                [FlowAttribute.nodeId]: node.id,
-                [FlowAttribute.pointerId]: event.pointerId,
-                [FlowAttribute.inputKind]: 'node-resize',
-                [FlowAttribute.changeKind]: change.kind,
-              }),
-              Effect.withSpan(FlowSpan.nodeDragComplete, {
-                attributes: {
-                  [FlowAttribute.nodeId]: node.id,
-                  [FlowAttribute.pointerId]: event.pointerId,
-                  [FlowAttribute.inputKind]: 'node-resize',
-                  [FlowAttribute.changeKind]: change.kind,
-                },
-              })
-            )
-          )
-
-          return true
-        }
-
-        const startNodeResizeFromPointer = (
-          event: PointerEvent,
-          resizeHandle: HTMLButtonElement
-        ): void => {
-          event.preventDefault()
-          event.stopPropagation()
-          const current = findNode(node.id)
-
-          if (
-            current === undefined ||
-            current.selected !== true ||
-            interactionSlots.activeNodeResize !== null ||
-            activeKeyboardResize !== null ||
-            interactionSlots.activeDrag !== null ||
-            interactionSlots.activeViewportPan !== null ||
-            interactionSlots.activePinch !== null
-          ) {
-            return
-          }
-
-          const measured = measurements.get(node.id) ?? browser.measure(element)
-
-          const sizeStart = {
-            width:
-              measured.width > 0
-                ? measured.width
-                : (current.size?.width ?? 150),
-            height:
-              measured.height > 0
-                ? measured.height
-                : (current.size?.height ?? 44),
-          }
-
-          const direction = Effect.runSync(
-            S.decodeUnknownEffect(NodeResizeDirectionSchema)(
-              resizeHandle.dataset.direction
-            )
-          )
-
-          const session = {
-            kind: 'node-resize' as const,
-            resize: {
-              direction,
-              nodeId: node.id,
-              positionStart: current.position,
-              pointerId: event.pointerId,
-              pointerStart: pointerInFlow(event),
-              sizeStart,
-              childExtent: graphResizeChildExtent(
-                createFlowGraph(document, measurements),
-                node.id
-              ),
-            },
-          }
-
-          const started = startFlowInteraction(interactionSessions, session)
-
-          if (started.kind !== 'started') {
-            return
-          }
-
-          interactionSessions = started.sessions
-
-          if (!runEffect(browser.capturePointer(element, event.pointerId))) {
-            cancelNodeResize('pointer-capture-failed')
-
-            return
-          }
-
-          element.classList.add('resizing')
-          runTelemetry(
-            Effect.logDebug('Started node resize').pipe(
-              Effect.annotateLogs({
-                [FlowAttribute.nodeId]: node.id,
-                [FlowAttribute.pointerId]: event.pointerId,
-                [FlowAttribute.inputKind]: 'node-resize',
-              }),
-              Effect.withSpan(FlowSpan.nodeDragStart, {
-                attributes: {
-                  [FlowAttribute.nodeId]: node.id,
-                  [FlowAttribute.pointerId]: event.pointerId,
-                  [FlowAttribute.inputKind]: 'node-resize',
-                },
-              })
-            )
-          )
-        }
-
-        const startNodeDragFromPointer = (event: PointerEvent): void => {
-          if (isNodePointerTargetAllowed(content, event.target) === false) {
-            return
-          }
-
-          if (
-            event.button !== 0 ||
-            interactionSlots.activeDrag !== null ||
-            interactionSlots.activeReconnection !== null
-          ) {
-            return
-          }
-
-          const current = findNode(node.id)
-
-          if (current === undefined) {
-            return
-          }
-
-          const selectedNodes =
-            current.selected === true ? selectedMovableNodes() : []
-
-          interactionSlots.activeDrag = selectedNodes.some(
-            (candidate) => candidate.id !== current.id
-          )
-            ? {
-                anchorNodeId: current.id,
-                pointerId: event.pointerId,
-                pointerStart: pointerInFlow(event),
-                positions: selectedNodes.map((candidate) => ({
-                  nodeId: candidate.id,
-                  position: adoptedPosition(candidate),
-                })),
-              }
-            : beginNodeDrag(
-                node.id,
-                absolutePosition(current.id),
-                pointerInFlow(event),
-                event.pointerId
-              )
-          dragPointerStart = pointerInCanvas(event)
-          dragPointer = dragPointerStart
-
-          if (!runEffect(browser.capturePointer(element, event.pointerId))) {
-            cancelActiveDrag('pointer-capture-failed')
-
-            return
-          }
-
-          event.preventDefault()
-
-          if (options.nodeDragThreshold === 0) {
-            activateNodeDrag(event)
-          }
-        }
-
-        const onPointerDown = (event: PointerEvent): void => {
-          if (pendingConnection !== null) {
-            return
-          }
-
-          if (activeKeyboardResize?.nodeId === node.id) {
-            event.preventDefault()
-            event.stopPropagation()
-
-            return
-          }
-
-          const resizeHandle =
-            event.target instanceof HTMLElement
-              ? event.target.closest<HTMLButtonElement>(
-                  '.flow-node-resize-handle'
-                )
-              : null
-
-          if (resizeHandle !== null) {
-            startNodeResizeFromPointer(event, resizeHandle)
-
-            return
-          }
-
-          const handleElement =
-            event.target instanceof HTMLElement
-              ? event.target.closest<HTMLElement>('.flow-handle')
-              : null
-
-          if (handleElement !== null) {
-            const current = findNode(node.id)
-
-            const handle = current?.handles?.find(
-              (item) => item.id === handleElement.dataset.handleId
-            )
-
-            if (current !== undefined && handle !== undefined) {
-              startConnection(current, handle, handleElement, event)
-            }
-
-            return
-          }
-
-          startNodeDragFromPointer(event)
-        }
-
-        const onPointerMove = (event: PointerEvent): void => {
-          if (previewResize(event)) {
-            return
-          }
-
-          if (
-            interactionSlots.activeDrag?.pointerId !== event.pointerId ||
-            dragAnchorId(interactionSlots.activeDrag) !== node.id
-          ) {
-            return
-          }
-
-          if (!activateNodeDrag(event)) {
-            return
-          }
-
-          dragPointer = pointerInCanvas(event)
-
-          updateNodeDragPreview(
-            interactionSlots.activeDrag,
-            pointerInFlow(event)
-          )
-          nodeDragAutoPan.schedule()
-        }
-
-        const finishDrag = (event: PointerEvent): void => {
-          if (finishNodeResize(event)) {
-            return
-          }
-
-          if (
-            interactionSlots.activeDrag?.pointerId !== event.pointerId ||
-            dragAnchorId(interactionSlots.activeDrag) !== node.id
-          ) {
-            return
-          }
-
-          const wasActivated = activateNodeDrag(event)
-          dragPointer = pointerInCanvas(event)
-          cancelNodeDragFrame()
-
-          const candidate =
-            'positions' in interactionSlots.activeDrag
-              ? moveNodeGroupDrag(
-                  interactionSlots.activeDrag,
-                  pointerInFlow(event),
-                  options.snapGrid
-                )
-              : completeNodeDrag(
-                  interactionSlots.activeDrag,
-                  pointerInFlow(event),
-                  options.snapGrid
-                )
-
-          const change = changeForFinishedDrag(
-            interactionSlots.activeDrag,
-            candidate,
-            boundedGroupChange,
-            boundedNodePosition,
-            localPositionFromAbsolute
-          )
-
-          const outcome = endSession('node-drag', event.pointerId, 'finished')
-          interactionSlots.activeDrag = null
-          dragPointerStart = null
-          dragPointer = null
-
-          const changedPositions =
-            change.kind === 'node-position'
-              ? [{ nodeId: change.nodeId, position: change.position }]
-              : change.positions
-
-          for (const { nodeId } of changedPositions) {
-            const authoritative = findNode(nodeId)
-
-            if (authoritative !== undefined) {
-              restoreAdoptedPosition(authoritative)
-            }
-          }
-
-          element.classList.remove('dragging')
-          runEffect(browser.releasePointer(element, event.pointerId))
-          suppressCanvasClick = true
-          globalThis.setTimeout(() => {
-            suppressCanvasClick = false
-          }, 0)
-
-          const current = findNode(node.id)
-
-          if (current !== undefined && !wasActivated) {
-            if (current.focusable !== false) {
-              element.focus()
-            }
-
-            if (
-              current.selectable !== false &&
-              (event.metaKey || event.ctrlKey)
-            ) {
-              operations.toggleNodeSelection(current)
-            } else if (
-              current.selectable !== false &&
-              current.selected !== true
-            ) {
-              operations.publishChange({
-                kind: 'node-selection',
-                nodeId: current.id,
-                selected: true,
-              })
-            }
-
-            return
-          }
-
-          if (!wasActivated) {
-            return
-          }
-
-          if (
-            outcome.kind === 'finished' &&
-            outcome.semanticEvent === change.kind
-          ) {
-            operations.publishChange(change)
-          }
-
-          notifyNodeDragStop(
-            event.pointerId,
-            {
-              nodeIds: changedPositions.map(({ nodeId }) => nodeId),
-              positions: changedPositions.map(({ nodeId, position }) => ({
-                nodeId,
-                position: { ...position },
-              })),
-            },
-            'proposed'
-          )
-
-          runTelemetry(
-            Effect.logDebug('Completed node drag').pipe(
-              Effect.annotateLogs({
-                [FlowAttribute.nodeId]: node.id,
-                [FlowAttribute.nodeCount]: changedPositions.length,
-              }),
-              Effect.withSpan(FlowSpan.nodeDragComplete, {
-                attributes: {
-                  [FlowAttribute.nodeId]: node.id,
-                  [FlowAttribute.pointerId]: event.pointerId,
-                  [FlowAttribute.nodeCount]: changedPositions.length,
-                },
-              })
-            )
-          )
-        }
-
-        const onPointerCancel = (event: PointerEvent): void => {
-          if (
-            interactionSlots.activeNodeResize?.pointerId === event.pointerId &&
-            interactionSlots.activeNodeResize.nodeId === node.id
-          ) {
-            cancelNodeResize('pointer-cancel')
-
-            return
-          }
-
-          if (
-            interactionSlots.activeDrag?.pointerId === event.pointerId &&
-            dragAnchorId(interactionSlots.activeDrag) === node.id
-          ) {
-            cancelActiveDrag('pointer-cancel')
-          }
-        }
-
-        const nodeScope = runEffect(Scope.make('sequential'))
-        runEffect(
-          Scope.addFinalizer(hostScope, Scope.close(nodeScope, Exit.void))
+        applyNodePosition(
+          element,
+          pass.graph.nodes.get(node.id)?.absolutePosition ?? node.position
         )
-        runEffect(
-          Scope.provide(
-            browser.listen(element, 'pointerdown', onPointerDown),
-            nodeScope
-          )
-        )
-        runEffect(
-          Scope.provide(
-            browser.listen(element, 'pointermove', onPointerMove),
-            nodeScope
-          )
-        )
-        runEffect(
-          Scope.provide(
-            browser.listen(element, 'pointerup', finishDrag),
-            nodeScope
-          )
-        )
-        runEffect(
-          Scope.provide(
-            browser.listen(element, 'pointercancel', onPointerCancel),
-            nodeScope
-          )
-        )
-        resizeObserver.observe(element)
 
-        let released = false
+        const rendererScope = runEffect(
+          Scope.fork(hostRendererScope, 'sequential')
+        )
+
+        const nodeScope = runEffect(Scope.fork(hostBrowserScope, 'sequential'))
 
         const nodeEntry: NodeEntry = {
           element,
@@ -5805,19 +6623,868 @@ export const createFlowHost = (
           handles,
           generation,
           rendererType,
-          renderer: rendererInstance,
+          rendererScope,
+          browserScope: nodeScope,
+          state: 'owned',
+          renderer: { kind: 'awaiting-factory' },
           release: () => {
-            if (released) {
+            if (nodeEntry.state === 'retired') {
               return
             }
 
-            released = true
-            nodeEntry.renderer?.destroy()
-            runEffect(Scope.close(nodeScope, Exit.void))
+            nodeEntry.state = 'retired'
+
+            try {
+              runEffect(Scope.close(nodeScope, Exit.void))
+            } finally {
+              try {
+                runEffect(Scope.close(rendererScope, Exit.void))
+              } finally {
+                element.remove()
+              }
+            }
           },
         }
 
-        return nodeEntry
+        const reservation = reserveNodeCandidate(
+          node.id,
+          expected,
+          nodeEntry,
+          pass
+        )
+
+        if (reservation === undefined) {
+          nodeEntry.release()
+
+          return undefined
+        }
+
+        let acquisition: 'acquiring' | 'adopted' = 'acquiring'
+
+        const retireUnfinished = () => {
+          if (nodeSlots.get(node.id) === reservation) {
+            nodeSlots.delete(node.id)
+          }
+
+          nodeEntry.release()
+        }
+
+        try {
+          const candidatePass =
+            previousMeasurement === undefined
+              ? pass
+              : captureProjection(document, pass.origin)
+
+          const candidateCurrent = () =>
+            projectionMatches(candidatePass, { kind: 'node', id: node.id })
+
+          if (expected !== undefined) {
+            expected.entry.release()
+          }
+
+          if (
+            destroyed ||
+            nodeSlots.get(node.id) !== reservation ||
+            !candidateCurrent()
+          ) {
+            return undefined
+          }
+
+          const instance = renderer?.(node, content)
+
+          if (instance === undefined) {
+            nodeEntry.renderer = { kind: 'default' }
+            renderDefaultNodeContents(content, node)
+          } else {
+            runEffect(
+              Scope.addFinalizer(
+                rendererScope,
+                Effect.sync(() => {
+                  try {
+                    instance.destroy()
+                  } catch (error) {
+                    if (destroyed) {
+                      cleanupFailures.push(error)
+                    } else {
+                      throw error
+                    }
+                  }
+                })
+              )
+            )
+            nodeEntry.renderer = { kind: 'custom', instance }
+          }
+
+          if (
+            destroyed ||
+            nodeSlots.get(node.id) !== reservation ||
+            nodeEntry.state !== 'owned' ||
+            !candidateCurrent()
+          ) {
+            return undefined
+          }
+
+          renderNodeHandles(handles, node)
+          renderNodeResizeHandle(element, node)
+
+          // eslint-disable-next-line complexity -- Activation checks the existing phase, geometry and callback ownership.
+          const activateNodeDrag = (event: PointerEvent): boolean => {
+            if (destroyed) {
+              return false
+            }
+
+            if (
+              interactionSlots.activeDrag === null ||
+              dragPointerStart === null
+            ) {
+              return false
+            }
+
+            const drag = interactionSlots.activeDrag
+
+            if (
+              !('positions' in drag) &&
+              findNode(drag.nodeId)?.draggable === false
+            ) {
+              return false
+            }
+
+            if ('positions' in drag && drag.positions.length === 0) {
+              return false
+            }
+
+            const dragSession = sessionFor('node-drag')
+
+            if (
+              dragSession?.kind === 'node-drag' &&
+              dragSession.phase === 'active'
+            ) {
+              return true
+            }
+
+            if (
+              nodeDragThreshold !== 0 &&
+              !nodeDragActivated(
+                nodeDragThreshold,
+                dragPointerStart.x,
+                dragPointerStart.y,
+                event.clientX,
+                event.clientY
+              )
+            ) {
+              return false
+            }
+
+            const activation = activateFlowInteraction(
+              interactionSessions,
+              event.pointerId
+            )
+
+            if (activation.kind !== 'activated') {
+              return false
+            }
+
+            interactionSessions = activation.sessions
+            element.classList.add('dragging')
+            runTelemetry(
+              Effect.logDebug('Started node drag').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.nodeId]: node.id,
+                  [FlowAttribute.pointerId]: event.pointerId,
+                }),
+                Effect.withSpan(FlowSpan.nodeDragStart, {
+                  attributes: {
+                    [FlowAttribute.nodeId]: node.id,
+                    [FlowAttribute.pointerId]: event.pointerId,
+                  },
+                })
+              )
+            )
+
+            callbackStartedNodeDrags.add(drag)
+
+            if (options.onNodeDragStart !== undefined) {
+              reportBoundaryCallback(
+                'Node drag start',
+                'node-drag',
+                options.onNodeDragStart,
+                nodeDragCallbackPayload(drag)
+              )
+            }
+
+            return (
+              !destroyed &&
+              interactionSlots.activeDrag === drag &&
+              findNode(dragAnchorId(drag))?.draggable !== false &&
+              graphFor().nodes.get(dragAnchorId(drag))?.hidden === false &&
+              element.isConnected
+            )
+          }
+
+          const resizeCandidate = (
+            resize: ActiveNodeResize,
+            event: PointerEvent
+          ): NodeBoundsChange | undefined => {
+            const current = findNode(resize.nodeId)
+
+            if (current === undefined) {
+              return undefined
+            }
+
+            const parent =
+              current.parentId === undefined
+                ? undefined
+                : graphFor().nodes.get(current.parentId)
+
+            const bounds =
+              current.parentId !== undefined &&
+              current.extent === 'parent' &&
+              parent !== undefined
+                ? {
+                    minX: 0,
+                    minY: 0,
+                    maxX: parent.dimensions.width,
+                    maxY: parent.dimensions.height,
+                  }
+                : options.nodeExtent
+
+            const result = calculateNodeResize({
+              direction: resize.direction,
+              positionStart: resize.positionStart,
+              sizeStart: resize.sizeStart,
+              delta: {
+                x: pointerInFlow(event).x - resize.pointerStart.x,
+                y: pointerInFlow(event).y - resize.pointerStart.y,
+              },
+              minimumSize: { width: 40, height: 24 },
+              bounds,
+              childExtent: resize.childExtent,
+            })
+
+            if (result.boundsIssues.length > 0) {
+              return undefined
+            }
+
+            const childPositions = document.nodes
+              .filter((candidate) => candidate.parentId === current.id)
+              .map((child) => ({
+                nodeId: child.id,
+                position: {
+                  x: child.position.x + result.childrenPositionDelta.x,
+                  y: child.position.y + result.childrenPositionDelta.y,
+                },
+              }))
+
+            return {
+              kind: 'node-bounds',
+              nodeId: resize.nodeId,
+              position: result.position,
+              size: result.size,
+              childPositions,
+            }
+          }
+
+          const previewResize = (event: PointerEvent): boolean => {
+            if (destroyed) {
+              return false
+            }
+
+            const resize = interactionSlots.activeNodeResize
+
+            if (
+              resize === null ||
+              resize.pointerId !== event.pointerId ||
+              resize.nodeId !== node.id
+            ) {
+              return false
+            }
+
+            const change = resizeCandidate(resize, event)
+
+            if (change === undefined) {
+              return true
+            }
+
+            renderedNodePositions.set(node.id, change.position)
+
+            for (const child of change.childPositions) {
+              renderedNodePositions.set(child.nodeId, child.position)
+            }
+
+            element.style.width = `${change.size.width}px`
+            element.style.height = `${change.size.height}px`
+            element.style.boxSizing = 'border-box'
+            element.dataset.resizing = 'true'
+            acceptMeasurement(node.id, { nodeId: node.id, ...change.size })
+            recordNodeMeasurement(findNode(node.id) ?? node, element)
+
+            if (renderGraphEdges() && options.renderOnlyVisible === true) {
+              reconcileVisible?.()
+            }
+
+            return true
+          }
+
+          const finishNodeResize = (event: PointerEvent): boolean => {
+            if (!dispatchOwns(event, 'activeNodeResize')) {
+              return false
+            }
+
+            if (destroyed) {
+              return false
+            }
+
+            const resize = interactionSlots.activeNodeResize
+
+            if (
+              resize === null ||
+              resize.pointerId !== event.pointerId ||
+              resize.nodeId !== node.id
+            ) {
+              return false
+            }
+
+            const change = resizeCandidate(resize, event)
+
+            if (change === undefined) {
+              cancelNodeResize('resize-bounds-conflict')
+
+              return true
+            }
+
+            const outcome = endSession(
+              'node-resize',
+              event.pointerId,
+              'finished'
+            )
+
+            interactionSlots.activeNodeResize = null
+            element.classList.remove('resizing')
+            delete element.dataset.resizing
+
+            for (const pointerId of pointerIdsFromOutcome(outcome, [
+              event.pointerId,
+            ])) {
+              runEffect(browser.releasePointer(element, pointerId))
+            }
+
+            suppressClickThroughDispatch()
+
+            if (
+              outcome.kind === 'finished' &&
+              outcome.semanticEvent === change.kind &&
+              (change.position.x !== resize.positionStart.x ||
+                change.position.y !== resize.positionStart.y ||
+                change.size.width !== resize.sizeStart.width ||
+                change.size.height !== resize.sizeStart.height)
+            ) {
+              operations.publishChange(change)
+            }
+
+            runTelemetry(
+              Effect.logDebug('Completed node resize').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.nodeId]: node.id,
+                  [FlowAttribute.pointerId]: event.pointerId,
+                  [FlowAttribute.inputKind]: 'node-resize',
+                  [FlowAttribute.changeKind]: change.kind,
+                }),
+                Effect.withSpan(FlowSpan.nodeDragComplete, {
+                  attributes: {
+                    [FlowAttribute.nodeId]: node.id,
+                    [FlowAttribute.pointerId]: event.pointerId,
+                    [FlowAttribute.inputKind]: 'node-resize',
+                    [FlowAttribute.changeKind]: change.kind,
+                  },
+                })
+              )
+            )
+
+            return true
+          }
+
+          const startNodeResizeFromPointer = (
+            event: PointerEvent,
+            resizeHandle: HTMLButtonElement
+          ): void => {
+            if (destroyed) {
+              return
+            }
+
+            event.preventDefault()
+            event.stopPropagation()
+            const current = findNode(node.id)
+
+            if (
+              current === undefined ||
+              current.selected !== true ||
+              interactionSlots.activeNodeResize !== null ||
+              activeKeyboardResize !== null ||
+              interactionSlots.activeDrag !== null ||
+              interactionSlots.activeViewportPan !== null ||
+              interactionSlots.activePinch !== null
+            ) {
+              return
+            }
+
+            const measured =
+              measurements.get(node.id) ?? browser.measure(element)
+
+            const sizeStart = {
+              width:
+                measured.width > 0
+                  ? measured.width
+                  : (current.size?.width ?? 150),
+              height:
+                measured.height > 0
+                  ? measured.height
+                  : (current.size?.height ?? 44),
+            }
+
+            const direction = Effect.runSync(
+              S.decodeUnknownEffect(NodeResizeDirectionSchema)(
+                resizeHandle.dataset.direction
+              )
+            )
+
+            const session = {
+              kind: 'node-resize' as const,
+              resize: {
+                direction,
+                nodeId: node.id,
+                positionStart: current.position,
+                pointerId: event.pointerId,
+                pointerStart: pointerInFlow(event),
+                sizeStart,
+                childExtent: graphResizeChildExtent(
+                  createFlowGraph(document, measurements),
+                  node.id
+                ),
+              },
+            }
+
+            const started = startFlowInteraction(interactionSessions, session)
+
+            if (started.kind !== 'started') {
+              return
+            }
+
+            resizeRestorations.set(
+              session.resize,
+              captureResizeRestoration(node.id, sizeStart)
+            )
+            interactionSessions = started.sessions
+
+            if (!runEffect(browser.capturePointer(element, event.pointerId))) {
+              cancelNodeResize('pointer-capture-failed')
+
+              return
+            }
+
+            element.classList.add('resizing')
+            runTelemetry(
+              Effect.logDebug('Started node resize').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.nodeId]: node.id,
+                  [FlowAttribute.pointerId]: event.pointerId,
+                  [FlowAttribute.inputKind]: 'node-resize',
+                }),
+                Effect.withSpan(FlowSpan.nodeDragStart, {
+                  attributes: {
+                    [FlowAttribute.nodeId]: node.id,
+                    [FlowAttribute.pointerId]: event.pointerId,
+                    [FlowAttribute.inputKind]: 'node-resize',
+                  },
+                })
+              )
+            )
+          }
+
+          const startNodeDragFromPointer = (event: PointerEvent): void => {
+            if (destroyed) {
+              return
+            }
+
+            if (isNodePointerTargetAllowed(content, event.target) === false) {
+              return
+            }
+
+            if (
+              event.button !== 0 ||
+              interactionSlots.activeDrag !== null ||
+              interactionSlots.activeReconnection !== null
+            ) {
+              return
+            }
+
+            const current = findNode(node.id)
+
+            if (current === undefined) {
+              return
+            }
+
+            const selectedNodes =
+              current.selected === true ? selectedMovableNodes() : []
+
+            interactionSlots.activeDrag = selectedNodes.some(
+              (candidate) => candidate.id !== current.id
+            )
+              ? {
+                  anchorNodeId: current.id,
+                  pointerId: event.pointerId,
+                  pointerStart: pointerInFlow(event),
+                  positions: selectedNodes.map((candidate) => ({
+                    nodeId: candidate.id,
+                    position: adoptedPosition(candidate),
+                  })),
+                }
+              : beginNodeDrag(
+                  node.id,
+                  absolutePosition(current.id),
+                  pointerInFlow(event),
+                  event.pointerId
+                )
+            dragPointerStart = { x: event.clientX, y: event.clientY }
+            dragPointer = pointerInCanvas(event)
+
+            if (!runEffect(browser.capturePointer(element, event.pointerId))) {
+              cancelActiveDrag('pointer-capture-failed')
+
+              return
+            }
+
+            event.preventDefault()
+
+            if (nodeDragThreshold === 0) {
+              activateNodeDrag(event)
+            }
+          }
+
+          const onPointerDown = (event: PointerEvent): void => {
+            if (destroyed) {
+              return
+            }
+
+            if (pendingConnection !== null) {
+              return
+            }
+
+            if (activeKeyboardResize?.nodeId === node.id) {
+              event.preventDefault()
+              event.stopPropagation()
+
+              return
+            }
+
+            const resizeHandle =
+              event.target instanceof HTMLElement
+                ? event.target.closest<HTMLButtonElement>(
+                    '.flow-node-resize-handle'
+                  )
+                : null
+
+            if (resizeHandle !== null) {
+              startNodeResizeFromPointer(event, resizeHandle)
+
+              return
+            }
+
+            const handleElement =
+              event.target instanceof HTMLElement
+                ? event.target.closest<HTMLElement>('.flow-handle')
+                : null
+
+            if (handleElement !== null) {
+              const current = findNode(node.id)
+
+              const handle = current?.handles?.find(
+                (item) => item.id === handleElement.dataset.handleId
+              )
+
+              if (current !== undefined && handle !== undefined) {
+                startConnection(current, handle, handleElement, event)
+              }
+
+              return
+            }
+
+            startNodeDragFromPointer(event)
+          }
+
+          const onPointerMove = (event: PointerEvent): void => {
+            if (destroyed) {
+              return
+            }
+
+            if (previewResize(event)) {
+              return
+            }
+
+            if (
+              interactionSlots.activeDrag?.pointerId !== event.pointerId ||
+              dragAnchorId(interactionSlots.activeDrag) !== node.id
+            ) {
+              return
+            }
+
+            if (!activateNodeDrag(event)) {
+              return
+            }
+
+            dragPointer = pointerInCanvas(event)
+
+            const drag = interactionSlots.activeDrag
+            const session = sessionFor('node-drag')
+
+            if (
+              drag === null ||
+              session?.kind !== 'node-drag' ||
+              session.phase !== 'active'
+            ) {
+              return
+            }
+
+            const sample: NodeSample = {
+              drag,
+              session,
+              pointerId: event.pointerId,
+              rawClient: { x: event.clientX, y: event.clientY },
+              canvasPoint: dragPointer,
+            }
+
+            nodeSample = sample
+            updateNodeDragPreview(sample, pointerInFlow(event))
+            scheduleNodeFrame(sample)
+          }
+
+          // eslint-disable-next-line complexity -- Release settles capture, selection and the detached drag in one transition.
+          const finishDrag = (event: PointerEvent): void => {
+            if (destroyed) {
+              return
+            }
+
+            if (finishNodeResize(event)) {
+              return
+            }
+
+            if (!dispatchOwns(event, 'activeDrag')) {
+              return
+            }
+
+            if (
+              interactionSlots.activeDrag?.pointerId !== event.pointerId ||
+              dragAnchorId(interactionSlots.activeDrag) !== node.id
+            ) {
+              return
+            }
+
+            const drag = interactionSlots.activeDrag
+            const dragSession = sessionFor('node-drag')
+
+            const wasActivated =
+              dragSession?.kind === 'node-drag' &&
+              dragSession.phase === 'active'
+
+            dragPointer = pointerInCanvas(event)
+            cancelNodeDragFrame()
+
+            const candidate =
+              'positions' in interactionSlots.activeDrag
+                ? moveNodeGroupDrag(
+                    interactionSlots.activeDrag,
+                    pointerInFlow(event),
+                    options.snapGrid
+                  )
+                : completeNodeDrag(
+                    interactionSlots.activeDrag,
+                    pointerInFlow(event),
+                    options.snapGrid
+                  )
+
+            const change = changeForFinishedDrag(
+              interactionSlots.activeDrag,
+              candidate,
+              boundedGroupChange,
+              boundedNodePosition,
+              localPositionFromAbsolute
+            )
+
+            const outcome = endSession('node-drag', event.pointerId, 'finished')
+            interactionSlots.activeDrag = null
+            dragPointerStart = null
+            dragPointer = null
+
+            const changedPositions =
+              change.kind === 'node-position'
+                ? [{ nodeId: change.nodeId, position: change.position }]
+                : change.positions
+
+            for (const { nodeId } of changedPositions) {
+              const authoritative = findNode(nodeId)
+
+              if (authoritative !== undefined) {
+                restoreAdoptedPosition(authoritative)
+              }
+            }
+
+            element.classList.remove('dragging')
+            suppressClickThroughDispatch()
+            runEffect(browser.releasePointer(element, event.pointerId))
+
+            const current = findNode(node.id)
+
+            if (current !== undefined && !wasActivated) {
+              if (current.focusable !== false) {
+                element.focus()
+              }
+
+              if (
+                current.selectable !== false &&
+                (event.metaKey || event.ctrlKey)
+              ) {
+                operations.toggleNodeSelection(current)
+              } else if (
+                current.selectable !== false &&
+                current.selected !== true
+              ) {
+                operations.publishChange({
+                  kind: 'node-selection',
+                  nodeId: current.id,
+                  selected: true,
+                })
+              }
+
+              return
+            }
+
+            if (!wasActivated) {
+              return
+            }
+
+            if (
+              outcome.kind === 'finished' &&
+              outcome.semanticEvent === change.kind
+            ) {
+              operations.publishChange(change)
+            }
+
+            notifyNodeDragStop(
+              drag,
+              {
+                nodeIds: changedPositions.map(({ nodeId }) => nodeId),
+                positions: changedPositions.map(({ nodeId, position }) => ({
+                  nodeId,
+                  position: { ...position },
+                })),
+              },
+              'proposed'
+            )
+
+            runTelemetry(
+              Effect.logDebug('Completed node drag').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.nodeId]: node.id,
+                  [FlowAttribute.nodeCount]: changedPositions.length,
+                }),
+                Effect.withSpan(FlowSpan.nodeDragComplete, {
+                  attributes: {
+                    [FlowAttribute.nodeId]: node.id,
+                    [FlowAttribute.pointerId]: event.pointerId,
+                    [FlowAttribute.nodeCount]: changedPositions.length,
+                  },
+                })
+              )
+            )
+          }
+
+          runEffect(
+            Scope.provide(
+              browser.listen(element, 'pointerdown', onPointerDown),
+              nodeScope
+            )
+          )
+          runEffect(
+            Scope.provide(
+              browser.listen(element, 'pointermove', onPointerMove),
+              nodeScope
+            )
+          )
+          runEffect(
+            Scope.provide(
+              browser.listen(element, 'pointerup', finishDrag),
+              nodeScope
+            )
+          )
+          runEffect(
+            Scope.provide(
+              browser.listen(element, 'pointercancel', onNodePointerCancel),
+              nodeScope
+            )
+          )
+          runEffect(
+            Scope.provide(
+              Effect.acquireRelease(
+                Effect.sync(() => {
+                  resizeObserver.observe(element)
+
+                  return element
+                }),
+                (observed) =>
+                  Effect.sync(() => resizeObserver.unobserve(observed))
+              ),
+              nodeScope
+            )
+          )
+
+          if (
+            destroyed ||
+            nodeSlots.get(node.id) !== reservation ||
+            nodeEntry.state !== 'owned' ||
+            !candidateCurrent()
+          ) {
+            return undefined
+          }
+
+          const ready: ReadyNodeEntry = Object.assign(nodeEntry, {
+            renderer: nodeEntry.renderer,
+          })
+
+          if (
+            !installNodeReservation(
+              node.id,
+              {
+                expected: { kind: 'present', slot: reservation },
+                next: { kind: 'ready', entry: ready },
+              },
+              candidatePass
+            )
+          ) {
+            return undefined
+          }
+
+          acquisition = 'adopted'
+
+          return { entry: ready, pass: candidatePass }
+        } catch (error) {
+          const primaryError = error
+
+          try {
+            retireUnfinished()
+          } catch (cleanupError) {
+            // eslint-disable-next-line preserve-caught-error -- The renderer error stays primary; the caught cleanup error is retained in errors[1].
+            throw new AggregateError(
+              [primaryError, cleanupError],
+              'Node renderer and cleanup failed',
+              { cause: primaryError }
+            )
+          }
+
+          throw error
+        } finally {
+          if (acquisition === 'acquiring') {
+            retireUnfinished()
+          }
+        }
       },
     }
 
@@ -5867,6 +7534,10 @@ export const createFlowHost = (
           : endSession('selection', selection.pointerId, terminal)
 
       const screenEnd = selectionPointer ?? selection?.pointerStart
+      const overlay = selectionOverlay
+      selectionPointer = null
+      selectionOverlay = null
+      interactionSlots.activeSelectionRect = null
 
       if (
         selectionFrame !== null &&
@@ -5886,10 +7557,7 @@ export const createFlowHost = (
         }
       }
 
-      interactionSlots.activeSelectionRect = null
-      selectionPointer = null
-      selectionOverlay?.remove()
-      selectionOverlay = null
+      overlay?.remove()
 
       if (selection !== null && options.onSelectionEnd !== undefined) {
         const payload = selectionRectPayload(
@@ -5946,32 +7614,70 @@ export const createFlowHost = (
       }
     }
 
-    const tickSelectionAutoPan = (): void => {
-      selectionFrame = null
+    const scheduleSelectionFrame = (
+      active: NonNullable<FlowInteractionSlots['activeSelectionRect']>
+    ): void => {
+      const handle = globalThis.requestAnimationFrame(() => {
+        if (
+          destroyed ||
+          selectionFrame !== handle ||
+          interactionSlots.activeSelectionRect !== active
+        ) {
+          return
+        }
 
-      if (
-        interactionSlots.activeSelectionRect === null ||
-        selectionPointer === null
-      ) {
-        return
-      }
+        selectionFrame = null
+        const pointer = selectionPointer
 
-      const delta = selectionAutoPanDelta(
-        selectionPointer,
-        canvas.clientWidth,
-        canvas.clientHeight
-      )
+        if (pointer === null) {
+          return
+        }
 
-      if (delta.x === 0 && delta.y === 0) {
-        return
-      }
+        const delta = selectionAutoPanDelta(
+          pointer,
+          canvas.clientWidth,
+          canvas.clientHeight
+        )
 
-      renderViewport(panViewport(renderedViewport, delta))
-      updateSelectionRect(selectionPointer)
-      selectionFrame = globalThis.requestAnimationFrame(tickSelectionAutoPan)
+        if (delta.x === 0 && delta.y === 0) {
+          return
+        }
+
+        renderViewport(panViewport(renderedViewport, delta))
+
+        if (
+          destroyed ||
+          interactionSlots.activeSelectionRect !== active ||
+          selectionFrame !== null ||
+          selectionPointer !== pointer
+        ) {
+          return
+        }
+
+        updateSelectionRect(pointer)
+
+        if (
+          !destroyed &&
+          interactionSlots.activeSelectionRect === active &&
+          selectionFrame === null &&
+          selectionPointer === pointer
+        ) {
+          scheduleSelectionFrame(active)
+        }
+      })
+
+      selectionFrame = handle
     }
 
     const finishSelectionRect = (event: PointerEvent): void => {
+      if (!dispatchOwns(event, 'activeSelectionRect')) {
+        return
+      }
+
+      if (destroyed) {
+        return
+      }
+
       if (interactionSlots.activeSelectionRect?.pointerId !== event.pointerId) {
         return
       }
@@ -5997,10 +7703,7 @@ export const createFlowHost = (
         return
       }
 
-      suppressCanvasClick = true
-      globalThis.setTimeout(() => {
-        suppressCanvasClick = false
-      }, 0)
+      suppressClickThroughDispatch()
 
       const flowEnd = screenToFlowPosition(end, renderedViewport)
 
@@ -6042,6 +7745,10 @@ export const createFlowHost = (
     }
 
     const startPinch = (event: PointerEvent): boolean => {
+      if (destroyed) {
+        return false
+      }
+
       if (
         !(
           event.pointerType === 'touch' &&
@@ -6114,7 +7821,12 @@ export const createFlowHost = (
       interactionSlots.activePinch !== null ||
       interactionSlots.activeSelectionRect !== null
 
+    // eslint-disable-next-line complexity -- Keep capture admission and exact-owner continuation checks in the canvas entry.
     const onCanvasPointerDown = (event: PointerEvent): void => {
+      if (destroyed) {
+        return
+      }
+
       const { target } = event
 
       if (
@@ -6201,12 +7913,18 @@ export const createFlowHost = (
         return
       }
 
-      interactionSlots.activeViewportPan = beginViewportPan(
+      const admittedPan = beginViewportPan(
         renderedViewport,
         pointerInCanvas(event),
         event.pointerId
       )
+
+      interactionSlots.activeViewportPan = admittedPan
       beginUserViewportObservation()
+
+      if (destroyed || interactionSlots.activeViewportPan !== admittedPan) {
+        return
+      }
 
       if (!runEffect(browser.capturePointer(canvas, event.pointerId))) {
         cancelViewportPan('pointer-capture-failed')
@@ -6239,6 +7957,10 @@ export const createFlowHost = (
     }
 
     const onCanvasPointerDownCapture = (event: PointerEvent): void => {
+      if (destroyed) {
+        return
+      }
+
       const { target } = event
 
       if (
@@ -6259,8 +7981,6 @@ export const createFlowHost = (
         return
       }
 
-      // Keep the existing touch pinch lifecycle; mouse/pen primary drags are
-      // captured here so node and edge handlers never start another gesture.
       if (event.pointerType === 'touch' && startPinch(event)) {
         event.stopPropagation()
 
@@ -6316,6 +8036,10 @@ export const createFlowHost = (
     }
 
     const prepareConnectionMove = (event: PointerEvent): boolean => {
+      if (destroyed) {
+        return false
+      }
+
       if (pendingConnection !== null) {
         const pending = pendingConnection
 
@@ -6364,9 +8088,7 @@ export const createFlowHost = (
           connectionPointer = pointerInCanvas(event)
 
           if (options.autoPanOnConnect !== false && connectionFrame === null) {
-            connectionFrame = globalThis.requestAnimationFrame(
-              tickConnectionAutoPan
-            )
+            scheduleConnectionFrame(interactionSlots.activeConnection)
           }
         }
 
@@ -6420,6 +8142,10 @@ export const createFlowHost = (
     }
 
     const onCanvasPointerMove = (event: PointerEvent): void => {
+      if (destroyed) {
+        return
+      }
+
       if (
         interactionSlots.activePinch !== null &&
         touchPointers.has(event.pointerId)
@@ -6452,8 +8178,7 @@ export const createFlowHost = (
         updateSelectionRect(pointerInCanvas(event))
 
         if (selectionFrame === null) {
-          selectionFrame =
-            globalThis.requestAnimationFrame(tickSelectionAutoPan)
+          scheduleSelectionFrame(interactionSlots.activeSelectionRect)
         }
 
         return
@@ -6480,6 +8205,14 @@ export const createFlowHost = (
     }
 
     const finishViewportPan = (event: PointerEvent): void => {
+      if (!dispatchOwns(event, 'activeViewportPan')) {
+        return
+      }
+
+      if (destroyed) {
+        return
+      }
+
       if (interactionSlots.activeViewportPan?.pointerId !== event.pointerId) {
         return
       }
@@ -6492,6 +8225,7 @@ export const createFlowHost = (
         ),
       }
 
+      const observation = userViewportObservation
       const outcome = endSession('pane-pan', event.pointerId, 'finished')
       interactionSlots.activeViewportPan = null
       touchPointers.delete(event.pointerId)
@@ -6510,7 +8244,7 @@ export const createFlowHost = (
         operations.publishChange(change)
       }
 
-      endUserViewportObservation()
+      endUserViewportObservation(observation)
 
       runTelemetry(
         Effect.logDebug('Completed viewport pan').pipe(
@@ -6533,35 +8267,18 @@ export const createFlowHost = (
       )
     }
 
-    const cancelPinch = (reason: string): void => {
-      if (interactionSlots.activePinch === null) {
-        return
-      }
-
-      const pinch = interactionSlots.activePinch
-      suppressClickUntilPointerUp()
-      const outcome = endSession('pinch', pinch.firstPointerId, 'cancelled')
-      endUserViewportObservation()
-      interactionSlots.activePinch = null
-      touchPointers.clear()
-
-      for (const pointerId of pointerIdsFromOutcome(outcome, [
-        pinch.firstPointerId,
-        pinch.secondPointerId,
-      ])) {
-        runEffect(browser.releasePointer(canvas, pointerId))
-      }
-
-      renderViewport(authoritativeViewport)
+    const notifyCancelPinch = (pinch: ActivePinch, reason: string): void => {
       runTelemetry(
         Effect.logDebug('Cancelled pinch gesture').pipe(
           Effect.annotateLogs({
             [FlowAttribute.inputKind]: 'touch-pinch',
+            [FlowAttribute.pointerId]: pinch.firstPointerId,
             [FlowAttribute.cancellationReason]: reason,
           }),
           Effect.withSpan(FlowSpan.gestureCancel, {
             attributes: {
               [FlowAttribute.inputKind]: 'touch-pinch',
+              [FlowAttribute.pointerId]: pinch.firstPointerId,
               [FlowAttribute.cancellationReason]: reason,
             },
           })
@@ -6569,159 +8286,488 @@ export const createFlowHost = (
       )
     }
 
-    const isPinchForPointer = (pointerId: number | undefined): boolean =>
-      interactionSlots.activePinch !== null &&
-      (pointerId === undefined ||
-        interactionSlots.activePinch.firstPointerId === pointerId ||
-        interactionSlots.activePinch.secondPointerId === pointerId)
+    // eslint-disable-next-line complexity -- Every captured actor is taken before resource release and before any preview or terminal callback.
+    cancelCaptured = (owners: EntryOwners, reason: string): void => {
+      const taken = owners.actors.filter(({ actor }) => actorOwned(actor))
 
-    const cancelNodeGestures = (
-      reason: string,
-      pointerId: number | undefined
-    ): void => {
-      if (isGestureForPointer(interactionSlots.activeDrag, pointerId)) {
-        cancelActiveDrag(reason)
-      }
-
-      if (isGestureForPointer(interactionSlots.activeNodeResize, pointerId)) {
-        cancelNodeResize(reason)
-      }
-
-      if (pointerId === undefined) {
-        cancelKeyboardResize(reason)
-      }
-    }
-
-    const cancelConnectionGestures = (
-      reason: string,
-      pointerId: number | undefined
-    ): void => {
-      if (isGestureForPointer(pendingConnection, pointerId)) {
-        clearPendingConnection()
-      }
-
-      if (isGestureForPointer(interactionSlots.activeConnection, pointerId)) {
-        cancelConnection(reason)
-      }
-
-      if (isGestureForPointer(interactionSlots.activeReconnection, pointerId)) {
-        cancelReconnection(reason)
-      }
-
-      if (pointerId === undefined) {
-        cancelClickConnection(reason)
-      }
-    }
-
-    const cancelViewportGestures = (
-      reason: string,
-      pointerId: number | undefined
-    ): void => {
-      if (isGestureForPointer(interactionSlots.activeViewportPan, pointerId)) {
-        cancelViewportPan(reason)
-      }
-
-      if (isPinchForPointer(pointerId)) {
-        cancelPinch(reason)
-      }
-    }
-
-    const cancelSelectionGesture = (
-      reason: string,
-      pointerId: number | undefined
-    ): void => {
-      const selection = interactionSlots.activeSelectionRect
-
-      if (!isGestureForPointer(selection, pointerId) || selection === null) {
+      if (taken.length === 0) {
         return
       }
 
-      clearSelectionRect('cancelled', undefined, reason)
-      runTelemetry(
-        Effect.logDebug('Cancelled selection rectangle gesture').pipe(
-          Effect.annotateLogs({
-            [FlowAttribute.pointerId]: selection.pointerId,
-            [FlowAttribute.cancellationReason]: reason,
-            [FlowAttribute.inputKind]: 'selection-rectangle',
-          }),
-          Effect.withSpan(FlowSpan.gestureCancel, {
-            attributes: {
-              [FlowAttribute.pointerId]: selection.pointerId,
-              [FlowAttribute.cancellationReason]: reason,
-              [FlowAttribute.inputKind]: 'selection-rectangle',
-            },
+      const captures = taken.flatMap(({ captures: receipts }) => receipts)
+      const resources: VanillaResource[] = []
+
+      for (const captured of taken) {
+        for (const resource of captured.resources) {
+          switch (resource.kind) {
+            case 'click-source': {
+              resources.push(resource)
+              break
+            }
+
+            case 'node-frame': {
+              if (nodeFrame === resource.ticket) {
+                nodeFrame = undefined
+                resource.ticket.state = { kind: 'revoked' }
+                resources.push(resource)
+              }
+
+              break
+            }
+
+            case 'connection-frame': {
+              if (connectionFrame === resource.handle) {
+                connectionFrame = null
+                resources.push(resource)
+              }
+
+              break
+            }
+
+            case 'selection-frame': {
+              if (selectionFrame === resource.handle) {
+                selectionFrame = null
+                resources.push(resource)
+              }
+
+              break
+            }
+
+            case 'preview': {
+              if (connectionPreview === resource.element) {
+                connectionPreview = null
+                connectionLine = null
+                hoveredConnectionHandle = null
+                resources.push(resource)
+              }
+
+              break
+            }
+
+            case 'selection-overlay': {
+              if (selectionOverlay === resource.element) {
+                selectionOverlay = null
+                selectionPointer = null
+                resources.push(resource)
+              }
+
+              break
+            }
+
+            case 'viewport': {
+              if (resource.owner.state === 'open') {
+                resource.owner.state = 'ended'
+
+                if (userViewportObservation === resource.owner) {
+                  userViewportObservation = null
+                }
+
+                resources.push(resource)
+              }
+
+              break
+            }
+
+            default: {
+              const exhausted: never = resource
+
+              return exhausted
+            }
+          }
+        }
+      }
+
+      for (const { actor } of taken) {
+        switch (actor.kind) {
+          case 'activeDrag': {
+            endSession('node-drag', actor.record.pointerId, 'cancelled')
+            dragPointerStart = null
+            dragPointer = null
+            nodeSample = undefined
+            break
+          }
+
+          case 'activeNodeResize': {
+            endSession('node-resize', actor.record.pointerId, 'cancelled')
+            break
+          }
+
+          case 'activeKeyboardResize': {
+            activeKeyboardResize = null
+            break
+          }
+
+          case 'activeKeyboardNodeDrag': {
+            activeKeyboardNodeDrag = null
+            break
+          }
+
+          case 'pendingConnection': {
+            pendingConnection = null
+            connectionCapture = null
+            break
+          }
+
+          case 'activeConnection': {
+            endSession('connection', actor.record.pointerId, 'cancelled')
+            connectionCapture = null
+            connectionPointer = null
+            connectionPointerStart = null
+            break
+          }
+
+          case 'activeReconnection': {
+            endSession('reconnection', actor.record.pointerId, 'cancelled')
+            connectionCapture = null
+            break
+          }
+
+          case 'activeClickConnection': {
+            activeClickConnection = null
+            break
+          }
+
+          case 'activeViewportPan': {
+            endSession('pane-pan', actor.record.pointerId, 'cancelled')
+            break
+          }
+
+          case 'activePinch': {
+            endSession('pinch', actor.record.firstPointerId, 'cancelled')
+            break
+          }
+
+          case 'activeSelectionRect': {
+            endSession('selection', actor.record.pointerId, 'cancelled')
+            break
+          }
+
+          default: {
+            const exhausted: never = actor
+
+            return exhausted
+          }
+        }
+      }
+
+      for (const touch of owners.touches) {
+        if (touchPointers.get(touch.pointerId) === touch.point) {
+          touchPointers.delete(touch.pointerId)
+        }
+      }
+
+      const dragTerminals = new Map<NodeSample['drag'], FlowNodeDragPayload>()
+      let restoredViewport: Viewport | undefined
+
+      for (const { actor } of taken) {
+        if (actor.kind === 'activeDrag') {
+          const drag = actor.record
+
+          if (
+            interactionSlots.activeViewportPan === null &&
+            interactionSlots.activePinch === null
+          ) {
+            renderedViewport = constrainViewport(authoritativeViewport)
+            applyViewport(viewport, renderedViewport)
+          }
+
+          entries.get(dragAnchorId(drag))?.element.classList.remove('dragging')
+
+          const ids =
+            'positions' in drag
+              ? drag.positions.map((item) => item.nodeId)
+              : [drag.nodeId]
+
+          for (const id of ids) {
+            const node = findNode(id)
+
+            if (node !== undefined) {
+              restoreAdoptedPosition(node)
+            }
+          }
+
+          dragTerminals.set(drag, nodeDragCallbackPayload(drag))
+        } else if (actor.kind === 'activeNodeResize') {
+          restoreResizePrimitives(actor.record)
+        } else if (actor.kind === 'activeKeyboardResize') {
+          restoreResizePrimitives(actor.record)
+        } else if (
+          actor.kind === 'activeViewportPan' ||
+          actor.kind === 'activePinch'
+        ) {
+          renderedViewport = constrainViewport(authoritativeViewport)
+          applyViewport(viewport, renderedViewport)
+          restoredViewport = renderedViewport
+        }
+      }
+
+      const retirementPass = captureProjection(document, {
+        kind: 'retired',
+        document,
+      })
+
+      const retiredGraph = retirementPass.graph
+
+      for (const [id, entry] of entries) {
+        const resolved = retiredGraph.nodes.get(id)
+
+        if (resolved !== undefined) {
+          applyNodePosition(entry.element, resolved.absolutePosition)
+        }
+      }
+
+      const retirementCurrent = () =>
+        projectionMatches(retirementPass, { kind: 'toolbar' })
+
+      suppressClickUntilPointerUp()
+
+      for (const resource of resources) {
+        if (resource.kind === 'click-source') {
+          resource.element.classList.remove('connecting')
+        } else if (resource.kind === 'preview') {
+          resource.hover?.classList.remove(
+            'connection-valid',
+            'connection-invalid'
+          )
+        } else if (resource.kind === 'viewport') {
+          canvas.classList.remove('panning')
+        }
+      }
+
+      let resourceFailure: { readonly cause: unknown } | undefined
+
+      const retireResource = (retire: () => void): void => {
+        try {
+          retire()
+        } catch (error) {
+          resourceFailure ??= { cause: error }
+        }
+      }
+
+      for (const resource of resources) {
+        if (resource.kind === 'node-frame') {
+          retireResource(() => {
+            runEffect(Scope.close(resource.ticket.registrationScope, Exit.void))
           })
-        )
-      )
+        } else if (
+          resource.kind === 'connection-frame' ||
+          resource.kind === 'selection-frame'
+        ) {
+          retireResource(() => globalThis.cancelAnimationFrame(resource.handle))
+        }
+      }
+
+      for (const { target, pointerId } of captures) {
+        if (target.hasPointerCapture(pointerId)) {
+          retireResource(() => {
+            runEffect(browser.releasePointer(target, pointerId))
+          })
+        }
+      }
+
+      for (const resource of resources) {
+        if (resource.kind === 'preview') {
+          resource.element.remove()
+        } else if (resource.kind === 'selection-overlay') {
+          resource.element.remove()
+        }
+      }
+
+      if (retirementCurrent()) {
+        updateToolbarAnchors(retirementPass)
+
+        if (retirementCurrent()) {
+          updateCanvasMinimap(retirementPass)
+        }
+
+        if (retirementCurrent()) {
+          edgeRenderer.reconcile(retirementPass)
+        }
+      }
+
+      for (const resource of resources) {
+        if (resource.kind === 'preview') {
+          publishConnectionPreview(null, resource.element)
+        } else if (resource.kind === 'viewport') {
+          emitViewportObservation('end', resource.viewport, 'user')
+        }
+      }
+
+      for (const { actor } of taken) {
+        switch (actor.kind) {
+          case 'activeDrag': {
+            const payload = dragTerminals.get(actor.record)
+
+            if (payload !== undefined) {
+              notifyCancelledDrag(actor.record, payload, reason)
+            }
+
+            break
+          }
+
+          case 'activeNodeResize': {
+            notifyCancelledResize(actor.record, reason)
+            break
+          }
+
+          case 'activeKeyboardResize': {
+            if (
+              reason !== 'host-destroyed' &&
+              actor.record.button.isConnected
+            ) {
+              actor.record.button.focus()
+            }
+
+            runTelemetry(
+              Effect.logDebug('Cancelled keyboard node resize').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.nodeId]: actor.record.nodeId,
+                  [FlowAttribute.inputKind]: 'keyboard-node-resize',
+                  [FlowAttribute.cancellationReason]: reason,
+                }),
+                Effect.withSpan(FlowSpan.gestureCancel, {
+                  attributes: {
+                    [FlowAttribute.nodeId]: actor.record.nodeId,
+                    [FlowAttribute.inputKind]: 'keyboard-node-resize',
+                    [FlowAttribute.cancellationReason]: reason,
+                  },
+                })
+              )
+            )
+            break
+          }
+
+          case 'pendingConnection': {
+            break
+          }
+
+          case 'activeConnection': {
+            notifyCancelConnection(actor.record, reason)
+            break
+          }
+
+          case 'activeReconnection': {
+            notifyCancelReconnection(actor.record, reason)
+            break
+          }
+
+          case 'activeClickConnection': {
+            notifyCancelClickConnection(actor.record, reason)
+            break
+          }
+
+          case 'activeViewportPan': {
+            if (restoredViewport !== undefined) {
+              emitViewportObservation('change', restoredViewport)
+            }
+
+            notifyCancelViewportPan(actor.record, reason)
+            break
+          }
+
+          case 'activePinch': {
+            if (restoredViewport !== undefined) {
+              emitViewportObservation('change', restoredViewport)
+            }
+
+            notifyCancelPinch(actor.record, reason)
+            break
+          }
+
+          case 'activeSelectionRect': {
+            if (options.onSelectionEnd !== undefined) {
+              reportBoundaryCallback(
+                'Selection end',
+                'selection-rectangle',
+                options.onSelectionEnd,
+                {
+                  ...selectionRectPayload(
+                    actor.record,
+                    resources.find(
+                      (resource) => resource.kind === 'selection-overlay'
+                    )?.point ?? actor.record.pointerStart
+                  ),
+                  outcome: 'cancelled',
+                  reason,
+                }
+              )
+            }
+
+            runTelemetry(
+              Effect.logDebug('Cancelled selection rectangle gesture').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.pointerId]: actor.record.pointerId,
+                  [FlowAttribute.cancellationReason]: reason,
+                  [FlowAttribute.inputKind]: 'selection-rectangle',
+                }),
+                Effect.withSpan(FlowSpan.gestureCancel)
+              )
+            )
+            break
+          }
+
+          case 'activeKeyboardNodeDrag': {
+            if (options.onNodeDragStop !== undefined) {
+              reportBoundaryCallback(
+                'Keyboard node drag stop',
+                'keyboard-node-drag',
+                options.onNodeDragStop,
+                { ...actor.record, outcome: 'cancelled', reason }
+              )
+            }
+
+            break
+          }
+
+          default: {
+            const exhausted: never = actor
+
+            return exhausted
+          }
+        }
+      }
+
+      if (resourceFailure !== undefined) {
+        throw resourceFailure.cause
+      }
     }
 
-    const hasActivePointerGesture = (pointerId: number | undefined): boolean =>
-      [
-        isGestureForPointer(pendingConnection, pointerId),
-        isGestureForPointer(interactionSlots.activeDrag, pointerId),
-        isGestureForPointer(interactionSlots.activeConnection, pointerId),
-        isGestureForPointer(interactionSlots.activeReconnection, pointerId),
-        isGestureForPointer(interactionSlots.activeViewportPan, pointerId),
-        isPinchForPointer(pointerId),
-        isGestureForPointer(interactionSlots.activeSelectionRect, pointerId),
-        isGestureForPointer(interactionSlots.activeNodeResize, pointerId),
-      ].some(Boolean) ||
-      (pointerId === undefined && activeKeyboardResize !== null) ||
-      (pointerId === undefined && activeClickConnection !== null)
-
     cancelActiveGestures = (reason: string, pointerId?: number): boolean => {
-      if (!hasActivePointerGesture(pointerId)) {
-        return false
-      }
+      const owners = snapshotEntry(pointerId)
+      cancelCaptured(owners, reason)
 
-      cancelNodeGestures(reason, pointerId)
-      cancelConnectionGestures(reason, pointerId)
-      cancelViewportGestures(reason, pointerId)
-      cancelSelectionGesture(reason, pointerId)
-
-      if (pointerId === undefined) {
-        touchPointers.clear()
-      } else {
-        touchPointers.delete(pointerId)
-      }
-
-      return true
+      return owners.actors.length > 0
     }
 
     const onWindowBlur = (): void => {
-      cancelActiveGestures('window-blur')
-
-      if (activeKeyboardNodeDrag !== null) {
-        const payload = activeKeyboardNodeDrag
-        activeKeyboardNodeDrag = null
-
-        if (options.onNodeDragStop !== undefined) {
-          reportBoundaryCallback(
-            'Keyboard node drag stop',
-            'keyboard-node-drag',
-            options.onNodeDragStop,
-            { ...payload, outcome: 'cancelled', reason: 'window-blur' }
-          )
-        }
-      }
+      cancelCaptured(snapshotEntry(), 'window-blur')
     }
 
     const onLostPointerCapture = (event: PointerEvent): void => {
-      if (
-        connectionCapture === event.pointerId &&
-        (event.target !== canvas || canvas.hasPointerCapture(event.pointerId))
-      ) {
-        return
-      }
+      const entry = terminalDispatches.get(event)
 
-      cancelActiveGestures('lost-pointer-capture', event.pointerId)
+      if (entry !== undefined) {
+        cancelCaptured(entry.owners, 'lost-pointer-capture')
+      }
     }
 
     const onCanvasPointerCancel = (event: PointerEvent): void => {
-      cancelActiveGestures('pointer-cancel', event.pointerId)
+      const entry = terminalDispatches.get(event)
+
+      if (entry !== undefined) {
+        cancelCaptured(entry.owners, 'pointer-cancel')
+      }
     }
 
     const finishPinch = (event: PointerEvent): void => {
+      if (!dispatchOwns(event, 'activePinch')) {
+        return
+      }
+
+      if (destroyed) {
+        return
+      }
+
       if (
         interactionSlots.activePinch === null ||
         (event.pointerId !== interactionSlots.activePinch.firstPointerId &&
@@ -6731,10 +8777,15 @@ export const createFlowHost = (
       }
 
       const pinch = interactionSlots.activePinch
+      const observation = userViewportObservation
       const outcome = endSession('pinch', pinch.firstPointerId, 'finished')
-      endUserViewportObservation()
       interactionSlots.activePinch = null
-      touchPointers.clear()
+
+      for (const touch of terminalDispatches.get(event)?.owners.touches ?? []) {
+        if (touchPointers.get(touch.pointerId) === touch.point) {
+          touchPointers.delete(touch.pointerId)
+        }
+      }
 
       for (const pointerId of pointerIdsFromOutcome(outcome, [
         pinch.firstPointerId,
@@ -6743,10 +8794,8 @@ export const createFlowHost = (
         runEffect(browser.releasePointer(canvas, pointerId))
       }
 
-      suppressCanvasClick = true
-      globalThis.setTimeout(() => {
-        suppressCanvasClick = false
-      }, 0)
+      endUserViewportObservation(observation)
+      suppressClickThroughDispatch()
 
       const change: FlowChange = {
         kind: 'viewport',
@@ -6931,14 +8980,22 @@ export const createFlowHost = (
 
     // eslint-disable-next-line complexity -- Ordered pointer/click completion must emit one terminal callback after validation.
     const finishConnection = (event: PointerEvent): void => {
+      if (
+        !dispatchOwns(event, 'pendingConnection') &&
+        !dispatchOwns(event, 'activeConnection')
+      ) {
+        return
+      }
+
+      if (destroyed) {
+        return
+      }
+
       if (pendingConnection?.pointerId === event.pointerId) {
         const pending = pendingConnection
         const eligible = pendingConnectionEligible(pending)
         clearPendingConnection()
-        suppressCanvasClick = true
-        globalThis.setTimeout(() => {
-          suppressCanvasClick = false
-        }, 0)
+        suppressClickThroughDispatch()
 
         if (
           eligible &&
@@ -7025,10 +9082,7 @@ export const createFlowHost = (
           reason: 'click-connect-activation',
         })
         beginClickConnection(targetNode, targetHandle, targetElement)
-        suppressCanvasClick = true
-        globalThis.setTimeout(() => {
-          suppressCanvasClick = false
-        }, 0)
+        suppressClickThroughDispatch()
 
         return
       }
@@ -7077,14 +9131,19 @@ export const createFlowHost = (
     }
 
     const finishReconnection = (event: PointerEvent): void => {
+      if (!dispatchOwns(event, 'activeReconnection')) {
+        return
+      }
+
+      if (destroyed) {
+        return
+      }
+
       if (interactionSlots.activeReconnection?.pointerId !== event.pointerId) {
         return
       }
 
-      suppressCanvasClick = true
-      globalThis.setTimeout(() => {
-        suppressCanvasClick = false
-      }, 0)
+      suppressClickThroughDispatch()
 
       const active = interactionSlots.activeReconnection
 
@@ -7273,8 +9332,8 @@ export const createFlowHost = (
 
     // eslint-disable-next-line complexity -- Canvas activation covers pane, node, edge, and modifier selection.
     const onCanvasClick = (event: MouseEvent): void => {
-      if (suppressCanvasClick) {
-        suppressCanvasClick = false
+      if (clickSuppression !== null) {
+        clickSuppression = null
 
         return
       }
@@ -7410,7 +9469,7 @@ export const createFlowHost = (
 
     // eslint-disable-next-line complexity -- Keyboard actions cover nodes, handles, edges, and the pane.
     const onCanvasKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape' && cancelActiveGestures('escape')) {
+      if (event.key === 'Escape' && cancelCapturedEscape(event)) {
         event.preventDefault()
 
         return
@@ -7476,6 +9535,12 @@ export const createFlowHost = (
 
             if (change !== undefined) {
               activeKeyboardResize = { ...active, delta, change }
+              const restoration = resizeRestorations.get(active)
+
+              if (restoration !== undefined) {
+                resizeRestorations.set(activeKeyboardResize, restoration)
+              }
+
               previewKeyboardResize(activeKeyboardResize)
             }
 
@@ -7587,6 +9652,10 @@ export const createFlowHost = (
             delta,
             change,
           }
+          resizeRestorations.set(
+            activeKeyboardResize,
+            captureResizeRestoration(current.id, origin.sizeStart)
+          )
           previewKeyboardResize(activeKeyboardResize)
           runTelemetry(
             Effect.logDebug('Started keyboard node resize').pipe(
@@ -7882,7 +9951,7 @@ export const createFlowHost = (
     }
 
     const onWindowKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape' && cancelActiveGestures('escape')) {
+      if (event.key === 'Escape' && cancelCapturedEscape(event)) {
         event.preventDefault()
       }
     }
@@ -7908,25 +9977,11 @@ export const createFlowHost = (
     }
 
     const dispatchCanvasEvent = (
-      family:
-        | 'Click'
-        | 'DoubleClick'
-        | 'ContextMenu'
-        | 'MouseEnter'
-        | 'MouseMove'
-        | 'MouseLeave',
+      family: CanvasCallbackFamily,
       event: MouseEvent,
       target = getFlowCanvasEventTarget(event.target)
     ): void => {
-      const prefixByKind = { pane: 'Pane', node: 'Node', edge: 'Edge' }
-      const prefix = prefixByKind[target.kind]
-      // SAFETY: prefix and family are selected from closed unions whose combinations are declared callback fields.
-      const callbackName = `on${prefix}${family}` as keyof FlowHostOptions
-
-      // SAFETY: prefix and family are selected from closed unions whose combinations are declared callback fields.
-      const callback = options[callbackName] as
-        | FlowCanvasEventListener
-        | undefined
+      const callback = options[canvasCallbackKeys[target.kind][family]]
 
       if (callback === undefined) {
         return
@@ -7994,6 +10049,10 @@ export const createFlowHost = (
     }
 
     const onCanvasWheel = (event: WheelEvent): void => {
+      if (destroyed) {
+        return
+      }
+
       const { target } = event
 
       if (target instanceof Element) {
@@ -8015,7 +10074,7 @@ export const createFlowHost = (
       }
 
       if (options.panOnScroll === true) {
-        beginUserViewportObservation()
+        const observation = beginUserViewportObservation()
         event.preventDefault()
         const speed = options.panOnScrollSpeed ?? 1
         const mode = options.panOnScrollMode ?? 'free'
@@ -8030,7 +10089,7 @@ export const createFlowHost = (
             })
           ),
         })
-        endUserViewportObservation()
+        endUserViewportObservation(observation)
 
         return
       }
@@ -8059,10 +10118,10 @@ export const createFlowHost = (
         viewportLimits
       )
 
-      beginUserViewportObservation()
+      const observation = beginUserViewportObservation()
       event.preventDefault()
       operations.publishChange({ kind: 'viewport', viewport: candidate })
-      endUserViewportObservation()
+      endUserViewportObservation(observation)
       runTelemetry(
         Effect.logDebug('Zoomed viewport').pipe(
           Effect.annotateLogs({
@@ -8088,96 +10147,122 @@ export const createFlowHost = (
     }
 
     yield* Scope.provide(
+      browser.listenWindow(globalThis.window, 'keydown', rememberDispatch, {
+        capture: true,
+      }),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'pointerup', rememberDispatch, { capture: true }),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'pointercancel', rememberDispatch, {
+        capture: true,
+      }),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'lostpointercapture', rememberDispatch, {
+        capture: true,
+      }),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
       browser.listen(canvas, 'pointerdown', onCanvasPointerDownCapture, {
         capture: true,
       }),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointerdown', onCanvasPointerDown),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointermove', onCanvasPointerMove),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointerup', finishViewportPan),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointerup', finishPinch),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointerup', finishSelectionRect),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointerup', finishConnection),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointerup', finishReconnection),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
-      browser.listen(canvas, 'pointerup', () => {
-        if (suppressCanvasClick) {
+      browser.listen(canvas, 'pointerup', (event) => {
+        const receipt = terminalDispatches.get(event)?.owners.suppression
+
+        if (receipt !== undefined && receipt !== null) {
           globalThis.setTimeout(() => {
-            suppressCanvasClick = false
+            if (clickSuppression === receipt) {
+              clickSuppression = null
+            }
           }, 0)
         }
       }),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'pointercancel', onCanvasPointerCancel),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'lostpointercapture', onLostPointerCapture),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listenWindow(globalThis.window, 'blur', onWindowBlur),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listenWindow(globalThis.window, 'keyup', onWindowKeyUp),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listenWindow(globalThis.window, 'keydown', onWindowKeyDown),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'click', onCanvasClick),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'click', (event) =>
         dispatchCanvasEvent('Click', event)
       ),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'keydown', onCanvasKeyDown),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'wheel', onCanvasWheel, { passive: false }),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'contextmenu', onCanvasContextMenu),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'mousemove', (event) => {
         dispatchCanvasEvent('MouseMove', event)
       }),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'mouseover', (event) => {
@@ -8191,7 +10276,7 @@ export const createFlowHost = (
           dispatchCanvasEvent('MouseLeave', event, previous)
         }
       }),
-      hostScope
+      hostBrowserScope
     )
     yield* Scope.provide(
       browser.listen(canvas, 'mouseout', (event) => {
@@ -8202,7 +10287,7 @@ export const createFlowHost = (
           dispatchCanvasEvent('MouseLeave', event)
         }
       }),
-      hostScope
+      hostBrowserScope
     )
 
     yield* Scope.provide(
@@ -8234,14 +10319,14 @@ export const createFlowHost = (
           viewportLimits
         )
 
-        beginUserViewportObservation()
+        const observation = beginUserViewportObservation()
         operations.publishChange({
           kind: 'viewport',
           viewport: constrainViewport(next),
         })
-        endUserViewportObservation()
+        endUserViewportObservation(observation)
       }),
-      hostScope
+      hostBrowserScope
     )
     canvasUIHandle.current = createCanvasUI(
       {
@@ -8321,76 +10406,10 @@ export const createFlowHost = (
     )
     canvas.append(viewport, connectionStatus, canvasUIHandle.current.element)
     updateCanvasMinimap()
-    const cleanupFailures: unknown[] = []
-    yield* Scope.addFinalizer(
-      hostScope,
-      Effect.sync(() => {
-        for (const entry of entries.values()) {
-          try {
-            entry.release()
-          } catch (error) {
-            cleanupFailures.push(error)
-          }
-        }
-
-        entries.clear()
-        renderedNodePositions.clear()
-
-        try {
-          edgeRenderer.destroy()
-        } catch (error) {
-          cleanupFailures.push(error)
-        }
-
-        listeners.clear()
-        stateListeners.clear()
-        connectionPreviewListeners.clear()
-        viewportListeners.clear()
-
-        for (const dispose of viewportPortalDisposers) {
-          try {
-            dispose()
-          } catch (error) {
-            cleanupFailures.push(error)
-          }
-        }
-
-        const restorePanelFocus = canvasUIHandle.current?.captureActiveFocus()
-
-        try {
-          root.replaceChildren()
-        } catch (error) {
-          cleanupFailures.push(error)
-        }
-
-        try {
-          canvasUIHandle.current?.destroy(restorePanelFocus)
-        } catch (error) {
-          cleanupFailures.push(error)
-        }
-
-        if (cleanupFailures.length > 0) {
-          try {
-            runTelemetry(
-              Effect.logError('Failed to fully clean up flow host').pipe(
-                Effect.annotateLogs({
-                  [FlowAttribute.documentIssue]: cleanupFailures
-                    .map(String)
-                    .join('; '),
-                  [FlowAttribute.nodeCount]: cleanupFailures.length,
-                }),
-                Effect.withSpan(FlowSpan.hostDestroy)
-              )
-            )
-          } catch {
-            // Cleanup reporting must not replace the mount or destroy outcome.
-          }
-        }
-      })
-    )
 
     try {
       root.replaceChildren(canvas)
+      rootAttached = true
       canvasUIHandle.current?.restoreFocus()
       authoritativeViewport = constrainViewport(authoritativeViewport)
       renderViewport(authoritativeViewport)
@@ -8399,7 +10418,7 @@ export const createFlowHost = (
       try {
         runEffect(Scope.close(hostScope, Exit.fail(error)))
       } catch (cleanupError) {
-        try {
+        attemptOptionalFailureReport(() => {
           runTelemetry(
             Effect.logError(
               'Failed to close flow host after mount failure'
@@ -8410,9 +10429,7 @@ export const createFlowHost = (
               Effect.withSpan(FlowSpan.hostMount)
             )
           )
-        } catch {
-          // Preserve the renderer error even if cleanup reporting fails.
-        }
+        })
       }
 
       throw error
@@ -8431,19 +10448,6 @@ export const createFlowHost = (
 
       return nextViewportRequestId
     }
-
-    let activeViewportOperation:
-      | {
-          readonly requestId: number
-          readonly resolve: (result: ViewportOperationResult) => void
-          readonly target: Viewport
-          readonly from: Viewport
-          startedAt: number
-          readonly duration: number
-          readonly easing: 'linear' | 'ease-in-out'
-          frame: number | undefined
-        }
-      | undefined
 
     const settleViewportOperation = (
       status: ViewportOperationResult['status']
@@ -8557,7 +10561,6 @@ export const createFlowHost = (
         })
       }
 
-      // The RAF callback is the settlement source for an interruptible host animation.
       // eslint-disable-next-line promise/avoid-new -- The host owns frame lifecycle and cancellation.
       return new Promise((resolve) => {
         emitViewportObservation('start', from, 'programmatic')
@@ -8688,19 +10691,11 @@ export const createFlowHost = (
         let stateCleanupFailure: unknown
         let stateCleanupFailed = false
 
+        destroyed = true
+
         try {
-          cancelActiveDrag('host-destroyed')
-          cancelNodeResize('host-destroyed')
-          cancelKeyboardResize('host-destroyed', true)
-          clearPendingConnection()
-          cancelConnection('host-destroyed')
-          cancelClickConnection('host-destroyed')
-          cancelReconnection('host-destroyed')
-          cancelViewportPan('host-destroyed')
-          cancelPinch('host-destroyed')
-          clearSelectionRect('cancelled', undefined, 'host-destroyed')
+          cancelCaptured(snapshotEntry(), 'host-destroyed')
           settleViewportOperation('disposed')
-          destroyed = true
 
           for (const dispose of keyPressDisposers) {
             dispose()
@@ -8728,7 +10723,6 @@ export const createFlowHost = (
         } catch (error) {
           stateCleanupFailure = error
           stateCleanupFailed = true
-          destroyed = true
         }
 
         const closeHostScope = async (): Promise<void> => {
@@ -9049,8 +11043,7 @@ export const createFlowHost = (
                 samples
               )
               measurements = getFlowMeasuredNodes(document, measurementState)
-              renderGraphPositions()
-              edgeRenderer.reconcile(document, renderedNodePositions)
+              renderGraphEdges()
             }
           } catch (error) {
             runTelemetry(measurementFailure(error, 'batch'))
@@ -9076,7 +11069,10 @@ export const createFlowHost = (
 
           try {
             runEffect(
-              Scope.provide(browser.requestAnimationFrame(flush), hostScope)
+              Scope.provide(
+                browser.requestAnimationFrame(flush),
+                hostBrowserScope
+              )
             )
           } catch (error) {
             failQueued(error)
@@ -9905,38 +11901,38 @@ export const mountFlow = (
         const pending = Promise.withResolvers<FlowDeleteResult>()
         let settled = false
 
-        const settlePending = (
-          outcome:
-            | { readonly kind: 'rejected'; readonly error: Error }
-            | { readonly kind: 'resolved'; readonly result: FlowDeleteResult }
-        ): void => {
-          if (settled) {
-            return
-          }
+        const approval = {
+          settle(
+            outcome:
+              | { readonly kind: 'rejected'; readonly error: Error }
+              | { readonly kind: 'resolved'; readonly result: FlowDeleteResult }
+          ): void {
+            if (settled) {
+              return
+            }
 
-          settled = true
-          // eslint-disable-next-line no-use-before-define -- All settlement outcomes unregister the same approval rejector.
-          pendingDeleteRejectors.delete(rejectPending)
-          // eslint-disable-next-line no-use-before-define -- The signal listener is removed through the shared settlement path.
-          lifecycle.signal?.removeEventListener('abort', onAbort)
+            settled = true
+            pendingDeleteRejectors.delete(approval.reject)
+            lifecycle?.signal?.removeEventListener('abort', approval.abort)
 
-          if (outcome.kind === 'rejected') {
-            pending.reject(outcome.error)
-          } else {
-            pending.resolve(outcome.result)
-          }
+            if (outcome.kind === 'rejected') {
+              pending.reject(outcome.error)
+            } else {
+              pending.resolve(outcome.result)
+            }
+          },
+          reject(error: Error): void {
+            approval.settle({ kind: 'rejected', error })
+          },
+          abort(): void {
+            approval.reject(new FlowDeleteCancelled({ operationId }))
+          },
         }
 
-        const rejectPending = (error: Error): void => {
-          settlePending({ kind: 'rejected', error })
-        }
-
-        const onAbort = (): void => {
-          rejectPending(new FlowDeleteCancelled({ operationId }))
-        }
-
-        pendingDeleteRejectors.add(rejectPending)
-        lifecycle.signal?.addEventListener('abort', onAbort, { once: true })
+        pendingDeleteRejectors.add(approval.reject)
+        lifecycle.signal?.addEventListener('abort', approval.abort, {
+          once: true,
+        })
         // eslint-disable-next-line complexity -- asynchronous approval is isolated from publication.
         void (async () => {
           try {
@@ -9993,17 +11989,17 @@ export const mountFlow = (
                 return
               }
 
-              settlePending({ kind: 'resolved', result: result.deletion })
+              approval.settle({ kind: 'resolved', result: result.deletion })
 
               return
             }
 
-            settlePending({
+            approval.settle({
               kind: 'resolved',
               result: { deletedNodeIds: [], deletedEdgeIds: [] },
             })
           } catch (error) {
-            rejectPending(
+            approval.reject(
               error instanceof FlowDeleteInvalidCandidate ||
                 error instanceof FlowDeleteRevisionConflict ||
                 error instanceof FlowDeleteCancelled ||

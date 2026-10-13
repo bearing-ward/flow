@@ -634,3 +634,12 @@ export {
 } from './domain/flow-connection-drag-threshold.schema.ts'
 
 export type { ConnectionDragThreshold } from './domain/flow-connection-drag-threshold.schema.ts'
+
+export {
+  NodeDragThresholdSchema,
+  defaultNodeDragThreshold,
+  decodeNodeDragThreshold,
+  nodeDragActivated,
+} from './domain/flow-node-drag-threshold.schema.ts'
+
+export type { NodeDragThreshold } from './domain/flow-node-drag-threshold.schema.ts'

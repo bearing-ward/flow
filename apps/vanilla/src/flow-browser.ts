@@ -99,6 +99,8 @@ const pointerOperation = (
     try: () => {
       if (operation === 'capture') {
         element.setPointerCapture(pointerId)
+
+        return element.hasPointerCapture(pointerId)
       } else if (element.hasPointerCapture(pointerId)) {
         element.releasePointerCapture(pointerId)
       }

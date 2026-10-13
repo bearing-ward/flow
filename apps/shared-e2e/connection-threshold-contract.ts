@@ -40,6 +40,51 @@ const start = async (page: Page, selector: string) => {
   return point
 }
 
+const falseCaptureTests = (
+  host: string,
+  mount: (page: Page, options: Options) => Promise<void>,
+  anchor: (endpoint: string) => string
+) => {
+  for (const mode of ['connection', 'reconnection']) {
+    const reconnect = mode === 'reconnection'
+    test(`connectionDragThreshold ${host} false capture is silent and permits ${mode} retry`, async ({
+      page,
+    }) => {
+      await mount(page, { threshold: 0, edge: reconnect })
+
+      const source = reconnect
+        ? anchor('target')
+        : '[data-node-id="source"] [data-handle-id="out"]'
+
+      await call(page, 'captureFailure', 'false')
+      await start(page, source)
+      expect(await call(page, 'read')).toMatchObject({
+        events: [],
+        changes: [],
+        captured: false,
+        preview: null,
+      })
+      await page.mouse.up()
+      await call(page, 'captureFailure', false)
+
+      if (reconnect) {
+        await call(page, 'restoreEdgeSelection')
+      }
+
+      await start(page, source)
+      await page.keyboard.press('Escape')
+      await page.mouse.up()
+      await call(page, 'frames')
+      const retry = await call(page, 'read')
+      expect(retry.events).toEqual(
+        reconnect
+          ? ['reconnectStart', 'reconnectEnd']
+          : ['connectStart', 'connectEnd']
+      )
+    })
+  }
+}
+
 export const connectionThresholdTests = (
   host: 'vanilla' | 'vue' | 'foldkit'
 ) => {
@@ -754,6 +799,8 @@ export const connectionThresholdTests = (
     await page.mouse.up()
     await call(page, 'captureFailure', false)
   })
+
+  falseCaptureTests(host, mount, anchor)
 
   for (const action of ['dispose', 'replace'] as const) {
     test(`connectionDragThreshold ${host} reentrant start ${action}`, async ({

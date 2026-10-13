@@ -1,4 +1,7 @@
 export {
+  invalidNodeConstructors,
+  nodeThreshold,
+  nodeMutation,
   mount,
   read,
   frames,
@@ -13,4 +16,5 @@ export {
   overlapLabel,
   invalidVanillaHost,
   acknowledge,
+  restoreEdgeSelection,
 } from '../../shared-e2e/connection-threshold-harness.ts'

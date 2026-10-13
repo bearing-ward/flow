@@ -37,6 +37,7 @@ import {
   getViewportForBounds as calculateViewportForBounds,
   interpolateViewport,
   createFlowGraph,
+  createFlowSnapshot,
   graphBounds,
   NodeIdSchema,
   FlowAttribute,
@@ -51,6 +52,10 @@ import {
   Exit,
   Option,
   Predicate,
+  Queue,
+  Fiber,
+  Stream,
+  Scope,
   Schema,
 } from 'effect'
 import type { Html } from 'foldkit'
@@ -632,80 +637,138 @@ export const ModelSchema = Schema.Struct({
 
 export type Model = typeof ModelSchema.Type
 
-const PublishChanges = Command.define('PublishFlowChanges', {
-  args: {
-    change: Schema.optional(FlowChangeSchema),
-    acceptedState: Schema.optional(FlowStateChangeSchema),
-    cancellation: Schema.optional(
-      Schema.Struct({ kind: Schema.String, reason: Schema.String })
-    ),
-    lifecycle: Schema.optional(
-      Schema.Struct({
-        span: Schema.String,
-        kind: Schema.Literals([
-          'connection',
-          'reconnection',
-          'selection',
-          'node-drag',
-          'resize',
-          'keyboard-resize',
-          'viewport-pan',
-        ]),
-        inputKind: Schema.String,
-        entityId: Schema.optional(Schema.String),
-        controlMode: Schema.Literals(['controlled', 'uncontrolled']),
-      })
-    ),
-    controlMode: Schema.optional(
-      Schema.Literals(['controlled', 'uncontrolled'])
-    ),
-  },
-  messages: [AppMessage.ChangePublished],
-  execute: ({ change, acceptedState, cancellation, lifecycle, controlMode }) =>
-    Effect.gen(function* publishFlowChanges() {
-      if (lifecycle !== undefined) {
-        yield* logGestureStarted(lifecycle)
-      }
+const ChangePublicationSchema = Schema.Struct({
+  kind: Schema.Literal('change'),
+  change: Schema.optional(FlowChangeSchema),
+  acceptedState: Schema.optional(FlowStateChangeSchema),
+  cancellation: Schema.optional(
+    Schema.Struct({ kind: Schema.String, reason: Schema.String })
+  ),
+  lifecycle: Schema.optional(
+    Schema.Struct({
+      span: Schema.String,
+      kind: Schema.Literals([
+        'connection',
+        'reconnection',
+        'selection',
+        'node-drag',
+        'resize',
+        'keyboard-resize',
+        'viewport-pan',
+      ]),
+      inputKind: Schema.String,
+      entityId: Schema.optional(Schema.String),
+      controlMode: Schema.Literals(['controlled', 'uncontrolled']),
+    })
+  ),
+  controlMode: Schema.optional(Schema.Literals(['controlled', 'uncontrolled'])),
+})
 
-      if (cancellation !== undefined) {
-        yield* Effect.logDebug('Cancelled Foldkit gesture').pipe(
-          Effect.annotateLogs({
+const PublicationSchema = Schema.Union([
+  ChangePublicationSchema,
+  Schema.Struct({
+    kind: Schema.Literal('interaction'),
+    events: InteractionEventsSchema,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('edit-failure'),
+    response: EditResponseSchema,
+    interactionError: Graph.InteractionEventSchema,
+  }),
+])
+
+type PublicationItem = typeof PublicationSchema.Type
+
+type PublicationBatch = readonly PublicationItem[]
+
+type AppReduction = Update.ReturnWithOutMessage<
+  Model,
+  AppMessageData,
+  PublicationBatch
+> & { readonly nativeBarrier?: Graph.NativeBarrier }
+
+const respondEdit = (response: typeof EditResponseSchema.Type) => {
+  const emitResponse = Port.emit(ports.outbound.editResults, response).pipe(
+    Effect.as(AppMessage.EditPublished())
+  )
+
+  if (!('error' in response)) {
+    return emitResponse
+  }
+
+  return Effect.logError('Foldkit edit failed').pipe(
+    Effect.annotateLogs({ [FlowAttribute.failureName]: response.error._tag }),
+    Effect.withSpan(FlowSpan.editFailure, {
+      attributes: { [FlowAttribute.failureName]: response.error._tag },
+    }),
+    Effect.andThen(emitResponse)
+  )
+}
+
+const emitPublication = (
+  item: PublicationItem
+): Effect.Effect<AppMessageData> => {
+  if (item.kind === 'interaction') {
+    return Port.emit(ports.outbound.interactionEvents, item.events).pipe(
+      Effect.as(AppMessage.InteractionEventsPublished())
+    )
+  }
+
+  if (item.kind === 'edit-failure') {
+    return respondEdit(item.response).pipe(
+      Effect.andThen(
+        Port.emit(ports.outbound.interactionEvents, [item.interactionError])
+      ),
+      Effect.as(AppMessage.EditPublished())
+    )
+  }
+
+  const { change, acceptedState, cancellation, lifecycle, controlMode } = item
+
+  return Effect.gen(function* publishFlowChanges() {
+    if (lifecycle !== undefined) {
+      yield* logGestureStarted(lifecycle)
+    }
+
+    if (cancellation !== undefined) {
+      yield* Effect.logDebug('Cancelled Foldkit gesture').pipe(
+        Effect.annotateLogs({
+          [FlowAttribute.inputKind]: cancellation.kind,
+          [FlowAttribute.cancellationReason]: cancellation.reason,
+        }),
+        Effect.withSpan(FlowSpan.gestureCancel, {
+          attributes: {
             [FlowAttribute.inputKind]: cancellation.kind,
             [FlowAttribute.cancellationReason]: cancellation.reason,
-          }),
-          Effect.withSpan(FlowSpan.gestureCancel, {
-            attributes: {
-              [FlowAttribute.inputKind]: cancellation.kind,
-              [FlowAttribute.cancellationReason]: cancellation.reason,
-            },
-          })
-        )
+          },
+        })
+      )
+    }
+
+    if (change !== undefined) {
+      const baseAttributes = {
+        [FlowAttribute.changeKind]: change.kind,
       }
 
-      if (change !== undefined) {
-        const baseAttributes = {
-          [FlowAttribute.changeKind]: change.kind,
-        }
+      const attributes =
+        controlMode === undefined
+          ? baseAttributes
+          : { ...baseAttributes, [FlowAttribute.controlMode]: controlMode }
 
-        const attributes =
-          controlMode === undefined
-            ? baseAttributes
-            : { ...baseAttributes, [FlowAttribute.controlMode]: controlMode }
+      yield* Effect.logDebug('Published Foldkit semantic change').pipe(
+        Effect.annotateLogs(attributes),
+        Effect.withSpan(interactionCompletionSpan(change), { attributes })
+      )
+      yield* Port.emit(ports.outbound.changes, change)
+    }
 
-        yield* Effect.logDebug('Published Foldkit semantic change').pipe(
-          Effect.annotateLogs(attributes),
-          Effect.withSpan(interactionCompletionSpan(change), { attributes })
-        )
-        yield* Port.emit(ports.outbound.changes, change)
-      }
+    if (acceptedState !== undefined) {
+      yield* Port.emit(ports.outbound.acceptedStates, acceptedState)
+    }
 
-      if (acceptedState !== undefined) {
-        yield* Port.emit(ports.outbound.acceptedStates, acceptedState)
-      }
-
-      return AppMessage.ChangePublished()
-    }),
-})
+    return AppMessage.ChangePublished()
+  })
+}
 
 const selectSnapshotProjection = (
   graph: Graph.Model,
@@ -805,40 +868,9 @@ const RespondSnapshotFailure = Command.define('RespondFlowSnapshotFailure', {
 })
 
 const RespondEdit = Command.define('RespondFlowEdit', {
-  args: {
-    response: EditResponseSchema,
-    interactionError: Schema.optional(Graph.InteractionEventSchema),
-  },
+  args: { response: EditResponseSchema },
   messages: [AppMessage.EditPublished],
-  execute: ({ response, interactionError }) => {
-    const emitResponse = Port.emit(ports.outbound.editResults, response).pipe(
-      Effect.as(AppMessage.EditPublished())
-    )
-
-    const reportError =
-      interactionError === undefined
-        ? Effect.void
-        : Port.emit(ports.outbound.interactionEvents, [interactionError])
-
-    if (!('error' in response)) {
-      return emitResponse.pipe(
-        Effect.andThen(reportError),
-        Effect.as(AppMessage.EditPublished())
-      )
-    }
-
-    return Effect.logError('Foldkit edit failed').pipe(
-      Effect.annotateLogs({
-        [FlowAttribute.failureName]: response.error._tag,
-      }),
-      Effect.withSpan(FlowSpan.editFailure, {
-        attributes: { [FlowAttribute.failureName]: response.error._tag },
-      }),
-      Effect.andThen(emitResponse),
-      Effect.andThen(reportError),
-      Effect.as(AppMessage.EditPublished())
-    )
-  },
+  execute: ({ response }) => respondEdit(response),
 })
 
 const PublishDeleteApproval = Command.define('PublishFoldkitDeleteApproval', {
@@ -915,93 +947,576 @@ const PublishViewportEvent = Command.define('PublishFlowViewportEvent', {
     ),
 })
 
-const PublishInteractionEvents = Command.define(
-  'PublishFoldkitInteractionEvents',
-  {
-    args: { events: InteractionEventsSchema },
-    messages: [AppMessage.InteractionEventsPublished],
-    execute: ({ events }) =>
-      Port.emit(ports.outbound.interactionEvents, events).pipe(
-        Effect.as(AppMessage.InteractionEventsPublished())
-      ),
-  }
-)
-
-const graphFold = Update.foldChild<
+const foldGraph = Update.foldChild<
   Model,
   AppMessageData,
   Graph.Model,
   Graph.GraphMessageData,
   Graph.GraphMessageData,
-  Graph.OutMessageData
+  Graph.OutMessageData,
+  PublicationBatch
 >({
   update: Graph.update,
   read: (model: Model) => Option.some(model.graph),
   write: (model, graph) => ({ ...model, graph }),
   toParentMessage: (message) => wrapGraphMessage({ message }),
-  foldOutMessage: Graph.OutMessage.match({
-    GestureCancelled:
-      ({ kind, reason }) =>
-      (model: Model) => ({
-        model,
-        commands: [PublishChanges({ cancellation: { kind, reason } })],
-      }),
-    SemanticChange:
-      ({ change, acceptedState }) =>
-      (model: Model) => {
-        const changeKinds: Model['changeKinds'] = [
-          ...model.changeKinds,
-          change.kind,
-        ]
-
-        return {
-          model: { ...model, changeKinds },
-          commands: [
-            PublishChanges({
+  foldOutMessage:
+    (output) =>
+    (model): AppReduction =>
+      Graph.OutMessage.match(output, {
+        GestureCancelled: ({ kind, reason }): AppReduction => ({
+          model,
+          outMessage: [{ kind: 'change', cancellation: { kind, reason } }],
+        }),
+        SemanticChange: ({ change, acceptedState }): AppReduction => ({
+          model: { ...model, changeKinds: [...model.changeKinds, change.kind] },
+          outMessage: [
+            {
+              kind: 'change',
               change,
               acceptedState,
               controlMode: model.graph.documentMode,
-            }),
-          ],
-        }
-      },
-    AcceptedState:
-      ({ change }) =>
-      (model: Model) => ({
-        model,
-        commands: [PublishChanges({ acceptedState: change })],
-      }),
-    EditCompleted:
-      ({ requestId, result, change, acceptedState }) =>
-      (model: Model) => ({
-        model,
-        commands: [
-          PublishChanges({
-            change,
-            acceptedState,
-            controlMode: model.graph.documentMode,
-          }),
-          RespondEdit({ response: { requestId, result } }),
-        ],
-      }),
-    EditFailed:
-      ({ requestId, error }) =>
-      (model: Model) => ({
-        model,
-        commands: [
-          RespondEdit({
-            response: { requestId, error },
-            interactionError: {
-              name: 'onError',
-              phase: 'event',
-              inputKind: 'api',
-              reason: error._tag,
             },
-          }),
-        ],
+          ],
+        }),
+        AcceptedState: ({ change }): AppReduction => ({
+          model,
+          outMessage: [{ kind: 'change', acceptedState: change }],
+        }),
+        EditCompleted: ({
+          requestId,
+          result,
+          change,
+          acceptedState,
+        }): AppReduction => ({
+          model,
+          commands: [RespondEdit({ response: { requestId, result } })],
+          outMessage: [
+            {
+              kind: 'change',
+              change,
+              acceptedState,
+              controlMode: model.graph.documentMode,
+            },
+          ],
+        }),
+        EditFailed: ({ requestId, error }): AppReduction => ({
+          model,
+          outMessage: [
+            {
+              kind: 'edit-failure',
+              response: { requestId, error },
+              interactionError: {
+                name: 'onError',
+                phase: 'event',
+                inputKind: 'api',
+                reason: error._tag,
+              },
+            },
+          ],
+        }),
       }),
-  }),
 })
+
+interface ActiveGestureTelemetry {
+  readonly span: string
+  readonly kind:
+    | 'connection'
+    | 'reconnection'
+    | 'selection'
+    | 'node-drag'
+    | 'resize'
+    | 'keyboard-resize'
+    | 'viewport-pan'
+  readonly inputKind: 'pointer' | 'click' | 'keyboard'
+  readonly entityId?: string
+}
+
+const activeGestureTelemetry = (
+  graph: Graph.Model
+): ActiveGestureTelemetry | undefined => {
+  const pointer = graph.pointerSession
+
+  if (
+    pointer !== null &&
+    pointer.kind !== 'node-pending' &&
+    pointer.kind !== 'connection-pending' &&
+    pointer.kind !== 'reconnection-pending'
+  ) {
+    if (pointer.kind === 'connection') {
+      return {
+        span: FlowSpan.connectionStart,
+        kind: pointer.kind,
+        inputKind: 'pointer',
+        entityId: pointer.nodeId,
+      }
+    }
+
+    if (pointer.kind === 'reconnection') {
+      return {
+        span: FlowSpan.edgeReconnectStart,
+        kind: pointer.kind,
+        inputKind: 'pointer',
+        entityId: pointer.edgeId,
+      }
+    }
+
+    return {
+      span: FlowSpan.nodeDragStart,
+      kind: pointer.kind,
+      inputKind: 'pointer',
+      entityId: pointer.nodeId,
+    }
+  }
+
+  const gesture = graph.gestureSession
+
+  if (gesture !== null) {
+    if (gesture.kind === 'viewport-pan') {
+      return {
+        span: FlowSpan.viewportPanStart,
+        kind: gesture.kind,
+        inputKind: 'pointer',
+      }
+    }
+
+    return gesture.kind === 'selection'
+      ? {
+          span: FlowSpan.selectionRectStart,
+          kind: gesture.kind,
+          inputKind: 'pointer',
+        }
+      : {
+          span: FlowSpan.nodeDragStart,
+          kind: gesture.kind,
+          inputKind: 'pointer',
+          entityId: gesture.nodeId,
+        }
+  }
+
+  const keyboardConnection = graph.keyboardConnectionSession
+
+  if (keyboardConnection !== null) {
+    return keyboardConnection.kind === 'connection'
+      ? {
+          span: FlowSpan.connectionStart,
+          kind: keyboardConnection.kind,
+          inputKind: keyboardConnection.inputKind,
+          entityId: keyboardConnection.sourceNodeId,
+        }
+      : {
+          span: FlowSpan.edgeReconnectStart,
+          kind: keyboardConnection.kind,
+          inputKind: keyboardConnection.inputKind,
+          entityId: keyboardConnection.edgeId,
+        }
+  }
+
+  if (graph.keyboardResizeSession !== null) {
+    return {
+      span: FlowSpan.nodeDragStart,
+      kind: 'keyboard-resize',
+      inputKind: 'keyboard',
+      entityId: graph.keyboardResizeSession.nodeId,
+    }
+  }
+}
+
+const transitionActors = (
+  previous: Graph.Model,
+  current: Graph.Model,
+  message: Graph.GraphMessageData
+) => {
+  const ownsNode =
+    Predicate.isTagged('NodeDragMoved')(message) ||
+    previous.pointerSession?.kind === 'node-pending' ||
+    previous.pointerSession?.kind === 'node-drag' ||
+    current.pointerSession?.kind === 'node-pending' ||
+    current.pointerSession?.kind === 'node-drag'
+
+  const project = (graph: Graph.Model) =>
+    activeGestureTelemetry(
+      ownsNode
+        ? {
+            ...graph,
+            gestureSession: null,
+            keyboardConnectionSession: null,
+            keyboardResizeSession: null,
+          }
+        : graph
+    )
+
+  return { before: project(previous), after: project(current) }
+}
+
+const interactionEventName = (
+  kind: ActiveGestureTelemetry['kind'],
+  phase: 'start' | 'progress' | 'end'
+): Graph.InteractionEvent['name'] => {
+  const names: Record<
+    ActiveGestureTelemetry['kind'],
+    Record<'start' | 'progress' | 'end', Graph.InteractionEvent['name']>
+  > = {
+    connection: {
+      start: 'onConnectStart',
+      progress: 'onConnectionPreview',
+      end: 'onConnectEnd',
+    },
+    reconnection: {
+      start: 'onReconnectStart',
+      progress: 'onReconnectPreview',
+      end: 'onReconnectEnd',
+    },
+    selection: {
+      start: 'onSelectionStart',
+      progress: 'onSelectionDrag',
+      end: 'onSelectionEnd',
+    },
+    'node-drag': {
+      start: 'onNodeDragStart',
+      progress: 'onNodeDrag',
+      end: 'onNodeDragStop',
+    },
+    resize: {
+      start: 'onNodeDragStart',
+      progress: 'onNodeDrag',
+      end: 'onNodeDragStop',
+    },
+    'keyboard-resize': {
+      start: 'onNodeDragStart',
+      progress: 'onNodeDrag',
+      end: 'onNodeDragStop',
+    },
+    'viewport-pan': {
+      start: 'onMoveStart',
+      progress: 'onMove',
+      end: 'onMoveEnd',
+    },
+  }
+
+  return names[kind][phase] ?? 'onNodeDrag'
+}
+
+const interactionEntity = (
+  active: ActiveGestureTelemetry
+): Pick<Graph.InteractionEvent, 'nodeId' | 'edgeId'> => {
+  if (active.entityId === undefined) {
+    return {}
+  }
+
+  return active.kind === 'reconnection'
+    ? { edgeId: active.entityId }
+    : { nodeId: active.entityId }
+}
+
+const lifecycleMessagePhase = (
+  message: Graph.GraphMessageData
+): 'progress' | 'release' | 'cancel' | undefined => {
+  if (
+    Predicate.isTagged('GestureMoved')(message) ||
+    Predicate.isTagged('ConnectionPointerMoved')(message) ||
+    Predicate.isTagged('NodeDragMoved')(message) ||
+    Predicate.isTagged('ResizeByKeyboard')(message)
+  ) {
+    return 'progress'
+  }
+
+  if (
+    Predicate.isTagged('PointerReleased')(message) ||
+    Predicate.isTagged('GestureReleased')(message) ||
+    Predicate.isTagged('RoutedPointerClick')(message)
+  ) {
+    return 'release'
+  }
+
+  if (
+    Predicate.isTagged('PointerCancelled')(message) ||
+    Predicate.isTagged('CancelGesture')(message)
+  ) {
+    return 'cancel'
+  }
+
+  return undefined
+}
+
+// oxlint-disable-next-line complexity
+const foldkitLifecycleEvents = (
+  previous: Graph.Model,
+  current: Graph.Model,
+  message: Graph.GraphMessageData,
+  result: AppReduction,
+  cancellationReason = 'cancelled'
+): Graph.InteractionEvent[] => {
+  const events: Graph.InteractionEvent[] = []
+  const { before, after } = transitionActors(previous, current, message)
+  const explicitPhase = lifecycleMessagePhase(message)
+
+  const phase =
+    explicitPhase ??
+    (before !== undefined && after === undefined ? 'cancel' : undefined)
+
+  const semanticChange = result.outMessage?.find(
+    (item): item is typeof ChangePublicationSchema.Type =>
+      item.kind === 'change' && item.change !== undefined
+  )
+
+  if (
+    'pointerId' in message &&
+    current.pointerSession !== null &&
+    message.pointerId !== current.pointerSession.pointerId
+  ) {
+    return []
+  }
+
+  const transitioned =
+    before !== undefined &&
+    after !== undefined &&
+    (before.kind !== after.kind ||
+      before.inputKind !== after.inputKind ||
+      before.entityId !== after.entityId)
+
+  if (transitioned && before !== undefined) {
+    events.push({
+      name: interactionEventName(before.kind, 'end'),
+      phase: 'end',
+      inputKind: before.inputKind,
+      outcome: 'cancelled',
+      reason: 'superseded',
+      ...interactionEntity(before),
+    })
+  }
+
+  if ((before === undefined || transitioned) && after !== undefined) {
+    events.push({
+      name: interactionEventName(after.kind, 'start'),
+      phase: 'start',
+      inputKind: after.inputKind,
+      ...interactionEntity(after),
+    })
+  }
+
+  if (
+    after !== undefined &&
+    phase === 'progress' &&
+    current.pointerSession?.kind !== 'connection-pending' &&
+    current.pointerSession?.kind !== 'reconnection-pending'
+  ) {
+    const session = current.gestureSession ?? current.pointerSession
+
+    const progressEvent: Graph.InteractionEvent = {
+      name: interactionEventName(after.kind, 'progress'),
+      phase: 'progress',
+      inputKind: after.inputKind,
+      ...interactionEntity(after),
+    }
+
+    if (Predicate.isTagged('NodeDragMoved')(message)) {
+      events.push({
+        ...progressEvent,
+        x: message.flowX,
+        y: message.flowY,
+      })
+    } else if (Predicate.isTagged('ResizeByKeyboard')(message)) {
+      events.push({
+        ...progressEvent,
+        x: message.delta.x,
+        y: message.delta.y,
+      })
+    } else if (session !== null && 'currentX' in session) {
+      events.push({
+        ...progressEvent,
+        x: session.currentX,
+        y: session.currentY,
+      })
+    } else {
+      events.push(progressEvent)
+    }
+  }
+
+  if (
+    before !== undefined &&
+    after === undefined &&
+    phase !== undefined &&
+    phase !== 'progress'
+  ) {
+    const snapshotChanged =
+      JSON.stringify(Graph.selectSnapshot(previous)) !==
+      JSON.stringify(Graph.selectSnapshot(current))
+
+    const viewportChanged =
+      previous.gestureSession?.kind === 'viewport-pan' &&
+      (previous.gestureSession.viewportStart.x !== current.viewport.x ||
+        previous.gestureSession.viewportStart.y !== current.viewport.y)
+
+    const controlledProposal =
+      semanticChange?.controlMode === 'controlled' && !snapshotChanged
+
+    const accepted =
+      snapshotChanged ||
+      viewportChanged ||
+      (semanticChange !== undefined && !controlledProposal)
+
+    let outcome: 'accepted' | 'proposed' | 'rejected' | 'cancelled' =
+      controlledProposal ? 'proposed' : 'rejected'
+
+    if (phase === 'cancel') {
+      outcome = 'cancelled'
+    } else if (accepted) {
+      outcome = 'accepted'
+    }
+
+    const terminal = {
+      name: interactionEventName(before.kind, 'end'),
+      phase: 'end' as const,
+      inputKind: before.inputKind,
+      outcome,
+      ...interactionEntity(before),
+    }
+
+    let terminalEvent: Graph.InteractionEvent = terminal
+
+    if (phase === 'cancel') {
+      terminalEvent = { ...terminal, reason: cancellationReason }
+    }
+
+    const proposalChange = Schema.decodeUnknownOption(FlowChangeSchema)(
+      semanticChange?.change
+    )
+
+    const isConnectionProposal =
+      Option.isSome(proposalChange) &&
+      ((before.kind === 'connection' &&
+        proposalChange.value.kind === 'edge-add') ||
+        (before.kind === 'reconnection' &&
+          proposalChange.value.kind === 'edge-reconnect'))
+
+    if (phase !== 'cancel' && isConnectionProposal) {
+      const proposal: Graph.InteractionEvent = {
+        ...terminalEvent,
+        name: before.kind === 'connection' ? 'onConnect' : 'onReconnect',
+        phase: 'proposal',
+      }
+
+      events.push({ ...proposal, change: proposalChange.value })
+    }
+
+    events.push(terminalEvent)
+  }
+
+  if (
+    (Predicate.isTagged('ViewportWheel')(message) ||
+      Predicate.isTagged('ViewportDoubleClick')(message)) &&
+    (previous.viewport.x !== current.viewport.x ||
+      previous.viewport.y !== current.viewport.y ||
+      previous.viewport.zoom !== current.viewport.zoom)
+  ) {
+    const eventInputKind = Predicate.isTagged('ViewportWheel')(message)
+      ? 'wheel'
+      : 'pointer'
+
+    events.push(
+      {
+        name: 'onMoveStart',
+        phase: 'start',
+        inputKind: eventInputKind,
+      },
+      {
+        name: 'onMove',
+        phase: 'progress',
+        inputKind: eventInputKind,
+        x: current.viewport.x,
+        y: current.viewport.y,
+      },
+      {
+        name: 'onMoveEnd',
+        phase: 'end',
+        inputKind: eventInputKind,
+        outcome: 'accepted',
+      }
+    )
+  }
+
+  return events
+}
+
+const nativeBarrierFor = (
+  message: Graph.GraphMessageData
+): Graph.NativeBarrier | undefined =>
+  Predicate.isTagged('ReplaceDocument')(message) ||
+  Predicate.isTagged('ReplaceViewport')(message) ||
+  Predicate.isTagged('SetAllowedTargets')(message)
+    ? { kind: message._tag }
+    : undefined
+
+const graphFold = (
+  model: Model,
+  message: Graph.GraphMessageData,
+  route: 'full' | 'node-cancellation' = 'node-cancellation'
+): AppReduction => {
+  const result = foldGraph(model, message)
+
+  const { before, after } = transitionActors(
+    model.graph,
+    result.model.graph,
+    message
+  )
+
+  const cancellation = result.outMessage?.find(
+    (item) => item.kind === 'change' && item.cancellation !== undefined
+  )
+
+  const originatingReason =
+    cancellation?.kind === 'change'
+      ? (cancellation.cancellation?.reason ?? message._tag)
+      : message._tag
+
+  const cancellationReason = route === 'full' ? 'cancelled' : originatingReason
+
+  const events =
+    route === 'full' ||
+    (before?.kind === 'node-drag' && after?.kind !== 'node-drag')
+      ? foldkitLifecycleEvents(
+          model.graph,
+          result.model.graph,
+          message,
+          result,
+          cancellationReason
+        )
+      : []
+
+  const eligible =
+    route === 'full'
+      ? events
+      : events.filter(
+          (event) => event.name === 'onNodeDragStop' && event.phase === 'end'
+        )
+
+  const started = eligible.some((event) => event.phase === 'start')
+
+  const nativeBarrier = nativeBarrierFor(message)
+
+  const reduction: AppReduction = {
+    ...result,
+    outMessage: [
+      ...(result.outMessage ?? []),
+      ...(started && after !== undefined
+        ? [
+            {
+              kind: 'change' as const,
+              lifecycle: { ...after, controlMode: model.graph.documentMode },
+            },
+          ]
+        : []),
+      ...(eligible.length === 0
+        ? []
+        : [{ kind: 'interaction' as const, events: eligible }]),
+    ],
+  }
+
+  return nativeBarrier === undefined
+    ? reduction
+    : { ...reduction, nativeBarrier }
+}
 
 const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
   actions: Port.subscription(ports.inbound.actions, (action) =>
@@ -1042,7 +1557,7 @@ const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
 const routeAction = (model: Model, action: HostActionData) =>
   HostAction.match(action, {
     ReplaceDocument: ({ document }) =>
-      graphFold(model, Graph.Message.ReplaceDocument({ document })),
+      graphFold(model, Graph.Message.ReplaceDocument({ document }), 'full'),
     ReplaceViewport: ({ viewport }) =>
       graphFold(model, Graph.Message.ReplaceViewport({ viewport })),
     SetAllowedTargets: ({ targets }) =>
@@ -1096,7 +1611,7 @@ const routeAction = (model: Model, action: HostActionData) =>
   })
 
 const observeViewportReplacement = (
-  result: Update.Return<Model, AppMessageData>,
+  result: AppReduction,
   viewportMode: Model['graph']['viewportMode'],
   previous: Viewport,
   replacement: Viewport
@@ -1392,411 +1907,16 @@ const getViewportProposal = (model: Model, request: ViewportRequest) => {
   return { current, proposed, point, status, mutating, changed }
 }
 
-interface ActiveGestureTelemetry {
-  readonly span: string
-  readonly kind:
-    | 'connection'
-    | 'reconnection'
-    | 'selection'
-    | 'node-drag'
-    | 'resize'
-    | 'keyboard-resize'
-    | 'viewport-pan'
-  readonly inputKind: 'pointer' | 'click' | 'keyboard'
-  readonly entityId?: string
-}
-
-const activeGestureTelemetry = (
-  graph: Graph.Model
-): ActiveGestureTelemetry | undefined => {
-  const pointer = graph.pointerSession
-
-  if (
-    pointer !== null &&
-    pointer.kind !== 'connection-pending' &&
-    pointer.kind !== 'reconnection-pending'
-  ) {
-    if (pointer.kind === 'connection') {
-      return {
-        span: FlowSpan.connectionStart,
-        kind: pointer.kind,
-        inputKind: 'pointer',
-        entityId: pointer.nodeId,
-      }
-    }
-
-    if (pointer.kind === 'reconnection') {
-      return {
-        span: FlowSpan.edgeReconnectStart,
-        kind: pointer.kind,
-        inputKind: 'pointer',
-        entityId: pointer.edgeId,
-      }
-    }
-
-    return {
-      span: FlowSpan.nodeDragStart,
-      kind: pointer.kind,
-      inputKind: 'pointer',
-      entityId: pointer.nodeId,
-    }
-  }
-
-  const gesture = graph.gestureSession
-
-  if (gesture !== null) {
-    if (gesture.kind === 'viewport-pan') {
-      return {
-        span: FlowSpan.viewportPanStart,
-        kind: gesture.kind,
-        inputKind: 'pointer',
-      }
-    }
-
-    return gesture.kind === 'selection'
-      ? {
-          span: FlowSpan.selectionRectStart,
-          kind: gesture.kind,
-          inputKind: 'pointer',
-        }
-      : {
-          span: FlowSpan.nodeDragStart,
-          kind: gesture.kind,
-          inputKind: 'pointer',
-          entityId: gesture.nodeId,
-        }
-  }
-
-  const keyboardConnection = graph.keyboardConnectionSession
-
-  if (keyboardConnection !== null) {
-    return keyboardConnection.kind === 'connection'
-      ? {
-          span: FlowSpan.connectionStart,
-          kind: keyboardConnection.kind,
-          inputKind: keyboardConnection.inputKind,
-          entityId: keyboardConnection.sourceNodeId,
-        }
-      : {
-          span: FlowSpan.edgeReconnectStart,
-          kind: keyboardConnection.kind,
-          inputKind: keyboardConnection.inputKind,
-          entityId: keyboardConnection.edgeId,
-        }
-  }
-
-  if (graph.keyboardResizeSession !== null) {
-    return {
-      span: FlowSpan.nodeDragStart,
-      kind: 'keyboard-resize',
-      inputKind: 'keyboard',
-      entityId: graph.keyboardResizeSession.nodeId,
-    }
-  }
-}
-
-const interactionEventName = (
-  kind: ActiveGestureTelemetry['kind'],
-  phase: 'start' | 'progress' | 'end'
-): Graph.InteractionEvent['name'] => {
-  const names: Record<
-    ActiveGestureTelemetry['kind'],
-    Record<'start' | 'progress' | 'end', Graph.InteractionEvent['name']>
-  > = {
-    connection: {
-      start: 'onConnectStart',
-      progress: 'onConnectionPreview',
-      end: 'onConnectEnd',
-    },
-    reconnection: {
-      start: 'onReconnectStart',
-      progress: 'onReconnectPreview',
-      end: 'onReconnectEnd',
-    },
-    selection: {
-      start: 'onSelectionStart',
-      progress: 'onSelectionDrag',
-      end: 'onSelectionEnd',
-    },
-    'node-drag': {
-      start: 'onNodeDragStart',
-      progress: 'onNodeDrag',
-      end: 'onNodeDragStop',
-    },
-    resize: {
-      start: 'onNodeDragStart',
-      progress: 'onNodeDrag',
-      end: 'onNodeDragStop',
-    },
-    'keyboard-resize': {
-      start: 'onNodeDragStart',
-      progress: 'onNodeDrag',
-      end: 'onNodeDragStop',
-    },
-    'viewport-pan': {
-      start: 'onMoveStart',
-      progress: 'onMove',
-      end: 'onMoveEnd',
-    },
-  }
-
-  return names[kind][phase] ?? 'onNodeDrag'
-}
-
-const interactionEntity = (
-  active: ActiveGestureTelemetry
-): Pick<Graph.InteractionEvent, 'nodeId' | 'edgeId'> => {
-  if (active.entityId === undefined) {
-    return {}
-  }
-
-  return active.kind === 'reconnection'
-    ? { edgeId: active.entityId }
-    : { nodeId: active.entityId }
-}
-
-const lifecycleMessagePhase = (
-  message: Graph.GraphMessageData
-): 'progress' | 'release' | 'cancel' | undefined => {
-  if (
-    Predicate.isTagged('GestureMoved')(message) ||
-    Predicate.isTagged('ConnectionPointerMoved')(message) ||
-    Predicate.isTagged('NodeDragMoved')(message) ||
-    Predicate.isTagged('ResizeByKeyboard')(message)
-  ) {
-    return 'progress'
-  }
-
-  if (
-    Predicate.isTagged('PointerReleased')(message) ||
-    Predicate.isTagged('GestureReleased')(message) ||
-    Predicate.isTagged('RoutedPointerClick')(message)
-  ) {
-    return 'release'
-  }
-
-  if (
-    Predicate.isTagged('PointerCancelled')(message) ||
-    Predicate.isTagged('CancelGesture')(message)
-  ) {
-    return 'cancel'
-  }
-
-  return undefined
-}
-
-// oxlint-disable-next-line complexity
-const foldkitLifecycleEvents = (
-  previous: Graph.Model,
-  current: Graph.Model,
-  message: Graph.GraphMessageData,
-  result: Update.Return<Model, AppMessageData>
-): Graph.InteractionEvent[] => {
-  const events: Graph.InteractionEvent[] = []
-  const before = activeGestureTelemetry(previous)
-  const after = activeGestureTelemetry(current)
-  const explicitPhase = lifecycleMessagePhase(message)
-
-  const phase =
-    explicitPhase ??
-    (before !== undefined && after === undefined ? 'cancel' : undefined)
-
-  const semanticChange = result.commands?.find(
-    (command) =>
-      command.name === 'PublishFlowChanges' &&
-      command.args?.change !== undefined &&
-      command.args.change !== null
-  )
-
-  const transitioned =
-    before !== undefined &&
-    after !== undefined &&
-    (before.kind !== after.kind ||
-      before.inputKind !== after.inputKind ||
-      before.entityId !== after.entityId)
-
-  if (transitioned && before !== undefined) {
-    events.push({
-      name: interactionEventName(before.kind, 'end'),
-      phase: 'end',
-      inputKind: before.inputKind,
-      outcome: 'cancelled',
-      reason: 'superseded',
-      ...interactionEntity(before),
-    })
-  }
-
-  if ((before === undefined || transitioned) && after !== undefined) {
-    events.push({
-      name: interactionEventName(after.kind, 'start'),
-      phase: 'start',
-      inputKind: after.inputKind,
-      ...interactionEntity(after),
-    })
-  }
-
-  if (
-    after !== undefined &&
-    phase === 'progress' &&
-    current.pointerSession?.kind !== 'connection-pending' &&
-    current.pointerSession?.kind !== 'reconnection-pending'
-  ) {
-    const session = current.gestureSession ?? current.pointerSession
-
-    const progressEvent: Graph.InteractionEvent = {
-      name: interactionEventName(after.kind, 'progress'),
-      phase: 'progress',
-      inputKind: after.inputKind,
-      ...interactionEntity(after),
-    }
-
-    if (Predicate.isTagged('NodeDragMoved')(message)) {
-      events.push({
-        ...progressEvent,
-        x: message.flowX,
-        y: message.flowY,
-      })
-    } else if (Predicate.isTagged('ResizeByKeyboard')(message)) {
-      events.push({
-        ...progressEvent,
-        x: message.delta.x,
-        y: message.delta.y,
-      })
-    } else if (session !== null && 'currentX' in session) {
-      events.push({
-        ...progressEvent,
-        x: session.currentX,
-        y: session.currentY,
-      })
-    } else {
-      events.push(progressEvent)
-    }
-  }
-
-  if (
-    before !== undefined &&
-    after === undefined &&
-    phase !== undefined &&
-    phase !== 'progress'
-  ) {
-    const snapshotChanged =
-      JSON.stringify(Graph.selectSnapshot(previous)) !==
-      JSON.stringify(Graph.selectSnapshot(current))
-
-    const viewportChanged =
-      previous.gestureSession?.kind === 'viewport-pan' &&
-      (previous.gestureSession.viewportStart.x !== current.viewport.x ||
-        previous.gestureSession.viewportStart.y !== current.viewport.y)
-
-    const controlledProposal =
-      semanticChange?.args?.controlMode === 'controlled' && !snapshotChanged
-
-    const accepted =
-      snapshotChanged ||
-      viewportChanged ||
-      (semanticChange !== undefined && !controlledProposal)
-
-    let outcome: 'accepted' | 'proposed' | 'rejected' | 'cancelled' =
-      controlledProposal ? 'proposed' : 'rejected'
-
-    if (phase === 'cancel') {
-      outcome = 'cancelled'
-    } else if (accepted) {
-      outcome = 'accepted'
-    }
-
-    const terminal = {
-      name: interactionEventName(before.kind, 'end'),
-      phase: 'end' as const,
-      inputKind: before.inputKind,
-      outcome,
-      ...interactionEntity(before),
-    }
-
-    let terminalEvent: Graph.InteractionEvent = terminal
-
-    if (phase === 'cancel') {
-      terminalEvent = { ...terminal, reason: 'cancelled' }
-    }
-
-    const proposalChange = Schema.decodeUnknownOption(FlowChangeSchema)(
-      semanticChange?.args?.change
-    )
-
-    const isConnectionProposal =
-      Option.isSome(proposalChange) &&
-      ((before.kind === 'connection' &&
-        proposalChange.value.kind === 'edge-add') ||
-        (before.kind === 'reconnection' &&
-          proposalChange.value.kind === 'edge-reconnect'))
-
-    if (phase !== 'cancel' && isConnectionProposal) {
-      const proposal: Graph.InteractionEvent = {
-        ...terminalEvent,
-        name: before.kind === 'connection' ? 'onConnect' : 'onReconnect',
-        phase: 'proposal',
-      }
-
-      events.push({ ...proposal, change: proposalChange.value })
-    }
-
-    events.push(terminalEvent)
-  }
-
-  if (
-    (Predicate.isTagged('ViewportWheel')(message) ||
-      Predicate.isTagged('ViewportDoubleClick')(message)) &&
-    (previous.viewport.x !== current.viewport.x ||
-      previous.viewport.y !== current.viewport.y ||
-      previous.viewport.zoom !== current.viewport.zoom)
-  ) {
-    const eventInputKind = Predicate.isTagged('ViewportWheel')(message)
-      ? 'wheel'
-      : 'pointer'
-
-    events.push(
-      {
-        name: 'onMoveStart',
-        phase: 'start',
-        inputKind: eventInputKind,
-      },
-      {
-        name: 'onMove',
-        phase: 'progress',
-        inputKind: eventInputKind,
-        x: current.viewport.x,
-        y: current.viewport.y,
-      },
-      {
-        name: 'onMoveEnd',
-        phase: 'end',
-        inputKind: eventInputKind,
-        outcome: 'accepted',
-      }
-    )
-  }
-
-  return events
-}
-
-export const update = (
-  model: Model,
-  message: AppMessageData
-): Update.Return<Model, AppMessageData> => {
+export const update = (model: Model, message: AppMessageData): AppReduction => {
   const updateResult = AppMessage.match(message, {
     GraphMessage: ({ message: graphMessage }) => {
-      const result = graphFold(model, graphMessage)
+      const result = graphFold(model, graphMessage, 'full')
 
       const readyModel = model.lifecycleReady
         ? result.model
         : { ...result.model, lifecycleReady: true }
 
-      const lifecycleEvents = foldkitLifecycleEvents(
-        model.graph,
-        result.model.graph,
-        graphMessage,
-        result
-      )
+      const lifecycleEvents: Graph.InteractionEvent[] = []
 
       if (
         'name' in graphMessage &&
@@ -1821,103 +1941,52 @@ export const update = (
 
       const events: Graph.InteractionEvent[] = [...lifecycleEvents]
 
-      if (model.lifecycleReady === false) {
-        events.unshift({
-          name: 'onInit',
-          phase: 'event',
-          inputKind: 'runtime',
-        })
-      }
-
-      const withLifecycle = {
-        ...result,
-        model: readyModel,
-        commands: [
-          ...(result.commands ?? []),
-          ...(events.length === 0
-            ? []
-            : [PublishInteractionEvents({ events })]),
-        ],
-      }
-
       const viewportEvents = viewportPanEvents(
         model.graph,
         readyModel.graph,
         graphMessage
       )
 
-      const withViewportEvents = {
-        ...withLifecycle,
-        commands: [
-          ...(withLifecycle.commands ?? []),
-          ...viewportEvents.map((event) => PublishViewportEvent({ event })),
-        ],
-      }
-
-      const previous = activeGestureTelemetry(model.graph)
-      const current = activeGestureTelemetry(readyModel.graph)
-
-      const started =
-        current !== undefined &&
-        (previous === undefined ||
-          previous.kind !== current.kind ||
-          previous.inputKind !== current.inputKind ||
-          previous.entityId !== current.entityId)
-
-      if (!started || current === undefined) {
-        return withViewportEvents
-      }
-
-      const lifecycle = {
-        ...current,
-        controlMode: model.graph.documentMode,
-      }
-
       return {
-        ...withViewportEvents,
+        ...result,
+        model: readyModel,
+        outMessage: [
+          ...(model.lifecycleReady
+            ? []
+            : [
+                {
+                  kind: 'interaction' as const,
+                  events: [
+                    {
+                      name: 'onInit' as const,
+                      phase: 'event' as const,
+                      inputKind: 'runtime' as const,
+                    },
+                  ],
+                },
+              ]),
+          ...(result.outMessage ?? []),
+          ...(events.length === 0
+            ? []
+            : [{ kind: 'interaction' as const, events }]),
+        ],
         commands: [
-          ...(withViewportEvents.commands ?? []),
-          PublishChanges({ lifecycle }),
+          ...(result.commands ?? []),
+          ...viewportEvents.map((event) => PublishViewportEvent({ event })),
         ],
       }
     },
     HostAction: ({ action }) => {
-      if (Predicate.isTagged('ReplaceDocument')(action)) {
-        const result = routeAction(model, action)
-
-        const lifecycleEvents = foldkitLifecycleEvents(
-          model.graph,
-          result.model.graph,
-          Graph.Message.ReplaceDocument({ document: action.document }),
-          result
-        )
-
-        return {
-          ...result,
-          commands: [
-            ...(result.commands ?? []),
-            ...(lifecycleEvents.length === 0
-              ? []
-              : [PublishInteractionEvents({ events: lifecycleEvents })]),
-          ],
-        }
-      }
-
       const result = routeAction(model, action)
 
-      return HostAction.match(action, {
-        ReplaceDocument: () => result,
-        ReplaceViewport: ({ viewport: replacement }) =>
-          observeViewportReplacement(
+      return Predicate.isTagged('ReplaceViewport')(action)
+        ? observeViewportReplacement(
             result,
             model.graph.viewportMode,
             model.graph.viewport,
-            replacement
-          ),
-        SetAllowedTargets: () => result,
-        DispatchCommand: () => result,
-        MeasureNode: () => result,
-      })
+            action.viewport
+          )
+        : result
     },
     SnapshotRequest: ({ request }) => {
       let savedSession: typeof SavedFlowSessionSchema.Type
@@ -2364,6 +2433,7 @@ export const update = (
 
       return {
         model: { ...model, graph, viewportAnimation: null },
+        outMessage: [{ kind: 'change' as const, change, acceptedState }],
         commands: [
           PublishViewportEvent({
             event: { kind: 'change', source: 'programmatic', viewport },
@@ -2371,7 +2441,6 @@ export const update = (
           PublishViewportEvent({
             event: { kind: 'end', source: 'programmatic', viewport },
           }),
-          PublishChanges({ change, acceptedState }),
           RespondViewport({
             response: {
               requestId: animation.requestId,
@@ -2572,6 +2641,207 @@ export const view = (
     ]
   )
 
+const freezePublication = <A>(value: A): A => {
+  if (Predicate.isObject(value)) {
+    for (const child of Object.values(value)) {
+      freezePublication(child)
+    }
+
+    Object.freeze(value)
+  }
+
+  return value
+}
+
+const detachPublication = (item: PublicationItem): PublicationItem => {
+  if (item.kind === 'edit-failure') {
+    const encoded = Schema.encodeSync(EditResponseSchema)(item.response)
+
+    const response = Schema.decodeUnknownSync(EditResponseSchema)(
+      structuredClone(encoded)
+    )
+
+    return freezePublication({
+      ...item,
+      response,
+      interactionError: Schema.decodeUnknownSync(Graph.InteractionEventSchema)(
+        structuredClone(
+          Schema.encodeSync(Graph.InteractionEventSchema)(item.interactionError)
+        )
+      ),
+    })
+  }
+
+  const copied = structuredClone(item)
+
+  if (copied.kind === 'change' && copied.acceptedState !== undefined) {
+    const state = copied.acceptedState
+
+    return freezePublication({
+      ...copied,
+      acceptedState: {
+        ...state,
+        previous: createFlowSnapshot(
+          state.previous.document,
+          state.previous.viewport
+        ),
+        current: createFlowSnapshot(
+          state.current.document,
+          state.current.viewport
+        ),
+      },
+    })
+  }
+
+  return freezePublication(copied)
+}
+
+export const createProgramPublication = (
+  pointer: ReturnType<typeof Graph.createPointerResource>,
+  emit: typeof emitPublication = emitPublication
+) => {
+  const queue = Effect.runSync(Queue.unbounded<PublicationBatch>())
+  let closed = false
+  let failure: Cause.Cause<never> | undefined
+  let worker: Fiber.Fiber<void> | undefined
+
+  const close = (interrupt = true): void => {
+    if (closed) {
+      return
+    }
+
+    closed = true
+    pointer.close()
+    Effect.runSync(Queue.shutdown(queue))
+
+    if (interrupt) {
+      worker?.interruptUnsafe()
+    }
+  }
+
+  const enqueue = (batch: PublicationBatch | undefined): void => {
+    if (closed) {
+      throw new Error('Publication lane is closed')
+    }
+
+    if (batch === undefined || batch.length === 0) {
+      return
+    }
+
+    try {
+      const detached = Object.freeze(batch.map(detachPublication))
+
+      if (!Queue.offerUnsafe(queue, detached)) {
+        throw new Error('Publication queue rejected batch')
+      }
+    } catch (error) {
+      close()
+      throw error
+    }
+  }
+
+  const stream = Stream.unwrap(
+    Effect.gen(function* stream() {
+      const scope = yield* Effect.acquireRelease(
+        Scope.make('sequential'),
+        (acquiredScope) => Scope.close(acquiredScope, Exit.void)
+      )
+
+      yield* Scope.addFinalizer(
+        scope,
+        Effect.sync(() => close())
+      )
+
+      const input = yield* pointer.acquire.pipe(
+        Effect.provideService(Scope.Scope, scope)
+      )
+
+      worker = yield* Stream.fromQueue(queue).pipe(
+        Stream.runForEach((batch) =>
+          Effect.gen(function* emitBatch() {
+            yield* Effect.yieldNow
+
+            for (const item of batch) {
+              if (closed) {
+                return
+              }
+
+              yield* emit(item)
+            }
+          })
+        ),
+        Effect.catchCause((cause) =>
+          Effect.gen(function* emitBatch() {
+            failure = cause
+            const error = Cause.squash(cause)
+            close(false)
+            yield* Effect.logError('Foldkit publication failed').pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.failureMessage]: Cause.pretty(cause),
+                [FlowAttribute.failureName]:
+                  error instanceof Error ? error.name : 'Unknown',
+              }),
+              Effect.withSpan(FlowSpan.editFailure)
+            )
+
+            return yield* Effect.failCause(cause)
+          })
+        ),
+        Effect.forkIn(scope)
+      )
+
+      return Stream.merge(
+        input.pipe(Stream.map((message) => wrapGraphMessage({ message }))),
+        Stream.fromEffect(
+          Fiber.join(worker).pipe(Effect.as(AppMessage.ChangePublished()))
+        )
+      )
+    })
+  ).pipe(Stream.catchCause((cause) => Stream.failCause(failure ?? cause)))
+
+  return { enqueue, stream, close }
+}
+
+export const createProgramUpdate =
+  (
+    pointerResource: ReturnType<typeof Graph.createPointerResource>,
+    publication: Pick<
+      ReturnType<typeof createProgramPublication>,
+      'enqueue' | 'close'
+    >
+  ) =>
+  (model: Model, message: AppMessageData) => {
+    try {
+      let preparedMessage = message
+
+      if (Predicate.isTagged('GraphMessage')(message)) {
+        const prepared = pointerResource.prepare(message.message)
+
+        if (Option.isNone(prepared)) {
+          return { model }
+        }
+
+        preparedMessage = wrapGraphMessage({ message: prepared.value })
+      }
+
+      const result = update(model, preparedMessage)
+      pointerResource.reconcile({
+        previous: model.graph,
+        current: result.model.graph,
+        message: Predicate.isTagged('GraphMessage')(preparedMessage)
+          ? preparedMessage.message
+          : undefined,
+        nativeBarrier: result.nativeBarrier,
+      })
+      publication.enqueue(result.outMessage)
+
+      return { model: result.model, commands: result.commands ?? [] }
+    } catch (error) {
+      publication.close()
+      throw error
+    }
+  }
+
 let rendererInstanceNumber = 0
 
 export const createProgram = (
@@ -2600,7 +2870,9 @@ export const createProgram = (
     instanceId
   )
 
-  const pointerResource = Graph.createConnectionPointerResource(initialGraph)
+  const pointerResource = Graph.createPointerResource(initialGraph)
+
+  const publication = createProgramPublication(pointerResource)
 
   const graphView = Graph.makeView(
     rendererRegistry,
@@ -2624,50 +2896,21 @@ export const createProgram = (
         cancelledDeleteOperations: [],
       },
     }),
-    update: (model: Model, message: AppMessageData) => {
-      let preparedMessage = message
-
-      if (Predicate.isTagged('GraphMessage')(message)) {
-        const prepared = pointerResource.prepare(message.message)
-
-        if (Option.isNone(prepared)) {
-          return { model }
-        }
-
-        preparedMessage = wrapGraphMessage({ message: prepared.value })
-      }
-
-      const result = update(model, preparedMessage)
-      let resourceMessage: Graph.GraphMessageData | undefined
-
-      if (Predicate.isTagged('GraphMessage')(preparedMessage)) {
-        resourceMessage = preparedMessage.message
-      } else if (Predicate.isTagged('HostAction')(preparedMessage)) {
-        const { action } = preparedMessage
-
-        if (Predicate.isTagged('ReplaceDocument')(action)) {
-          resourceMessage = Graph.Message.ReplaceDocument({
-            document: action.document,
-          })
-        } else if (Predicate.isTagged('ReplaceViewport')(action)) {
-          resourceMessage = Graph.Message.ReplaceViewport({
-            viewport: action.viewport,
-          })
-        }
-      }
-
-      pointerResource.reconcile(result.model.graph, resourceMessage)
-
-      return result
-    },
+    update: createProgramUpdate(pointerResource, publication),
     view: (model, h) => view(model, h, graphView),
     subscriptions: Subscription.aggregate(
       hostSubscriptions,
-      Subscription.lift(pointerResource.subscriptions)({
-        toChildModel: (model: Model) => model.graph,
-        toParentMessage: (message: typeof Graph.Message.Type) =>
-          wrapGraphMessage({ message }),
-      }),
+      Subscription.make<Model, AppMessageData>()((entry) => ({
+        programIo: entry(
+          { instanceId: Schema.String },
+          {
+            modelToDependencies: (model) => ({
+              instanceId: model.graph.instanceId,
+            }),
+            dependenciesToStream: () => publication.stream,
+          }
+        ),
+      })),
       Subscription.lift(Graph.subscriptions)({
         toChildModel: (model: Model) => model.graph,
         toParentMessage: (message: typeof Graph.Message.Type) =>
