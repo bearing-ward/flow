@@ -1,0 +1,72 @@
+.feature-overview-page .flow-foldkit-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 10px 14px;
+}
+
+.overview-annotation {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-style: italic;
+}
+
+.overview-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.overview-edge-label {
+  padding: 2px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 11px;
+  pointer-events: all;
+}
+
+.overview-animated {
+  stroke-dasharray: 5;
+  animation: overview-dash 0.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overview-animated {
+    animation: none;
+  }
+}
+
+@keyframes overview-dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.overview-panel {
+  max-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.overview-panel p {
+  margin: 4px 0 0;
+}
+
+.overview-toolbar {
+  display: flex;
+  gap: 4px;
+}
+
+/* Keep the minimap clear of the bottom-right resize controls. */
+.feature-overview-page .flow-foldkit-minimap {
+  top: 12px;
+  right: auto;
+  bottom: auto;
+  left: 12px;
+}

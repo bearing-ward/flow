@@ -1,0 +1,38 @@
+/* Labels stay on one line, so label length drives the measured width. */
+#app[data-recipe='layout'] .flow-node {
+  min-width: 60px;
+  white-space: nowrap;
+}
+
+/* Elkjs Multiple Handles: three source handles at clearly different heights. */
+#app[data-recipe='layout'] .flow-node[data-node-id='s'] {
+  min-height: 120px;
+}
+
+#app[data-recipe='layout'] .flow-handle[data-handle-id='out-a'] {
+  top: 14px;
+}
+
+#app[data-recipe='layout'] .flow-handle[data-handle-id='out-b'] {
+  top: 54px;
+}
+
+#app[data-recipe='layout'] .flow-handle[data-handle-id='out-c'] {
+  top: 94px;
+}
+
+.layout-placeholder {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.flow-node:has(.layout-placeholder) {
+  min-width: 60px;
+  border: 1px dashed #94a3b8;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.flow-edge-group[data-edge-id^='pe-'] .flow-edge-path {
+  stroke-dasharray: 5 4;
+}

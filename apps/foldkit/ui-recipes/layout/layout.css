@@ -1,0 +1,42 @@
+/* Nodes size to their labels, so measured widths differ. */
+.layout-page .flow-foldkit-node {
+  width: max-content;
+  min-height: 0;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.layout-page[data-scene='elk-multiple-handles'] .flow-foldkit-node,
+.layout-page[data-scene='force-layout'] .flow-foldkit-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Spread the three source handles of "s" at clearly different offsets. */
+.layout-page [data-node-id='s'] [data-handle-id='out-a'] {
+  top: 20%;
+}
+
+.layout-page [data-node-id='s'] [data-handle-id='out-b'] {
+  top: 50%;
+}
+
+.layout-page [data-node-id='s'] [data-handle-id='out-c'] {
+  top: 80%;
+}
+
+/* Converted placeholders keep their box, so every node has one width. */
+.layout-page[data-scene='dynamic-layouting'] .flow-foldkit-node {
+  width: 110px;
+  text-align: center;
+}
+
+.layout-page .flow-foldkit-node:has(> .layout-placeholder) {
+  border: 1px dashed #94a3b8;
+  background: #f8fafc;
+  color: #64748b;
+  box-shadow: none;
+  cursor: pointer;
+}

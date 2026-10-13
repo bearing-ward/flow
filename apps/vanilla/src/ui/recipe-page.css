@@ -1,0 +1,24 @@
+.recipe-page {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+}
+
+.recipe-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.recipe-toolbar [aria-pressed='true'] {
+  background: #dbeafe;
+  outline: 2px solid #2563eb;
+}
+
+.recipe-page .recipe-canvas {
+  position: relative;
+  width: 900px;
+  height: 540px;
+}
