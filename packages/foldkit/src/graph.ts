@@ -48,6 +48,7 @@ import {
   applyEdgeReconnectChange,
   orderFlowEdges,
   applyNodePositionChange,
+  applyNodePositionsChange,
   applyNodeBoundsChange,
   applySelectionSetChange,
   calculateNodeResize,
@@ -210,6 +211,21 @@ const PointerSessionSchema = Schema.Union([
     startX: Schema.Finite,
     startY: Schema.Finite,
     nodeId: NodeIdSchema,
+    /** Every dragged node; the pressed node is first when it moves itself. */
+    nodeIds: Schema.Array(NodeIdSchema),
+    /** Where the drag found each dragged node: relative and absolute top-left. */
+    origins: Schema.Array(
+      Schema.Struct({
+        nodeId: NodeIdSchema,
+        x: Schema.Finite,
+        y: Schema.Finite,
+        absoluteX: Schema.Finite,
+        absoluteY: Schema.Finite,
+      })
+    ),
+    /** The pointer's latest client position, for the live drag preview. */
+    currentX: Schema.Finite,
+    currentY: Schema.Finite,
   }),
   Schema.Struct({
     kind: Schema.Literal('connection'),
@@ -316,6 +332,8 @@ export const ModelSchema = Schema.Struct({
   nodesDraggable: Schema.Boolean,
   nodesConnectable: Schema.Boolean,
   elementsSelectable: Schema.Boolean,
+  /** Selected nodes show resize controls only when this is on. */
+  nodesResizable: Schema.Boolean,
   defaultEdgeOptions: FlowDefaultEdgeOptionsSchema,
   measurements: FlowMeasurementStateSchema,
   pointerSession: Schema.NullOr(PointerSessionSchema),
@@ -324,6 +342,8 @@ export const ModelSchema = Schema.Struct({
   keyboardResizeSession: Schema.NullOr(KeyboardResizeSessionSchema),
   pendingResizeAcceptance: Schema.NullOr(ResizeAcceptanceSchema),
   selectionMode: SelectionModeSchema,
+  /** The click that ends a real node drag does not select, as with d3-drag. */
+  nodeClickSuppressed: Schema.Boolean,
 })
 
 export type Model = typeof ModelSchema.Type
@@ -356,6 +376,17 @@ export const ConnectionEndStateSchema = Schema.Struct({
   toHandleType: Schema.NullOr(Schema.Literals(['source', 'target'])),
 })
 
+const XYPositionSchema = Schema.Struct({ x: Schema.Finite, y: Schema.Finite })
+
+/** One dragged node's live position, as React Flow drag handlers receive it. */
+export const DraggedNodePositionSchema = Schema.Struct({
+  nodeId: Schema.String,
+  position: XYPositionSchema,
+  positionAbsolute: XYPositionSchema,
+})
+
+export type DraggedNodePosition = typeof DraggedNodePositionSchema.Type
+
 /** Serializable lifecycle records emitted by the Foldkit adapter. */
 export const InteractionEventSchema = Schema.Struct({
   name: Schema.Literals([
@@ -375,6 +406,9 @@ export const InteractionEventSchema = Schema.Struct({
     'onSelectionStart',
     'onSelectionDrag',
     'onSelectionEnd',
+    'onSelectionDragStart',
+    'onSelectionDragMove',
+    'onSelectionDragStop',
     'onMoveStart',
     'onMove',
     'onMoveEnd',
@@ -429,6 +463,12 @@ export const InteractionEventSchema = Schema.Struct({
   edgeIds: Schema.optional(Schema.Array(Schema.String)),
   /** `onConnectEnd`/`onReconnectEnd` final connection state. */
   connectionState: Schema.optional(ConnectionEndStateSchema),
+  /** Node drag events: the dragged node's live position. */
+  position: Schema.optional(XYPositionSchema),
+  /** Node drag events: the dragged node's live absolute top-left. */
+  positionAbsolute: Schema.optional(XYPositionSchema),
+  /** Node drag events: every dragged node's live position. */
+  nodePositions: Schema.optional(Schema.Array(DraggedNodePositionSchema)),
 })
 
 export type InteractionEvent = typeof InteractionEventSchema.Type
@@ -458,6 +498,8 @@ export const Message = FoldMessage.defineMessageUnion({
     nodeId: Schema.NullOr(Schema.String),
     edgeId: Schema.NullOr(Schema.String),
     pointer: Schema.optional(MouseDetailSchema),
+    /** A node click outside Foldkit's own controls, which selects the node. */
+    select: Schema.optional(Schema.Boolean),
   },
   SetInteractivity: {
     nodesDraggable: Schema.optional(Schema.Boolean),
@@ -606,6 +648,12 @@ export interface GraphInteractionOptions {
   /** React Flow `elementsSelectable`; element `selectable` wins. Defaults to true. */
   readonly elementsSelectable?: boolean
   /**
+   * Show resize controls on selected nodes and accept resize gestures.
+   * Defaults to false: React Flow shows resize controls only with a
+   * `NodeResizer`.
+   */
+  readonly nodesResizable?: boolean
+  /**
    * React Flow `isValidConnection`. When set it replaces the static
    * `allowedConnectionTargets` list. Registered by `createProgram`; it never
    * enters the schema-checked model.
@@ -632,6 +680,7 @@ export const defaultInteractionOptions: GraphInteractionOptions = {
   nodesDraggable: true,
   nodesConnectable: true,
   elementsSelectable: true,
+  nodesResizable: false,
 }
 
 export const selectSnapshot = (model: Model): FlowSnapshot => ({
@@ -1136,54 +1185,269 @@ const completeKeyboardReconnection = (
       )
 }
 
-const finishNodeDrag = (
+type NodeDragSession = Extract<
+  NonNullable<Model['pointerSession']>,
+  { kind: 'node-drag' }
+>
+
+/**
+ * The nodes a press on `nodeId` drags, as React Flow's `getDragItems`: a
+ * selected node drags every selected, draggable, visible node that has no
+ * selected ancestor; an unselected node drags alone. Each item records where
+ * the drag found it, so every frame is an offset from there.
+ */
+const nodeDragStart = (
   model: Model,
-  cleared: Model & { readonly pointerSession: null },
-  session: Extract<NonNullable<Model['pointerSession']>, { kind: 'node-drag' }>,
-  message: PointerReleased
-) => {
-  const node = model.document.nodes.find(
-    (candidate) => candidate.id === session.nodeId
-  )
-
-  if (node === undefined) {
-    return { model: cleared }
-  }
-
-  const dx = (message.clientX - session.startX) / model.viewport.zoom
-  const dy = (message.clientY - session.startY) / model.viewport.zoom
+  nodeId: NodeId
+): Pick<NodeDragSession, 'nodeIds' | 'origins'> => {
+  const interactivity = selectInteractivity(model)
 
   const graph = createFlowGraph(
     model.document,
     getFlowMeasuredNodes(model.document, model.measurements)
   )
 
-  const resolved = graph.nodes.get(node.id)
+  const pressed = graph.nodes.get(nodeId)?.node
 
-  if (
-    resolved === undefined ||
-    resolved.hidden ||
-    !isNodeDraggable(selectInteractivity(model), node)
-  ) {
+  const candidates = new Set(
+    pressed?.selected === true
+      ? model.document.nodes
+          .filter(
+            (node) =>
+              (node.selected === true || node.id === nodeId) &&
+              isNodeDraggable(interactivity, node) &&
+              graph.nodes.get(node.id)?.hidden === false
+          )
+          .map(({ id }) => id)
+      : [nodeId]
+  )
+
+  const hasDraggedAncestor = (id: NodeId): boolean => {
+    let parentId = graph.nodes.get(id)?.parentId
+
+    while (parentId !== undefined) {
+      if (candidates.has(parentId)) {
+        return true
+      }
+
+      parentId = graph.nodes.get(parentId)?.parentId
+    }
+
+    return false
+  }
+
+  const items = [...candidates].filter((id) => !hasDraggedAncestor(id))
+
+  const nodeIds = items.includes(nodeId)
+    ? [nodeId, ...items.filter((id) => id !== nodeId)]
+    : items
+
+  const origins = nodeIds.flatMap((id) => {
+    const resolved = graph.nodes.get(id)
+
+    if (resolved === undefined || resolved.hidden) {
+      return []
+    }
+
+    const parent =
+      resolved.parentId === undefined
+        ? undefined
+        : graph.nodes.get(resolved.parentId)
+
+    const position = nodeTopLeftToAnchor(
+      {
+        x: resolved.absolutePosition.x - (parent?.absolutePosition.x ?? 0),
+        y: resolved.absolutePosition.y - (parent?.absolutePosition.y ?? 0),
+      },
+      resolved.dimensions,
+      resolveNodeOrigin(resolved.node, model.document)
+    )
+
+    return [
+      {
+        nodeId: id,
+        x: position.x,
+        y: position.y,
+        absoluteX: resolved.absolutePosition.x,
+        absoluteY: resolved.absolutePosition.y,
+      },
+    ]
+  })
+
+  return { nodeIds, origins }
+}
+
+/**
+ * Each dragged node's position once the pointer is at `clientX`/`clientY`:
+ * its drag origin plus the pointer travel, so a frame costs O(dragged nodes)
+ * plus one id lookup per node.
+ */
+const nodeDragPositions = (
+  model: Model,
+  session: NodeDragSession,
+  clientX: number,
+  clientY: number
+): readonly {
+  readonly nodeId: NodeId
+  readonly position: XYPosition
+  readonly positionAbsolute: XYPosition
+}[] => {
+  const dx = (clientX - session.startX) / model.viewport.zoom
+  const dy = (clientY - session.startY) / model.viewport.zoom
+  const interactivity = selectInteractivity(model)
+  const nodes = new Map(model.document.nodes.map((node) => [node.id, node]))
+
+  return session.origins.flatMap(({ nodeId, x, y, absoluteX, absoluteY }) => {
+    const node = nodes.get(nodeId)
+
+    return node === undefined ||
+      node.hidden === true ||
+      !isNodeDraggable(interactivity, node)
+      ? []
+      : [
+          {
+            nodeId,
+            position: { x: x + dx, y: y + dy },
+            positionAbsolute: { x: absoluteX + dx, y: absoluteY + dy },
+          },
+        ]
+  })
+}
+
+/** The semantic change a node drag proposes with the pointer at a client point. */
+const nodeDragChange = (
+  model: Model,
+  session: NodeDragSession,
+  clientX: number,
+  clientY: number
+): CoreFlowChange | undefined => {
+  const positions = nodeDragPositions(model, session, clientX, clientY).map(
+    ({ nodeId, position }) => ({ nodeId, position })
+  )
+
+  const [first] = positions
+
+  if (first === undefined) {
+    return undefined
+  }
+
+  return positions.length === 1
+    ? { kind: 'node-position', nodeId: first.nodeId, position: first.position }
+    : { kind: 'node-positions', positions }
+}
+
+const applyNodeDragChange = (
+  document: FlowDocument,
+  change: CoreFlowChange
+): FlowDocument | undefined => {
+  if (change.kind === 'node-position') {
+    return applyNodePositionChange(document, change)
+  }
+
+  return change.kind === 'node-positions'
+    ? applyNodePositionsChange(document, change)
+    : undefined
+}
+
+/**
+ * The document with an active node drag's live positions applied: the drag
+ * preview. It moves the same nodes to the same positions the release commit
+ * does, in one pass over the nodes and without building a graph.
+ */
+export const selectLiveDocument = (model: Model): FlowDocument => {
+  const session = model.pointerSession
+
+  if (session?.kind !== 'node-drag') {
+    return model.document
+  }
+
+  const moved = new Map(
+    nodeDragPositions(model, session, session.currentX, session.currentY).map(
+      ({ nodeId, position }) => [nodeId, position]
+    )
+  )
+
+  if (moved.size === 0) {
+    return model.document
+  }
+
+  return {
+    ...model.document,
+    nodes: model.document.nodes.map((node) => {
+      const position = moved.get(node.id)
+
+      return position === undefined ? node : { ...node, position }
+    }),
+  }
+}
+
+/** The model as a reader sees it mid-drag: live positions, same everything else. */
+export const selectLiveModel = (model: Model): Model => {
+  const document = selectLiveDocument(model)
+
+  return document === model.document ? model : { ...model, document }
+}
+
+/**
+ * Live positions of every dragged node, with the pointer at `at` or at the
+ * session's latest point. Undefined when no node drag is active.
+ */
+export const selectNodeDragPositions = (
+  model: Model,
+  at?: { readonly clientX: number; readonly clientY: number }
+): readonly DraggedNodePosition[] | undefined => {
+  const session = model.pointerSession
+
+  return session?.kind === 'node-drag'
+    ? nodeDragPositions(
+        model,
+        session,
+        at?.clientX ?? session.currentX,
+        at?.clientY ?? session.currentY
+      )
+    : undefined
+}
+
+/** Whether the pointer moved after the press; d3-drag then swallows the click. */
+const nodeDragMoved = (
+  session: NodeDragSession,
+  message: PointerReleased
+): boolean =>
+  session.currentX !== session.startX ||
+  session.currentY !== session.startY ||
+  message.clientX !== session.startX ||
+  message.clientY !== session.startY
+
+const finishNodeDrag = (
+  model: Model,
+  cleared: Model & { readonly pointerSession: null },
+  session: NodeDragSession,
+  message: PointerReleased
+) => {
+  const change = nodeDragChange(
+    model,
+    session,
+    message.clientX,
+    message.clientY
+  )
+
+  const document =
+    change === undefined
+      ? undefined
+      : applyNodeDragChange(model.document, change)
+
+  if (change === undefined || document === undefined) {
     return { model: cleared }
   }
 
-  const absoluteOrigin = resolved.absolutePosition
-
-  const parent =
-    node.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
-
-  return setNodePosition(
-    cleared,
-    node.id,
-    nodeTopLeftToAnchor(
-      {
-        x: absoluteOrigin.x + dx - (parent?.absolutePosition.x ?? 0),
-        y: absoluteOrigin.y + dy - (parent?.absolutePosition.y ?? 0),
-      },
-      resolved.dimensions,
-      resolveNodeOrigin(node, model.document)
-    )
+  return report(
+    model,
+    {
+      ...cleared,
+      document:
+        model.documentMode === 'uncontrolled' ? document : model.document,
+    },
+    change
   )
 }
 
@@ -1357,7 +1621,12 @@ const finishPointer = (model: Model, message: PointerReleased) => {
   if (session.kind === 'node-drag') {
     return finishNodeDrag(
       model,
-      { ...model, pointerSession: null, pointerClickReceipt: null },
+      {
+        ...model,
+        pointerSession: null,
+        pointerClickReceipt: null,
+        nodeClickSuppressed: nodeDragMoved(session, message),
+      },
       session,
       message
     )
@@ -1653,13 +1922,133 @@ const activatePending = (
         currentY: flowY,
       }
 
+/** Add or remove one node from the selection, keeping the rest. */
+const toggleNodeSelection = (
+  model: Model,
+  nodeId: string
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const node = model.document.nodes.find((candidate) => candidate.id === nodeId)
+
+  const interactivity = selectInteractivity(model)
+
+  if (
+    node === undefined ||
+    !isNodeSelectable(interactivity, node) ||
+    node.hidden === true
+  ) {
+    return noChange(model)
+  }
+
+  const change = {
+    kind: 'selection-set' as const,
+    nodeIds: model.document.nodes
+      .filter(
+        (candidate) =>
+          isNodeSelectable(interactivity, candidate) &&
+          candidate.hidden !== true &&
+          (candidate.id === nodeId
+            ? candidate.selected !== true
+            : candidate.selected === true)
+      )
+      .map((candidate) => candidate.id),
+    edgeIds: model.document.edges
+      .filter((edge) => edge.selected === true)
+      .map((edge) => edge.id),
+  }
+
+  const document = applySelectionSetChange(model.document, change)
+
+  // Controlled documents publish the proposal and keep the accepted document.
+  return document === undefined
+    ? noChange(model)
+    : report(
+        model,
+        {
+          ...model,
+          document:
+            model.documentMode === 'uncontrolled' ? document : model.document,
+        },
+        change
+      )
+}
+
+type ObserveMouseMessage = Extract<
+  GraphMessageData,
+  { readonly _tag: 'ObserveMouse' }
+>
+
+/**
+ * React Flow `handleNodeClick`: a click selects only the node, or toggles it
+ * while Meta or Control is held. The click that ends a node drag is consumed.
+ */
+const selectClickedNode = (
+  model: Model,
+  observed: ObserveMouseMessage
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  if (observed.name !== 'onNodeClick') {
+    return noChange(model)
+  }
+
+  if (model.nodeClickSuppressed) {
+    return { model: { ...model, nodeClickSuppressed: false } }
+  }
+
+  const interactivity = selectInteractivity(model)
+  const node = model.document.nodes.find(({ id }) => id === observed.nodeId)
+
+  if (
+    observed.select !== true ||
+    node === undefined ||
+    node.hidden === true ||
+    !isNodeSelectable(interactivity, node)
+  ) {
+    return noChange(model)
+  }
+
+  const multi =
+    observed.pointer?.metaKey === true || observed.pointer?.ctrlKey === true
+
+  if (multi) {
+    return toggleNodeSelection(model, node.id)
+  }
+
+  const change = {
+    kind: 'selection-set' as const,
+    nodeIds: [node.id],
+    edgeIds: [],
+  }
+
+  const alreadyOnly =
+    node.selected === true &&
+    model.document.nodes.every(
+      (candidate) => candidate.id === node.id || candidate.selected !== true
+    ) &&
+    model.document.edges.every((edge) => edge.selected !== true)
+
+  const document = alreadyOnly
+    ? undefined
+    : applySelectionSetChange(model.document, change)
+
+  return document === undefined
+    ? noChange(model)
+    : report(
+        model,
+        {
+          ...model,
+          document:
+            model.documentMode === 'uncontrolled' ? document : model.document,
+        },
+        change
+      )
+}
+
 const updateState = (
   model: Model,
   message: GraphMessageData
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> =>
   Message.match(message, {
     IgnoreInput: () => noChange(model),
-    ObserveMouse: () => noChange(model),
+    ObserveMouse: (observed) => selectClickedNode(model, observed),
     ViewportWheel: ({ deltaX, deltaY, clientX, clientY }) => {
       if (model.viewportMode === 'controlled') {
         return noChange(model)
@@ -1819,6 +2208,22 @@ const updateState = (
         return noChange(model)
       }
 
+      if (model.nodeClickSuppressed) {
+        return updateState(
+          { ...model, nodeClickSuppressed: false },
+          Message.PointerDown({
+            pointerId,
+            clientX,
+            clientY,
+            nodeId,
+            handleId,
+            direction: null,
+            edgeId,
+            endpoint,
+          })
+        )
+      }
+
       const origin = {
         pointerId,
         startX: clientX,
@@ -1871,7 +2276,12 @@ const updateState = (
                   pointerClickReceipt: null,
                   pointerSession: {
                     ...(model.nodeDragThreshold === 0
-                      ? { kind: 'node-drag' as const }
+                      ? {
+                          kind: 'node-drag' as const,
+                          ...nodeDragStart(model, node.id),
+                          currentX: clientX,
+                          currentY: clientY,
+                        }
                       : {
                           kind: 'node-pending' as const,
                           threshold: model.nodeDragThreshold,
@@ -2017,6 +2427,25 @@ const updateState = (
       const pending = model.pointerSession
 
       if (
+        pending?.kind === 'node-drag' &&
+        pending.pointerId === moved.pointerId
+      ) {
+        return pending.currentX === moved.clientX &&
+          pending.currentY === moved.clientY
+          ? noChange(model)
+          : {
+              model: {
+                ...model,
+                pointerSession: {
+                  ...pending,
+                  currentX: moved.clientX,
+                  currentY: moved.clientY,
+                },
+              },
+            }
+      }
+
+      if (
         pending?.kind !== 'node-pending' ||
         pending.pointerId !== moved.pointerId ||
         !nodeDragActivated(
@@ -2037,8 +2466,11 @@ const updateState = (
             kind: 'node-drag' as const,
             pointerId: pending.pointerId,
             nodeId: pending.nodeId,
+            ...nodeDragStart(model, pending.nodeId),
             startX: pending.startX,
             startY: pending.startY,
+            currentX: moved.clientX,
+            currentY: moved.clientY,
           },
         },
       }
@@ -2238,7 +2670,7 @@ const updateState = (
         }
       }
 
-      if (direction === null) {
+      if (direction === null || !model.nodesResizable) {
         return noChange(model)
       }
 
@@ -2462,7 +2894,19 @@ const updateState = (
         }
 
         return {
-          model: { ...model, pointerSession: null, pointerClickReceipt: null },
+          model: {
+            ...model,
+            pointerSession: null,
+            pointerClickReceipt: null,
+            // A cancelled drag moved the pointer; its trailing click is no select.
+            nodeClickSuppressed:
+              model.nodeClickSuppressed ||
+              (model.pointerSession.kind === 'node-drag' &&
+                (model.pointerSession.currentX !==
+                  model.pointerSession.startX ||
+                  model.pointerSession.currentY !==
+                    model.pointerSession.startY)),
+          },
           outMessage: OutMessage.GestureCancelled({
             kind: model.pointerSession.kind,
             reason: 'pointer-cancel',
@@ -2493,6 +2937,11 @@ const updateState = (
         keyboardConnectionSession: null,
         keyboardResizeSession: null,
         pendingResizeAcceptance: null,
+        nodeClickSuppressed:
+          model.nodeClickSuppressed ||
+          (model.pointerSession?.kind === 'node-drag' &&
+            (model.pointerSession.currentX !== model.pointerSession.startX ||
+              model.pointerSession.currentY !== model.pointerSession.startY)),
       }
 
       if (
@@ -2569,44 +3018,7 @@ const updateState = (
         ? noChange(model)
         : report(model, { ...model, document }, change)
     },
-    ToggleNodeSelection: ({ nodeId }) => {
-      const node = model.document.nodes.find(
-        (candidate) => candidate.id === nodeId
-      )
-
-      const interactivity = selectInteractivity(model)
-
-      if (
-        node === undefined ||
-        !isNodeSelectable(interactivity, node) ||
-        node.hidden === true
-      ) {
-        return noChange(model)
-      }
-
-      const change = {
-        kind: 'selection-set' as const,
-        nodeIds: model.document.nodes
-          .filter(
-            (candidate) =>
-              isNodeSelectable(interactivity, candidate) &&
-              candidate.hidden !== true &&
-              (candidate.id === nodeId
-                ? candidate.selected !== true
-                : candidate.selected === true)
-          )
-          .map((candidate) => candidate.id),
-        edgeIds: model.document.edges
-          .filter((edge) => edge.selected === true)
-          .map((edge) => edge.id),
-      }
-
-      const document = applySelectionSetChange(model.document, change)
-
-      return document === undefined
-        ? noChange(model)
-        : report(model, { ...model, document }, change)
-    },
+    ToggleNodeSelection: ({ nodeId }) => toggleNodeSelection(model, nodeId),
     // oxlint-disable-next-line complexity
     KeyboardSelectionKey: ({ key, shift, nodeId }) => {
       if (!model.keyboardActivation) {
@@ -2753,7 +3165,7 @@ const updateState = (
           )
     },
     ResizeByKeyboard: ({ nodeId, direction, delta }) => {
-      if (!model.keyboardActivation) {
+      if (!model.keyboardActivation || !model.nodesResizable) {
         return noChange(model)
       }
 
@@ -3103,11 +3515,19 @@ export type FoldkitEdgeLabelRenderer = (
   content: FoldHtml.Html | readonly FoldHtml.Html[]
 ) => void
 
+/**
+ * Sets the path the edge's built-in hit target follows, like the interaction
+ * path React Flow's `BaseEdge` draws along a custom path. Unset, the hit
+ * target follows `geometry.path`.
+ */
+export type FoldkitEdgeInteraction = (path: string) => void
+
 export type FoldkitEdgeRenderer = (
   edge: FlowEdge,
   geometry: FoldkitEdgeGeometry,
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
-  edgeLabelRenderer: FoldkitEdgeLabelRenderer
+  edgeLabelRenderer: FoldkitEdgeLabelRenderer,
+  edgeInteraction: FoldkitEdgeInteraction
 ) => FoldHtml.Html
 
 /** `line` carries ConnectionLineComponentProps once the origin handle resolves. */
@@ -3679,24 +4099,7 @@ const edgeVisuals = (
       : [markerDefinition(h, markerEndId, edge.markerEnd ?? 'arrow', stroke)]),
   ]
 
-  const hitTarget = h.path([
-    h.Class('flow-foldkit-edge-hit-target'),
-    h.D(geometry.path),
-    h.Fill('none'),
-    h.Stroke('transparent'),
-    h.StrokeWidth(String(edge.interactionWidth ?? 16)),
-    h.PointerEvents('stroke'),
-    h.Attribute('role', edge.selectable === false ? 'img' : 'button'),
-    h.Attribute('tabindex', edge.focusable === false ? '-1' : '0'),
-    h.AriaLabel(ariaLabel),
-    // Clicks and mouse movement are observed by the pointer resource, which
-    // reads client positions and modifier keys from the native event.
-    h.OnKeyDownPreventDefault((key) =>
-      key === 'Enter' || key === ' '
-        ? Option.some(Message.SelectEdge({ edgeId: edge.id }))
-        : Option.none()
-    ),
-  ])
+  let interactionPath = geometry.path
 
   const renderedEdge =
     renderer === undefined
@@ -3713,7 +4116,28 @@ const edgeVisuals = (
             ? []
             : [h.MarkerEnd(`url(#${markerEndId})`)]),
         ])
-      : renderer(edge, geometry, h, edgeLabelRenderer)
+      : renderer(edge, geometry, h, edgeLabelRenderer, (path) => {
+          interactionPath = path
+        })
+
+  const hitTarget = h.path([
+    h.Class('flow-foldkit-edge-hit-target'),
+    h.D(interactionPath),
+    h.Fill('none'),
+    h.Stroke('transparent'),
+    h.StrokeWidth(String(edge.interactionWidth ?? 16)),
+    h.PointerEvents('stroke'),
+    h.Attribute('role', edge.selectable === false ? 'img' : 'button'),
+    h.Attribute('tabindex', edge.focusable === false ? '-1' : '0'),
+    h.AriaLabel(ariaLabel),
+    // Clicks and mouse movement are observed by the pointer resource, which
+    // reads client positions and modifier keys from the native event.
+    h.OnKeyDownPreventDefault((key) =>
+      key === 'Enter' || key === ' '
+        ? Option.some(Message.SelectEdge({ edgeId: edge.id }))
+        : Option.none()
+    ),
+  ])
 
   return { markerDefinitions, content: [hitTarget, renderedEdge] }
 }
@@ -4611,6 +5035,7 @@ export const createPointerResource = (initial: Model) => {
             nodeId: record.nodeId,
             edgeId: record.edgeId,
             pointer: record.pointer,
+            select: record.select,
           })
 
     // Node clicks follow the pointer release already queued here.
@@ -4995,7 +5420,7 @@ const nodeRendererProps = (
     positionAbsolute: position,
     dragging:
       model.pointerSession?.kind === 'node-drag' &&
-      model.pointerSession.nodeId === node.id,
+      model.pointerSession.nodeIds.includes(node.id),
     size,
   })
 
@@ -5096,11 +5521,12 @@ const graphView = (
             resizeSession.input
           )
 
+    const liveDocument = selectLiveDocument(model)
+
     const renderDocument =
       resizeChange === undefined
-        ? model.document
-        : (applyNodeBoundsChange(model.document, resizeChange) ??
-          model.document)
+        ? liveDocument
+        : (applyNodeBoundsChange(liveDocument, resizeChange) ?? liveDocument)
 
     const renderMeasurements = new Map(measurements)
 
@@ -5174,7 +5600,7 @@ const graphView = (
         )
 
         const resizeHandles =
-          node.selected === true
+          model.nodesResizable && node.selected === true
             ? (
                 [
                   'top',
@@ -5276,7 +5702,12 @@ const graphView = (
         return h.keyed('div')(
           node.id,
           [
-            h.Class('flow-foldkit-node'),
+            h.Class(
+              model.pointerSession?.kind === 'node-drag' &&
+                model.pointerSession.nodeIds.includes(node.id)
+                ? 'flow-foldkit-node dragging'
+                : 'flow-foldkit-node'
+            ),
             h.DataAttribute('testid', 'flow-node'),
             h.DataAttribute('node-id', node.id),
             h.Attribute('tabindex', node.focusable === false ? '-1' : '0'),
@@ -5796,6 +6227,7 @@ export const initialModel = (
   zoomOnDoubleClick: interactionOptions.zoomOnDoubleClick ?? false,
   keyboardActivation: interactionOptions.keyboardActivation ?? true,
   connectOnClick: interactionOptions.connectOnClick ?? true,
+  nodesResizable: interactionOptions.nodesResizable ?? false,
   defaultEdgeOptions: Effect.runSync(
     decodeFlowDefaultEdgeOptions(interactionOptions.defaultEdgeOptions ?? {})
   ),
@@ -5806,6 +6238,7 @@ export const initialModel = (
   keyboardResizeSession: null,
   pendingResizeAcceptance: null,
   selectionMode,
+  nodeClickSuppressed: false,
 })
 
 export const subscriptions = PointerEvents

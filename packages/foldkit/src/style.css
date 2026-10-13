@@ -228,6 +228,8 @@
 }
 .flow-foldkit-handle {
   position: absolute;
+  /* Above resize controls, so handles stay connectable on selected nodes. */
+  z-index: 3;
   top: 50%;
   width: 11px;
   height: 11px;

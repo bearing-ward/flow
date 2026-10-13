@@ -43,6 +43,8 @@ export type ObservedMouse =
       readonly nodeId: string | null
       readonly edgeId: string | null
       readonly pointer: MouseDetail
+      /** A node click outside Foldkit's own controls selects the node. */
+      readonly select: boolean
     }
   | {
       readonly kind: 'select-edge'
@@ -68,6 +70,10 @@ const nodeElement = (element: Element | null) =>
 
 const edgeHitElement = (element: Element | null) =>
   element?.closest('.flow-foldkit-edge-hit-target') ?? null
+
+/** Foldkit's own node controls, whose clicks do not select the node. */
+const nodeControlSelector =
+  '.flow-foldkit-select-node, [data-handle-id], [data-resize-direction], [data-edge-endpoint]'
 
 const edgeIdOf = (element: Element | null): string | null =>
   element?.closest<SVGElement>('[data-edge-id]')?.dataset.edgeId ?? null
@@ -98,9 +104,17 @@ export const observeCanvasMouse = (
     name: ObservedMouseName,
     event: MouseEvent,
     nodeId: string | null = null,
-    edgeId: string | null = null
+    edgeId: string | null = null,
+    select = false
   ) =>
-    emit({ kind: 'observe', name, nodeId, edgeId, pointer: mouseDetail(event) })
+    emit({
+      kind: 'observe',
+      name,
+      nodeId,
+      edgeId,
+      pointer: mouseDetail(event),
+      select,
+    })
 
   const click = (event: MouseEvent): void => {
     const target = scoped(event.target)
@@ -112,7 +126,13 @@ export const observeCanvasMouse = (
     const node = nodeElement(target.element)
 
     if (node !== null) {
-      observe('onNodeClick', event, node.dataset.nodeId ?? null)
+      observe(
+        'onNodeClick',
+        event,
+        node.dataset.nodeId ?? null,
+        null,
+        target.element.closest(nodeControlSelector) === null
+      )
 
       return
     }

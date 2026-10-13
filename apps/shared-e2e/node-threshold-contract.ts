@@ -710,7 +710,7 @@ export const nodeThresholdContract = (host: 'vanilla' | 'vue' | 'foldkit') => {
 
         return bounds?.x
       })
-      .toBe(before.x + (host === 'foldkit' ? 0 : 6))
+      .toBe(before.x + 6)
     expect(await positionCount(page)).toBe(0)
     await page.mouse.up()
     await expect.poll(() => positionCount(page)).toBe(1)

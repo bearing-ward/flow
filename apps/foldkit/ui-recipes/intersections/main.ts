@@ -25,10 +25,9 @@ import './intersections.css'
 
 /*
  * Intersection recipes: Intersections, Node Collisions, Edge Intersection
- * and Proximity Connect. Foldkit's `onNodeDrag` event carries the pointer's
- * flow position, not the node's, so the page derives the live node position
- * from the pointer travel since press. Sizes come from the snapshot port and
- * every hit test from the core helpers.
+ * and Proximity Connect. Foldkit's `onNodeDrag` event carries the dragged
+ * node's live position, which overrides its committed one while it moves.
+ * Sizes come from the snapshot port and every hit test from the core helpers.
  */
 
 const svgNamespace = 'http://www.w3.org/2000/svg'
@@ -163,11 +162,8 @@ frame.append(overlay)
 /** Accepted document and measured internal nodes, refreshed after each change. */
 let latest: MeasuredState | undefined
 
-/** Pointer press in flow coordinates, the start of a possible node drag. */
-let pressed: XYPosition | undefined
-
-/** The node being dragged and the pointer travel since press. */
-let drag: { readonly id: string; readonly delta: XYPosition } | undefined
+/** The node being dragged and its live parent-relative position. */
+let drag: { readonly id: string; readonly position: XYPosition } | undefined
 
 const ids = (items: readonly { readonly id: string }[]): string =>
   items
@@ -175,30 +171,13 @@ const ids = (items: readonly { readonly id: string }[]): string =>
     .toSorted()
     .join(',')
 
-/**
- * Measurements and the live drag position as a parent-relative anchor: the
- * committed position plus the pointer travel since press.
- */
-const geometryOptions = (state: MeasuredState) => {
-  const flowNode = state.document.nodes.find(({ id }) => id === drag?.id)
-
-  return {
-    measurements: flowMeasurementsFromInternalNodes(state.internals.values()),
-    positionOverrides: new Map(
-      drag === undefined || flowNode === undefined
-        ? []
-        : [
-            [
-              drag.id,
-              {
-                x: flowNode.position.x + drag.delta.x,
-                y: flowNode.position.y + drag.delta.y,
-              },
-            ],
-          ]
-    ),
-  }
-}
+/** Measurements and the live drag position from `onNodeDrag`. */
+const geometryOptions = (state: MeasuredState) => ({
+  measurements: flowMeasurementsFromInternalNodes(state.internals.values()),
+  positionOverrides: new Map(
+    drag === undefined ? [] : [[drag.id, drag.position]]
+  ),
+})
 
 /** Absolute bounds of every visible node, moved by the live drag. */
 const candidates = (): readonly FlowIntersectionCandidate[] =>
@@ -430,17 +409,8 @@ const connectDropped = async (nodeId: string) => {
   ])
 }
 
-// Remember where a press started; a node drag moves the node by the same amount.
-frame.addEventListener(
-  'pointerdown',
-  (event) => {
-    pressed = host.screenToFlow({ x: event.clientX, y: event.clientY })
-  },
-  { capture: true }
-)
-
 host.runtime.ports.interactionEvents.subscribe((events) => {
-  for (const { name, nodeId, x, y } of events) {
+  for (const { name, nodeId, position } of events) {
     if (name === 'onNodeDragStop') {
       drag = undefined
       report()
@@ -448,11 +418,9 @@ host.runtime.ports.interactionEvents.subscribe((events) => {
       name === 'onNodeDrag' &&
       nodeId !== undefined &&
       nodeId !== null &&
-      x !== undefined &&
-      y !== undefined &&
-      pressed !== undefined
+      position !== undefined
     ) {
-      drag = { id: nodeId, delta: { x: x - pressed.x, y: y - pressed.y } }
+      drag = { id: nodeId, position }
       report()
     }
   }

@@ -99,6 +99,7 @@ const edge = (source: string, target: string) => ({
 
 const host = mountRecipeHost({
   page: 'feature-overview-page',
+  interaction: { nodesResizable: true },
   document: {
     nodes: [
       node('input', 'Input', 260, 0),
@@ -283,22 +284,4 @@ host.runtime.ports.measurementResults.subscribe((result) => {
     fitted = true
     void fitOnce()
   }
-})
-
-// Foldkit reports node clicks; selecting the clicked node shows its toolbar
-// and Foldkit's resize controls.
-host.runtime.ports.interactionEvents.subscribe((events) => {
-  const clicked = events.find(({ name }) => name === 'onNodeClick')?.nodeId
-
-  if (clicked === undefined || clicked === null) {
-    return
-  }
-
-  void host.edit(
-    host.document().nodes.map(({ id }) => ({
-      kind: 'update-node' as const,
-      nodeId: id,
-      patch: { selected: id === clicked },
-    }))
-  )
 })

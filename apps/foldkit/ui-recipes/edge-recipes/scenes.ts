@@ -154,8 +154,11 @@ const animatedSvgEdge: FoldkitEdgeRenderer = (edge, { props }, h) => {
 
 const floatingEdge =
   (params: typeof getFloatingEdgeParams): FoldkitEdgeRenderer =>
-  (_edge, { props }, h) => {
+  (_edge, { props }, h, _labels, edgeInteraction) => {
     const [path] = getBezierPath(params(props.sourceNode, props.targetNode))
+
+    // The hit area follows the floating path, as React's BaseEdge does.
+    edgeInteraction(path)
 
     return flowBaseEdge(h, {
       path,

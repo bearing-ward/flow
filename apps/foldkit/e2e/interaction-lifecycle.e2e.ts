@@ -1537,8 +1537,10 @@ test('Foldkit pointer cancellation discards a drag and permits a fresh drag', as
   await page.mouse.up()
 
   expect(await adapter.changeKinds()).toEqual([])
-  const cancelledSnapshot = await adapter.snapshot()
-  expect(cancelledSnapshot.positions).toEqual([{ id: 'move', x: 80, y: 100 }])
+  // The live drag preview reverts on the next render after the cancel.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toEqual([{ id: 'move', x: 80, y: 100 }])
 
   await adapter.perform({ kind: 'drag-node', nodeId: 'move', dx: 32, dy: 20 })
   await expect.poll(() => adapter.changeKinds()).toEqual(['node-position'])
@@ -1552,10 +1554,10 @@ test('Foldkit pointer cancellation discards a drag and permits a fresh drag', as
     nodeId: 'move',
     position: { x: 112, y: 120 },
   })
-  const freshGestureSnapshot = await adapter.snapshot()
-  expect(freshGestureSnapshot.positions).toEqual([
-    { id: 'move', x: 80, y: 100 },
-  ])
+  // The live preview reverts to the accepted position on the next render.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toEqual([{ id: 'move', x: 80, y: 100 }])
 
   const cleanup = await adapter.destroy()
   expect(cleanup.mountedElements).toBe(0)
@@ -1795,8 +1797,11 @@ test('Foldkit ignores cancellation from a different pointer and completes the ac
     nodeId: 'move',
     position: { x: 112, y: 120 },
   })
-  const completedSnapshot = await adapter.snapshot()
-  expect(completedSnapshot.positions).toEqual([{ id: 'move', x: 80, y: 100 }])
+  // The controlled proposal leaves the accepted position; the live preview
+  // reverts to it on the next render.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toEqual([{ id: 'move', x: 80, y: 100 }])
 
   const cleanup = await adapter.destroy()
   expect(cleanup.mountedElements).toBe(0)
@@ -1919,6 +1924,24 @@ test('Foldkit supports keyboard node selection and resize through focused contro
   expect(selection).toMatchObject({
     kind: 'selection-set',
     nodeIds: ['move', 'already-selected'],
+  })
+  // The controlled owner accepts the proposed selection.
+  await adapter.perform({
+    kind: 'update-document',
+    document: {
+      ...movementFixture.document,
+      nodes: [
+        ...movementFixture.document.nodes.map((node) =>
+          node.id === 'move' ? { ...node, selected: true } : node
+        ),
+        {
+          id: 'already-selected',
+          label: 'Already selected',
+          position: { x: 360, y: 300 },
+          selected: true,
+        },
+      ],
+    },
   })
   await expect(
     page.getByRole('button', { name: 'Resize Move from right' })

@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Merge of Plans 111 and 112 host hardening",
+  "activeWork": "Host hardening Plans 111-113 merged",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
@@ -35,8 +35,23 @@
       "whiteboard-recipes.e2e.ts"
     ],
     "foldkit": [
+      "computing-flows-recipes.e2e.ts",
+      "connection-threshold.e2e.ts",
       "edge-geometry-recipes.e2e.ts",
+      "edge-recipes.e2e.ts",
+      "events-and-changes.e2e.ts",
+      "feature-overview-recipes.e2e.ts",
+      "handle-connections.e2e.ts",
+      "interaction-lifecycle.e2e.ts",
       "intersection-recipes.e2e.ts",
+      "layout-recipes.e2e.ts",
+      "live-drag.e2e.ts",
+      "node-threshold.e2e.ts",
+      "public-state.e2e.ts",
+      "renderer-props.e2e.ts",
+      "shared-conformance.e2e.ts",
+      "subflows-recipes.e2e.ts",
+      "ui-controls.e2e.ts",
       "whiteboard-recipes.e2e.ts"
     ]
   }

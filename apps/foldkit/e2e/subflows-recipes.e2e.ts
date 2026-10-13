@@ -78,9 +78,11 @@ test('Selection Grouping wraps the selected nodes in a new parent', async ({
   const beforeA = await nodeBox(page, 'A')
   const beforeB = await nodeBox(page, 'B')
 
-  // Foldkit's additive selection control on each node.
-  await page.getByRole('button', { name: 'Toggle selection for A' }).click()
-  await page.getByRole('button', { name: 'Toggle selection for B' }).click()
+  // Click selects A; Meta-click adds B, as React Flow's multi-selection key.
+  await page.mouse.click(beforeA.x + 20, beforeA.y + 20)
+  await page.keyboard.down('Meta')
+  await page.mouse.click(beforeB.x + 20, beforeB.y + 20)
+  await page.keyboard.up('Meta')
   await page.getByTestId('group-selection').click()
 
   await expect(status).toHaveAttribute(

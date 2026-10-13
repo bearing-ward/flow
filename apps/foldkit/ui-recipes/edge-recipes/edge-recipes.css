@@ -97,9 +97,3 @@ body {
   background: #cbd5e1;
   cursor: grab;
 }
-
-/* Foldkit shows resize controls on selected nodes; this recipe selects nodes to
-   connect them, so the controls would cover the source handles. */
-[data-scene='multi-connection-line'] .flow-foldkit-resize {
-  display: none;
-}
