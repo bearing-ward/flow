@@ -69,6 +69,12 @@ import {
   createConnectionPreviewSnapshot,
   selectFlowSelection,
   flowSelectionEqual,
+  flowConnectionLineProps,
+  flowEdgeRendererProps,
+  flowNodeBounds,
+  flowNodeRendererProps,
+  sameFlowEdgeRendererProps,
+  sameFlowNodeRendererProps,
 } from '@flow/core'
 import type {
   FlowChange,
@@ -83,6 +89,8 @@ import type {
   FlowEditResult,
   FlowEditTransactionInput,
   FlowEdgePath,
+  FlowConnectionLineType,
+  FlowNodeRendererProps,
   FlowHandle,
   FlowMeasurementState,
   NodeMeasurementGeneration,
@@ -126,6 +134,12 @@ import type {
   VNode,
 } from 'vue'
 
+import {
+  createEdgeLabelRegistry,
+  createRendererPropsCache,
+  declaredRendererProps,
+  FlowEdgeLabelRendererContextKey,
+} from './edge-label-renderer.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyPressOptions } from './key-press-observer.ts'
 import { FlowMiniMapContextKey } from './minimap.ts'
@@ -409,20 +423,18 @@ const unwrapReactive = <Value>(value: Value): Value => {
   return value
 }
 
-type NodeVisual = Component<{ readonly node: FlowNode }>
+/**
+ * Renderer components may declare any subset of the renderer props (see
+ * FlowNodeProps, FlowEdgeProps and FlowConnectionLineComponentProps), so the
+ * registries accept any component.
+ */
+type NodeVisual = Component
 
 type EdgeVisual = Component<{ readonly edge: FlowEdge }>
 
-type ConnectionPreviewVisual = Component<{
-  readonly preview: ConnectionPreviewState
-}>
+type ConnectionPreviewVisual = Component
 
-type EdgeTypeVisual = Component<{
-  readonly edge: FlowEdge
-  readonly path: string
-  readonly markerStart: string | undefined
-  readonly markerEnd: string | undefined
-}>
+type EdgeTypeVisual = Component
 
 const edgePath = (
   path: FlowEdgePath | undefined,
@@ -529,11 +541,24 @@ const NodeWithIdContext = defineComponent({
     node: { type: Object as PropType<FlowNode>, required: true },
     // SAFETY: NodeWithIdContext receives only the resolved host renderer component.
     visual: { type: Object as PropType<NodeVisual>, required: true },
+    // SAFETY: The canvas computes these props from the same accepted node snapshot.
+    rendererProps: {
+      type: Object as PropType<FlowNodeRendererProps>,
+      required: true,
+    },
   },
   setup(scopeProps, { slots: scopedSlots }) {
     provide(FlowNodeIdKey, scopeProps.node.id)
 
-    return () => h(scopeProps.visual, { node: scopeProps.node }, scopedSlots)
+    return () =>
+      h(
+        scopeProps.visual,
+        {
+          ...declaredRendererProps(scopeProps.visual, scopeProps.rendererProps),
+          node: scopeProps.node,
+        },
+        scopedSlots
+      )
   },
 })
 
@@ -618,6 +643,11 @@ export const FlowCanvas = defineComponent({
     },
     connectionPreview: {
       type: [Object, Function] as PropType<ConnectionPreviewVisual>,
+      default: undefined,
+    },
+    /** Built-in connection line path; the default keeps the straight preview. */
+    connectionLineType: {
+      type: String as PropType<FlowConnectionLineType>,
       default: undefined,
     },
     connectionMode: {
@@ -918,6 +948,7 @@ export const FlowCanvas = defineComponent({
     const keyPressDisposers = new Set<() => void>()
     const canvas = shallowRef<HTMLElement>()
     const viewportPortalTarget = shallowRef<HTMLElement | null>(null)
+    const edgeLabelRegistry = createEdgeLabelRegistry()
     const toolbarOverlayTarget = shallowRef<HTMLElement | null>(null)
     let acceptedSnapshot = stateSnapshot.value
     let documentRevision = 0
@@ -1104,14 +1135,15 @@ export const FlowCanvas = defineComponent({
     let measurementState: FlowMeasurementState = emptyFlowMeasurementState()
     const measurementRevision = shallowRef(0)
 
-    const graph = computed(() => {
+    const measuredNodes = computed(() => {
       void measurementRevision.value
 
-      return createFlowGraph(
-        activeDocument.value,
-        getFlowMeasuredNodes(activeDocument.value, measurementState)
-      )
+      return getFlowMeasuredNodes(activeDocument.value, measurementState)
     })
+
+    const graph = computed(() =>
+      createFlowGraph(activeDocument.value, measuredNodes.value)
+    )
 
     const connectionMode = computed(() =>
       S.decodeUnknownSync(ConnectionModeSchema)(props.connectionMode)
@@ -4303,6 +4335,7 @@ export const FlowCanvas = defineComponent({
     }
 
     provide(FlowEditorKey, editor)
+    provide(FlowEdgeLabelRendererContextKey, edgeLabelRegistry.context)
     provide(FlowViewportPortalContextKey, {
       target: viewportPortalTarget,
       noPanClassName: computed(() => props.noPanClassName),
@@ -6948,6 +6981,97 @@ export const FlowCanvas = defineComponent({
       )
     }
 
+    // Unchanged renderer props keep their identity, so pan and zoom renders
+    // do not re-render every custom node and edge.
+    const nodeRendererPropsCache = createRendererPropsCache(
+      sameFlowNodeRendererProps
+    )
+
+    const edgeRendererPropsCache = createRendererPropsCache(
+      sameFlowEdgeRendererProps
+    )
+
+    watch(activeDocument, (next) => {
+      nodeRendererPropsCache.retain(new Set(next.nodes.map(({ id }) => id)))
+      edgeRendererPropsCache.retain(new Set(next.edges.map(({ id }) => id)))
+    })
+
+    const nodeRendererProps = (
+      node: FlowNode,
+      position: XYPosition,
+      resizePreview: KeyboardResizeSession | undefined
+    ): FlowNodeRendererProps =>
+      nodeRendererPropsCache.keep(
+        node.id,
+        flowNodeRendererProps(node, {
+          positionAbsolute: position,
+          // Vue drags one node at a time, so the dragged node is the session node.
+          dragging:
+            session.value?.kind === 'node' && session.value.node.id === node.id,
+          size:
+            resizePreview?.change.size ??
+            measuredNodes.value.get(node.id) ??
+            node.size,
+        })
+      )
+
+    /** Preview state is only computed when a renderer or line type consumes it. */
+    const connectionLinePreview = (
+      owner: ConnectionPreviewOwner | undefined
+    ): ConnectionPreviewState | null =>
+      owner === undefined ||
+      (props.connectionPreview === undefined &&
+        props.connectionLineType === undefined)
+        ? null
+        : connectionPreviewState(owner)
+
+    const renderConnectionLine = (
+      connection: ConnectionData,
+      renderPreview: ConnectionPreviewState | null
+    ): VNode[] => {
+      const lineProps =
+        renderPreview === null
+          ? undefined
+          : flowConnectionLineProps({
+              graph: graph.value,
+              preview: renderPreview,
+              connectionLineType: props.connectionLineType ?? 'straight',
+              origin: {
+                nodeId: connection.sourceNode.id,
+                handleId: connection.sourceHandle,
+              },
+            })
+
+      if (props.connectionPreview === undefined) {
+        const typedPath =
+          props.connectionLineType === undefined ? undefined : lineProps?.path
+
+        return [
+          h('path', {
+            class: 'flow-vue-connection-preview',
+            'data-testid': 'flow-connection-preview',
+            'data-connection-line-type': props.connectionLineType,
+            d:
+              typedPath ??
+              straightEdgePath(connection.start, connection.pointer),
+          }),
+        ]
+      }
+
+      if (renderPreview === null) {
+        return []
+      }
+
+      const declared =
+        lineProps === undefined
+          ? undefined
+          : declaredRendererProps(props.connectionPreview, lineProps)
+
+      return [
+        h(props.connectionPreview, { ...declared, preview: renderPreview }),
+      ]
+    }
+
     const renderNode = (node: FlowNode): VNode | null => {
       if (graph.value.nodes.get(node.id)?.hidden === true || !visible(node)) {
         return null
@@ -7216,7 +7340,16 @@ export const FlowCanvas = defineComponent({
         [
           h(
             NodeWithIdContext,
-            { node, visual: Node, key: `visual-${node.id}` },
+            {
+              node,
+              visual: Node,
+              key: `visual-${node.id}`,
+              rendererProps: nodeRendererProps(
+                node,
+                position,
+                activeKeyboardResize
+              ),
+            },
             nodeSlots
           ),
           ...handleChildren,
@@ -7327,6 +7460,8 @@ export const FlowCanvas = defineComponent({
         targetNode,
         sourceAnchor,
         targetAnchor,
+        sourceHandle: resolved.sourceHandle,
+        targetHandle: resolved.targetHandle,
       }
     }
 
@@ -7435,9 +7570,37 @@ export const FlowCanvas = defineComponent({
 
       const { markerStart, markerEnd } = edgeMarkers(edge)
 
-      if (path !== undefined && Edge !== undefined) {
+      if (geometry !== undefined && Edge !== undefined) {
+        const rendererProps = edgeRendererPropsCache.keep(
+          edge.id,
+          flowEdgeRendererProps({
+            edge,
+            source: geometry.sourceAnchor,
+            target: geometry.targetAnchor,
+            sourcePosition: geometry.sourceHandle.side,
+            targetPosition: geometry.targetHandle.side,
+            sourceHandleId: geometry.sourceHandle.id,
+            targetHandleId: geometry.targetHandle.id,
+            sourceNode: flowNodeBounds(geometry.sourceNode),
+            targetNode: flowNodeBounds(geometry.targetNode),
+            markerStart,
+            markerEnd,
+            defaultInteractionWidth: 20,
+          })
+        )
+
         edgeChildren = [
-          h(Edge, { edge, path, markerStart, markerEnd }, edgeSlots),
+          h(
+            Edge,
+            {
+              ...declaredRendererProps(Edge, rendererProps),
+              edge,
+              path: geometry.path,
+              markerStart,
+              markerEnd,
+            },
+            edgeSlots
+          ),
         ]
       } else if (LegacyEdge !== undefined) {
         edgeChildren = [h(LegacyEdge, { edge }, edgeSlots)]
@@ -8183,10 +8346,7 @@ export const FlowCanvas = defineComponent({
     return () => {
       const renderOwner = currentConnectionPreviewOwner()
 
-      const renderPreview =
-        renderOwner === undefined || props.connectionPreview === undefined
-          ? null
-          : connectionPreviewState(renderOwner)
+      const renderPreview = connectionLinePreview(renderOwner)
 
       if (stateDisposed) {
         return null
@@ -8201,23 +8361,10 @@ export const FlowCanvas = defineComponent({
             : renderOwner.active
       }
 
-      const connectionPreview = []
-
-      if (connection !== undefined) {
-        if (props.connectionPreview === undefined) {
-          connectionPreview.push(
-            h('path', {
-              class: 'flow-vue-connection-preview',
-              'data-testid': 'flow-connection-preview',
-              d: straightEdgePath(connection.start, connection.pointer),
-            })
-          )
-        } else if (renderPreview !== null) {
-          connectionPreview.push(
-            h(props.connectionPreview, { preview: renderPreview })
-          )
-        }
-      }
+      const connectionPreview =
+        connection === undefined
+          ? []
+          : renderConnectionLine(connection, renderPreview)
 
       const connectionKeyboardStatus =
         connection?.pointerId === -1
@@ -8613,6 +8760,17 @@ export const FlowCanvas = defineComponent({
               ),
               ...connectionPreview,
             ]
+          ),
+          h(
+            'div',
+            {
+              class: 'flow-vue-edge-label-renderer',
+              'data-testid': 'flow-edge-label-renderer',
+              style: {
+                transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
+              },
+            },
+            edgeLabelRegistry.render()
           ),
           ...connectionKeyboardStatus,
           ...selectionPreview,

@@ -79,6 +79,10 @@ import {
   decodeFlowDefaultEdgeOptions,
   FlowDefaultEdgeOptionsSchema,
   createConnectionPreviewSnapshot,
+  flowConnectionLineProps,
+  flowEdgeRendererProps,
+  flowNodeBounds,
+  flowNodeRendererProps,
 } from '@flow/core'
 import type {
   FlowChange as CoreFlowChange,
@@ -112,6 +116,12 @@ import type {
   ConnectionRadius,
   ConnectionPreviewState,
   ConnectionPreviewSnapshot,
+  FlowConnectionLineProps,
+  FlowConnectionLineType,
+  FlowGraphView,
+  XYPosition,
+  FlowEdgeRendererProps,
+  FlowNodeRendererProps,
   FlowDefaultEdgeOptions,
 } from '@flow/core'
 import {
@@ -2869,28 +2879,53 @@ export interface FoldkitEdgeGeometry {
   readonly end: { readonly x: number; readonly y: number }
   readonly markerStartId: string | undefined
   readonly markerEndId: string | undefined
+  /** React Flow style EdgeProps, including endpoint node bounds for floating edges. */
+  readonly props: FlowEdgeRendererProps
 }
 
 export interface FoldkitRendererRegistry {
-  readonly nodeTypes?: Readonly<Record<string, FoldkitNodeRenderer | undefined>>
-  readonly edgeTypes?: Readonly<Record<string, FoldkitEdgeRenderer | undefined>>
+  readonly nodeTypes?: FoldkitNodeTypes
+  readonly edgeTypes?: FoldkitEdgeTypes
   readonly connectionPreview?: FoldkitConnectionPreviewRenderer
+  /** Built-in connection line path; unset keeps the straight preview line. */
+  readonly connectionLineType?: FlowConnectionLineType
 }
 
+export type FoldkitNodeTypes = Readonly<
+  Record<string, FoldkitNodeRenderer | undefined>
+>
+
+export type FoldkitEdgeTypes = Readonly<
+  Record<string, FoldkitEdgeRenderer | undefined>
+>
+
+/** `props` carries React Flow style NodeProps such as `selected` and `dragging`. */
 export type FoldkitNodeRenderer = (
   node: FlowNode,
-  h: FoldHtml.HtmlBuilder<GraphMessageData>
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  props: FlowNodeRendererProps
 ) => FoldHtml.Html
+
+/**
+ * Adds HTML to the canvas edge label layer, which sits above the edges in
+ * flow coordinates and follows pan and zoom, like `<EdgeLabelRenderer />`.
+ */
+export type FoldkitEdgeLabelRenderer = (
+  content: FoldHtml.Html | readonly FoldHtml.Html[]
+) => void
 
 export type FoldkitEdgeRenderer = (
   edge: FlowEdge,
   geometry: FoldkitEdgeGeometry,
-  h: FoldHtml.HtmlBuilder<GraphMessageData>
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  edgeLabelRenderer: FoldkitEdgeLabelRenderer
 ) => FoldHtml.Html
 
+/** `line` carries ConnectionLineComponentProps once the origin handle resolves. */
 export type FoldkitConnectionPreviewRenderer = (
   state: ConnectionPreviewState,
-  h: FoldHtml.HtmlBuilder<GraphMessageData>
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  line: FlowConnectionLineProps | null
 ) => FoldHtml.Html
 
 const flowPointForElement = (
@@ -3055,19 +3090,37 @@ const calculateEdgeGeometry = (
   const markerEndId =
     edge.markerEnd === undefined ? undefined : `${markerScope}-${edge.id}-end`
 
+  const labelPosition = edgeLabelPosition(
+    start,
+    end,
+    pathType,
+    sourceSide,
+    targetSide
+  )
+
   const geometry: FoldkitEdgeGeometry = {
     path,
     start,
     end,
-    labelPosition: edgeLabelPosition(
-      start,
-      end,
-      pathType,
-      sourceSide,
-      targetSide
-    ),
+    labelPosition,
     markerStartId,
     markerEndId,
+    props: flowEdgeRendererProps({
+      edge,
+      source: start,
+      target: end,
+      sourcePosition: sourceSide,
+      targetPosition: targetSide,
+      sourceHandleId: sourceHandle?.id ?? null,
+      targetHandleId: targetHandle?.id ?? null,
+      sourceNode: flowNodeBounds(source),
+      targetNode: flowNodeBounds(target),
+      markerStart:
+        markerStartId === undefined ? undefined : `url(#${markerStartId})`,
+      markerEnd: markerEndId === undefined ? undefined : `url(#${markerEndId})`,
+      defaultInteractionWidth: 16,
+      labelPosition,
+    }),
   }
 
   return { geometry, markerStartId, markerEndId }
@@ -3363,7 +3416,8 @@ const edgeVisuals = (
   markerStartId: string | undefined,
   markerEndId: string | undefined,
   renderer: FoldkitEdgeRenderer | undefined,
-  h: FoldHtml.HtmlBuilder<GraphMessageData>
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  edgeLabelRenderer: FoldkitEdgeLabelRenderer
 ) => {
   const ariaLabel = edge.ariaLabel ?? edge.label ?? `Edge ${edge.id}`
   const stroke = edge.stroke ?? '#64748b'
@@ -3440,7 +3494,7 @@ const edgeVisuals = (
             ? []
             : [h.MarkerEnd(`url(#${markerEndId})`)]),
         ])
-      : renderer(edge, geometry, h)
+      : renderer(edge, geometry, h, edgeLabelRenderer)
 
   return { markerDefinitions, content: [hitTarget, renderedEdge] }
 }
@@ -4610,6 +4664,92 @@ export const createPointerResource = (initial: Model) => {
   return { begin, prepare, reconcile, acquire, close }
 }
 
+const nodeRendererProps = (
+  model: Model,
+  node: FlowNode,
+  position: XYPosition,
+  size: { readonly width: number; readonly height: number } | undefined
+): FlowNodeRendererProps =>
+  flowNodeRendererProps(node, {
+    positionAbsolute: position,
+    dragging:
+      model.pointerSession?.kind === 'node-drag' &&
+      model.pointerSession.nodeId === node.id,
+    size,
+  })
+
+/** Collects one edge renderer's HTML labels into a keyed group for the label layer. */
+const createEdgeLabelCollector = (
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  edgeId: string
+) => {
+  const items: NonNullable<FoldHtml.Html>[] = []
+
+  const collect: FoldkitEdgeLabelRenderer = (content) => {
+    for (const item of [content].flat()) {
+      if (item !== null) {
+        items.push(item)
+      }
+    }
+  }
+
+  const group = (): NonNullable<FoldHtml.Html>[] => {
+    if (items.length === 0) {
+      return []
+    }
+
+    const element = h.keyed('div')(
+      edgeId,
+      [
+        h.Class('flow-foldkit-edge-label-renderer-group'),
+        h.DataAttribute('edge-id', edgeId),
+      ],
+      items
+    )
+
+    return element === null ? [] : [element]
+  }
+
+  return { collect, group }
+}
+
+const connectionLineView = (
+  model: Model,
+  graph: FlowGraphView,
+  connectionLineType: FlowConnectionLineType | undefined,
+  previewState: ConnectionPreviewState | null
+) => {
+  const lineTypeAttribute = connectionLineType ?? ''
+
+  if (previewState === null) {
+    return { connectionLine: null, builtinPreviewPath: '', lineTypeAttribute }
+  }
+
+  const session = model.pointerSession
+
+  const connectionLine =
+    flowConnectionLineProps({
+      graph,
+      preview: previewState,
+      connectionLineType: connectionLineType ?? 'straight',
+      origin:
+        session?.kind === 'connection'
+          ? { nodeId: session.nodeId, handleId: session.sourceHandleId }
+          : undefined,
+    }) ?? null
+
+  const straight = `M ${previewState.from.x} ${previewState.from.y} L ${previewState.to.x} ${previewState.to.y}`
+
+  return {
+    connectionLine,
+    lineTypeAttribute,
+    builtinPreviewPath:
+      connectionLineType === undefined || connectionLine === null
+        ? straight
+        : connectionLine.path,
+  }
+}
+
 const graphView = (
   renderers: FoldkitRendererRegistry,
   markerScope: string,
@@ -4793,7 +4933,15 @@ const graphView = (
           node.type === undefined ? undefined : renderers.nodeTypes?.[node.type]
 
         const contents =
-          renderer === undefined ? [node.label] : [renderer(node, h)]
+          renderer === undefined
+            ? [node.label]
+            : [
+                renderer(
+                  node,
+                  h,
+                  nodeRendererProps(model, node, renderPosition, renderSize)
+                ),
+              ]
 
         return h.keyed('div')(
           node.id,
@@ -4838,6 +4986,7 @@ const graphView = (
       })
 
     const edgeLabels: NonNullable<FoldHtml.Html>[] = []
+    const customEdgeLabels: NonNullable<FoldHtml.Html>[] = []
     const reconnectControls: NonNullable<FoldHtml.Html>[] = []
 
     const visibleEdges = orderFlowEdges(
@@ -4902,14 +5051,19 @@ const graphView = (
           }
         }
 
+        const htmlLabels = createEdgeLabelCollector(h, edge.id)
+
         const { markerDefinitions, content } = edgeVisuals(
           edge,
           geometry,
           markerStartId,
           markerEndId,
           renderer,
-          h
+          h,
+          htmlLabels.collect
         )
+
+        customEdgeLabels.push(...htmlLabels.group())
 
         return h.keyed('svg')(
           edge.id,
@@ -4949,10 +5103,18 @@ const graphView = (
 
     const previewState = connectionPreviewState(model)
 
+    const { connectionLine, builtinPreviewPath, lineTypeAttribute } =
+      connectionLineView(
+        model,
+        graph,
+        renderers.connectionLineType,
+        previewState
+      )
+
     const connectionPreview =
       previewState === null
         ? null
-        : (renderers.connectionPreview?.(previewState, h) ??
+        : (renderers.connectionPreview?.(previewState, h, connectionLine) ??
           h.svg(
             [
               h.Class('flow-foldkit-connection-preview'),
@@ -4972,9 +5134,8 @@ const graphView = (
             [
               h.path([
                 h.Class('flow-foldkit-connection-preview-path'),
-                h.D(
-                  `M ${previewState.from.x} ${previewState.from.y} L ${previewState.to.x} ${previewState.to.y}`
-                ),
+                h.DataAttribute('connection-line-type', lineTypeAttribute),
+                h.D(builtinPreviewPath),
                 h.Fill('none'),
                 h.Stroke(previewState.valid === false ? '#dc2626' : '#2563eb'),
                 h.StrokeWidth('2'),
@@ -5056,6 +5217,13 @@ const graphView = (
                 h.DataAttribute('label-owner', 'host-overlay'),
               ],
               edgeLabels
+            ),
+            h.div(
+              [
+                h.Class('flow-foldkit-edge-label-renderer'),
+                h.DataAttribute('testid', 'flow-edge-label-renderer'),
+              ],
+              customEdgeLabels
             ),
             ...nodes,
             ...reconnectControls,

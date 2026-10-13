@@ -567,4 +567,11 @@
 .flow-vue-node-search [hidden],
 .flow-vue-devtools [hidden] {
   display: none !important;
+
+.flow-vue-edge-label-renderer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  z-index: 1;
+  pointer-events: none;
 }

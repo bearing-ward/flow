@@ -1,21 +1,31 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 106: UI catalog controls",
+  "activeWork": "Merge of Plan 105/105b renderer props and Plan 106 UI controls",
   "checks": ["docs", "catalog", "examples", "api-members", "consumer"],
   "browserTests": {
     "vanilla": [
+      "renderer-props.e2e.ts",
+      "base-edge.e2e.ts",
+      "renderer-contract.e2e.ts",
       "ui-controls.e2e.ts",
       "canvas-ui-contract.e2e.ts",
       "canvas-ui.e2e.ts"
     ],
     "vue": [
+      "renderer-props.e2e.ts",
+      "base-edge.e2e.ts",
+      "renderer-contract.e2e.ts",
+      "connection.e2e.ts",
       "ui-controls.e2e.ts",
       "canvas-ui-contract.e2e.ts",
       "edge-toolbar.e2e.ts"
     ],
     "foldkit": [
-      "ui-controls.e2e.ts",
+      "renderer-props.e2e.ts",
+      "base-edge.e2e.ts",
+      "renderer-contract.e2e.ts",
       "canvas-ui-contract.e2e.ts",
+      "ui-controls.e2e.ts",
       "toolbars.e2e.ts"
     ]
   }

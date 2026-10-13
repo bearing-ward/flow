@@ -6,6 +6,26 @@ export { FlowMiniMap } from './minimap.ts'
 
 export { FlowViewportPortal } from './viewport-portal.ts'
 
+export { FlowEdgeLabelRenderer } from './edge-label-renderer.ts'
+
+export type {
+  FlowConnectionLineComponent,
+  FlowConnectionLineComponentProps,
+  FlowEdgeProps,
+  FlowEdgeTypes,
+  FlowNodeProps,
+  FlowNodeTypes,
+} from './edge-label-renderer.ts'
+
+export type {
+  FlowConnectionLineProps,
+  FlowConnectionLineType,
+  FlowEdgeRendererProps,
+  FlowNodeBounds,
+  FlowNodeRendererProps,
+  FlowPosition,
+} from '@flow/core'
+
 export { FlowBaseEdge, FlowEdgeText } from './base-edge.ts'
 
 export { FlowEdgeToolbar } from './edge-toolbar.ts'

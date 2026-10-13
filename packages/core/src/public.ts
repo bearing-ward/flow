@@ -573,6 +573,30 @@ export type {
 } from './domain/flow-connection-preview.schema.ts'
 
 export {
+  FlowConnectionLineTypeSchema,
+  connectionLinePath,
+  flowConnectionLineProps,
+  flowEdgeRendererProps,
+  flowNodeBounds,
+  flowNodeRendererProps,
+  sameFlowEdgeRendererProps,
+  sameFlowNodeRendererProps,
+} from './domain/flow-renderer-props.ts'
+
+export type {
+  FlowConnectionLinePathParams,
+  FlowConnectionLineProps,
+  FlowConnectionLinePropsInput,
+  FlowConnectionLineType,
+  FlowEdgeRendererProps,
+  FlowEdgeRendererPropsInput,
+  FlowNodeBounds,
+  FlowNodeRendererProps,
+  FlowNodeRendererPropsInput,
+  FlowPosition,
+} from './domain/flow-renderer-props.ts'
+
+export {
   FlowDefaultEdgeOptionsSchema,
   applyDefaultEdgeOptions,
   decodeFlowDefaultEdgeOptions,

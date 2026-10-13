@@ -4,7 +4,10 @@ import {
   edgeAttachmentPosition,
   inferHandleMeasurement,
   edgeLabelPosition,
+  flowEdgeRendererProps,
+  flowNodeBounds,
   orderFlowEdges,
+  sameFlowEdgeRendererProps,
   resolveEdgeHandles,
   smoothStepEdgePath,
   simpleBezierEdgePath,
@@ -17,6 +20,7 @@ import type {
   FlowEdgeMarker,
   FlowNode,
   FlowDefaultEdgeOptions,
+  FlowEdgeRendererProps,
   FlowGraphView,
   HandleId,
   MeasuredHandle,
@@ -212,6 +216,14 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   labelLayer.setAttribute('aria-hidden', 'true')
   layer.append(definitions, pathLayer)
   viewport.append(layer)
+
+  // The props each custom edge renderer last received, to skip unchanged frames.
+  const sentProps = new WeakMap<EdgeEntry, FlowEdgeRendererProps>()
+
+  const edgeLabelRenderer = globalThis.document.createElement('div')
+  edgeLabelRenderer.classList.add('flow-edge-label-renderer')
+  edgeLabelRenderer.dataset.testid = 'flow-edge-label-renderer'
+  viewport.append(edgeLabelRenderer)
 
   const anchorLayer = globalThis.document.createElementNS(svgNamespace, 'svg')
   anchorLayer.classList.add('flow-edge-anchor-layer')
@@ -698,18 +710,52 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           ;({ pathData } = customGeometry)
         }
 
+        const stroke = edge.stroke ?? defaultStroke
+
+        const markerUrl = (kind: FlowEdgeMarker | undefined) => {
+          if (kind === undefined) {
+            return
+          }
+
+          const markerId = ensureMarker(kind, stroke)
+          visibleMarkers.add(markerId)
+
+          return `url(#${markerId})`
+        }
+
+        const markerStart = markerUrl(edge.markerStart)
+        const markerEnd = markerUrl(edge.markerEnd)
+
+        const labelAnchor =
+          customGeometry?.labelAnchor ??
+          edgeLabelPosition(
+            source,
+            target,
+            edge.path ?? 'straight',
+            resolved.sourceHandle.side,
+            resolved.targetHandle.side
+          )
+
         const context: FlowEdgeRenderContext = {
+          props: flowEdgeRendererProps({
+            edge,
+            source,
+            target,
+            sourcePosition: resolved.sourceHandle.side,
+            targetPosition: resolved.targetHandle.side,
+            sourceHandleId: resolved.sourceHandle.id,
+            targetHandleId: resolved.targetHandle.id,
+            sourceNode: flowNodeBounds(sourceGraphNode),
+            targetNode: flowNodeBounds(targetGraphNode),
+            markerStart,
+            markerEnd,
+            defaultInteractionWidth: 20,
+            labelPosition: labelAnchor,
+          }),
           ...endpoints,
           pathData,
-          labelAnchor:
-            customGeometry?.labelAnchor ??
-            edgeLabelPosition(
-              source,
-              target,
-              edge.path ?? 'straight',
-              resolved.sourceHandle.side,
-              resolved.targetHandle.side
-            ),
+          labelAnchor,
+          edgeLabelRenderer,
         }
 
         const { path, visual } = entry.elements
@@ -720,6 +766,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           if (instance === undefined) {
             entry.renderer = { kind: 'default' }
           } else {
+            sentProps.set(entry, context.props)
             runEffect(
               Scope.addFinalizer(
                 entry.scope,
@@ -740,9 +787,24 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           }
 
           added += 1
-        } else if (entry.renderer.kind === 'custom' && !projectionOnly) {
-          entry.renderer.instance.update(edge, context)
-          updated += 1
+        } else if (entry.renderer.kind === 'custom') {
+          const { instance } = entry.renderer
+          const positionOnly = projectionOnly || onlyEdges !== undefined
+
+          if (positionOnly && instance.updateProps !== undefined) {
+            // Opted-in renderers get per-frame props instead of `update`.
+            if (
+              !sameFlowEdgeRendererProps(sentProps.get(entry), context.props)
+            ) {
+              sentProps.set(entry, context.props)
+              instance.updateProps(context.props, context)
+              updated += 1
+            }
+          } else if (!projectionOnly) {
+            sentProps.set(entry, context.props)
+            instance.update(edge, context)
+            updated += 1
+          }
         }
 
         if (!owns()) {
@@ -795,23 +857,18 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           edge.ariaLabel ??
             `Edge from ${resolved.sourceNode.label} to ${resolved.targetNode.label}`
         )
-        const stroke = edge.stroke ?? defaultStroke
         path.setAttribute('stroke', stroke)
         path.setAttribute('stroke-width', String(edge.strokeWidth ?? 2))
 
-        for (const [attribute, kind] of [
-          ['marker-start', edge.markerStart],
-          ['marker-end', edge.markerEnd],
+        for (const [attribute, url] of [
+          ['marker-start', markerStart],
+          ['marker-end', markerEnd],
         ] as const) {
-          if (kind === undefined) {
+          if (url === undefined) {
             path.removeAttribute(attribute)
-
-            continue
+          } else {
+            path.setAttribute(attribute, url)
           }
-
-          const markerId = ensureMarker(kind, stroke)
-          visibleMarkers.add(markerId)
-          path.setAttribute(attribute, `url(#${markerId})`)
         }
 
         if (onlyEdges === undefined) {
@@ -1015,6 +1072,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
       layer.remove()
       anchorLayer.remove()
       labelLayer.remove()
+      edgeLabelRenderer.remove()
     },
   }
 }

@@ -293,6 +293,14 @@ body,
   pointer-events: none;
 }
 
+.flow-edge-label-renderer {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
 .flow-node {
   position: absolute;
   z-index: 1;
@@ -500,7 +508,9 @@ body,
   pointer-events: none;
 }
 
-.flow-connection-preview line {
+.flow-connection-preview line,
+.flow-connection-preview-path {
+  fill: none;
   stroke: #2563eb;
   stroke-width: 2;
 }
