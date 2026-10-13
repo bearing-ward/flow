@@ -1,11 +1,23 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 113 Foldkit host hardening",
-  "checks": ["docs", "catalog", "examples", "api-members", "consumer"],
+  "activeWork": "Plan 110 core instance helpers, edge geometry and intersection recipes; Plan 113 Foldkit host hardening",
+  "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
-    "vanilla": [],
-    "vue": [],
+    "vanilla": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "node-threshold.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ],
+    "vue": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ],
     "foldkit": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts",
       "live-drag.e2e.ts",
       "interaction-lifecycle.e2e.ts",
       "connection-threshold.e2e.ts",

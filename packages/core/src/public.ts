@@ -643,16 +643,61 @@ export type {
 } from './domain/flow-floating-edge.ts'
 
 export {
+  boundedNodeId,
+  boundedNodeRect,
   getInternalNodeBounds,
   getIntersectingNodes,
   getRectOverlapArea,
+  isNodeIntersecting,
   isRectIntersecting,
 } from './domain/flow-intersection.ts'
 
 export type {
+  FlowBoundedNode,
   FlowIntersectionCandidate,
   FlowIntersectionOptions,
+  FlowNodeOrRect,
 } from './domain/flow-intersection.ts'
+
+export { getNodesBounds, toFlowObject } from './domain/flow-instance.ts'
+
+export type {
+  FlowNodesBoundsOptions,
+  FlowObject,
+} from './domain/flow-instance.ts'
+
+export {
+  flowMeasurementsFromInternalNodes,
+  getEdgeDistanceToPoint,
+  getEdgeGeometry,
+  getEdgeIntersections,
+  getEdgePolylines,
+  getEdgesGeometry,
+  getFlowNodeBounds,
+  getPathPolylines,
+  isEdgeIntersectingRect,
+  isPointNearEdge,
+} from './domain/flow-edge-geometry.ts'
+
+export type {
+  FlowEdgeGeometryOptions,
+  FlowEdgeRenderGeometry,
+  FlowPathPolylineOptions,
+} from './domain/flow-edge-geometry.ts'
+
+export {
+  getClosestNode,
+  getProximityConnection,
+  resolveNodeCollisions,
+} from './domain/flow-collision.ts'
+
+export type {
+  FlowClosestNode,
+  FlowClosestNodeOptions,
+  FlowCollisionOptions,
+  FlowProximityConnection,
+  FlowProximityMeasure,
+} from './domain/flow-collision.ts'
 
 export {
   getFreehandPath,
