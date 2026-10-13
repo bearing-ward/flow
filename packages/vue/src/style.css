@@ -567,6 +567,7 @@
 .flow-vue-node-search [hidden],
 .flow-vue-devtools [hidden] {
   display: none !important;
+}
 
 .flow-vue-edge-label-renderer {
   position: absolute;
