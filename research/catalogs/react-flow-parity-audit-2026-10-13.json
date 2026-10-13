@@ -12,10 +12,10 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 144,
+    "inScopeCloseAllHosts": 145,
     "inScopeCloseByHost": {
       "vanilla": 159,
-      "vue": 151,
+      "vue": 159,
       "foldkit": 147
     }
   },
@@ -1356,14 +1356,14 @@
       "section": "api-reference types",
       "name": "SelectionDragHandler",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 2,
       "missing": "Selection drag payload lacks dragged nodes",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108", "Plan 112"]
     },
     {
       "section": "api-reference types",
@@ -1429,14 +1429,14 @@
       "section": "examples overview",
       "name": "Feature Overview",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "No gallery route combining all features per host",
       "effort": "M",
       "theme": "gallery",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 112"]
     },
     {
       "section": "examples nodes",
@@ -1736,14 +1736,14 @@
       "section": "examples edges",
       "name": "Floating Edges",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107", "Plan 112"]
     },
     {
       "section": "examples edges",
@@ -1787,14 +1787,14 @@
       "section": "examples edges",
       "name": "Simple Floating Edges",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 1,
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107", "Plan 112"]
     },
     {
       "section": "examples edges",
@@ -1985,14 +1985,14 @@
       "section": "examples grouping",
       "name": "Selection Grouping · Pro",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "No group-selection reparent helper",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 112"]
     },
     {
       "section": "examples grouping",
@@ -2049,14 +2049,14 @@
       "section": "examples layout",
       "name": "Elkjs Multiple Handles",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Measured handle positions outside Vanilla",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 112"]
     },
     {
       "section": "examples layout",
@@ -2086,14 +2086,14 @@
       "section": "examples layout",
       "name": "Auto Layout · Pro",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "Layout engine integration on measure/change",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 112"]
     },
     {
       "section": "examples layout",
@@ -2112,14 +2112,14 @@
       "section": "examples layout",
       "name": "Dynamic Layouting · Pro",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 6,
       "missing": "Layout engine integration with add-node placeholders",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 112"]
     },
     {
       "section": "examples layout",
