@@ -14,7 +14,7 @@
     "intentionalGaps": 2,
     "inScopeCloseAllHosts": 145,
     "inScopeCloseByHost": {
-      "vanilla": 159,
+      "vanilla": 161,
       "vue": 159,
       "foldkit": 147
     }
@@ -2085,7 +2085,7 @@
     {
       "section": "examples layout",
       "name": "Auto Layout · Pro",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "P",
       "scope": "parity",
@@ -2093,7 +2093,7 @@
       "missing": "Layout engine integration on measure/change",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"]
     },
     {
       "section": "examples layout",
@@ -2111,7 +2111,7 @@
     {
       "section": "examples layout",
       "name": "Dynamic Layouting · Pro",
-      "vanilla": "P",
+      "vanilla": "C",
       "vue": "C",
       "foldkit": "P",
       "scope": "parity",
@@ -2119,7 +2119,7 @@
       "missing": "Layout engine integration with add-node placeholders",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"]
     },
     {
       "section": "examples layout",
