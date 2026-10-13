@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 141,
+    "inScopeCloseAllHosts": 144,
     "inScopeCloseByHost": {
-      "vanilla": 154,
-      "vue": 146,
-      "foldkit": 144
+      "vanilla": 159,
+      "vue": 151,
+      "foldkit": 147
     }
   },
   "waves": {
@@ -533,14 +533,15 @@
     {
       "section": "api-reference utils",
       "name": "getNodesBounds()",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Direct nodes-array getNodesBounds; graphBounds needs FlowGraphView",
       "effort": "S",
-      "theme": "utils"
+      "theme": "utils",
+      "updatedBy": ["Plan 110"]
     },
     {
       "section": "api-reference utils",
@@ -1515,14 +1516,15 @@
     {
       "section": "examples nodes",
       "name": "Intersections",
-      "vanilla": "P",
-      "vue": "P",
+      "vanilla": "C",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 4,
       "missing": "No getIntersectingNodes/isNodeIntersecting helper",
       "effort": "M",
-      "theme": "intersections"
+      "theme": "intersections",
+      "updatedBy": ["Plan 110"]
     },
     {
       "section": "examples nodes",
@@ -1558,7 +1560,8 @@
       "wave": 4,
       "missing": "Foldkit lacks node-bounds query during drag",
       "effort": "M",
-      "theme": "intersections"
+      "theme": "intersections",
+      "updatedBy": ["Plan 110"]
     },
     {
       "section": "examples nodes",
@@ -1683,14 +1686,15 @@
     {
       "section": "examples edges",
       "name": "Edge Intersection",
-      "vanilla": "P",
-      "vue": "P",
+      "vanilla": "C",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 4,
       "missing": "No path intersection helper",
       "effort": "M",
-      "theme": "intersections"
+      "theme": "intersections",
+      "updatedBy": ["Plan 110"]
     },
     {
       "section": "examples edges",
@@ -2120,14 +2124,15 @@
     {
       "section": "examples layout",
       "name": "Node Collisions",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "No node overlap/collision resolution helper",
       "effort": "M",
-      "theme": "intersections"
+      "theme": "intersections",
+      "updatedBy": ["Plan 110"]
     },
     {
       "section": "examples styling",
@@ -2180,15 +2185,15 @@
     {
       "section": "examples whiteboard",
       "name": "Eraser Tool",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "No freeform pane tool overlay/hit-test recipe",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109", "Plan 110"]
     },
     {
       "section": "examples whiteboard",

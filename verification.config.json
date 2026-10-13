@@ -1,19 +1,32 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 111 Vanilla host hardening",
-  "checks": ["docs", "catalog", "examples", "api-members", "consumer"],
+  "activeWork": "Plan 111 Vanilla host hardening (with Plan 110 scope)",
+  "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
-      "host-hardening.e2e.ts",
-      "node-threshold.e2e.ts",
-      "events-and-changes.e2e.ts",
-      "ui-controls.e2e.ts",
+      "advanced-gestures.e2e.ts",
+      "canvas.e2e.ts",
+      "edge-geometry-recipes.e2e.ts",
       "edge-recipes.e2e.ts",
+      "events-and-changes.e2e.ts",
+      "host-hardening.e2e.ts",
+      "intersection-recipes.e2e.ts",
       "layout-recipes.e2e.ts",
+      "nested-resize-containment.e2e.ts",
+      "node-threshold.e2e.ts",
       "renderer-props.e2e.ts",
-      "canvas.e2e.ts"
+      "ui-controls.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
     ],
-    "vue": [],
-    "foldkit": []
+    "vue": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ],
+    "foldkit": [
+      "edge-geometry-recipes.e2e.ts",
+      "intersection-recipes.e2e.ts",
+      "whiteboard-recipes.e2e.ts"
+    ]
   }
 }
