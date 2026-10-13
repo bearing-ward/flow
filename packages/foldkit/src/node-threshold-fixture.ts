@@ -170,6 +170,7 @@ export const setupPointer = (threshold = 5) => {
       nodeDragThreshold: threshold,
       connectionDragThreshold: threshold,
       panOnDrag: true,
+      nodesResizable: true,
     }
   )
 

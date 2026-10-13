@@ -114,7 +114,8 @@ const floating: FoldkitEdgeRenderer = (
 }
 
 export const mountFoldkitLiveDragFixture = (
-  container: HTMLElement
+  container: HTMLElement,
+  options: { readonly nodesResizable?: boolean } = {}
 ): FoldkitLiveDragFixture => {
   const events: InteractionEvent[] = []
   const deltas: ElementChanges[] = []
@@ -126,13 +127,16 @@ export const mountFoldkitLiveDragFixture = (
       container,
       Effect.runSync(decodeFlowDocument(documentInput)),
       { x: 0, y: 0, zoom: 1 },
-      [],
+      ['a', 'b', 'c'],
       'uncontrolled',
       'uncontrolled',
       { nodeTypes: { box }, edgeTypes: { floating } },
       undefined,
       'full',
-      defaultInteractionOptions
+      {
+        ...defaultInteractionOptions,
+        nodesResizable: options.nodesResizable === true,
+      }
     )
   )
 

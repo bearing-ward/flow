@@ -30,7 +30,9 @@
       "computing-flows-recipes.e2e.ts",
       "renderer-props.e2e.ts",
       "handle-connections.e2e.ts",
-      "public-state.e2e.ts"
+      "public-state.e2e.ts",
+      "node-threshold.e2e.ts",
+      "shared-conformance.e2e.ts"
     ]
   }
 }

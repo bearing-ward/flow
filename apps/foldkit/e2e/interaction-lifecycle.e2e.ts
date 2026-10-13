@@ -1554,10 +1554,10 @@ test('Foldkit pointer cancellation discards a drag and permits a fresh drag', as
     nodeId: 'move',
     position: { x: 112, y: 120 },
   })
-  const freshGestureSnapshot = await adapter.snapshot()
-  expect(freshGestureSnapshot.positions).toEqual([
-    { id: 'move', x: 80, y: 100 },
-  ])
+  // The live preview reverts to the accepted position on the next render.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toEqual([{ id: 'move', x: 80, y: 100 }])
 
   const cleanup = await adapter.destroy()
   expect(cleanup.mountedElements).toBe(0)
@@ -1797,8 +1797,11 @@ test('Foldkit ignores cancellation from a different pointer and completes the ac
     nodeId: 'move',
     position: { x: 112, y: 120 },
   })
-  const completedSnapshot = await adapter.snapshot()
-  expect(completedSnapshot.positions).toEqual([{ id: 'move', x: 80, y: 100 }])
+  // The controlled proposal leaves the accepted position; the live preview
+  // reverts to it on the next render.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toEqual([{ id: 'move', x: 80, y: 100 }])
 
   const cleanup = await adapter.destroy()
   expect(cleanup.mountedElements).toBe(0)

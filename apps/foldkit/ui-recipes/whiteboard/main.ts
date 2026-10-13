@@ -77,6 +77,8 @@ const freehandNode: FoldkitNodeRenderer = (flowNode, h) =>
 
 const host = mountRecipeHost({
   page: 'whiteboard-page',
+  // Selected nodes show their resize controls, which mark the lasso result.
+  interaction: { nodesResizable: true },
   // A non-identity viewport proves the screen-to-flow conversion.
   viewport: { x: 40, y: 30, zoom: 1.25 },
   document: {

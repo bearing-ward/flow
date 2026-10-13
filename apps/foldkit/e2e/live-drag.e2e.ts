@@ -14,9 +14,9 @@ interface Point {
   readonly y: number
 }
 
-const mount = async (page: Page) => {
+const mount = async (page: Page, nodesResizable = false) => {
   await page.goto('/test.html')
-  await page.evaluate(async () => {
+  await page.evaluate(async (resizable) => {
     const modulePath = '/e2e/live-drag-fixture.ts'
     const { mountFoldkitLiveDragFixture } = await import(modulePath)
     const host = document.querySelector<HTMLElement>('#app')
@@ -33,8 +33,10 @@ const mount = async (page: Page) => {
       throw new Error('Missing Foldkit live drag container')
     }
 
-    window.__flowFoldkitLiveDrag = mountFoldkitLiveDragFixture(container)
-  })
+    window.__flowFoldkitLiveDrag = mountFoldkitLiveDragFixture(container, {
+      nodesResizable: resizable,
+    })
+  }, nodesResizable)
   await expect(page.locator('[data-testid="flow-node"]')).toHaveCount(3)
 }
 
@@ -344,4 +346,51 @@ test('Foldkit custom edges hit-test along the path they report', async ({
   await expect
     .poll(() => lastField(page, 'onEdgeClick', 'edgeId'))
     .toBe('floating')
+})
+
+test('Foldkit shows resize controls only with nodesResizable, below the handles', async ({
+  page,
+}) => {
+  await mount(page)
+  await clickAt(page, await centre(page, 'c'))
+  await expect.poll(() => selection(page)).toEqual(['c'])
+  // Off by default, as React Flow shows resize controls only with a NodeResizer.
+  await expect(
+    nodeLocator(page, 'c').locator('.flow-foldkit-resize')
+  ).toHaveCount(0)
+
+  await mount(page, true)
+  await clickAt(page, await centre(page, 'c'))
+  await expect(
+    nodeLocator(page, 'c').locator('.flow-foldkit-resize')
+  ).toHaveCount(8)
+
+  // The source handle on the selected node stays on top and connectable.
+  const handleCentre = async (nodeId: string, handleId: string) => {
+    const box = await nodeLocator(page, nodeId)
+      .locator(`[data-handle-id="${handleId}"]`)
+      .boundingBox()
+
+    if (box === null) {
+      throw new Error('Missing handle')
+    }
+
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+  }
+
+  const out = await handleCentre('c', 'out')
+  const into = await handleCentre('b', 'in')
+
+  const topHandle = await page.evaluate(
+    ({ x, y }) =>
+      document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-handle-id]')
+        ?.dataset.handleId ?? null,
+    out
+  )
+
+  expect(topHandle).toBe('out')
+
+  await pressAndMove(page, out, into)
+  await page.mouse.up()
+  await expect(page.locator('[data-testid="flow-edge"]')).toHaveCount(3)
 })

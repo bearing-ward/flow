@@ -332,6 +332,8 @@ export const ModelSchema = Schema.Struct({
   nodesDraggable: Schema.Boolean,
   nodesConnectable: Schema.Boolean,
   elementsSelectable: Schema.Boolean,
+  /** Selected nodes show resize controls only when this is on. */
+  nodesResizable: Schema.Boolean,
   defaultEdgeOptions: FlowDefaultEdgeOptionsSchema,
   measurements: FlowMeasurementStateSchema,
   pointerSession: Schema.NullOr(PointerSessionSchema),
@@ -646,6 +648,12 @@ export interface GraphInteractionOptions {
   /** React Flow `elementsSelectable`; element `selectable` wins. Defaults to true. */
   readonly elementsSelectable?: boolean
   /**
+   * Show resize controls on selected nodes and accept resize gestures.
+   * Defaults to false: React Flow shows resize controls only with a
+   * `NodeResizer`.
+   */
+  readonly nodesResizable?: boolean
+  /**
    * React Flow `isValidConnection`. When set it replaces the static
    * `allowedConnectionTargets` list. Registered by `createProgram`; it never
    * enters the schema-checked model.
@@ -672,6 +680,7 @@ export const defaultInteractionOptions: GraphInteractionOptions = {
   nodesDraggable: true,
   nodesConnectable: true,
   elementsSelectable: true,
+  nodesResizable: false,
 }
 
 export const selectSnapshot = (model: Model): FlowSnapshot => ({
@@ -2661,7 +2670,7 @@ const updateState = (
         }
       }
 
-      if (direction === null) {
+      if (direction === null || !model.nodesResizable) {
         return noChange(model)
       }
 
@@ -3156,7 +3165,7 @@ const updateState = (
           )
     },
     ResizeByKeyboard: ({ nodeId, direction, delta }) => {
-      if (!model.keyboardActivation) {
+      if (!model.keyboardActivation || !model.nodesResizable) {
         return noChange(model)
       }
 
@@ -5591,7 +5600,7 @@ const graphView = (
         )
 
         const resizeHandles =
-          node.selected === true
+          model.nodesResizable && node.selected === true
             ? (
                 [
                   'top',
@@ -6218,6 +6227,7 @@ export const initialModel = (
   zoomOnDoubleClick: interactionOptions.zoomOnDoubleClick ?? false,
   keyboardActivation: interactionOptions.keyboardActivation ?? true,
   connectOnClick: interactionOptions.connectOnClick ?? true,
+  nodesResizable: interactionOptions.nodesResizable ?? false,
   defaultEdgeOptions: Effect.runSync(
     decodeFlowDefaultEdgeOptions(interactionOptions.defaultEdgeOptions ?? {})
   ),

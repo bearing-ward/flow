@@ -1042,7 +1042,8 @@ const mount = async (
       : {},
     undefined,
     selectionMode,
-    interactionOptions
+    // Conformance fixtures exercise resize controls.
+    { ...interactionOptions, nodesResizable: true }
   )
 
   handle = Runtime.embed<typeof ports, never, 'Element'>(program)
@@ -1342,7 +1343,8 @@ const publicProgram = (
     undefined,
     { minZoom: 0.25, maxZoom: 4 },
     'full',
-    interactionOptions
+    // Conformance fixtures exercise resize controls.
+    { ...interactionOptions, nodesResizable: true }
   )
 
   const active = Runtime.embed<typeof ports, never, 'Element'>(program)

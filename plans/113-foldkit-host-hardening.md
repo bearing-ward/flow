@@ -15,6 +15,8 @@ Reference: `packages/system/src/xydrag/XYDrag.ts` and `utils.ts` (`getDragItems`
 - **Drag events (application.ts).** `onNodeDragStart`/`onNodeDrag`/`onNodeDragStop` keep `x`/`y` as the pointer's flow point. They add `position`, `positionAbsolute`, `nodeIds` and `nodePositions` for every dragged node. With two or more nodes, `onSelectionDragStart`/`onSelectionDragMove`/`onSelectionDragStop` carry the same payload, mirroring Vanilla.
 - **Click selection.** A node click that is not on a Foldkit control selects only that node and clears every other selection. With Meta or Control held, it toggles that node. A click that ends a real drag is suppressed, as d3-drag suppresses it.
 - **Dimensions.** A `MeasureNode` that changes a node's measured size, including the first measurement, publishes `{ id, type: 'dimensions', dimensions }` on `elementChanges`.
+- **Resizable nodes.** `nodesResizable` (program and interaction option, default off, as React shows resize controls only with a `NodeResizer`) gates resize controls and resize gestures. Handles render above resize controls so they stay connectable on selected nodes. Resize fixtures, the playground, Feature Overview and Whiteboard opt in.
+- **Review fixes.** A drag release swallows the click only when the pointer moved, so clicks select at `nodeDragThreshold: 0`. Meta/Control-click and the toggle button propose in controlled mode. Drag sessions record each node's origin, so frames cost O(dragged nodes) plus one id map, with no graph build.
 - **Custom edge hit area.** Edge renderers get a fifth argument, `edgeInteraction(path)`. When a renderer calls it, the built-in hit target uses that path.
 - **Node data.** Node views can already send `Message.DispatchCommand` with an `update-node-data` edit, but it is verbose. `updateNodeData(nodeId, data, options?)` builds that typed message.
 - **Recipes.** Feature Overview and Subflows select by click. Layout reruns on `dimensions` changes instead of every measurement result. Computing Flows text nodes write data from the node view. The floating-edge recipes set their interaction path.
@@ -32,5 +34,6 @@ Reference: `packages/system/src/xydrag/XYDrag.ts` and `utils.ts` (`getDragItems`
   - `selectNodesOnDrag` is not modelled: dragging an unselected node leaves the selection unchanged.
   - Both Meta and Control toggle, instead of the platform's single `multiSelectionKeyCode`.
   - Clicks on handles, resize controls and the selection toggle button do not select through the node click.
+  - Before Plan 113 Foldkit showed resize controls on every selected node; they now need `nodesResizable`.
   - Computing-node derivations stay in app code, because Foldkit node views are pure and cannot run effects.
 - **Unverified.** There is no live React runtime comparison.

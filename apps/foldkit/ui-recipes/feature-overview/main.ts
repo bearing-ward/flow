@@ -99,6 +99,7 @@ const edge = (source: string, target: string) => ({
 
 const host = mountRecipeHost({
   page: 'feature-overview-page',
+  interaction: { nodesResizable: true },
   document: {
     nodes: [
       node('input', 'Input', 260, 0),

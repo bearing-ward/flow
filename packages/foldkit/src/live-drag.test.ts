@@ -379,3 +379,23 @@ describe('Foldkit measurement and data changes', () => {
     })
   })
 })
+
+const resizeSession = (model: AppModel) =>
+  step(
+    model,
+    Graph.Message.ResizeByKeyboard({
+      nodeId: NodeIdSchema.make('a'),
+      direction: 'right',
+      delta: { x: 5, y: 0 },
+    })
+  ).model.graph.keyboardResizeSession
+
+describe('Foldkit nodesResizable', () => {
+  it('ignores resize input by default and accepts it when enabled', () => {
+    expect(resizeSession(startWith({}))).toBeNull()
+    expect(resizeSession(startWith({ nodesResizable: true }))).toMatchObject({
+      nodeId: 'a',
+      direction: 'right',
+    })
+  })
+})

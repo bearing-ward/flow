@@ -231,6 +231,7 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     undefined,
     {
       ...defaultInteractionOptions,
+      nodesResizable: true,
       panOnDrag: true,
       zoomOnScroll: true,
       selectionOnDrag: false,
