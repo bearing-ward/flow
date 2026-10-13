@@ -75,13 +75,9 @@ test('selection grouping wraps the selected nodes in a new parent', async ({
   const beforeA = await boxOf(node(page, 'A'))
   const beforeB = await boxOf(node(page, 'B'))
 
-  await page.keyboard.down('Shift')
-  await drag(
-    page,
-    { x: beforeA.x - 20, y: beforeA.y - 20 },
-    { x: beforeB.x + beforeB.width + 20, y: beforeB.y + beforeB.height + 20 }
-  )
-  await page.keyboard.up('Shift')
+  // Click selection with the multi-selection key, as in React Flow.
+  await node(page, 'A').click()
+  await node(page, 'B').click({ modifiers: ['Meta'] })
   await expect(status).toHaveAttribute('data-selected', 'A,B')
 
   await page.getByTestId('group-selection').click()

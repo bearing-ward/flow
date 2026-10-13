@@ -133,26 +133,52 @@ export const elkLayout = async (
 }
 
 /**
- * Layout input once every visible node has a non-empty measured box and all
- * of its declared handles measured; undefined until then. Right after mount
- * the Vue host can report a node as measured before its size and handle boxes
- * arrive.
+ * Element changes the canvas reports through `nodesChange` and `edgesChange`,
+ * including the `dimensions` changes of each new measurement.
  */
+const elementChangeListeners = new Set<() => void>()
+
+/** Forward a canvas change event to the layouts waiting on measurements. */
+export const notifyElementChanges = (): void => {
+  for (const listener of elementChangeListeners) {
+    listener()
+  }
+}
+
+const onElementChanges = (listener: () => void): void => {
+  elementChangeListeners.add(listener)
+  onScopeDispose(() => elementChangeListeners.delete(listener))
+}
+
+/** Layout input once every visible node is measured; undefined until then. */
 export const getMeasuredLayoutInput = (
   flow: FlowActions
 ): FlowLayoutInput | undefined => {
   const input = getFlowLayoutInput(flow.document.value, flow.getInternalNode)
 
-  const complete = input.nodes.every(
-    ({ id, width, height, handles }) =>
-      width > 0 &&
-      height > 0 &&
-      handles.length === (flow.getNode(id)?.handles?.length ?? 0)
-  )
-
-  return input.unmeasured.length === 0 && input.nodes.length > 0 && complete
+  return input.unmeasured.length === 0 && input.nodes.length > 0
     ? input
     : undefined
+}
+
+/** Call `ready` with the layout input once every visible node is measured. */
+export const whenMeasured = (
+  flow: FlowActions,
+  ready: (input: FlowLayoutInput) => void
+): void => {
+  let done = false
+
+  const check = (): void => {
+    const input = done ? undefined : getMeasuredLayoutInput(flow)
+
+    if (input !== undefined) {
+      done = true
+      ready(input)
+    }
+  }
+
+  onElementChanges(check)
+  check()
 }
 
 const signature = (input: FlowLayoutInput): string =>
@@ -166,9 +192,9 @@ const signature = (input: FlowLayoutInput): string =>
 
 /**
  * Run `layout` once every visible node is measured, and again whenever the
- * node or edge set or a measured node size changes. The Vue host exposes
- * measurements through `getInternalNode` without a reactive signal, so this
- * samples them once per animation frame.
+ * node or edge set or a measured node size changes. The canvas reports each
+ * measurement as a `dimensions` change, so this waits on change events
+ * instead of sampling every frame.
  */
 export const useMeasuredLayout = (
   flow: FlowActions,
@@ -176,22 +202,12 @@ export const useMeasuredLayout = (
 ): void => {
   let last = ''
   let busy = false
-  let frame = 0
+  let again = false
 
-  const runLayout = async (input: FlowLayoutInput): Promise<void> => {
-    busy = true
-
-    try {
-      await layout(input)
-    } finally {
-      busy = false
-    }
-  }
-
-  const check = (): void => {
-    frame = requestAnimationFrame(check)
-
+  const check = async (): Promise<void> => {
     if (busy) {
+      again = true
+
       return
     }
 
@@ -208,9 +224,22 @@ export const useMeasuredLayout = (
     }
 
     last = next
-    void runLayout(input)
+    busy = true
+
+    try {
+      await layout(input)
+    } finally {
+      busy = false
+    }
+
+    if (again) {
+      again = false
+      await check()
+    }
   }
 
-  frame = requestAnimationFrame(check)
-  onScopeDispose(() => cancelAnimationFrame(frame))
+  onElementChanges(() => {
+    void check()
+  })
+  void check()
 }

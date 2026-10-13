@@ -1,5 +1,5 @@
 import { applyFlowLayoutPositions } from '@flow/core'
-import type { FlowNode } from '@flow/core'
+import type { FlowLayoutInput, FlowNode } from '@flow/core'
 import type { FlowActions } from '@flow/vue'
 import {
   forceCollide,
@@ -13,7 +13,7 @@ import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force'
 import { onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
 
-import { getMeasuredLayoutInput } from './layout-recipes-engines.ts'
+import { whenMeasured } from './layout-recipes-engines.ts'
 
 interface ForceNode extends SimulationNodeDatum {
   readonly id: string
@@ -97,15 +97,7 @@ export const useForceLayout = (
     frame = requestAnimationFrame(step)
   }
 
-  const start = (): void => {
-    const input = getMeasuredLayoutInput(flow)
-
-    if (input === undefined) {
-      frame = requestAnimationFrame(start)
-
-      return
-    }
-
+  const start = (input: FlowLayoutInput): void => {
     const nodes = input.nodes.map(({ id, width, height }) => {
       const position = flow.getNode(id)?.position ?? { x: 0, y: 0 }
 
@@ -146,7 +138,7 @@ export const useForceLayout = (
     run()
   }
 
-  frame = requestAnimationFrame(start)
+  whenMeasured(flow, start)
   onScopeDispose(() => cancelAnimationFrame(frame))
 
   return {

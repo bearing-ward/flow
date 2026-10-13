@@ -16,6 +16,7 @@ import {
   dagreLayout,
   elkLayout,
   elkPortId,
+  notifyElementChanges,
   useMeasuredLayout,
 } from './layout-recipes-engines.ts'
 import type { LayoutPositions } from './layout-recipes-engines.ts'
@@ -84,28 +85,18 @@ const ports = ref('')
 const applyLayout = async (
   flow: FlowActions,
   positions: LayoutPositions,
-  direction: FlowLayoutDirection,
-  fit = true
+  direction: FlowLayoutDirection
 ): Promise<void> => {
   await flow.setNodes((nodes) =>
     orientFlowHandles(applyFlowLayoutPositions(nodes, positions), direction)
   )
-
-  if (fit) {
-    await flow.fitView()
-  }
+  await flow.fitView()
 
   layouts.value += 1
 }
 
 const currentInput = (flow: FlowActions) =>
   getFlowLayoutInput(flow.document.value, flow.getInternalNode)
-
-/** Select only the clicked node; the Vue canvas does not select on click. */
-const selectOnly = (flow: FlowActions, nodeId: string) =>
-  flow.setNodes((nodes) =>
-    nodes.map((node) => ({ ...node, selected: node.id === nodeId }))
-  )
 
 interface SceneHandlers {
   readonly controls?: () => VNode[]
@@ -206,9 +197,7 @@ const elkMultipleHandles: LayoutScene = {
       await applyLayout(
         flow,
         await elkLayout(input, 'LR', { ports: true }),
-        'LR',
-        // Keep zoom 1: Vue can record handle offsets against a stale zoom right after fitView.
-        false
+        'LR'
       )
     })
 
@@ -260,9 +249,6 @@ const autoLayout: LayoutScene = {
         button('add-child', 'Add child', addChild),
         button('remove-last', 'Remove last', removeLast),
       ],
-      onNodeClick: (node) => {
-        void selectOnly(flow, node.id)
-      },
     }
   },
 }
@@ -451,9 +437,12 @@ const app = createApp(
             FlowCanvas,
             {
               defaultDocument: activeScene.document(),
+              nodesResizable: true,
               nodeTypes: activeScene.nodeTypes ?? {},
               edgeTypes: activeScene.edgeTypes ?? {},
               onNodeClick: (node: FlowNode) => handlers.onNodeClick?.(node),
+              onNodesChange: notifyElementChanges,
+              onEdgesChange: notifyElementChanges,
               onNodeDragStart: () => handlers.onNodeDragStart?.(),
               onNodeDragStop: (payload: { readonly node: FlowNode }) =>
                 handlers.onNodeDragStop?.(payload.node),

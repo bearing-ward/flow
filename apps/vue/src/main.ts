@@ -910,6 +910,7 @@ const Demo = defineComponent({
       const canvasProps = {
         document: document.value,
         documentMode: 'controlled' as const,
+        nodesResizable: true,
         viewport: viewport.value,
         viewportMode:
           scene.value === 'viewport'
