@@ -6,6 +6,7 @@ import {
   flowMiniMapPanViewport,
   flowMiniMapWheelZoom,
   flowThemeValue,
+  NodeIdSchema,
   selectFlowMiniMapProjection,
 } from '@flow/core'
 import type {
@@ -79,6 +80,8 @@ type MiniMapController = Pick<
   | 'nodesInitialized'
   | 'subscribeState'
   | 'subscribeViewport'
+  | 'getRenderedNodePositions'
+  | 'subscribeRenderedPositions'
 > &
   Partial<Pick<JavaScriptFlowController, 'getAriaLabelConfig'>>
 
@@ -242,10 +245,17 @@ export const createFlowMiniMap = (
   const render = (): void => {
     const { document } = controller.getSnapshot()
 
+    // Drawn positions, so the overview follows drags and resizes live.
     const graph = createFlowGraph(
       document,
       flowMeasurementsFromInternalNodes(
         document.nodes.map((node) => controller.getInternalNode(node.id))
+      ),
+      new Map(
+        [...controller.getRenderedNodePositions()].map(([id, position]) => [
+          NodeIdSchema.make(id),
+          position,
+        ])
       )
     )
 
@@ -293,8 +303,19 @@ export const createFlowMiniMap = (
 
   settle(settleFrames)
 
+  // One redraw per animation frame for preview frames.
+  let previewFrame: number | undefined
+
+  const renderPreview = (): void => {
+    previewFrame ??= globalThis.requestAnimationFrame(() => {
+      previewFrame = undefined
+      render()
+    })
+  }
+
   const stopState = controller.subscribeState(render)
   const stopViewport = controller.subscribeViewport(render)
+  const stopPreview = controller.subscribeRenderedPositions(renderPreview)
 
   const pointInMiniMap = (event: MouseEvent): XYPosition => {
     const bounds = svg.getBoundingClientRect()
@@ -430,6 +451,12 @@ export const createFlowMiniMap = (
 
       stopState()
       stopViewport()
+      stopPreview()
+
+      if (previewFrame !== undefined) {
+        globalThis.cancelAnimationFrame(previewFrame)
+      }
+
       svg.removeEventListener('pointerdown', onPointerDown)
       svg.removeEventListener('pointermove', onPointerMove)
       svg.removeEventListener('pointerup', onPointerUp)

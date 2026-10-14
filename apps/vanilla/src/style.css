@@ -78,34 +78,6 @@ body,
     );
 }
 
-/*
- * Vanilla's light palette over the shared theme defaults that
- * `flowThemeStylesheet` injects (React Flow's values). Dark mode uses the
- * shared dark defaults unchanged; `--flow-*` overrides win in both modes.
- */
-.flow-canvas:not(.dark) {
-  --flow-background-color-default: #f8fafc;
-  --flow-background-pattern-dots-color-default: #cbd5e1;
-  --flow-background-pattern-lines-color-default: #cbd5e1;
-  --flow-background-pattern-cross-color-default: #cbd5e1;
-  --flow-node-border-radius-default: 4px;
-  --flow-node-color-default: #1f2937;
-  --flow-edge-stroke-default: #64748b;
-  --flow-edge-stroke-selected-default: #64748b;
-  --flow-edge-label-color-default: #1a192b;
-  --flow-handle-background-color-default: #fff;
-  --flow-handle-border-color-default: #1a192b;
-  --flow-controls-button-background-color-default: #fff;
-  --flow-controls-button-background-color-hover-default: #eff6ff;
-  --flow-controls-button-color-default: #1f2937;
-  --flow-controls-button-border-color-default: #cbd5e1;
-  --flow-minimap-background-color-default: rgb(255 255 255 / 92%);
-  --flow-minimap-node-background-color-default: #93c5fd;
-  --flow-minimap-node-stroke-color-default: #1d4ed8;
-  --flow-selection-background-color-default: rgb(37 99 235 / 12%);
-  --flow-selection-border-default: 1px solid #2563eb;
-}
-
 .flow-canvas[data-background='none'] {
   background-image: none;
 }
@@ -375,7 +347,7 @@ body,
 }
 
 .flow-edge-text {
-  fill: #1e293b;
+  fill: var(--flow-edge-label-color, var(--flow-edge-label-color-default));
   font-size: 10px;
   pointer-events: none;
 }
@@ -693,7 +665,13 @@ body,
   user-select: none;
 }
 
-.flow-node.selected,
+.flow-node.selected {
+  box-shadow: var(
+    --flow-node-boxshadow-selected,
+    var(--flow-node-boxshadow-selected-default)
+  );
+}
+
 .flow-node:focus-visible {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgb(37 99 235 / 20%);
@@ -762,9 +740,6 @@ body,
   top: calc(50% - 6px);
   left: -6px;
 }
-.flow-handle-source {
-  background: #2563eb;
-}
 
 .flow-handle.connecting {
   outline: 3px solid #93c5fd;
@@ -803,8 +778,14 @@ body,
 .flow-connection-preview line,
 .flow-connection-preview-path {
   fill: none;
-  stroke: #2563eb;
-  stroke-width: 2;
+  stroke: var(
+    --flow-connectionline-stroke,
+    var(--flow-connectionline-stroke-default)
+  );
+  stroke-width: var(
+    --flow-connectionline-stroke-width,
+    var(--flow-connectionline-stroke-width-default)
+  );
 }
 
 .flow-demo-panel {

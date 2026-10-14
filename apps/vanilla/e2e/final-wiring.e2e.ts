@@ -106,6 +106,24 @@ const widthOf = async (page: Page, id: string) => {
   return size?.width
 }
 
+const heightOf = async (page: Page, id: string) => {
+  const size = await sizeOf(page, id)
+
+  return size?.height ?? 0
+}
+
+const yOf = async (page: Page, id: string) => {
+  const position = await positionOf(page, id)
+
+  return position?.y ?? 0
+}
+
+const boxWidth = async (locator: Locator) => {
+  const bounds = await box(locator)
+
+  return bounds.width
+}
+
 const selectedOf = async (page: Page, id: string) => {
   const found = await nodeOf(page, id)
 
@@ -567,7 +585,7 @@ test.describe('Vanilla model and styling (Plan 114 checklist)', () => {
     )
   })
 
-  test('expandParent drags grow the parent in one node-bounds commit', async ({
+  test('expandParent drags grow the parent in one proposal', async ({
     page,
   }) => {
     await mount(page, {
@@ -599,8 +617,8 @@ test.describe('Vanilla model and styling (Plan 114 checklist)', () => {
       globalThis.wiringFixture?.changes.map(({ kind }) => kind)
     )
 
-    expect(kinds).toContain('node-bounds')
-    expect(kinds).not.toContain('node-position')
+    // One proposal carries the child and the grown parent (React batches).
+    expect(kinds).toStrictEqual(['edit-proposal'])
 
     const child = await nodeOf(page, 'child')
     const parent = await nodeOf(page, 'parent')
@@ -725,6 +743,53 @@ test.describe('Vanilla MiniMap component', () => {
     await expect
       .poll(async () => (await viewportXOf(page)) ?? 0)
       .toBeGreaterThan(50)
+  })
+
+  test('onClick reports flow points, zoomStep scales wheel zoom, drags update live', async ({
+    page,
+  }) => {
+    await mount(page, {
+      document: graph,
+      minimap: { zoomable: true, zoomStep: 2 },
+    })
+
+    const minimap = page.getByTestId('flow-minimap')
+    const nodeA = await box(minimap.locator('[data-node-id="a"]'))
+    await page.mouse.click(
+      nodeA.x + nodeA.width / 2,
+      nodeA.y + nodeA.height / 2
+    )
+
+    const points = await page.evaluate(
+      () => globalThis.wiringFixture?.minimapPoints
+    )
+
+    const [point] = points ?? []
+    // Node `a` covers flow 0..120 x 0..60.
+    expect(point?.x).toBeGreaterThan(0)
+    expect(point?.x).toBeLessThan(120)
+    expect(
+      await page.evaluate(() => globalThis.wiringFixture?.minimapClicks)
+    ).toStrictEqual(['a'])
+
+    // The minimap follows a drag preview before the drop commits.
+    // Moving `a` shrinks the graph bounds, so the overview rescales `b`.
+    const rect = minimap.locator('[data-node-id="b"]')
+    const before = await rect.getAttribute('x')
+    const start = await centre(node(page, 'a'))
+    await page.mouse.move(start.x, start.y)
+    await page.mouse.down()
+    await page.mouse.move(start.x + 3, start.y + 3)
+    await page.mouse.move(start.x + 150, start.y, { steps: 6 })
+    await expect(rect).not.toHaveAttribute('x', before ?? '')
+    expect(await positionOf(page, 'a')).toStrictEqual({ x: 0, y: 0 })
+    await page.mouse.up()
+
+    // React XYMinimap: zoom * 2 ** (-deltaY * 0.002 * zoomStep).
+    const centrePoint = await centre(minimap)
+    await page.mouse.move(centrePoint.x, centrePoint.y)
+    await page.mouse.wheel(0, -100)
+    await expect.poll(() => zoomOf(page)).toBeCloseTo(2 ** 0.4, 3)
   })
 
   test('custom nodes receive MiniMapNodeProps; ariaLabel null removes the title', async ({
@@ -929,6 +994,168 @@ test.describe('Vanilla NodeResizer and NodeResizeControl', () => {
     await expect
       .poll(async () => await sizeOf(page, 'parent'))
       .toEqual({ width: 280, height: 190 })
+  })
+})
+
+test.describe('Vanilla NodeResizer presentation and expandParent', () => {
+  const resizable = {
+    nodes: [square('r', 100, 100, { size: { width: 150, height: 80 } })],
+    edges: [],
+  }
+
+  test('autoScale keeps handles screen-sized; handleStyle and lineStyle apply', async ({
+    page,
+  }) => {
+    await mount(page, {
+      document: resizable,
+      zoom: 0.5,
+      resizers: [
+        {
+          nodeId: 'r',
+          kind: 'resizer',
+          options: {
+            handleStyle: { width: 12, height: 12 },
+            lineStyle: { borderColor: 'rgb(1, 2, 3)' },
+          },
+        },
+      ],
+    })
+
+    const corner = control(page, 'r', 'bottom-right')
+    await expect(corner).toHaveCSS('scale', '2')
+    await expect(corner).toHaveCSS('width', '12px')
+    await expect(control(page, 'r', 'right')).toHaveCSS(
+      'border-right-color',
+      'rgb(1, 2, 3)'
+    )
+
+    await page.evaluate(() =>
+      globalThis.wiringFixture?.resizers[0]?.update({ autoScale: false })
+    )
+    await expect(corner).toHaveCSS('scale', 'none')
+  })
+
+  const nested = {
+    nodes: [
+      square('parent', 100, 100, { size: { width: 200, height: 150 } }),
+      square('child', 10, 10, {
+        parentId: 'parent',
+        expandParent: true,
+        size: { width: 80, height: 50 },
+      }),
+      square('sibling', 120, 90, {
+        parentId: 'parent',
+        size: { width: 60, height: 40 },
+      }),
+    ],
+    edges: [],
+  }
+
+  test('left-edge resize grows the parent live and clamps the child, as React', async ({
+    page,
+  }) => {
+    await mount(page, {
+      document: nested,
+      resizers: [{ nodeId: 'child', kind: 'resizer' }],
+    })
+
+    const parentBefore = await box(node(page, 'parent'))
+    const left = await centre(control(page, 'child', 'left'))
+    await page.mouse.move(left.x, left.y)
+    await page.mouse.down()
+    await page.mouse.move(left.x - 3, left.y)
+    await page.mouse.move(left.x - 50, left.y, { steps: 5 })
+
+    // The parent grows during the gesture, before the commit.
+    await expect
+      .poll(() => boxWidth(node(page, 'parent')))
+      .toBeCloseTo(parentBefore.width + 40, 0)
+    await page.mouse.up()
+
+    await expect
+      .poll(() => positionOf(page, 'parent'))
+      .toStrictEqual({
+        x: 60,
+        y: 100,
+      })
+    expect(await sizeOf(page, 'parent')).toStrictEqual({
+      width: 240,
+      height: 150,
+    })
+    expect(await positionOf(page, 'child')).toStrictEqual({ x: 0, y: 10 })
+    expect(await sizeOf(page, 'child')).toStrictEqual({
+      width: 130,
+      height: 50,
+    })
+    // The sibling keeps its absolute position.
+    expect(await positionOf(page, 'sibling')).toStrictEqual({ x: 160, y: 90 })
+  })
+
+  test('top-left resize grows the parent on both axes in one controlled proposal', async ({
+    page,
+  }) => {
+    await mount(page, {
+      document: nested,
+      documentMode: 'controlled',
+      ownerAppliesLatest: true,
+      resizers: [{ nodeId: 'child', kind: 'resizer' }],
+    })
+
+    const corner = await centre(control(page, 'child', 'top-left'))
+    await drag(page, corner, { x: corner.x - 50, y: corner.y - 30 })
+
+    await expect
+      .poll(() => positionOf(page, 'parent'))
+      .toStrictEqual({
+        x: 60,
+        y: 80,
+      })
+    expect(await sizeOf(page, 'parent')).toStrictEqual({
+      width: 240,
+      height: 170,
+    })
+    expect(await positionOf(page, 'child')).toStrictEqual({ x: 0, y: 0 })
+    expect(await sizeOf(page, 'child')).toStrictEqual({
+      width: 130,
+      height: 80,
+    })
+    expect(await positionOf(page, 'sibling')).toStrictEqual({ x: 160, y: 110 })
+  })
+
+  test('a group drag that grows two parents commits one controlled proposal', async ({
+    page,
+  }) => {
+    await mount(page, {
+      documentMode: 'controlled',
+      ownerAppliesLatest: true,
+      document: {
+        nodes: [
+          square('p1', 40, 60, { size: { width: 160, height: 120 } }),
+          square('p2', 300, 60, { size: { width: 160, height: 120 } }),
+          square('c1', 20, 20, {
+            parentId: 'p1',
+            expandParent: true,
+            selected: true,
+            size: { width: 60, height: 40 },
+          }),
+          square('c2', 20, 20, {
+            parentId: 'p2',
+            expandParent: true,
+            selected: true,
+            size: { width: 60, height: 40 },
+          }),
+        ],
+        edges: [],
+      },
+    })
+
+    const start = await centre(node(page, 'c1'))
+    await drag(page, start, { x: start.x, y: start.y + 150 })
+
+    await expect.poll(() => heightOf(page, 'p1')).toBeGreaterThan(120)
+    expect(await heightOf(page, 'p2')).toBeGreaterThan(120)
+    expect(await yOf(page, 'c1')).toBeGreaterThan(100)
+    expect(await yOf(page, 'c2')).toBeGreaterThan(100)
   })
 })
 

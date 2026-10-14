@@ -56,7 +56,7 @@ test('feature-overview: controls zoom, node toolbar and resizing', async ({
 }) => {
   await open(page)
   const before = await zoomOf(page)
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect.poll(() => zoomOf(page)).toBeGreaterThan(before)
 
   const toolbar = page.locator(

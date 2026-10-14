@@ -1,20 +1,6 @@
 import { resolveFlowAriaLabelConfig } from '@flow/core'
 import type { FlowAriaLabelConfig, FlowAriaLabelConfigInput } from '@flow/core'
 
-/**
- * Vanilla's built-in English labels where it had its own before Plan 115.
- * Entries the caller passes in `ariaLabelConfig` replace them, as React's
- * `ariaLabelConfig` replaces its defaults.
- */
-const vanillaAriaLabelDefaults = {
-  'controls.ariaLabel': 'Flow controls',
-  'controls.zoomIn.ariaLabel': 'Zoom in',
-  'controls.zoomOut.ariaLabel': 'Zoom out',
-  'controls.fitView.ariaLabel': 'Fit view',
-  'controls.interactive.ariaLabel': 'Toggle interactivity',
-  'minimap.ariaLabel': 'Graph minimap',
-} as const satisfies Partial<FlowAriaLabelConfig>
-
 /** The resolved labels plus whether the caller set a handle label. */
 export interface FlowResolvedAriaLabels {
   readonly config: FlowAriaLabelConfig
@@ -25,10 +11,7 @@ export interface FlowResolvedAriaLabels {
 export const resolveVanillaAriaLabels = (
   input: FlowAriaLabelConfigInput | undefined
 ): FlowResolvedAriaLabels => ({
-  config: resolveFlowAriaLabelConfig({
-    ...vanillaAriaLabelDefaults,
-    ...input,
-  }),
+  config: resolveFlowAriaLabelConfig(input),
   handleLabelConfigured: input?.['handle.ariaLabel'] !== undefined,
 })
 

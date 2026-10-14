@@ -196,14 +196,14 @@ test('public backgrounds and controls operate per host and clean up on remount',
   await expect(firstControls).toHaveAttribute('data-orientation', 'horizontal')
   await expect(firstControls).toHaveCSS('border-color', 'rgb(1, 2, 3)')
   await expect(
-    page.locator('#second-flow').getByRole('button', { name: 'Zoom in' })
+    page.locator('#second-flow').getByRole('button', { name: 'Zoom In' })
   ).toBeVisible()
   await expect(
-    page.locator('#second-flow').getByRole('button', { name: 'Fit view' })
+    page.locator('#second-flow').getByRole('button', { name: 'Fit View' })
   ).toHaveCount(0)
-  await firstControls.getByRole('button', { name: 'Zoom in' }).click()
+  await firstControls.getByRole('button', { name: 'Zoom In' }).click()
   await expect(
-    firstControls.getByRole('button', { name: 'Zoom in' })
+    firstControls.getByRole('button', { name: 'Zoom In' })
   ).toBeDisabled()
   await expect
     .poll(() =>
@@ -219,7 +219,7 @@ test('public backgrounds and controls operate per host and clean up on remount',
         })
     )
     .toBe('1.2')
-  await firstControls.getByRole('button', { name: 'Fit view' }).click()
+  await firstControls.getByRole('button', { name: 'Fit View' }).click()
   await expect
     .poll(() => page.evaluate(() => globalThis.flowUi.calls.fit))
     .toBe(1)
@@ -284,7 +284,7 @@ test('public backgrounds and controls operate per host and clean up on remount',
       remountedControls: createFlowControls(controller),
     })
   })
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect
     .poll(() =>
       page

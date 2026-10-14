@@ -1,4 +1,7 @@
-import { defaultFlowAriaLabelConfig } from '@flow/core'
+import {
+  applyFlowChangeToDocument,
+  defaultFlowAriaLabelConfig,
+} from '@flow/core'
 import type {
   FlowChange,
   FlowMiniMapNodeProps,
@@ -76,6 +79,11 @@ export interface WiringFixtureInput {
   readonly resizers?: readonly WiringResizerInput[] | undefined
   /** Node type `grip`: a `.grip` span and a `.body` span. */
   readonly gripRenderer?: boolean | undefined
+  /**
+   * Controlled owner that applies only the latest proposal of each task, as
+   * an owner keeping one pending change would.
+   */
+  readonly ownerAppliesLatest?: boolean | undefined
 }
 
 export interface WiringFixture {
@@ -85,6 +93,7 @@ export interface WiringFixture {
   readonly resizeEvents: string[]
   readonly resizeParams: FlowResizeParams[]
   readonly minimapClicks: string[]
+  readonly minimapPoints: { readonly x: number; readonly y: number }[]
   readonly minimap: FlowMiniMapMount | undefined
   readonly resizers: FlowNodeResizerMount<FlowNodeResizerOptions>[]
   readonly errors: string[]
@@ -129,6 +138,7 @@ export const mountWiringFixture = (
   const resizeEvents: string[] = []
   const resizeParams: FlowResizeParams[] = []
   const minimapClicks: string[] = []
+  const minimapPoints: { readonly x: number; readonly y: number }[] = []
   const errors: string[] = []
   const zoom = input.zoom ?? 1
 
@@ -176,6 +186,36 @@ export const mountWiringFixture = (
 
   controller.subscribe((change) => changes.push(change))
 
+  if (input.ownerAppliesLatest === true) {
+    let latest: FlowChange | undefined
+
+    controller.subscribe((change) => {
+      const scheduled = latest !== undefined
+      latest = change
+
+      if (scheduled) {
+        return
+      }
+
+      queueMicrotask(() => {
+        const proposal = latest
+        latest = undefined
+
+        const next =
+          proposal === undefined
+            ? undefined
+            : applyFlowChangeToDocument(
+                controller.getSnapshot().document,
+                proposal
+              )
+
+        if (next !== undefined) {
+          controller.update(next)
+        }
+      })
+    })
+  }
+
   if (input.controls !== undefined) {
     createFlowControls(controller, {
       // SAFETY: tests pass a React PanelPosition literal; the controls schema validates it.
@@ -191,6 +231,7 @@ export const mountWiringFixture = (
     const options: MutableMiniMapOptions = {
       ...minimapOptions,
       onNodeClick: (_event, node) => minimapClicks.push(node.id),
+      onClick: (_event, position) => minimapPoints.push(position),
     }
 
     if (nodeColorById !== undefined) {
@@ -251,6 +292,7 @@ export const mountWiringFixture = (
     resizeEvents,
     resizeParams,
     minimapClicks,
+    minimapPoints,
     minimap,
     resizers,
     errors,

@@ -141,8 +141,8 @@ import {
   resolveFlowInteractivity,
   flowNodeHandles,
   computeFlowStacking,
-  calculateFlowExpandParentDrag,
   calculateFlowExpandParent,
+  applyFlowChangeToDocument,
   startFlowNodeResize,
   stepFlowNodeResize,
   snapPosition,
@@ -202,6 +202,8 @@ import type {
   FlowPanelPosition,
   FlowNodeResizeSession,
   FlowNodeResizeStart,
+  FlowExpandParentChild,
+  FlowRect,
   FlowResizeParams,
   FlowResizeParamsWithDirection,
   FlowResizeControlPosition,
@@ -1100,6 +1102,13 @@ export interface FlowController {
   }
   readonly setColorMode: (mode: FlowColorMode) => void
   /**
+   * Stored positions as currently drawn: drag and resize previews override
+   * the accepted ones (parent-relative anchors, like `node.position`).
+   */
+  readonly getRenderedNodePositions: () => ReadonlyMap<string, XYPosition>
+  /** Called after every drawn position frame, including drag previews. */
+  readonly subscribeRenderedPositions: (listener: () => void) => () => void
+  /**
    * Render resize controls in one node and drive them with the core resizer
    * session. `createFlowNodeResizer`/`createFlowNodeResizeControl` call it.
    */
@@ -1369,6 +1378,8 @@ export interface JavaScriptFlowController extends FlowInstanceApi {
   readonly getAriaLabelConfig: FlowController['getAriaLabelConfig']
   readonly getColorMode: FlowController['getColorMode']
   readonly setColorMode: FlowController['setColorMode']
+  readonly getRenderedNodePositions: FlowController['getRenderedNodePositions']
+  readonly subscribeRenderedPositions: FlowController['subscribeRenderedPositions']
   readonly registerNodeResizer: FlowController['registerNodeResizer']
   readonly mountViewportPortal: FlowController['mountViewportPortal']
   readonly getConnectionPreview: FlowController['getConnectionPreview']
@@ -1615,6 +1626,30 @@ const applyViewport = (element: HTMLElement, viewport: Viewport): void => {
     '--flow-resize-control-scale',
     String(Math.max(1 / viewport.zoom, 1))
   )
+}
+
+/** A gesture that can grow `expandParent` parents. */
+type ExpandParentGesture =
+  | ActiveNodeDrag
+  | ActiveNodeGroupDrag
+  | ActiveNodeResize
+
+/** The smallest rectangle around both. */
+const unionRect = (first: FlowRect, second: FlowRect): FlowRect => {
+  const x = Math.min(first.x, second.x)
+  const y = Math.min(first.y, second.y)
+
+  return {
+    x,
+    y,
+    width: Math.max(first.x + first.width, second.x + second.width) - x,
+    height: Math.max(first.y + first.height, second.y + second.height) - y,
+  }
+}
+
+/** Invoke a parameterless observer through the boundary reporter. */
+const callObserver = (observer: () => void): void => {
+  observer()
 }
 
 // eslint-disable-next-line complexity -- one comparison per rendered node field.
@@ -2492,8 +2527,22 @@ export const createFlowHost = (
           }
     }
 
-    const findNode = (nodeId: NodeId): FlowNode | undefined =>
-      document.nodes.find((node) => node.id === nodeId)
+    // Accepted documents are replaced, never mutated, so an index per
+    // document identity keeps node lookups constant-time on hot paths.
+    let indexedNodes: readonly FlowNode[] | undefined
+    let nodeIndex = new Map<NodeId, FlowNode>()
+
+    /** Observers of preview frames (drags, resizes) for overview UI. */
+    const renderedPositionListeners = new Set<() => void>()
+
+    const findNode = (nodeId: NodeId): FlowNode | undefined => {
+      if (indexedNodes !== document.nodes) {
+        indexedNodes = document.nodes
+        nodeIndex = new Map(document.nodes.map((node) => [node.id, node]))
+      }
+
+      return nodeIndex.get(nodeId)
+    }
 
     // Per-node resizers (`createFlowNodeResizer`/`createFlowNodeResizeControl`).
     const nodeResizers = new Map<
@@ -2841,6 +2890,7 @@ export const createFlowHost = (
       hostScope,
       Effect.sync(() => {
         colorMode.dispose()
+        renderedPositionListeners.clear()
         nodeSlots.clear()
         renderedNodePositions.clear()
 
@@ -3829,6 +3879,15 @@ export const createFlowHost = (
 
       if (projectionMatches(pass, { kind: 'minimap' })) {
         updateCanvasMinimap(pass)
+      }
+
+      for (const listener of renderedPositionListeners) {
+        reportBoundaryCallback(
+          'Rendered positions observer',
+          'rendered-positions',
+          callObserver,
+          listener
+        )
       }
 
       return graph
@@ -5910,12 +5969,16 @@ export const createFlowHost = (
     }
 
     /**
-     * React `expandParent` while dragging: `calculateFlowExpandParentDrag`
-     * grows (and for up/left moves, shifts) the parent and compensates its
-     * other children on every step. Vanilla previews that growth and commits
-     * it with the drop; `parents` and `siblings` hold the preview.
+     * React `expandParent`: every drag or resize step grows (and for up/left
+     * moves, shifts) the parent around the child and compensates its other
+     * children; React commits each step. Vanilla previews the growth and
+     * commits it with the gesture in one proposal. `base` is the graph at
+     * gesture start; growth is computed against it with the union of every
+     * rectangle so far, so the parent never shrinks back within a gesture.
      */
     interface ExpandParentPreview {
+      readonly base: FlowGraphView
+      readonly expanded: Map<NodeId, FlowRect>
       readonly parents: Map<
         NodeId,
         {
@@ -5926,8 +5989,9 @@ export const createFlowHost = (
       readonly siblings: Map<NodeId, XYPosition>
     }
 
+    /** Previews by gesture record (node drag or node resize). */
     const expandParentPreviews = new WeakMap<
-      ActiveNodeDrag | ActiveNodeGroupDrag,
+      ExpandParentGesture,
       ExpandParentPreview
     >()
 
@@ -5937,73 +6001,133 @@ export const createFlowHost = (
       return node?.expandParent === true && node.parentId !== undefined
     }
 
-    /** Apply one drag step's expand-parent changes; returns the dragged positions. */
-    const previewExpandParent = (
-      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
-      items: readonly {
-        readonly nodeId: NodeId
+    /** The parent's absolute top-left in the preview. */
+    const previewParentTopLeft = (
+      preview: ExpandParentPreview,
+      parentId: NodeId
+    ): XYPosition | undefined => {
+      const parent = preview.base.nodes.get(parentId)
+
+      if (parent === undefined) {
+        return undefined
+      }
+
+      const moved = preview.parents.get(parentId)
+
+      if (moved === undefined) {
+        return parent.absolutePosition
+      }
+
+      const origin = resolveNodeOrigin(parent.node, document)
+
+      const stored = nodeAnchorToTopLeft(
+        parent.node.position,
+        parent.dimensions,
+        origin
+      )
+
+      const next = nodeAnchorToTopLeft(moved.position, moved.size, origin)
+
+      return {
+        x: parent.absolutePosition.x - stored.x + next.x,
+        y: parent.absolutePosition.y - stored.y + next.y,
+      }
+    }
+
+    /** Grow the parents of `children` (stored, unclamped positions) for one step. */
+    // eslint-disable-next-line complexity -- one pass maps each core change kind onto the preview.
+    const growExpandParents = (
+      gesture: ExpandParentGesture,
+      children: readonly {
+        readonly node: FlowNode
         readonly position: XYPosition
+        readonly size: { readonly width: number; readonly height: number }
       }[]
-    ): readonly {
-      readonly nodeId: NodeId
-      readonly position: XYPosition
-    }[] => {
-      if (!items.some(({ nodeId }) => expandsParent(nodeId))) {
-        return items
+    ): void => {
+      let preview = expandParentPreviews.get(gesture)
+
+      if (preview === undefined) {
+        preview = {
+          base: createFlowGraph(document, measurements),
+          expanded: new Map(),
+          parents: new Map(),
+          siblings: new Map(),
+        }
+        expandParentPreviews.set(gesture, preview)
       }
 
-      const preview: ExpandParentPreview = expandParentPreviews.get(drag) ?? {
-        parents: new Map(),
-        siblings: new Map(),
+      const current = preview
+      const rects: FlowExpandParentChild[] = []
+
+      for (const { node, position, size } of children) {
+        const parentTopLeft =
+          node.parentId === undefined
+            ? undefined
+            : previewParentTopLeft(current, node.parentId)
+
+        if (node.parentId === undefined || parentTopLeft === undefined) {
+          continue
+        }
+
+        const topLeft = nodeAnchorToTopLeft(
+          position,
+          size,
+          resolveNodeOrigin(node, document)
+        )
+
+        rects.push({
+          id: node.id,
+          parentId: node.parentId,
+          rect: {
+            x: parentTopLeft.x + topLeft.x,
+            y: parentTopLeft.y + topLeft.y,
+            ...size,
+          },
+        })
       }
 
-      expandParentPreviews.set(drag, preview)
-      const draggedIds = new Set(items.map(({ nodeId }) => nodeId))
+      // Earlier steps' growth stays: their union rides along as one more child.
+      const previous = [...current.expanded].flatMap(([parentId, rect]) => {
+        const child = rects.find((item) => item.parentId === parentId)
 
-      const parentIds = new Set(
-        items.flatMap(({ nodeId }) => findNode(nodeId)?.parentId ?? [])
-      )
+        return child === undefined ? [] : [{ ...child, rect }]
+      })
 
-      // React commits every step, so each step starts from the previous
-      // one's parent and sibling positions; the preview stands in for them.
-      const previewDocument: FlowDocument = {
-        ...document,
-        nodes: document.nodes.map((candidate) => {
-          const parent = preview.parents.get(candidate.id)
-          const sibling = preview.siblings.get(candidate.id)
+      for (const { parentId, rect } of rects) {
+        const parent = current.base.nodes.get(parentId)
 
-          if (parent !== undefined) {
-            return {
-              ...candidate,
-              position: parent.position,
-              size: parent.size,
-            }
-          }
-
-          return sibling === undefined
-            ? candidate
-            : { ...candidate, position: sibling }
-        }),
+        if (parent !== undefined) {
+          current.expanded.set(
+            parentId,
+            unionRect(
+              current.expanded.get(parentId) ?? {
+                ...parent.absolutePosition,
+                ...parent.dimensions,
+              },
+              rect
+            )
+          )
+        }
       }
 
-      const changes = calculateFlowExpandParentDrag(
-        graphFor(previewDocument),
-        items.map(({ nodeId, position }) => ({ id: nodeId, position }))
-      )
+      const parentIds = new Set(rects.map(({ parentId }) => parentId))
 
-      const dragged: { nodeId: NodeId; position: XYPosition }[] = []
-
-      for (const change of changes) {
-        const parentPreview = preview.parents.get(change.nodeId)
+      for (const change of calculateFlowExpandParent(current.base, [
+        ...rects,
+        ...previous,
+      ])) {
+        const parentPreview = current.parents.get(change.nodeId)
 
         if (change.kind === 'size') {
-          const parent = findNode(change.nodeId)
+          const parent = current.base.nodes.get(change.nodeId)
           const entry = entries.get(change.nodeId)
 
-          preview.parents.set(change.nodeId, {
-            position:
-              parentPreview?.position ??
-              (parent === undefined ? { x: 0, y: 0 } : adoptedPosition(parent)),
+          current.parents.set(change.nodeId, {
+            position: parentPreview?.position ??
+              parent?.node.position ?? {
+                x: 0,
+                y: 0,
+              },
             size: change.size,
           })
 
@@ -6015,40 +6139,77 @@ export const createFlowHost = (
           }
 
           acceptMeasurement(change.nodeId, change.size)
-        } else if (draggedIds.has(change.nodeId)) {
-          dragged.push({ nodeId: change.nodeId, position: change.position })
         } else if (parentIds.has(change.nodeId)) {
-          const parent = findNode(change.nodeId)
-
-          preview.parents.set(change.nodeId, {
+          current.parents.set(change.nodeId, {
             position: change.position,
-            size:
-              parentPreview?.size ??
-              (parent === undefined
-                ? { width: 0, height: 0 }
-                : dimensionsForNode(parent)),
+            size: parentPreview?.size ??
+              current.base.nodes.get(change.nodeId)?.dimensions ?? {
+                width: 0,
+                height: 0,
+              },
           })
           renderedNodePositions.set(change.nodeId, change.position)
         } else {
-          preview.siblings.set(change.nodeId, change.position)
+          current.siblings.set(change.nodeId, change.position)
           renderedNodePositions.set(change.nodeId, change.position)
         }
       }
-
-      return dragged
     }
 
-    /** Undo a drag's expand-parent preview (cancel, or a declined commit). */
-    const revertExpandParentPreview = (
-      drag: ActiveNodeDrag | ActiveNodeGroupDrag
-    ): void => {
-      const preview = expandParentPreviews.get(drag)
+    /**
+     * One drag step: React `updateNodePositions` clamps an `expandParent`
+     * child at its parent's origin and grows the parent from the unclamped
+     * rectangle. Returns the positions to preview.
+     */
+    const previewExpandParent = (
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
+      items: readonly {
+        readonly nodeId: NodeId
+        readonly position: XYPosition
+      }[]
+    ): readonly {
+      readonly nodeId: NodeId
+      readonly position: XYPosition
+    }[] => {
+      const growing = items.flatMap((item) => {
+        const node = findNode(item.nodeId)
 
-      if (preview === undefined) {
+        return node?.expandParent === true && node.parentId !== undefined
+          ? [{ node, position: item.position, size: dimensionsForNode(node) }]
+          : []
+      })
+
+      if (growing.length === 0) {
+        return items
+      }
+
+      growExpandParents(drag, growing)
+
+      return items.map((item) =>
+        expandsParent(item.nodeId)
+          ? {
+              nodeId: item.nodeId,
+              position: {
+                x: Math.max(0, item.position.x),
+                y: Math.max(0, item.position.y),
+              },
+            }
+          : item
+      )
+    }
+
+    /** Drop a gesture's expand-parent preview after its commit or cancel. */
+    const revertExpandParentPreview = (
+      gesture: ExpandParentGesture | undefined
+    ): void => {
+      const preview =
+        gesture === undefined ? undefined : expandParentPreviews.get(gesture)
+
+      if (gesture === undefined || preview === undefined) {
         return
       }
 
-      expandParentPreviews.delete(drag)
+      expandParentPreviews.delete(gesture)
 
       for (const nodeId of [
         ...preview.parents.keys(),
@@ -6071,63 +6232,43 @@ export const createFlowHost = (
     }
 
     /**
-     * The drop commit for an expand-parent drag. With one parent the whole
-     * step is one `node-bounds` change (the parent's bounds and every moved
-     * child); otherwise the parents follow the drag change.
+     * The gesture's own change plus every grown parent as one proposal, so
+     * an owner that applies only the latest proposal keeps all of it (React
+     * batches these node changes). Without growth it is the change itself.
      */
-    const expandParentCommit = (
-      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
-      positions: readonly {
-        readonly nodeId: NodeId
-        readonly position: XYPosition
-      }[]
-    ):
-      | { readonly changes: readonly FlowChange[]; readonly withDrag: boolean }
-      | undefined => {
-      const preview = expandParentPreviews.get(drag)
+    const withExpandParentCommit = (
+      gesture: ExpandParentGesture,
+      change: FlowChange
+    ): FlowChange => {
+      const preview = expandParentPreviews.get(gesture)
 
       if (preview === undefined || preview.parents.size === 0) {
-        return undefined
+        return change
       }
 
-      const bounds = [...preview.parents].map(
-        ([nodeId, parent]): NodeBoundsChange => ({
-          kind: 'node-bounds',
-          nodeId,
-          position: parent.position,
-          size: parent.size,
-          childPositions: [...preview.siblings].flatMap(
-            ([siblingId, position]) =>
-              findNode(siblingId)?.parentId === nodeId
-                ? [{ nodeId: siblingId, position }]
-                : []
-          ),
-        })
-      )
+      let proposed = applyFlowChangeToDocument(document, change) ?? document
 
-      const [only] = bounds
-
-      if (bounds.length === 1 && only !== undefined) {
-        return {
-          withDrag: true,
-          changes: [
-            {
-              ...only,
-              childPositions: [
-                ...only.childPositions,
-                ...positions.filter(
-                  ({ nodeId }) =>
-                    !only.childPositions.some(
-                      (child) => child.nodeId === nodeId
-                    )
-                ),
-              ],
-            },
-          ],
-        }
+      for (const [nodeId, parent] of preview.parents) {
+        proposed =
+          applyNodeBoundsChange(proposed, {
+            kind: 'node-bounds',
+            nodeId,
+            position: parent.position,
+            size: parent.size,
+            childPositions: [...preview.siblings].flatMap(
+              ([siblingId, position]) =>
+                findNode(siblingId)?.parentId === nodeId
+                  ? [{ nodeId: siblingId, position }]
+                  : []
+            ),
+          }) ?? proposed
       }
 
-      return { withDrag: false, changes: bounds }
+      return {
+        kind: 'edit-proposal',
+        document: proposed,
+        deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+      }
     }
 
     const notifyNodeDragStop = (
@@ -6919,6 +7060,7 @@ export const createFlowHost = (
 
     /** One registered resize step; `shouldResize` may veto it. */
     const registeredResizeCandidate = (
+      resize: ActiveNodeResize,
       gesture: RegisteredResize,
       event: PointerEvent
     ): NodeBoundsChange => {
@@ -6946,10 +7088,29 @@ export const createFlowHost = (
       }
       gesture.resized = true
 
+      const size = step.size ?? gesture.candidate.size
+      let nextPosition = step.position ?? gesture.candidate.position
+      const node = findNode(resize.nodeId)
+
+      // React NodeResizeControl: an `expandParent` child grows its parent on
+      // every step, then clamps at `origin * size` inside the grown parent.
+      if (node?.expandParent === true && node.parentId !== undefined) {
+        growExpandParents(resize, [{ node, position: nextPosition, size }])
+
+        if (step.position !== undefined) {
+          const origin = resolveNodeOrigin(node, document)
+
+          nextPosition = {
+            x: Math.max(origin[0] * size.width, nextPosition.x),
+            y: Math.max(origin[1] * size.height, nextPosition.y),
+          }
+        }
+      }
+
       gesture.candidate = {
         ...gesture.candidate,
-        position: step.position ?? gesture.candidate.position,
-        size: step.size ?? gesture.candidate.size,
+        position: nextPosition,
+        size,
         childPositions:
           step.childPositions.length === 0
             ? gesture.candidate.childPositions
@@ -6970,68 +7131,6 @@ export const createFlowHost = (
       }
 
       return gesture.candidate
-    }
-
-    /**
-     * React NodeResizeControl `expandParent`: after the resize commits, grow
-     * the parent around the child's new rectangle (`calculateFlowExpandParent`).
-     */
-    const expandParentAfterResize = (change: NodeBoundsChange): void => {
-      const node = findNode(change.nodeId)
-
-      if (node?.expandParent !== true || node.parentId === undefined) {
-        return
-      }
-
-      const graph = graphFor()
-      const parent = graph.nodes.get(node.parentId)
-
-      if (parent === undefined) {
-        return
-      }
-
-      const topLeft = nodeAnchorToTopLeft(
-        change.position,
-        change.size,
-        resolveNodeOrigin(node, document)
-      )
-
-      const changes = calculateFlowExpandParent(graph, [
-        {
-          id: node.id,
-          parentId: node.parentId,
-          rect: {
-            x: parent.absolutePosition.x + topLeft.x,
-            y: parent.absolutePosition.y + topLeft.y,
-            ...change.size,
-          },
-        },
-      ])
-
-      const size = changes.find(
-        (item) => item.kind === 'size' && item.nodeId === node.parentId
-      )
-
-      if (size?.kind !== 'size') {
-        return
-      }
-
-      const moved = changes.find(
-        (item) => item.kind === 'position' && item.nodeId === node.parentId
-      )
-
-      changePublisher.publish({
-        kind: 'node-bounds',
-        nodeId: node.parentId,
-        position:
-          moved?.kind === 'position' ? moved.position : parent.node.position,
-        size: size.size,
-        childPositions: changes.flatMap((item) =>
-          item.kind === 'position' && item.nodeId !== node.parentId
-            ? [{ nodeId: item.nodeId, position: item.position }]
-            : []
-        ),
-      })
     }
 
     const operations = {
@@ -8230,7 +8329,7 @@ export const createFlowHost = (
             const registered = registeredResizes.get(resize)
 
             if (registered !== undefined) {
-              return registeredResizeCandidate(registered, event)
+              return registeredResizeCandidate(resize, registered, event)
             }
 
             const current = findNode(resize.nodeId)
@@ -8386,9 +8485,10 @@ export const createFlowHost = (
                 change.size.width !== resize.sizeStart.width ||
                 change.size.height !== resize.sizeStart.height)
             ) {
-              operations.publishChange(change)
-              expandParentAfterResize(change)
+              operations.publishChange(withExpandParentCommit(resize, change))
             }
+
+            revertExpandParentPreview(resize)
 
             const registered = registeredResizes.get(resize)
 
@@ -8839,8 +8939,6 @@ export const createFlowHost = (
                   }
                 : { ...boundedChange, positions: expandedPositions }
 
-            const expandCommit = expandParentCommit(drag, expandedPositions)
-
             const outcome = endSession('node-drag', event.pointerId, 'finished')
             interactionSlots.activeDrag = null
             dragPointerStart = null
@@ -8899,13 +8997,7 @@ export const createFlowHost = (
               outcome.kind === 'finished' &&
               outcome.semanticEvent === change.kind
             ) {
-              if (expandCommit?.withDrag !== true) {
-                operations.publishChange(change)
-              }
-
-              for (const expandChange of expandCommit?.changes ?? []) {
-                operations.publishChange(expandChange)
-              }
+              operations.publishChange(withExpandParentCommit(drag, change))
             }
 
             revertExpandParentPreview(drag)
@@ -9935,6 +10027,7 @@ export const createFlowHost = (
           }
 
           case 'activeNodeResize': {
+            revertExpandParentPreview(actor.record)
             endSession('node-resize', actor.record.pointerId, 'cancelled')
             break
           }
@@ -12404,6 +12497,22 @@ export const createFlowHost = (
       },
       getSnapshot: () => createFlowSnapshot(document, authoritativeViewport),
       getAriaLabelConfig: () => ariaLabels.config,
+      getRenderedNodePositions: () =>
+        new Map(
+          [...renderedNodePositions].map(([id, position]) => [
+            id,
+            { ...position },
+          ])
+        ),
+      subscribeRenderedPositions: (listener) => {
+        if (!destroyed) {
+          renderedPositionListeners.add(listener)
+        }
+
+        return () => {
+          renderedPositionListeners.delete(listener)
+        }
+      },
       registerNodeResizer: (nodeId, registration) =>
         registerNodeResizer(
           S.decodeUnknownSync(NodeIdSchema)(nodeId),
@@ -13296,6 +13405,8 @@ export const mountFlow = (
     ...createFlowInstanceApi(host),
     overlayPortal: host.overlayPortal,
     getAriaLabelConfig: host.getAriaLabelConfig,
+    getRenderedNodePositions: host.getRenderedNodePositions,
+    subscribeRenderedPositions: host.subscribeRenderedPositions,
     registerNodeResizer: host.registerNodeResizer,
     getColorMode: host.getColorMode,
     setColorMode: (mode) =>
