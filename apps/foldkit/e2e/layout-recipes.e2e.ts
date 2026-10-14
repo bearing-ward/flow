@@ -306,3 +306,23 @@ test('dynamic-layouting grows the tree from placeholders', async ({ page }) => {
   const branch = await nodeBox(page, 'p-3')
   expect(branch.y).toBeGreaterThanOrEqual(branched.y + branched.height)
 })
+
+test('auto-layout re-runs when an edge alone is added', async ({ page }) => {
+  await open(page, 'auto-layout')
+  await expect(status(page)).toHaveAttribute('data-layouts', '1')
+  await expectLaidOut(page, 'TB')
+
+  const before = await layouts(page)
+  const from = await handleCenter(page, '2c', 'out')
+  const to = await handleCenter(page, '3c', 'in')
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+  await page.mouse.move(from.x + 4, from.y + 4)
+  await page.mouse.move(to.x, to.y, { steps: 8 })
+  await page.mouse.up()
+
+  await expect(page.locator('[data-testid="flow-edge"]')).toHaveCount(10)
+  await expect.poll(() => layouts(page)).toBeGreaterThan(before)
+  // The new edge orders 3c below 2c, so the tree was laid out again.
+  await expectLaidOut(page, 'TB')
+})

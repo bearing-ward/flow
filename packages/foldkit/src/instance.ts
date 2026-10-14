@@ -369,10 +369,29 @@ export const createFoldkitFlowInstance = (
   }
 
   return {
+    // React `getNodes`: each node carries `measured` from the host's last
+    // measurement, as `getNode` does.
     getNodes: async () => {
-      const current = await currentDocument()
+      const response = await read({ internalNodes: true })
 
-      return current.nodes
+      const measured = new Map(
+        (response.internalNodes ?? []).flatMap((internal) =>
+          internal.measurementStatus === 'measured'
+            ? [
+                [
+                  internal.node.id,
+                  { width: internal.width, height: internal.height },
+                ] as const,
+              ]
+            : []
+        )
+      )
+
+      return response.snapshot.document.nodes.map((node) => {
+        const size = measured.get(node.id)
+
+        return size === undefined ? node : { ...node, measured: size }
+      })
     },
     getEdges: async () => {
       const current = await currentDocument()

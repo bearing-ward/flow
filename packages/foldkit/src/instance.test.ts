@@ -171,6 +171,16 @@ const ids = async (
 }
 
 describe('Foldkit flow instance', () => {
+  test('getNodes carries measured sizes, as React getNodes', async () => {
+    const instance = createFoldkitFlowInstance(fakeRuntime().ports)
+    const read = await instance.getNodes()
+
+    expect(read.find(({ id }) => id === 'a')?.measured).toStrictEqual({
+      width: 150,
+      height: 40,
+    })
+  })
+
   test('reads nodes, edges and nodes by id through the snapshot port', async () => {
     const instance = createFoldkitFlowInstance(fakeRuntime().ports)
 

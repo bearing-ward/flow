@@ -104,6 +104,8 @@ export const mountFoldkitModelStylingFixture = (
     onResizeEnd: log('onResizeEnd'),
   })
 
+  const plainResizer = createFoldkitNodeResizer()
+
   const aspectResizer = createFoldkitNodeResizer({
     keepAspectRatio: true,
     autoScale: false,
@@ -123,6 +125,8 @@ export const mountFoldkitModelStylingFixture = (
         [h.Class('fixture-resizable')],
         [node.label, ...resizer.view(h, props)]
       ),
+    plain: (node, h, props) =>
+      h.div([], [node.label, ...plainResizer.view(h, props)]),
     aspect: (node, h, props) =>
       h.div([], [node.label, ...aspectResizer.view(h, props)]),
     line: (node, h, props) =>

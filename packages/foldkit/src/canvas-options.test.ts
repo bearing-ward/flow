@@ -422,6 +422,68 @@ describe('Foldkit NodeResizer gesture', () => {
     resizer.dispose()
   })
 
+  it('publishes resize events and no node-drag events, as React', () => {
+    const resizer = createFoldkitNodeResizer()
+
+    const { reductions, released } = resize(start(single), resizer.id, [
+      [130, 60],
+      [150, 70],
+    ])
+
+    const names = [...reductions, released].flatMap((reduction) =>
+      events(reduction).map(({ name }) => name)
+    )
+
+    expect(names).toStrictEqual(
+      expect.arrayContaining(['onResizeStart', 'onResize', 'onResizeEnd'])
+    )
+    expect(names.filter((name) => name.startsWith('onNodeDrag'))).toStrictEqual(
+      []
+    )
+    resizer.dispose()
+  })
+
+  it('publishes no node-drag events for a keyboard resize', () => {
+    const model = start(
+      {
+        nodes: [
+          {
+            id: 'a',
+            label: 'A',
+            position: { x: 0, y: 0 },
+            size: { width: 100, height: 50 },
+            selected: true,
+          },
+        ],
+        edges: [],
+      },
+      { nodesResizable: true }
+    )
+
+    const pressed = step(
+      model,
+      Graph.Message.ResizeByKeyboard({
+        nodeId: NodeIdSchema.make('a'),
+        direction: 'right',
+        delta: { x: 5, y: 0 },
+      })
+    )
+
+    const finished = step(
+      pressed.model,
+      Graph.Message.FinishKeyboardResize({ key: 'ArrowRight' })
+    )
+
+    const names = [pressed, finished].flatMap((reduction) =>
+      events(reduction).map(({ name }) => name)
+    )
+
+    expect(names.filter((name) => name.startsWith('onNodeDrag'))).toStrictEqual(
+      []
+    )
+    expect(finished.model.graph.document.nodes[0]?.size?.width).toBe(105)
+  })
+
   it('keeps the aspect ratio and snaps the pointer to the grid', () => {
     const resizer = createFoldkitNodeResizer({ keepAspectRatio: true })
 
@@ -578,6 +640,85 @@ describe('Foldkit expandParent resize (React NodeResizeControl.tsx:88-120)', () 
     expect(ownedNode(released, 'child')).toMatchObject({
       position: { x: 0, y: 20 },
       size: { width: 90, height: 40 },
+    })
+  })
+
+  it('keeps the proposed size pending in controlled mode', () => {
+    const { released } = resizeChild('left', [[-30, 0]])
+
+    expect(released.model.graph.pendingResizeAcceptance).toMatchObject({
+      change: {
+        nodeId: 'child',
+        position: { x: 0, y: 20 },
+        size: { width: 90, height: 40 },
+      },
+    })
+  })
+
+  it('keeps edits accepted mid-gesture and patches only position and size', () => {
+    const resizer = createFoldkitNodeResizer()
+
+    const pressed = step(
+      start(family),
+      Graph.Message.GestureDown({
+        pointerId: 5,
+        clientX: 200,
+        clientY: 200,
+        nodeId: 'child',
+        direction: 'left',
+        allowPan: false,
+        screenX: 200,
+        screenY: 200,
+        resizer: { resizerId: resizer.id, constraints: {} },
+      })
+    ).model
+
+    const moved = step(
+      pressed,
+      Graph.Message.GestureMoved({
+        pointerId: 5,
+        flowX: 0,
+        flowY: 0,
+        screenX: 170,
+        screenY: 200,
+      })
+    ).model
+
+    const edited = step(
+      moved,
+      Graph.Message.EditRequest({
+        requestId: 'mid-gesture',
+        transaction: {
+          operations: [
+            {
+              kind: 'update-node',
+              nodeId: NodeIdSchema.make('parent'),
+              patch: { label: 'Renamed parent' },
+            },
+          ],
+        },
+      })
+    ).model
+
+    const released = step(
+      edited,
+      Graph.Message.GestureReleased({
+        pointerId: 5,
+        flowX: 0,
+        flowY: 0,
+        clientX: 0,
+        clientY: 0,
+      })
+    )
+
+    resizer.dispose()
+
+    expect(
+      released.model.graph.document.nodes.find(({ id }) => id === 'parent')
+    ).toMatchObject({
+      label: 'Renamed parent',
+      position: { x: -10, y: 0 },
+      size: { width: 210, height: 100 },
     })
   })
 

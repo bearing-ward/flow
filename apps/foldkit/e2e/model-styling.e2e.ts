@@ -380,7 +380,7 @@ test('ariaLabelConfig labels handles and describes nodes and edges', async ({
     options: {
       ariaLabelConfig: {
         'handle.ariaLabel': 'Port',
-        'node.a11yDescription.keyboardDisabled': 'Custom node help',
+        'node.a11yDescription.default': 'Custom node help',
         'edge.a11yDescription.default': 'Custom edge help',
       },
     },
@@ -463,4 +463,47 @@ test('expandParent grows the parent while a child is dragged out', async ({
     x: 220,
     y: 40,
   })
+})
+
+test('Reconnect anchors stay above a selected endpoint node and can be pressed', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [
+        box('a', 40, 60, { sourcePosition: 'right', targetPosition: 'left' }),
+        box('b', 420, 260, {
+          sourcePosition: 'right',
+          targetPosition: 'left',
+          selected: true,
+        }),
+      ],
+      edges: [{ id: 'e', source: 'a', target: 'b', selected: true }],
+    },
+  })
+
+  const anchor = page.locator(
+    '.flow-foldkit-reconnect-handle[data-edge-endpoint="target"]'
+  )
+
+  await expect(anchor).toBeVisible()
+
+  const point = await centreOf(anchor)
+
+  const topmost = await page.evaluate(
+    ({ x, y }) =>
+      document
+        .elementFromPoint(x, y)
+        ?.closest<HTMLElement>('[data-edge-endpoint]')?.dataset.edgeEndpoint ??
+      null,
+    point
+  )
+
+  expect(topmost).toBe('target')
+
+  await page.mouse.move(point.x, point.y)
+  await page.mouse.down()
+  await page.mouse.move(point.x + 40, point.y + 30, { steps: 5 })
+  await expect(page.locator('.flow-foldkit-connection-preview')).toBeVisible()
+  await page.mouse.up()
 })

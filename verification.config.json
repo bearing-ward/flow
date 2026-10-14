@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 117 Foldkit final parity wiring (with Plan 114 core and Plans 111-113 scope)",
+  "activeWork": "Plan 117 Foldkit final parity wiring and Plan 116 Vue final parity wiring (with Plan 114 core and Plans 111-113 scope)",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [

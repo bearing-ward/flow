@@ -74,6 +74,11 @@ const host = mountRecipeHost({
       ? { x: 450, y: 270, zoom: 1 }
       : { x: 0, y: 0, zoom: 1 },
   registry,
+  // Auto Layout lets users connect nodes, as the React example does; the new
+  // edge changes the tree, so the layout runs again.
+  ...(scene === 'auto-layout'
+    ? { interaction: { isValidConnection: () => true } }
+    : undefined),
 })
 
 const page = host.root.querySelector<HTMLElement>('main')
@@ -218,11 +223,18 @@ const createLayoutController = (
   // `dimensions` change (a new measured size, including each added node's
   // first measurement) or a `remove` change. Position changes, including the
   // layout's own, do not re-run it.
-  const stop = target.runtime.ports.elementChanges.subscribe(({ nodes }) => {
-    if (nodes.some(({ type }) => type === 'dimensions' || type === 'remove')) {
-      void request()
+  // The layout key includes the edge set, so edge-only edits (add, remove,
+  // replace) lay out again too; selection changes do not.
+  const stop = target.runtime.ports.elementChanges.subscribe(
+    ({ nodes, edges }) => {
+      if (
+        nodes.some(({ type }) => type === 'dimensions' || type === 'remove') ||
+        edges.some(({ type }) => type !== 'select')
+      ) {
+        void request()
+      }
     }
-  })
+  )
 
   target.onDispose(stop)
   void request()

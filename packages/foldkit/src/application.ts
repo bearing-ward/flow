@@ -1499,6 +1499,29 @@ const lifecycleMessagePhase = (
   return undefined
 }
 
+const isResizeGesture = (actor: ActiveGestureTelemetry | undefined): boolean =>
+  actor?.kind === 'resize' || actor?.kind === 'keyboard-resize'
+
+/** Resize gestures publish no drag events, but still log their start span. */
+const resizeLifecycleStarted = (
+  route: 'full' | 'node-cancellation',
+  before: ActiveGestureTelemetry | undefined,
+  after: ActiveGestureTelemetry | undefined
+): boolean =>
+  route === 'full' &&
+  isResizeGesture(after) &&
+  (before === undefined || before.kind !== after?.kind)
+
+/** A gesture's start span is logged with its start event, or for a resize. */
+const lifecycleStarted = (
+  events: readonly Graph.InteractionEvent[],
+  route: 'full' | 'node-cancellation',
+  before: ActiveGestureTelemetry | undefined,
+  after: ActiveGestureTelemetry | undefined
+): boolean =>
+  events.some((event) => event.phase === 'start') ||
+  resizeLifecycleStarted(route, before, after)
+
 // oxlint-disable-next-line complexity
 const foldkitLifecycleEvents = (
   previous: Graph.Model,
@@ -1508,7 +1531,12 @@ const foldkitLifecycleEvents = (
   cancellationReason = 'cancelled'
 ): Graph.InteractionEvent[] => {
   const events: Graph.InteractionEvent[] = []
-  const { before, after } = transitionActors(previous, current, message)
+  const actors = transitionActors(previous, current, message)
+
+  // React fires no node-drag events for NodeResizer or keyboard resizes;
+  // resizes report `onResizeStart`/`onResize`/`onResizeEnd` instead.
+  const before = isResizeGesture(actors.before) ? undefined : actors.before
+  const after = isResizeGesture(actors.after) ? undefined : actors.after
   const explicitPhase = lifecycleMessagePhase(message)
 
   const phase =
@@ -1864,6 +1892,17 @@ const resizerEvents = (
   return []
 }
 
+const resizerPublication = (
+  previous: Graph.Model,
+  current: Graph.Model
+): PublicationBatch => {
+  const resized = resizerEvents(previous, current)
+
+  return resized.length === 0
+    ? []
+    : [{ kind: 'interaction' as const, events: resized }]
+}
+
 const graphFold = (
   model: Model,
   message: Graph.GraphMessageData,
@@ -1917,7 +1956,7 @@ const graphFold = (
             event.phase === 'end'
         )
 
-  const started = eligible.some((event) => event.phase === 'start')
+  const started = lifecycleStarted(eligible, route, before, after)
 
   const nativeBarrier = nativeBarrierFor(message)
 
@@ -1936,13 +1975,7 @@ const graphFold = (
       ...(eligible.length === 0
         ? []
         : [{ kind: 'interaction' as const, events: eligible }]),
-      ...(() => {
-        const resized = resizerEvents(model.graph, result.model.graph)
-
-        return resized.length === 0
-          ? []
-          : [{ kind: 'interaction' as const, events: resized }]
-      })(),
+      ...resizerPublication(model.graph, result.model.graph),
     ],
   }
 

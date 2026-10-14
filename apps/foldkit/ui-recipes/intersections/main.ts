@@ -463,7 +463,7 @@ if (sceneName === 'node-collisions') {
 }
 
 host.button('to-object', 'To object').addEventListener('click', async () => {
-  const result = await host.snapshots.request({})
+  const result = await host.snapshots.requestVersioned({})
 
   if (result.status === 'succeeded') {
     const object = toFlowObject(result.response.snapshot)

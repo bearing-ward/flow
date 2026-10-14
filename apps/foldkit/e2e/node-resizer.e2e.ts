@@ -160,3 +160,87 @@ test('Node Resizer: shouldResize vetoes, isVisible follows selection, handles au
     'none'
   )
 })
+
+const box = (
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) => ({
+  id,
+  label: id.toUpperCase(),
+  position: { x, y },
+  size: { width, height },
+})
+
+test('Node Resizer: expandParent child grows its parent from the top-left handle', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [
+        box('p', 100, 100, 300, 200),
+        {
+          ...box('c', 40, 40, 120, 60),
+          type: 'plain',
+          parentId: 'p',
+          expandParent: true,
+        },
+      ],
+      edges: [],
+    },
+  })
+
+  await dragBy(page, control(page, 'c', 'top-left'), -80, -80)
+  await expect
+    .poll(() => readNode(page, 'p'))
+    .toMatchObject({
+      position: { x: 60, y: 60 },
+      size: { width: 340, height: 240 },
+    })
+  await expect
+    .poll(() => readNode(page, 'c'))
+    .toMatchObject({
+      position: { x: 0, y: 0 },
+      size: { width: 200, height: 140 },
+    })
+})
+
+test("Node Resizer: an extent: 'parent' child stops at the parent box", async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [
+        box('p', 100, 100, 300, 200),
+        {
+          ...box('c', 40, 40, 100, 60),
+          type: 'plain',
+          parentId: 'p',
+          extent: 'parent',
+        },
+      ],
+      edges: [],
+    },
+  })
+
+  await dragBy(page, control(page, 'c', 'bottom-right'), 500, 500)
+  await expect.poll(() => size(page, 'c')).toEqual({ width: 260, height: 160 })
+  await expect
+    .poll(() => readNode(page, 'p'))
+    .toMatchObject({ size: { width: 300, height: 200 } })
+})
+
+test('Node Resizer: snapGrid snaps the resize pointer', async ({ page }) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [{ ...box('s', 100, 100, 100, 50), type: 'plain' }],
+      edges: [],
+    },
+    options: { snapToGrid: true, snapGrid: [25, 25] },
+  })
+
+  await dragBy(page, control(page, 's', 'bottom-right'), 37, 30)
+  await expect.poll(() => size(page, 's')).toEqual({ width: 125, height: 75 })
+})

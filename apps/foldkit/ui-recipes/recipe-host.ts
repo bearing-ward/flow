@@ -21,7 +21,7 @@ import {
 import type {
   EditResponse,
   FoldkitRendererRegistry,
-  FoldkitSnapshotClient,
+  FoldkitVersionedSnapshotClient,
   GraphInteractionOptions,
   ports,
   ViewportClient,
@@ -64,7 +64,7 @@ export interface RecipeHost {
   readonly toolbar: HTMLElement
   readonly frame: HTMLElement
   readonly status: HTMLOutputElement
-  readonly snapshots: FoldkitSnapshotClient
+  readonly snapshots: FoldkitVersionedSnapshotClient
   readonly viewportClient: ViewportClient
   readonly document: () => FlowDocument
   readonly viewport: () => Viewport
@@ -197,14 +197,14 @@ export const mountRecipeHost = (options: RecipeHostOptions): RecipeHost => {
   const measuredState = async (
     ids?: readonly string[]
   ): Promise<MeasuredState> => {
-    const first = await snapshots.request({})
+    const first = await snapshots.requestVersioned({})
 
     const document =
       first.status === 'succeeded' ? first.response.snapshot.document : current
 
     const results = await Promise.all(
       (ids ?? document.nodes.map(({ id }) => id)).map((nodeId) =>
-        snapshots.request({ nodeId })
+        snapshots.requestVersioned({ nodeId })
       )
     )
 

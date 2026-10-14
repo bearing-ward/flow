@@ -203,6 +203,96 @@ import {
 import type { ResizerControl } from './node-resizer.ts'
 import { edgeLabelPresentation, foldkitStyle } from './presentation.ts'
 
+/** One node's gesture-owned position and size during an `expandParent` resize. */
+const ResizerPatchSchema = Schema.Struct({
+  nodeId: NodeIdSchema,
+  position: Schema.optional(
+    Schema.Struct({ x: Schema.Finite, y: Schema.Finite })
+  ),
+  size: Schema.optional(
+    Schema.Struct({ width: Schema.Finite, height: Schema.Finite })
+  ),
+})
+
+type ResizerPatch = typeof ResizerPatchSchema.Type
+
+/** Apply an `expandParent` resize's patches to the current document. */
+const applyResizerPatches = (
+  document: FlowDocument,
+  patches: readonly ResizerPatch[]
+): FlowDocument => {
+  if (patches.length === 0) {
+    return document
+  }
+
+  const byId = new Map(patches.map((patch) => [patch.nodeId, patch]))
+
+  return {
+    ...document,
+    nodes: document.nodes.map((node) => {
+      const patch = byId.get(node.id)
+
+      if (patch === undefined) {
+        return node
+      }
+
+      let next = node
+
+      if (patch.position !== undefined) {
+        next = { ...next, position: patch.position }
+      }
+
+      if (patch.size !== undefined) {
+        next = { ...next, size: patch.size }
+      }
+
+      return next
+    }),
+  }
+}
+
+/** Fold the position and size differences between two documents into patches. */
+const mergeResizerPatches = (
+  patches: readonly ResizerPatch[],
+  before: FlowDocument,
+  after: FlowDocument
+): readonly ResizerPatch[] => {
+  const merged = new Map(patches.map((patch) => [patch.nodeId, patch]))
+  const previous = new Map(before.nodes.map((node) => [node.id, node]))
+
+  for (const node of after.nodes) {
+    const old = previous.get(node.id)
+
+    if (old === undefined) {
+      continue
+    }
+
+    const moved =
+      old.position.x !== node.position.x || old.position.y !== node.position.y
+
+    const resized =
+      node.size !== undefined &&
+      (old.size?.width !== node.size.width ||
+        old.size.height !== node.size.height)
+
+    if (moved || resized) {
+      const patch = { ...merged.get(node.id), nodeId: node.id }
+
+      if (moved) {
+        Object.assign(patch, { position: node.position })
+      }
+
+      if (resized) {
+        Object.assign(patch, { size: node.size })
+      }
+
+      merged.set(node.id, patch)
+    }
+  }
+
+  return [...merged.values()]
+}
+
 const PendingHandleSchema = Schema.Struct({
   nodeId: NodeIdSchema,
   handleId: HandleIdSchema,
@@ -319,10 +409,12 @@ const GestureSessionSchema = Schema.Union([
     /** The bounds of the last step `shouldResize` allowed: the live preview. */
     preview: Schema.NullOr(NodeBoundsChangeSchema),
     /**
-     * With `expandParent`, the document after every allowed step grew the
-     * parent, as React commits each step; released as one edit transaction.
+     * With `expandParent`, the position and size changes every allowed step
+     * made (child, its children, the grown parent and shifted siblings), as
+     * React commits each step; released as one edit transaction. Only these
+     * fields are patched, so edits accepted mid-gesture survive.
      */
-    expanded: Schema.NullOr(FlowDocumentSchema),
+    expandPatches: Schema.NullOr(Schema.Array(ResizerPatchSchema)),
     /** Allowed steps so far; each one is an `onResize`. */
     steps: Schema.Int,
     params: Schema.NullOr(FlowResizeParamsWithDirectionSchema),
@@ -1631,8 +1723,8 @@ const applyNodeDragChange = (
 export const selectLiveDocument = (model: Model): FlowDocument => {
   const gesture = model.gestureSession
 
-  if (gesture?.kind === 'node-resizer' && gesture.expanded !== null) {
-    return gesture.expanded
+  if (gesture?.kind === 'node-resizer' && gesture.expandPatches !== null) {
+    return applyResizerPatches(model.document, gesture.expandPatches)
   }
 
   const session = model.pointerSession
@@ -2329,7 +2421,7 @@ const startResizer = (
         ),
         resize,
         preview: null,
-        expanded: null,
+        expandPatches: null,
         steps: 0,
         params: null,
       },
@@ -2388,7 +2480,7 @@ const expandParentResizeStep = (
   session: ResizerSession,
   step: NonNullable<ReturnType<typeof stepFlowNodeResize>['step']>
 ): FlowDocument => {
-  const base = session.expanded ?? model.document
+  const base = applyResizerPatches(model.document, session.expandPatches ?? [])
 
   const graph = createFlowGraph(
     base,
@@ -2512,6 +2604,11 @@ const stepResizer = (
       : resize.children.map(({ id, position }) => ({ nodeId: id, position }))
 
   if (resize.expandParent) {
+    const base = applyResizerPatches(
+      model.document,
+      session.expandPatches ?? []
+    )
+
     const expanded = expandParentResizeStep(model, session, step)
     const resized = expanded.nodes.find(({ id }) => id === session.nodeId)
 
@@ -2522,7 +2619,11 @@ const stepResizer = (
         resize,
         steps: session.steps + 1,
         params: step.params,
-        expanded,
+        expandPatches: mergeResizerPatches(
+          session.expandPatches ?? [],
+          base,
+          expanded
+        ),
         preview: {
           kind: 'node-bounds',
           nodeId: session.nodeId,
@@ -2574,23 +2675,21 @@ const finishResizer = (
     return { model: cleared }
   }
 
-  if (session.expanded !== null) {
-    const before = new Map(model.document.nodes.map((node) => [node.id, node]))
+  if (session.expandPatches !== null) {
+    // Only the gesture's own position and size changes, applied to the
+    // current document, so edits accepted mid-gesture are kept.
+    const present = new Set(model.document.nodes.map(({ id }) => id))
 
-    const operations = session.expanded.nodes.flatMap((node) =>
-      before.get(node.id) === node
-        ? []
-        : [
-            {
-              kind: 'update-node' as const,
-              nodeId: node.id,
-              patch:
-                node.size === undefined
-                  ? { position: node.position }
-                  : { position: node.position, size: node.size },
-            },
-          ]
-    )
+    const operations = session.expandPatches
+      .filter(({ nodeId }) => present.has(nodeId))
+      .map(({ nodeId, position, size }) => ({
+        kind: 'update-node' as const,
+        nodeId,
+        patch: {
+          ...(position === undefined ? undefined : { position }),
+          ...(size === undefined ? undefined : { size }),
+        },
+      }))
 
     const prepared = Effect.runSync(
       prepareFlowEdit(model.document, { operations })
@@ -2600,6 +2699,13 @@ const finishResizer = (
       model,
       {
         ...cleared,
+        // Controlled: keep the proposed size until the owner acknowledges.
+        pendingResizeAcceptance:
+          model.documentMode === 'controlled' ? { change } : null,
+        measurements:
+          model.documentMode === 'uncontrolled'
+            ? measurementsForResize(model, prepared.document, change)
+            : model.measurements,
         document:
           model.documentMode === 'uncontrolled'
             ? prepared.document
@@ -6362,6 +6468,10 @@ const connectionLineView = (
   }
 }
 
+/** What Foldkit's own node keys do: select, rectangle-select and cancel. */
+const foldkitNodeDescription =
+  'Press enter or space on the selection control to select a node. Press shift and space to start a rectangle selection, then use the arrow keys and enter. Press escape to cancel.'
+
 const graphView = (
   renderers: FoldkitRendererRegistry,
   markerScope: string,
@@ -6620,6 +6730,8 @@ const graphView = (
         )
       })
 
+    const topNodeZ = Math.max(0, ...stacking.nodes.values())
+
     const edgeLabels: NonNullable<FoldHtml.Html>[] = []
     const customEdgeLabels: NonNullable<FoldHtml.Html>[] = []
     const reconnectControls: NonNullable<FoldHtml.Html>[] = []
@@ -6657,8 +6769,16 @@ const graphView = (
 
         const edgeZ = stacking.edges.get(edge.id) ?? edge.zIndex ?? 0
 
+        // Reconnect anchors sit above every node, including elevated
+        // selected nodes, so a selected endpoint node never covers them.
         reconnectControls.push(
-          ...edgeReconnectControls(edge, geometry, ariaLabel, h, edgeZ + 1)
+          ...edgeReconnectControls(
+            edge,
+            geometry,
+            ariaLabel,
+            h,
+            Math.max(edgeZ, topNodeZ) + 1
+          )
         )
 
         if (edge.label !== undefined) {
@@ -6890,9 +7010,12 @@ const graphView = (
             h.Style({ display: 'none' }),
           ],
           [
-            model.keyboardActivation
-              ? ariaLabels['node.a11yDescription.keyboardDisabled']
-              : ariaLabels['node.a11yDescription.default'],
+            // Foldkit has no arrow-key node move and no built-in Delete key
+            // (hosts delete through the delete client), so React's texts
+            // would mislead. Describe Foldkit's keys unless the host
+            // configured the text.
+            model.ariaLabelConfig['node.a11yDescription.default'] ??
+              foldkitNodeDescription,
           ]
         ),
         h.div(
