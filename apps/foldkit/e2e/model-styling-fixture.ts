@@ -44,6 +44,7 @@ export interface ResizeLogEntry {
 }
 
 export interface FoldkitModelStylingFixture {
+  readonly deleteResults: () => number
   readonly deleteApprovals: () => number
   readonly replaceRenderers: () => void
   readonly events: () => readonly InteractionEvent[]
@@ -60,6 +61,8 @@ export interface FoldkitModelStylingFixture {
 }
 
 export interface FoldkitModelStylingInput {
+  readonly shadowCanvas?: boolean
+  readonly initialPaneSize?: { readonly width: number; readonly height: number }
   readonly document: unknown
   readonly approveDeletion?: boolean
   readonly liveMessages?: boolean
@@ -80,9 +83,20 @@ export const mountFoldkitModelStylingFixture = (
   const owner = container.parentElement ?? container
 
   const style = document.createElement('style')
-  style.textContent =
-    '#app .flow-foldkit-canvas { position: relative; width: 800px; height: 500px; overflow: hidden; } #app .flow-foldkit-node { box-sizing: border-box; }'
-  document.head.append(style)
+  style.textContent = `.flow-foldkit-canvas { position: relative; width: ${input.initialPaneSize?.width ?? 800}px; height: ${input.initialPaneSize?.height ?? 500}px; overflow: hidden; } .flow-foldkit-node { box-sizing: border-box; }`
+  const root = container.getRootNode()
+
+  if (root instanceof ShadowRoot) {
+    for (const sheet of document.querySelectorAll(
+      'style, link[rel="stylesheet"]'
+    )) {
+      root.append(sheet.cloneNode(true))
+    }
+
+    root.append(style)
+  } else {
+    document.head.append(style)
+  }
 
   const events: InteractionEvent[] = []
   const resizeLog: ResizeLogEntry[] = []
@@ -232,6 +246,11 @@ export const mountFoldkitModelStylingFixture = (
   )
 
   let deleteApprovals = 0
+  let deleteResults = 0
+
+  active.ports.deleteResults.subscribe(() => {
+    deleteResults += 1
+  })
 
   createFoldkitDeleteClient(active, () => {
     deleteApprovals += 1
@@ -293,6 +312,7 @@ export const mountFoldkitModelStylingFixture = (
   })
 
   return {
+    deleteResults: () => deleteResults,
     deleteApprovals: () => deleteApprovals,
     replaceRenderers: () =>
       updateFoldkitRendererRegistry(

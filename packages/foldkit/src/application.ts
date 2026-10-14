@@ -2160,23 +2160,14 @@ const fitInitialView = (model: Model, initial: AppReduction): AppReduction => {
   ) {
     const { graph } = measured.model
 
-    const canvas = globalThis.document?.querySelector<HTMLElement>(
-      `[data-flow-instance="${CSS.escape(graph.instanceId)}"]`
-    )
-
-    if (
-      canvas !== null &&
-      canvas !== undefined &&
-      canvas.clientWidth > 0 &&
-      canvas.clientHeight > 0
-    ) {
+    if (graph.paneSize.width > 0 && graph.paneSize.height > 0) {
       const options = graph.fitViewOptions
 
       const viewport = calculateFitView(measured.model, {
         requestId: 'initial-fit',
         kind: 'fitView',
-        width: canvas.clientWidth,
-        height: canvas.clientHeight,
+        width: graph.paneSize.width,
+        height: graph.paneSize.height,
         originX: 0,
         originY: 0,
         padding: options.padding ?? 0.1,
@@ -2670,7 +2661,11 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
         }
       }
 
-      const result = graphFold(model, graphMessage, 'full')
+      const folded = graphFold(model, graphMessage, 'full')
+
+      const result = Predicate.isTagged('PaneResized')(graphMessage)
+        ? fitInitialView(model, folded)
+        : folded
 
       const readyModel = model.lifecycleReady
         ? result.model

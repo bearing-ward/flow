@@ -1,9 +1,12 @@
 import {
   createFlowGraph,
+  FlowAttribute,
+  FlowSpan,
   getFlowMeasuredNodes,
   NodeIdSchema,
   selectionAutoPanDelta,
 } from '@flow/core'
+import { Effect } from 'effect'
 
 import type { Message, GraphMessageData, Model } from './graph.ts'
 import { observeKeyPress } from './key-press-observer.ts'
@@ -11,7 +14,10 @@ import type { FlowKeyCode } from './key-press-observer.ts'
 
 /** Native subscriptions owned and disposed with the program pointer resource. */
 export const observeCanvasInput = (
-  messages: Pick<typeof Message, 'SetCanvasKey' | 'AutoPan' | 'DeleteSelected'>,
+  messages: Pick<
+    typeof Message,
+    'SetCanvasKey' | 'AutoPan' | 'DeleteSelected' | 'PaneResized'
+  >,
   model: () => Model,
   getCanvas: () => HTMLElement | null,
   isPressed: () => boolean,
@@ -48,11 +54,24 @@ export const observeCanvasInput = (
     observeModifier(model().selectionKeyCode, 'selection'),
     observeModifier(model().multiSelectionKeyCode, 'multiSelection'),
     observeModifier(model().zoomActivationKeyCode, 'zoom'),
-    observeKeyPress(model().deleteKeyCode, (isKeyPressed) => {
-      if (isKeyPressed && getCanvas()?.contains(document.activeElement)) {
-        emit(messages.DeleteSelected())
-      }
-    }),
+    observeKeyPress(
+      model().deleteKeyCode,
+      (isKeyPressed, event) => {
+        if (
+          isKeyPressed &&
+          event
+            ?.composedPath()
+            .some(
+              (target) =>
+                target instanceof HTMLElement &&
+                target.dataset.flowInstance === model().instanceId
+            )
+        ) {
+          emit(messages.DeleteSelected())
+        }
+      },
+      { actInsideInputWithModifier: false }
+    ),
   ]
 
   const focus = (event: FocusEvent): void => {
@@ -64,11 +83,18 @@ export const observeCanvasInput = (
       return
     }
 
-    const node = event.target.closest<HTMLElement>('[data-node-id]')
+    const node = event
+      .composedPath()
+      .find(
+        (target): target is HTMLElement =>
+          target instanceof HTMLElement &&
+          Object.hasOwn(target.dataset, 'nodeId')
+      )
+
     const canvas = getCanvas()
 
     if (
-      node === null ||
+      node === undefined ||
       canvas === null ||
       canvas.clientWidth <= 0 ||
       canvas.clientHeight <= 0 ||
@@ -90,7 +116,7 @@ export const observeCanvasInput = (
       getFlowMeasuredNodes(current.document, current.measurements)
     ).nodes.get(NodeIdSchema.make(id))
 
-    if (resolved === undefined) {
+    if (resolved === undefined || resolved.node.focusable === false) {
       return
     }
 
@@ -120,11 +146,66 @@ export const observeCanvasInput = (
     }
   }
 
+  let observedCanvas: HTMLElement | null = null
+  let lastSize: Model['paneSize'] | undefined
+
+  const measurePane = (): void => {
+    if (observedCanvas === null) {
+      return
+    }
+
+    const width = observedCanvas.clientWidth
+    const height = observedCanvas.clientHeight
+
+    const bounds = observedCanvas.getBoundingClientRect()
+
+    if (
+      lastSize?.width !== width ||
+      lastSize.height !== height ||
+      lastSize.bounds.width !== bounds.width ||
+      lastSize.bounds.height !== bounds.height
+    ) {
+      lastSize = {
+        width,
+        height,
+        bounds: { width: bounds.width, height: bounds.height },
+      }
+      emit(messages.PaneResized(lastSize))
+    }
+  }
+
+  let resizeObserver: ResizeObserver | undefined
+
   let frame = 0
 
   const autoPanFrame = (): void => {
     const canvas = getCanvas()
     const current = model()
+
+    if (canvas !== observedCanvas) {
+      resizeObserver?.disconnect()
+      observedCanvas = canvas
+      lastSize = undefined
+
+      if (canvas !== null) {
+        resizeObserver ??= Effect.runSync(
+          Effect.sync(() => new ResizeObserver(measurePane)).pipe(
+            Effect.tap(() =>
+              Effect.logDebug('Foldkit pane size observer acquired').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.browserCapability]: 'ResizeObserver',
+                  [FlowAttribute.browserOperation]: 'pane-size',
+                })
+              )
+            ),
+            Effect.withSpan(FlowSpan.browserResizeObserverAcquire)
+          )
+        )
+
+        resizeObserver.observe(canvas)
+        measurePane()
+      }
+    }
 
     const nodeDrag =
       current.autoPanOnNodeDrag && current.pointerSession?.kind === 'node-drag'
@@ -166,6 +247,7 @@ export const observeCanvasInput = (
 
   return () => {
     cancelAnimationFrame(frame)
+    resizeObserver?.disconnect()
 
     for (const stop of keyStops) {
       stop()

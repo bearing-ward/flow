@@ -26,6 +26,24 @@ const viewportCoordinate = async (page: Page, axis: 'x' | 'zoom') => {
   return value?.[axis]
 }
 
+/** Wait for native input to reach the Runtime and for a public edit receipt. */
+const settleInput = async (page: Page): Promise<void> => {
+  await page.evaluate(async () => {
+    const first = Promise.withResolvers<number>()
+    requestAnimationFrame(first.resolve)
+    await first.promise
+    const second = Promise.withResolvers<number>()
+    requestAnimationFrame(second.resolve)
+    await second.promise
+  })
+
+  const receipt = await page.evaluate(() =>
+    window.__flowFoldkitModelStyling?.edit([])
+  )
+
+  expect(receipt).toHaveProperty('result')
+}
+
 const readPosition = async (page: Page, id: string) => {
   const value = await readNode(page, id)
 
@@ -293,9 +311,11 @@ test('configured delete key uses the approval workflow and ignores text inputs',
   })
   await page.getByTestId('keyboard-input').fill('Text')
   await page.keyboard.press('Delete')
+  await settleInput(page)
   expect(await readNode(page, 'a')).not.toBeNull()
   await nodeLocator(page, 'a').focus()
   await page.keyboard.press('Backspace')
+  await settleInput(page)
   expect(await readNode(page, 'a')).not.toBeNull()
   await page.keyboard.press('Delete')
   await expect(nodeLocator(page, 'a')).toHaveCount(0)
@@ -316,6 +336,11 @@ test('keyboard deletion respects approval rejection', async ({ page }) => {
   await expect
     .poll(() =>
       page.evaluate(() => window.__flowFoldkitModelStyling?.deleteApprovals())
+    )
+    .toBe(1)
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__flowFoldkitModelStyling?.deleteResults())
     )
     .toBe(1)
   await expect(nodeLocator(page, 'a')).toHaveCount(1)
@@ -350,6 +375,7 @@ test('null key codes disable deletion, modifier selection and wheel activation',
   await nodeLocator(page, 'b').focus()
   await page.keyboard.press('Backspace')
   await page.keyboard.press('Delete')
+  await settleInput(page)
   expect(
     await page.evaluate(() =>
       window.__flowFoldkitModelStyling?.deleteApprovals()
@@ -365,13 +391,24 @@ test('null key codes disable deletion, modifier selection and wheel activation',
   await page.keyboard.up('Shift')
 })
 
-for (const enabled of [false, true]) {
-  test(`autoPanOnNodeDrag=${enabled} controls drag auto-pan`, async ({
+for (const configured of [undefined, false, true]) {
+  const enabled = configured ?? true
+
+  test(`autoPanOnNodeDrag=${configured ?? 'default'} controls drag auto-pan`, async ({
     page,
   }) => {
+    const options: NonNullable<
+      Parameters<typeof mountModelStyling>[1]['options']
+    > = { autoPanSpeed: 7 }
+
+    const scopedOptions =
+      configured === undefined
+        ? options
+        : { ...options, autoPanOnNodeDrag: configured }
+
     await mountModelStyling(page, {
       document: { nodes: [node('a', 600, 250)], edges: [] },
-      options: { autoPanOnNodeDrag: enabled, autoPanSpeed: 7 },
+      options: scopedOptions,
     })
     const from = await centreOf(nodeLocator(page, 'a'))
     const pane = await page.getByTestId('flow-canvas').boundingBox()
@@ -396,6 +433,7 @@ for (const enabled of [false, true]) {
     }
 
     await page.mouse.up()
+    await settleInput(page)
 
     if (enabled) {
       await expect
@@ -407,19 +445,29 @@ for (const enabled of [false, true]) {
   })
 }
 
-for (const enabled of [false, true]) {
-  test(`autoPanOnSelection=${enabled} controls selection auto-pan with configured selection key`, async ({
+for (const configured of [undefined, false, true]) {
+  const enabled = configured ?? true
+
+  test(`autoPanOnSelection=${configured ?? 'default'} controls selection auto-pan with configured selection key`, async ({
     page,
   }) => {
+    const options: NonNullable<
+      Parameters<typeof mountModelStyling>[1]['options']
+    > = {
+      selectionKeyCode: 'Alt',
+      selectionOnDrag: false,
+      panOnDrag: true,
+      autoPanSpeed: 7,
+    }
+
+    const scopedOptions =
+      configured === undefined
+        ? options
+        : { ...options, autoPanOnSelection: configured }
+
     await mountModelStyling(page, {
       document: { nodes: [node('a')], edges: [] },
-      options: {
-        autoPanOnSelection: enabled,
-        selectionKeyCode: 'Alt',
-        selectionOnDrag: false,
-        panOnDrag: true,
-        autoPanSpeed: 7,
-      },
+      options: scopedOptions,
     })
     const pane = await page.getByTestId('flow-canvas').boundingBox()
 
@@ -441,6 +489,7 @@ for (const enabled of [false, true]) {
 
     await page.mouse.up()
     await page.keyboard.up('Alt')
+    await settleInput(page)
 
     if (!enabled) {
       expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
@@ -448,13 +497,16 @@ for (const enabled of [false, true]) {
   })
 }
 
-for (const enabled of [false, true]) {
-  test(`autoPanOnNodeFocus=${enabled} controls offscreen keyboard focus`, async ({
+for (const configured of [undefined, false, true]) {
+  const enabled = configured ?? true
+
+  test(`autoPanOnNodeFocus=${configured ?? 'default'} controls offscreen keyboard focus`, async ({
     page,
   }) => {
     await mountModelStyling(page, {
       document: { nodes: [node('a'), node('far', 1100, 600)], edges: [] },
-      options: { autoPanOnNodeFocus: enabled },
+      options:
+        configured === undefined ? {} : { autoPanOnNodeFocus: configured },
     })
     await nodeLocator(page, 'far').focus()
 
@@ -598,4 +650,329 @@ test('connectionLineStyle and connectionLineContainerStyle style the builtin pre
   await page.keyboard.press('Escape')
   await page.mouse.up()
   await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
+})
+
+test('non-focusable nodes omit tabindex and ignore node keyboard and focus handlers', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [node('a', 100, 100, { selected: true, focusable: false })],
+      edges: [],
+    },
+  })
+  const wrapper = nodeLocator(page, 'a')
+
+  await expect(wrapper).not.toHaveAttribute('tabindex')
+  await wrapper.click({ position: { x: 30, y: 20 } })
+  // Make the wrapper focusable externally to prove the handler also checks the domain option.
+  await wrapper.evaluate((element) => {
+    element.setAttribute('tabindex', '-1')
+  })
+  await wrapper.focus()
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Enter')
+  await settleInput(page)
+  expect(await readPosition(page, 'a')).toEqual({ x: 100, y: 100 })
+  const selectedNode = await readNode(page, 'a')
+  expect(selectedNode?.selected).toBe(true)
+  await expect(page.locator('[aria-live="assertive"]')).toHaveText('')
+  await page.evaluate(() =>
+    window.__flowFoldkitModelStyling?.setViewport({ x: -1200, y: 0, zoom: 1 })
+  )
+  await expect.poll(() => viewport(page)).toEqual({ x: -1200, y: 0, zoom: 1 })
+  await wrapper.focus()
+  await settleInput(page)
+  expect(await viewport(page)).toEqual({ x: -1200, y: 0, zoom: 1 })
+})
+
+for (const kind of ['contenteditable', 'nokey', 'shadow-input']) {
+  test(`arrow and Escape keys inside ${kind} keep editable ownership`, async ({
+    page,
+  }) => {
+    await mountModelStyling(page, {
+      document: { nodes: [node('a', 100, 100, { selected: true })], edges: [] },
+    })
+    await nodeLocator(page, 'a').evaluate((element, controlKind) => {
+      const control = document.createElement(
+        controlKind === 'shadow-input' ? 'input' : 'div'
+      )
+
+      control.dataset.testid = 'editable-control'
+      control.tabIndex = 0
+
+      if (controlKind === 'contenteditable') {
+        control.setAttribute('contenteditable', '')
+      }
+
+      if (controlKind === 'nokey') {
+        control.className = 'nokey'
+      }
+
+      if (controlKind === 'shadow-input') {
+        const host = document.createElement('div')
+        element.append(host)
+        host.attachShadow({ mode: 'open' }).append(control)
+      } else {
+        element.append(control)
+      }
+    }, kind)
+    await nodeLocator(page, 'a').focus()
+    await page.keyboard.press('Shift+Space')
+    await expect(page.locator('.flow-foldkit-selection-rect')).toHaveCount(1)
+    await page.getByTestId('editable-control').focus()
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('Escape')
+    await settleInput(page)
+    expect(await readPosition(page, 'a')).toEqual({ x: 100, y: 100 })
+    const selectedNode = await readNode(page, 'a')
+    expect(selectedNode?.selected).toBe(true)
+    await expect(page.locator('.flow-foldkit-selection-rect')).toHaveCount(1)
+    await expect
+      .poll(() =>
+        page
+          .locator('.flow-foldkit-selection-rect')
+          .evaluate((element) =>
+            element instanceof HTMLElement ? element.style.width : null
+          )
+      )
+      .toBe('0px')
+    await nodeLocator(page, 'a').focus()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.flow-foldkit-selection-rect')).toHaveCount(0)
+  })
+}
+
+for (const extra of [
+  { selected: false },
+  { selected: true, draggable: false },
+]) {
+  test(`arrow scrolling is preserved for a node with ${JSON.stringify(extra)}`, async ({
+    page,
+  }) => {
+    await mountModelStyling(page, {
+      document: { nodes: [node('a', 100, 100, extra)], edges: [] },
+    })
+
+    const prevented = await nodeLocator(page, 'a').evaluate((element) => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        code: 'ArrowRight',
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+
+      element.dispatchEvent(event)
+
+      return event.defaultPrevented
+    })
+
+    expect(prevented).toBe(false)
+    await settleInput(page)
+    expect(await readPosition(page, 'a')).toEqual({ x: 100, y: 100 })
+  })
+}
+
+test('non-draggable nodes retain travelled clicks regardless of nodeClickDistance', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: { nodes: [node('a', 100, 100, { draggable: false })], edges: [] },
+    options: { nodeClickDistance: 6, selectionOnDrag: false },
+  })
+  await dragBy(page, nodeLocator(page, 'a'), 10, 0)
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.__flowFoldkitModelStyling
+            ?.events()
+            .filter(({ name }) => name === 'onNodeClick').length
+      )
+    )
+    .toBe(1)
+  const selectedNode = await readNode(page, 'a')
+  expect(selectedNode?.selected).toBe(true)
+})
+
+test('Meta+Backspace stays inside a node input and deletes after focusing its wrapper', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: { nodes: [node('a', 100, 100, { selected: true })], edges: [] },
+    options: { deleteKeyCode: 'Meta+Backspace' },
+  })
+  await nodeLocator(page, 'a').evaluate((element) => {
+    const input = document.createElement('input')
+    input.dataset.testid = 'delete-input'
+    element.append(input)
+  })
+  await page.getByTestId('delete-input').fill('Text')
+  await page.keyboard.press('Meta+Backspace')
+  await settleInput(page)
+  expect(
+    await page.evaluate(() =>
+      window.__flowFoldkitModelStyling?.deleteApprovals()
+    )
+  ).toBe(0)
+  expect(await readNode(page, 'a')).not.toBeNull()
+  await nodeLocator(page, 'a').focus()
+  await page.keyboard.press('Meta+Backspace')
+  await expect(nodeLocator(page, 'a')).toHaveCount(0)
+  expect(
+    await page.evaluate(() =>
+      window.__flowFoldkitModelStyling?.deleteApprovals()
+    )
+  ).toBe(1)
+})
+
+test('default deletion works when the canvas is mounted inside a shadow root', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    shadowCanvas: true,
+    document: { nodes: [node('a', 100, 100, { selected: true })], edges: [] },
+  })
+  await nodeLocator(page, 'a').focus()
+  await page.keyboard.press('Backspace')
+  await expect(nodeLocator(page, 'a')).toHaveCount(0)
+  expect(
+    await page.evaluate(() =>
+      window.__flowFoldkitModelStyling?.deleteApprovals()
+    )
+  ).toBe(1)
+})
+
+test('initial fitting retries when a zero-sized mounted pane receives dimensions', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    initialPaneSize: { width: 0, height: 0 },
+    document: {
+      nodes: [node('a', 1000, 1000), node('b', 2200, 1800)],
+      edges: [],
+    },
+    options: {
+      fitView: true,
+      onlyRenderVisibleElements: true,
+      fitViewOptions: { maxZoom: 0.7 },
+    },
+  })
+  await settleInput(page)
+  expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
+  await page.getByTestId('flow-canvas').evaluate((element) => {
+    element.style.width = '800px'
+    element.style.height = '500px'
+  })
+  await expect.poll(() => viewportCoordinate(page, 'zoom')).toBeLessThan(0.7)
+  await expect(nodeLocator(page, 'a')).toBeVisible()
+  await expect(nodeLocator(page, 'b')).toBeVisible()
+})
+
+test('resizing the pane updates node and edge culling without another graph action', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [node('a'), node('b', 840, 100), node('c', 1000, 100)],
+      edges: [{ id: 'far', source: 'b', target: 'c' }],
+    },
+    options: { onlyRenderVisibleElements: true },
+  })
+  await expect(nodeLocator(page, 'b')).toHaveCount(0)
+  await page.getByTestId('flow-canvas').evaluate((element) => {
+    element.style.width = '950px'
+  })
+  await expect(nodeLocator(page, 'b')).toHaveCount(1)
+  await expect(page.locator('svg[data-edge-id="far"]')).toHaveCount(1)
+  await page.getByTestId('flow-canvas').evaluate((element) => {
+    element.style.width = '800px'
+  })
+  await expect(nodeLocator(page, 'b')).toHaveCount(0)
+  await expect(page.locator('svg[data-edge-id="far"]')).toHaveCount(0)
+})
+
+test('culling retains an edge crossing the viewport when both endpoints are offscreen', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: {
+      nodes: [node('a'), node('left', -400, 220), node('right', 1100, 220)],
+      edges: [
+        { id: 'crossing', source: 'left', target: 'right', path: 'straight' },
+      ],
+    },
+    options: { onlyRenderVisibleElements: true },
+  })
+  await expect(nodeLocator(page, 'left')).toHaveCount(0)
+  await expect(nodeLocator(page, 'right')).toHaveCount(0)
+  await expect(page.locator('svg[data-edge-id="crossing"]')).toHaveCount(1)
+
+  const path = page.locator(
+    'svg[data-edge-id="crossing"] .flow-foldkit-edge-path'
+  )
+
+  await expect(path).toHaveAttribute('d', /L/u)
+})
+
+test('React defaults select with Enter, draw a pane selection with Shift and zoom with the platform modifier', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: { nodes: [node('a')], edges: [] },
+    options: { panOnDrag: true, selectionOnDrag: false },
+  })
+  await nodeLocator(page, 'a').focus()
+  await page.keyboard.press('Enter')
+  await expect
+    .poll(() => readNode(page, 'a').then((n) => n?.selected))
+    .toBe(true)
+  await page.keyboard.press('Enter')
+  await expect
+    .poll(() => readNode(page, 'a').then((n) => n?.selected))
+    .toBe(false)
+  await page.keyboard.down('Shift')
+  await page.mouse.move(500, 350)
+  await page.mouse.down()
+  await page.mouse.move(600, 400)
+  await expect(page.locator('.flow-foldkit-selection-rect')).toHaveCount(1)
+  await page.mouse.up()
+  await page.keyboard.up('Shift')
+
+  const modifier = await page.evaluate(() =>
+    navigator.userAgent.includes('Mac') ? 'Meta' : 'Control'
+  )
+
+  await page.keyboard.down(modifier)
+  await page.mouse.move(500, 350)
+  await page.mouse.wheel(0, -100)
+  await expect.poll(() => viewportCoordinate(page, 'zoom')).toBeGreaterThan(1)
+  await page.keyboard.up(modifier)
+})
+
+test('keyboardActivation=false preserves native arrow scrolling', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: { nodes: [node('a', 100, 100, { selected: true })], edges: [] },
+    options: { keyboardActivation: false },
+  })
+
+  const prevented = await nodeLocator(page, 'a').evaluate((element) => {
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+
+    element.dispatchEvent(event)
+
+    return event.defaultPrevented
+  })
+
+  expect(prevented).toBe(false)
+  await settleInput(page)
+  expect(await readPosition(page, 'a')).toEqual({ x: 100, y: 100 })
 })

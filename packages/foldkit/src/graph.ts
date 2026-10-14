@@ -194,6 +194,7 @@ import {
   NodeDragOriginSchema,
   placeDraggedNodes,
 } from './drag-constraints.ts'
+import { firstEventElement, isInputDOMNode } from './key-press-observer.ts'
 import {
   MouseDetailSchema,
   ObservedMouseNameSchema,
@@ -467,9 +468,16 @@ const ResizeAcceptanceSchema = Schema.Struct({
   measurement: Schema.optional(NodeMeasurementInputSchema),
 })
 
+const PaneSizeSchema = Schema.Struct({
+  width: Schema.Finite,
+  height: Schema.Finite,
+  bounds: Schema.Struct({ width: Schema.Finite, height: Schema.Finite }),
+})
+
 export const ModelSchema = Schema.Struct({
   ...ClosingOptionsSchema.fields,
   fitViewPending: Schema.Boolean,
+  paneSize: PaneSizeSchema,
   rendererRevision: Schema.Number,
   selectionKeyPressed: Schema.Boolean,
   multiSelectionKeyPressed: Schema.Boolean,
@@ -815,6 +823,7 @@ export const Message = FoldMessage.defineMessageUnion({
     clientY: Schema.Number,
   },
   CancelGesture: {},
+  PaneResized: PaneSizeSchema.fields,
   MeasureNode: { measurement: NodeMeasurementInputSchema },
   PruneMeasurements: {},
   SelectEdge: {
@@ -1047,8 +1056,6 @@ const edgeCrossesViewport = (
     return false
   }
 
-  const canvas = canvasForModel(model)
-
   const left =
     Math.min(source.absolutePosition.x, target.absolutePosition.x) *
       model.viewport.zoom +
@@ -1076,8 +1083,8 @@ const edgeCrossesViewport = (
     model.viewport.y
 
   return (
-    left < (canvas?.clientWidth ?? 960) &&
-    top < (canvas?.clientHeight ?? 640) &&
+    left < model.paneSize.width &&
+    top < model.paneSize.height &&
     right > 0 &&
     bottom > 0
   )
@@ -1100,7 +1107,12 @@ const selectMountedNodeIds = (
         return []
       }
 
-      if (!model.onlyRenderVisibleElements || model.fitViewPending) {
+      if (
+        !model.onlyRenderVisibleElements ||
+        model.fitViewPending ||
+        model.paneSize.width === 0 ||
+        model.paneSize.height === 0
+      ) {
         return [node.id]
       }
 
@@ -1110,10 +1122,8 @@ const selectMountedNodeIds = (
 
       const { width, height } = graphNode.dimensions
 
-      const canvas = canvasForModel(model)
-
-      return left < (canvas?.clientWidth ?? 960) &&
-        top < (canvas?.clientHeight ?? 640) &&
+      return left < model.paneSize.width &&
+        top < model.paneSize.height &&
         left + width * zoom > 0 &&
         top + height * zoom > 0
         ? [node.id]
@@ -1512,7 +1522,8 @@ type NodeDragSession = Extract<
  */
 const nodeDragStart = (
   model: Model,
-  nodeId: NodeId
+  nodeId: NodeId,
+  placement: 'pointer' | 'keyboard' = 'pointer'
 ): Pick<
   NodeDragSession,
   'nodeIds' | 'origins' | 'expandParent' | 'startMeasurements'
@@ -1553,7 +1564,9 @@ const nodeDragStart = (
     return false
   }
 
-  const items = [...candidates].filter((id) => !hasDraggedAncestor(id))
+  const items = [...candidates].filter(
+    (id) => placement === 'keyboard' || !hasDraggedAncestor(id)
+  )
 
   const nodeIds = items.includes(nodeId)
     ? [nodeId, ...items.filter((id) => id !== nodeId)]
@@ -1568,7 +1581,9 @@ const nodeDragStart = (
   // React `getInternalNodesBounds(dragItems)`: the group box a multi-node
   // drag keeps inside `nodeExtent`.
   const groupBox =
-    resolvedItems.length < 2 || model.nodeExtent === null
+    placement === 'keyboard' ||
+    resolvedItems.length < 2 ||
+    model.nodeExtent === null
       ? undefined
       : dragGroupBox(
           resolvedItems.map((item) => ({
@@ -1631,7 +1646,16 @@ const nodeDragStart = (
       nodeIds,
       origins,
       expandParent,
-      startMeasurements: model.measurements,
+      startMeasurements: {
+        ...model.measurements,
+        nodes: model.measurements.nodes.filter(({ measurement }) =>
+          resolvedItems.some(
+            (item) =>
+              item.node.expandParent === true &&
+              item.parentId === measurement.nodeId
+          )
+        ),
+      },
     }
   }
 
@@ -1680,6 +1704,38 @@ const nodeDragPositions = (
   )
 }
 
+/** Keep expandParent's accepted parent dimensions while observing live node and handle geometry. */
+const dragMeasurements = (model: Model): Model['measurements'] => {
+  const frozen =
+    model.pointerSession?.kind === 'node-drag'
+      ? model.pointerSession.startMeasurements
+      : undefined
+
+  if (frozen === undefined) {
+    return model.measurements
+  }
+
+  return {
+    ...model.measurements,
+    nodes: model.measurements.nodes.map((entry) => {
+      const parent = frozen.nodes.find(
+        ({ measurement }) => measurement.nodeId === entry.measurement.nodeId
+      )
+
+      return parent === undefined
+        ? entry
+        : {
+            ...entry,
+            measurement: {
+              ...entry.measurement,
+              width: parent.measurement.width,
+              height: parent.measurement.height,
+            },
+          }
+    }),
+  }
+}
+
 /**
  * React `updateNodePositions` with `expandParent`: the dragged positions,
  * the parent growth and the sibling shifts, applied to the document.
@@ -1693,12 +1749,7 @@ const expandParentDragDocument = (
 ): FlowDocument => {
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(
-      model.document,
-      model.pointerSession?.kind === 'node-drag'
-        ? (model.pointerSession.startMeasurements ?? model.measurements)
-        : model.measurements
-    )
+    getFlowMeasuredNodes(model.document, dragMeasurements(model))
   )
 
   const changes = calculateFlowExpandParentDrag(
@@ -2252,19 +2303,17 @@ export const constrainViewportToTranslateExtent = (
         pane.height
       )
 
-const paneSize = (model: Model) => {
-  const bounds = canvasForModel(model)?.getBoundingClientRect()
-
-  return bounds === undefined
-    ? undefined
-    : { width: bounds.width, height: bounds.height }
-}
-
 const translateConstrained = (
   model: Model,
   viewport: CoreViewport
 ): CoreViewport =>
-  constrainViewportToTranslateExtent(model, viewport, paneSize(model))
+  constrainViewportToTranslateExtent(
+    model,
+    viewport,
+    model.paneSize.width > 0 && model.paneSize.height > 0
+      ? model.paneSize.bounds
+      : undefined
+  )
 
 const zoomViewportAt = (
   model: Model,
@@ -3086,6 +3135,9 @@ const updateState = (
         'viewport-update'
       )
     },
+    PaneResized: ({ width, height, bounds }) => ({
+      model: { ...model, paneSize: { width, height, bounds } },
+    }),
     MoveNodeByKeyboard: ({ nodeId, key, shift }) => {
       if (model.disableKeyboardA11y || !model.keyboardActivation) {
         return noChange(model)
@@ -3116,6 +3168,7 @@ const updateState = (
 
       if (
         node === undefined ||
+        node.focusable === false ||
         node.selected !== true ||
         !isNodeDraggable(selectInteractivity(model), node) ||
         delta === undefined
@@ -3130,19 +3183,72 @@ const updateState = (
         y: (delta.y / 5) * (model.snapToGrid ? model.snapGrid.y : 5) * factor,
       }
 
-      const items = nodeDragStart(model, nodeId)
+      const items = nodeDragStart(model, nodeId, 'keyboard')
 
-      const positions = placeDraggedNodes(
-        items.origins,
-        velocity,
-        model.snapToGrid ? model.snapGrid : undefined
+      const graph = createFlowGraph(
+        model.document,
+        getFlowMeasuredNodes(model.document, model.measurements)
       )
 
+      const origins = new Map(
+        items.origins.map((origin) => [origin.nodeId, origin])
+      )
+
+      const updatedAbsolute = new Map<NodeId, XYPosition>()
+
+      const positions = graph.orderedNodes.flatMap((resolved) => {
+        const currentNode = resolved.node
+        const origin = origins.get(currentNode.id)
+
+        const originalParent =
+          currentNode.parentId === undefined
+            ? { x: 0, y: 0 }
+            : (graph.nodes.get(currentNode.parentId)?.absolutePosition ?? {
+                x: 0,
+                y: 0,
+              })
+
+        const parent =
+          currentNode.parentId === undefined
+            ? originalParent
+            : (updatedAbsolute.get(currentNode.parentId) ?? originalParent)
+
+        if (origin === undefined) {
+          updatedAbsolute.set(currentNode.id, {
+            x: resolved.absolutePosition.x + parent.x - originalParent.x,
+            y: resolved.absolutePosition.y + parent.y - originalParent.y,
+          })
+
+          return []
+        }
+
+        const extent =
+          currentNode.extent === 'parent' && origin.extent !== null
+            ? {
+                minX: origin.extent.minX + parent.x - originalParent.x,
+                minY: origin.extent.minY + parent.y - originalParent.y,
+                maxX: origin.extent.maxX + parent.x - originalParent.x,
+                maxY: origin.extent.maxY + parent.y - originalParent.y,
+              }
+            : origin.extent
+
+        const placed = placeDraggedNodes(
+          [{ ...origin, parentX: parent.x, parentY: parent.y, extent }],
+          velocity,
+          model.snapToGrid ? model.snapGrid : undefined
+        )
+
+        const [moved] = placed
+
+        if (moved !== undefined) {
+          updatedAbsolute.set(moved.nodeId, moved.positionAbsolute)
+        }
+
+        return placed
+      })
+
       const absolute =
-        createFlowGraph(
-          model.document,
-          getFlowMeasuredNodes(model.document, model.measurements)
-        ).nodes.get(nodeId)?.absolutePosition ?? node.position
+        graph.nodes.get(nodeId)?.absolutePosition ?? node.position
 
       const result = updateState(
         model,
@@ -3157,6 +3263,10 @@ const updateState = (
           },
         })
       )
+
+      if (result.model.document === model.document) {
+        return result
+      }
 
       return {
         ...result,
@@ -5598,12 +5708,12 @@ const qualifiesEscape = (event: KeyboardEvent): boolean => {
     return false
   }
 
-  const { target } = event
+  const target = firstEventElement(event)
 
   const nativeControl =
     target instanceof Element
       ? target.closest(
-          'input, textarea, select, button:not(.flow-foldkit-select-node), a[href], [contenteditable="true"], [data-flow-no-drag], [data-flow-nodrag]'
+          'button:not(.flow-foldkit-select-node), a[href], [data-flow-no-drag], [data-flow-nodrag]'
         )
       : null
 
@@ -5614,7 +5724,10 @@ const qualifiesEscape = (event: KeyboardEvent): boolean => {
         )
       : null
 
-  return nativeControl === null || interactionControl !== null
+  return (
+    !isInputDOMNode(event) &&
+    (nativeControl === null || interactionControl !== null)
+  )
 }
 
 const pendingMounted = (
@@ -5693,12 +5806,7 @@ const nodeFrame = (
 
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(
-      model.document,
-      model.pointerSession?.kind === 'node-drag'
-        ? (model.pointerSession.startMeasurements ?? model.measurements)
-        : model.measurements
-    )
+    getFlowMeasuredNodes(model.document, dragMeasurements(model))
   )
 
   const resolved = graph.nodes.get(node.id)
@@ -7059,7 +7167,11 @@ const graphView = (
             ...(node.dragHandle === undefined
               ? []
               : [h.DataAttribute('drag-handle', node.dragHandle)]),
-            h.Attribute('tabindex', node.focusable === false ? '-1' : '0'),
+            ...(node.focusable === false ? [] : [h.Attribute('tabindex', '0')]),
+            h.DataAttribute(
+              'draggable',
+              String(isNodeDraggable(selectInteractivity(model), node))
+            ),
             h.Attribute('role', node.ariaRole ?? 'group'),
             ...(node.ariaLabel === undefined
               ? []
@@ -7617,46 +7729,89 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
     }
   ),
   keyboardSelectionEvents: entry(
-    { active: Schema.Boolean, instanceId: Schema.String },
+    {
+      active: Schema.Boolean,
+      instanceId: Schema.String,
+      keyboardActivation: Schema.Boolean,
+      keyboardSelection: Schema.Boolean,
+      nonFocusableNodeIds: Schema.Array(Schema.String),
+      movableNodeIds: Schema.Array(Schema.String),
+    },
     {
       modelToDependencies: (model) => ({
         active: !model.disableKeyboardA11y,
         instanceId: model.instanceId,
+        keyboardActivation: model.keyboardActivation,
+        keyboardSelection:
+          model.gestureSession?.kind === 'selection' &&
+          model.gestureSession.pointerId === -2,
+        nonFocusableNodeIds: model.document.nodes
+          .filter((node) => node.focusable === false)
+          .map(({ id }) => id),
+        movableNodeIds: model.document.nodes
+          .filter(
+            (node) =>
+              node.selected === true &&
+              isNodeDraggable(selectInteractivity(model), node)
+          )
+          .map(({ id }) => id),
       }),
-      dependenciesToStream: ({ active, instanceId }) =>
+      dependenciesToStream: ({
+        active,
+        instanceId,
+        keyboardActivation,
+        keyboardSelection,
+        nonFocusableNodeIds,
+        movableNodeIds,
+      }) =>
         active
           ? Subscription.fromEvent({
               target: document,
               type: 'keydown',
               mapEvent: (event: KeyboardEvent): GraphMessageData => {
-                const { target } = event
+                const target = firstEventElement(event)
+                const path = event.composedPath()
+
+                const canvas = path.find(
+                  (element) =>
+                    element instanceof HTMLElement &&
+                    element.dataset.flowInstance === instanceId
+                )
 
                 if (
-                  !(target instanceof Element) ||
-                  target.closest<HTMLElement>('.flow-foldkit-canvas')?.dataset
-                    .flowInstance !== instanceId
+                  target === null ||
+                  canvas === undefined ||
+                  isInputDOMNode(event)
                 ) {
                   return Message.IgnoreInput({})
                 }
 
-                const nativeControl =
-                  target instanceof Element
-                    ? target.closest(
-                        'input, textarea, select, button:not(.flow-foldkit-select-node), a[href], [contenteditable="true"], [data-flow-no-drag], [data-flow-nodrag]'
-                      )
-                    : null
+                const nativeControl = target.closest(
+                  'button:not(.flow-foldkit-select-node), a[href], [data-flow-no-drag], [data-flow-nodrag]'
+                )
 
                 if (nativeControl !== null) {
                   return Message.IgnoreInput({})
                 }
 
-                const control =
-                  target instanceof Element
-                    ? target.closest<HTMLElement>('.flow-foldkit-select-node')
-                    : null
+                const control = target.closest<HTMLElement>(
+                  '.flow-foldkit-select-node'
+                )
 
-                const nodeId =
-                  target.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
+                const nodeElement = path.find(
+                  (element): element is HTMLElement =>
+                    element instanceof HTMLElement &&
+                    Object.hasOwn(element.dataset, 'nodeId')
+                )
+
+                const nodeId = nodeElement?.dataset.nodeId
+
+                if (
+                  nodeId !== undefined &&
+                  nonFocusableNodeIds.includes(nodeId)
+                ) {
+                  return Message.IgnoreInput({})
+                }
 
                 if (
                   (event.key === ' ' || event.key === 'Enter') &&
@@ -7668,8 +7823,17 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                 if (
                   nodeId !== undefined &&
                   control === null &&
-                  event.key.startsWith('Arrow')
+                  ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(
+                    event.key
+                  )
                 ) {
+                  if (
+                    !keyboardActivation ||
+                    (!keyboardSelection && !movableNodeIds.includes(nodeId))
+                  ) {
+                    return Message.IgnoreInput({})
+                  }
+
                   event.preventDefault()
 
                   return Message.MoveNodeByKeyboard({
@@ -7724,6 +7888,9 @@ const ariaLabelTextConfig = (input: FlowAriaLabelConfigInput | undefined) =>
     )
   )
 
+const platformModifier = (): string =>
+  globalThis.navigator?.userAgent.includes('Mac') === true ? 'Meta' : 'Control'
+
 // oxlint-disable-next-line complexity -- one default per canvas option.
 export const initialModel = (
   document: FlowDocument,
@@ -7739,7 +7906,12 @@ export const initialModel = (
     ...defaultClosingOptions,
     ...interactionOptions,
   }),
+  zoomActivationKeyCode:
+    interactionOptions.zoomActivationKeyCode === undefined
+      ? platformModifier()
+      : interactionOptions.zoomActivationKeyCode,
   fitViewPending: interactionOptions.fitView === true,
+  paneSize: { width: 0, height: 0, bounds: { width: 0, height: 0 } },
   rendererRevision: 0,
   selectionKeyPressed: false,
   multiSelectionKeyPressed: false,

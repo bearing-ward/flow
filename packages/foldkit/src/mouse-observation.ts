@@ -158,7 +158,7 @@ export const observeCanvasMouse = (
     if (
       event.detail !== 0 &&
       travelled > limit &&
-      (node === null || limit > 0)
+      (node === null || (limit > 0 && node.dataset.draggable === 'true'))
     ) {
       onSuppressedClick?.()
 
