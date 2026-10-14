@@ -2041,6 +2041,9 @@ test('Vue rectangle selection honors full and partial modes', async ({
       (mode) => window.__flowVueTest?.setSelectionMode(mode),
       selectionCase.mode
     )
+    await page.evaluate(() =>
+      window.__flowVueTest?.setGestureOptions({ autoPanOnSelection: false })
+    )
     const canvas = await page.getByTestId('flow-canvas').boundingBox()
 
     if (canvas === null) {

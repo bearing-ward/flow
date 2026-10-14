@@ -301,6 +301,7 @@ const NodeDragSessionSchema = S.Union([
 type DragSession = typeof NodeDragSessionSchema.Type & {
   readonly element: HTMLElement
   readonly captureTarget: HTMLElement
+  readonly viewportStart: Viewport
   /** Every node the drag moves, set when the drag activates. */
   readonly members?: readonly DragMember[]
 }
@@ -403,15 +404,21 @@ const keyboardResizeDelta = (
   return undefined
 }
 
-const reconnectAnchorOffsets = {
-  top: { x: 0, y: -12 },
-  right: { x: 12, y: 0 },
-  bottom: { x: 0, y: 12 },
-  left: { x: -12, y: 0 },
-} satisfies Record<
-  FlowHandle['side'],
-  { readonly x: number; readonly y: number }
->
+/** React `EdgeAnchor` shift: the anchor sits one radius outside its handle side. */
+const reconnectAnchorOffset = (
+  side: FlowHandle['side'],
+  radius: number
+): XYPosition => {
+  if (side === 'top') {
+    return { x: 0, y: -radius }
+  }
+
+  if (side === 'bottom') {
+    return { x: 0, y: radius }
+  }
+
+  return { x: side === 'left' ? -radius : radius, y: 0 }
+}
 
 interface PanSession {
   readonly kind: 'pan'
@@ -424,6 +431,8 @@ interface PanSession {
 
 interface SelectionSession {
   readonly kind: 'selection'
+  readonly threshold: number
+  readonly activated: boolean
   readonly pointerId: number
   readonly captureTarget: HTMLElement
   readonly startX: number
@@ -897,8 +906,8 @@ export const FlowCanvas = defineComponent({
     /** React `edgesReconnectable`; an edge's own `reconnectable` wins. */
     edgesReconnectable: { type: Boolean, default: true },
     /**
-     * React `deleteKeyCode`: deletes the selected, deletable elements while
-     * focus is inside the canvas. `null` disables it.
+     * React `deleteKeyCode`: document-level deletion of selected, deletable
+     * elements outside editable controls. `null` disables it.
      */
     deleteKeyCode: {
       type: [String, Array, null] as PropType<FlowKeyCode>,
@@ -928,6 +937,29 @@ export const FlowCanvas = defineComponent({
       type: Object as PropType<FlowStyle>,
       default: undefined,
     },
+    /** React `connectionLineContainerStyle`: style of the group holding the connection line. */
+    connectionLineContainerStyle: {
+      // SAFETY: Vue validates an object prop; FlowStyle is the public style contract.
+      type: Object as PropType<FlowStyle>,
+      default: undefined,
+    },
+    /** React `autoPanOnNodeDrag`: pan when a dragged node nears the pane edge. */
+    autoPanOnNodeDrag: { type: Boolean, default: true },
+    /** React `autoPanOnSelection`: pan when a selection box nears the pane edge. */
+    autoPanOnSelection: { type: Boolean, default: true },
+    /** React `autoPanOnNodeFocus`: centre a keyboard-focused node outside the view. */
+    autoPanOnNodeFocus: { type: Boolean, default: true },
+    /** React `paneClickDistance`: pointer travel, in pixels, after which a pane press is no click. */
+    paneClickDistance: { type: Number, default: 1 },
+    /** React `nodeClickDistance`: pointer travel, in pixels, after which a node press is no click. */
+    nodeClickDistance: { type: Number, default: 0 },
+    /** React `reconnectRadius`: radius of the reconnect anchors at a selected edge's ends. */
+    reconnectRadius: { type: Number, default: 10 },
+    /**
+     * React `disableKeyboardA11y`: turns off keyboard selection, arrow-key
+     * node moves, the move announcements and node focus auto-pan.
+     */
+    disableKeyboardA11y: { type: Boolean, default: false },
     /** Let nodes be dragged; a node's own `draggable` wins. */
     nodesDraggable: { type: Boolean, default: true },
     /** Let handles start and finish connections; node and handle flags win. */
@@ -2658,6 +2690,14 @@ export const FlowCanvas = defineComponent({
       publish({ kind: 'selection-set', nodeIds: selectedNodeIds, edgeIds })
     }
 
+    /** Client position of the last primary press on the pane. */
+    let panePress:
+      | { readonly x: number; readonly y: number; readonly distance: number }
+      | undefined
+
+    /** React `ariaLiveMessage`: the last keyboard node move announcement. */
+    const ariaLiveMessage = shallowRef('')
+
     /** Client position of the last primary press on a node. */
     let nodePress:
       | {
@@ -2668,6 +2708,7 @@ export const FlowCanvas = defineComponent({
            * (`selectNodesOnDrag`), so the click reads the selection from before.
            */
           readonly document: FlowDocument
+          readonly distance: number
           /**
            * Whether the press began on a control inside the node. A pending
            * connection captures the pointer on the node, so the click that
@@ -2677,8 +2718,32 @@ export const FlowCanvas = defineComponent({
         }
       | undefined
 
+    // Measure travel entirely with pointer events. Compatibility mouse events
+    // round fractional client coordinates, which would reject stationary clicks.
+    const trackClickTravel = (event: PointerEvent): void => {
+      if (panePress !== undefined) {
+        panePress = {
+          ...panePress,
+          distance: Math.max(
+            panePress.distance,
+            Math.hypot(event.clientX - panePress.x, event.clientY - panePress.y)
+          ),
+        }
+      }
+
+      if (nodePress !== undefined) {
+        nodePress = {
+          ...nodePress,
+          distance: Math.max(
+            nodePress.distance,
+            Math.hypot(event.clientX - nodePress.x, event.clientY - nodePress.y)
+          ),
+        }
+      }
+    }
+
     /**
-     * A click that did not move past the drag threshold selects the node.
+     * A click that did not move past nodeClickDistance selects the node.
      * Controls inside the node, including handles and resize controls, keep
      * their own click behaviour.
      */
@@ -2691,8 +2756,7 @@ export const FlowCanvas = defineComponent({
         press === undefined ||
         press.onControl ||
         event.button !== 0 ||
-        Math.hypot(event.clientX - press.x, event.clientY - press.y) >
-          (nodeDragThreshold ?? defaultNodeDragThreshold) ||
+        press.distance > props.nodeClickDistance ||
         isNodeControl(event.target, event.currentTarget)
       ) {
         return
@@ -3517,6 +3581,50 @@ export const FlowCanvas = defineComponent({
       } finally {
         finishInstantCall(operation, normal)
       }
+    }
+
+    const panToFocusedNode = (node: FlowNode, event: FocusEvent): void => {
+      const element = event.currentTarget
+
+      if (
+        props.disableKeyboardA11y ||
+        !props.autoPanOnNodeFocus ||
+        !(element instanceof HTMLElement) ||
+        !element.matches(':focus-visible')
+      ) {
+        return
+      }
+
+      const internal = graph.value.nodes.get(node.id)
+
+      if (internal === undefined) {
+        return
+      }
+
+      const viewport = activeViewport.value
+      const x = internal.absolutePosition.x * viewport.zoom + viewport.x
+      const y = internal.absolutePosition.y * viewport.zoom + viewport.y
+
+      if (
+        x + internal.dimensions.width * viewport.zoom > 0 &&
+        y + internal.dimensions.height * viewport.zoom > 0 &&
+        x < canvasWidth.value &&
+        y < canvasHeight.value
+      ) {
+        return
+      }
+
+      updateViewport({
+        x:
+          canvasWidth.value / 2 -
+          (internal.absolutePosition.x + internal.dimensions.width / 2) *
+            viewport.zoom,
+        y:
+          canvasHeight.value / 2 -
+          (internal.absolutePosition.y + internal.dimensions.height / 2) *
+            viewport.zoom,
+        zoom: viewport.zoom,
+      })
     }
 
     const autoPanConnection = (
@@ -5907,6 +6015,59 @@ export const FlowCanvas = defineComponent({
       publishAll(changes)
     }
 
+    const moveSelectedNodesByKey = (
+      node: FlowNode,
+      event: KeyboardEvent
+    ): void => {
+      if (
+        session.value !== undefined ||
+        node.selected !== true ||
+        !isNodeDraggable(interactivity.value, node)
+      ) {
+        return
+      }
+
+      const delta = keyboardResizeDelta(event.key, event.shiftKey ? 4 : 1)
+
+      if (delta === undefined) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      const internal = graph.value.nodes.get(node.id)
+
+      if (internal === undefined) {
+        return
+      }
+
+      const message = ariaLabelConfig.value[
+        'node.a11yDescription.ariaLiveMessage'
+      ]({
+        direction: event.key.replace('Arrow', '').toLowerCase(),
+        x: Math.trunc(internal.absolutePosition.x),
+        y: Math.trunc(internal.absolutePosition.y),
+      })
+
+      if (stateDisposed) {
+        return
+      }
+
+      const step = constrainedDragStep(
+        dragGroupMembers(activeDocument.value, interactivity.value, node),
+        node,
+        props.snapToGrid
+          ? { x: delta.x * snapGrid.value.x, y: delta.y * snapGrid.value.y }
+          : delta
+      )
+
+      publishDragCommit(
+        [...step.positions].map(([nodeId, position]) => ({ nodeId, position })),
+        step
+      )
+      ariaLiveMessage.value = message
+    }
+
     const previewForDragStep = (
       preview: NonNullable<typeof dragPreview.value>,
       members: readonly DragMember[],
@@ -5964,6 +6125,26 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const nodePointerDelta = (
+      active: DragSession,
+      event: PointerEvent
+    ): XYPosition => {
+      const bounds = canvas.value?.getBoundingClientRect()
+
+      const start = {
+        x:
+          (active.startX - (bounds?.left ?? 0) - active.viewportStart.x) /
+          active.viewportStart.zoom,
+        y:
+          (active.startY - (bounds?.top ?? 0) - active.viewportStart.y) /
+          active.viewportStart.zoom,
+      }
+
+      const pointer = clientToFlow(event.clientX, event.clientY)
+
+      return { x: pointer.x - start.x, y: pointer.y - start.y }
+    }
+
     const moveNode = (active: Session, event: PointerEvent): void => {
       if (active.kind !== 'node' && active.kind !== 'node-pending') {
         return
@@ -5991,9 +6172,7 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const dx = (event.clientX - dragging.startX) / activeViewport.value.zoom
-
-      const dy = (event.clientY - dragging.startY) / activeViewport.value.zoom
+      const { x: dx, y: dy } = nodePointerDelta(dragging, event)
 
       const step = constrainedDragStep(dragging.members ?? [], dragging.node, {
         x: dx,
@@ -6113,6 +6292,7 @@ export const FlowCanvas = defineComponent({
         originX: node.position.x,
         originY: node.position.y,
         frame,
+        viewportStart: activeViewport.value,
       }
 
       session.value = pending
@@ -7442,6 +7622,7 @@ export const FlowCanvas = defineComponent({
         return
       }
 
+      trackClickTravel(event)
       const active = session.value
 
       if (
@@ -7510,7 +7691,12 @@ export const FlowCanvas = defineComponent({
           Math.hypot(
             event.clientX - active.startX,
             event.clientY - active.startY
-          ) >= 2
+          ) >= 2 &&
+          (active.activated ||
+            Math.hypot(
+              event.clientX - active.startX,
+              event.clientY - active.startY
+            ) > active.threshold)
         ) {
           const end = pointerInFlow(event)
 
@@ -7561,8 +7747,7 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const dx = (event.clientX - active.startX) / activeViewport.value.zoom
-      const dy = (event.clientY - active.startY) / activeViewport.value.zoom
+      const { x: dx, y: dy } = nodePointerDelta(active, event)
 
       if (!nodeStillValid(active)) {
         endNodeDrag(active, 'cancelled', 'node-frame-invalid')
@@ -7661,11 +7846,14 @@ export const FlowCanvas = defineComponent({
 
       const active = session.value
 
+      // React listens for `deleteKeyCode` on the document. Keys aimed at
+      // another canvas stay with that canvas.
       if (
         active === undefined &&
         !event.repeat &&
         target instanceof Element &&
-        canvas.value?.contains(target) === true &&
+        (canvas.value?.contains(target) === true ||
+          target.closest('.flow-vue-canvas') === null) &&
         target.closest(
           'input, textarea, select, [contenteditable=""], [contenteditable="true"], .nokey'
         ) === null &&
@@ -7803,6 +7991,8 @@ export const FlowCanvas = defineComponent({
 
           const admitted: OwnedSelection = {
             kind: 'selection',
+            threshold: 0,
+            activated: true,
             owner: { state: { kind: 'live' } },
             pointerId: -1,
             captureTarget: nodeElement,
@@ -7947,6 +8137,14 @@ export const FlowCanvas = defineComponent({
       const { target, currentTarget } = event
 
       if (
+        event.button === 0 &&
+        target instanceof Element &&
+        target.closest('[data-node-id], [data-flow-edge-hit]') === null
+      ) {
+        panePress = { x: event.clientX, y: event.clientY, distance: 0 }
+      }
+
+      if (
         event.button !== 0 ||
         session.value !== undefined ||
         !(target instanceof Element) ||
@@ -8001,6 +8199,8 @@ export const FlowCanvas = defineComponent({
       session.value = isSelection
         ? {
             kind: 'selection',
+            threshold: selectionKeyHeld(event) ? 0 : props.paneClickDistance,
+            activated: false,
             owner: { state: { kind: 'live' } },
             pointerId: event.pointerId,
             captureTarget: currentTarget,
@@ -8667,7 +8867,16 @@ export const FlowCanvas = defineComponent({
           'data-testid': 'flow-node',
           'data-node-id': node.id,
           tabindex: focusable ? 0 : -1,
-          'aria-describedby': `${canvasId}-node-description`,
+          // React `NodeWrapper` roles and labels; a node's own
+          // `ariaDescription` replaces the shared description.
+          role: node.ariaRole ?? (focusable ? 'group' : undefined),
+          'aria-roledescription': 'node',
+          'aria-label': node.ariaLabel,
+          'aria-description': node.ariaDescription,
+          'aria-describedby':
+            props.disableKeyboardA11y || node.ariaDescription !== undefined
+              ? undefined
+              : `${canvasId}-node-description`,
           ref: nodeRef(node),
           // React order: z-index, then the node style, then position and size.
           style: [
@@ -8680,6 +8889,7 @@ export const FlowCanvas = defineComponent({
               x: event.clientX,
               y: event.clientY,
               document: activeDocument.value,
+              distance: 0,
               onControl: isNodeControl(event.target, event.currentTarget),
             }
             onPointerDown(event, node)
@@ -8694,9 +8904,21 @@ export const FlowCanvas = defineComponent({
           onMouseleave: (event: MouseEvent) =>
             emit('nodeMouseLeave', node, event),
           onClick: (event: MouseEvent) => {
+            // React `nodeClickDistance`: a press that travelled further is a
+            // drag, not a click.
+            if (
+              nodePress !== undefined &&
+              nodePress.distance > props.nodeClickDistance
+            ) {
+              nodePress = undefined
+
+              return
+            }
+
             emit('nodeClick', node, event)
             selectNodeOnClick(node, event)
           },
+          onFocus: (event: FocusEvent) => panToFocusedNode(node, event),
           onDblclick: (event: MouseEvent) =>
             emit('nodeDoubleClick', node, event),
           onContextmenu: (event: MouseEvent) =>
@@ -8704,6 +8926,18 @@ export const FlowCanvas = defineComponent({
           onKeydown: (event: KeyboardEvent) => {
             if (
               event.target !== event.currentTarget ||
+              props.disableKeyboardA11y
+            ) {
+              return
+            }
+
+            if (keyboardResizeDelta(event.key, 1) !== undefined) {
+              moveSelectedNodesByKey(node, event)
+
+              return
+            }
+
+            if (
               !isNodeSelectable(interactivity.value, node) ||
               (event.key !== ' ' && event.key !== 'Enter')
             ) {
@@ -8848,7 +9082,8 @@ export const FlowCanvas = defineComponent({
         'stroke-width': edge.interactionWidth ?? 20,
         'pointer-events': 'stroke',
         tabindex: (edge.focusable ?? props.edgesFocusable) ? 0 : -1,
-        role: edge.selectable === false ? 'img' : 'button',
+        role: edge.ariaRole ?? (edge.selectable === false ? 'img' : 'button'),
+        'aria-roledescription': 'edge',
         'aria-describedby': `${canvasId}-edge-description`,
         'aria-label':
           edge.ariaLabel ?? `Edge from ${sourceLabel} to ${targetLabel}`,
@@ -8870,7 +9105,10 @@ export const FlowCanvas = defineComponent({
         onContextmenu: (event: MouseEvent) =>
           emit('edgeContextMenu', edge, event),
         onKeydown: (event: KeyboardEvent) => {
-          if (event.key === 'Enter' || event.key === ' ') {
+          if (
+            !props.disableKeyboardA11y &&
+            (event.key === 'Enter' || event.key === ' ')
+          ) {
             event.preventDefault()
             event.stopPropagation()
             emit('edgeClick', edge, event)
@@ -8908,7 +9146,7 @@ export const FlowCanvas = defineComponent({
         return anchor
       }
 
-      const offset = reconnectAnchorOffsets[handle.side]
+      const offset = reconnectAnchorOffset(handle.side, props.reconnectRadius)
 
       return { x: anchor.x + offset.x, y: anchor.y + offset.y }
     }
@@ -9036,7 +9274,7 @@ export const FlowCanvas = defineComponent({
                 'aria-label': `Reconnect ${endpoint} of edge ${edge.id}`,
                 cx: reconnectAnchorPosition(edge, endpoint, anchor).x,
                 cy: reconnectAnchorPosition(edge, endpoint, anchor).y,
-                r: 7,
+                r: props.reconnectRadius,
                 onPointerdown: (event: PointerEvent) =>
                   startReconnection(edge, endpoint, event),
                 // eslint-disable-next-line complexity, no-loop-func -- one callback coordinates this block-scoped edge's keyboard lifecycle.
@@ -9817,6 +10055,110 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    let gesturePanFrame: number | undefined
+    let gesturePanEvent: PointerEvent | undefined
+
+    const stopGesturePan = (): void => {
+      if (gesturePanFrame !== undefined) {
+        cancelAnimationFrame(gesturePanFrame)
+      }
+
+      gesturePanFrame = undefined
+      gesturePanEvent = undefined
+    }
+
+    // eslint-disable-next-line complexity -- A frame checks gesture identity, configuration and ownership before and after viewport callbacks.
+    const panGestureFrame = (): void => {
+      gesturePanFrame = undefined
+      const event = gesturePanEvent
+      const active = session.value
+      const bounds = canvas.value?.getBoundingClientRect()
+
+      if (
+        stateDisposed ||
+        event === undefined ||
+        bounds === undefined ||
+        active === undefined ||
+        active.pointerId !== event.pointerId ||
+        !(
+          (active.kind === 'node' && props.autoPanOnNodeDrag) ||
+          (active.kind === 'selection' && props.autoPanOnSelection)
+        )
+      ) {
+        stopGesturePan()
+
+        return
+      }
+
+      const delta = selectionAutoPanDelta(
+        { x: event.clientX - bounds.left, y: event.clientY - bounds.top },
+        bounds.width,
+        bounds.height,
+        40,
+        props.autoPanSpeed
+      )
+
+      if (delta.x === 0 && delta.y === 0) {
+        stopGesturePan()
+
+        return
+      }
+
+      if (active.kind === 'node' && !continueNode(active)) {
+        stopGesturePan()
+
+        return
+      }
+
+      updateViewport(panViewport(activeViewport.value, delta))
+
+      // Viewport listeners may replace the graph, end the gesture or unmount.
+      if (stateDisposed || session.value !== active) {
+        stopGesturePan()
+
+        return
+      }
+
+      if (active.kind === 'node') {
+        moveNode(active, event)
+      } else if (active.owner.state.kind === 'live') {
+        session.value = { ...active, pointer: pointerInFlow(event) }
+      }
+
+      const current = session.value
+
+      if (
+        !stateDisposed &&
+        ((active.kind === 'node' && current === active) ||
+          (active.kind === 'selection' &&
+            current?.kind === 'selection' &&
+            current.owner === active.owner &&
+            active.owner.state.kind === 'live'))
+      ) {
+        gesturePanFrame = requestAnimationFrame(panGestureFrame)
+      }
+    }
+
+    const scheduleGesturePan = (event: PointerEvent): void => {
+      gesturePanEvent = event
+
+      if (gesturePanFrame === undefined) {
+        gesturePanFrame = requestAnimationFrame(panGestureFrame)
+      }
+    }
+
+    watch(
+      session,
+      (active) => {
+        if (active?.kind !== 'node' && active?.kind !== 'selection') {
+          stopGesturePan()
+        }
+      },
+      { flush: 'sync' }
+    )
+
+    onBeforeUnmount(stopGesturePan)
+
     return () => {
       const renderOwner = currentConnectionPreviewOwner()
 
@@ -9835,10 +10177,40 @@ export const FlowCanvas = defineComponent({
             : renderOwner.active
       }
 
+      // A separate SVG lets container layout styles leave graph edges untouched.
       const connectionPreview =
         connection === undefined
           ? []
-          : renderConnectionLine(connection, renderPreview)
+          : [
+              h(
+                'svg',
+                {
+                  class: 'flow-vue-connection-line',
+                  'data-testid': 'flow-connection-line-container',
+                  width: canvasWidth.value,
+                  height: canvasHeight.value,
+                  style: [
+                    {
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      overflow: 'visible',
+                      pointerEvents: 'none',
+                    },
+                    flowVueStyle(props.connectionLineContainerStyle),
+                  ],
+                },
+                [
+                  h(
+                    'g',
+                    {
+                      transform: `translate(${activeViewport.value.x} ${activeViewport.value.y}) scale(${activeViewport.value.zoom})`,
+                    },
+                    renderConnectionLine(connection, renderPreview)
+                  ),
+                ]
+              ),
+            ]
 
       const connectionKeyboardStatus =
         connection?.pointerId === -1
@@ -9939,6 +10311,8 @@ export const FlowCanvas = defineComponent({
           'data-color-mode': colorModeClass.value,
           // eslint-disable-next-line complexity -- Movement dispatches the closed session union with owner checks after observable effects.
           onPointermove: (event: PointerEvent) => {
+            trackClickTravel(event)
+
             if (!prepareConnectionMove(event)) {
               return
             }
@@ -10010,8 +10384,25 @@ export const FlowCanvas = defineComponent({
             }
 
             if (active.kind === 'selection') {
+              if (
+                !active.activated &&
+                Math.hypot(
+                  event.clientX - active.startX,
+                  event.clientY - active.startY
+                ) <= active.threshold
+              ) {
+                return
+              }
+
+              scheduleGesturePan(event)
               const pointer = pointerInFlow(event)
-              const updated: OwnedSelection = { ...active, pointer }
+
+              const updated: OwnedSelection = {
+                ...active,
+                pointer,
+                activated: true,
+              }
+
               session.value = updated
 
               if (
@@ -10105,6 +10496,10 @@ export const FlowCanvas = defineComponent({
             }
 
             moveNode(active, event)
+
+            if (session.value?.kind === 'node') {
+              scheduleGesturePan(event)
+            }
           },
           onPointerdown: onCanvasPointerDown,
           onMousedown: (event: MouseEvent) => {
@@ -10134,7 +10529,15 @@ export const FlowCanvas = defineComponent({
               target instanceof Element &&
               target.closest('[data-node-id], [data-flow-edge-hit]') === null
             ) {
-              emit('paneClick', clientToFlow(event.clientX, event.clientY))
+              const press = panePress
+              panePress = undefined
+
+              if (
+                press === undefined ||
+                press.distance <= props.paneClickDistance
+              ) {
+                emit('paneClick', clientToFlow(event.clientX, event.clientY))
+              }
             }
           },
           onMousemove: (event: MouseEvent) => {
@@ -10235,12 +10638,9 @@ export const FlowCanvas = defineComponent({
                 transformOrigin: '0 0',
               },
             },
-            [
-              h('defs', renderMarkers()),
-              ...edgeLayers.base.map(renderEdge),
-              ...connectionPreview,
-            ]
+            [h('defs', renderMarkers()), ...edgeLayers.base.map(renderEdge)]
           ),
+          ...connectionPreview,
           h(
             'div',
             {
@@ -10326,13 +10726,19 @@ export const FlowCanvas = defineComponent({
                 element instanceof HTMLElement ? element : null
             },
           }),
+          // React's key names are swapped: with keyboard support the node
+          // description reads the `keyboardDisabled` text, which explains
+          // the arrow keys.
           h(
             'div',
             {
               id: `${canvasId}-node-description`,
               class: 'flow-vue-a11y-description',
+              'data-testid': 'flow-node-description',
             },
-            ariaLabelConfig.value['node.a11yDescription.default']
+            props.disableKeyboardA11y
+              ? ariaLabelConfig.value['node.a11yDescription.default']
+              : ariaLabelConfig.value['node.a11yDescription.keyboardDisabled']
           ),
           h(
             'div',
@@ -10342,6 +10748,20 @@ export const FlowCanvas = defineComponent({
             },
             ariaLabelConfig.value['edge.a11yDescription.default']
           ),
+          ...(props.disableKeyboardA11y
+            ? []
+            : [
+                h(
+                  'div',
+                  {
+                    class: 'flow-vue-aria-live',
+                    'data-testid': 'flow-aria-live',
+                    'aria-live': 'assertive',
+                    'aria-atomic': 'true',
+                  },
+                  ariaLiveMessage.value
+                ),
+              ]),
           slots.default?.({}),
         ]
       )
