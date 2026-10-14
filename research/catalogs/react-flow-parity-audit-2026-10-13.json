@@ -12,12 +12,13 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 156,
+    "inScopeCloseAllHosts": 174,
     "inScopeCloseByHost": {
-      "vanilla": 184,
-      "vue": 184,
-      "foldkit": 156
-    }
+      "vanilla": 178,
+      "vue": 176,
+      "foldkit": 176
+    },
+    "reaudit": "2026-10-14 independent re-audit after Plans 105-117 (statuses above are the re-audit ratings)"
   },
   "waves": {
     "1": "Renderer props contract",
@@ -39,7 +40,12 @@
       "wave": 4,
       "missing": "Remaining canvas props/events, notably onNodesChange/onEdgesChange controlled flow",
       "effort": "L",
-      "theme": "canvas-props"
+      "theme": "canvas-props",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Unmapped props: key codes, autoPan*, onlyRenderVisibleElements (Foldkit), fitView on init",
+        "evidence": "plans/117-foldkit-final-wiring.md:30"
+      }
     },
     {
       "section": "api-reference overview",
@@ -52,7 +58,12 @@
       "missing": "Vue provider so useFlow works outside FlowCanvas",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": ["Plan 116"]
+      "updatedBy": ["Plan 116"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/vue/src/provider.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -64,7 +75,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/ui.ts:74"
+      }
     },
     {
       "section": "api-reference components",
@@ -76,7 +92,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/base-edge.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -88,7 +109,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/control-button.e2e.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -101,7 +127,12 @@
       "missing": "showInteractive lock toggle and onInteractiveChange",
       "effort": "S",
       "theme": "ui-component",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/ui-controls.e2e.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -114,7 +145,12 @@
       "missing": "Dedicated HTML edge-label layer; only viewport portal today",
       "effort": "M",
       "theme": "edge-props",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/graph.ts:4438"
+      }
     },
     {
       "section": "api-reference components",
@@ -126,7 +162,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "edge-props"
+      "theme": "edge-props",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/base-edge.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -139,7 +180,12 @@
       "missing": "Vanilla edge toolbar component (only anchors/core helpers)",
       "effort": "S",
       "theme": "ui-component",
-      "updatedBy": ["Plan 106"]
+      "updatedBy": ["Plan 106"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/toolbars.e2e.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -152,46 +198,66 @@
       "missing": "isConnectable/Start/End, isValidConnection, onConnect handle props",
       "effort": "M",
       "theme": "connection",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/base-handle-recipe.e2e.ts"
+      }
     },
     {
       "section": "api-reference components",
       "name": "<MiniMap />",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "nodeColor/stroke/mask, pannable/zoomable, position, custom node options",
       "effort": "M",
       "theme": "minimap",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/minimap-options.e2e.ts:59"
+      }
     },
     {
       "section": "api-reference components",
       "name": "<NodeResizeControl />",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "G",
+      "foldkit": "P",
       "scope": "parity",
       "wave": 5,
       "missing": "Public single resize control with position, variant, constraints",
       "effort": "M",
       "theme": "resize",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Foldkit control renders empty div; no custom children/content like React",
+        "evidence": "packages/foldkit/src/node-resizer.ts:370"
+      }
     },
     {
       "section": "api-reference components",
       "name": "<NodeResizer />",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Configurable resizer: min/max, aspect ratio, visibility, resize callbacks",
       "effort": "M",
       "theme": "resize",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/node-resizer.e2e.ts:39"
+      }
     },
     {
       "section": "api-reference components",
@@ -204,7 +270,12 @@
       "missing": "Vanilla node toolbar component (only anchors/core helpers)",
       "effort": "S",
       "theme": "ui-component",
-      "updatedBy": ["Plan 106"]
+      "updatedBy": ["Plan 106"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/toolbars.e2e.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -216,7 +287,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "ui-component"
+      "theme": "ui-component",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/panel.e2e.ts"
+      }
     },
     {
       "section": "api-reference components",
@@ -228,7 +304,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/viewport-portal.e2e.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -241,7 +322,12 @@
       "missing": "Foldkit connection-preview subscription beyond snapshot reads",
       "effort": "S",
       "theme": "connection",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/connection-observer.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -253,7 +339,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/mount-flow.ts:1153"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -266,7 +357,12 @@
       "missing": "onEdgesChange change-array controlled flow plus setter convenience",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/flow-changes.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -278,7 +374,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "connection"
+      "theme": "connection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -290,7 +391,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/mount-flow.ts:1187"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -303,7 +409,12 @@
       "missing": "Vue ref-returning useKeyPress composable",
       "effort": "S",
       "theme": "misc",
-      "updatedBy": ["Plan 116"]
+      "updatedBy": ["Plan 116"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/key-press-observer.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -315,7 +426,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "connection"
+      "theme": "connection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/mount-flow.ts:1158"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -327,7 +443,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/vue/src/use-flow.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -339,20 +460,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/mount-flow.ts:1152"
+      }
     },
     {
       "section": "api-reference hooks",
       "name": "useNodesData()",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Selective nodes-data observation in Vanilla and Foldkit",
       "effort": "S",
       "theme": "store-hooks",
-      "updatedBy": ["Plan 115"]
+      "updatedBy": ["Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/store.ts:73"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -364,7 +495,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/vue/src/use-flow.ts:262"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -377,7 +513,12 @@
       "missing": "onNodesChange change-array controlled flow plus setter convenience",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/flow-changes.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -389,7 +530,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "selection"
+      "theme": "selection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/application.ts:2533"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -401,33 +547,48 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/vue/src/flow-canvas.ts:3027"
+      }
     },
     {
       "section": "api-reference hooks",
       "name": "useReactFlow()",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "getIntersectingNodes, isNodeIntersecting, toObject, getNodesBounds instance methods",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Foldkit instance lacks getNodeConnections/getHandleConnections/viewportInitialized (via snapshot port)",
+        "evidence": "packages/foldkit/src/instance.ts:83"
+      }
     },
     {
       "section": "api-reference hooks",
       "name": "useStore()",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Selector-plus-equality subscription over snapshot",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/store.ts:59"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -440,7 +601,12 @@
       "missing": "Raw getState/setState intentionally absent; decide or document",
       "effort": "S",
       "theme": "store-hooks",
-      "reason": "Raw store getState/setState is intentionally not exposed; Flow publishes accepted state through snapshots and subscriptions (docs/react-flow-api-correspondence.md)."
+      "reason": "Raw store getState/setState is intentionally not exposed; Flow publishes accepted state through snapshots and subscriptions (docs/react-flow-api-correspondence.md).",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Intentional gap: no raw store API",
+        "evidence": null
+      }
     },
     {
       "section": "api-reference hooks",
@@ -452,7 +618,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/update-node-internals.ts"
+      }
     },
     {
       "section": "api-reference hooks",
@@ -464,7 +635,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/mount-flow.ts:1243"
+      }
     },
     {
       "section": "api-reference utils",
@@ -476,7 +652,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -488,7 +669,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -500,7 +686,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -512,7 +703,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -524,7 +720,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -536,7 +737,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -549,7 +755,12 @@
       "missing": "Direct nodes-array getNodesBounds; graphBounds needs FlowGraphView",
       "effort": "S",
       "theme": "utils",
-      "updatedBy": ["Plan 110"]
+      "updatedBy": ["Plan 110"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -561,7 +772,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -573,7 +789,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -585,7 +806,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -597,7 +823,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -609,7 +840,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -621,7 +857,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -633,7 +874,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference utils",
@@ -645,7 +891,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "utils"
+      "theme": "utils",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts:334-393"
+      }
     },
     {
       "section": "api-reference types",
@@ -657,20 +908,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "toolbar"
+      "theme": "toolbar",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "AriaLabelConfig",
       "vanilla": "C",
-      "vue": "C",
+      "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Global localized aria-label config object for canvas/controls/live region",
       "effort": "M",
       "theme": "a11y",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Vue/Foldkit: ariaLiveMessage and keyboardDisabled unused; no node move announcements",
+        "evidence": "packages/foldkit/src/graph.ts:7304"
+      }
     },
     {
       "section": "api-reference types",
@@ -682,20 +943,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "background"
+      "theme": "background",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "ColorMode",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "G",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Add light/dark/system color mode option and theming",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:200"
+      }
     },
     {
       "section": "api-reference types",
@@ -707,7 +978,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "connection"
+      "theme": "connection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -720,7 +996,12 @@
       "missing": "Export Foldkit connection preview renderer type",
       "effort": "S",
       "theme": "connection-line",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -733,7 +1014,12 @@
       "missing": "Add fromNode/fromHandle/fromPosition/toPosition/lineType to preview state",
       "effort": "M",
       "theme": "connection-line",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -746,7 +1032,12 @@
       "missing": "Add configurable preview path type option",
       "effort": "S",
       "theme": "connection-line",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -758,7 +1049,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "connection"
+      "theme": "connection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -771,32 +1067,47 @@
       "missing": "Add inProgress/fromNode/fromHandle/toHandle fields; Foldkit reactive accessor",
       "effort": "M",
       "theme": "connection",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "CoordinateExtent",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Foldkit nodeExtent option; host translateExtent options",
       "effort": "S",
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:286"
+      }
     },
     {
       "section": "api-reference types",
       "name": "DefaultEdgeOptions",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Style/className/animated/marker-config fields excluded",
       "effort": "M",
       "theme": "edge-model",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/interaction-lifecycle.e2e.ts:111"
+      }
     },
     {
       "section": "api-reference types",
@@ -808,7 +1119,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "edit-api"
+      "theme": "edit-api",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -821,7 +1137,12 @@
       "missing": "Add style/className/animated/label styling/marker config fields",
       "effort": "M",
       "theme": "edge-model",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Foldkit ignores edge.reconnectable; ariaRole unrendered in all hosts",
+        "evidence": "packages/foldkit/src/graph.ts:5032"
+      }
     },
     {
       "section": "api-reference types",
@@ -833,20 +1154,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "changes"
+      "theme": "changes",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "EdgeMarker",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Edge schema markers accept literal only, not config object",
       "effort": "S",
       "theme": "edge-model",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:102"
+      }
     },
     {
       "section": "api-reference types",
@@ -859,7 +1190,12 @@
       "missing": "Vue/Foldkit edge events lack browser event payload",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -872,7 +1208,12 @@
       "missing": "Add sourceX/Y,targetX/Y,positions,labelX/Y,selected,markers to renderer props",
       "effort": "M",
       "theme": "edge-props",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -885,20 +1226,30 @@
       "missing": "Export Foldkit renderer registry/edge renderer types",
       "effort": "S",
       "theme": "edge-props",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "FitViewOptions",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Add minZoom/maxZoom/includeHiddenNodes/explicit node list",
       "effort": "S",
       "theme": "viewport",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Foldkit has no mount-time fitView option; call fitView after init",
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:286"
+      }
     },
     {
       "section": "api-reference types",
@@ -910,7 +1261,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "handles"
+      "theme": "handles",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -922,7 +1278,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "connection"
+      "theme": "connection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -934,7 +1295,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "store-state"
+      "theme": "store-state",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -947,7 +1313,12 @@
       "missing": "Foldkit validator callback beyond allowedTargets list",
       "effort": "S",
       "theme": "connection",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -959,7 +1330,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "misc"
+      "theme": "misc",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -971,33 +1347,48 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "edge-model"
+      "theme": "edge-model",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "MiniMapNodeProps",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "G",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Custom minimap node renderer props in all hosts",
       "effort": "M",
       "theme": "minimap",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/minimap-options.e2e.ts:120"
+      }
     },
     {
       "section": "api-reference types",
       "name": "Node",
       "vanilla": "C",
-      "vue": "C",
+      "vue": "P",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Add style/className/source/targetPosition/dragHandle/measured/expandParent",
       "effort": "M",
       "theme": "node-model",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Vue/Foldkit do not render node ariaLabel, ariaDescription, ariaRole",
+        "evidence": "apps/vanilla/src/mount-flow.ts:1702"
+      }
     },
     {
       "section": "api-reference types",
@@ -1009,7 +1400,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "changes"
+      "theme": "changes",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1021,7 +1417,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "connection"
+      "theme": "connection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1033,7 +1434,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "handles"
+      "theme": "handles",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1046,7 +1452,12 @@
       "missing": "Vue/Foldkit node events lack browser event payload",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1058,7 +1469,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "node-model"
+      "theme": "node-model",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1071,7 +1487,12 @@
       "missing": "Add selected/dragging/positionAbsolute/isConnectable/zIndex/dimensions props",
       "effort": "M",
       "theme": "node-props",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1084,7 +1505,12 @@
       "missing": "Export Foldkit node renderer registry types",
       "effort": "S",
       "theme": "node-props",
-      "updatedBy": ["Plan 105"]
+      "updatedBy": ["Plan 105"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1096,7 +1522,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "delete"
+      "theme": "delete",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1108,7 +1539,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "events"
+      "theme": "events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1120,7 +1556,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "events"
+      "theme": "events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1132,7 +1573,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "events"
+      "theme": "events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1144,7 +1590,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "delete"
+      "theme": "delete",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1157,7 +1608,12 @@
       "missing": "Emit EdgeChange[] deltas instead of FlowChange stream",
       "effort": "M",
       "theme": "changes",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1169,7 +1625,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "delete"
+      "theme": "delete",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1182,7 +1643,12 @@
       "missing": "Vue error emit limited to connection-validator boundary",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/foldkit/src/application.ts:1161"
+      }
     },
     {
       "section": "api-reference types",
@@ -1194,7 +1660,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "events"
+      "theme": "events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1206,7 +1677,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "events"
+      "theme": "events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1218,7 +1694,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "events"
+      "theme": "events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1231,7 +1712,12 @@
       "missing": "Emit NodeChange[] deltas instead of FlowChange stream",
       "effort": "M",
       "theme": "changes",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1243,7 +1729,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "delete"
+      "theme": "delete",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1256,7 +1747,12 @@
       "missing": "Vanilla onReconnect lacks old edge plus new connection",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1269,7 +1765,12 @@
       "missing": "Foldkit selection-change event",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1281,20 +1782,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "PanelPosition",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Add center-left/center-right placements",
       "effort": "S",
       "theme": "panel",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/minimap-options.e2e.ts:320"
+      }
     },
     {
       "section": "api-reference types",
@@ -1306,7 +1817,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "handles"
+      "theme": "handles",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1319,20 +1835,30 @@
       "missing": "Intentional: no attribution; document as N/A",
       "effort": "S",
       "theme": "misc",
-      "reason": "Flow intentionally has no attribution mechanism to hide; React Flow Pro licensing options do not apply."
+      "reason": "Flow intentionally has no attribution mechanism to hide; React Flow Pro licensing options do not apply.",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Intentional gap: no Pro attribution",
+        "evidence": "research/catalogs/react-flow-parity-audit-2026-10-13.json"
+      }
     },
     {
       "section": "api-reference types",
       "name": "ReactFlowInstance",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Add getIntersectingNodes/toObject/getNodesBounds; Foldkit unified instance",
       "effort": "L",
       "theme": "instance-api",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Foldkit instance lacks getHandleConnections; compose from core getHandleConnections",
+        "evidence": "apps/foldkit/e2e/instance-api.e2e.ts:38"
+      }
     },
     {
       "section": "api-reference types",
@@ -1344,7 +1870,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "persistence"
+      "theme": "persistence",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1356,20 +1887,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "geometry"
+      "theme": "geometry",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "ResizeParams",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Host NodeResizer callbacks exposing resize params",
       "effort": "M",
       "theme": "node-resizer",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/node-resizer.e2e.ts:39"
+      }
     },
     {
       "section": "api-reference types",
@@ -1382,7 +1923,12 @@
       "missing": "Selection drag payload lacks dragged nodes",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108", "Plan 112", "Plan 113"]
+      "updatedBy": ["Plan 108", "Plan 112", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1394,20 +1940,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "selection"
+      "theme": "selection",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "SnapGrid",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Vue/Foldkit snapGrid option",
       "effort": "S",
       "theme": "interaction-options",
-      "updatedBy": ["Plan 116"]
+      "updatedBy": ["Plan 116"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/node-resizer.e2e.ts:235"
+      }
     },
     {
       "section": "api-reference types",
@@ -1419,7 +1975,12 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
@@ -1431,20 +1992,30 @@
       "wave": null,
       "missing": null,
       "effort": null,
-      "theme": "geometry"
+      "theme": "geometry",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "packages/core/src/public.ts"
+      }
     },
     {
       "section": "api-reference types",
       "name": "ZIndexMode",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "G",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Add auto/basic/manual stacking mode",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:241"
+      }
     },
     {
       "section": "examples overview",
@@ -1457,7 +2028,12 @@
       "missing": "No gallery route combining all features per host",
       "effort": "M",
       "theme": "gallery",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/feature-overview-recipes.e2e.ts:14"
+      }
     },
     {
       "section": "examples nodes",
@@ -1470,7 +2046,12 @@
       "missing": "onConnectEnd lacks drop client position",
       "effort": "S",
       "theme": "connection-events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/events-and-changes.e2e.ts:242"
+      }
     },
     {
       "section": "examples nodes",
@@ -1483,7 +2064,12 @@
       "missing": "No per-handle connectable or connection limit",
       "effort": "M",
       "theme": "handles",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/events-and-changes.e2e.ts:371"
+      }
     },
     {
       "section": "examples nodes",
@@ -1496,7 +2082,12 @@
       "missing": "Foldkit node views cannot dispatch app data edits",
       "effort": "S",
       "theme": "custom-nodes",
-      "updatedBy": ["Plan 113"]
+      "updatedBy": ["Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/custom-node-recipe.e2e.ts:5"
+      }
     },
     {
       "section": "examples nodes",
@@ -1508,7 +2099,12 @@
       "wave": null,
       "missing": "Gallery route only; APIs and e2e exist",
       "effort": null,
-      "theme": "graph-editing"
+      "theme": "graph-editing",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/graph-editing-examples.e2e.ts:97"
+      }
     },
     {
       "section": "examples nodes",
@@ -1520,7 +2116,12 @@
       "wave": null,
       "missing": "Gallery route only; recipe e2e in all hosts",
       "effort": null,
-      "theme": "custom-nodes"
+      "theme": "custom-nodes",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/drag-handle-recipe.e2e.ts:3"
+      }
     },
     {
       "section": "examples nodes",
@@ -1533,7 +2134,12 @@
       "missing": "Whole-node handles plus floating edge attachment",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:268"
+      }
     },
     {
       "section": "examples nodes",
@@ -1546,20 +2152,30 @@
       "missing": "No getIntersectingNodes/isNodeIntersecting helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110", "Plan 113"]
+      "updatedBy": ["Plan 110", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:56"
+      }
     },
     {
       "section": "examples nodes",
       "name": "Node Resizer",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No resizer options: aspect ratio, max size, custom controls",
       "effort": "M",
       "theme": "node-resizer",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/node-resizer.e2e.ts:39"
+      }
     },
     {
       "section": "examples nodes",
@@ -1571,7 +2187,12 @@
       "wave": null,
       "missing": "Gallery route only; toolbar APIs in all hosts",
       "effort": null,
-      "theme": "toolbars"
+      "theme": "toolbars",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/toolbars.e2e.ts:36"
+      }
     },
     {
       "section": "examples nodes",
@@ -1584,7 +2205,12 @@
       "missing": "Foldkit lacks node-bounds query during drag",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110", "Plan 113"]
+      "updatedBy": ["Plan 110", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:200"
+      }
     },
     {
       "section": "examples nodes",
@@ -1596,7 +2222,12 @@
       "wave": 7,
       "missing": "Node rotation and rotated handle geometry",
       "effort": "L",
-      "theme": "node-transform"
+      "theme": "node-transform",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Node rotation and rotated handle geometry",
+        "evidence": "no rotation support in apps/*/src or packages/*/src"
+      }
     },
     {
       "section": "examples nodes",
@@ -1608,7 +2239,12 @@
       "wave": 7,
       "missing": "No animated node position transitions",
       "effort": "M",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Animated node position transitions recipe",
+        "evidence": "no node position animation API"
+      }
     },
     {
       "section": "examples nodes",
@@ -1620,20 +2256,30 @@
       "wave": null,
       "missing": "Gallery route only; renderOnlyVisible and perf e2e exist",
       "effort": null,
-      "theme": "performance"
+      "theme": "performance",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/performance.e2e.ts:346"
+      }
     },
     {
       "section": "examples nodes",
       "name": "Updating Nodes",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "No node style/className field for default nodes",
       "effort": "S",
       "theme": "styling",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Hidden toggle untested in Foldkit despite comment",
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:37"
+      }
     },
     {
       "section": "examples nodes",
@@ -1645,7 +2291,12 @@
       "wave": 7,
       "missing": "No shape node recipe; custom SVG nodes possible",
       "effort": "M",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "No shape node recipe",
+        "evidence": "custom SVG nodes possible via renderers"
+      }
     },
     {
       "section": "examples edges",
@@ -1657,7 +2308,12 @@
       "wave": null,
       "missing": "No animated flag; custom edge renderers suffice",
       "effort": null,
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/edge-recipes.e2e.ts:239"
+      }
     },
     {
       "section": "examples edges",
@@ -1669,7 +2325,12 @@
       "wave": null,
       "missing": "Gallery route only; connectionPreview renderer exists",
       "effort": null,
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/renderer-props.e2e.ts:121"
+      }
     },
     {
       "section": "examples edges",
@@ -1681,19 +2342,29 @@
       "wave": null,
       "missing": "Gallery route only; edgeTypes and BaseEdge exist",
       "effort": null,
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/renderer-props.e2e.ts:147"
+      }
     },
     {
       "section": "examples edges",
       "name": "Delete Edge on Drop",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": null,
       "missing": "Gallery route only; reconnectEnd outcome exists",
       "effort": null,
-      "theme": "reconnect"
+      "theme": "reconnect",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "No recipe/test deleting an edge when reconnect drops on pane",
+        "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:690"
+      }
     },
     {
       "section": "examples edges",
@@ -1705,7 +2376,12 @@
       "wave": null,
       "missing": "Gallery route only; EdgeText/HTML labels exist",
       "effort": null,
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:124"
+      }
     },
     {
       "section": "examples edges",
@@ -1718,7 +2394,12 @@
       "missing": "No path intersection helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110", "Plan 113"]
+      "updatedBy": ["Plan 110", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:173"
+      }
     },
     {
       "section": "examples edges",
@@ -1730,7 +2411,12 @@
       "wave": null,
       "missing": "Gallery route only; edge toolbar in all hosts",
       "effort": null,
-      "theme": "toolbars"
+      "theme": "toolbars",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/edge-toolbar.e2e.ts:14"
+      }
     },
     {
       "section": "examples edges",
@@ -1742,7 +2428,12 @@
       "wave": null,
       "missing": "Gallery route only; all five path types exist",
       "effort": null,
-      "theme": "custom-edges"
+      "theme": "custom-edges",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/edge-geometry-recipes.e2e.ts:36"
+      }
     },
     {
       "section": "examples edges",
@@ -1754,7 +2445,12 @@
       "wave": 7,
       "missing": "Obstacle-aware edge routing",
       "effort": "L",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Obstacle-aware edge routing",
+        "evidence": "no routing implementation"
+      }
     },
     {
       "section": "examples edges",
@@ -1767,7 +2463,12 @@
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"]
+      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:220"
+      }
     },
     {
       "section": "examples edges",
@@ -1780,7 +2481,12 @@
       "missing": "Only arrow/arrowclosed; no custom SVG markers",
       "effort": "M",
       "theme": "custom-edges",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:345"
+      }
     },
     {
       "section": "examples edges",
@@ -1793,7 +2499,12 @@
       "missing": "Preview renderer is single-source only",
       "effort": "M",
       "theme": "custom-edges",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:412"
+      }
     },
     {
       "section": "examples edges",
@@ -1805,7 +2516,12 @@
       "wave": null,
       "missing": "Gallery route only; reconnect lifecycle e2e in all",
       "effort": null,
-      "theme": "reconnect"
+      "theme": "reconnect",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/activation-callbacks.e2e.ts:582"
+      }
     },
     {
       "section": "examples edges",
@@ -1818,7 +2534,12 @@
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"]
+      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/edge-recipes.e2e.ts:301"
+      }
     },
     {
       "section": "examples edges",
@@ -1831,7 +2552,12 @@
       "missing": "onConnectEnd lacks drop position for temp edge",
       "effort": "M",
       "theme": "connection-events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/events-and-changes.e2e.ts:381"
+      }
     },
     {
       "section": "examples edges",
@@ -1843,7 +2569,12 @@
       "wave": 7,
       "missing": "Draggable edge control points with edge-data writes",
       "effort": "L",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Draggable edge control points writing edge data",
+        "evidence": "no editable edge recipe"
+      }
     },
     {
       "section": "examples interaction",
@@ -1856,7 +2587,12 @@
       "missing": "Foldkit node views cannot write node data",
       "effort": "M",
       "theme": "computing-flows",
-      "updatedBy": ["Plan 109", "Plan 113"]
+      "updatedBy": ["Plan 109", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/computing-flows-recipes.e2e.ts:3"
+      }
     },
     {
       "section": "examples interaction",
@@ -1868,7 +2604,12 @@
       "wave": null,
       "missing": "Gallery route only; lifecycle e2e in all hosts",
       "effort": null,
-      "theme": "connection-events"
+      "theme": "connection-events",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:601"
+      }
     },
     {
       "section": "examples interaction",
@@ -1881,44 +2622,64 @@
       "missing": "Foldkit lacks node/pane context-menu events",
       "effort": "S",
       "theme": "events",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Vanilla/Vue test callbacks only, no menu recipe",
+        "evidence": "apps/foldkit/e2e/events-and-changes.e2e.ts:394"
+      }
     },
     {
       "section": "examples interaction",
       "name": "Contextual Zoom",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "P",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Foldkit node views lack viewport zoom input",
       "effort": "S",
-      "theme": "viewport"
+      "theme": "viewport",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Vanilla/Vue zoom-dependent node recipe and test",
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:409"
+      }
     },
     {
       "section": "examples interaction",
       "name": "Drag and Drop",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": null,
       "missing": "Gallery route only; screenToFlow plus edits exist",
       "effort": null,
-      "theme": "drag-drop"
+      "theme": "drag-drop",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Sidebar HTML5 drop-to-create recipe and e2e per host",
+        "evidence": "no dataTransfer/drop test in apps/*/e2e"
+      }
     },
     {
       "section": "examples interaction",
       "name": "Preventing Cycles",
-      "vanilla": "C",
-      "vue": "C",
+      "vanilla": "P",
+      "vue": "P",
       "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit lacks isValidConnection callback",
       "effort": "S",
       "theme": "validation",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Vanilla/Vue getOutgoers+isValidConnection cycle test",
+        "evidence": "apps/foldkit/e2e/events-and-changes-fixture.ts:144"
+      }
     },
     {
       "section": "examples interaction",
@@ -1930,7 +2691,12 @@
       "wave": null,
       "missing": "Gallery route only; versioned persistence e2e in all",
       "effort": null,
-      "theme": "persistence"
+      "theme": "persistence",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/versioned-persistence.e2e.ts:3"
+      }
     },
     {
       "section": "examples interaction",
@@ -1942,7 +2708,12 @@
       "wave": null,
       "missing": "Gallery route only; connectOnClick and touch e2e",
       "effort": null,
-      "theme": "touch"
+      "theme": "touch",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/touch-ready-mobile.e2e.ts:17"
+      }
     },
     {
       "section": "examples interaction",
@@ -1955,7 +2726,12 @@
       "missing": "Foldkit only static allowedConnectionTargets",
       "effort": "S",
       "theme": "validation",
-      "updatedBy": ["Plan 108"]
+      "updatedBy": ["Plan 108"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/events-and-changes.e2e.ts:320"
+      }
     },
     {
       "section": "examples interaction",
@@ -1967,7 +2743,12 @@
       "wave": 7,
       "missing": "No drag position override/snapping hook recipe",
       "effort": "M",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Helper line snapping recipe",
+        "evidence": "no helper lines recipe"
+      }
     },
     {
       "section": "examples interaction",
@@ -1979,7 +2760,12 @@
       "wave": 7,
       "missing": "No CRDT/Yjs sync integration",
       "effort": "L",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "CRDT/Yjs sync integration",
+        "evidence": "no collaboration recipe"
+      }
     },
     {
       "section": "examples interaction",
@@ -1991,7 +2777,12 @@
       "wave": 7,
       "missing": "No clipboard recipe; selection plus edits exist",
       "effort": "M",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Clipboard recipe",
+        "evidence": "no clipboard recipe"
+      }
     },
     {
       "section": "examples interaction",
@@ -2003,7 +2794,12 @@
       "wave": 7,
       "missing": "No history API over edit transactions",
       "effort": "M",
-      "theme": "undo-redo"
+      "theme": "undo-redo",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "History API over edit transactions",
+        "evidence": "no undo/redo recipe"
+      }
     },
     {
       "section": "examples grouping",
@@ -2016,7 +2812,12 @@
       "missing": "No group-selection reparent helper",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
+      }
     },
     {
       "section": "examples grouping",
@@ -2029,7 +2830,12 @@
       "missing": "Drop-to-reparent needs intersection helper",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/subflows-recipes.e2e.ts:123"
+      }
     },
     {
       "section": "examples grouping",
@@ -2041,7 +2847,12 @@
       "wave": null,
       "missing": "Gallery route only; parentId/extent e2e in all",
       "effort": null,
-      "theme": "subflows"
+      "theme": "subflows",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
+      }
     },
     {
       "section": "examples layout",
@@ -2054,7 +2865,12 @@
       "missing": "dagre integration; Foldkit measured-size access",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:109"
+      }
     },
     {
       "section": "examples layout",
@@ -2067,7 +2883,12 @@
       "missing": "elkjs integration; Foldkit measured-size access",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:109"
+      }
     },
     {
       "section": "examples layout",
@@ -2080,7 +2901,12 @@
       "missing": "Measured handle positions outside Vanilla",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112"]
+      "updatedBy": ["Plan 109", "Plan 112"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:132"
+      }
     },
     {
       "section": "examples layout",
@@ -2092,7 +2918,12 @@
       "wave": null,
       "missing": "Gallery route only; left/right handle sides exist",
       "effort": null,
-      "theme": "layout"
+      "theme": "layout",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "No dedicated recipe; covered by LR layout tests",
+        "evidence": "apps/vue/e2e/layout-recipes.e2e.ts:101"
+      }
     },
     {
       "section": "examples layout",
@@ -2104,20 +2935,30 @@
       "wave": 7,
       "missing": "Hidden subtree plus relayout recipe",
       "effort": "M",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Hidden subtree plus relayout recipe",
+        "evidence": "no expand/collapse recipe"
+      }
     },
     {
       "section": "examples layout",
       "name": "Auto Layout · Pro",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Layout engine integration on measure/change",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:178"
+      }
     },
     {
       "section": "examples layout",
@@ -2130,20 +2971,30 @@
       "missing": "d3-force continuous position updates",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:218"
+      }
     },
     {
       "section": "examples layout",
       "name": "Dynamic Layouting · Pro",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
       "missing": "Layout engine integration with add-node placeholders",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"]
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:281"
+      }
     },
     {
       "section": "examples layout",
@@ -2156,33 +3007,48 @@
       "missing": "No node overlap/collision resolution helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": ["Plan 110"]
+      "updatedBy": ["Plan 110"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:113"
+      }
     },
     {
       "section": "examples styling",
       "name": "Base Style",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "No CSS theme variables or node style/className",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:200"
+      }
     },
     {
       "section": "examples styling",
       "name": "Dark Mode",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "G",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "No colorMode option or dark theme variables",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Foldkit controls/minimap dark tokens untested",
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:200"
+      }
     },
     {
       "section": "examples styling",
@@ -2194,19 +3060,29 @@
       "wave": null,
       "missing": "Gallery route only; custom node classes suffice",
       "effort": null,
-      "theme": "styling"
+      "theme": "styling",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "No Tailwind recipe; className support tested only",
+        "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:37"
+      }
     },
     {
       "section": "examples styling",
       "name": "Turbo Flow",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": null,
       "missing": "Gallery route only; custom nodes/edges with gradients",
       "effort": null,
-      "theme": "styling"
+      "theme": "styling",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Gradient custom node/edge recipe and test per host",
+        "evidence": "no turbo recipe in apps/*/ui-recipes"
+      }
     },
     {
       "section": "examples whiteboard",
@@ -2219,7 +3095,12 @@
       "missing": "No freeform pane tool overlay/hit-test recipe",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": ["Plan 109", "Plan 110"]
+      "updatedBy": ["Plan 109", "Plan 110"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:108"
+      }
     },
     {
       "section": "examples whiteboard",
@@ -2232,7 +3113,12 @@
       "missing": "No freeform lasso selection",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:57"
+      }
     },
     {
       "section": "examples whiteboard",
@@ -2245,7 +3131,12 @@
       "missing": "Foldkit lacks pane pointer-down/up events",
       "effort": "S",
       "theme": "whiteboard",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:156"
+      }
     },
     {
       "section": "examples whiteboard",
@@ -2258,19 +3149,29 @@
       "missing": "No freehand stroke capture tool",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": ["Plan 109"]
+      "updatedBy": ["Plan 109"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:180"
+      }
     },
     {
       "section": "examples misc",
       "name": "Download Image",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": null,
       "missing": "html-to-image integration; getViewportForBounds exists",
       "effort": null,
-      "theme": "export"
+      "theme": "export",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "html-to-image export recipe and e2e; only getViewportForBounds exists",
+        "evidence": "packages/core/src/public.ts:216"
+      }
     },
     {
       "section": "examples misc",
@@ -2282,7 +3183,12 @@
       "wave": 7,
       "missing": "No server-side rendering of flows",
       "effort": "L",
-      "theme": "pro"
+      "theme": "pro",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Server-side flow rendering",
+        "evidence": "no SSR rendering"
+      }
     },
     {
       "section": "ui templates",
@@ -2294,7 +3200,12 @@
       "wave": 7,
       "missing": "No template; needs editor app, simulated AI runs, save/restore",
       "effort": "L",
-      "theme": "template"
+      "theme": "template",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "No template or recipe in any host (stretch)",
+        "evidence": "no match for 'workflow editor' under apps/ or packages/"
+      }
     },
     {
       "section": "ui templates",
@@ -2306,7 +3217,12 @@
       "wave": 7,
       "missing": "No template; needs editor app, deterministic runner, save/restore",
       "effort": "L",
-      "theme": "template"
+      "theme": "template",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "No template or recipe in any host (stretch)",
+        "evidence": "no match for 'workflow editor' under apps/ or packages/"
+      }
     },
     {
       "section": "ui components",
@@ -2318,7 +3234,12 @@
       "wave": null,
       "missing": "Upstream option comparison unverified only",
       "effort": null,
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/base-node-recipe.e2e.ts; apps/vanilla/src/public.ts:182"
+      }
     },
     {
       "section": "ui components",
@@ -2330,7 +3251,12 @@
       "wave": null,
       "missing": "Upstream option comparison unverified only",
       "effort": null,
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/ui-recipes.e2e.ts; packages/foldkit/src/public.ts:239"
+      }
     },
     {
       "section": "ui components",
@@ -2342,7 +3268,12 @@
       "wave": null,
       "missing": "Upstream option comparison unverified only",
       "effort": null,
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/appendix-recipe.e2e.ts; apps/vanilla/src/public.ts:215"
+      }
     },
     {
       "section": "ui components",
@@ -2354,7 +3285,12 @@
       "wave": null,
       "missing": "Upstream option comparison unverified only",
       "effort": null,
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vue/e2e/tooltip-recipe.e2e.ts; packages/foldkit/src/public.ts:250"
+      }
     },
     {
       "section": "ui components",
@@ -2366,7 +3302,12 @@
       "wave": null,
       "missing": "Upstream option comparison unverified only",
       "effort": null,
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/database-schema-recipe.e2e.ts"
+      }
     },
     {
       "section": "ui components",
@@ -2378,20 +3319,30 @@
       "wave": null,
       "missing": "Rejection paths and lifecycle leak coverage unverified",
       "effort": null,
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/placeholder-recipe.e2e.ts"
+      }
     },
     {
       "section": "ui components",
       "name": "Labeled Group",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "G",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "No labeled group/collapse component or recipe in any host",
       "effort": "M",
       "theme": "ui-node",
-      "updatedBy": ["Plan 116", "Plan 115"]
+      "updatedBy": ["Plan 116", "Plan 115"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Vanilla is recipe-only (no exported helper)",
+        "evidence": "packages/foldkit/src/public.ts:275; apps/foldkit/e2e/labeled-group-recipe.e2e.ts:46"
+      }
     },
     {
       "section": "ui components",
@@ -2403,7 +3354,12 @@
       "wave": null,
       "missing": "Option-level upstream comparison unverified",
       "effort": null,
-      "theme": "ui-handle"
+      "theme": "ui-handle",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/base-handle-recipe.e2e.ts"
+      }
     },
     {
       "section": "ui components",
@@ -2415,7 +3371,12 @@
       "wave": null,
       "missing": "Option-level upstream comparison unverified",
       "effort": null,
-      "theme": "ui-handle"
+      "theme": "ui-handle",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/labeled-handle-recipe.e2e.ts"
+      }
     },
     {
       "section": "ui components",
@@ -2427,7 +3388,12 @@
       "wave": null,
       "missing": "Recipe-only (no dedicated helper); styling/options unverified",
       "effort": null,
-      "theme": "ui-handle"
+      "theme": "ui-handle",
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": "Recipe-only in all hosts; no exported component",
+        "evidence": "apps/*/e2e/button-handle-recipe.e2e.ts:3"
+      }
     },
     {
       "section": "ui components",
@@ -2440,7 +3406,12 @@
       "missing": "BaseEdge/EdgeText exist; no button-edge recipe or tests",
       "effort": "S",
       "theme": "ui-edge",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:124; apps/vue/e2e/edge-recipes.e2e.ts:196"
+      }
     },
     {
       "section": "ui components",
@@ -2453,7 +3424,12 @@
       "missing": "No endpoint-data edge recipe; BaseEdge primitives only",
       "effort": "M",
       "theme": "ui-edge",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:155; apps/foldkit/e2e/edge-recipes.e2e.ts:164"
+      }
     },
     {
       "section": "ui components",
@@ -2466,7 +3442,12 @@
       "missing": "No animated edge recipe with reduced-motion handling",
       "effort": "S",
       "theme": "ui-edge",
-      "updatedBy": ["Plan 107"]
+      "updatedBy": ["Plan 107"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:175; apps/vue/e2e/edge-recipes.e2e.ts:239"
+      }
     },
     {
       "section": "ui components",
@@ -2479,7 +3460,12 @@
       "missing": "No search control, result navigation, viewport focus",
       "effort": "M",
       "theme": "ui-controls",
-      "updatedBy": ["Plan 106"]
+      "updatedBy": ["Plan 106"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/ui-controls.e2e.ts; packages/foldkit/src/public.ts:149"
+      }
     },
     {
       "section": "ui components",
@@ -2492,7 +3478,12 @@
       "missing": "No range zoom control bound to viewport",
       "effort": "S",
       "theme": "ui-controls",
-      "updatedBy": ["Plan 106"]
+      "updatedBy": ["Plan 106"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/ui-controls.e2e.ts; packages/vue/src/public.ts:113"
+      }
     },
     {
       "section": "ui components",
@@ -2505,7 +3496,12 @@
       "missing": "No zoom preset/fit select control",
       "effort": "S",
       "theme": "ui-controls",
-      "updatedBy": ["Plan 106"]
+      "updatedBy": ["Plan 106"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/*/e2e/ui-controls.e2e.ts; packages/foldkit/src/public.ts:141"
+      }
     },
     {
       "section": "ui components",
@@ -2518,7 +3514,12 @@
       "missing": "No snapshot inspector/change logger/viewport panel",
       "effort": "M",
       "theme": "devtools",
-      "updatedBy": ["Plan 106"]
+      "updatedBy": ["Plan 106"],
+      "reaudit": {
+        "on": "2026-10-14",
+        "missing": null,
+        "evidence": "apps/vanilla/src/ui/devtools.ts:13; apps/*/e2e/ui-controls.e2e.ts"
+      }
     }
   ]
 }
