@@ -375,12 +375,12 @@ test('Foldkit nested drag emits a parent-local position candidate', async ({
   expect(changes).toEqual([
     { kind: 'node-position', nodeId: 'grandchild', position: { x: 27, y: 24 } },
   ])
-  const snapshot = await adapter.snapshot()
-  expect(snapshot.positions).toContainEqual({
-    id: 'grandchild',
-    x: 132,
-    y: 154,
-  })
+  // The change is published from the Runtime's publication lane, which can
+  // run before Foldkit paints the release. Until that paint the DOM still
+  // shows the last live-drag frame, so wait for the controlled position.
+  await expect
+    .poll(() => adapter.snapshot().then(({ positions }) => positions))
+    .toContainEqual({ id: 'grandchild', x: 132, y: 154 })
   const cleanup = await adapter.destroy()
   expect(cleanup.mountedElements).toBe(0)
 })

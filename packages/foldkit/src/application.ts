@@ -25,6 +25,7 @@ import {
   SavedFlowFormatFailureCodeSchema,
   selectNodeConnections,
   selectNodesData,
+  getFlowInternalNodes,
   FlowStateChangeSchema,
   ViewportSchema,
   NodeMeasurementInputSchema,
@@ -45,6 +46,9 @@ import {
   EdgeChangeSchema,
   NodeChangeSchema,
   flowChangeElementChanges,
+  flowNodeHandles,
+  FlowColorModeSchema,
+  FlowFitViewOptionsSchema,
   flowSelectionEqual,
   resolveEdgeHandles,
   selectFlowSelection,
@@ -92,6 +96,7 @@ import {
   MAX_PENDING_DELETE_APPROVALS,
 } from './delete-approval.ts'
 import * as Graph from './graph.ts'
+import { notifyResizer } from './node-resizer.ts'
 
 const interactionCompletionSpan = (
   change: typeof FlowChangeSchema.Type
@@ -177,6 +182,8 @@ export const HostAction = FoldMessage.defineMessageUnion({
     requestId: Schema.String,
     measurement: NodeMeasurementInputSchema,
   },
+  /** React Flow `colorMode` (`light`, `dark` or `system`) at runtime. */
+  SetColorMode: { mode: FlowColorModeSchema },
   /** Change `nodesDraggable`, `nodesConnectable` and `elementsSelectable` at runtime. */
   SetInteractivity: {
     nodesDraggable: Schema.optional(Schema.Boolean),
@@ -208,6 +215,8 @@ export const SnapshotRequestSchema = Schema.Struct({
   ),
   handleConnections: Schema.optional(FlowHandleConnectionsQuerySchema),
   includeHiddenNodes: Schema.optional(Schema.Boolean),
+  /** Also return every node's internal projection, React Flow's `nodeLookup`. */
+  internalNodes: Schema.optional(Schema.Boolean),
 })
 
 export const EditRequestSchema = Schema.Struct({
@@ -236,6 +245,8 @@ export const SnapshotResponseSchema = Schema.Struct({
   node: Schema.optional(FlowNodeSchema),
   edge: Schema.optional(FlowEdgeSchema),
   internalNode: Schema.NullOr(FlowInternalNodeSchema),
+  /** Present when the request set `internalNodes: true`. */
+  internalNodes: Schema.optional(Schema.Array(FlowInternalNodeSchema)),
   nodesInitialized: Schema.Boolean,
   nodesData: Schema.Array(FlowNodeDataSchema),
   nodeConnections: Schema.Array(FlowNodeConnectionSchema),
@@ -292,6 +303,10 @@ export const ViewportRequestSchema = Schema.Struct({
     ])
   ),
   padding: Schema.optional(ViewportPaddingSchema),
+  /** React `FitViewOptions.includeHiddenNodes`, `minZoom` and `maxZoom`. */
+  includeHiddenNodes: Schema.optional(Schema.Boolean),
+  minZoom: Schema.optional(Schema.Finite.check(Schema.isGreaterThan(0))),
+  maxZoom: Schema.optional(Schema.Finite.check(Schema.isGreaterThan(0))),
   animation: Schema.optional(ViewportAnimationOptionsSchema),
   width: Schema.Finite,
   height: Schema.Finite,
@@ -418,6 +433,9 @@ export interface ViewportPaneMetrics {
   readonly originY: number
 }
 
+/** React `FitViewOptions`; `nodes` takes `{ id }` items or `all`/`selected`. */
+export type FlowFitViewOptionsInput = typeof FlowFitViewOptionsSchema.Encoded
+
 export interface ViewportClient {
   readonly getViewportLimits: () => typeof ViewportLimitsSchema.Type
   readonly request: (
@@ -471,8 +489,12 @@ export interface ViewportClient {
     bounds: typeof ViewportBoundsSchema.Type,
     padding?: typeof ViewportPaddingSchema.Type
   ) => Viewport | undefined
+  /**
+   * Fit the given nodes, or take React `FitViewOptions` (`padding`, `nodes`,
+   * `includeHiddenNodes`, `minZoom`, `maxZoom`, `duration`, `easing`).
+   */
   readonly fitView: (
-    nodes?: 'all' | 'selected' | readonly string[],
+    nodes?: 'all' | 'selected' | readonly string[] | FlowFitViewOptionsInput,
     padding?: typeof ViewportPaddingSchema.Type,
     animation?: typeof ViewportAnimationOptionsSchema.Type
   ) => Promise<typeof ViewportResponseSchema.Type>
@@ -627,16 +649,44 @@ export const createViewportClient = (
         padding: validPadding,
       })
     },
-    fitView: (nodes, padding, animation) =>
-      request({
+    fitView: (nodes, padding, animation) => {
+      if (
+        nodes === undefined ||
+        nodes === 'all' ||
+        nodes === 'selected' ||
+        Array.isArray(nodes)
+      ) {
+        return request({
+          kind: 'fitView',
+          nodes:
+            nodes === undefined || nodes === 'all' || nodes === 'selected'
+              ? nodes
+              : nodes.map((id: string) => NodeIdSchema.make(id)),
+          padding,
+          animation,
+        })
+      }
+
+      const options = Schema.decodeUnknownSync(FlowFitViewOptionsSchema)(nodes)
+
+      return request({
         kind: 'fitView',
         nodes:
-          nodes === undefined || nodes === 'all' || nodes === 'selected'
-            ? nodes
-            : nodes.map((id) => NodeIdSchema.make(id)),
-        padding,
-        animation,
-      }),
+          options.nodes === undefined ||
+          options.nodes === 'all' ||
+          options.nodes === 'selected'
+            ? options.nodes
+            : options.nodes.map(({ id }) => id),
+        padding: options.padding ?? padding,
+        includeHiddenNodes: options.includeHiddenNodes,
+        minZoom: options.minZoom,
+        maxZoom: options.maxZoom,
+        animation:
+          options.duration === undefined
+            ? animation
+            : { duration: options.duration, easing: options.easing },
+      })
+    },
     cancelAnimation: () =>
       request({ kind: 'set', viewport, animation: { duration: 0 } }),
     dispose: () => {
@@ -756,7 +806,22 @@ const emitPublication = (
   item: PublicationItem
 ): Effect.Effect<AppMessageData> => {
   if (item.kind === 'interaction') {
-    return Port.emit(ports.outbound.interactionEvents, item.events).pipe(
+    return Effect.sync(() => {
+      for (const event of item.events) {
+        if (
+          event.resizerId !== undefined &&
+          event.resize !== undefined &&
+          event.nodeId !== undefined &&
+          event.nodeId !== null &&
+          (event.name === 'onResizeStart' ||
+            event.name === 'onResize' ||
+            event.name === 'onResizeEnd')
+        ) {
+          notifyResizer(event.resizerId, event.name, event.nodeId, event.resize)
+        }
+      }
+    }).pipe(
+      Effect.andThen(Port.emit(ports.outbound.interactionEvents, item.events)),
       Effect.as(AppMessage.InteractionEventsPublished())
     )
   }
@@ -871,6 +936,10 @@ const selectSnapshotProjection = (
       request.nodeId === undefined
         ? null
         : (Graph.selectInternalNode(graph, request.nodeId) ?? null),
+    internalNodes:
+      request.internalNodes === true
+        ? getFlowInternalNodes(graph.document, graph.measurements)
+        : undefined,
     nodesInitialized: Graph.selectNodesInitialized(graph, {
       includeHidden: request.includeHiddenNodes === true,
     }),
@@ -1170,7 +1239,7 @@ const activeGestureTelemetry = (
         }
       : {
           span: FlowSpan.nodeDragStart,
-          kind: gesture.kind,
+          kind: 'resize',
           inputKind: 'pointer',
           entityId: gesture.nodeId,
         }
@@ -1306,9 +1375,9 @@ const handleEndpoint = (
   const handle =
     nodeId === null || handleId === null
       ? undefined
-      : graph.document.nodes
-          .find(({ id }) => id === nodeId)
-          ?.handles?.find(({ id }) => id === handleId)
+      : flowNodeHandles(
+          graph.document.nodes.find(({ id }) => id === nodeId)
+        ).find(({ id }) => id === handleId)
 
   return handle === undefined || nodeId === null
     ? undefined
@@ -1430,6 +1499,29 @@ const lifecycleMessagePhase = (
   return undefined
 }
 
+const isResizeGesture = (actor: ActiveGestureTelemetry | undefined): boolean =>
+  actor?.kind === 'resize' || actor?.kind === 'keyboard-resize'
+
+/** Resize gestures publish no drag events, but still log their start span. */
+const resizeLifecycleStarted = (
+  route: 'full' | 'node-cancellation',
+  before: ActiveGestureTelemetry | undefined,
+  after: ActiveGestureTelemetry | undefined
+): boolean =>
+  route === 'full' &&
+  isResizeGesture(after) &&
+  (before === undefined || before.kind !== after?.kind)
+
+/** A gesture's start span is logged with its start event, or for a resize. */
+const lifecycleStarted = (
+  events: readonly Graph.InteractionEvent[],
+  route: 'full' | 'node-cancellation',
+  before: ActiveGestureTelemetry | undefined,
+  after: ActiveGestureTelemetry | undefined
+): boolean =>
+  events.some((event) => event.phase === 'start') ||
+  resizeLifecycleStarted(route, before, after)
+
 // oxlint-disable-next-line complexity
 const foldkitLifecycleEvents = (
   previous: Graph.Model,
@@ -1439,7 +1531,12 @@ const foldkitLifecycleEvents = (
   cancellationReason = 'cancelled'
 ): Graph.InteractionEvent[] => {
   const events: Graph.InteractionEvent[] = []
-  const { before, after } = transitionActors(previous, current, message)
+  const actors = transitionActors(previous, current, message)
+
+  // React fires no node-drag events for NodeResizer or keyboard resizes;
+  // resizes report `onResizeStart`/`onResize`/`onResizeEnd` instead.
+  const before = isResizeGesture(actors.before) ? undefined : actors.before
+  const after = isResizeGesture(actors.after) ? undefined : actors.after
   const explicitPhase = lifecycleMessagePhase(message)
 
   const phase =
@@ -1737,6 +1834,75 @@ const withElementChanges = (
       : { ...item, elementChanges }
   })
 
+type ResizerGesture = Extract<
+  NonNullable<Graph.Model['gestureSession']>,
+  { kind: 'node-resizer' }
+>
+
+const resizerGesture = (graph: Graph.Model): ResizerGesture | undefined =>
+  graph.gestureSession?.kind === 'node-resizer'
+    ? graph.gestureSession
+    : undefined
+
+const resizerEvent = (
+  name: 'onResizeStart' | 'onResize' | 'onResizeEnd',
+  gesture: ResizerGesture,
+  phase: 'start' | 'progress' | 'end',
+  resize: NonNullable<Graph.InteractionEvent['resize']>
+): Graph.InteractionEvent => ({
+  name,
+  phase,
+  inputKind: 'pointer',
+  nodeId: gesture.nodeId,
+  resizerId: gesture.resizerId,
+  resize,
+})
+
+/**
+ * React `NodeResizer` callbacks as interaction events: `onResizeStart` on
+ * press, `onResize` for each step `shouldResize` allowed, `onResizeEnd` on
+ * release when a step was allowed.
+ */
+const resizerEvents = (
+  previous: Graph.Model,
+  current: Graph.Model
+): readonly Graph.InteractionEvent[] => {
+  const before = resizerGesture(previous)
+  const after = resizerGesture(current)
+
+  if (before === undefined && after !== undefined) {
+    return [
+      resizerEvent('onResizeStart', after, 'start', after.resize.previous),
+    ]
+  }
+
+  if (
+    before !== undefined &&
+    after !== undefined &&
+    after.steps !== before.steps &&
+    after.params !== null
+  ) {
+    return [resizerEvent('onResize', after, 'progress', after.params)]
+  }
+
+  if (before !== undefined && after === undefined && before.steps > 0) {
+    return [resizerEvent('onResizeEnd', before, 'end', before.resize.previous)]
+  }
+
+  return []
+}
+
+const resizerPublication = (
+  previous: Graph.Model,
+  current: Graph.Model
+): PublicationBatch => {
+  const resized = resizerEvents(previous, current)
+
+  return resized.length === 0
+    ? []
+    : [{ kind: 'interaction' as const, events: resized }]
+}
+
 const graphFold = (
   model: Model,
   message: Graph.GraphMessageData,
@@ -1790,7 +1956,7 @@ const graphFold = (
             event.phase === 'end'
         )
 
-  const started = eligible.some((event) => event.phase === 'start')
+  const started = lifecycleStarted(eligible, route, before, after)
 
   const nativeBarrier = nativeBarrierFor(message)
 
@@ -1809,6 +1975,7 @@ const graphFold = (
       ...(eligible.length === 0
         ? []
         : [{ kind: 'interaction' as const, events: eligible }]),
+      ...resizerPublication(model.graph, result.model.graph),
     ],
   }
 
@@ -1941,6 +2108,8 @@ const routeAction = (model: Model, action: HostActionData) =>
     },
     DispatchCommand: ({ command }) =>
       graphFold(model, Graph.Message.DispatchCommand({ command })),
+    SetColorMode: ({ mode }) =>
+      graphFold(model, Graph.Message.SetColorMode({ mode })),
     // Merges a partial patch, ends a click or keyboard connection that can no
     // longer finish, and publishes the resulting switches. An empty patch
     // just publishes the current switches.
@@ -2154,7 +2323,8 @@ const calculateFitView = (model: Model, request: ViewportRequest) => {
 
   const bounds = graphBounds(
     createFlowGraph(model.graph.document, measurements),
-    nodeIds
+    nodeIds,
+    { includeHidden: request.includeHiddenNodes === true }
   )
 
   return bounds === undefined
@@ -2163,7 +2333,10 @@ const calculateFitView = (model: Model, request: ViewportRequest) => {
         bounds,
         width: request.width,
         height: request.height,
-        limits: model.viewportLimits,
+        limits: {
+          minZoom: request.minZoom ?? model.viewportLimits.minZoom,
+          maxZoom: request.maxZoom ?? model.viewportLimits.maxZoom,
+        },
         padding: request.padding,
       })
 }
@@ -2308,7 +2481,20 @@ const getViewportProposal = (model: Model, request: ViewportRequest) => {
       ? { proposed: current }
       : calculateCandidate(model, request, current)
 
-  const { proposed, point } = candidate
+  const { point } = candidate
+
+  // React applies `translateExtent` to every viewport the d3-zoom behaviour
+  // sets, including programmatic ones.
+  const proposed =
+    request.kind === 'get' ||
+    request.kind === 'flowToScreen' ||
+    request.kind === 'screenToFlow'
+      ? candidate.proposed
+      : Graph.constrainViewportToTranslateExtent(
+          model.graph,
+          candidate.proposed,
+          { width: request.width, height: request.height }
+        )
 
   const mutating =
     request.kind === 'set' ||

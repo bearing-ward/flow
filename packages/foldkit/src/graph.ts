@@ -1,5 +1,26 @@
 import {
+  calculateFlowExpandParent,
+  calculateFlowExpandParentDrag,
+  FlowResizeParamsWithDirectionSchema,
+  snapPosition,
+  startFlowNodeResize,
+  stepFlowNodeResize,
+  computeFlowStacking,
+  constrainViewportToExtent,
+  flowClassNames,
+  flowColorModeMediaQuery,
+  FlowColorModeSchema,
   flowEdgeMarkerType,
+  FlowExtentInputSchema,
+  flowNodeHandles,
+  FlowSnapGridInputSchema,
+  FlowZIndexModeSchema,
+  FlowAriaLabelTextConfigSchema,
+  PanExtentSchema,
+  defaultFlowAriaLabelConfig,
+  resolveFlowColorMode,
+  resolveFlowEdgeMarker,
+  SnapGridSchema,
   FlowSpan,
   FlowAttribute,
   FlowChangeSchema,
@@ -19,6 +40,7 @@ import {
   decodeNodeDragThreshold,
   nodeDragActivated,
   nodeTopLeftToAnchor,
+  nodeAnchorToTopLeft,
   NodeOriginSchema,
   resolveNodeOrigin,
   ConnectionDragThresholdSchema,
@@ -135,6 +157,11 @@ import type {
   FlowDefaultEdgeOptions,
   FlowConnectionState,
   FlowInteractivity,
+  ResolvedFlowEdgeMarker,
+  FlowAriaLabelConfigInput,
+  FlowColorMode,
+  FlowZIndexMode,
+  PanExtent,
 } from '@flow/core'
 import {
   Cause,
@@ -156,11 +183,115 @@ import {
 } from './connection-rules.ts'
 import type { FoldkitIsValidConnection } from './connection-rules.ts'
 import {
+  dragGroupBox,
+  dragItemExtent,
+  NodeDragOriginSchema,
+  placeDraggedNodes,
+} from './drag-constraints.ts'
+import {
   MouseDetailSchema,
   ObservedMouseNameSchema,
   observeCanvasMouse,
 } from './mouse-observation.ts'
 import type { ObservedMouse } from './mouse-observation.ts'
+import {
+  FlowNodeResizeSessionSchema,
+  readResizerControl,
+  resizerAllows,
+  ResizerControlSchema,
+} from './node-resizer.ts'
+import type { ResizerControl } from './node-resizer.ts'
+import { edgeLabelPresentation, foldkitStyle } from './presentation.ts'
+
+/** One node's gesture-owned position and size during an `expandParent` resize. */
+const ResizerPatchSchema = Schema.Struct({
+  nodeId: NodeIdSchema,
+  position: Schema.optional(
+    Schema.Struct({ x: Schema.Finite, y: Schema.Finite })
+  ),
+  size: Schema.optional(
+    Schema.Struct({ width: Schema.Finite, height: Schema.Finite })
+  ),
+})
+
+type ResizerPatch = typeof ResizerPatchSchema.Type
+
+/** Apply an `expandParent` resize's patches to the current document. */
+const applyResizerPatches = (
+  document: FlowDocument,
+  patches: readonly ResizerPatch[]
+): FlowDocument => {
+  if (patches.length === 0) {
+    return document
+  }
+
+  const byId = new Map(patches.map((patch) => [patch.nodeId, patch]))
+
+  return {
+    ...document,
+    nodes: document.nodes.map((node) => {
+      const patch = byId.get(node.id)
+
+      if (patch === undefined) {
+        return node
+      }
+
+      let next = node
+
+      if (patch.position !== undefined) {
+        next = { ...next, position: patch.position }
+      }
+
+      if (patch.size !== undefined) {
+        next = { ...next, size: patch.size }
+      }
+
+      return next
+    }),
+  }
+}
+
+/** Fold the position and size differences between two documents into patches. */
+const mergeResizerPatches = (
+  patches: readonly ResizerPatch[],
+  before: FlowDocument,
+  after: FlowDocument
+): readonly ResizerPatch[] => {
+  const merged = new Map(patches.map((patch) => [patch.nodeId, patch]))
+  const previous = new Map(before.nodes.map((node) => [node.id, node]))
+
+  for (const node of after.nodes) {
+    const old = previous.get(node.id)
+
+    if (old === undefined) {
+      continue
+    }
+
+    const moved =
+      old.position.x !== node.position.x || old.position.y !== node.position.y
+
+    const resized =
+      node.size !== undefined &&
+      (old.size?.width !== node.size.width ||
+        old.size.height !== node.size.height)
+
+    if (moved || resized) {
+      const patch = { ...merged.get(node.id), nodeId: node.id }
+
+      if (moved) {
+        Object.assign(patch, { position: node.position })
+      }
+
+      if (resized) {
+        Object.assign(patch, { size: node.size })
+      }
+
+      merged.set(node.id, patch)
+    }
+  }
+
+  return [...merged.values()]
+}
 
 const PendingHandleSchema = Schema.Struct({
   nodeId: NodeIdSchema,
@@ -214,16 +345,10 @@ const PointerSessionSchema = Schema.Union([
     nodeId: NodeIdSchema,
     /** Every dragged node; the pressed node is first when it moves itself. */
     nodeIds: Schema.Array(NodeIdSchema),
-    /** Where the drag found each dragged node: relative and absolute top-left. */
-    origins: Schema.Array(
-      Schema.Struct({
-        nodeId: NodeIdSchema,
-        x: Schema.Finite,
-        y: Schema.Finite,
-        absoluteX: Schema.Finite,
-        absoluteY: Schema.Finite,
-      })
-    ),
+    /** Where the drag found each dragged node, with its size and extent. */
+    origins: Schema.Array(NodeDragOriginSchema),
+    /** A dragged node has `expandParent`, so frames may grow its parent. */
+    expandParent: Schema.optional(Schema.Boolean),
     /** The pointer's latest client position, for the live drag preview. */
     currentX: Schema.Finite,
     currentY: Schema.Finite,
@@ -269,6 +394,30 @@ const GestureSessionSchema = Schema.Union([
     startY: Schema.Number,
     input: NodeResizeCalculationInputSchema,
     measurement: Schema.optional(NodeMeasurementInputSchema),
+  }),
+  Schema.Struct({
+    /** A React `NodeResizer`/`NodeResizeControl` gesture (core resize session). */
+    kind: Schema.Literal('node-resizer'),
+    pointerId: Schema.Number,
+    nodeId: NodeIdSchema,
+    resizerId: Schema.String,
+    /** Pointer client position and snapped flow position at the press. */
+    startX: Schema.Finite,
+    startY: Schema.Finite,
+    startFlow: Schema.Struct({ x: Schema.Finite, y: Schema.Finite }),
+    resize: FlowNodeResizeSessionSchema,
+    /** The bounds of the last step `shouldResize` allowed: the live preview. */
+    preview: Schema.NullOr(NodeBoundsChangeSchema),
+    /**
+     * With `expandParent`, the position and size changes every allowed step
+     * made (child, its children, the grown parent and shifted siblings), as
+     * React commits each step; released as one edit transaction. Only these
+     * fields are patched, so edits accepted mid-gesture survive.
+     */
+    expandPatches: Schema.NullOr(Schema.Array(ResizerPatchSchema)),
+    /** Allowed steps so far; each one is an `onResize`. */
+    steps: Schema.Int,
+    params: Schema.NullOr(FlowResizeParamsWithDirectionSchema),
   }),
   Schema.Struct({
     kind: Schema.Literal('viewport-pan'),
@@ -336,6 +485,23 @@ export const ModelSchema = Schema.Struct({
   /** Selected nodes show resize controls only when this is on. */
   nodesResizable: Schema.Boolean,
   defaultEdgeOptions: FlowDefaultEdgeOptionsSchema,
+  /** React Flow `snapToGrid` and `snapGrid` for node drags and resizes. */
+  snapToGrid: Schema.Boolean,
+  snapGrid: SnapGridSchema,
+  /** React Flow `nodeExtent`, absolute; `null` is unbounded. */
+  nodeExtent: Schema.NullOr(PanExtentSchema),
+  /** React Flow `translateExtent`; `null` is unbounded. */
+  translateExtent: Schema.NullOr(PanExtentSchema),
+  colorMode: FlowColorModeSchema,
+  /** The `prefers-color-scheme: dark` match, followed while `colorMode` is `system`. */
+  prefersDark: Schema.Boolean,
+  zIndexMode: FlowZIndexModeSchema,
+  elevateNodesOnSelect: Schema.Boolean,
+  elevateEdgesOnSelect: Schema.Boolean,
+  /** The text entries of React Flow `ariaLabelConfig` the host overrode. */
+  ariaLabelConfig: FlowAriaLabelTextConfigSchema,
+  /** React Flow `defaultMarkerColor`; `null` uses each edge's stroke. */
+  defaultMarkerColor: Schema.NullOr(Schema.String),
   measurements: FlowMeasurementStateSchema,
   pointerSession: Schema.NullOr(PointerSessionSchema),
   gestureSession: Schema.NullOr(GestureSessionSchema),
@@ -347,12 +513,15 @@ export const ModelSchema = Schema.Struct({
   nodeClickSuppressed: Schema.Boolean,
 })
 
+const prefersDarkColorScheme = (): boolean =>
+  globalThis.matchMedia?.(flowColorModeMediaQuery).matches === true
+
 export type Model = typeof ModelSchema.Type
 
 const canvasForInstance = (instanceId: string): HTMLElement | null =>
-  document.querySelector<HTMLElement>(
+  globalThis.document?.querySelector<HTMLElement>(
     `[data-flow-instance="${CSS.escape(instanceId)}"]`
-  )
+  ) ?? null
 
 const canvasForModel = (model: Model): HTMLElement | null =>
   canvasForInstance(model.instanceId)
@@ -430,6 +599,9 @@ export const InteractionEventSchema = Schema.Struct({
     'onEdgeMouseEnter',
     'onEdgeMouseMove',
     'onEdgeMouseLeave',
+    'onResizeStart',
+    'onResize',
+    'onResizeEnd',
   ]),
   phase: Schema.Literals(['start', 'progress', 'proposal', 'end', 'event']),
   inputKind: Schema.Literals([
@@ -470,6 +642,18 @@ export const InteractionEventSchema = Schema.Struct({
   positionAbsolute: Schema.optional(XYPositionSchema),
   /** Node drag events: every dragged node's live position. */
   nodePositions: Schema.optional(Schema.Array(DraggedNodePositionSchema)),
+  /** Resize events: the `NodeResizer` that owns the gesture. */
+  resizerId: Schema.optional(Schema.String),
+  /** Resize events: React `ResizeParams`, with `direction` for `onResize`. */
+  resize: Schema.optional(
+    Schema.Struct({
+      x: Schema.Finite,
+      y: Schema.Finite,
+      width: Schema.Finite,
+      height: Schema.Finite,
+      direction: Schema.optional(Schema.Tuple([Schema.Finite, Schema.Finite])),
+    })
+  ),
 })
 
 export type InteractionEvent = typeof InteractionEventSchema.Type
@@ -510,6 +694,10 @@ export const Message = FoldMessage.defineMessageUnion({
   ReplaceDocument: { document: FlowDocumentSchema },
   ReplaceViewport: { viewport: ViewportSchema },
   SetSelectionMode: { mode: SelectionModeSchema },
+  /** React Flow `colorMode` changed at runtime. */
+  SetColorMode: { mode: FlowColorModeSchema },
+  /** The `prefers-color-scheme: dark` match changed. */
+  SystemColorScheme: { prefersDark: Schema.Boolean },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
   DispatchCommand: { command: FlowCommandSchema },
   EditRequest: {
@@ -573,6 +761,8 @@ export const Message = FoldMessage.defineMessageUnion({
     allowPan: Schema.Boolean,
     screenX: Schema.Finite,
     screenY: Schema.Finite,
+    /** Set when the press is on a node view's resizer control. */
+    resizer: Schema.optional(ResizerControlSchema),
   },
   GestureMoved: {
     pointerId: Schema.Number,
@@ -654,6 +844,29 @@ export interface GraphInteractionOptions {
    * `NodeResizer`.
    */
   readonly nodesResizable?: boolean
+  /** React Flow `snapToGrid`. Defaults to false. */
+  readonly snapToGrid?: boolean
+  /** React Flow `snapGrid`: `[x, y]` or `{ x, y }`. Defaults to `[15, 15]`. */
+  readonly snapGrid?: typeof FlowSnapGridInputSchema.Encoded
+  /** React Flow `nodeExtent`: `[[minX, minY], [maxX, maxY]]` or a record. */
+  readonly nodeExtent?: typeof FlowExtentInputSchema.Encoded
+  /** React Flow `translateExtent`: the pannable flow area. */
+  readonly translateExtent?: typeof FlowExtentInputSchema.Encoded
+  /** React Flow `colorMode`. Defaults to `light`. */
+  readonly colorMode?: FlowColorMode
+  /** React Flow `zIndexMode`. Defaults to `basic`. */
+  readonly zIndexMode?: FlowZIndexMode
+  /** React Flow `elevateNodesOnSelect`. Defaults to true. */
+  readonly elevateNodesOnSelect?: boolean
+  /** React Flow `elevateEdgesOnSelect`. Defaults to false. */
+  readonly elevateEdgesOnSelect?: boolean
+  /**
+   * React Flow `ariaLabelConfig`. Text entries label handles and describe
+   * nodes and edges; the canvas UI helpers take the same object.
+   */
+  readonly ariaLabelConfig?: FlowAriaLabelConfigInput
+  /** React Flow `defaultMarkerColor`. Unset, markers use the edge stroke. */
+  readonly defaultMarkerColor?: string
   /**
    * React Flow `isValidConnection`. When set it replaces the static
    * `allowedConnectionTargets` list. Registered by `createProgram`; it never
@@ -754,8 +967,19 @@ export const selectHandleConnections = (
   query: typeof FlowHandleConnectionsQuerySchema.Type
 ) => selectCoreHandleConnections(model.document, query)
 
-export const selectNode = (model: Model, id: string): FlowNode | undefined =>
-  model.document.nodes.find((node) => node.id === id)
+/** React `getNode`: the node with `measured` from the host's last measurement. */
+export const selectNode = (model: Model, id: string): FlowNode | undefined => {
+  const node = model.document.nodes.find((candidate) => candidate.id === id)
+
+  const measured =
+    node === undefined
+      ? undefined
+      : getFlowMeasuredNodes(model.document, model.measurements).get(node.id)
+
+  return node === undefined || measured === undefined
+    ? node
+    : { ...node, measured: { width: measured.width, height: measured.height } }
+}
 
 export const selectEdge = (model: Model, id: string): FlowEdge | undefined =>
   model.document.edges.find((edge) => edge.id === id)
@@ -1011,11 +1235,11 @@ const finishConnection = (
       ? undefined
       : model.document.nodes.find((node) => node.id === message.targetNodeId)
 
-  const sourceHandle = source?.handles?.find(
+  const sourceHandle = flowNodeHandles(source).find(
     (handle) => handle.id === session.sourceHandleId
   )
 
-  const targetHandle = target?.handles?.find(
+  const targetHandle = flowNodeHandles(target).find(
     (handle) => handle.id === message.targetHandleId
   )
 
@@ -1112,7 +1336,7 @@ const reconnectionAllowed = (
   handleId: string
 ): boolean => {
   const node = model.document.nodes.find(({ id }) => id === nodeId)
-  const handle = node?.handles?.find(({ id }) => id === handleId)
+  const handle = flowNodeHandles(node).find(({ id }) => id === handleId)
 
   return (
     node !== undefined &&
@@ -1200,7 +1424,7 @@ type NodeDragSession = Extract<
 const nodeDragStart = (
   model: Model,
   nodeId: NodeId
-): Pick<NodeDragSession, 'nodeIds' | 'origins'> => {
+): Pick<NodeDragSession, 'nodeIds' | 'origins' | 'expandParent'> => {
   const interactivity = selectInteractivity(model)
 
   const graph = createFlowGraph(
@@ -1243,17 +1467,31 @@ const nodeDragStart = (
     ? [nodeId, ...items.filter((id) => id !== nodeId)]
     : items
 
-  const origins = nodeIds.flatMap((id) => {
+  const resolvedItems = nodeIds.flatMap((id) => {
     const resolved = graph.nodes.get(id)
 
-    if (resolved === undefined || resolved.hidden) {
-      return []
-    }
+    return resolved === undefined || resolved.hidden ? [] : [resolved]
+  })
 
+  // React `getInternalNodesBounds(dragItems)`: the group box a multi-node
+  // drag keeps inside `nodeExtent`.
+  const groupBox =
+    resolvedItems.length < 2 || model.nodeExtent === null
+      ? undefined
+      : dragGroupBox(
+          resolvedItems.map((item) => ({
+            ...item.absolutePosition,
+            ...item.dimensions,
+          }))
+        )
+
+  const origins = resolvedItems.map((resolved) => {
     const parent =
       resolved.parentId === undefined
         ? undefined
         : graph.nodes.get(resolved.parentId)
+
+    const nodeOrigin = resolveNodeOrigin(resolved.node, model.document)
 
     const position = nodeTopLeftToAnchor(
       {
@@ -1261,27 +1499,48 @@ const nodeDragStart = (
         y: resolved.absolutePosition.y - (parent?.absolutePosition.y ?? 0),
       },
       resolved.dimensions,
-      resolveNodeOrigin(resolved.node, model.document)
+      nodeOrigin
     )
 
-    return [
-      {
-        nodeId: id,
-        x: position.x,
-        y: position.y,
-        absoluteX: resolved.absolutePosition.x,
-        absoluteY: resolved.absolutePosition.y,
-      },
-    ]
+    const extent = dragItemExtent({
+      parentBox:
+        parent === undefined
+          ? undefined
+          : { ...parent.absolutePosition, ...parent.dimensions },
+      extentParent: resolved.node.extent === 'parent',
+      expandParent: resolved.node.expandParent === true,
+      nodeExtent: model.nodeExtent ?? undefined,
+      item: { ...resolved.absolutePosition, ...resolved.dimensions },
+      groupBox,
+    })
+
+    return {
+      nodeId: resolved.id,
+      x: position.x,
+      y: position.y,
+      absoluteX: resolved.absolutePosition.x,
+      absoluteY: resolved.absolutePosition.y,
+      width: resolved.dimensions.width,
+      height: resolved.dimensions.height,
+      originX: nodeOrigin[0],
+      originY: nodeOrigin[1],
+      parentX: parent?.absolutePosition.x ?? 0,
+      parentY: parent?.absolutePosition.y ?? 0,
+      extent: extent ?? null,
+    }
   })
 
-  return { nodeIds, origins }
+  const expandParent = resolvedItems.some(
+    (item) => item.parentId !== undefined && item.node.expandParent === true
+  )
+
+  return { nodeIds, origins, expandParent }
 }
 
 /**
  * Each dragged node's position once the pointer is at `clientX`/`clientY`:
- * its drag origin plus the pointer travel, so a frame costs O(dragged nodes)
- * plus one id lookup per node.
+ * its drag origin plus the pointer travel, snapped and clamped as React
+ * `XYDrag` does, so a frame costs O(dragged nodes) plus one id lookup.
  */
 const nodeDragPositions = (
   model: Model,
@@ -1293,26 +1552,124 @@ const nodeDragPositions = (
   readonly position: XYPosition
   readonly positionAbsolute: XYPosition
 }[] => {
-  const dx = (clientX - session.startX) / model.viewport.zoom
-  const dy = (clientY - session.startY) / model.viewport.zoom
   const interactivity = selectInteractivity(model)
   const nodes = new Map(model.document.nodes.map((node) => [node.id, node]))
 
-  return session.origins.flatMap(({ nodeId, x, y, absoluteX, absoluteY }) => {
+  const origins = session.origins.filter(({ nodeId }) => {
     const node = nodes.get(nodeId)
 
-    return node === undefined ||
-      node.hidden === true ||
-      !isNodeDraggable(interactivity, node)
+    return (
+      node !== undefined &&
+      node.hidden !== true &&
+      isNodeDraggable(interactivity, node)
+    )
+  })
+
+  return placeDraggedNodes(
+    origins,
+    {
+      x: (clientX - session.startX) / model.viewport.zoom,
+      y: (clientY - session.startY) / model.viewport.zoom,
+    },
+    model.snapToGrid ? model.snapGrid : undefined
+  )
+}
+
+/**
+ * React `updateNodePositions` with `expandParent`: the dragged positions,
+ * the parent growth and the sibling shifts, applied to the document.
+ */
+const expandParentDragDocument = (
+  model: Model,
+  positions: readonly {
+    readonly nodeId: NodeId
+    readonly position: XYPosition
+  }[]
+): FlowDocument => {
+  const graph = createFlowGraph(
+    model.document,
+    getFlowMeasuredNodes(model.document, model.measurements)
+  )
+
+  const changes = calculateFlowExpandParentDrag(
+    graph,
+    positions.map(({ nodeId, position }) => ({ id: nodeId, position }))
+  )
+
+  const moved = new Map<NodeId, XYPosition>()
+
+  const sized = new Map<
+    NodeId,
+    { readonly width: number; readonly height: number }
+  >()
+
+  for (const change of changes) {
+    if (change.kind === 'position') {
+      moved.set(change.nodeId, change.position)
+    } else {
+      sized.set(change.nodeId, change.size)
+    }
+  }
+
+  return {
+    ...model.document,
+    nodes: model.document.nodes.map((node) => {
+      const position = moved.get(node.id)
+      const size = sized.get(node.id)
+
+      let next = node
+
+      if (position !== undefined) {
+        next = { ...next, position }
+      }
+
+      if (size !== undefined) {
+        next = { ...next, size }
+      }
+
+      return next
+    }),
+  }
+}
+
+/**
+ * A drag that grows a parent changes positions and sizes together, so it
+ * commits as one edit transaction of `update-node` patches.
+ */
+const expandParentDragChange = (
+  model: Model,
+  positions: readonly {
+    readonly nodeId: NodeId
+    readonly position: XYPosition
+  }[]
+): CoreFlowChange => {
+  const document = expandParentDragDocument(model, positions)
+  const before = new Map(model.document.nodes.map((node) => [node.id, node]))
+
+  const operations = document.nodes.flatMap((node) =>
+    before.get(node.id) === node
       ? []
       : [
           {
-            nodeId,
-            position: { x: x + dx, y: y + dy },
-            positionAbsolute: { x: absoluteX + dx, y: absoluteY + dy },
+            kind: 'update-node' as const,
+            nodeId: node.id,
+            patch:
+              node.size === undefined
+                ? { position: node.position }
+                : { position: node.position, size: node.size },
           },
         ]
-  })
+  )
+
+  const prepared = Effect.runSync(
+    prepareFlowEdit(model.document, { operations })
+  )
+
+  return {
+    kind: 'edit-proposal',
+    document: prepared.document,
+    deletion: prepared.deletion,
+  }
 }
 
 /** The semantic change a node drag proposes with the pointer at a client point. */
@@ -1332,6 +1689,10 @@ const nodeDragChange = (
     return undefined
   }
 
+  if (session.expandParent === true) {
+    return expandParentDragChange(model, positions)
+  }
+
   return positions.length === 1
     ? { kind: 'node-position', nodeId: first.nodeId, position: first.position }
     : { kind: 'node-positions', positions }
@@ -1345,6 +1706,10 @@ const applyNodeDragChange = (
     return applyNodePositionChange(document, change)
   }
 
+  if (change.kind === 'edit-proposal') {
+    return change.document
+  }
+
   return change.kind === 'node-positions'
     ? applyNodePositionsChange(document, change)
     : undefined
@@ -1356,21 +1721,36 @@ const applyNodeDragChange = (
  * does, in one pass over the nodes and without building a graph.
  */
 export const selectLiveDocument = (model: Model): FlowDocument => {
+  const gesture = model.gestureSession
+
+  if (gesture?.kind === 'node-resizer' && gesture.expandPatches !== null) {
+    return applyResizerPatches(model.document, gesture.expandPatches)
+  }
+
   const session = model.pointerSession
 
   if (session?.kind !== 'node-drag') {
     return model.document
   }
 
-  const moved = new Map(
-    nodeDragPositions(model, session, session.currentX, session.currentY).map(
-      ({ nodeId, position }) => [nodeId, position]
-    )
+  const positions = nodeDragPositions(
+    model,
+    session,
+    session.currentX,
+    session.currentY
   )
 
-  if (moved.size === 0) {
+  if (positions.length === 0) {
     return model.document
   }
+
+  if (session.expandParent === true) {
+    return expandParentDragDocument(model, positions)
+  }
+
+  const moved = new Map(
+    positions.map(({ nodeId, position }) => [nodeId, position])
+  )
 
   return {
     ...model.document,
@@ -1469,7 +1849,7 @@ const finishKeyboardTargetClick = (
       (candidate) => candidate.id === session.nodeId
     )
 
-    const handle = node?.handles?.find(
+    const handle = flowNodeHandles(node).find(
       (candidate) => candidate.id === session.sourceHandleId
     )
 
@@ -1503,7 +1883,7 @@ const pendingEligible = (
     return (
       graph.nodes.get(identity.nodeId)?.hidden === false &&
       node !== undefined &&
-      node.handles?.some(
+      flowNodeHandles(node).some(
         ({ id, kind }) => id === identity.handleId && kind === identity.kind
       ) === true
     )
@@ -1511,7 +1891,10 @@ const pendingEligible = (
 
   const startable = (identity: typeof PendingHandleSchema.Type): boolean => {
     const node = model.document.nodes.find(({ id }) => id === identity.nodeId)
-    const handle = node?.handles?.find(({ id }) => id === identity.handleId)
+
+    const handle = flowNodeHandles(node).find(
+      ({ id }) => id === identity.handleId
+    )
 
     return (
       node !== undefined &&
@@ -1592,7 +1975,7 @@ const activePointerClickTarget = (
     (candidate) => candidate.id === session.nodeId
   )
 
-  const handle = node?.handles?.find(
+  const handle = flowNodeHandles(node).find(
     (candidate) => candidate.id === session.sourceHandleId
   )
 
@@ -1729,7 +2112,8 @@ const flowPoint = (
   canvas?: HTMLElement | null
 ) => {
   const bounds = (
-    canvas ?? document.querySelector<HTMLElement>('.flow-foldkit-canvas')
+    canvas ??
+    globalThis.document?.querySelector<HTMLElement>('.flow-foldkit-canvas')
   )?.getBoundingClientRect()
 
   return {
@@ -1737,6 +2121,38 @@ const flowPoint = (
     y: (clientY - (bounds?.top ?? 0) - viewport.y) / viewport.zoom,
   }
 }
+
+/**
+ * React `translateExtent`: keep the visible flow area inside the extent, as
+ * d3-zoom's constrain does for user pans and zooms.
+ */
+export const constrainViewportToTranslateExtent = (
+  model: Pick<Model, 'translateExtent'>,
+  viewport: CoreViewport,
+  pane: { readonly width: number; readonly height: number } | undefined
+): CoreViewport =>
+  model.translateExtent === null || pane === undefined
+    ? viewport
+    : constrainViewportToExtent(
+        viewport,
+        model.translateExtent,
+        pane.width,
+        pane.height
+      )
+
+const paneSize = (model: Model) => {
+  const bounds = canvasForModel(model)?.getBoundingClientRect()
+
+  return bounds === undefined
+    ? undefined
+    : { width: bounds.width, height: bounds.height }
+}
+
+const translateConstrained = (
+  model: Model,
+  viewport: CoreViewport
+): CoreViewport =>
+  constrainViewportToTranslateExtent(model, viewport, paneSize(model))
 
 const zoomViewportAt = (
   model: Model,
@@ -1762,7 +2178,7 @@ const measurementsForResize = (
   model: Model,
   document: FlowDocument,
   change: NodeBoundsChange,
-  measurement: NodeMeasurementInput | undefined
+  measurement?: NodeMeasurementInput
 ) => {
   const measurements = pruneFlowMeasurements(document, model.measurements)
 
@@ -1893,6 +2309,435 @@ const resizeProposal = (
         },
       })),
   }
+}
+
+type ResizerSession = Extract<
+  NonNullable<Model['gestureSession']>,
+  { kind: 'node-resizer' }
+>
+
+/** The live bounds of an active `NodeResizer` gesture, for the view. */
+export const selectResizerPreview = (
+  model: Model
+): NodeBoundsChange | undefined =>
+  model.gestureSession?.kind === 'node-resizer'
+    ? (model.gestureSession.preview ?? undefined)
+    : undefined
+
+const snappedFlowPoint = (model: Model, point: XYPosition): XYPosition =>
+  model.snapToGrid ? snapPosition(point, model.snapGrid) : point
+
+/**
+ * React `XYResizer` start: stored position and measured size, the parent
+ * box for `extent: 'parent'`, the child extent, the children and
+ * `expandParent`.
+ */
+const startResizer = (
+  model: Model,
+  press: {
+    readonly pointerId: number
+    readonly clientX: number
+    readonly clientY: number
+    readonly nodeId: string
+    readonly direction: NodeResizeCalculationInput['direction']
+    readonly resizer: ResizerControl
+  }
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const graph = createFlowGraph(
+    model.document,
+    getFlowMeasuredNodes(model.document, model.measurements)
+  )
+
+  const resolved = graph.nodes.get(NodeIdSchema.make(press.nodeId))
+
+  if (resolved === undefined) {
+    return noChange(model)
+  }
+
+  const { node } = resolved
+
+  const parent =
+    node.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
+
+  const extent =
+    parent !== undefined && node.extent === 'parent'
+      ? {
+          minX: 0,
+          minY: 0,
+          maxX: parent.dimensions.width,
+          maxY: parent.dimensions.height,
+        }
+      : undefined
+
+  const startInput: Parameters<typeof startFlowNodeResize>[0] = {
+    controlPosition: press.direction,
+    start: {
+      x: node.position.x,
+      y: node.position.y,
+      width: resolved.dimensions.width,
+      height: resolved.dimensions.height,
+    },
+    constraints: press.resizer.constraints,
+    nodeOrigin: resolveNodeOrigin(node, model.document),
+    children: model.document.nodes
+      .filter((child) => child.parentId === node.id)
+      .map((child) => ({ id: child.id, position: child.position })),
+    expandParent: parent !== undefined && node.expandParent === true,
+  }
+
+  const childExtent = graphResizeChildExtent(graph, node.id)
+
+  const resize = startFlowNodeResize(
+    Object.assign(
+      startInput,
+      press.resizer.resizeDirection === undefined
+        ? undefined
+        : { resizeDirection: press.resizer.resizeDirection },
+      extent === undefined ? undefined : { extent },
+      childExtent === undefined ? undefined : { childExtent }
+    )
+  )
+
+  return {
+    model: {
+      ...model,
+      keyboardConnectionSession: null,
+      pendingResizeAcceptance: null,
+      gestureSession: {
+        kind: 'node-resizer',
+        pointerId: press.pointerId,
+        nodeId: node.id,
+        resizerId: press.resizer.resizerId,
+        startX: press.clientX,
+        startY: press.clientY,
+        startFlow: snappedFlowPoint(
+          model,
+          flowPoint(
+            press.clientX,
+            press.clientY,
+            model.viewport,
+            canvasForModel(model)
+          )
+        ),
+        resize,
+        preview: null,
+        expandPatches: null,
+        steps: 0,
+        params: null,
+      },
+    },
+  }
+}
+
+/** Apply `calculateFlowExpandParent` position and size changes. */
+const applyExpandParentChanges = (
+  document: FlowDocument,
+  changes: readonly (
+    | {
+        readonly kind: 'position'
+        readonly nodeId: NodeId
+        readonly position: XYPosition
+      }
+    | {
+        readonly kind: 'size'
+        readonly nodeId: NodeId
+        readonly size: { readonly width: number; readonly height: number }
+      }
+  )[]
+): FlowDocument => {
+  if (changes.length === 0) {
+    return document
+  }
+
+  return {
+    ...document,
+    nodes: document.nodes.map((node) => {
+      let current = node
+
+      for (const change of changes) {
+        if (change.nodeId === node.id) {
+          current =
+            change.kind === 'position'
+              ? { ...current, position: change.position }
+              : { ...current, size: change.size }
+        }
+      }
+
+      return current
+    }),
+  }
+}
+
+/**
+ * React `NodeResizeControl` `onChange` for an `expandParent` child
+ * (`NodeResizeControl.tsx:88-120`): grow the parent around the child's
+ * unclamped rectangle, then clamp the child to `max(origin * size, x)`.
+ * Steps accumulate on the previous step's document, as React commits each
+ * step before the next one.
+ */
+const expandParentResizeStep = (
+  model: Model,
+  session: ResizerSession,
+  step: NonNullable<ReturnType<typeof stepFlowNodeResize>['step']>
+): FlowDocument => {
+  const base = applyResizerPatches(model.document, session.expandPatches ?? [])
+
+  const graph = createFlowGraph(
+    base,
+    getFlowMeasuredNodes(base, model.measurements)
+  )
+
+  const resolved = graph.nodes.get(session.nodeId)
+
+  const parent =
+    resolved?.parentId === undefined
+      ? undefined
+      : graph.nodes.get(resolved.parentId)
+
+  if (resolved === undefined || parent === undefined) {
+    return base
+  }
+
+  const { node } = resolved
+  const origin = resolveNodeOrigin(node, base)
+  const width = step.size?.width ?? resolved.dimensions.width
+  const height = step.size?.height ?? resolved.dimensions.height
+
+  const topLeft = nodeAnchorToTopLeft(
+    {
+      x: step.position?.x ?? node.position.x,
+      y: step.position?.y ?? node.position.y,
+    },
+    { width, height },
+    origin
+  )
+
+  const grown = applyExpandParentChanges(
+    base,
+    calculateFlowExpandParent(graph, [
+      {
+        id: node.id,
+        parentId: parent.id,
+        rect: {
+          x: parent.absolutePosition.x + topLeft.x,
+          y: parent.absolutePosition.y + topLeft.y,
+          width,
+          height,
+        },
+      },
+    ])
+  )
+
+  // React only moves the child when both clamped coordinates are set; a
+  // zero coordinate counts as unset there.
+  const x =
+    step.position === undefined || step.position.x === 0
+      ? undefined
+      : Math.max(origin[0] * width, step.position.x)
+
+  const y =
+    step.position === undefined || step.position.y === 0
+      ? undefined
+      : Math.max(origin[1] * height, step.position.y)
+
+  const children = new Map(
+    step.childPositions.map(({ id, position }) => [id, position])
+  )
+
+  return {
+    ...grown,
+    nodes: grown.nodes.map((candidate) => {
+      if (candidate.id === node.id) {
+        let next = candidate
+
+        if (x !== undefined && y !== undefined) {
+          next = { ...next, position: { x, y } }
+        }
+
+        if (step.size !== undefined) {
+          next = { ...next, size: step.size }
+        }
+
+        return next
+      }
+
+      const position = children.get(candidate.id)
+
+      return position === undefined ? candidate : { ...candidate, position }
+    }),
+  }
+}
+
+/**
+ * One React `XYResizer` drag step. The session always advances; the preview
+ * and `onResize` follow only steps `shouldResize` allows.
+ */
+const stepResizer = (
+  model: Model,
+  session: ResizerSession,
+  screenX: number,
+  screenY: number
+): Model => {
+  const pointer = snappedFlowPoint(model, {
+    x: session.startFlow.x + (screenX - session.startX) / model.viewport.zoom,
+    y: session.startFlow.y + (screenY - session.startY) / model.viewport.zoom,
+  })
+
+  const { session: resize, step } = stepFlowNodeResize(session.resize, {
+    x: pointer.x - session.startFlow.x,
+    y: pointer.y - session.startFlow.y,
+  })
+
+  if (step === undefined) {
+    return model
+  }
+
+  if (!resizerAllows(session.resizerId, session.nodeId, step.params)) {
+    return { ...model, gestureSession: { ...session, resize } }
+  }
+
+  const { previous } = resize
+
+  const childPositions =
+    resize.children.length === 0
+      ? []
+      : resize.children.map(({ id, position }) => ({ nodeId: id, position }))
+
+  if (resize.expandParent) {
+    const base = applyResizerPatches(
+      model.document,
+      session.expandPatches ?? []
+    )
+
+    const expanded = expandParentResizeStep(model, session, step)
+    const resized = expanded.nodes.find(({ id }) => id === session.nodeId)
+
+    return {
+      ...model,
+      gestureSession: {
+        ...session,
+        resize,
+        steps: session.steps + 1,
+        params: step.params,
+        expandPatches: mergeResizerPatches(
+          session.expandPatches ?? [],
+          base,
+          expanded
+        ),
+        preview: {
+          kind: 'node-bounds',
+          nodeId: session.nodeId,
+          position: resized?.position ?? { x: previous.x, y: previous.y },
+          size: {
+            width: Math.max(previous.width, Number.EPSILON),
+            height: Math.max(previous.height, Number.EPSILON),
+          },
+          childPositions,
+        },
+      },
+    }
+  }
+
+  return {
+    ...model,
+    gestureSession: {
+      ...session,
+      resize,
+      steps: session.steps + 1,
+      params: step.params,
+      preview: {
+        kind: 'node-bounds',
+        nodeId: session.nodeId,
+        position: { x: previous.x, y: previous.y },
+        size: {
+          width: Math.max(previous.width, Number.EPSILON),
+          height: Math.max(previous.height, Number.EPSILON),
+        },
+        childPositions,
+      },
+    },
+  }
+}
+
+/**
+ * Commit the last allowed resize step. A node with `expandParent` also
+ * grows its parent (React `handleExpandParent`), which changes several
+ * nodes' positions and sizes, so that commit is one edit transaction.
+ */
+const finishResizer = (
+  model: Model,
+  cleared: Model,
+  session: ResizerSession
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const change = session.preview
+
+  if (change === null) {
+    return { model: cleared }
+  }
+
+  if (session.expandPatches !== null) {
+    // Only the gesture's own position and size changes, applied to the
+    // current document, so edits accepted mid-gesture are kept.
+    const present = new Set(model.document.nodes.map(({ id }) => id))
+
+    const operations = session.expandPatches
+      .filter(({ nodeId }) => present.has(nodeId))
+      .map(({ nodeId, position, size }) => ({
+        kind: 'update-node' as const,
+        nodeId,
+        patch: {
+          ...(position === undefined ? undefined : { position }),
+          ...(size === undefined ? undefined : { size }),
+        },
+      }))
+
+    const prepared = Effect.runSync(
+      prepareFlowEdit(model.document, { operations })
+    )
+
+    return report(
+      model,
+      {
+        ...cleared,
+        // Controlled: keep the proposed size until the owner acknowledges.
+        pendingResizeAcceptance:
+          model.documentMode === 'controlled' ? { change } : null,
+        measurements:
+          model.documentMode === 'uncontrolled'
+            ? measurementsForResize(model, prepared.document, change)
+            : model.measurements,
+        document:
+          model.documentMode === 'uncontrolled'
+            ? prepared.document
+            : model.document,
+      },
+      {
+        kind: 'edit-proposal',
+        document: prepared.document,
+        deletion: prepared.deletion,
+      }
+    )
+  }
+
+  const document = applyNodeBoundsChange(model.document, change)
+
+  return document === undefined
+    ? { model: cleared }
+    : report(
+        model,
+        {
+          ...cleared,
+          pendingResizeAcceptance:
+            model.documentMode === 'controlled' ? { change } : null,
+          measurements:
+            model.documentMode === 'uncontrolled'
+              ? measurementsForResize(model, document, change)
+              : model.measurements,
+          document:
+            model.documentMode === 'uncontrolled' ? document : model.document,
+        },
+        change
+      )
 }
 
 const activatePending = (
@@ -2049,6 +2894,16 @@ const updateState = (
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> =>
   Message.match(message, {
     IgnoreInput: () => noChange(model),
+    SetColorMode: ({ mode }) => ({
+      model: {
+        ...model,
+        colorMode: mode,
+        prefersDark: mode === 'system' && prefersDarkColorScheme(),
+      },
+    }),
+    SystemColorScheme: ({ prefersDark }) => ({
+      model: { ...model, prefersDark },
+    }),
     ObserveMouse: (observed) => selectClickedNode(model, observed),
     ViewportWheel: ({ deltaX, deltaY, clientX, clientY }) => {
       if (model.viewportMode === 'controlled') {
@@ -2080,7 +2935,11 @@ const updateState = (
         })
       }
 
-      return acceptReplacement(model, { ...model, viewport }, 'viewport-update')
+      return acceptReplacement(
+        model,
+        { ...model, viewport: translateConstrained(model, viewport) },
+        'viewport-update'
+      )
     },
     ViewportDoubleClick: ({ clientX, clientY }) => {
       if (!model.zoomOnDoubleClick || model.viewportMode === 'controlled') {
@@ -2091,7 +2950,10 @@ const updateState = (
         model,
         {
           ...model,
-          viewport: zoomViewportAt(model, clientX, clientY, 1.2),
+          viewport: translateConstrained(
+            model,
+            zoomViewportAt(model, clientX, clientY, 1.2)
+          ),
         },
         'viewport-update'
       )
@@ -2297,7 +3159,7 @@ const updateState = (
             : noChange(model)
         }
 
-        const handle = node.handles?.find(({ id }) => id === handleId)
+        const handle = flowNodeHandles(node).find(({ id }) => id === handleId)
 
         if (handle === undefined) {
           return noChange(model)
@@ -2492,7 +3354,10 @@ const updateState = (
         model,
         {
           ...model,
-          viewport: panViewport(model.viewport, session.autoPanDelta),
+          viewport: translateConstrained(
+            model,
+            panViewport(model.viewport, session.autoPanDelta)
+          ),
         },
         'viewport-update'
       )
@@ -2510,7 +3375,7 @@ const updateState = (
         (candidate) => candidate.id === nodeId
       )
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         (candidate) => candidate.id === handleId
       )
 
@@ -2627,6 +3492,7 @@ const updateState = (
       allowPan,
       screenX,
       screenY,
+      resizer,
     }) => {
       if (model.gestureSession !== null || model.pointerSession !== null) {
         return noChange(model)
@@ -2669,6 +3535,17 @@ const updateState = (
             },
           },
         }
+      }
+
+      if (direction !== null && resizer !== undefined) {
+        return startResizer(model, {
+          pointerId,
+          clientX,
+          clientY,
+          nodeId,
+          direction,
+          resizer,
+        })
       }
 
       if (direction === null || !model.nodesResizable) {
@@ -2725,11 +3602,11 @@ const updateState = (
           model,
           {
             ...model,
-            viewport: {
+            viewport: translateConstrained(model, {
               ...session.viewportStart,
               x: session.viewportStart.x + screenX - session.startX,
               y: session.viewportStart.y + screenY - session.startY,
-            },
+            }),
             gestureSession: {
               ...session,
               currentX: screenX,
@@ -2738,6 +3615,10 @@ const updateState = (
           },
           'viewport-update'
         )
+      }
+
+      if (session.kind === 'node-resizer') {
+        return { model: stepResizer(model, session, screenX, screenY) }
       }
 
       if (session.kind === 'resize') {
@@ -2781,6 +3662,10 @@ const updateState = (
 
       if (gesture.kind === 'viewport-pan') {
         return { model: cleared }
+      }
+
+      if (gesture.kind === 'node-resizer') {
+        return finishResizer(model, cleared, gesture)
       }
 
       if (gesture.kind === 'selection') {
@@ -3342,6 +4227,30 @@ const readTarget = (target: EventTarget | null): GraphTarget => {
   }
 }
 
+/**
+ * React `node.dragHandle`: a node with a drag-handle selector drags only
+ * from an element inside it that matches the selector (`hasSelector`).
+ */
+const outsideNodeDragHandle = (
+  node: HTMLElement | null,
+  target: Element
+): boolean => {
+  const selector = node?.dataset.dragHandle
+
+  if (node === null || selector === undefined || selector === '') {
+    return false
+  }
+
+  try {
+    const handle = target.closest(selector)
+
+    return handle === null || !node.contains(handle)
+  } catch {
+    // An invalid selector matches nothing, so the node cannot be dragged.
+    return true
+  }
+}
+
 const shouldIgnoreNodePointer = (target: Element): boolean => {
   const node = target.closest<HTMLElement>('[data-node-id]')
 
@@ -3366,6 +4275,7 @@ const shouldIgnoreNodePointer = (target: Element): boolean => {
 
   return (
     noDragControl !== null ||
+    outsideNodeDragHandle(node, target) ||
     (hasMarkedDragHandle && isMarkedDragHandle === false) ||
     (nativeControl !== null && isMarkedDragHandle === false)
   )
@@ -3446,6 +4356,10 @@ const beginPointer = (
   }
 
   if (direction !== null) {
+    const resizer = readResizerControl(
+      targetElement?.closest<HTMLElement>('[data-resize-direction]') ?? null
+    )
+
     return Option.some(
       Message.GestureDown({
         pointerId,
@@ -3456,6 +4370,7 @@ const beginPointer = (
         allowPan: false,
         screenX: clientX,
         screenY: clientY,
+        resizer,
       })
     )
   }
@@ -3501,11 +4416,19 @@ export type FoldkitEdgeTypes = Readonly<
   Record<string, FoldkitEdgeRenderer | undefined>
 >
 
+/**
+ * React Flow NodeProps plus the viewport `zoom`, which a node view reads as
+ * React nodes read `useStore((s) => s.transform[2])` (Contextual Zoom).
+ */
+export interface FoldkitNodeRendererProps extends FlowNodeRendererProps {
+  readonly zoom: number
+}
+
 /** `props` carries React Flow style NodeProps such as `selected` and `dragging`. */
 export type FoldkitNodeRenderer = (
   node: FlowNode,
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
-  props: FlowNodeRendererProps
+  props: FoldkitNodeRendererProps
 ) => FoldHtml.Html
 
 /**
@@ -3552,7 +4475,7 @@ const flowPointForElement = (
   const graphNode =
     decodedNodeId === undefined ? undefined : graph.nodes.get(decodedNodeId)
 
-  const handle = graphNode?.node.handles?.find(
+  const handle = flowNodeHandles(graphNode?.node).find(
     ({ id }) => id === element.dataset.handleId
   )
 
@@ -3823,7 +4746,9 @@ const connectionPreviewState = (
       (candidate) => candidate.id === nodeId
     )
 
-    const handle = node?.handles?.find((candidate) => candidate.id === handleId)
+    const handle = flowNodeHandles(node).find(
+      (candidate) => candidate.id === handleId
+    )
 
     if (
       nodeId === undefined ||
@@ -4039,28 +4964,47 @@ export const selectConnectionState = (model: Model): FlowConnectionState => {
   })
 }
 
+/**
+ * React `MarkerDefinitions` symbol for one resolved marker. A marker without
+ * a colour follows the themed edge stroke through CSS.
+ */
 const markerDefinition = (
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
   id: string,
-  marker: 'arrow' | 'arrowclosed',
-  stroke: string
+  marker: ResolvedFlowEdgeMarker
 ): NonNullable<FoldHtml.Html> => {
+  const closed = marker.type === 'arrowclosed'
+
+  const paint = marker.color === undefined ? [] : [h.Stroke(marker.color)]
+
+  const fill = closed ? (marker.color ?? 'currentColor') : 'none'
+
   const definition = h.marker(
     [
       h.Id(id),
-      h.ViewBox('0 0 10 10'),
-      h.RefX('10'),
-      h.RefY('5'),
-      h.MarkerWidth('6'),
-      h.MarkerHeight('6'),
-      h.MarkerUnits('strokeWidth'),
-      h.Attribute('orient', 'auto-start-reverse'),
+      h.Class(
+        flowClassNames(
+          'flow-foldkit-marker',
+          `flow-foldkit-marker-${marker.type}`,
+          marker.color === undefined && 'flow-foldkit-marker-themed'
+        )
+      ),
+      h.ViewBox('-10 -10 20 20'),
+      h.RefX('0'),
+      h.RefY('0'),
+      h.MarkerWidth(String(marker.width)),
+      h.MarkerHeight(String(marker.height)),
+      h.MarkerUnits(marker.markerUnits),
+      h.Attribute('orient', marker.orient),
     ],
     [
-      h.path([
-        h.D('M 0 0 L 10 5 L 0 10'),
-        h.Fill(marker === 'arrowclosed' ? stroke : 'none'),
-        h.Stroke(stroke),
+      h.polyline([
+        h.StrokeLinecap('round'),
+        h.StrokeLinejoin('round'),
+        h.StrokeWidth(String(marker.strokeWidth)),
+        h.Fill(fill),
+        h.Points(closed ? '-5,-4 0,0 -5,4 -5,-4' : '-5,-4 0,0 -5,4'),
+        ...paint,
       ]),
     ]
   )
@@ -4079,33 +5023,43 @@ const edgeVisuals = (
   markerEndId: string | undefined,
   renderer: FoldkitEdgeRenderer | undefined,
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
-  edgeLabelRenderer: FoldkitEdgeLabelRenderer
+  edgeLabelRenderer: FoldkitEdgeLabelRenderer,
+  options: {
+    readonly defaultMarkerColor: string | undefined
+    readonly descriptionId: string
+  }
 ) => {
   const ariaLabel = edge.ariaLabel ?? edge.label ?? `Edge ${edge.id}`
   const stroke = edge.stroke ?? '#64748b'
+  const markerColor = edge.stroke ?? options.defaultMarkerColor
+
+  const marker = (id: string, option: FlowEdge['markerEnd']) => {
+    const resolved = resolveFlowEdgeMarker(option, {
+      defaultColor: markerColor,
+    })
+
+    return resolved === undefined ? [] : [markerDefinition(h, id, resolved)]
+  }
 
   const markerDefinitions = [
     ...(markerStartId === undefined
       ? []
-      : [
-          markerDefinition(
-            h,
-            markerStartId,
-            flowEdgeMarkerType(edge.markerStart) ?? 'arrow',
-            stroke
-          ),
-        ]),
-    ...(markerEndId === undefined
-      ? []
-      : [
-          markerDefinition(
-            h,
-            markerEndId,
-            flowEdgeMarkerType(edge.markerEnd) ?? 'arrow',
-            stroke
-          ),
-        ]),
+      : marker(markerStartId, edge.markerStart)),
+    ...(markerEndId === undefined ? [] : marker(markerEndId, edge.markerEnd)),
   ]
+
+  // React BaseEdge: `style` on the visible path, after the stroke defaults.
+  const strokeDefaults: Record<string, string> = {}
+
+  if (edge.stroke !== undefined) {
+    strokeDefaults['stroke'] = edge.stroke
+  }
+
+  if (edge.strokeWidth !== undefined) {
+    strokeDefaults['stroke-width'] = String(edge.strokeWidth)
+  }
+
+  const pathStyle = { ...strokeDefaults, ...foldkitStyle(edge.style) }
 
   let interactionPath = geometry.path
 
@@ -4117,6 +5071,7 @@ const edgeVisuals = (
           h.Fill('none'),
           h.Stroke(stroke),
           h.StrokeWidth(String(edge.strokeWidth ?? 2)),
+          ...(Object.keys(pathStyle).length === 0 ? [] : [h.Style(pathStyle)]),
           ...(markerStartId === undefined
             ? []
             : [h.MarkerStart(`url(#${markerStartId})`)]),
@@ -4138,6 +5093,7 @@ const edgeVisuals = (
     h.Attribute('role', edge.selectable === false ? 'img' : 'button'),
     h.Attribute('tabindex', edge.focusable === false ? '-1' : '0'),
     h.AriaLabel(ariaLabel),
+    h.AriaDescribedBy(options.descriptionId),
     // Clicks and mouse movement are observed by the pointer resource, which
     // reads client positions and modifier keys from the native event.
     h.OnKeyDownPreventDefault((key) =>
@@ -4154,7 +5110,8 @@ const edgeReconnectControls = (
   edge: FlowEdge,
   geometry: FoldkitEdgeGeometry,
   ariaLabel: string,
-  h: FoldHtml.HtmlBuilder<GraphMessageData>
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  zIndex: number
 ): NonNullable<FoldHtml.Html>[] => {
   if (edge.selected !== true) {
     return []
@@ -4179,9 +5136,7 @@ const edgeReconnectControls = (
       h.Style({
         left: `${point.x}px`,
         top: `${point.y}px`,
-        zIndex: String(
-          (edge.zIndex ?? 0) + (edge.selected === true ? 1000 : 0) + 1
-        ),
+        zIndex: String(zIndex),
       }),
       h.OnKeyDownPreventDefault((key) =>
         key === 'Enter' || key === ' '
@@ -4238,7 +5193,7 @@ const connectionReleaseTarget = (
       (node) => node.id === pointerSession.nodeId
     )
 
-    const sourceHandle = sourceNode?.handles?.find(
+    const sourceHandle = flowNodeHandles(sourceNode).find(
       (handle) => handle.id === pointerSession.sourceHandleId
     )
 
@@ -4263,7 +5218,7 @@ const connectionReleaseTarget = (
         (node) => node.id === targetNodeId
       )
 
-      const targetHandle = targetNode?.handles?.find(
+      const targetHandle = flowNodeHandles(targetNode).find(
         (handle) => handle.id === targetHandleId
       )
 
@@ -4610,6 +5565,13 @@ export const createPointerResource = (initial: Model) => {
     }
 
     if (origin.down.direction !== null) {
+      if (session.kind === 'node-resizer') {
+        return (
+          session.nodeId === origin.down.nodeId &&
+          session.resize.controlPosition === origin.down.direction
+        )
+      }
+
       return (
         session.kind === 'resize' &&
         session.nodeId === origin.down.nodeId &&
@@ -5423,14 +6385,16 @@ const nodeRendererProps = (
   node: FlowNode,
   position: XYPosition,
   size: { readonly width: number; readonly height: number } | undefined
-): FlowNodeRendererProps =>
-  flowNodeRendererProps(node, {
+): FoldkitNodeRendererProps => ({
+  ...flowNodeRendererProps(node, {
     positionAbsolute: position,
     dragging:
       model.pointerSession?.kind === 'node-drag' &&
       model.pointerSession.nodeIds.includes(node.id),
     size,
-  })
+  }),
+  zoom: model.viewport.zoom,
+})
 
 /** Collects one edge renderer's HTML labels into a keyed group for the label layer. */
 const createEdgeLabelCollector = (
@@ -5504,6 +6468,10 @@ const connectionLineView = (
   }
 }
 
+/** What Foldkit's own node keys do: select, rectangle-select and cancel. */
+const foldkitNodeDescription =
+  'Press enter or space on the selection control to select a node. Press shift and space to start a rectangle selection, then use the arrow keys and enter. Press escape to cancel.'
+
 const graphView = (
   renderers: FoldkitRendererRegistry,
   markerScope: string,
@@ -5522,7 +6490,7 @@ const graphView = (
 
     const resizeChange =
       resizeSession === null
-        ? undefined
+        ? selectResizerPreview(model)
         : resizeProposal(
             model.document,
             resizeSession.nodeId,
@@ -5530,6 +6498,20 @@ const graphView = (
           )
 
     const liveDocument = selectLiveDocument(model)
+
+    // React `ariaLabelConfig` text entries over the English defaults.
+    const ariaLabels = {
+      ...defaultFlowAriaLabelConfig,
+      ...Object.fromEntries(
+        Object.entries(model.ariaLabelConfig).filter(
+          ([, value]) => value !== undefined
+        )
+      ),
+    }
+
+    const nodeDescriptionId = `${model.instanceId}-node-desc`
+
+    const edgeDescriptionId = `${model.instanceId}-edge-desc`
 
     const renderDocument =
       resizeChange === undefined
@@ -5544,6 +6526,18 @@ const graphView = (
 
     const graph = createFlowGraph(renderDocument, renderMeasurements)
     const mountedNodeIds = selectMountedNodeIds(model, measurements, graph)
+
+    const renderEdges = model.document.edges.map((edge) =>
+      applyDefaultEdgeOptions(edge, model.defaultEdgeOptions)
+    )
+
+    const stacking = computeFlowStacking({
+      nodes: renderDocument.nodes,
+      edges: renderEdges,
+      zIndexMode: model.zIndexMode,
+      elevateNodesOnSelect: model.elevateNodesOnSelect,
+      elevateEdgesOnSelect: model.elevateEdgesOnSelect,
+    })
 
     const nodes = graph.orderedNodes
       .map(({ node }) => node)
@@ -5562,24 +6556,25 @@ const graphView = (
         const renderSize =
           resizeChange?.nodeId === node.id ? resizeChange.size : size
 
-        const style =
-          renderSize === undefined
-            ? {
-                left: `${renderPosition.x}px`,
-                top: `${renderPosition.y}px`,
-                zIndex: String(node.zIndex ?? 0),
-              }
-            : {
-                left: `${renderPosition.x}px`,
-                top: `${renderPosition.y}px`,
-                width: `${renderSize.width}px`,
-                height: `${renderSize.height}px`,
-                zIndex: String(node.zIndex ?? 0),
-              }
+        // React NodeWrapper: user style first, then position, stacking and
+        // dimensions win.
+        const style = {
+          ...foldkitStyle(node.style),
+          left: `${renderPosition.x}px`,
+          top: `${renderPosition.y}px`,
+          'z-index': String(stacking.nodes.get(node.id) ?? node.zIndex ?? 0),
+        }
+
+        if (renderSize !== undefined) {
+          Object.assign(style, {
+            width: `${renderSize.width}px`,
+            height: `${renderSize.height}px`,
+          })
+        }
 
         const interactivity = selectInteractivity(model)
 
-        const handles = (node.handles ?? []).map((handle) =>
+        const handles = flowNodeHandles(node).map((handle) =>
           h.button([
             h.Class(
               [
@@ -5590,7 +6585,10 @@ const graphView = (
             ),
             h.DataAttribute('handle-id', handle.id),
             h.DataAttribute('handle-side', handle.side),
-            h.AriaLabel(`${handle.kind} handle ${handle.id}`),
+            h.AriaLabel(
+              model.ariaLabelConfig['handle.ariaLabel'] ??
+                `${handle.kind} handle ${handle.id}`
+            ),
             h.OnClick(
               Message.ClickHandle({ nodeId: node.id, handleId: handle.id })
             ),
@@ -5711,29 +6709,34 @@ const graphView = (
           node.id,
           [
             h.Class(
-              model.pointerSession?.kind === 'node-drag' &&
-                model.pointerSession.nodeIds.includes(node.id)
-                ? 'flow-foldkit-node dragging'
-                : 'flow-foldkit-node'
+              flowClassNames(
+                'flow-foldkit-node',
+                model.pointerSession?.kind === 'node-drag' &&
+                  model.pointerSession.nodeIds.includes(node.id) &&
+                  'dragging',
+                node.className
+              )
             ),
             h.DataAttribute('testid', 'flow-node'),
             h.DataAttribute('node-id', node.id),
+            ...(node.dragHandle === undefined
+              ? []
+              : [h.DataAttribute('drag-handle', node.dragHandle)]),
             h.Attribute('tabindex', node.focusable === false ? '-1' : '0'),
+            h.AriaDescribedBy(nodeDescriptionId),
             h.Style(style),
           ],
           [...contents, ...handles, ...resizeHandles, ...selectionControl]
         )
       })
 
+    const topNodeZ = Math.max(0, ...stacking.nodes.values())
+
     const edgeLabels: NonNullable<FoldHtml.Html>[] = []
     const customEdgeLabels: NonNullable<FoldHtml.Html>[] = []
     const reconnectControls: NonNullable<FoldHtml.Html>[] = []
 
-    const visibleEdges = orderFlowEdges(
-      model.document.edges.map((edge) =>
-        applyDefaultEdgeOptions(edge, model.defaultEdgeOptions)
-      )
-    )
+    const visibleEdges = orderFlowEdges(renderEdges)
       .filter(
         (edge) =>
           edge.hidden !== true &&
@@ -5764,11 +6767,23 @@ const graphView = (
 
         const ariaLabel = edge.ariaLabel ?? edge.label ?? `Edge ${edge.id}`
 
+        const edgeZ = stacking.edges.get(edge.id) ?? edge.zIndex ?? 0
+
+        // Reconnect anchors sit above every node, including elevated
+        // selected nodes, so a selected endpoint node never covers them.
         reconnectControls.push(
-          ...edgeReconnectControls(edge, geometry, ariaLabel, h)
+          ...edgeReconnectControls(
+            edge,
+            geometry,
+            ariaLabel,
+            h,
+            Math.max(edgeZ, topNodeZ) + 1
+          )
         )
 
         if (edge.label !== undefined) {
+          const presentation = edgeLabelPresentation(edge)
+
           const label = h.keyed('div')(
             edge.id,
             [
@@ -5776,14 +6791,21 @@ const graphView = (
               h.DataAttribute('edge-id', edge.id),
               h.DataAttribute('label-owner', 'host-overlay'),
               h.Style({
+                ...presentation.box,
                 left: `${geometry.labelPosition.x}px`,
                 top: `${geometry.labelPosition.y}px`,
-                zIndex: String(
-                  (edge.zIndex ?? 0) + (edge.selected === true ? 1000 : 0)
-                ),
+                'z-index': String(edgeZ),
               }),
             ],
-            [edge.label]
+            [
+              h.span(
+                [
+                  h.Class('flow-foldkit-edge-label-text'),
+                  h.Style(presentation.text),
+                ],
+                [edge.label]
+              ),
+            ]
           )
 
           if (label !== null) {
@@ -5800,7 +6822,11 @@ const graphView = (
           markerEndId,
           renderer,
           h,
-          htmlLabels.collect
+          htmlLabels.collect,
+          {
+            defaultMarkerColor: model.defaultMarkerColor ?? undefined,
+            descriptionId: edgeDescriptionId,
+          }
         )
 
         customEdgeLabels.push(...htmlLabels.group())
@@ -5808,7 +6834,13 @@ const graphView = (
         return h.keyed('svg')(
           edge.id,
           [
-            h.Class('flow-foldkit-edge'),
+            h.Class(
+              flowClassNames(
+                'flow-foldkit-edge',
+                edge.animated === true && 'animated',
+                edge.className
+              )
+            ),
             h.DataAttribute('edge-id', edge.id),
             h.DataAttribute('edge-type', edge.type ?? 'default'),
             h.DataAttribute('edge-path-kind', edge.path ?? 'straight'),
@@ -5833,9 +6865,7 @@ const graphView = (
             h.ViewBox('0 0 960 640'),
             h.Style({
               overflow: 'visible',
-              zIndex: String(
-                (edge.zIndex ?? 0) + (edge.selected === true ? 1000 : 0)
-              ),
+              'z-index': String(edgeZ),
             }),
           ],
           [
@@ -5892,7 +6922,13 @@ const graphView = (
 
     return h.div(
       [
-        h.Class('flow-foldkit-canvas'),
+        h.Class(
+          flowClassNames(
+            'flow-foldkit-canvas',
+            resolveFlowColorMode(model.colorMode, model.prefersDark)
+          )
+        ),
+        h.DataAttribute('color-mode', model.colorMode),
         h.DataAttribute('flow-instance', model.instanceId),
         h.DataAttribute('testid', 'flow-canvas'),
         h.Tabindex(0),
@@ -5966,6 +7002,30 @@ const graphView = (
             ]
           : []),
         h.div([h.Class('flow-foldkit-change-kinds'), h.AriaLive('polite')], []),
+        // React A11yDescriptions: the texts nodes and edges are described by.
+        h.div(
+          [
+            h.Id(nodeDescriptionId),
+            h.Class('flow-foldkit-a11y-description'),
+            h.Style({ display: 'none' }),
+          ],
+          [
+            // Foldkit has no arrow-key node move and no built-in Delete key
+            // (hosts delete through the delete client), so React's texts
+            // would mislead. Describe Foldkit's keys unless the host
+            // configured the text.
+            model.ariaLabelConfig['node.a11yDescription.default'] ??
+              foldkitNodeDescription,
+          ]
+        ),
+        h.div(
+          [
+            h.Id(edgeDescriptionId),
+            h.Class('flow-foldkit-a11y-description'),
+            h.Style({ display: 'none' }),
+          ],
+          [ariaLabels['edge.a11yDescription.default']]
+        ),
       ]
     )
   })
@@ -6101,6 +7161,27 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
       },
     }
   ),
+  // React `useColorModeClass`: follow the system scheme while `system`.
+  systemColorScheme: entry(
+    { active: Schema.Boolean },
+    {
+      modelToDependencies: (model) => ({
+        active: model.colorMode === 'system',
+      }),
+      dependenciesToStream: ({ active }) => {
+        const query = globalThis.matchMedia?.(flowColorModeMediaQuery)
+
+        return active && query !== undefined
+          ? Subscription.fromEvent({
+              target: query,
+              type: 'change',
+              mapEvent: (event: MediaQueryListEvent): GraphMessageData =>
+                Message.SystemColorScheme({ prefersDark: event.matches }),
+            })
+          : Stream.empty
+      },
+    }
+  ),
   connectionAutoPan: Subscription.animationFrame<Model, GraphMessageData>({
     isActive: (model) => {
       const session = model.pointerSession
@@ -6196,12 +7277,36 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
 }))
 // oxlint-enable anti-slop(require-readable-spacing)
 
-/** Host callbacks stay outside the schema-checked model. */
+/** Host callbacks and raw option inputs stay outside the schema-checked model. */
 const withoutCallbacks = ({
   isValidConnection: _callback,
+  snapGrid: _snapGrid,
+  nodeExtent: _nodeExtent,
+  translateExtent: _translateExtent,
+  ariaLabelConfig: _ariaLabelConfig,
+  defaultMarkerColor: _defaultMarkerColor,
   ...options
 }: GraphInteractionOptions) => options
 
+const decodeExtent = (
+  input: GraphInteractionOptions['nodeExtent']
+): PanExtent | null =>
+  input === undefined
+    ? null
+    : Schema.decodeUnknownSync(FlowExtentInputSchema)(input)
+
+/** The text entries of a partial `ariaLabelConfig`; the live message is a function. */
+const ariaLabelTextConfig = (input: FlowAriaLabelConfigInput | undefined) =>
+  Schema.decodeUnknownSync(FlowAriaLabelTextConfigSchema)(
+    Object.fromEntries(
+      Object.entries(input ?? {}).filter(
+        ([key, value]) =>
+          key !== 'node.a11yDescription.ariaLiveMessage' && value !== undefined
+      )
+    )
+  )
+
+// oxlint-disable-next-line complexity -- one default per canvas option.
 export const initialModel = (
   document: FlowDocument,
   viewport: CoreViewport,
@@ -6242,6 +7347,20 @@ export const initialModel = (
   keyboardActivation: interactionOptions.keyboardActivation ?? true,
   connectOnClick: interactionOptions.connectOnClick ?? true,
   nodesResizable: interactionOptions.nodesResizable ?? false,
+  snapToGrid: interactionOptions.snapToGrid ?? false,
+  snapGrid: Schema.decodeUnknownSync(FlowSnapGridInputSchema)(
+    interactionOptions.snapGrid ?? [15, 15]
+  ),
+  nodeExtent: decodeExtent(interactionOptions.nodeExtent),
+  translateExtent: decodeExtent(interactionOptions.translateExtent),
+  colorMode: interactionOptions.colorMode ?? 'light',
+  prefersDark:
+    interactionOptions.colorMode === 'system' && prefersDarkColorScheme(),
+  zIndexMode: interactionOptions.zIndexMode ?? 'basic',
+  elevateNodesOnSelect: interactionOptions.elevateNodesOnSelect ?? true,
+  elevateEdgesOnSelect: interactionOptions.elevateEdgesOnSelect ?? false,
+  ariaLabelConfig: ariaLabelTextConfig(interactionOptions.ariaLabelConfig),
+  defaultMarkerColor: interactionOptions.defaultMarkerColor ?? null,
   defaultEdgeOptions: Effect.runSync(
     decodeFlowDefaultEdgeOptions(interactionOptions.defaultEdgeOptions ?? {})
   ),

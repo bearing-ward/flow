@@ -142,7 +142,9 @@ const refreshHandleCenters = async (): Promise<void> => {
   }
 
   const results = await Promise.all(
-    current.nodes.map((flowNode) => snapshots.request({ nodeId: flowNode.id }))
+    current.nodes.map((flowNode) =>
+      snapshots.requestVersioned({ nodeId: flowNode.id })
+    )
   )
 
   for (const result of results) {

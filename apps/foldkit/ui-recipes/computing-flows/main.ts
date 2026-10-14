@@ -138,7 +138,7 @@ const host = mountRecipeHost({
  * `useNodesData`.
  */
 const incomingData = async (nodeId: string) => {
-  const connections = await host.snapshots.request({
+  const connections = await host.snapshots.requestVersioned({
     connections: { nodeId, type: 'target' },
   })
 
@@ -154,7 +154,7 @@ const incomingData = async (nodeId: string) => {
     return []
   }
 
-  const data = await host.snapshots.request({ nodeIds: sources })
+  const data = await host.snapshots.requestVersioned({ nodeIds: sources })
 
   if (data.status !== 'succeeded') {
     return []
