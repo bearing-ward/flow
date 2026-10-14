@@ -37121,6 +37121,1397 @@
           }
         }
       ]
+    },
+    {
+      "runId": "16f09c7a-2959-4d96-9562-cea6f795eb5c",
+      "host": "vanilla",
+      "command": "bun run test:browser -- performance-calibration.e2e.ts",
+      "sourceRevision": "f14f1b4b2f1078986753c1ffe228aad6b68d9cdc",
+      "sourceTreeState": "clean",
+      "environment": {
+        "browser": {
+          "name": "chromium",
+          "version": "151.0.7922.34"
+        },
+        "os": {
+          "name": "Darwin",
+          "release": "27.2.0",
+          "architecture": "arm64"
+        },
+        "runtime": {
+          "node": "24.17.0",
+          "bun": "1.4.3",
+          "playwright": "1.62.1"
+        },
+        "hardware": {
+          "cpuModel": "Apple M4 Max",
+          "logicalCpuCount": 16,
+          "totalMemoryBytes": 51539607552
+        },
+        "viewport": {
+          "width": 960,
+          "height": 640,
+          "deviceScaleFactor": 1
+        }
+      },
+      "measurements": [
+        {
+          "workloadId": "reconcile-250-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            322.5, 323, 318.8000000715256, 320.39999997615814, 321,
+            320.2999999523163, 321.89999997615814, 326.60000002384186, 326.5,
+            323.7999999523163, 325.1999999284744, 321.10000002384186,
+            323.7999999523163, 354.60000002384186, 327, 321.60000002384186,
+            323.5, 324.5, 320.90000009536743, 322.89999997615814
+          ],
+          "medianMs": 322.89999997615814,
+          "p95Ms": 327,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4636.100000023842, 4630, 4593.299999952316, 4529, 4465,
+            4496.099999904633, 4492.700000047684, 4501.800000071526,
+            4470.299999952316, 4415.199999928474, 4401.100000023842,
+            4412.800000071526, 4364.899999976158, 4381.899999976158,
+            4467.899999976158, 4344.699999928474, 4410.600000023842,
+            4515.399999976158, 4520.799999952316, 4504.5
+          ],
+          "medianMs": 4470.299999952316,
+          "p95Ms": 4630,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "enabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            579.2999999523163, 575.3999999761581, 565.3999999761581,
+            587.2999999523163, 558.5, 567.8999999761581, 557.7000000476837, 565,
+            555.4000000953674, 552.6000000238419, 559.3000000715256,
+            554.2999999523163, 565.1000000238419, 553.7000000476837, 555.5,
+            552.0999999046326, 556.3999999761581, 552.5, 585.5,
+            582.1999999284744
+          ],
+          "medianMs": 558.5,
+          "p95Ms": 585.5,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-125",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 125,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4479.299999952316, 4518.199999928474, 4611.200000047684,
+            4485.600000023842, 4571.100000023842, 4638.700000047684,
+            4546.700000047684, 4504.5, 4636.799999952316, 4480.599999904633,
+            4460.799999952316, 4427.100000023842, 4419.399999976158,
+            4694.199999928474, 4495.200000047684, 4679.200000047684,
+            4700.700000047684, 4645.5, 4545.899999976158, 4602.200000047684
+          ],
+          "medianMs": 4545.899999976158,
+          "p95Ms": 4694.199999928474,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-500",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 500,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4942.899999976158, 4922.300000071526, 5104.700000047684,
+            5066.899999976158, 5091.799999952316, 4987.599999904633,
+            5023.100000023842, 4953.700000047684, 4884.600000023842,
+            4939.199999928474, 5065.100000023842, 4986.5, 4869.5,
+            5047.399999976158, 4995.600000023842, 5096.700000047684,
+            4995.100000023842, 5028.199999928474, 5011.5, 5003.899999976158
+          ],
+          "medianMs": 4995.600000023842,
+          "p95Ms": 5096.700000047684,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            26.40000009536743, 68.79999995231628, 68, 67.20000004768372,
+            68.89999997615814, 67.39999997615814, 67.20000004768372,
+            67.69999992847443, 76.10000002384186, 74.60000002384186,
+            75.10000002384186, 73.59999990463257, 75.20000004768372,
+            67.80000007152557, 68, 67.19999992847443, 67.10000002384186,
+            70.60000002384186, 67.80000007152557, 67.79999995231628
+          ],
+          "medianMs": 67.80000007152557,
+          "p95Ms": 75.20000004768372,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-250-sparse-minimap",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            277, 281.90000009536743, 291.39999997615814, 296.39999997615814,
+            285.5, 280, 286.09999990463257, 284.7000000476837,
+            287.10000002384186, 290.7000000476837, 296.5, 291.89999997615814,
+            290.7000000476837, 287.60000002384186, 288.39999997615814, 286.5,
+            281.89999997615814, 279.7000000476837, 279.90000009536743,
+            285.10000002384186
+          ],
+          "medianMs": 286.09999990463257,
+          "p95Ms": 296.39999997615814,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse-minimap",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4317.600000023842, 4329.899999976158, 4350.5, 4446,
+            4329.299999952316, 4375.299999952316, 4405.699999928474,
+            4456.899999976158, 4549, 4373.200000047684, 4407.600000023842,
+            4392.699999928474, 4364.5, 4411.299999952316, 4487.600000023842,
+            4439.699999928474, 4338.299999952316, 4270.600000023842, 4444.5,
+            4344.599999904633
+          ],
+          "medianMs": 4375.299999952316,
+          "p95Ms": 4487.600000023842,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse-minimap",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "enabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            557.5999999046326, 585.8000000715256, 575.5, 566.1000000238419,
+            560.6000000238419, 569.1000000238419, 570.3999999761581,
+            571.6000000238419, 569.6000000238419, 575.5999999046326, 580.5,
+            571.2000000476837, 569.1000000238419, 564.2000000476837,
+            562.0999999046326, 558.3999999761581, 559.6000000238419,
+            558.7999999523163, 561.3000000715256, 571.2999999523163
+          ],
+          "medianMs": 569.1000000238419,
+          "p95Ms": 580.5,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse-minimap",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            31.199999928474426, 80.19999992847443, 77.69999992847443, 80.5,
+            84.60000002384186, 77.29999995231628, 77.69999992847443,
+            85.60000002384186, 77.20000004768372, 79.5, 87.70000004768372,
+            82.60000002384186, 84.39999997615814, 86.29999995231628,
+            82.29999995231628, 87.69999992847443, 86.39999997615814,
+            83.39999997615814, 84.79999995231628, 85.70000004768372
+          ],
+          "medianMs": 82.60000002384186,
+          "p95Ms": 87.69999992847443,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        }
+      ]
+    },
+    {
+      "runId": "c0b4f300-be43-47c5-acd6-405b7bf3352b",
+      "host": "vue",
+      "command": "bun run test:conformance:vue -- performance-calibration.e2e.ts",
+      "sourceRevision": "working-tree@f14f1b4b2f1078986753c1ffe228aad6b68d9cdc",
+      "sourceTreeState": "dirty",
+      "environment": {
+        "browser": {
+          "name": "chromium",
+          "version": "151.0.7922.34"
+        },
+        "os": {
+          "name": "Darwin",
+          "release": "27.2.0",
+          "architecture": "arm64"
+        },
+        "runtime": {
+          "node": "24.17.0",
+          "bun": "1.4.3",
+          "playwright": "1.62.1"
+        },
+        "hardware": {
+          "cpuModel": "Apple M4 Max",
+          "logicalCpuCount": 16,
+          "totalMemoryBytes": 51539607552
+        },
+        "viewport": {
+          "width": 960,
+          "height": 640,
+          "deviceScaleFactor": 1
+        }
+      },
+      "measurements": [
+        {
+          "workloadId": "reconcile-250-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            0.8000000715255737, 0.8000000715255737, 1, 0.8000000715255737,
+            0.7000000476837158, 0.6999999284744263, 0.6000000238418579,
+            0.7000000476837158, 0.7999999523162842, 0.6999999284744263,
+            0.6999999284744263, 0.6000000238418579, 0.7000000476837158,
+            0.7000000476837158, 1, 0.6999999284744263, 0.7000000476837158,
+            0.8000000715255737, 0.8000000715255737, 0.6999999284744263
+          ],
+          "medianMs": 0.7000000476837158,
+          "p95Ms": 1,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.4000000953674316, 2.5, 3.399999976158142, 3.5, 2.5,
+            2.100000023841858, 2.5, 2.299999952316284, 2.0999999046325684,
+            2.1999999284744263, 3.3000000715255737, 4.699999928474426,
+            2.899999976158142, 4.299999952316284, 3.0999999046325684,
+            2.899999976158142, 3.399999976158142, 3, 3, 4.5
+          ],
+          "medianMs": 2.899999976158142,
+          "p95Ms": 4.5,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "enabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            11.299999952316284, 8.5, 8.800000071525574, 8.100000023841858, 8.5,
+            8.099999904632568, 8.299999952316284, 8.199999928474426,
+            11.199999928474426, 8.199999928474426, 8.100000023841858,
+            8.100000023841858, 8.100000023841858, 8, 8.200000047683716,
+            8.300000071525574, 8.5, 11.299999952316284, 8.399999976158142,
+            8.299999952316284
+          ],
+          "medianMs": 8.299999952316284,
+          "p95Ms": 11.299999952316284,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-125",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 125,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.1999999284744263, 2.299999952316284, 3, 5.699999928474426,
+            2.899999976158142, 4.399999976158142, 3.100000023841858,
+            3.4000000953674316, 2.899999976158142, 3.600000023841858, 3,
+            3.5999999046325684, 2.9000000953674316, 3, 4.800000071525574,
+            3.399999976158142, 3, 3.600000023841858, 3.399999976158142,
+            2.799999952316284
+          ],
+          "medianMs": 3,
+          "p95Ms": 4.800000071525574,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-500",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 500,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.600000023841858, 2.600000023841858, 3.399999976158142,
+            4.200000047683716, 3.399999976158142, 4, 5.300000071525574,
+            3.299999952316284, 6, 3.4000000953674316, 5.699999928474426, 3.5,
+            5.799999952316284, 3.399999976158142, 5.300000071525574,
+            3.9000000953674316, 4.899999976158142, 3.5, 5.100000023841858,
+            3.799999952316284
+          ],
+          "medianMs": 3.799999952316284,
+          "p95Ms": 5.799999952316284,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            17.5, 15, 13.600000023841858, 12, 12.600000023841858,
+            12.600000023841858, 13.699999928474426, 14.399999976158142,
+            16.399999976158142, 17.200000047683716, 17.199999928474426,
+            16.90000009536743, 19.299999952316284, 16.600000023841858,
+            16.300000071525574, 13.899999976158142, 12.899999976158142,
+            12.799999952316284, 14.399999976158142, 14.900000095367432
+          ],
+          "medianMs": 14.399999976158142,
+          "p95Ms": 17.5,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        }
+      ]
+    },
+    {
+      "runId": "d7aafe94-61af-4968-9013-fbcd938ce262",
+      "host": "foldkit",
+      "command": "bun run test:conformance:foldkit -- performance-calibration.e2e.ts",
+      "sourceRevision": "working-tree@f14f1b4b2f1078986753c1ffe228aad6b68d9cdc",
+      "sourceTreeState": "dirty",
+      "environment": {
+        "browser": {
+          "name": "chromium",
+          "version": "151.0.7922.34"
+        },
+        "os": {
+          "name": "Darwin",
+          "release": "27.2.0",
+          "architecture": "arm64"
+        },
+        "runtime": {
+          "node": "24.17.0",
+          "bun": "1.4.3",
+          "playwright": "1.62.1"
+        },
+        "hardware": {
+          "cpuModel": "Apple M4 Max",
+          "logicalCpuCount": 16,
+          "totalMemoryBytes": 51539607552
+        },
+        "viewport": {
+          "width": 960,
+          "height": 640,
+          "deviceScaleFactor": 1
+        }
+      },
+      "measurements": [
+        {
+          "workloadId": "reconcile-250-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.100000023841858, 2, 2.100000023841858, 2.0999999046325684, 2,
+            1.899999976158142, 1.899999976158142, 1.8000000715255737, 2,
+            1.8000000715255737, 2, 2, 1.8000000715255737, 1.9000000953674316,
+            1.899999976158142, 2.100000023841858, 1.899999976158142,
+            2.100000023841858, 2, 2
+          ],
+          "medianMs": 2,
+          "p95Ms": 2.100000023841858,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            10, 12, 7.700000047683716, 7.5, 7.399999976158142,
+            7.700000047683716, 7.100000023841858, 7.600000023841858,
+            7.399999976158142, 7.400000095367432, 7.700000047683716,
+            7.200000047683716, 7.299999952316284, 7.799999952316284,
+            7.299999952316284, 7.699999928474426, 7.400000095367432,
+            7.300000071525574, 7.199999928474426, 7.100000023841858
+          ],
+          "medianMs": 7.400000095367432,
+          "p95Ms": 10,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            29.5, 29.59999990463257, 29.600000023841858, 30.399999976158142, 30,
+            33.39999997615814, 30.90000009536743, 33.10000002384186,
+            30.699999928474426, 30.899999976158142, 29.300000071525574, 31,
+            31.59999990463257, 31.5, 30.799999952316284, 32, 30.899999976158142,
+            32, 31.399999976158142, 29.600000023841858
+          ],
+          "medianMs": 30.899999976158142,
+          "p95Ms": 33.10000002384186,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-125",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 125,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            7.399999976158142, 7.399999976158142, 7, 7.5, 9.5,
+            8.399999976158142, 7.400000095367432, 8.5, 7.699999928474426,
+            8.099999904632568, 8.100000023841858, 7.800000071525574,
+            7.600000023841858, 7.700000047683716, 8.199999928474426,
+            8.299999952316284, 8.799999952316284, 7.799999952316284,
+            7.700000047683716, 7.699999928474426
+          ],
+          "medianMs": 7.700000047683716,
+          "p95Ms": 8.799999952316284,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-500",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 500,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            8.700000047683716, 9.199999928474426, 9.100000023841858,
+            9.100000023841858, 9, 9.399999976158142, 9.300000071525574,
+            8.899999976158142, 9.099999904632568, 9.100000023841858,
+            8.700000047683716, 10.800000071525574, 9.300000071525574, 9.5,
+            9.900000095367432, 8.899999976158142, 9.100000023841858,
+            8.899999976158142, 9.300000071525574, 9.100000023841858
+          ],
+          "medianMs": 9.100000023841858,
+          "p95Ms": 9.900000095367432,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            3.399999976158142, 3.600000023841858, 3.399999976158142,
+            3.5999999046325684, 3.5, 3.3000000715255737, 3.3000000715255737,
+            3.4000000953674316, 3.299999952316284, 3.399999976158142,
+            3.200000047683716, 3.5, 3.100000023841858, 3.200000047683716,
+            3.100000023841858, 3.299999952316284, 3.399999976158142,
+            3.100000023841858, 3.5, 3.100000023841858
+          ],
+          "medianMs": 3.3000000715255737,
+          "p95Ms": 3.5999999046325684,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        }
+      ]
+    },
+    {
+      "runId": "4f655b56-5d69-4dc4-a468-5b33e4cfe18f",
+      "host": "vanilla",
+      "command": "bun run test:browser -- performance-calibration.e2e.ts",
+      "sourceRevision": "working-tree@8a4dd4dfa7a37323285cf3e248263b139dc03748",
+      "sourceTreeState": "dirty",
+      "environment": {
+        "browser": {
+          "name": "chromium",
+          "version": "151.0.7922.34"
+        },
+        "os": {
+          "name": "Darwin",
+          "release": "27.2.0",
+          "architecture": "arm64"
+        },
+        "runtime": {
+          "node": "24.17.0",
+          "bun": "1.4.3",
+          "playwright": "1.62.1"
+        },
+        "hardware": {
+          "cpuModel": "Apple M4 Max",
+          "logicalCpuCount": 16,
+          "totalMemoryBytes": 51539607552
+        },
+        "viewport": {
+          "width": 960,
+          "height": 640,
+          "deviceScaleFactor": 1
+        }
+      },
+      "measurements": [
+        {
+          "workloadId": "reconcile-250-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            298.89999997615814, 298, 296.59999990463257, 298.90000009536743,
+            298.1999999284744, 300.3000000715256, 297.59999990463257,
+            301.60000002384186, 301.2999999523163, 308.2000000476837,
+            300.10000002384186, 304.39999997615814, 306.40000009536743,
+            299.60000002384186, 304.1999999284744, 308.3000000715256,
+            303.7000000476837, 312.89999997615814, 305.39999997615814, 303.5
+          ],
+          "medianMs": 301.2999999523163,
+          "p95Ms": 308.3000000715256,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4540.699999928474, 4545.299999952316, 4484.700000047684,
+            4322.899999976158, 4319.700000047684, 4321.099999904633,
+            4361.199999928474, 4331.399999976158, 4322, 4343.900000095367,
+            4328.100000023842, 4376.800000071526, 4436.599999904633, 4467.5,
+            4575.299999952316, 4616.400000095367, 4551.399999976158,
+            4454.799999952316, 4486.899999976158, 4463.5
+          ],
+          "medianMs": 4436.599999904633,
+          "p95Ms": 4575.299999952316,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "enabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            560.5, 562.3000000715256, 565.2999999523163, 561.3999999761581,
+            561.6999999284744, 558, 557.3999999761581, 551, 554.8999999761581,
+            555.8000000715256, 558, 550.5999999046326, 557.8999999761581,
+            560.6000000238419, 557.8999999761581, 555.2999999523163,
+            554.3000000715256, 563.7999999523163, 564.3999999761581, 564
+          ],
+          "medianMs": 558,
+          "p95Ms": 564.3999999761581,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-125",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 125,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4477.600000023842, 4468, 4431.800000071526, 4437.600000023842, 4466,
+            4437, 4416, 4445.099999904633, 4437.399999976158, 4485.5,
+            4431.800000071526, 4423.699999928474, 4449.699999928474,
+            4437.899999976158, 4454.199999928474, 4440.100000023842,
+            4668.800000071526, 4485.899999976158, 4433.199999928474,
+            4438.700000047684
+          ],
+          "medianMs": 4438.700000047684,
+          "p95Ms": 4485.899999976158,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-500",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 500,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4901.600000023842, 4910.600000023842, 4919.5, 4905.799999952316,
+            4923.900000095367, 4923.800000071526, 4914.100000023842,
+            4906.100000023842, 4918.399999976158, 4909.100000023842,
+            4893.899999976158, 4938.199999928474, 4893.600000023842,
+            4924.700000047684, 4917.900000095367, 4904.800000071526,
+            4910.399999976158, 4937.699999928474, 4908.100000023842, 4893.5
+          ],
+          "medianMs": 4910.399999976158,
+          "p95Ms": 4937.699999928474,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "disabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            27, 72.29999995231628, 71.20000004768372, 72.29999995231628,
+            70.79999995231628, 74.10000002384186, 73.10000002384186, 70.5, 71.5,
+            71.5, 72.30000007152557, 73.20000004768372, 73.60000002384186,
+            71.19999992847443, 71.10000002384186, 72.09999990463257,
+            71.30000007152557, 71.79999995231628, 72.19999992847443,
+            72.90000009536743
+          ],
+          "medianMs": 71.79999995231628,
+          "p95Ms": 73.60000002384186,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-250-sparse-minimap",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            273.8000000715256, 277.3000000715256, 276, 276.7999999523163,
+            278.10000002384186, 276, 276.10000002384186, 277.10000002384186,
+            278.59999990463257, 276.60000002384186, 280.10000002384186,
+            274.7999999523163, 276.2000000476837, 277.2000000476837,
+            278.6999999284744, 278.2000000476837, 282.90000009536743,
+            276.39999997615814, 276.39999997615814, 278
+          ],
+          "medianMs": 276.7999999523163,
+          "p95Ms": 280.10000002384186,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse-minimap",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            4303.300000071526, 4324.5, 4324.700000047684, 4294,
+            4299.700000047684, 4307.900000095367, 4330.300000071526,
+            4303.700000047684, 4329.5, 4307.799999952316, 4310.200000047684,
+            4342.399999976158, 4317.399999976158, 4312.5, 4340.899999976158,
+            4324.199999928474, 4315.200000047684, 4313.5, 4326.799999952316,
+            4349.099999904633
+          ],
+          "medianMs": 4315.200000047684,
+          "p95Ms": 4342.399999976158,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse-minimap",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "enabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            546.8999999761581, 552.7999999523163, 549.2000000476837,
+            551.2999999523163, 553, 549.6000000238419, 552.5, 549.8000000715256,
+            553.7000000476837, 579.7999999523163, 572.3000000715256,
+            567.7000000476837, 568.6999999284744, 560.1000000238419,
+            557.1000000238419, 555.8000000715256, 553.6000000238419, 553, 554.5,
+            552.7000000476837
+          ],
+          "medianMs": 553,
+          "p95Ms": 572.3000000715256,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse-minimap",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "enabled",
+          "warmupCount": 5,
+          "samplesMs": [
+            30, 80.5, 81.10000002384186, 79.80000007152557, 81.39999997615814,
+            80.39999997615814, 81.10000002384186, 80.39999997615814,
+            78.10000002384186, 81.30000007152557, 80.79999995231628,
+            79.80000007152557, 79.79999995231628, 81.10000002384186, 78,
+            81.30000007152557, 81.80000007152557, 79, 79.30000007152557,
+            80.39999997615814
+          ],
+          "medianMs": 80.39999997615814,
+          "p95Ms": 81.39999997615814,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        }
+      ]
+    },
+    {
+      "runId": "5ed482d4-e26a-4f44-ac4e-a6affb4f951b",
+      "host": "vue",
+      "command": "bun run test:conformance:vue -- performance-calibration.e2e.ts",
+      "sourceRevision": "working-tree@8a4dd4dfa7a37323285cf3e248263b139dc03748",
+      "sourceTreeState": "dirty",
+      "environment": {
+        "browser": {
+          "name": "chromium",
+          "version": "151.0.7922.34"
+        },
+        "os": {
+          "name": "Darwin",
+          "release": "27.2.0",
+          "architecture": "arm64"
+        },
+        "runtime": {
+          "node": "24.17.0",
+          "bun": "1.4.3",
+          "playwright": "1.62.1"
+        },
+        "hardware": {
+          "cpuModel": "Apple M4 Max",
+          "logicalCpuCount": 16,
+          "totalMemoryBytes": 51539607552
+        },
+        "viewport": {
+          "width": 960,
+          "height": 640,
+          "deviceScaleFactor": 1
+        }
+      },
+      "measurements": [
+        {
+          "workloadId": "reconcile-250-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            0.7999999523162842, 0.6999999284744263, 0.7999999523162842,
+            1.100000023841858, 0.6000000238418579, 0.6000000238418579,
+            0.7000000476837158, 0.7999999523162842, 1, 0.6999999284744263,
+            0.7999999523162842, 0.6000000238418579, 0.6999999284744263,
+            0.6999999284744263, 0.9000000953674316, 0.7000000476837158,
+            0.6999999284744263, 0.7000000476837158, 0.6000000238418579,
+            0.7999999523162842
+          ],
+          "medianMs": 0.7000000476837158,
+          "p95Ms": 1,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.5, 2.1999999284744263, 2.799999952316284, 4, 2.299999952316284,
+            3.100000023841858, 3.200000047683716, 3.399999976158142, 3,
+            4.399999976158142, 2.799999952316284, 3, 3.100000023841858,
+            2.899999976158142, 4.5, 2.899999976158142, 4.399999976158142, 3,
+            4.399999976158142, 3.1999999284744263
+          ],
+          "medianMs": 3,
+          "p95Ms": 4.399999976158142,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "enabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            61.800000071525574, 8.799999952316284, 8.099999904632568,
+            8.300000071525574, 8.600000023841858, 8.899999976158142,
+            8.399999976158142, 11.300000071525574, 8.299999952316284,
+            8.399999976158142, 8, 8, 8.800000071525574, 8.100000023841858,
+            8.200000047683716, 8, 11.100000023841858, 8.300000071525574,
+            8.800000071525574, 8.199999928474426
+          ],
+          "medianMs": 8.300000071525574,
+          "p95Ms": 11.300000071525574,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-125",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 125,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.899999976158142, 7.5, 3.600000023841858, 3, 2.899999976158142,
+            3.600000023841858, 2.8000000715255737, 3.3000000715255737,
+            4.699999928474426, 2.899999976158142, 3.5, 2.100000023841858,
+            3.299999952316284, 3.5, 2.799999952316284, 3.399999976158142,
+            3.100000023841858, 2.9000000953674316, 5.399999976158142,
+            2.899999976158142
+          ],
+          "medianMs": 3.100000023841858,
+          "p95Ms": 5.399999976158142,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-500",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 500,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.5999999046325684, 3, 4, 4.200000047683716, 3.399999976158142,
+            3.299999952316284, 3.899999976158142, 3.5, 3.899999976158142,
+            3.399999976158142, 4.100000023841858, 4.100000023841858,
+            3.4000000953674316, 3.799999952316284, 3.399999976158142,
+            3.8000000715255737, 2.799999952316284, 2.5, 4.899999976158142,
+            4.200000047683716
+          ],
+          "medianMs": 3.5,
+          "p95Ms": 4.200000047683716,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            16, 44.39999997615814, 42.10000002384186, 44.299999952316284,
+            43.59999990463257, 45.5, 44.10000002384186, 44.199999928474426,
+            44.700000047683716, 43.5, 43.700000047683716, 43.800000071525574,
+            44.299999952316284, 43.59999990463257, 46.39999997615814,
+            44.200000047683716, 44.60000002384186, 43.39999997615814,
+            43.699999928474426, 48.300000071525574
+          ],
+          "medianMs": 44.10000002384186,
+          "p95Ms": 46.39999997615814,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        }
+      ]
+    },
+    {
+      "runId": "492c08ac-c983-4bb3-a4a9-5d7d19cf5b97",
+      "host": "foldkit",
+      "command": "bun run test:conformance:foldkit -- performance-calibration.e2e.ts",
+      "sourceRevision": "working-tree@8a4dd4dfa7a37323285cf3e248263b139dc03748",
+      "sourceTreeState": "dirty",
+      "environment": {
+        "browser": {
+          "name": "chromium",
+          "version": "151.0.7922.34"
+        },
+        "os": {
+          "name": "Darwin",
+          "release": "27.2.0",
+          "architecture": "arm64"
+        },
+        "runtime": {
+          "node": "24.17.0",
+          "bun": "1.4.3",
+          "playwright": "1.62.1"
+        },
+        "hardware": {
+          "cpuModel": "Apple M4 Max",
+          "logicalCpuCount": 16,
+          "totalMemoryBytes": 51539607552
+        },
+        "viewport": {
+          "width": 960,
+          "height": 640,
+          "deviceScaleFactor": 1
+        }
+      },
+      "measurements": [
+        {
+          "workloadId": "reconcile-250-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 250,
+          "edgeCount": 6,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            2.299999952316284, 2.3000000715255737, 2, 2, 2.100000023841858,
+            1.7999999523162842, 1.899999976158142, 2, 2.100000023841858, 2, 2,
+            1.899999976158142, 1.899999976158142, 1.9000000953674316,
+            2.1999999284744263, 2, 1.899999976158142, 2.299999952316284, 2,
+            2.0999999046325684
+          ],
+          "medianMs": 2,
+          "p95Ms": 2.299999952316284,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            7.900000095367432, 7.399999976158142, 7.299999952316284,
+            8.599999904632568, 7.299999952316284, 7.5, 8.100000023841858,
+            7.299999952316284, 7.200000047683716, 7.399999976158142, 7.5, 7.5,
+            7.5, 8.300000071525574, 7.300000071525574, 7.199999928474426, 7.5,
+            8.199999928474426, 7.299999952316284, 7.200000047683716
+          ],
+          "medianMs": 7.399999976158142,
+          "p95Ms": 8.300000071525574,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-4000-sparse",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 4000,
+          "edgeCount": 100,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            31.5, 31.90000009536743, 32.39999997615814, 30.5,
+            32.700000047683716, 32.700000047683716, 32.10000002384186,
+            30.899999976158142, 32.10000002384186, 31.100000023841858,
+            30.59999990463257, 30.699999928474426, 32.60000002384186, 30.5,
+            30.5, 30.59999990463257, 29.899999976158142, 29.399999976158142,
+            30.200000047683716, 30.399999976158142
+          ],
+          "medianMs": 30.699999928474426,
+          "p95Ms": 32.700000047683716,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-125",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 125,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            7.599999904632568, 7.600000023841858, 8.200000047683716,
+            7.600000023841858, 7.200000047683716, 8, 7.699999928474426, 7.5,
+            8.400000095367432, 7.699999928474426, 7.399999976158142,
+            7.700000047683716, 7.700000047683716, 7.5, 7.800000071525574,
+            7.700000047683716, 7.799999952316284, 8, 7.799999952316284,
+            8.800000071525574
+          ],
+          "medianMs": 7.700000047683716,
+          "p95Ms": 8.400000095367432,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "reconcile-1000-dense-500",
+          "operation": "synchronousDocumentReplacement",
+          "nodeCount": 1000,
+          "edgeCount": 500,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            8.899999976158142, 10, 9.300000071525574, 9, 9.800000071525574,
+            9.200000047683716, 12.299999952316284, 8.899999976158142,
+            9.600000023841858, 8.900000095367432, 9.199999928474426,
+            10.399999976158142, 9.600000023841858, 9, 9.799999952316284,
+            8.799999952316284, 9, 9.199999928474426, 9.200000047683716,
+            9.700000047683716
+          ],
+          "medianMs": 9.200000047683716,
+          "p95Ms": 10.399999976158142,
+          "inputLatencyDefinition": "performance.now duration of the public synchronous document replacement call; excludes caller serialization and paint; two animation frames are awaited between samples.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        },
+        {
+          "workloadId": "drag-1000-sparse",
+          "operation": "syntheticPointerMoveToNextAnimationFrame",
+          "nodeCount": 1000,
+          "edgeCount": 25,
+          "cullingMode": "disabled",
+          "minimapMode": "unavailable",
+          "warmupCount": 5,
+          "samplesMs": [
+            30.799999952316284, 31.5, 33, 31.300000071525574,
+            31.299999952316284, 30.399999976158142, 31.399999976158142,
+            31.899999976158142, 31, 31.699999928474426, 31.200000047683716,
+            31.5, 31, 30.700000047683716, 30.699999928474426,
+            31.100000023841858, 36.39999997615814, 32.89999997615814,
+            32.10000002384186, 32.199999928474426
+          ],
+          "medianMs": 31.300000071525574,
+          "p95Ms": 33,
+          "inputLatencyDefinition": "For each Playwright pointermove captured in the document capture phase, performance.now at listener entry to the next requestAnimationFrame callback; raw latency sample per dispatched pointermove.",
+          "teardown": {
+            "retainedResourceScope": "observable-dom-only; active listener/frame handles are not introspectable",
+            "domDescendants": 0,
+            "nodeElements": 0,
+            "edgeElements": 0,
+            "minimapElements": 0
+          }
+        }
+      ]
     }
   ]
 }
