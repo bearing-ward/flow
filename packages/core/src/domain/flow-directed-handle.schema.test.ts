@@ -2,6 +2,7 @@ import { Effect, Schema as S } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import * as frozen from '../../../conformance/src/fixtures/legacy-v1-persistence/baseline-reader-writer.js'
+import { legacyV1Input } from '../../../conformance/src/legacy-v1-input.ts'
 import {
   FlowConnectionRequestSchema,
   FlowConnectionSchema,
@@ -656,7 +657,7 @@ describe('frozen endpoint-kind reader compatibility and legacy extension selecti
     }
 
     expect(encodeSavedFlowDocument(canonical)).toStrictEqual(
-      frozen.encodeSavedFlowDocument(canonical)
+      frozen.encodeSavedFlowDocument(legacyV1Input(canonical))
     )
   })
 })

@@ -30,6 +30,18 @@ export interface FlowGraphView {
 
 const fallbackDimensions = { width: 150, height: 44 } as const
 
+// React getNodeDimensions prefers `node.measured` over declared width/height.
+const measuredDimensions = (
+  node: FlowNode
+): { readonly width: number; readonly height: number } | undefined => {
+  const width = node.measured?.width
+  const height = node.measured?.height
+
+  return width !== undefined && height !== undefined && width > 0 && height > 0
+    ? { width, height }
+    : undefined
+}
+
 /** Build physical geometry; document positions and overrides are parent-relative anchors. */
 export const createFlowGraph = (
   document: FlowDocument,
@@ -87,7 +99,7 @@ export const createFlowGraph = (
       measurement.width > 0 &&
       measurement.height > 0
         ? { width: measurement.width, height: measurement.height }
-        : (node.size ?? fallback)
+        : (measuredDimensions(node) ?? node.size ?? fallback)
 
     const topLeft = nodeAnchorToTopLeft(
       position,
@@ -221,7 +233,8 @@ export const graphNodeBounds = (node: FlowGraphNode) => ({
 
 export const graphBounds = (
   graph: FlowGraphView,
-  ids?: ReadonlySet<NodeId>
+  ids?: ReadonlySet<NodeId>,
+  options: { readonly includeHidden?: boolean } = {}
 ) => {
   let minX = Infinity
   let minY = Infinity
@@ -229,7 +242,10 @@ export const graphBounds = (
   let maxY = -Infinity
 
   for (const node of graph.orderedNodes) {
-    if (node.hidden || (ids !== undefined && !ids.has(node.id))) {
+    if (
+      (node.hidden && options.includeHidden !== true) ||
+      (ids !== undefined && !ids.has(node.id))
+    ) {
       continue
     }
 

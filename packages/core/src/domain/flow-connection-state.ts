@@ -1,5 +1,6 @@
 import type { ConnectionPreviewSnapshot } from './flow-connection-preview.schema.ts'
 import { resolveEdgeHandles } from './flow-edge.schema.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type {
   FlowDocument,
   FlowHandle,
@@ -90,7 +91,7 @@ const connectionHandle = (
 
 const findEndpoint = (document: FlowDocument, nodeId: string, id: string) => {
   const node = document.nodes.find((item) => item.id === nodeId)
-  const handle = node?.handles?.find((item) => item.id === id)
+  const handle = flowNodeHandles(node).find((item) => item.id === id)
 
   return node === undefined || handle === undefined
     ? undefined

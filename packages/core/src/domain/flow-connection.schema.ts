@@ -5,6 +5,7 @@ import { resolveEdgeHandles } from './flow-edge.schema.ts'
 import { isHandleConnectable } from './flow-interactivity.ts'
 import type { FlowInteractivityInput } from './flow-interactivity.ts'
 import { EdgeIdSchema, HandleIdSchema, NodeIdSchema } from './flow-values.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type { FlowDocument, FlowEdge } from './flow.schema.ts'
 
 export const ActiveConnectionSchema = S.Struct({
@@ -82,13 +83,13 @@ export const normalizeFlowConnection = (
 
   const source = document.nodes.find((node) => node.id === connection.source)
 
-  const sourceHandle = source?.handles?.find(
+  const sourceHandle = flowNodeHandles(source).find(
     (handle) => handle.id === connection.sourceHandle
   )
 
   const target = document.nodes.find((node) => node.id === connection.target)
 
-  const targetHandle = target?.handles?.find(
+  const targetHandle = flowNodeHandles(target).find(
     (handle) => handle.id === connection.targetHandle
   )
 
@@ -121,7 +122,7 @@ export const findConnectionIssue = (
     return 'missing-target-node'
   }
 
-  const sourceHandle = source.handles?.find(
+  const sourceHandle = flowNodeHandles(source).find(
     (handle) => handle.id === connection.sourceHandle
   )
 
@@ -132,7 +133,7 @@ export const findConnectionIssue = (
     return 'missing-source-handle'
   }
 
-  const targetHandle = target.handles?.find(
+  const targetHandle = flowNodeHandles(target).find(
     (handle) => handle.id === connection.targetHandle
   )
 
@@ -217,7 +218,7 @@ export const handleGestureConnectable = (
 ): boolean => {
   const endpoint = (nodeId: string, handleId: string) => {
     const node = document.nodes.find((item) => item.id === nodeId)
-    const handle = node?.handles?.find((item) => item.id === handleId)
+    const handle = flowNodeHandles(node).find((item) => item.id === handleId)
 
     return node === undefined || handle === undefined
       ? undefined
@@ -247,9 +248,9 @@ export const connectionFromHandleGesture = (
   },
   mode: ConnectionMode = 'strict'
 ): Effect.Effect<FlowConnection, InvalidFlowConnection> => {
-  const fromHandle = document.nodes
-    .find((node) => node.id === gesture.fromNodeId)
-    ?.handles?.find((handle) => handle.id === gesture.fromHandleId)
+  const fromHandle = flowNodeHandles(
+    document.nodes.find((node) => node.id === gesture.fromNodeId)
+  ).find((handle) => handle.id === gesture.fromHandleId)
 
   const from = { nodeId: gesture.fromNodeId, handleId: gesture.fromHandleId }
   const to = { nodeId: gesture.toNodeId, handleId: gesture.toHandleId }

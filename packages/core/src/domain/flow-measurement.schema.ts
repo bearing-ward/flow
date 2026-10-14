@@ -9,6 +9,7 @@ import {
   FlowDocumentSchema,
   FlowHandleSchema,
   FlowNodeSchema,
+  flowNodeHandles,
   NodeIdSchema,
   XYPositionSchema,
 } from './flow.schema.ts'
@@ -160,7 +161,10 @@ export const applyNodeMeasurements = (
       continue
     }
 
-    const handleDeclarations = nodesById.get(measurement.nodeId)?.handles ?? []
+    const declaringNode = nodesById.get(measurement.nodeId)
+
+    const handleDeclarations =
+      declaringNode === undefined ? [] : flowNodeHandles(declaringNode)
 
     const nextMeasurement: MeasuredNode = {
       nodeId: measurement.nodeId,
@@ -270,7 +274,7 @@ export const getFlowMeasuredNodes = (
         : (measurement.handles ?? []).filter(
             (handle) =>
               handle.nodeId === node.id &&
-              node.handles?.some(
+              flowNodeHandles(node).some(
                 ({ id, kind, side }) =>
                   id === handle.handleId &&
                   declarations

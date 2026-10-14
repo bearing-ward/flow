@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 112b Vue click-connect regression",
+  "activeWork": "Plan 114 core model fields, styling and canvas options (merged with Plans 111-113, 112b scope)",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [

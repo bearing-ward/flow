@@ -7,6 +7,7 @@ import {
   XYPositionSchema,
 } from './flow-values.ts'
 import type { HandleId, XYPosition } from './flow-values.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type {
   FlowDocument,
   FlowEdge,
@@ -54,7 +55,7 @@ const selectHandle = (
   kind: FlowHandle['kind'],
   id: HandleId | undefined
 ): FlowHandle | undefined =>
-  node.handles?.find((handle) =>
+  flowNodeHandles(node).find((handle) =>
     id === undefined ? handle.kind === kind : handle.id === id
   )
 

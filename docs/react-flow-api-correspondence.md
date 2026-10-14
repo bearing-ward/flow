@@ -24,7 +24,7 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | defaultViewport | initial ViewportSchema | mount options | defaultViewport prop | createProgram arg | Host initialization. |
 | onViewportChange | ViewportChange proposal | `onViewport` callback + accepted-state subscription | `update:viewport` and local start/change/end emits | typed `viewportEvents` port | Movement observations are separate from accepted-state events; controlled proposals do not imply owner acknowledgement. See `research/traces/public-viewport-contract.md`. |
 | fitView | `fitViewportToNodes` | Promise operation | Promise operation | request/result client operation | All hosts support all/selected/id selection, measured dimensions, zoom limits, padding, terminal status, and optional animation; exact React option compatibility remains partial. |
-| fitViewOptions | operation options schema | padding, node selection, duration/easing | padding, node selection, duration/easing | padding, node selection, duration/easing | Hidden-node inclusion and upstream initialization prop are not mapped. |
+| fitViewOptions | `FlowFitViewOptionsSchema` (padding, includeHiddenNodes, minZoom, maxZoom, duration, easing, nodes as `{ id }[]` or all/selected) + `fitViewportToNodes` | padding, node selection, duration/easing | padding, node selection, duration/easing | padding, node selection, duration/easing | Plan 114: core computes hidden-node inclusion and per-call zoom limits; host option mapping pending (Plan 114 checklist). Initialization prop unmapped. |
 | minZoom | `ViewportLimitsSchema` | mount option | `viewportLimits` prop | program configuration | Host limits now feed operation math; defaults intentionally differ by host. |
 | maxZoom | `ViewportLimitsSchema` | mount option | `viewportLimits` prop | program configuration | Host limits now feed operation math; defaults intentionally differ by host. |
 | translateExtent / pan extent | `PanExtentSchema` + `constrainViewportToExtent` | preserve finite extent constraint on programmatic targets | intentional gap | intentional gap | Chosen policy preserves existing Vanilla behavior and adds no Vue/Foldkit option. Core math is unit-tested; Vanilla host enforcement through viewport operations, Vue/Foldkit behavior, and the upstream extent cell remain unverified. |
@@ -32,9 +32,9 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | height | no graph field | mount root CSS/layout | canvas layout | container layout | Host DOM/layout ownership; unassessed. |
 | nodeTypes | node.type only | nodeRenderers | renderer registration | view renderer registry | Host rendering; names differ. |
 | edgeTypes | edge.type only | edgeRenderers | renderer registration | view renderer registry | Host rendering; names differ. |
-| colorMode | gap | gap | gap | gap | Host theming; unassessed. |
+| colorMode | `FlowColorModeSchema`, `resolveFlowColorMode`, `flowThemeTokens`/`flowThemeStylesheet` | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core contract: hosts toggle a `dark` class and read `--flow-*` tokens with React light/dark defaults; `system` follows `prefers-color-scheme`. |
 | debug | gap | structured telemetry, not equivalent | gap | gap | Host observability; not equivalent. |
-| ariaLabelConfig | individual ARIA fields only | partial labels | partial labels | partial labels | Host accessibility/localization; global config gap. |
+| ariaLabelConfig | `FlowAriaLabelConfig` + `defaultFlowAriaLabelConfig`/`resolveFlowAriaLabelConfig` (React keys) | partial labels; wiring pending (Plan 114 checklist) | partial labels; wiring pending (Plan 114 checklist) | partial labels; wiring pending (Plan 114 checklist) | Plan 114 core contract with React English defaults; hosts must source controls, minimap, handle, node/edge descriptions and the live message from it. |
 | nodeOrigin | gap | gap | gap | gap | Core coordinate convention; no prop equivalence. |
 | nodeDragThreshold | validated raw client-distance threshold | mount option | nodeDragThreshold prop | interactionOptions.nodeDragThreshold | Shared default 1, finite nonnegative values, checked zero activation and strict crossing. Plan099 feature proof passes across hosts; full reference parity remains unverified. |
 | connectionDragThreshold | Schema and strict client-distance predicate | mount option | prop | graph initialization option | Default 1, zero activates on down, positive movement must strictly exceed the threshold. Dedicated feature proof passed across hosts; mounted reference comparison and packed consumer compatibility remain unverified. See Plan 098. |
@@ -42,20 +42,20 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | nodeClickDistance | gap | gap | gap | gap | Host interaction config; unassessed. |
 | proOptions | gap | gap | gap | gap | Product/licensing/attribution policy; unassessed. |
 | snapToGrid | SnapGrid helpers | host option | gap | gap | Core math exists; adapter API mapping open. |
-| snapGrid | SnapGridSchema | host option | gap | gap | Core value; adapter API mapping open. |
+| snapGrid | `SnapGridSchema` + `FlowSnapGridInputSchema` (record or React `[x, y]` tuple) | host option | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 shared option boundary; Vue/Foldkit option mapping pending. |
 | onlyRenderVisibleElements | visibility projection | renderOnlyVisible | renderOnlyVisible | view culling | Host render projection; accepted reads include culled items. |
-| translateExtent | PanExtentSchema | option | gap | gap | Core constraint helper; Vue/Foldkit option gap. |
-| nodeExtent | node extent helpers | option | gap | gap | Core constraint helper; Vue/Foldkit option gap. |
+| translateExtent | `PanExtentSchema`, `CoordinateExtentSchema`, `FlowExtentInputSchema` | option | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114: shared boundary accepts the React tuple or the Flow record; Vue/Foldkit option pending. |
+| nodeExtent | node extent helpers + `FlowExtentInputSchema` | option | option | wiring pending (Plan 114 checklist) | Plan 114: shared boundary; Foldkit option pending. |
 | preventScrolling | gap | gap | gap | gap | Host DOM event policy; unassessed. |
 | attributionPosition | gap | gap | gap | gap | Host UI; unassessed. |
-| elevateEdgesOnSelect | Edge.zIndex only | partial render order | gap | gap | Host render policy; not equivalent to schema field. |
-| defaultMarkerColor | marker kind only | renderer style partial | gap | gap | Host rendering; color prop gap. |
-| defaultEdgeOptions | schema-backed FlowEdge subset | schema-backed FlowEdge subset | schema-backed FlowEdge subset | Supported defaults fill missing fields on new edges; stored explicit fields override defaults at render. Vue updates when the prop changes. Tests do not establish overlap precedence on creation. ID/endpoints/handles/selection and React `style`/custom marker fields are excluded. |
+| elevateEdgesOnSelect | `computeFlowStacking` edge z (getElevatedEdgeZIndex) | partial render order | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core port; hosts must apply the returned edge z-index. |
+| defaultMarkerColor | `resolveFlowEdgeMarker`/`collectFlowEdgeMarkers` `defaultColor` | renderer style partial | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114: Flow defaults to the edge stroke, React to `#b1b1b7`; host prop pending. |
+| defaultEdgeOptions | `FlowDefaultEdgeOptionsSchema` incl. style, className, animated, label styling, marker configurations | schema-backed FlowEdge subset | schema-backed FlowEdge subset | schema-backed FlowEdge subset | Supported defaults fill missing fields on new edges; stored explicit fields override defaults at render. Plan 114 adds the React presentation fields to the schema; host rendering of them is pending. ID/endpoints/handles/selection stay excluded. |
 | reconnectRadius | ConnectionRadiusSchema | option | gap | gap | Core radius math; option mapping incomplete. |
 | edgesReconnectable | Edge.reconnectable | host option | gap | gap | Host interaction plus per-edge core field; config gap. |
 | autoPanOnNodeFocus | viewport pan on focus | host option | gap | app focus behavior | Host lifecycle; focus-triggered viewport behavior unverified. |
 | nodesDraggable | FlowNode.draggable | global host option | canvas/per-node | model/app interaction | Core flag + host policy; precedence needs tests. |
-| NodeResizer | node-bounds change | built-in resize controls on selected nodes | `nodesResizable` canvas prop, default `false`, shows resize controls on selected nodes | built-in resize controls on selected nodes | Vue: a canvas switch rather than a per-node component, with no resizer options. |
+| NodeResizer | node-bounds change + `FlowNodeResizeConstraintsSchema`, `startFlowNodeResize`/`stepFlowNodeResize`, `FlowResizeParamsWithDirection` | built-in resize controls on selected nodes | `nodesResizable` canvas prop, default `false`, shows resize controls on selected nodes | built-in resize controls on selected nodes | Plan 114 core port of XYResizer/getDimensionsAfterResize (min/max, keepAspectRatio, extent, child extent, resizeDirection); host options and callbacks pending. |
 | nodesConnectable | handles/connection model | `nodesConnectable` host option | per-node `connectable` policy; no canvas prop | allowed-target policy; no canvas prop | Vanilla canvas toggle exists; Vue/Foldkit canvas-wide mapping remains open. |
 | nodesFocusable | FlowNode.focusable | host option | canvas/node behavior | app interaction | Core flag + host accessibility. |
 | edgesFocusable | FlowEdge.focusable | partial DOM behavior | partial DOM behavior | partial DOM behavior | Core field exists; exact host behavior unverified. |
@@ -74,10 +74,10 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | zoomOnPinch | pinch session/zoom | option is declared; execution not established | no prop | no option | Native pinch and trusted multi-pointer behavior remain unverified for 060; Vue/Foldkit have no pinch option. |
 | zoomOnDoubleClick | viewport zoom command | host option | canvas option | gap | Host lifecycle; Vue gap. |
 | selectNodesOnDrag | node selection change | option; enabled unless false | prop; default false | no option | Vue's default false preserves existing shared conformance semantics; explicit Vue true is tested. These defaults are intentionally host-specific, not parity. Foldkit exposes no option. |
-| elevateNodesOnSelect | node.zIndex | render behavior | gap | app rendering | Host render policy; order equivalence unverified. |
+| elevateNodesOnSelect | `computeFlowStacking` node z (default true) | render behavior | wiring pending (Plan 114 checklist) | app rendering | Plan 114 core port of `calculateZ`; hosts must apply the returned node z-index. |
 | connectOnClick | click-connection session | configurable mount option | Boolean prop | program option | Each adapter can toggle click connection; callback event names/payloads differ. |
 | connectionMode | handle kind/validation | mount option | prop, default `strict` | program option, default `strict` | Strict/loose production cases retain the historical fixture separately; current named target-target gestures use initiating-target direction. Physical-ID rendering is an intentional native Flow rendering difference from pinned renderer008. |
-| zIndexMode | node/edge zIndex | host z-order | gap | gap | Host rendering policy; unassessed. |
+| zIndexMode | `FlowZIndexModeSchema` + `computeFlowStacking` (basic/auto/manual) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core port of adoptUserNodes/updateChildNode/getElevatedEdgeZIndex; unit-tested against hand-derived React values. |
 | connectionLineStyle | gap | renderer style option | gap | gap | Host rendering; unassessed. |
 | connectionLineType | FlowEdgePathSchema | connection option | partial | partial | Host renderer; path semantics need validation. |
 | connectionRadius | ConnectionRadiusSchema | mount option, default 20 CSS px | prop, default 20 CSS px | program option, default 20 CSS px | All Flow hosts keep the radius fixed in screen-space CSS pixels at every zoom; Vue and Foldkit convert into graph coordinates. Pinned xyflow uses renderer/flow units, so its effective screen radius scales with zoom. Near/far and zoom cases are production-tested; Vanilla/Vue direct-hit priority is tested, while Foldkit does not yet establish oversized direct-hit priority. Exact browser boundary coverage remains open. |
@@ -233,8 +233,8 @@ Source: [current Node type](https://reactflow.dev/api-reference/types/node). Eve
 | id | NodeIdSchema | document | active document | Model document / selectNode | Core identity; missing lookup returns undefined. |
 | position | XYPositionSchema, parent-relative | document | active document | Model document / selectNode | Core graph value; render absolute coordinates differ. |
 | data | optional JsonObject | document | active document | Model document / selectNode | Core JSON; arbitrary React data type differs. |
-| sourcePosition | gap | gap | gap | gap | Core handle-layout follow-up. |
-| targetPosition | gap | gap | gap | gap | Core handle-layout follow-up. |
+| sourcePosition | optional `FlowHandleSideSchema`; `flowNodeHandles` default source handle (bottom) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114: used when a node declares no `handles`; core edge resolution honours it. |
+| targetPosition | optional `FlowHandleSideSchema`; `flowNodeHandles` default target handle (top) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114: used when a node declares no `handles`. |
 | hidden | optional boolean | document/render filter | document/render filter | document/view filter; selectNodes retains it | Core semantic; read even when hidden. |
 | selected | optional boolean | document/change | document/change | document/change | Core semantic selection. |
 | dragging | gap persisted; session state | preview/session | transform/session | pointer session | Host transient lifecycle; excluded snapshot. |
@@ -242,7 +242,7 @@ Source: [current Node type](https://reactflow.dev/api-reference/types/node). Eve
 | selectable | optional boolean | field + policy | field + policy | field + policy | Core field and host interaction. |
 | connectable | gap node field | host handles | host handles | host handles | Host interaction; no same node field. |
 | deletable | gap | gap | gap | gap | Core schema/delete policy follow-up. |
-| dragHandle | gap | host selector option | gap | gap | Host DOM interaction. |
+| dragHandle | optional selector string | host selector option | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field; hosts must start drags only inside a matching element. |
 | width | optional size.width | host measurement | host measurement | view geometry | Core saved size differs from measured field. |
 | height | optional size.height | host measurement | host measurement | view geometry | Core saved size differs from measured field. |
 | initialWidth | gap | gap | gap | gap | Initialization sizing follow-up. |
@@ -250,14 +250,14 @@ Source: [current Node type](https://reactflow.dev/api-reference/types/node). Eve
 | parentId | optional NodeIdSchema | document | document | document / selectNode | Core topology; local positions retained. |
 | zIndex | optional finite | document/render order | document/render order | document/view order | Core value + host ordering. |
 | extent | optional parent | document/geometry | document/geometry | document/geometry | Core only supports parent extent. |
-| expandParent | gap | gap | gap | gap | Parent expansion unassessed. |
+| expandParent | optional boolean + `calculateFlowExpandParent` | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core port of handleExpandParent; the resize session also honours it. |
 | ariaLabel | optional string | document/DOM | document/DOM | document/DOM | Core label; host DOM serialization. |
 | origin | gap | gap | gap | gap | Coordinate convention gap. |
 | handles | FlowHandleSchema[] | document/renderer | document/renderer | document/view | Related concept; shape differs. |
-| measured | gap | host measurement | host measurement | view measurement | Host ephemeral state; excluded snapshot. |
+| measured | optional `NodeMeasuredSchema` read model; graph dimension fallback after DOM measurements | host measurement | host measurement | view measurement | Plan 114: transient, never persisted; hosts populate it on read. |
 | type | optional string | renderer registry | renderer registry | view registry | Core ID, host renderer. |
-| style | gap | renderer config | component props | view config | Host presentation; no core field. |
-| className | gap | renderer config | component props | view config | Host presentation; no core field. |
+| style | optional `FlowStyleSchema` + `flowStyleDeclarations` | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 serializable style record (React DOM px rules); saved in v3 sessions. |
+| className | optional string + `flowClassNames` | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field; saved in v3 sessions. |
 | resizing | gap persisted; session state | resize session | resize/session | gap | Transient lifecycle; excluded snapshot. |
 | focusable | optional boolean | document/DOM | document/DOM | document/DOM | Core capability + host accessibility. |
 | ariaRole | gap | host DOM default | host DOM default | host DOM default | Host accessibility follow-up. |
@@ -275,25 +275,25 @@ Source: [current Edge type](https://reactflow.dev/api-reference/types/edge). Cor
 | target | NodeIdSchema | document | document | document | Core topology. |
 | sourceHandle | optional HandleIdSchema | document/renderer | document/renderer | document/view | Core endpoint; host rendered handle. |
 | targetHandle | optional HandleIdSchema | document/renderer | document/renderer | document/view | Core endpoint; host rendered handle. |
-| animated | gap | gap | gap | gap | Host presentation unassessed. |
+| animated | optional boolean | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field. |
 | hidden | optional boolean | document/render filter | document/render filter | document/view filter | Core flag; accepted read retains it. |
 | deletable | optional boolean | document/delete policy | document/delete policy | document/delete policy | Core semantic capability; delete gesture host-owned. |
 | selectable | optional boolean | document/change | document/change | document/change | Core semantic capability. |
 | data | gap | gap | gap | gap | Schema evolution/version decision. |
 | selected | optional boolean | document/change | document/change | document/change | Core semantic state. |
-| markerStart | marker enum | document/renderer | document/renderer | document/view | Core kind; color/style differ. |
-| markerEnd | marker enum | document/renderer | document/renderer | document/view | Core kind; color/style differ. |
+| markerStart | `FlowEdgeMarkerOptionSchema` (kind or `{ type, color, width, height, strokeWidth, markerUnits, orient }`) + `resolveFlowEdgeMarker` | kind rendered; config wiring pending (Plan 114 checklist) | kind rendered; config wiring pending (Plan 114 checklist) | kind rendered; config wiring pending (Plan 114 checklist) | Plan 114: hosts render the kind of a configured marker via `flowEdgeMarkerType` until wired. Arbitrary marker-id strings remain unsupported. |
+| markerEnd | `FlowEdgeMarkerOptionSchema` + `resolveFlowEdgeMarker` | kind rendered; config wiring pending (Plan 114 checklist) | kind rendered; config wiring pending (Plan 114 checklist) | kind rendered; config wiring pending (Plan 114 checklist) | As markerStart. |
 | zIndex | optional finite | document/render order | document/render order | document/view order | Core value plus host ordering. |
 | ariaLabel | optional string | document/DOM | document/DOM | document/DOM | Core label + host serialization. |
 | interactionWidth | optional positive finite | document/hit path | document/hit path | document/hit path | Field correspondence; browser behavior unverified. |
 | label | optional string | SVG renderer | SVG renderer | view renderer | Flow string vs ReactNode. |
-| labelStyle | gap | renderer style partial | gap | gap | Host rendering style. |
-| labelShowBg | gap | gap | gap | gap | Host rendering feature. |
-| labelBgStyle | gap | gap | gap | gap | Host rendering style. |
-| labelBgPadding | gap | gap | gap | gap | Host label layout. |
-| labelBgBorderRadius | gap | gap | gap | gap | Host rendering style. |
-| style | gap | renderer config partial | component props partial | view config | Host presentation; no core field. |
-| className | gap | renderer config partial | component props partial | view config | Host presentation; no core field. |
+| labelStyle | optional `FlowStyleSchema` | renderer style partial | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field. |
+| labelShowBg | optional boolean | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field; React default true. |
+| labelBgStyle | optional `FlowStyleSchema` | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field. |
+| labelBgPadding | optional `[x, y]` tuple | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field; React default [2, 4]. |
+| labelBgBorderRadius | optional nonnegative finite | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | wiring pending (Plan 114 checklist) | Plan 114 core field; React default 2. |
+| style | optional `FlowStyleSchema` | renderer config partial | component props partial | view config | Plan 114 core field; hosts must apply it to the visible path. |
+| className | optional string | renderer config partial | component props partial | view config | Plan 114 core field; hosts must apply it to the edge group. |
 | reconnectable | optional bool/endpoint literal | document/interaction | document/interaction | document/interaction | Core field; gesture semantics unverified. |
 | focusable | optional boolean | partial DOM | partial DOM | partial DOM | Core field; accessibility behavior unverified. |
 | ariaRole | gap | host DOM | host DOM | host DOM | Host accessibility follow-up. |
