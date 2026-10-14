@@ -46,9 +46,7 @@
         "missing": "Unmapped props: key codes, autoPan*, onlyRenderVisibleElements (Foldkit), fitView on init",
         "evidence": "plans/117-foldkit-final-wiring.md:30"
       },
-      "updatedBy": [
-        "Plan 118"
-      ]
+      "updatedBy": ["Plan 118"]
     },
     {
       "section": "api-reference overview",
@@ -61,9 +59,7 @@
       "missing": "Vue provider so useFlow works outside FlowCanvas",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": [
-        "Plan 116"
-      ],
+      "updatedBy": ["Plan 116"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -132,9 +128,7 @@
       "missing": "showInteractive lock toggle and onInteractiveChange",
       "effort": "S",
       "theme": "ui-component",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -152,9 +146,7 @@
       "missing": "Dedicated HTML edge-label layer; only viewport portal today",
       "effort": "M",
       "theme": "edge-props",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -189,9 +181,7 @@
       "missing": "Vanilla edge toolbar component (only anchors/core helpers)",
       "effort": "S",
       "theme": "ui-component",
-      "updatedBy": [
-        "Plan 106"
-      ],
+      "updatedBy": ["Plan 106"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -209,9 +199,7 @@
       "missing": "isConnectable/Start/End, isValidConnection, onConnect handle props",
       "effort": "M",
       "theme": "connection",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -229,10 +217,7 @@
       "missing": "nodeColor/stroke/mask, pannable/zoomable, position, custom node options",
       "effort": "M",
       "theme": "minimap",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -250,10 +235,7 @@
       "missing": "Public single resize control with position, variant, constraints",
       "effort": "M",
       "theme": "resize",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit control renders empty div; no custom children/content like React",
@@ -271,10 +253,7 @@
       "missing": "Configurable resizer: min/max, aspect ratio, visibility, resize callbacks",
       "effort": "M",
       "theme": "resize",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -292,9 +271,7 @@
       "missing": "Vanilla node toolbar component (only anchors/core helpers)",
       "effort": "S",
       "theme": "ui-component",
-      "updatedBy": [
-        "Plan 106"
-      ],
+      "updatedBy": ["Plan 106"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -346,9 +323,7 @@
       "missing": "Foldkit connection-preview subscription beyond snapshot reads",
       "effort": "S",
       "theme": "connection",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -383,9 +358,7 @@
       "missing": "onEdgesChange change-array controlled flow plus setter convenience",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -437,9 +410,7 @@
       "missing": "Vue ref-returning useKeyPress composable",
       "effort": "S",
       "theme": "misc",
-      "updatedBy": [
-        "Plan 116"
-      ],
+      "updatedBy": ["Plan 116"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -508,9 +479,7 @@
       "missing": "Selective nodes-data observation in Vanilla and Foldkit",
       "effort": "S",
       "theme": "store-hooks",
-      "updatedBy": [
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -545,9 +514,7 @@
       "missing": "onNodesChange change-array controlled flow plus setter convenience",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -599,10 +566,7 @@
       "missing": "getIntersectingNodes, isNodeIntersecting, toObject, getNodesBounds instance methods",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit instance lacks getNodeConnections/getHandleConnections/viewportInitialized (via snapshot port)",
@@ -620,10 +584,7 @@
       "missing": "Selector-plus-equality subscription over snapshot",
       "effort": "M",
       "theme": "store-hooks",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -795,9 +756,7 @@
       "missing": "Direct nodes-array getNodesBounds; graphBounds needs FlowGraphView",
       "effort": "S",
       "theme": "utils",
-      "updatedBy": [
-        "Plan 110"
-      ],
+      "updatedBy": ["Plan 110"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -968,10 +927,7 @@
       "missing": "Global localized aria-label config object for canvas/controls/live region",
       "effort": "M",
       "theme": "a11y",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vue/Foldkit: ariaLiveMessage and keyboardDisabled unused; no node move announcements",
@@ -1006,10 +962,7 @@
       "missing": "Add light/dark/system color mode option and theming",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1044,9 +997,7 @@
       "missing": "Export Foldkit connection preview renderer type",
       "effort": "S",
       "theme": "connection-line",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1064,9 +1015,7 @@
       "missing": "Add fromNode/fromHandle/fromPosition/toPosition/lineType to preview state",
       "effort": "M",
       "theme": "connection-line",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1084,9 +1033,7 @@
       "missing": "Add configurable preview path type option",
       "effort": "S",
       "theme": "connection-line",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1121,9 +1068,7 @@
       "missing": "Add inProgress/fromNode/fromHandle/toHandle fields; Foldkit reactive accessor",
       "effort": "M",
       "theme": "connection",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1158,10 +1103,7 @@
       "missing": "Style/className/animated/marker-config fields excluded",
       "effort": "M",
       "theme": "edge-model",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1196,10 +1138,7 @@
       "missing": "Add style/className/animated/label styling/marker config fields",
       "effort": "M",
       "theme": "edge-model",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit ignores edge.reconnectable; ariaRole unrendered in all hosts",
@@ -1234,10 +1173,7 @@
       "missing": "Edge schema markers accept literal only, not config object",
       "effort": "S",
       "theme": "edge-model",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1255,9 +1191,7 @@
       "missing": "Vue/Foldkit edge events lack browser event payload",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1275,9 +1209,7 @@
       "missing": "Add sourceX/Y,targetX/Y,positions,labelX/Y,selected,markers to renderer props",
       "effort": "M",
       "theme": "edge-props",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1295,9 +1227,7 @@
       "missing": "Export Foldkit renderer registry/edge renderer types",
       "effort": "S",
       "theme": "edge-props",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1315,10 +1245,7 @@
       "missing": "Add minZoom/maxZoom/includeHiddenNodes/explicit node list",
       "effort": "S",
       "theme": "viewport",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit has no mount-time fitView option; call fitView after init",
@@ -1387,9 +1314,7 @@
       "missing": "Foldkit validator callback beyond allowedTargets list",
       "effort": "S",
       "theme": "connection",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1441,10 +1366,7 @@
       "missing": "Custom minimap node renderer props in all hosts",
       "effort": "M",
       "theme": "minimap",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1462,10 +1384,7 @@
       "missing": "Add style/className/source/targetPosition/dragHandle/measured/expandParent",
       "effort": "M",
       "theme": "node-model",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vue/Foldkit do not render node ariaLabel, ariaDescription, ariaRole",
@@ -1534,9 +1453,7 @@
       "missing": "Vue/Foldkit node events lack browser event payload",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1571,9 +1488,7 @@
       "missing": "Add selected/dragging/positionAbsolute/isConnectable/zIndex/dimensions props",
       "effort": "M",
       "theme": "node-props",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1591,9 +1506,7 @@
       "missing": "Export Foldkit node renderer registry types",
       "effort": "S",
       "theme": "node-props",
-      "updatedBy": [
-        "Plan 105"
-      ],
+      "updatedBy": ["Plan 105"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1696,9 +1609,7 @@
       "missing": "Emit EdgeChange[] deltas instead of FlowChange stream",
       "effort": "M",
       "theme": "changes",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1733,9 +1644,7 @@
       "missing": "Vue error emit limited to connection-validator boundary",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1804,9 +1713,7 @@
       "missing": "Emit NodeChange[] deltas instead of FlowChange stream",
       "effort": "M",
       "theme": "changes",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1841,9 +1748,7 @@
       "missing": "Vanilla onReconnect lacks old edge plus new connection",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1861,9 +1766,7 @@
       "missing": "Foldkit selection-change event",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1898,10 +1801,7 @@
       "missing": "Add center-left/center-right placements",
       "effort": "S",
       "theme": "panel",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -1954,10 +1854,7 @@
       "missing": "Add getIntersectingNodes/toObject/getNodesBounds; Foldkit unified instance",
       "effort": "L",
       "theme": "instance-api",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit instance lacks getHandleConnections; compose from core getHandleConnections",
@@ -2009,10 +1906,7 @@
       "missing": "Host NodeResizer callbacks exposing resize params",
       "effort": "M",
       "theme": "node-resizer",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2030,11 +1924,7 @@
       "missing": "Selection drag payload lacks dragged nodes",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108",
-        "Plan 112",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 108", "Plan 112", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2069,9 +1959,7 @@
       "missing": "Vue/Foldkit snapGrid option",
       "effort": "S",
       "theme": "interaction-options",
-      "updatedBy": [
-        "Plan 116"
-      ],
+      "updatedBy": ["Plan 116"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2123,10 +2011,7 @@
       "missing": "Add auto/basic/manual stacking mode",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2144,11 +2029,7 @@
       "missing": "No gallery route combining all features per host",
       "effort": "M",
       "theme": "gallery",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 112",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2166,9 +2047,7 @@
       "missing": "onConnectEnd lacks drop client position",
       "effort": "S",
       "theme": "connection-events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2186,9 +2065,7 @@
       "missing": "No per-handle connectable or connection limit",
       "effort": "M",
       "theme": "handles",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2206,9 +2083,7 @@
       "missing": "Foldkit node views cannot dispatch app data edits",
       "effort": "S",
       "theme": "custom-nodes",
-      "updatedBy": [
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2260,9 +2135,7 @@
       "missing": "Whole-node handles plus floating edge attachment",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": [
-        "Plan 107"
-      ],
+      "updatedBy": ["Plan 107"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2280,10 +2153,7 @@
       "missing": "No getIntersectingNodes/isNodeIntersecting helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": [
-        "Plan 110",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 110", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2301,10 +2171,7 @@
       "missing": "No resizer options: aspect ratio, max size, custom controls",
       "effort": "M",
       "theme": "node-resizer",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2339,10 +2206,7 @@
       "missing": "Foldkit lacks node-bounds query during drag",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": [
-        "Plan 110",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 110", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2411,10 +2275,7 @@
       "missing": "No node style/className field for default nodes",
       "effort": "S",
       "theme": "styling",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Hidden toggle untested in Foldkit despite comment",
@@ -2505,9 +2366,7 @@
         "missing": "No recipe/test deleting an edge when reconnect drops on pane",
         "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:690"
       },
-      "updatedBy": [
-        "Plan 118"
-      ]
+      "updatedBy": ["Plan 118"]
     },
     {
       "section": "examples edges",
@@ -2537,10 +2396,7 @@
       "missing": "No path intersection helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": [
-        "Plan 110",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 110", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2609,11 +2465,7 @@
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": [
-        "Plan 107",
-        "Plan 112",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2631,9 +2483,7 @@
       "missing": "Only arrow/arrowclosed; no custom SVG markers",
       "effort": "M",
       "theme": "custom-edges",
-      "updatedBy": [
-        "Plan 107"
-      ],
+      "updatedBy": ["Plan 107"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2651,9 +2501,7 @@
       "missing": "Preview renderer is single-source only",
       "effort": "M",
       "theme": "custom-edges",
-      "updatedBy": [
-        "Plan 107"
-      ],
+      "updatedBy": ["Plan 107"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2688,11 +2536,7 @@
       "missing": "Foldkit edge renderer lacks node bounds",
       "effort": "M",
       "theme": "floating-edges",
-      "updatedBy": [
-        "Plan 107",
-        "Plan 112",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 107", "Plan 112", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2710,9 +2554,7 @@
       "missing": "onConnectEnd lacks drop position for temp edge",
       "effort": "M",
       "theme": "connection-events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2747,10 +2589,7 @@
       "missing": "Foldkit node views cannot write node data",
       "effort": "M",
       "theme": "computing-flows",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 109", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2785,9 +2624,7 @@
       "missing": "Foldkit lacks node/pane context-menu events",
       "effort": "S",
       "theme": "events",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vanilla/Vue test callbacks only, no menu recipe",
@@ -2810,9 +2647,7 @@
         "missing": "Vanilla/Vue zoom-dependent node recipe and test",
         "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:409"
       },
-      "updatedBy": [
-        "Plan 118"
-      ]
+      "updatedBy": ["Plan 118"]
     },
     {
       "section": "examples interaction",
@@ -2830,9 +2665,7 @@
         "missing": "Sidebar HTML5 drop-to-create recipe and e2e per host",
         "evidence": "no dataTransfer/drop test in apps/*/e2e"
       },
-      "updatedBy": [
-        "Plan 118"
-      ]
+      "updatedBy": ["Plan 118"]
     },
     {
       "section": "examples interaction",
@@ -2845,10 +2678,7 @@
       "missing": "Foldkit lacks isValidConnection callback",
       "effort": "S",
       "theme": "validation",
-      "updatedBy": [
-        "Plan 108",
-        "Plan 118"
-      ],
+      "updatedBy": ["Plan 108", "Plan 118"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vanilla/Vue getOutgoers+isValidConnection cycle test",
@@ -2900,9 +2730,7 @@
       "missing": "Foldkit only static allowedConnectionTargets",
       "effort": "S",
       "theme": "validation",
-      "updatedBy": [
-        "Plan 108"
-      ],
+      "updatedBy": ["Plan 108"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -2988,11 +2816,7 @@
       "missing": "No group-selection reparent helper",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 112",
-        "Plan 113"
-      ],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3010,9 +2834,7 @@
       "missing": "Drop-to-reparent needs intersection helper",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3047,9 +2869,7 @@
       "missing": "dagre integration; Foldkit measured-size access",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3067,9 +2887,7 @@
       "missing": "elkjs integration; Foldkit measured-size access",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3087,10 +2905,7 @@
       "missing": "Measured handle positions outside Vanilla",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 112"
-      ],
+      "updatedBy": ["Plan 109", "Plan 112"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3142,11 +2957,7 @@
       "missing": "Layout engine integration on measure/change",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 112",
-        "Plan 111"
-      ],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3164,9 +2975,7 @@
       "missing": "d3-force continuous position updates",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3184,11 +2993,7 @@
       "missing": "Layout engine integration with add-node placeholders",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 112",
-        "Plan 111"
-      ],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3206,9 +3011,7 @@
       "missing": "No node overlap/collision resolution helper",
       "effort": "M",
       "theme": "intersections",
-      "updatedBy": [
-        "Plan 110"
-      ],
+      "updatedBy": ["Plan 110"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3226,10 +3029,7 @@
       "missing": "No CSS theme variables or node style/className",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3247,10 +3047,7 @@
       "missing": "No colorMode option or dark theme variables",
       "effort": "M",
       "theme": "styling",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit controls/minimap dark tokens untested",
@@ -3290,9 +3087,7 @@
         "missing": "Gradient custom node/edge recipe and test per host",
         "evidence": "no turbo recipe in apps/*/ui-recipes"
       },
-      "updatedBy": [
-        "Plan 118"
-      ]
+      "updatedBy": ["Plan 118"]
     },
     {
       "section": "examples whiteboard",
@@ -3305,10 +3100,7 @@
       "missing": "No freeform pane tool overlay/hit-test recipe",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": [
-        "Plan 109",
-        "Plan 110"
-      ],
+      "updatedBy": ["Plan 109", "Plan 110"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3326,9 +3118,7 @@
       "missing": "No freeform lasso selection",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3346,9 +3136,7 @@
       "missing": "Foldkit lacks pane pointer-down/up events",
       "effort": "S",
       "theme": "whiteboard",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3366,9 +3154,7 @@
       "missing": "No freehand stroke capture tool",
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": [
-        "Plan 109"
-      ],
+      "updatedBy": ["Plan 109"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3391,9 +3177,7 @@
         "missing": "html-to-image export recipe and e2e; only getViewportForBounds exists",
         "evidence": "packages/core/src/public.ts:216"
       },
-      "updatedBy": [
-        "Plan 118"
-      ]
+      "updatedBy": ["Plan 118"]
     },
     {
       "section": "examples misc",
@@ -3559,10 +3343,7 @@
       "missing": "No labeled group/collapse component or recipe in any host",
       "effort": "M",
       "theme": "ui-node",
-      "updatedBy": [
-        "Plan 116",
-        "Plan 115"
-      ],
+      "updatedBy": ["Plan 116", "Plan 115"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vanilla is recipe-only (no exported helper)",
@@ -3631,9 +3412,7 @@
       "missing": "BaseEdge/EdgeText exist; no button-edge recipe or tests",
       "effort": "S",
       "theme": "ui-edge",
-      "updatedBy": [
-        "Plan 107"
-      ],
+      "updatedBy": ["Plan 107"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3651,9 +3430,7 @@
       "missing": "No endpoint-data edge recipe; BaseEdge primitives only",
       "effort": "M",
       "theme": "ui-edge",
-      "updatedBy": [
-        "Plan 107"
-      ],
+      "updatedBy": ["Plan 107"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3671,9 +3448,7 @@
       "missing": "No animated edge recipe with reduced-motion handling",
       "effort": "S",
       "theme": "ui-edge",
-      "updatedBy": [
-        "Plan 107"
-      ],
+      "updatedBy": ["Plan 107"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3691,9 +3466,7 @@
       "missing": "No search control, result navigation, viewport focus",
       "effort": "M",
       "theme": "ui-controls",
-      "updatedBy": [
-        "Plan 106"
-      ],
+      "updatedBy": ["Plan 106"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3711,9 +3484,7 @@
       "missing": "No range zoom control bound to viewport",
       "effort": "S",
       "theme": "ui-controls",
-      "updatedBy": [
-        "Plan 106"
-      ],
+      "updatedBy": ["Plan 106"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3731,9 +3502,7 @@
       "missing": "No zoom preset/fit select control",
       "effort": "S",
       "theme": "ui-controls",
-      "updatedBy": [
-        "Plan 106"
-      ],
+      "updatedBy": ["Plan 106"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
@@ -3751,9 +3520,7 @@
       "missing": "No snapshot inspector/change logger/viewport panel",
       "effort": "M",
       "theme": "devtools",
-      "updatedBy": [
-        "Plan 106"
-      ],
+      "updatedBy": ["Plan 106"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
