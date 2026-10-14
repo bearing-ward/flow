@@ -35,6 +35,7 @@ import {
   nextConnectionEdge,
   panViewport,
   prepareFlowEdit,
+  prepareFlowDeleteCandidate,
   resolveEdgeHandles,
   simpleBezierEdgePath,
   smoothStepEdgePath,
@@ -97,6 +98,7 @@ import {
 } from '@flow/core'
 import type {
   CoordinateExtent,
+  FlowStyle,
   FlowAriaLabelConfigInput,
   FlowColorMode,
   FlowZIndexMode,
@@ -151,7 +153,9 @@ import {
   h,
   inject,
   onBeforeUnmount,
+  onBeforeUpdate,
   onMounted,
+  onUpdated,
   provide,
   shallowReactive,
   shallowRef,
@@ -191,7 +195,7 @@ import {
 } from './edge-label-renderer.ts'
 import { createFlowInteractivityState } from './interactivity.ts'
 import { observeKeyPress } from './key-press-observer.ts'
-import type { FlowKeyPressOptions } from './key-press-observer.ts'
+import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 import { FlowMiniMapContextKey } from './minimap.ts'
 import {
   dragGroupMembers,
@@ -619,6 +623,42 @@ const insideDragHandle = (
   }
 }
 
+/** The document a change applies to, as both owner modes compute it. */
+const applyPublishedChange = (
+  base: FlowDocument,
+  change: FlowChange
+): FlowDocument | undefined => {
+  switch (change.kind) {
+    case 'node-position': {
+      return applyNodePositionChange(base, change)
+    }
+
+    case 'node-positions': {
+      return applyNodePositionsChange(base, change)
+    }
+
+    case 'node-bounds': {
+      return applyNodeBoundsChange(base, change)
+    }
+
+    case 'selection-set': {
+      return applySelectionSetChange(base, change)
+    }
+
+    case 'edge-add': {
+      return { ...base, edges: [...base.edges, change.edge] }
+    }
+
+    case 'edge-reconnect': {
+      return applyEdgeReconnectChange(base, change)
+    }
+
+    default: {
+      return undefined
+    }
+  }
+}
+
 // SAFETY: DefaultNode receives FlowNode values created from the decoded graph.
 const DefaultNode = defineComponent({
   name: 'FlowDefaultNode',
@@ -856,6 +896,38 @@ export const FlowCanvas = defineComponent({
     edgesFocusable: { type: Boolean, default: true },
     /** React `edgesReconnectable`; an edge's own `reconnectable` wins. */
     edgesReconnectable: { type: Boolean, default: true },
+    /**
+     * React `deleteKeyCode`: deletes the selected, deletable elements while
+     * focus is inside the canvas. `null` disables it.
+     */
+    deleteKeyCode: {
+      type: [String, Array, null] as PropType<FlowKeyCode>,
+      default: 'Backspace',
+    },
+    /** React `selectionKeyCode`: held to draw a selection box. `null` disables it. */
+    selectionKeyCode: {
+      type: [String, null] as PropType<string | null>,
+      default: 'Shift',
+    },
+    /**
+     * React `multiSelectionKeyCode`: held to toggle a clicked element in the
+     * selection. Defaults to Meta or Control; `null` disables it.
+     */
+    multiSelectionKeyCode: {
+      type: [String, null] as PropType<string | null>,
+      default: undefined,
+    },
+    /** React `zoomOnPinch`: trackpad pinch (Control + wheel) zooms. */
+    zoomOnPinch: { type: Boolean, default: true },
+    /** React `preventScrolling`: wheel input over the pane never scrolls the page. */
+    preventScrolling: { type: Boolean, default: true },
+    /** React `autoPanSpeed`: auto-pan step in pixels near the pane edge. */
+    autoPanSpeed: { type: Number, default: 15 },
+    /** React `connectionLineStyle` for the built-in connection line. */
+    connectionLineStyle: {
+      type: Object as PropType<FlowStyle>,
+      default: undefined,
+    },
     /** Let nodes be dragged; a node's own `draggable` wins. */
     nodesDraggable: { type: Boolean, default: true },
     /** Let handles start and finish connections; node and handle flags win. */
@@ -2250,6 +2322,50 @@ export const FlowCanvas = defineComponent({
       }
     )
 
+    /**
+     * An open multi-change commit: each change applies to the previous
+     * one's result, and the owner sees one proposal or one accepted state.
+     */
+    let publishBatch:
+      | { document: FlowDocument; nodes: boolean; edges: boolean }
+      | undefined
+
+    /** Hand one change's result to the document owner. */
+    const commitPublished = (
+      next: FlowDocument | undefined,
+      change: FlowChange
+    ): void => {
+      if (next === undefined) {
+        return
+      }
+
+      if (hasSplitModel) {
+        if (
+          change.kind === 'node-position' ||
+          change.kind === 'node-positions' ||
+          change.kind === 'node-bounds'
+        ) {
+          emit('update:nodes', next.nodes)
+        }
+
+        if (change.kind === 'edge-add') {
+          emit('update:edges', next.edges)
+        }
+
+        return
+      }
+
+      if (props.documentMode === 'controlled') {
+        emit('update:document', next)
+
+        return
+      }
+
+      withStateCause('semantic-change', () => {
+        ownedDocument.value = next
+      })
+    }
+
     // eslint-disable-next-line complexity
     const publish = (change: FlowChange): void => {
       if (stateDisposed) {
@@ -2265,8 +2381,12 @@ export const FlowCanvas = defineComponent({
         }
       )
 
+      // Inside a batch, a change sees the earlier changes' result, not the
+      // owner's document, which a controlled owner has not updated yet.
+      const base = publishBatch?.document ?? activeDocument.value
+
       if (change.kind === 'selection-set') {
-        const selected = applySelectionSetChange(activeDocument.value, change)
+        const selected = applySelectionSetChange(base, change)
 
         if (selected !== undefined) {
           emit('selectionChange', {
@@ -2284,96 +2404,78 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const documentBefore = activeDocument.value
-
       emit('change', change)
-      emitElementChanges(documentBefore, change)
+      emitElementChanges(base, change)
 
       if (stateDisposed) {
         return
       }
 
-      if (hasSplitModel || props.documentMode === 'controlled') {
-        let next: FlowDocument | undefined
+      const next = applyPublishedChange(base, change)
+      const batch = publishBatch
 
-        if (change.kind === 'node-position') {
-          next = applyNodePositionChange(activeDocument.value, change)
-        } else if (change.kind === 'node-positions') {
-          next = applyNodePositionsChange(activeDocument.value, change)
-        } else if (change.kind === 'node-bounds') {
-          next = applyNodeBoundsChange(activeDocument.value, change)
-        } else if (change.kind === 'selection-set') {
-          next = applySelectionSetChange(activeDocument.value, change)
-        } else if (change.kind === 'edge-add') {
-          next = {
-            ...activeDocument.value,
-            edges: [...activeDocument.value.edges, change.edge],
-          }
-        } else if (change.kind === 'edge-reconnect') {
-          next = applyEdgeReconnectChange(activeDocument.value, change)
-        }
+      if (batch === undefined) {
+        commitPublished(next, change)
 
-        if (next !== undefined && hasSplitModel) {
-          if (
-            change.kind === 'node-position' ||
-            change.kind === 'node-positions' ||
-            change.kind === 'node-bounds'
-          ) {
-            emit('update:nodes', next.nodes)
-          }
+        return
+      }
 
-          if (change.kind === 'edge-add') {
-            emit('update:edges', next.edges)
-          }
-        } else if (next !== undefined) {
-          emit('update:document', next)
+      if (next !== undefined) {
+        batch.document = next
+        batch.nodes ||= change.kind !== 'edge-add'
+        batch.edges ||=
+          change.kind === 'edge-add' || change.kind === 'edge-reconnect'
+      }
+    }
+
+    /**
+     * Publish several changes as one commit: every `change` event fires,
+     * but the owner receives one composed proposal (controlled and split
+     * models) or one accepted state (uncontrolled).
+     */
+    const publishAll = (changes: readonly FlowChange[]): void => {
+      if (changes.length <= 1 || publishBatch !== undefined) {
+        for (const change of changes) {
+          publish(change)
         }
 
         return
       }
 
-      if (change.kind === 'node-position' || change.kind === 'node-positions') {
-        const updated =
-          change.kind === 'node-position'
-            ? applyNodePositionChange(activeDocument.value, change)
-            : applyNodePositionsChange(activeDocument.value, change)
+      const batch = {
+        document: activeDocument.value,
+        nodes: false,
+        edges: false,
+      }
 
-        if (updated !== undefined) {
-          withStateCause('semantic-change', () => {
-            ownedDocument.value = updated
-          })
+      publishBatch = batch
+
+      try {
+        for (const change of changes) {
+          publish(change)
         }
-      } else if (change.kind === 'edge-add') {
+      } finally {
+        publishBatch = undefined
+      }
+
+      if (stateDisposed || (!batch.nodes && !batch.edges)) {
+        return
+      }
+
+      if (hasSplitModel) {
+        if (batch.nodes) {
+          emit('update:nodes', batch.document.nodes)
+        }
+
+        if (batch.edges) {
+          emit('update:edges', batch.document.edges)
+        }
+      } else if (props.documentMode === 'controlled') {
+        emit('update:document', batch.document)
+      } else {
         withStateCause('semantic-change', () => {
-          ownedDocument.value = {
-            ...activeDocument.value,
-            edges: [...activeDocument.value.edges, change.edge],
-          }
+          ownedDocument.value = batch.document
         })
-      } else if (change.kind === 'edge-reconnect') {
-        const updated = applyEdgeReconnectChange(activeDocument.value, change)
-
-        if (updated !== undefined) {
-          withStateCause('semantic-change', () => {
-            ownedDocument.value = updated
-          })
-        }
-      } else if (change.kind === 'node-bounds') {
-        const updated = applyNodeBoundsChange(activeDocument.value, change)
-
-        if (updated !== undefined) {
-          withStateCause('semantic-change', () => {
-            ownedDocument.value = updated
-          })
-        }
-      } else if (change.kind === 'selection-set') {
-        const updated = applySelectionSetChange(activeDocument.value, change)
-
-        if (updated !== undefined) {
-          withStateCause('semantic-change', () => {
-            ownedDocument.value = updated
-          })
-        }
       }
     }
 
@@ -2421,6 +2523,71 @@ export const FlowCanvas = defineComponent({
     }
 
     const pressedKeys = new Set<string>()
+
+    /** Whether a key name is held, reading modifiers from the event. */
+    const keyHeld = (
+      key: string,
+      event: Pick<MouseEvent, 'shiftKey' | 'metaKey' | 'ctrlKey' | 'altKey'>
+    ): boolean => {
+      switch (key) {
+        case 'Shift': {
+          return event.shiftKey
+        }
+
+        case 'Meta': {
+          return event.metaKey
+        }
+
+        case 'Control': {
+          return event.ctrlKey
+        }
+
+        case 'Alt': {
+          return event.altKey
+        }
+
+        default: {
+          return pressedKeys.has(key)
+        }
+      }
+    }
+
+    /** React `selectionKeyCode`. */
+    const selectionKeyHeld = (event: MouseEvent): boolean =>
+      props.selectionKeyCode !== null && keyHeld(props.selectionKeyCode, event)
+
+    /** React `multiSelectionKeyCode`; Meta or Control unless set. */
+    const multiSelectionKeyHeld = (event: MouseEvent): boolean => {
+      const key = props.multiSelectionKeyCode
+
+      if (key === undefined) {
+        return isMultiSelectionEvent(event)
+      }
+
+      return key !== null && keyHeld(key, event)
+    }
+
+    /** React `deleteKeyCode` matching: one key or `+` combination per alternative. */
+    const deleteKeyMatches = (event: KeyboardEvent): boolean => {
+      const code = props.deleteKeyCode
+
+      if (code === null) {
+        return false
+      }
+
+      const alternatives: readonly string[] = Array.isArray(code)
+        ? code
+        : [code]
+
+      return alternatives.some((alternative: string) =>
+        alternative
+          .split('+')
+          .every(
+            (key: string) =>
+              key === event.key || key === event.code || keyHeld(key, event)
+          )
+      )
+    }
 
     /** The dragged nodes at the given positions, or at drag start. */
     const draggedNodes = (
@@ -2540,7 +2707,7 @@ export const FlowCanvas = defineComponent({
               press.document,
               interactivity.value,
               pressed,
-              isMultiSelectionEvent(event)
+              multiSelectionKeyHeld(event)
             )
 
       const current = activeDocument.value
@@ -2583,7 +2750,7 @@ export const FlowCanvas = defineComponent({
               activeDocument.value,
               interactivity.value,
               current,
-              isMultiSelectionEvent(event)
+              multiSelectionKeyHeld(event)
             )
 
       if (next !== undefined) {
@@ -3374,7 +3541,9 @@ export const FlowCanvas = defineComponent({
       const delta = selectionAutoPanDelta(
         { x: clientX - bounds.left, y: clientY - bounds.top },
         bounds.width,
-        bounds.height
+        bounds.height,
+        40,
+        props.autoPanSpeed
       )
 
       if (delta.x === 0 && delta.y === 0) {
@@ -5073,7 +5242,7 @@ export const FlowCanvas = defineComponent({
       zoom: () => activeViewport.value.zoom,
       pointerToFlow: (clientX, clientY) => clientToFlow(clientX, clientY),
       snapGrid: () => (props.snapToGrid ? snapGrid.value : undefined),
-      publish: (change) => publish(change),
+      publish: (changes) => publishAll(changes),
     }
 
     provide(FlowNodeResizerRegistryKey, resizerHost)
@@ -5698,6 +5867,7 @@ export const FlowCanvas = defineComponent({
 
       const next = grown.length === 0 ? undefined : documentForDragStep(step)
       const covered = new Set<FlowNode['id']>()
+      const changes: FlowChange[] = []
 
       for (const parentId of grown) {
         const parent = next?.nodes.find(({ id }) => id === parentId)
@@ -5716,7 +5886,7 @@ export const FlowCanvas = defineComponent({
             return { nodeId: id, position }
           })
 
-        publish({
+        changes.push({
           kind: 'node-bounds',
           nodeId: parentId,
           position: parent.position,
@@ -5729,10 +5899,12 @@ export const FlowCanvas = defineComponent({
       const [only] = rest
 
       if (rest.length === 1 && only !== undefined) {
-        publish({ kind: 'node-position', ...only })
+        changes.push({ kind: 'node-position', ...only })
       } else if (rest.length > 1) {
-        publish({ kind: 'node-positions', positions: rest })
+        changes.push({ kind: 'node-positions', positions: rest })
       }
+
+      publishAll(changes)
     }
 
     const previewForDragStep = (
@@ -7425,6 +7597,50 @@ export const FlowCanvas = defineComponent({
       )
     }
 
+    /**
+     * React `deleteKeyCode`: delete the selected nodes and edges that are
+     * deletable, with the edges of deleted nodes, as one edit.
+     */
+    const deleteSelectedElements = async (): Promise<void> => {
+      const document = activeDocument.value
+
+      const prepared = await Effect.runPromise(
+        prepareFlowDeleteCandidate(document, {
+          nodeIds: document.nodes
+            .filter(({ selected }) => selected === true)
+            .map(({ id }) => id),
+          edgeIds: document.edges
+            .filter(({ selected }) => selected === true)
+            .map(({ id }) => id),
+        })
+      )
+
+      if (
+        stateDisposed ||
+        (prepared.candidate.nodes.length === 0 &&
+          prepared.candidate.edges.length === 0)
+      ) {
+        return
+      }
+
+      try {
+        await applyEdit({
+          operations: [
+            {
+              kind: 'delete-elements',
+              nodeIds: prepared.candidate.nodes.map(({ id }) => id),
+              edgeIds: prepared.candidate.edges.map(({ id }) => id),
+            },
+          ],
+        })
+      } catch (error) {
+        reportError(
+          error instanceof Error ? error : new Error(String(error)),
+          'delete'
+        )
+      }
+    }
+
     // eslint-disable-next-line complexity -- handles keyboard selection as one session lifecycle.
     const onKeyDown = (event: KeyboardEvent): void => {
       if (stateDisposed) {
@@ -7444,6 +7660,22 @@ export const FlowCanvas = defineComponent({
       pressedKeys.add(event.code)
 
       const active = session.value
+
+      if (
+        active === undefined &&
+        !event.repeat &&
+        target instanceof Element &&
+        canvas.value?.contains(target) === true &&
+        target.closest(
+          'input, textarea, select, [contenteditable=""], [contenteditable="true"], .nokey'
+        ) === null &&
+        deleteKeyMatches(event)
+      ) {
+        event.preventDefault()
+        void deleteSelectedElements()
+
+        return
+      }
 
       if (active?.kind === 'selection' && active.pointerId === -1) {
         if (event.key === 'Escape') {
@@ -7744,7 +7976,7 @@ export const FlowCanvas = defineComponent({
       const isSelection =
         !onNode &&
         interactivity.value.elementsSelectable &&
-        (event.shiftKey || props.selectionOnDrag)
+        (selectionKeyHeld(event) || props.selectionOnDrag)
 
       if (
         excludedFromDrag ||
@@ -7842,6 +8074,7 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    // eslint-disable-next-line complexity -- one wheel entry routes pinch, pan, zoom and page-scroll policy.
     const onWheel = (event: WheelEvent): void => {
       if (stateDisposed) {
         return
@@ -7865,17 +8098,43 @@ export const FlowCanvas = defineComponent({
         deltaY: event.deltaY,
       })
 
-      if (
-        (props.panOnScroll &&
-          !activationKeyIsPressed(props.panActivationKeyCode)) ||
-        (!props.panOnScroll &&
-          props.zoomOnScroll &&
-          !activationKeyIsPressed(props.zoomActivationKeyCode))
-      ) {
+      // React `zoomOnPinch`: a trackpad pinch arrives as Control + wheel,
+      // unless Control is configured as the pan or zoom activation key.
+      const pinch =
+        event.ctrlKey &&
+        props.panActivationKeyCode !== 'Control' &&
+        props.zoomActivationKeyCode !== 'Control'
+
+      // React `preventScrolling`: wheel input the pane ignores still does
+      // not scroll the page unless asked to.
+      const ignore = (): void => {
+        if (props.preventScrolling) {
+          event.preventDefault()
+        }
+      }
+
+      if (pinch && !props.zoomOnPinch) {
+        ignore()
+
         return
       }
 
-      if (!props.panOnScroll && !props.zoomOnScroll) {
+      if (
+        !pinch &&
+        ((props.panOnScroll &&
+          !activationKeyIsPressed(props.panActivationKeyCode)) ||
+          (!props.panOnScroll &&
+            props.zoomOnScroll &&
+            !activationKeyIsPressed(props.zoomActivationKeyCode)))
+      ) {
+        ignore()
+
+        return
+      }
+
+      if (!pinch && !props.panOnScroll && !props.zoomOnScroll) {
+        ignore()
+
         return
       }
 
@@ -7890,7 +8149,7 @@ export const FlowCanvas = defineComponent({
         y: event.clientY - bounds.top,
       }
 
-      if (props.panOnScroll) {
+      if (props.panOnScroll && !pinch) {
         const delta = {
           x:
             props.panOnScrollMode === 'vertical'
@@ -7903,7 +8162,7 @@ export const FlowCanvas = defineComponent({
         }
 
         updateViewport(panViewport(activeViewport.value, delta))
-      } else if (props.zoomOnScroll) {
+      } else {
         const zoom = activeViewport.value.zoom * Math.exp(-event.deltaY * 0.001)
         updateViewport(
           zoomViewportAt(activeViewport.value, zoom, anchor, viewportLimits)
@@ -8134,6 +8393,7 @@ export const FlowCanvas = defineComponent({
           h('path', {
             class: 'flow-vue-connection-preview',
             'data-testid': 'flow-connection-preview',
+            style: flowVueStyle(props.connectionLineStyle),
             'data-connection-line-type': props.connectionLineType,
             d:
               typedPath ??
@@ -9489,6 +9749,52 @@ export const FlowCanvas = defineComponent({
 
     onBeforeUnmount(disposeComponent)
 
+    /**
+     * An edge moving between z layers is a new element. Keep keyboard focus
+     * on its hit target or reconnect anchor across that move.
+     */
+    let focusedEdgeSelector: string | undefined
+
+    onBeforeUpdate(() => {
+      focusedEdgeSelector = undefined
+
+      const active = canvas.value?.ownerDocument.activeElement
+
+      if (
+        !(active instanceof SVGElement) ||
+        canvas.value?.contains(active) !== true
+      ) {
+        return
+      }
+
+      const { flowEdgeHit, edgeId, endpoint } = active.dataset
+
+      if (flowEdgeHit !== undefined) {
+        focusedEdgeSelector = `[data-flow-edge-hit="${CSS.escape(flowEdgeHit)}"]`
+      } else if (edgeId !== undefined && endpoint !== undefined) {
+        focusedEdgeSelector = `[data-testid="flow-edge-reconnect-anchor"][data-edge-id="${CSS.escape(edgeId)}"][data-endpoint="${CSS.escape(endpoint)}"]`
+      }
+    })
+
+    onUpdated(() => {
+      const selector = focusedEdgeSelector
+      focusedEdgeSelector = undefined
+
+      if (selector === undefined || canvas.value === undefined) {
+        return
+      }
+
+      const active = canvas.value.ownerDocument.activeElement
+
+      if (active instanceof Element && active.matches(selector)) {
+        return
+      }
+
+      canvas.value
+        .querySelector<SVGElement>(selector)
+        ?.focus({ preventScroll: true })
+    })
+
     /** Edges at z-index 0 or below stay under every node; the rest are layered with them. */
     const layerEdges = () => {
       const base: FlowEdge[] = []
@@ -9960,7 +10266,7 @@ export const FlowCanvas = defineComponent({
             [
               // Elevated edges share the nodes' stacking context, as React's
               // per-z-level edge SVGs do.
-              ...edgeLayers.elevated.map(([zIndex, edges]) =>
+              ...edgeLayers.elevated.flatMap(([zIndex, edges]) => [
                 h(
                   'svg',
                   {
@@ -9970,8 +10276,20 @@ export const FlowCanvas = defineComponent({
                     style: { zIndex },
                   },
                   edges.map(renderEdge)
-                )
-              ),
+                ),
+                // Labels share their edge's level, as React's SVG labels do.
+                h(
+                  'div',
+                  {
+                    key: `edge-labels-${zIndex}`,
+                    class: 'flow-vue-edge-labels flow-vue-edge-labels-elevated',
+                    'aria-hidden': 'true',
+                    'data-z-index': zIndex,
+                    style: { zIndex },
+                  },
+                  edges.map(renderEdgeLabel)
+                ),
+              ]),
               ...graph.value.orderedNodes.map(({ node }) => renderNode(node)),
               h('div', {
                 class: 'flow-vue-viewport-portal-target',
@@ -9995,9 +10313,7 @@ export const FlowCanvas = defineComponent({
                 transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
               },
             },
-            activeDocument.value.edges.map((edge) =>
-              renderEdgeLabel(withEdgeDefaults(edge))
-            )
+            edgeLayers.base.map(renderEdgeLabel)
           ),
           h('div', {
             class: 'flow-vue-node-toolbar-layer',

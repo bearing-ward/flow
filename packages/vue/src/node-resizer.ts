@@ -51,7 +51,8 @@ export interface FlowNodeResizerHost {
   readonly pointerToFlow: (clientX: number, clientY: number) => XYPosition
   /** The grid while `snapToGrid` is on. */
   readonly snapGrid: () => SnapGrid | undefined
-  readonly publish: (change: FlowChange) => void
+  /** Commit changes together, as one owner proposal or accepted state. */
+  readonly publish: (changes: readonly FlowChange[]) => void
 }
 
 export const FlowNodeResizerRegistryKey: InjectionKey<FlowNodeResizerHost> =
@@ -289,7 +290,7 @@ export const FlowNodeResizeControl = defineComponent({
       const graph = host.graph()
       const node = graph.nodes.get(nodeId)
 
-      host.publish({
+      const own: FlowChange = {
         kind: 'node-bounds',
         nodeId,
         position: { x: params.x, y: params.y },
@@ -298,21 +299,22 @@ export const FlowNodeResizeControl = defineComponent({
           nodeId: child.id,
           position: child.position,
         })),
-      })
+      }
 
       const parentId = node?.parentId
+
+      const parent =
+        parentId === undefined || node?.node.expandParent !== true
+          ? undefined
+          : graph.nodes.get(parentId)
 
       if (
         node === undefined ||
         parentId === undefined ||
-        node.node.expandParent !== true
+        parent === undefined
       ) {
-        return
-      }
+        host.publish([own])
 
-      const parent = graph.nodes.get(parentId)
-
-      if (parent === undefined) {
         return
       }
 
@@ -345,23 +347,31 @@ export const FlowNodeResizeControl = defineComponent({
       )
 
       if (parentPosition === undefined && parentSize === undefined) {
+        host.publish([own])
+
         return
       }
 
-      host.publish({
-        kind: 'node-bounds',
-        nodeId: parentId,
-        position:
-          parentPosition?.kind === 'position'
-            ? parentPosition.position
-            : parent.node.position,
-        size: parentSize?.kind === 'size' ? parentSize.size : parent.dimensions,
-        childPositions: changes.flatMap((change) =>
-          change.kind === 'position' && change.nodeId !== parentId
-            ? [{ nodeId: change.nodeId, position: change.position }]
-            : []
-        ),
-      })
+      // The child and its parent growth commit together, so a controlled
+      // owner receives one proposal holding both.
+      host.publish([
+        own,
+        {
+          kind: 'node-bounds',
+          nodeId: parentId,
+          position:
+            parentPosition?.kind === 'position'
+              ? parentPosition.position
+              : parent.node.position,
+          size:
+            parentSize?.kind === 'size' ? parentSize.size : parent.dimensions,
+          childPositions: changes.flatMap((change) =>
+            change.kind === 'position' && change.nodeId !== parentId
+              ? [{ nodeId: change.nodeId, position: change.position }]
+              : []
+          ),
+        },
+      ])
     }
 
     const move = (event: PointerEvent): void => {

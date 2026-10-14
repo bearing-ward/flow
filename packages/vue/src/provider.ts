@@ -49,6 +49,11 @@ const emptyInteractivity: FlowInteractivity = {
   elementsSelectable: true,
 }
 
+const noMeasuredSizes: ReadonlyMap<
+  string,
+  { readonly width: number; readonly height: number }
+> = new Map()
+
 const missingCanvas = (member: string): Error =>
   new Error(`FlowProvider has no mounted FlowCanvas for ${member}`)
 
@@ -175,6 +180,9 @@ const createProviderEditor = (
       current.value?.nodesInitialized(options) ?? false,
     updateNodeInternals: (nodeIds) =>
       target('updateNodeInternals').updateNodeInternals(nodeIds),
+    measuredSizes: computed(
+      () => current.value?.measuredSizes?.value ?? noMeasuredSizes
+    ),
     ariaLabelConfig: computed(
       () => current.value?.ariaLabelConfig?.value ?? defaultFlowAriaLabelConfig
     ),
@@ -185,21 +193,33 @@ const createProviderEditor = (
  * React Flow `ReactFlowProvider`: holds the editor of the `FlowCanvas` below
  * it, so `useFlow`, `useStore`, `useNodes` and the other composables work in
  * siblings of the canvas, such as a sidebar.
+ *
+ * One canvas per provider is the supported use, as in React. When several
+ * canvases mount below one provider, siblings follow the most recently
+ * mounted one that is still mounted; unmounting it falls back to the
+ * previous one.
  */
 export const FlowProvider = defineComponent({
   name: 'FlowProvider',
   setup(_props, { slots }) {
     const editor = shallowRef<FlowEditor>()
+    const mounted: FlowEditor[] = []
 
     const register = (next: FlowEditor): (() => void) => {
+      mounted.push(next)
       editor.value = next
       recordProviderLifecycle('Vue FlowProvider registered a canvas', true)
 
       return () => {
-        if (editor.value === next) {
-          editor.value = undefined
-          recordProviderLifecycle('Vue FlowProvider released a canvas', false)
+        const index = mounted.indexOf(next)
+
+        if (index === -1) {
+          return
         }
+
+        mounted.splice(index, 1)
+        editor.value = mounted.at(-1)
+        recordProviderLifecycle('Vue FlowProvider released a canvas', false)
       }
     }
 

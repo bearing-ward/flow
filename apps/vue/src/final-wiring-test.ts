@@ -43,6 +43,10 @@ export interface FinalWiringFixture {
   readonly storeRenders: () => number
   readonly setColorMode: (mode: FlowColorMode) => void
   readonly setZIndexMode: (mode: FlowZIndexMode) => void
+  /** Owner updates received in controlled and split-model modes. */
+  readonly proposals: () => number
+  /** The owner-held document in controlled and split-model modes. */
+  readonly ownerNodes: () => readonly FlowNode[]
 }
 
 export interface FinalWiringOptions {
@@ -53,8 +57,12 @@ export interface FinalWiringOptions {
     | 'minimap'
     | 'resizer'
     | 'labeled-group'
+    | 'two-parents'
+    | 'layers'
   readonly colorMode?: FlowColorMode
   readonly snapToGrid?: boolean
+  /** Who owns the document; uncontrolled by default. */
+  readonly model?: 'uncontrolled' | 'controlled' | 'split'
 }
 
 declare global {
@@ -301,6 +309,113 @@ const providerDocument = (): FlowDocument =>
     edges: [],
   })
 
+/** Two groups with `expandParent` children and a root node, all selected but the groups. */
+const twoParentsDocument = (): FlowDocument =>
+  decode({
+    nodes: [
+      {
+        id: 'p1',
+        label: 'P1',
+        position: { x: 40, y: 40 },
+        size: { width: 200, height: 150 },
+      },
+      {
+        id: 'c1',
+        label: 'C1',
+        parentId: 'p1',
+        expandParent: true,
+        selected: true,
+        position: { x: 20, y: 50 },
+        size: { width: 80, height: 50 },
+      },
+      {
+        id: 'p2',
+        label: 'P2',
+        position: { x: 40, y: 260 },
+        size: { width: 200, height: 150 },
+      },
+      {
+        id: 'c2',
+        label: 'C2',
+        parentId: 'p2',
+        expandParent: true,
+        selected: true,
+        position: { x: 20, y: 50 },
+        size: { width: 80, height: 50 },
+      },
+      {
+        id: 'r',
+        label: 'R',
+        selected: true,
+        position: { x: 400, y: 40 },
+        size: { width: 80, height: 50 },
+      },
+    ],
+    edges: [],
+  })
+
+/** An opaque group with an edge between its children, and a root edge. */
+const layersDocument = (): FlowDocument =>
+  decode({
+    nodes: [
+      {
+        id: 'g',
+        label: 'Group',
+        position: { x: 40, y: 40 },
+        size: { width: 380, height: 260 },
+        style: { backgroundColor: '#dddddd' },
+      },
+      {
+        id: 'k1',
+        label: 'K1',
+        parentId: 'g',
+        position: { x: 20, y: 30 },
+        size: { width: 80, height: 50 },
+        handles,
+      },
+      {
+        id: 'k2',
+        label: 'K2',
+        parentId: 'g',
+        position: { x: 260, y: 190 },
+        size: { width: 80, height: 50 },
+        handles,
+      },
+      {
+        id: 'r1',
+        label: 'R1',
+        position: { x: 520, y: 60 },
+        size: { width: 80, height: 50 },
+        handles,
+      },
+      {
+        id: 'r2',
+        label: 'R2',
+        position: { x: 720, y: 300 },
+        size: { width: 80, height: 50 },
+        handles,
+      },
+    ],
+    edges: [
+      {
+        id: 'child-edge',
+        source: 'k1',
+        sourceHandle: 'out',
+        target: 'k2',
+        targetHandle: 'in',
+        label: 'Child label',
+      },
+      {
+        id: 'root-edge',
+        source: 'r1',
+        sourceHandle: 'out',
+        target: 'r2',
+        targetHandle: 'in',
+        label: 'Root label',
+      },
+    ],
+  })
+
 const numberData = (node: FlowNode, key: string): number | undefined => {
   const value = node.data?.[key]
 
@@ -417,8 +532,17 @@ export const mountFinalWiringFixture = (
 
   /** A sibling of the canvas below the provider: reads and edits the graph. */
   const Sidebar = defineComponent({
-    setup() {
+    emits: { toggleSecond: () => true },
+    setup(_props, { emit }) {
       const flow = useFlow()
+
+      const storeMeasured = useStore((state: FlowStoreState) => {
+        const size = state.measured.get('a')
+
+        return size === undefined ? '' : `${size.width}x${size.height}`
+      })
+
+      const siblingMeasured = shallowRef('')
       const shift = useKeyPress('Shift')
       const combo = useKeyPress(['Meta+k', 'Control+k'])
 
@@ -442,6 +566,33 @@ export const mountFinalWiringFixture = (
           h('output', { 'data-testid': 'combo' }, String(combo.value)),
           h('output', { 'data-testid': 'intersections' }, intersections.value),
           h('output', { 'data-testid': 'bounds' }, bounds.value),
+          h('output', { 'data-testid': 'store-measured' }, storeMeasured.value),
+          h(
+            'output',
+            { 'data-testid': 'sibling-measured' },
+            siblingMeasured.value
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              onClick: () => {
+                const measured = flow.getNode('a')?.measured
+
+                const fromList = flow
+                  .getNodes()
+                  .find(({ id }) => id === 'a')?.measured
+
+                siblingMeasured.value = `${measured?.width}x${measured?.height}/${fromList?.width}x${fromList?.height}`
+              },
+            },
+            'Read measured'
+          ),
+          h(
+            'button',
+            { type: 'button', onClick: () => emit('toggleSecond') },
+            'Toggle second canvas'
+          ),
           h(
             'button',
             {
@@ -492,6 +643,14 @@ export const mountFinalWiringFixture = (
 
       case 'labeled-group': {
         return labeledGroupDocument()
+      }
+
+      case 'two-parents': {
+        return twoParentsDocument()
+      }
+
+      case 'layers': {
+        return layersDocument()
       }
 
       default: {
@@ -613,6 +772,10 @@ export const mountFinalWiringFixture = (
       })
     }
 
+    if (options.scene === 'layers') {
+      Object.assign(props, { elevateEdgesOnSelect: true })
+    }
+
     if (options.scene === 'provider') {
       Object.assign(props, {
         fitView: true,
@@ -639,11 +802,53 @@ export const mountFinalWiringFixture = (
     return props
   }
 
+  const model = options.model ?? 'uncontrolled'
+  const owned = shallowRef(document)
+  let proposals = 0
+
+  /** Document binding for the chosen owner model; owners accept every proposal. */
+  const ownerProps = () => {
+    if (model === 'controlled') {
+      return {
+        document: owned.value,
+        documentMode: 'controlled' as const,
+        'onUpdate:document': (next: FlowDocument) => {
+          proposals += 1
+          owned.value = next
+        },
+      }
+    }
+
+    if (model === 'split') {
+      return {
+        nodes: owned.value.nodes,
+        edges: owned.value.edges,
+        'onUpdate:nodes': (nodes: readonly FlowNode[]) => {
+          proposals += 1
+          owned.value = { ...owned.value, nodes }
+        },
+        'onUpdate:edges': (edges: FlowDocument['edges']) => {
+          proposals += 1
+          owned.value = { ...owned.value, edges }
+        },
+      }
+    }
+
+    return { defaultDocument: document }
+  }
+
+  const secondCanvas = ref(false)
+
+  const secondDocument = decode({
+    nodes: [{ id: 'solo', label: 'Solo', position: { x: 20, y: 20 } }],
+    edges: [],
+  })
+
   const canvas = () =>
     h(
       FlowCanvas,
       {
-        defaultDocument: document,
+        ...ownerProps(),
         defaultViewport: viewport,
         nodeTypes,
         colorMode: colorMode.value,
@@ -662,7 +867,21 @@ export const mountFinalWiringFixture = (
       return () =>
         options.scene === 'provider'
           ? h(FlowProvider, null, {
-              default: () => [h(Sidebar), canvas()],
+              default: () => [
+                h(Sidebar, {
+                  onToggleSecond: () => {
+                    secondCanvas.value = !secondCanvas.value
+                  },
+                }),
+                canvas(),
+                secondCanvas.value
+                  ? h(FlowCanvas, {
+                      key: 'second',
+                      class: 'second-canvas',
+                      defaultDocument: secondDocument,
+                    })
+                  : null,
+              ],
             })
           : canvas()
     },
@@ -685,6 +904,8 @@ export const mountFinalWiringFixture = (
     setZIndexMode: (mode) => {
       zIndexMode.value = mode
     },
+    proposals: () => proposals,
+    ownerNodes: () => owned.value.nodes,
   }
 
   createApp(App).mount(root)

@@ -143,7 +143,198 @@ test.describe('Vue provider and composables', () => {
     )
 
     expect(measured).toEqual({ width: 120, height: 60 })
+
+    // Provider siblings see measured sizes too.
+    await expect(page.getByTestId('store-measured')).toHaveText('120x60')
+    await page.getByRole('button', { name: 'Read measured' }).click()
+    await expect(page.getByTestId('sibling-measured')).toHaveText(
+      '120x60/120x60'
+    )
+
+    // A second canvas takes over while mounted; unmounting it falls back to
+    // the first, which is still mounted.
+    await page.getByRole('button', { name: 'Toggle second canvas' }).click()
+    await expect(page.locator('.second-canvas')).toHaveCount(1)
+    await expect(page.getByTestId('node-count')).toHaveText('1')
+    await page.getByRole('button', { name: 'Toggle second canvas' }).click()
+    await expect(page.locator('.second-canvas')).toHaveCount(0)
+    await expect(page.getByTestId('node-count')).toHaveText('4')
   })
+})
+
+test.describe('Vue multi-part commits in every owner model', () => {
+  for (const model of ['uncontrolled', 'controlled', 'split'] as const) {
+    test(`${model}: a drag growing two parents with a mixed selection commits as one update`, async ({
+      page,
+    }) => {
+      await mount(page, { scene: 'two-parents', model })
+
+      const before = await fixture(page, (api) => api.proposals())
+
+      await drag(page, await centreOf(node(page, 'c1')), { x: 200, y: 0 })
+
+      await expect
+        .poll(() => position(page, 'c1'))
+        .toMatchObject({ x: 220, y: 50 })
+      await expect
+        .poll(() => position(page, 'c2'))
+        .toMatchObject({ x: 220, y: 50 })
+      await expect
+        .poll(() => position(page, 'r'))
+        .toMatchObject({ x: 600, y: 40 })
+      await expect
+        .poll(() => position(page, 'p1'))
+        .toMatchObject({ x: 40, y: 40, width: 300, height: 150 })
+      await expect
+        .poll(() => position(page, 'p2'))
+        .toMatchObject({ x: 40, y: 260, width: 300, height: 150 })
+
+      if (model !== 'uncontrolled') {
+        expect(await fixture(page, (api) => api.proposals())).toBe(before + 1)
+      }
+    })
+
+    test(`${model}: an expandParent resize keeps the child size with the parent growth`, async ({
+      page,
+    }) => {
+      await mount(page, { scene: 'resizer', model })
+
+      await drag(
+        page,
+        await centreOf(
+          node(page, 'child').locator(
+            '[data-testid="flow-node-resize-control"][data-position="bottom-right"]'
+          )
+        ),
+        { x: 150, y: 120 }
+      )
+      await expect
+        .poll(() => position(page, 'child'))
+        .toMatchObject({ x: 60, y: 60, width: 250, height: 180 })
+      await expect
+        .poll(() => position(page, 'parent'))
+        .toMatchObject({ x: 560, y: 260, width: 310, height: 240 })
+    })
+  }
+})
+
+test.describe('Vue edge layers', () => {
+  test('child edges and their labels stack with the nodes; auto mode and selection elevate them without losing focus', async ({
+    page,
+  }) => {
+    await mount(page, { scene: 'layers' })
+
+    const childLayer = page.locator(
+      '.flow-vue-viewport svg.flow-vue-edges-elevated[data-z-index="1"]'
+    )
+
+    await expect(
+      childLayer.locator('g[data-edge-id="child-edge"]')
+    ).toHaveCount(1)
+    await expect(
+      page.locator(
+        'svg.flow-vue-edges:not(.flow-vue-edges-elevated) g[data-edge-id="root-edge"]'
+      )
+    ).toHaveCount(1)
+
+    // The child label sits in its edge's layer, above the opaque group.
+    const childLabel = page.locator('[data-flow-edge-label="child-edge"]')
+    await expect(
+      page.locator(
+        '.flow-vue-edge-labels-elevated[data-z-index="1"] [data-flow-edge-label="child-edge"]'
+      )
+    ).toHaveCount(1)
+    const labelCentre = await centreOf(childLabel)
+
+    // Labels ignore the pointer; make this one hit-testable to read stacking.
+    await childLabel.evaluate((element) => {
+      element.style.pointerEvents = 'auto'
+    })
+
+    const hit = await page.evaluate(
+      ({ x, y }) =>
+        document
+          .elementFromPoint(x, y)
+          ?.closest<HTMLElement>('[data-flow-edge-label]')?.dataset
+          .flowEdgeLabel ?? null,
+      labelCentre
+    )
+
+    expect(hit).toBe('child-edge')
+
+    // elevateEdgesOnSelect moves a selected edge to a new layer; focus stays.
+    const rootHit = page.locator('[data-flow-edge-hit="root-edge"]')
+    await rootHit.focus()
+    await fixture(page, (api) =>
+      api.flow().updateEdge('root-edge', { selected: true })
+    )
+    await expect(
+      page.locator(
+        'svg.flow-vue-edges-elevated[data-z-index="1000"] g[data-edge-id="root-edge"]'
+      )
+    ).toHaveCount(1)
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.activeElement instanceof SVGElement
+            ? document.activeElement.dataset.flowEdgeHit
+            : undefined
+        )
+      )
+      .toBe('root-edge')
+
+    // auto mode lifts the root group and everything inside it.
+    await fixture(page, (api) => api.setZIndexMode('auto'))
+    await expect(node(page, 'g')).toHaveCSS('z-index', '10')
+    await expect(node(page, 'k1')).toHaveCSS('z-index', '11')
+    await expect(
+      page.locator(
+        'svg.flow-vue-edges-elevated[data-z-index="11"] g[data-edge-id="child-edge"]'
+      )
+    ).toHaveCount(1)
+    await expect(
+      page.locator(
+        '.flow-vue-edge-labels-elevated[data-z-index="11"] [data-flow-edge-label="child-edge"]'
+      )
+    ).toHaveCount(1)
+  })
+})
+
+test('deleteKeyCode, selectionKeyCode, multiSelectionKeyCode and zoomOnPinch act as React', async ({
+  page,
+}) => {
+  await mount(page, { scene: 'provider' })
+
+  const nodeA = node(page, 'a')
+  await nodeA.click()
+  await page.keyboard.press('Backspace')
+  await expect(nodeA).toHaveCount(0)
+
+  // Meta or Control toggles a node into the selection.
+  await node(page, 'b').click()
+  await node(page, 'c').click({ modifiers: ['ControlOrMeta'] })
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.__flowVueFinal
+          ?.flow()
+          .getNodes()
+          .filter(({ selected }) => selected === true)
+          .map(({ id }) => id)
+      )
+    )
+    .toEqual(['b', 'c'])
+
+  // A pinch (Control + wheel) zooms even with the canvas focused elsewhere.
+  const zoom = await fixture(page, (api) => api.flow().getZoom())
+  const pane = await boxOf(page.getByTestId('flow-canvas'))
+  await page.mouse.move(pane.x + 20, pane.y + pane.height - 20)
+  await page.keyboard.down('Control')
+  await page.mouse.wheel(0, -100)
+  await page.keyboard.up('Control')
+  await expect
+    .poll(() => fixture(page, (api) => api.flow().getZoom()))
+    .toBeGreaterThan(zoom)
 })
 
 test.describe('Vue model and styling', () => {

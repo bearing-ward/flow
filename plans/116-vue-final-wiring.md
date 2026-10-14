@@ -44,15 +44,21 @@ Bring the open in-scope Vue entries of `research/catalogs/react-flow-parity-audi
    - **`nodesResizable`** keeps its built-in controls on selected nodes that do not render a resizer of their own. A node that renders `FlowNodeResizer` or `FlowNodeResizeControl` opts out.
 6. **Labeled Group.** New `FlowLabeledGroupNode` UI renderer and the `/ui-recipes/labeled-group/` recipe.
 
-`<ReactFlow />` props deliberately not mapped:
+7. **Review fixes.**
+   - Multi-part commits (a drop that grows parents, a resize with `expandParent`) go through `publishAll`. Each change applies to the previous one's result, and the owner sees one `update:document`/`update:nodes` proposal or one accepted state.
+   - The provider passes `measuredSizes` through. Several canvases below one provider follow the latest still-mounted one.
+   - Elevated edge labels render in their edge's z layer.
+   - Keyboard focus on an edge hit target or reconnect anchor survives a layer move.
+   - `FlowZoomSlider` buttons read `ariaLabelConfig`.
 
+`<ReactFlow />` props added in the review: `deleteKeyCode` (default `Backspace`, acting while focus is inside the canvas), `selectionKeyCode`, `multiSelectionKeyCode`, `zoomOnPinch`, `preventScrolling`, `autoPanSpeed` (connection auto-pan) and `connectionLineStyle`. Already present under Vue names: `onNodesChange`/`onEdgesChange` → `nodesChange`/`edgesChange`, `onMove*` → `move*`, `onSelection*` → `selection*`/`selectedNodes*`, `onInit` → `init`, `onError` → `error`, `onlyRenderVisibleElements` → `renderOnlyVisible`, `minZoom`/`maxZoom` → also `viewportLimits`. Delete callbacks (`onBeforeDelete`, `onNodesDelete`, `onEdgesDelete`, `onDelete`) stay `deleteElements` lifecycle options.
+
+Real gaps, so `<ReactFlow />` stays P:
+
+- `autoPanOnNodeDrag`, `autoPanOnSelection`, `autoPanOnNodeFocus`: Vue auto-pans only connections.
 - `paneClickDistance`, `nodeClickDistance`;
-- `connectionLineStyle`, `connectionLineContainerStyle`;
-- `deleteKeyCode`, `selectionKeyCode`, `multiSelectionKeyCode`;
-- `autoPanOnNodeFocus`, `autoPanOnNodeDrag`, `autoPanOnSelection`, `autoPanSpeed`;
-- `preventScrolling`, `zoomOnPinch`, `reconnectRadius`;
-- `attributionPosition`, `proOptions`, `width`/`height`, `debug`;
-- `onBeforeDelete`/`onNodesDelete`/`onEdgesDelete`/`onDelete` as canvas props. They stay `deleteElements` lifecycle options.
+- `connectionLineContainerStyle`, `reconnectRadius`;
+- `attributionPosition`, `proOptions`, `width`/`height`, `debug`.
 
 `nodeOrigin` stays on the document.
 
@@ -67,7 +73,12 @@ Bring the open in-scope Vue entries of `research/catalogs/react-flow-parity-audi
   - snap and extents;
   - MiniMap options and gestures;
   - the resizer components, the switch relationship, and Labeled Group.
-- Updated: `minimap`, `canvas-ui-contract` and `base-edge`, for React default labels and the themed default stroke.
+- Review tests in `final-wiring.e2e.ts`:
+  - a two-parent mixed-selection drag and an `expandParent` resize, each in uncontrolled, controlled and split models, with one proposal per drop;
+  - provider sibling `measured` and the two-canvas fallback;
+  - edge and label layers in `basic` and `auto` modes, and focus kept across an `elevateEdgesOnSelect` move;
+  - the delete, multi-selection and pinch keys.
+- Updated: `minimap`, `canvas-ui-contract`, `base-edge`, `renderer-contract` and `versioned-persistence`, for React default labels, the themed stroke, marker ids and the v3 envelope.
 
 ## Conformity and deviations
 
@@ -89,7 +100,9 @@ Bring the open in-scope Vue entries of `research/catalogs/react-flow-parity-audi
   - Resizer emits are payload-first `(params, event)`, and `shouldResize(params, event)`.
   - Handle `aria-label` stays `"<kind> handle <id>"` unless `ariaLabelConfig['handle.ariaLabel']` is set.
   - The minimap keeps its interactive button role; `ariaLabel` replaces its leading text.
-  - The provider holds a canvas editor, not a store: reads before a canvas mounts show an empty graph, and commands throw.
+  - The provider holds a canvas editor, not a store: reads before a canvas mounts show an empty graph, and commands throw. One canvas per provider is the supported use; with several, the latest mounted one wins.
+  - `deleteKeyCode` acts only while focus is inside the canvas; React listens on the document.
+  - Control + wheel is a pinch unless Control is the configured pan or zoom activation key, which keeps Vue's existing activation-key contract.
   - Canvas default edge stroke and node look now follow the React theme. FlowBaseEdge without a caller stroke uses the themed CSS stroke instead of the `#64748b` attribute.
   - `nodesResizable` remains a canvas switch alongside the components.
 - **Unverified.** No live React runtime comparison. The `node.a11yDescription.ariaLiveMessage` key is unused because Vue has no keyboard node move.

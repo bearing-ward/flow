@@ -59,7 +59,8 @@ export const FlowZoomSlider = defineComponent({
             h(
               FlowControlButton,
               {
-                'aria-label': 'Zoom out',
+                'aria-label':
+                  flow.ariaLabelConfig.value['controls.zoomOut.ariaLabel'],
                 disabled: zoom.value <= limits.minZoom,
                 onClick: () => {
                   void flow.zoomOut()
@@ -89,7 +90,8 @@ export const FlowZoomSlider = defineComponent({
             h(
               FlowControlButton,
               {
-                'aria-label': 'Zoom in',
+                'aria-label':
+                  flow.ariaLabelConfig.value['controls.zoomIn.ariaLabel'],
                 disabled: zoom.value >= limits.maxZoom,
                 onClick: () => {
                   void flow.zoomIn()
@@ -111,7 +113,8 @@ export const FlowZoomSlider = defineComponent({
             h(
               FlowControlButton,
               {
-                'aria-label': 'Fit view',
+                'aria-label':
+                  flow.ariaLabelConfig.value['controls.fitView.ariaLabel'],
                 onClick: () => {
                   void flow.fitView(props.fitViewOptions)
                 },
