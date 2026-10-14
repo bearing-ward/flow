@@ -33,10 +33,29 @@
   overflow: hidden;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
-  background-color: white;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+  color: var(--flow-node-color, var(--flow-node-color-default));
+  background-color: var(
+    --flow-background-color,
+    var(--flow-background-color-default)
+  );
+  background-image: radial-gradient(
+    var(
+        --flow-background-pattern-dots-color,
+        var(--flow-background-pattern-dots-color-default)
+      )
+      1px,
+    transparent 1px
+  );
   background-size: 20px 20px;
   touch-action: none;
+}
+
+.flow-vue-canvas.dark {
+  color-scheme: dark;
+}
+
+.flow-vue-a11y-description {
+  display: none;
 }
 
 .flow-vue-panel {
@@ -93,6 +112,18 @@
   right: 12px;
 }
 
+.flow-vue-panel-center-left {
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+}
+
+.flow-vue-panel-center-right {
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+}
+
 .flow-vue-background {
   display: block;
   overflow: hidden;
@@ -104,10 +135,20 @@
   display: flex;
   gap: 4px;
   padding: 4px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid
+    var(
+      --flow-controls-button-border-color,
+      var(--flow-controls-button-border-color-default)
+    );
   border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 2px 7px #0f172a18;
+  background: var(
+    --flow-controls-button-background-color,
+    var(--flow-controls-button-background-color-default)
+  );
+  box-shadow: var(
+    --flow-controls-box-shadow,
+    var(--flow-controls-box-shadow-default)
+  );
 }
 
 .flow-vue-controls-vertical {
@@ -150,6 +191,18 @@
   bottom: 10px;
 }
 
+.flow-vue-controls-center-left {
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+.flow-vue-controls-center-right {
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+}
+
 .flow-vue-control-button {
   min-width: 30px;
   min-height: 30px;
@@ -157,13 +210,23 @@
   border: 0;
   border-radius: 3px;
   background: transparent;
-  color: #0f172a;
+  color: var(
+    --flow-controls-button-color,
+    var(--flow-controls-button-color-default)
+  );
   font: inherit;
   cursor: pointer;
 }
 
 .flow-vue-control-button:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: var(
+    --flow-controls-button-background-color-hover,
+    var(--flow-controls-button-background-color-hover-default)
+  );
+  color: var(
+    --flow-controls-button-color-hover,
+    var(--flow-controls-button-color-hover-default)
+  );
 }
 
 .flow-vue-control-button:focus-visible {
@@ -200,13 +263,34 @@
   width: 150px;
   min-height: 44px;
   padding: 12px 14px;
-  border: 1px solid #7b8ba5;
-  border-radius: 7px;
-  background: #fff;
-  box-shadow: 0 2px 7px #0f172a18;
+  border: var(--flow-node-border, var(--flow-node-border-default));
+  border-radius: var(
+    --flow-node-border-radius,
+    var(--flow-node-border-radius-default)
+  );
+  color: var(--flow-node-color, var(--flow-node-color-default));
+  background-color: var(
+    --flow-node-background-color,
+    var(--flow-node-background-color-default)
+  );
   cursor: grab;
   touch-action: none;
   pointer-events: auto;
+}
+
+.flow-vue-node:hover {
+  box-shadow: var(
+    --flow-node-boxshadow-hover,
+    var(--flow-node-boxshadow-hover-default)
+  );
+}
+
+.flow-vue-node.selected,
+.flow-vue-node:focus-visible {
+  box-shadow: var(
+    --flow-node-boxshadow-selected,
+    var(--flow-node-boxshadow-selected-default)
+  );
 }
 
 .flow-vue-node:active {
@@ -220,8 +304,11 @@
 .flow-vue-selection-rect {
   position: absolute;
   z-index: 5;
-  border: 1px solid #2563eb;
-  background: #3b82f633;
+  border: var(--flow-selection-border, var(--flow-selection-border-default));
+  background: var(
+    --flow-selection-background-color,
+    var(--flow-selection-background-color-default)
+  );
   transform-origin: 0 0;
   pointer-events: none;
 }
@@ -284,9 +371,13 @@
   width: 11px;
   height: 11px;
   padding: 0;
-  border: 1px solid #fff;
+  border: 1px solid
+    var(--flow-handle-border-color, var(--flow-handle-border-color-default));
   border-radius: 50%;
-  background: #2563eb;
+  background: var(
+    --flow-handle-background-color,
+    var(--flow-handle-background-color-default)
+  );
   transform: translateY(-50%);
 }
 
@@ -353,12 +444,20 @@
   z-index: 1;
 }
 
+.flow-vue-edges-elevated {
+  overflow: visible;
+  z-index: auto;
+}
+
 .flow-vue-edge-textbg {
-  fill: #ffffff;
+  fill: var(
+    --flow-edge-label-background-color,
+    var(--flow-edge-label-background-color-default)
+  );
 }
 
 .flow-vue-edge-text {
-  fill: #1e293b;
+  fill: var(--flow-edge-label-color, var(--flow-edge-label-color-default));
   font-size: 10px;
   pointer-events: none;
 }
@@ -366,6 +465,35 @@
 .flow-vue-edge-path {
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.flow-vue-edge-path:not([stroke]) {
+  stroke: var(--flow-edge-stroke, var(--flow-edge-stroke-default));
+}
+
+.flow-vue-edge.selected .flow-vue-edge-path:not([stroke]) {
+  stroke: var(
+    --flow-edge-stroke-selected,
+    var(--flow-edge-stroke-selected-default)
+  );
+}
+
+/* React `.react-flow__edge.animated path` and its `dashdraw` keyframes. */
+.flow-vue-edge.animated .flow-vue-edge-path {
+  stroke-dasharray: 5;
+  animation: flow-vue-dashdraw 0.5s linear infinite;
+}
+
+@keyframes flow-vue-dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-vue-edge.animated .flow-vue-edge-path {
+    animation: none;
+  }
 }
 
 .flow-vue-edge-hit-target {
@@ -395,20 +523,30 @@
 
 .flow-vue-edge-label {
   position: absolute;
-  color: #334155;
+  color: var(--flow-edge-label-color, var(--flow-edge-label-color-default));
   font-size: 12px;
   line-height: 1.2;
-  padding: 2px 5px;
-  border-radius: 4px;
-  background: white;
-  box-shadow: 0 1px 3px #0f172a24;
   transform: translate(-50%, -50%);
   white-space: nowrap;
 }
 
+.flow-vue-edge-label-bg {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(
+    --flow-edge-label-background-color,
+    var(--flow-edge-label-background-color-default)
+  );
+}
+
 .flow-vue-connection-preview {
   fill: none;
-  stroke: #2563eb;
+  stroke: var(
+    --flow-connectionline-stroke,
+    var(--flow-connectionline-stroke-default)
+  );
   stroke-width: 2;
   pointer-events: none;
 }
@@ -421,27 +559,166 @@
   overflow: hidden;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  background: #fff;
+  background: var(
+    --flow-minimap-background-color,
+    var(--flow-minimap-background-color-default)
+  );
   cursor: crosshair;
 }
 
 .flow-vue-minimap-background {
-  fill: #f8fafc;
+  fill: var(
+    --flow-minimap-background-color,
+    var(--flow-minimap-background-color-default)
+  );
 }
 
 .flow-vue-minimap-node {
-  fill: #64748b;
-  stroke: #334155;
-  stroke-width: 0.75px;
-  vector-effect: non-scaling-stroke;
+  fill: var(
+    --flow-minimap-node-background-color,
+    var(--flow-minimap-node-background-color-default)
+  );
+  stroke: var(
+    --flow-minimap-node-stroke-color,
+    var(--flow-minimap-node-stroke-color-default)
+  );
+  stroke-width: var(
+    --flow-minimap-node-stroke-width,
+    var(--flow-minimap-node-stroke-width-default)
+  );
+}
+
+.flow-vue-minimap-mask {
+  fill: var(
+    --flow-minimap-mask-background-color,
+    var(--flow-minimap-mask-background-color-default)
+  );
+  fill-rule: evenodd;
+  stroke: var(
+    --flow-minimap-mask-stroke-color,
+    var(--flow-minimap-mask-stroke-color-default)
+  );
+  stroke-width: var(
+    --flow-minimap-mask-stroke-width,
+    var(--flow-minimap-mask-stroke-width-default)
+  );
+  pointer-events: none;
 }
 
 .flow-vue-minimap-viewport {
-  fill: rgb(37 99 235 / 12%);
+  fill: none;
   stroke: #2563eb;
   stroke-width: 1.5px;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
+}
+
+/* React NodeResizer controls (`.react-flow__resize-control`). */
+.flow-vue-resize-control {
+  position: absolute;
+  z-index: 3;
+  touch-action: none;
+}
+
+.flow-vue-resize-control.left,
+.flow-vue-resize-control.right {
+  cursor: ew-resize;
+}
+
+.flow-vue-resize-control.top,
+.flow-vue-resize-control.bottom {
+  cursor: ns-resize;
+}
+
+.flow-vue-resize-control.top.left,
+.flow-vue-resize-control.bottom.right {
+  cursor: nwse-resize;
+}
+
+.flow-vue-resize-control.bottom.left,
+.flow-vue-resize-control.top.right {
+  cursor: nesw-resize;
+}
+
+.flow-vue-resize-control.handle {
+  width: 5px;
+  height: 5px;
+  border: 1px solid #fff;
+  border-radius: 1px;
+  background-color: var(--flow-resize-background-color, #3367d9);
+  translate: -50% -50%;
+}
+
+.flow-vue-resize-control.handle.left {
+  top: 50%;
+  left: 0;
+}
+
+.flow-vue-resize-control.handle.right {
+  top: 50%;
+  left: 100%;
+}
+
+.flow-vue-resize-control.handle.top {
+  top: 0;
+  left: 50%;
+}
+
+.flow-vue-resize-control.handle.bottom {
+  top: 100%;
+  left: 50%;
+}
+
+.flow-vue-resize-control.handle.top.left,
+.flow-vue-resize-control.handle.bottom.left {
+  left: 0;
+}
+
+.flow-vue-resize-control.handle.top.right,
+.flow-vue-resize-control.handle.bottom.right {
+  left: 100%;
+}
+
+.flow-vue-resize-control.line {
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--flow-resize-background-color, #3367d9);
+}
+
+.flow-vue-resize-control.line.left,
+.flow-vue-resize-control.line.right {
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translate(-50%, 0);
+}
+
+.flow-vue-resize-control.line.left {
+  left: 0;
+  border-left-width: 1px;
+}
+
+.flow-vue-resize-control.line.right {
+  left: 100%;
+  border-right-width: 1px;
+}
+
+.flow-vue-resize-control.line.top,
+.flow-vue-resize-control.line.bottom {
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: translate(0, -50%);
+}
+
+.flow-vue-resize-control.line.top {
+  top: 0;
+  border-top-width: 1px;
+}
+
+.flow-vue-resize-control.line.bottom {
+  top: 100%;
+  border-bottom-width: 1px;
 }
 
 .flow-vue-base-node {
@@ -575,4 +852,23 @@
   transform-origin: 0 0;
   z-index: 1;
   pointer-events: none;
+}
+
+/* React Flow UI `LabeledGroupNode`. */
+.flow-vue-labeled-group {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: rgb(255 255 255 / 50%);
+}
+
+.flow-vue-labeled-group-label {
+  position: absolute;
+  width: fit-content;
+  padding: 6px 8px;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 12px;
+  line-height: 1.2;
 }

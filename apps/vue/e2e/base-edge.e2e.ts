@@ -171,8 +171,12 @@ test('Vue FlowBaseEdge and FlowEdgeText render paths and centered measured label
   // interactionWidth 0 omits the interaction path; the label wrapper follows.
   const plain = await readPaths(page, 'plain')
   expect(plain.interactionClass).toBe('flow-vue-edge-textwrapper')
-  // Without caller stroke attributes the visible path keeps a drawn default.
-  expect(plain.stroke).toBe('#64748b')
+  // Without caller stroke attributes the visible path draws the themed default.
+  expect(plain.stroke).toBeNull()
+  await expect(page.getByTestId('base-edge-plain')).toHaveCSS(
+    'stroke',
+    'rgb(177, 177, 183)'
+  )
   await expect(page.getByTestId('base-edge-plain')).toHaveCSS(
     'stroke-width',
     '1.5px'

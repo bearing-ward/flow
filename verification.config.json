@@ -34,7 +34,12 @@
       "ui-controls.e2e.ts",
       "whiteboard-recipes.e2e.ts",
       "connection-threshold.e2e.ts",
-      "activation-callbacks.e2e.ts"
+      "activation-callbacks.e2e.ts",
+      "final-wiring.e2e.ts",
+      "minimap.e2e.ts",
+      "base-edge.e2e.ts",
+      "canvas-ui-contract.e2e.ts",
+      "panel.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",

@@ -552,7 +552,8 @@ const Component = defineComponent({
         mountedFlow = flow
 
         conformanceSnapshot = () => flow.getSnapshot()
-        conformanceNode = (id) => flow.getNode(id)
+        conformanceNode = (id) =>
+          flow.getSnapshot().document.nodes.find((node) => node.id === id)
         conformanceEdge = (id) => flow.getEdge(id)
         conformanceInternalNode = (id) => flow.getInternalNode(id)
         conformanceNodesInitialized = (includeHidden) =>

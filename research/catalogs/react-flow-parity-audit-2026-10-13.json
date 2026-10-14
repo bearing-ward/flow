@@ -12,10 +12,10 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 154,
+    "inScopeCloseAllHosts": 156,
     "inScopeCloseByHost": {
       "vanilla": 161,
-      "vue": 159,
+      "vue": 184,
       "foldkit": 156
     }
   },
@@ -45,13 +45,14 @@
       "section": "api-reference overview",
       "name": "<ReactFlowProvider />",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Vue provider so useFlow works outside FlowCanvas",
       "effort": "M",
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference components",
@@ -157,37 +158,40 @@
       "section": "api-reference components",
       "name": "<MiniMap />",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "nodeColor/stroke/mask, pannable/zoomable, position, custom node options",
       "effort": "M",
-      "theme": "minimap"
+      "theme": "minimap",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference components",
       "name": "<NodeResizeControl />",
       "vanilla": "G",
-      "vue": "G",
+      "vue": "C",
       "foldkit": "G",
       "scope": "parity",
       "wave": 5,
       "missing": "Public single resize control with position, variant, constraints",
       "effort": "M",
-      "theme": "resize"
+      "theme": "resize",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference components",
       "name": "<NodeResizer />",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 5,
       "missing": "Configurable resizer: min/max, aspect ratio, visibility, resize callbacks",
       "effort": "M",
-      "theme": "resize"
+      "theme": "resize",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference components",
@@ -292,13 +296,14 @@
       "section": "api-reference hooks",
       "name": "useKeyPress()",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Vue ref-returning useKeyPress composable",
       "effort": "S",
-      "theme": "misc"
+      "theme": "misc",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference hooks",
@@ -401,25 +406,27 @@
       "section": "api-reference hooks",
       "name": "useReactFlow()",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 4,
       "missing": "getIntersectingNodes, isNodeIntersecting, toObject, getNodesBounds instance methods",
       "effort": "M",
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference hooks",
       "name": "useStore()",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 4,
       "missing": "Selector-plus-equality subscription over snapshot",
       "effort": "M",
-      "theme": "store-hooks"
+      "theme": "store-hooks",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference hooks",
@@ -655,13 +662,14 @@
       "section": "api-reference types",
       "name": "AriaLabelConfig",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Global localized aria-label config object for canvas/controls/live region",
       "effort": "M",
-      "theme": "a11y"
+      "theme": "a11y",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -679,13 +687,14 @@
       "section": "api-reference types",
       "name": "ColorMode",
       "vanilla": "G",
-      "vue": "G",
+      "vue": "C",
       "foldkit": "G",
       "scope": "parity",
       "wave": 3,
       "missing": "Add light/dark/system color mode option and theming",
       "effort": "M",
-      "theme": "styling"
+      "theme": "styling",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -779,13 +788,14 @@
       "section": "api-reference types",
       "name": "DefaultEdgeOptions",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Style/className/animated/marker-config fields excluded",
       "effort": "M",
-      "theme": "edge-model"
+      "theme": "edge-model",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -803,13 +813,14 @@
       "section": "api-reference types",
       "name": "Edge",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Add style/className/animated/label styling/marker config fields",
       "effort": "M",
-      "theme": "edge-model"
+      "theme": "edge-model",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -827,13 +838,14 @@
       "section": "api-reference types",
       "name": "EdgeMarker",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Edge schema markers accept literal only, not config object",
       "effort": "S",
-      "theme": "edge-model"
+      "theme": "edge-model",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -878,13 +890,14 @@
       "section": "api-reference types",
       "name": "FitViewOptions",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Add minZoom/maxZoom/includeHiddenNodes/explicit node list",
       "effort": "S",
-      "theme": "viewport"
+      "theme": "viewport",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -963,25 +976,27 @@
       "section": "api-reference types",
       "name": "MiniMapNodeProps",
       "vanilla": "G",
-      "vue": "G",
+      "vue": "C",
       "foldkit": "G",
       "scope": "parity",
       "wave": 3,
       "missing": "Custom minimap node renderer props in all hosts",
       "effort": "M",
-      "theme": "minimap"
+      "theme": "minimap",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
       "name": "Node",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Add style/className/source/targetPosition/dragHandle/measured/expandParent",
       "effort": "M",
-      "theme": "node-model"
+      "theme": "node-model",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -1271,13 +1286,14 @@
       "section": "api-reference types",
       "name": "PanelPosition",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Add center-left/center-right placements",
       "effort": "S",
-      "theme": "panel"
+      "theme": "panel",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -1308,13 +1324,14 @@
       "section": "api-reference types",
       "name": "ReactFlowInstance",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 4,
       "missing": "Add getIntersectingNodes/toObject/getNodesBounds; Foldkit unified instance",
       "effort": "L",
-      "theme": "instance-api"
+      "theme": "instance-api",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -1344,13 +1361,14 @@
       "section": "api-reference types",
       "name": "ResizeParams",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 5,
       "missing": "Host NodeResizer callbacks exposing resize params",
       "effort": "M",
-      "theme": "node-resizer"
+      "theme": "node-resizer",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -1381,13 +1399,14 @@
       "section": "api-reference types",
       "name": "SnapGrid",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Vue/Foldkit snapGrid option",
       "effort": "S",
-      "theme": "interaction-options"
+      "theme": "interaction-options",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "api-reference types",
@@ -1417,13 +1436,14 @@
       "section": "api-reference types",
       "name": "ZIndexMode",
       "vanilla": "G",
-      "vue": "G",
+      "vue": "C",
       "foldkit": "G",
       "scope": "parity",
       "wave": 3,
       "missing": "Add auto/basic/manual stacking mode",
       "effort": "M",
-      "theme": "styling"
+      "theme": "styling",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "examples overview",
@@ -1531,13 +1551,14 @@
       "section": "examples nodes",
       "name": "Node Resizer",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 5,
       "missing": "No resizer options: aspect ratio, max size, custom controls",
       "effort": "M",
-      "theme": "node-resizer"
+      "theme": "node-resizer",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "examples nodes",
@@ -1604,13 +1625,14 @@
       "section": "examples nodes",
       "name": "Updating Nodes",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "No node style/className field for default nodes",
       "effort": "S",
-      "theme": "styling"
+      "theme": "styling",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "examples nodes",
@@ -2139,25 +2161,27 @@
       "section": "examples styling",
       "name": "Base Style",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "No CSS theme variables or node style/className",
       "effort": "M",
-      "theme": "styling"
+      "theme": "styling",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "examples styling",
       "name": "Dark Mode",
       "vanilla": "G",
-      "vue": "G",
+      "vue": "C",
       "foldkit": "G",
       "scope": "parity",
       "wave": 3,
       "missing": "No colorMode option or dark theme variables",
       "effort": "M",
-      "theme": "styling"
+      "theme": "styling",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "examples styling",
@@ -2359,13 +2383,14 @@
       "section": "ui components",
       "name": "Labeled Group",
       "vanilla": "G",
-      "vue": "G",
+      "vue": "C",
       "foldkit": "G",
       "scope": "parity",
       "wave": 5,
       "missing": "No labeled group/collapse component or recipe in any host",
       "effort": "M",
-      "theme": "ui-node"
+      "theme": "ui-node",
+      "updatedBy": ["Plan 116"]
     },
     {
       "section": "ui components",

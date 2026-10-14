@@ -112,7 +112,7 @@ export const runVersionedPersistenceProof = async () => {
     let invalidRejected = false
 
     try {
-      await flow.prepareVersionedRestore({ ...fresh, version: 3 })
+      await flow.prepareVersionedRestore({ ...fresh, version: 99 })
     } catch {
       invalidRejected = true
     }
