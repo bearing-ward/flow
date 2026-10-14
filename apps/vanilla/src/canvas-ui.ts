@@ -1,4 +1,4 @@
-import type { FlowToolbarAnchor } from '@flow/core'
+import type { FlowAriaLabelConfig, FlowToolbarAnchor } from '@flow/core'
 
 import type { CanvasPanelPlacement } from './mount-flow.ts'
 
@@ -21,6 +21,15 @@ export interface CanvasUIActions {
 export interface CanvasUISettings {
   readonly controls: boolean
   readonly minimap: boolean
+  /** Resolved `ariaLabelConfig` entries for the built-in controls and minimap. */
+  readonly ariaLabels: Pick<
+    FlowAriaLabelConfig,
+    | 'controls.ariaLabel'
+    | 'controls.zoomIn.ariaLabel'
+    | 'controls.zoomOut.ariaLabel'
+    | 'controls.fitView.ariaLabel'
+    | 'minimap.ariaLabel'
+  >
   readonly toolbarContainers?:
     | {
         readonly nodes?: Readonly<Record<string, HTMLElement>> | undefined
@@ -267,6 +276,11 @@ export const createCanvasUI = (
   if (settings.controls) {
     const controls = document.createElement('div')
     controls.className = 'flow-controls'
+    controls.setAttribute('role', 'group')
+    controls.setAttribute(
+      'aria-label',
+      settings.ariaLabels['controls.ariaLabel']
+    )
 
     const addButton = (name: string, label: string): void => {
       const button = document.createElement('button')
@@ -287,9 +301,9 @@ export const createCanvasUI = (
       controls.append(button)
     }
 
-    addButton('zoom-in', 'Zoom in')
-    addButton('zoom-out', 'Zoom out')
-    addButton('fit', 'Fit view')
+    addButton('zoom-in', settings.ariaLabels['controls.zoomIn.ariaLabel'])
+    addButton('zoom-out', settings.ariaLabels['controls.zoomOut.ariaLabel'])
+    addButton('fit', settings.ariaLabels['controls.fitView.ariaLabel'])
     const modeButton = document.createElement('button')
     modeButton.type = 'button'
     modeButton.className = 'flow-control-button'
@@ -315,7 +329,10 @@ export const createCanvasUI = (
     minimapElement.classList.add('flow-minimap')
     minimapElement.setAttribute('viewBox', '0 0 180 120')
     minimapElement.setAttribute('role', 'img')
-    minimapElement.setAttribute('aria-label', 'Graph minimap')
+    minimapElement.setAttribute(
+      'aria-label',
+      settings.ariaLabels['minimap.ariaLabel']
+    )
     scene = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     minimapElement.append(scene)
     minimapElement.addEventListener('click', (event) => {

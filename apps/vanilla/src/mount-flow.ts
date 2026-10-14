@@ -9,16 +9,21 @@ import {
   FlowSnapshotSchema,
   FlowDocumentSchema,
   FlowControlModeSchema,
-  FitViewPaddingSchema,
   FitViewNodeDimensionsSchema,
-  PanExtentSchema,
-  NodeExtentSchema,
+  FlowFitViewOptionsSchema,
+  resolveFitViewNodeIds,
+  FlowAriaLabelTextConfigSchema,
+  FlowPanelPositionSchema,
   NodeResizeDirectionSchema,
-  SnapGridSchema,
+  FlowSnapGridInputSchema,
+  FlowExtentInputSchema,
+  FlowColorModeSchema,
+  FlowZIndexModeSchema,
   NodeDragThresholdSchema,
   decodeNodeDragThreshold,
   nodeDragActivated,
   nodeTopLeftToAnchor,
+  nodeAnchorToTopLeft,
   resolveNodeOrigin,
   ConnectionDragThresholdSchema,
   defaultConnectionDragThreshold,
@@ -134,6 +139,13 @@ import {
   isNodeDraggable,
   isNodeSelectable,
   resolveFlowInteractivity,
+  flowNodeHandles,
+  computeFlowStacking,
+  calculateFlowExpandParentDrag,
+  calculateFlowExpandParent,
+  startFlowNodeResize,
+  stepFlowNodeResize,
+  snapPosition,
 } from '@flow/core'
 import type {
   ActiveNodeDrag,
@@ -183,6 +195,16 @@ import type {
   PanExtent,
   NodeExtent,
   SnapGrid,
+  FlowColorMode,
+  FlowZIndexMode,
+  FlowAriaLabelConfigInput,
+  FlowAriaLabelConfig,
+  FlowPanelPosition,
+  FlowNodeResizeSession,
+  FlowNodeResizeStart,
+  FlowResizeParams,
+  FlowResizeParamsWithDirection,
+  FlowResizeControlPosition,
   ConnectionRadius,
   ConnectionMode,
   ConnectionPreviewState,
@@ -207,9 +229,23 @@ import type {
   FlowInteractivity,
   FlowInteractivityInput,
 } from '@flow/core'
-import { Cause, Effect, Exit, Result, Schema as S, Scope } from 'effect'
+import {
+  Cause,
+  Effect,
+  Exit,
+  Predicate,
+  Result,
+  Schema as S,
+  Scope,
+} from 'effect'
 
+import {
+  createA11yDescriptions,
+  resolveVanillaAriaLabels,
+} from './aria-labels.ts'
+import type { FlowResolvedAriaLabels } from './aria-labels.ts'
 import { createCanvasUI } from './canvas-ui.ts'
+import { bindFlowColorMode } from './color-mode.ts'
 import { createEdgeRenderer, measureNodeHandles } from './edge-renderer.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
 import type {
@@ -219,9 +255,17 @@ import type {
   FlowReconnectDetails,
 } from './flow-changes.ts'
 import { createFlowGraphCache } from './flow-graph-cache.ts'
+import { createFlowInstanceApi } from './instance-api.ts'
+import type { FlowInstanceApi } from './instance-api.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 import { createMeasuredDimensionsTracker } from './measured-dimensions.ts'
+import { applyNodePresentation } from './presentation.ts'
+import { renderRegisteredResizeControls } from './resize-controls.ts'
+import type {
+  FlowNodeResizerHandle,
+  FlowNodeResizerRegistration,
+} from './resize-controls.ts'
 
 const noActiveGestures = (): boolean => false
 
@@ -405,29 +449,44 @@ export const FlowMountOptionsSchema = S.Struct({
   connectionMode: S.optional(ConnectionModeSchema),
   connectionLineType: S.optional(FlowConnectionLineTypeSchema),
   autoPanOnConnect: S.optional(S.Boolean),
-  snapGrid: S.optional(SnapGridSchema),
+  /** The `{ x, y }` record or React's `[x, y]` tuple. */
+  snapGrid: S.optional(FlowSnapGridInputSchema),
+  /** React `snapToGrid`: `false` ignores `snapGrid`; `true` alone snaps to 15x15. */
+  snapToGrid: S.optional(S.Boolean),
   connectionRadius: S.optional(ConnectionRadiusSchema),
-  nodeExtent: S.optional(NodeExtentSchema),
+  /** The `{ minX, … }` record or React's `[[minX, minY], [maxX, maxY]]`. */
+  nodeExtent: S.optional(FlowExtentInputSchema),
+  /** React `translateExtent`; overrides `viewport.extent` when both are set. */
+  translateExtent: S.optional(FlowExtentInputSchema),
   renderOnlyVisible: S.optional(S.Boolean),
   defaultEdgeOptions: S.optional(FlowDefaultEdgeOptionsSchema),
+  /** React `defaultMarkerColor`: markers without a color and edge stroke use it. */
+  defaultMarkerColor: S.optional(S.NonEmptyString),
   selectionMode: S.optional(SelectionModeSchema),
+  /** React `colorMode`; defaults to `light`. */
+  colorMode: S.optional(FlowColorModeSchema),
+  /** React `zIndexMode`; defaults to `basic`. */
+  zIndexMode: S.optional(FlowZIndexModeSchema),
+  elevateNodesOnSelect: S.optional(S.Boolean),
+  elevateEdgesOnSelect: S.optional(S.Boolean),
+  /** React `nodesFocusable`: the default for nodes without `focusable`. */
+  nodesFocusable: S.optional(S.Boolean),
+  /** React `edgesFocusable`: the default for edges without `focusable`. */
+  edgesFocusable: S.optional(S.Boolean),
+  /** React `fitView`: fit once every visible node is measured. */
+  fitView: S.optional(S.Boolean),
   background: S.optional(CanvasBackgroundSchema),
   ui: S.optional(CanvasUISchema),
   viewport: S.Struct({
-    extent: S.optional(PanExtentSchema),
+    extent: S.optional(FlowExtentInputSchema),
     initial: ViewportSchema,
     limits: ViewportLimitsSchema,
     mode: FlowControlModeSchema,
   }),
 })
 
-export type CanvasPanelPlacement =
-  | 'top-left'
-  | 'top-center'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-center'
-  | 'bottom-right'
+/** React `PanelPosition`, including `center-left` and `center-right`. */
+export type CanvasPanelPlacement = FlowPanelPosition
 
 export interface FlowPanelOption {
   readonly id: string
@@ -442,19 +501,9 @@ export class CanvasUIOptionsError extends Error {
   }
 }
 
-const canvasPanelPlacements = [
-  'top-left',
-  'top-center',
-  'top-right',
-  'bottom-left',
-  'bottom-center',
-  'bottom-right',
-] as const satisfies readonly CanvasPanelPlacement[]
-
 const isCanvasPanelPlacement = (
   value: unknown
-): value is CanvasPanelPlacement =>
-  S.is(S.Literals(canvasPanelPlacements))(value)
+): value is CanvasPanelPlacement => S.is(FlowPanelPositionSchema)(value)
 
 const validateCanvasPanelOptions = (
   panel: FlowMountOptionsInput['panel'],
@@ -519,12 +568,14 @@ const validateCanvasPanelOptions = (
   })
 }
 
+/**
+ * React `FitViewOptions` (`FlowFitViewOptionsSchema`: `nodes` as `all`,
+ * `selected` or `{ id }` items, `includeHiddenNodes`, `minZoom`, `maxZoom`)
+ * plus Vanilla's `fallbackDimensions` for unmeasured nodes.
+ */
 export const FitViewOptionsSchema = S.Struct({
-  nodes: S.optional(S.Literals(['all', 'selected'])),
-  padding: S.optional(FitViewPaddingSchema),
+  ...FlowFitViewOptionsSchema.fields,
   fallbackDimensions: S.optional(FitViewNodeDimensionsSchema),
-  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
-  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
 })
 
 export const FitBoundsOptionsSchema = S.Struct({
@@ -957,6 +1008,15 @@ export interface FlowHostOptions {
   readonly renderOnlyVisible?: boolean | undefined
   readonly selectionMode?: SelectionMode | undefined
   readonly defaultEdgeOptions?: FlowDefaultEdgeOptions | undefined
+  readonly defaultMarkerColor?: string | undefined
+  readonly colorMode?: FlowColorMode | undefined
+  readonly zIndexMode?: FlowZIndexMode | undefined
+  readonly elevateNodesOnSelect?: boolean | undefined
+  readonly elevateEdgesOnSelect?: boolean | undefined
+  readonly nodesFocusable?: boolean | undefined
+  readonly edgesFocusable?: boolean | undefined
+  /** Partial React `ariaLabelConfig`; unset entries keep Vanilla's labels. */
+  readonly ariaLabelConfig?: FlowAriaLabelConfigInput | undefined
   readonly background?: typeof CanvasBackgroundSchema.Type | undefined
   readonly ui?: typeof CanvasUISchema.Type | undefined
   readonly panel?: HTMLElement | undefined
@@ -1031,6 +1091,22 @@ const projectHandleConnectionEdges = (edges: readonly FlowEdge[]) =>
 
 export interface FlowController {
   readonly overlayPortal: HTMLElement
+  /** The resolved `ariaLabelConfig`, for UI components mounted on this canvas. */
+  readonly getAriaLabelConfig: () => FlowAriaLabelConfig
+  /** React `colorMode`: the configured mode and the class it resolved to. */
+  readonly getColorMode: () => {
+    readonly mode: FlowColorMode
+    readonly resolved: 'light' | 'dark'
+  }
+  readonly setColorMode: (mode: FlowColorMode) => void
+  /**
+   * Render resize controls in one node and drive them with the core resizer
+   * session. `createFlowNodeResizer`/`createFlowNodeResizeControl` call it.
+   */
+  readonly registerNodeResizer: (
+    nodeId: string,
+    registration: FlowNodeResizerRegistration
+  ) => FlowNodeResizerHandle
   /** Mount caller-owned content in graph coordinates inside this canvas viewport. */
   readonly mountViewportPortal: (element: HTMLElement) => () => void
   readonly getConnectionPreview: () => ConnectionPreviewSnapshot
@@ -1174,6 +1250,12 @@ export type ViewportInput = typeof ViewportSchema.Encoded
 
 export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly onInit?: ((controller: JavaScriptFlowController) => void) | undefined
+  /** React `fitViewOptions` for the initial `fitView`. */
+  readonly fitViewOptions?: typeof FitViewOptionsSchema.Encoded | undefined
+  /** React `ariaLabelConfig`: partial labels; unset entries keep Vanilla's. */
+  readonly ariaLabelConfig?: FlowAriaLabelConfigInput | undefined
+  /** React `onSelectionChange`: the selected nodes and edges after each change. */
+  readonly onSelectionChange?: ((selection: FlowSelection) => void) | undefined
   /** React Flow `onNodesChange`: node deltas next to the `FlowChange` stream. */
   readonly onNodesChange?: FlowNodesChangeListener | undefined
   /** React Flow `onEdgesChange`: edge deltas next to the `FlowChange` stream. */
@@ -1282,8 +1364,12 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
     | undefined
 }
 
-export interface JavaScriptFlowController {
+export interface JavaScriptFlowController extends FlowInstanceApi {
   readonly overlayPortal: HTMLElement
+  readonly getAriaLabelConfig: FlowController['getAriaLabelConfig']
+  readonly getColorMode: FlowController['getColorMode']
+  readonly setColorMode: FlowController['setColorMode']
+  readonly registerNodeResizer: FlowController['registerNodeResizer']
   readonly mountViewportPortal: FlowController['mountViewportPortal']
   readonly getConnectionPreview: FlowController['getConnectionPreview']
   readonly subscribeConnectionPreview: FlowController['subscribeConnectionPreview']
@@ -1524,8 +1610,14 @@ const applyViewport = (element: HTMLElement, viewport: Viewport): void => {
   element.dataset.x = String(viewport.x)
   element.dataset.y = String(viewport.y)
   element.dataset.zoom = String(viewport.zoom)
+  // React NodeResizeControl `autoScale`: handles keep their screen size when zoomed out.
+  element.style.setProperty(
+    '--flow-resize-control-scale',
+    String(Math.max(1 / viewport.zoom, 1))
+  )
 }
 
+// eslint-disable-next-line complexity -- one comparison per rendered node field.
 const sameNode = (left: FlowNode | undefined, right: FlowNode): boolean =>
   left?.label === right.label &&
   left.position.x === right.position.x &&
@@ -1543,14 +1635,33 @@ const sameNode = (left: FlowNode | undefined, right: FlowNode): boolean =>
   left.draggable === right.draggable &&
   left.ariaLabel === right.ariaLabel &&
   left.ariaDescription === right.ariaDescription &&
-  left.hidden === right.hidden
+  left.hidden === right.hidden &&
+  JSON.stringify(left.style) === JSON.stringify(right.style) &&
+  left.className === right.className &&
+  left.sourcePosition === right.sourcePosition &&
+  left.targetPosition === right.targetPosition &&
+  left.dragHandle === right.dragHandle &&
+  left.expandParent === right.expandParent
 
 const applyNodeInteractionState = (
   element: HTMLElement,
-  node: FlowNode
+  node: FlowNode,
+  canvas: {
+    readonly nodesFocusable: boolean | undefined
+    readonly descriptionId: string
+  }
 ): void => {
   element.classList.toggle('selected', node.selected === true)
-  element.tabIndex = node.focusable === false ? -1 : 0
+  element.tabIndex =
+    (node.focusable ?? canvas.nodesFocusable) === false ? -1 : 0
+
+  // React's shared node description; a node's own `ariaDescription` wins.
+  if (node.ariaDescription === undefined) {
+    element.setAttribute('aria-describedby', canvas.descriptionId)
+  } else {
+    element.removeAttribute('aria-describedby')
+  }
+
   element.setAttribute('role', node.selectable === false ? 'img' : 'button')
   element.setAttribute('aria-roledescription', 'node')
   element.setAttribute('aria-label', node.ariaLabel ?? node.label)
@@ -1604,11 +1715,12 @@ const markHandleConnectability = (
 const renderNodeHandles = (
   handles: HTMLElement,
   node: FlowNode,
-  interactivity: FlowInteractivity
+  interactivity: FlowInteractivity,
+  labels: FlowResolvedAriaLabels
 ): void => {
   handles.replaceChildren()
 
-  for (const handle of node.handles ?? []) {
+  for (const handle of flowNodeHandles(node)) {
     const button = globalThis.document.createElement('button')
     button.type = 'button'
     button.className = `flow-handle flow-handle-${handle.side} flow-handle-${handle.kind}`
@@ -1616,7 +1728,12 @@ const renderNodeHandles = (
     button.dataset.handleId = handle.id
     button.dataset.kind = handle.kind
     button.dataset.testid = 'flow-handle'
-    button.setAttribute('aria-label', `${handle.kind} handle ${handle.id}`)
+    button.setAttribute(
+      'aria-label',
+      labels.handleLabelConfigured
+        ? labels.config['handle.ariaLabel']
+        : `${handle.kind} handle ${handle.id}`
+    )
     markHandleConnectability(button, node, handle, interactivity)
     handles.append(button)
   }
@@ -1667,7 +1784,7 @@ const renderNodeResizeHandle = (
     // A mid-side control moves out past that side's connection handles.
     handle.classList.toggle(
       'flow-node-resize-clear',
-      node.handles?.some(({ side }) => side === direction) === true
+      flowNodeHandles(node).some(({ side }) => side === direction)
     )
     handle.dataset.testid = 'flow-node-resize-handle'
     handle.dataset.direction = direction
@@ -1747,6 +1864,24 @@ const isNodePointerTargetAllowed = (
     nativeControl === undefined ||
     nativeControl === dragHandle
   )
+}
+
+/**
+ * React `dragHandle`: with a selector, only a pointer-down inside a matching
+ * element within the node starts a drag (XYDrag `hasSelector`).
+ */
+const isInsideDragHandle = (
+  element: HTMLElement,
+  target: EventTarget | null,
+  selector: string | undefined
+): boolean => {
+  if (selector === undefined) {
+    return true
+  }
+
+  const handle = target instanceof Element ? target.closest(selector) : null
+
+  return handle !== null && element.contains(handle)
 }
 
 const changeForFinishedDrag = (
@@ -1929,10 +2064,23 @@ export const createFlowHost = (
       '--flow-background-spacing',
       `${background.spacing ?? 20}px`
     )
-    canvas.style.setProperty(
-      '--flow-background-color',
-      background.color ?? '#cbd5e1'
+
+    if (background.color !== undefined) {
+      canvas.style.setProperty(
+        '--flow-background-pattern-color',
+        background.color
+      )
+    }
+
+    const colorMode = bindFlowColorMode(canvas, options.colorMode)
+    const ariaLabels = resolveVanillaAriaLabels(options.ariaLabelConfig)
+
+    const a11yDescriptions = createA11yDescriptions(
+      canvas,
+      ariaLabels,
+      options.keyboardActivation !== false
     )
+
     const connectionStatus = globalThis.document.createElement('span')
     connectionStatus.className = 'flow-connection-status'
     connectionStatus.dataset.testid = 'flow-connection-status'
@@ -2332,8 +2480,94 @@ export const createFlowHost = (
     let documentRevision = 0
     let destroyPromise: Promise<void> | undefined
 
+    /** React `node.measured`: the last DOM measurement on public reads. */
+    const withMeasured = (node: FlowNode): FlowNode => {
+      const measured = measurements.get(node.id)
+
+      return measured === undefined
+        ? node
+        : {
+            ...node,
+            measured: { width: measured.width, height: measured.height },
+          }
+    }
+
     const findNode = (nodeId: NodeId): FlowNode | undefined =>
       document.nodes.find((node) => node.id === nodeId)
+
+    // Per-node resizers (`createFlowNodeResizer`/`createFlowNodeResizeControl`).
+    const nodeResizers = new Map<
+      NodeId,
+      Map<number, FlowNodeResizerRegistration>
+    >()
+
+    let nextResizerId = 0
+
+    /**
+     * A node with a registered resizer shows only its controls; otherwise
+     * `nodesResizable` shows the built-in controls on the selected node.
+     */
+    const renderResizeControls = (
+      element: HTMLElement,
+      node: FlowNode
+    ): void => {
+      const registered = renderRegisteredResizeControls(
+        element,
+        node.label,
+        nodeResizers.get(node.id)
+      )
+
+      renderNodeResizeHandle(
+        element,
+        node,
+        !registered && options.nodesResizable === true
+      )
+    }
+
+    const refreshResizeControls = (nodeId: NodeId): void => {
+      const entry = entries.get(nodeId)
+      const node = findNode(nodeId)
+
+      if (entry !== undefined && node !== undefined) {
+        renderResizeControls(entry.element, node)
+      }
+    }
+
+    const registerNodeResizer = (
+      nodeId: NodeId,
+      registration: FlowNodeResizerRegistration
+    ): FlowNodeResizerHandle => {
+      nextResizerId += 1
+      const id = nextResizerId
+      const forNode = nodeResizers.get(nodeId) ?? new Map()
+      forNode.set(id, registration)
+      nodeResizers.set(nodeId, forNode)
+      refreshResizeControls(nodeId)
+
+      return {
+        update: (next) => {
+          const current = nodeResizers.get(nodeId)
+
+          if (current?.has(id) === true) {
+            current.set(id, next)
+            refreshResizeControls(nodeId)
+          }
+        },
+        remove: () => {
+          const current = nodeResizers.get(nodeId)
+
+          if (current?.delete(id) !== true) {
+            return
+          }
+
+          if (current.size === 0) {
+            nodeResizers.delete(nodeId)
+          }
+
+          refreshResizeControls(nodeId)
+        },
+      }
+    }
 
     const dimensionsForNode = (node: FlowNode): NodeDimensions => {
       const measured = measurements.get(node.id)
@@ -2484,7 +2718,12 @@ export const createFlowHost = (
       position: XYPosition,
       dimensions: NodeDimensions
     ): XYPosition | undefined => {
-      if (node.parentId === undefined || node.extent !== 'parent') {
+      // React skips the parent clamp for `expandParent` children: they grow it.
+      if (
+        node.parentId === undefined ||
+        node.extent !== 'parent' ||
+        node.expandParent === true
+      ) {
         return undefined
       }
 
@@ -2601,6 +2840,7 @@ export const createFlowHost = (
     yield* Scope.addFinalizer(
       hostScope,
       Effect.sync(() => {
+        colorMode.dispose()
         nodeSlots.clear()
         renderedNodePositions.clear()
 
@@ -2937,7 +3177,14 @@ export const createFlowHost = (
       (pass, dependency) => projectionMatches(pass, dependency),
       () => destroyed,
       cleanupFailures,
-      (label, error) => reportEdgeCallbackFailure(label, error)
+      (label, error) => reportEdgeCallbackFailure(label, error),
+      () => ({
+        zIndexMode: options.zIndexMode,
+        elevateEdgesOnSelect: options.elevateEdgesOnSelect,
+        defaultMarkerColor: options.defaultMarkerColor,
+        edgesFocusable: options.edgesFocusable,
+        edgeDescriptionId: a11yDescriptions.edgeDescriptionId,
+      })
     )
 
     const captureProjection = (
@@ -4384,7 +4631,7 @@ export const createFlowHost = (
                 ({ handleId }) => handleId === element.dataset.handleId
               )
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         ({ id }) => id === element.dataset.handleId
       )
 
@@ -4431,7 +4678,7 @@ export const createFlowHost = (
           (item) => item.id === element.dataset.nodeId
         )
 
-        const handle = node?.handles?.find(
+        const handle = flowNodeHandles(node).find(
           (item) => item.id === element.dataset.handleId
         )
 
@@ -4514,7 +4761,7 @@ export const createFlowHost = (
         (node) => node.id === targetElement.dataset.nodeId
       )
 
-      const targetHandle = targetNode?.handles?.find(
+      const targetHandle = flowNodeHandles(targetNode).find(
         (handle) => handle.id === targetElement.dataset.handleId
       )
 
@@ -4610,7 +4857,7 @@ export const createFlowHost = (
           ({ id }) => id === button.dataset.nodeId
         )
 
-        const handle = owner?.handles?.find(
+        const handle = flowNodeHandles(owner).find(
           ({ id }) => id === button.dataset.handleId
         )
 
@@ -4751,7 +4998,7 @@ export const createFlowHost = (
         (node) => node.id === target?.dataset.nodeId
       )
 
-      const targetHandle = targetNode?.handles?.find(
+      const targetHandle = flowNodeHandles(targetNode).find(
         (handle) => handle.id === target?.dataset.handleId
       )
 
@@ -4804,7 +5051,7 @@ export const createFlowHost = (
         (item) => item.id === targetElement?.dataset.nodeId
       )
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         (item) => item.id === targetElement?.dataset.handleId
       )
 
@@ -5272,7 +5519,7 @@ export const createFlowHost = (
     ): HTMLElement | undefined => {
       const node = next.nodes.find(({ id }) => id === identity.nodeId)
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         ({ id, kind }) => id === identity.handleId && kind === identity.kind
       )
 
@@ -5333,7 +5580,7 @@ export const createFlowHost = (
       if (pending.kind === 'connection-pending') {
         const fromNode = next.nodes.find(({ id }) => id === pending.from.nodeId)
 
-        const fromHandle = fromNode?.handles?.find(
+        const fromHandle = flowNodeHandles(fromNode).find(
           ({ id }) => id === pending.from.handleId
         )
 
@@ -5662,6 +5909,227 @@ export const createFlowHost = (
       }
     }
 
+    /**
+     * React `expandParent` while dragging: `calculateFlowExpandParentDrag`
+     * grows (and for up/left moves, shifts) the parent and compensates its
+     * other children on every step. Vanilla previews that growth and commits
+     * it with the drop; `parents` and `siblings` hold the preview.
+     */
+    interface ExpandParentPreview {
+      readonly parents: Map<
+        NodeId,
+        {
+          position: XYPosition
+          size: { readonly width: number; readonly height: number }
+        }
+      >
+      readonly siblings: Map<NodeId, XYPosition>
+    }
+
+    const expandParentPreviews = new WeakMap<
+      ActiveNodeDrag | ActiveNodeGroupDrag,
+      ExpandParentPreview
+    >()
+
+    const expandsParent = (nodeId: NodeId): boolean => {
+      const node = findNode(nodeId)
+
+      return node?.expandParent === true && node.parentId !== undefined
+    }
+
+    /** Apply one drag step's expand-parent changes; returns the dragged positions. */
+    const previewExpandParent = (
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
+      items: readonly {
+        readonly nodeId: NodeId
+        readonly position: XYPosition
+      }[]
+    ): readonly {
+      readonly nodeId: NodeId
+      readonly position: XYPosition
+    }[] => {
+      if (!items.some(({ nodeId }) => expandsParent(nodeId))) {
+        return items
+      }
+
+      const preview: ExpandParentPreview = expandParentPreviews.get(drag) ?? {
+        parents: new Map(),
+        siblings: new Map(),
+      }
+
+      expandParentPreviews.set(drag, preview)
+      const draggedIds = new Set(items.map(({ nodeId }) => nodeId))
+
+      const parentIds = new Set(
+        items.flatMap(({ nodeId }) => findNode(nodeId)?.parentId ?? [])
+      )
+
+      // React commits every step, so each step starts from the previous
+      // one's parent and sibling positions; the preview stands in for them.
+      const previewDocument: FlowDocument = {
+        ...document,
+        nodes: document.nodes.map((candidate) => {
+          const parent = preview.parents.get(candidate.id)
+          const sibling = preview.siblings.get(candidate.id)
+
+          if (parent !== undefined) {
+            return {
+              ...candidate,
+              position: parent.position,
+              size: parent.size,
+            }
+          }
+
+          return sibling === undefined
+            ? candidate
+            : { ...candidate, position: sibling }
+        }),
+      }
+
+      const changes = calculateFlowExpandParentDrag(
+        graphFor(previewDocument),
+        items.map(({ nodeId, position }) => ({ id: nodeId, position }))
+      )
+
+      const dragged: { nodeId: NodeId; position: XYPosition }[] = []
+
+      for (const change of changes) {
+        const parentPreview = preview.parents.get(change.nodeId)
+
+        if (change.kind === 'size') {
+          const parent = findNode(change.nodeId)
+          const entry = entries.get(change.nodeId)
+
+          preview.parents.set(change.nodeId, {
+            position:
+              parentPreview?.position ??
+              (parent === undefined ? { x: 0, y: 0 } : adoptedPosition(parent)),
+            size: change.size,
+          })
+
+          if (entry !== undefined) {
+            entry.element.style.width = `${change.size.width}px`
+            entry.element.style.height = `${change.size.height}px`
+            entry.element.style.boxSizing = 'border-box'
+            entry.element.dataset.sized = 'true'
+          }
+
+          acceptMeasurement(change.nodeId, change.size)
+        } else if (draggedIds.has(change.nodeId)) {
+          dragged.push({ nodeId: change.nodeId, position: change.position })
+        } else if (parentIds.has(change.nodeId)) {
+          const parent = findNode(change.nodeId)
+
+          preview.parents.set(change.nodeId, {
+            position: change.position,
+            size:
+              parentPreview?.size ??
+              (parent === undefined
+                ? { width: 0, height: 0 }
+                : dimensionsForNode(parent)),
+          })
+          renderedNodePositions.set(change.nodeId, change.position)
+        } else {
+          preview.siblings.set(change.nodeId, change.position)
+          renderedNodePositions.set(change.nodeId, change.position)
+        }
+      }
+
+      return dragged
+    }
+
+    /** Undo a drag's expand-parent preview (cancel, or a declined commit). */
+    const revertExpandParentPreview = (
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag
+    ): void => {
+      const preview = expandParentPreviews.get(drag)
+
+      if (preview === undefined) {
+        return
+      }
+
+      expandParentPreviews.delete(drag)
+
+      for (const nodeId of [
+        ...preview.parents.keys(),
+        ...preview.siblings.keys(),
+      ]) {
+        const node = findNode(nodeId)
+        const entry = entries.get(nodeId)
+
+        if (node === undefined) {
+          continue
+        }
+
+        restoreAdoptedPosition(node)
+
+        if (entry !== undefined && preview.parents.has(nodeId)) {
+          applyDeclaredNodeSize(entry.element, node)
+          recordNodeMeasurement(node, entry.element)
+        }
+      }
+    }
+
+    /**
+     * The drop commit for an expand-parent drag. With one parent the whole
+     * step is one `node-bounds` change (the parent's bounds and every moved
+     * child); otherwise the parents follow the drag change.
+     */
+    const expandParentCommit = (
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
+      positions: readonly {
+        readonly nodeId: NodeId
+        readonly position: XYPosition
+      }[]
+    ):
+      | { readonly changes: readonly FlowChange[]; readonly withDrag: boolean }
+      | undefined => {
+      const preview = expandParentPreviews.get(drag)
+
+      if (preview === undefined || preview.parents.size === 0) {
+        return undefined
+      }
+
+      const bounds = [...preview.parents].map(
+        ([nodeId, parent]): NodeBoundsChange => ({
+          kind: 'node-bounds',
+          nodeId,
+          position: parent.position,
+          size: parent.size,
+          childPositions: [...preview.siblings].flatMap(
+            ([siblingId, position]) =>
+              findNode(siblingId)?.parentId === nodeId
+                ? [{ nodeId: siblingId, position }]
+                : []
+          ),
+        })
+      )
+
+      const [only] = bounds
+
+      if (bounds.length === 1 && only !== undefined) {
+        return {
+          withDrag: true,
+          changes: [
+            {
+              ...only,
+              childPositions: [
+                ...only.childPositions,
+                ...positions.filter(
+                  ({ nodeId }) =>
+                    !only.childPositions.some(
+                      (child) => child.nodeId === nodeId
+                    )
+                ),
+              ],
+            },
+          ],
+        }
+      }
+
+      return { withDrag: false, changes: bounds }
+    }
+
     const notifyNodeDragStop = (
       drag: ActiveNodeDrag | ActiveNodeGroupDrag,
       payload: FlowNodeDragPayload,
@@ -5699,7 +6167,10 @@ export const createFlowHost = (
           moveNodeGroupDrag(drag, point, options.snapGrid)
         )
 
-        for (const { nodeId, position } of change.positions) {
+        for (const { nodeId, position } of previewExpandParent(
+          drag,
+          change.positions
+        )) {
           renderedNodePositions.set(nodeId, position)
         }
 
@@ -5716,7 +6187,7 @@ export const createFlowHost = (
           new Set(change.positions.map(({ nodeId }) => nodeId))
         )
       } else {
-        const position = boundedNodePosition(
+        const bounded = boundedNodePosition(
           drag.nodeId,
           localPositionFromAbsolute(
             drag.nodeId,
@@ -5724,7 +6195,11 @@ export const createFlowHost = (
           )
         )
 
-        renderedNodePositions.set(drag.nodeId, position)
+        const [expanded] = previewExpandParent(drag, [
+          { nodeId: drag.nodeId, position: bounded },
+        ])
+
+        renderedNodePositions.set(drag.nodeId, expanded?.position ?? bounded)
         const paintPass = captureProjection(document, { kind: 'node', sample })
         const current = () => projectionMatches(paintPass, { kind: 'graph' })
         renderGraphPositions(paintPass)
@@ -6309,7 +6784,7 @@ export const createFlowHost = (
 
       const endpointHandleExists =
         endpointHandleId === undefined ||
-        endpointNode?.handles?.some(
+        flowNodeHandles(endpointNode).some(
           (handle) => handle.id === endpointHandleId && handle.kind === endpoint
         ) === true
 
@@ -6334,6 +6809,229 @@ export const createFlowHost = (
       ) {
         cancelReconnection('edge-changed')
       }
+    }
+
+    /** A pointer resize from a registered control: React `XYResizer` state. */
+    interface RegisteredResize {
+      readonly registration: FlowNodeResizerRegistration
+      readonly pointerStart: XYPosition
+      session: FlowNodeResizeSession
+      params: FlowResizeParams
+      candidate: NodeBoundsChange
+      resized: boolean
+    }
+
+    const registeredResizes = new WeakMap<ActiveNodeResize, RegisteredResize>()
+
+    /** React `getPointerPosition`: the flow point, snapped when snapping is on. */
+    const snappedFlowPoint = (point: XYPosition): XYPosition =>
+      options.snapGrid === undefined
+        ? point
+        : snapPosition(point, options.snapGrid)
+
+    /**
+     * Begin a registered resize (React `XYResizer` drag start): the parent box
+     * is the extent for `extent: 'parent'`, children compensate top/left
+     * moves, and `expandParent` children clamp at the parent origin.
+     */
+    const beginRegisteredResize = (
+      resize: ActiveNodeResize,
+      registration: FlowNodeResizerRegistration,
+      control: FlowResizeControlPosition,
+      event: PointerEvent
+    ): void => {
+      const node = findNode(resize.nodeId)
+
+      if (node === undefined) {
+        return
+      }
+
+      const parent =
+        node.parentId === undefined ? undefined : findNode(node.parentId)
+
+      const parentSize =
+        parent === undefined ? undefined : dimensionsForNode(parent)
+
+      const start = {
+        x: resize.positionStart.x,
+        y: resize.positionStart.y,
+        width: resize.sizeStart.width,
+        height: resize.sizeStart.height,
+      }
+
+      const input: MutableResizeStart = {
+        controlPosition: control,
+        start,
+        constraints: registration.constraints,
+        nodeOrigin: resolveNodeOrigin(node, document),
+        children: document.nodes.flatMap((child) =>
+          child.parentId === node.id
+            ? [{ id: child.id, position: child.position }]
+            : []
+        ),
+        expandParent: node.parentId !== undefined && node.expandParent === true,
+      }
+
+      if (registration.resizeDirection !== undefined) {
+        input.resizeDirection = registration.resizeDirection
+      }
+
+      if (node.extent === 'parent' && parentSize !== undefined) {
+        input.extent = {
+          minX: 0,
+          minY: 0,
+          maxX: parentSize.width,
+          maxY: parentSize.height,
+        }
+      }
+
+      if (resize.childExtent !== undefined) {
+        input.childExtent = resize.childExtent
+      }
+
+      const session = startFlowNodeResize(input)
+
+      registeredResizes.set(resize, {
+        registration,
+        pointerStart: snappedFlowPoint(resize.pointerStart),
+        session,
+        params: session.previous,
+        candidate: {
+          kind: 'node-bounds',
+          nodeId: node.id,
+          position: resize.positionStart,
+          size: resize.sizeStart,
+          childPositions: [],
+        },
+        resized: false,
+      })
+
+      if (registration.onResizeStart !== undefined) {
+        reportBoundaryCallback(
+          'Node resize start',
+          'node-resize',
+          (params: FlowResizeParams) =>
+            registration.onResizeStart?.(event, params),
+          session.previous
+        )
+      }
+    }
+
+    /** One registered resize step; `shouldResize` may veto it. */
+    const registeredResizeCandidate = (
+      gesture: RegisteredResize,
+      event: PointerEvent
+    ): NodeBoundsChange => {
+      const point = snappedFlowPoint(pointerInFlow(event))
+
+      const { session, step } = stepFlowNodeResize(gesture.session, {
+        x: point.x - gesture.pointerStart.x,
+        y: point.y - gesture.pointerStart.y,
+      })
+
+      gesture.session = session
+
+      if (
+        step === undefined ||
+        gesture.registration.shouldResize?.(event, step.params) === false
+      ) {
+        return gesture.candidate
+      }
+
+      gesture.params = {
+        x: step.params.x,
+        y: step.params.y,
+        width: step.params.width,
+        height: step.params.height,
+      }
+      gesture.resized = true
+
+      gesture.candidate = {
+        ...gesture.candidate,
+        position: step.position ?? gesture.candidate.position,
+        size: step.size ?? gesture.candidate.size,
+        childPositions:
+          step.childPositions.length === 0
+            ? gesture.candidate.childPositions
+            : step.childPositions.map(({ id, position }) => ({
+                nodeId: id,
+                position,
+              })),
+      }
+
+      if (gesture.registration.onResize !== undefined) {
+        reportBoundaryCallback(
+          'Node resize',
+          'node-resize',
+          (params: FlowResizeParamsWithDirection) =>
+            gesture.registration.onResize?.(event, params),
+          step.params
+        )
+      }
+
+      return gesture.candidate
+    }
+
+    /**
+     * React NodeResizeControl `expandParent`: after the resize commits, grow
+     * the parent around the child's new rectangle (`calculateFlowExpandParent`).
+     */
+    const expandParentAfterResize = (change: NodeBoundsChange): void => {
+      const node = findNode(change.nodeId)
+
+      if (node?.expandParent !== true || node.parentId === undefined) {
+        return
+      }
+
+      const graph = graphFor()
+      const parent = graph.nodes.get(node.parentId)
+
+      if (parent === undefined) {
+        return
+      }
+
+      const topLeft = nodeAnchorToTopLeft(
+        change.position,
+        change.size,
+        resolveNodeOrigin(node, document)
+      )
+
+      const changes = calculateFlowExpandParent(graph, [
+        {
+          id: node.id,
+          parentId: node.parentId,
+          rect: {
+            x: parent.absolutePosition.x + topLeft.x,
+            y: parent.absolutePosition.y + topLeft.y,
+            ...change.size,
+          },
+        },
+      ])
+
+      const size = changes.find(
+        (item) => item.kind === 'size' && item.nodeId === node.parentId
+      )
+
+      if (size?.kind !== 'size') {
+        return
+      }
+
+      const moved = changes.find(
+        (item) => item.kind === 'position' && item.nodeId === node.parentId
+      )
+
+      changePublisher.publish({
+        kind: 'node-bounds',
+        nodeId: node.parentId,
+        position:
+          moved?.kind === 'position' ? moved.position : parent.node.position,
+        size: size.size,
+        childPositions: changes.flatMap((item) =>
+          item.kind === 'position' && item.nodeId !== node.parentId
+            ? [{ nodeId: item.nodeId, position: item.position }]
+            : []
+        ),
+      })
     }
 
     const operations = {
@@ -6552,7 +7250,7 @@ export const createFlowHost = (
             (node) => node.id === interactionSlots.activeConnection?.source
           )
 
-          const sourceStillExists = source?.handles?.some(
+          const sourceStillExists = flowNodeHandles(source).some(
             (handle) =>
               handle.id === interactionSlots.activeConnection?.sourceHandle &&
               handle.kind === 'source'
@@ -6577,7 +7275,7 @@ export const createFlowHost = (
             (node) => node.id === activeClickConnection?.source
           )
 
-          const handleExists = source?.handles?.some(
+          const handleExists = flowNodeHandles(source).some(
             (handle) =>
               handle.id === activeClickConnection?.sourceHandle &&
               handle.kind === 'source'
@@ -6676,6 +7374,12 @@ export const createFlowHost = (
         // Moving a node element detaches it, and Chrome then drops the pending
         // click; nodes that already sit in order stay put (see nodeElementInPlace).
         let placedNodeElement: HTMLElement | null = null
+
+        const nodeStacking = computeFlowStacking({
+          nodes: next.nodes,
+          zIndexMode: options.zIndexMode ?? 'basic',
+          elevateNodesOnSelect: options.elevateNodesOnSelect ?? true,
+        }).nodes
 
         for (const graphNode of graph.orderedNodes) {
           const { node } = graphNode
@@ -6779,10 +7483,10 @@ export const createFlowHost = (
             }
 
             if (
-              JSON.stringify(previousNode?.handles ?? []) !==
-              JSON.stringify(node.handles ?? [])
+              JSON.stringify(flowNodeHandles(previousNode)) !==
+              JSON.stringify(flowNodeHandles(node))
             ) {
-              renderNodeHandles(entry.handles, node, interactivity)
+              renderNodeHandles(entry.handles, node, interactivity, ariaLabels)
             }
 
             applyDeclaredNodeSize(entry.element, node)
@@ -6809,12 +7513,16 @@ export const createFlowHost = (
               graphNode.absolutePosition
           )
 
-          applyNodeInteractionState(entry.element, node)
-          renderNodeResizeHandle(
+          applyNodeInteractionState(entry.element, node, {
+            nodesFocusable: options.nodesFocusable,
+            descriptionId: a11yDescriptions.nodeDescriptionId,
+          })
+          applyNodePresentation(
             entry.element,
             node,
-            options.nodesResizable === true
+            (nodeStacking.get(node.id) ?? 0) + 1
           )
+          renderResizeControls(entry.element, node)
 
           if (
             !(
@@ -7412,8 +8120,11 @@ export const createFlowHost = (
             return undefined
           }
 
-          renderNodeHandles(handles, node, interactivity)
-          renderNodeResizeHandle(element, node, options.nodesResizable === true)
+          renderNodeHandles(handles, node, interactivity, ariaLabels)
+          renderResizeControls(element, node)
+
+          // The press started outside the node's `dragHandle` selector.
+          let pressOutsideDragHandle = false
 
           // eslint-disable-next-line complexity -- Activation checks the existing phase, geometry and callback ownership.
           const activateNodeDrag = (event: PointerEvent): boolean => {
@@ -7429,6 +8140,10 @@ export const createFlowHost = (
             }
 
             const drag = interactionSlots.activeDrag
+
+            if (pressOutsideDragHandle) {
+              return false
+            }
 
             if (!('positions' in drag) && !nodeIsDraggable(drag.nodeId)) {
               return false
@@ -7512,6 +8227,12 @@ export const createFlowHost = (
             resize: ActiveNodeResize,
             event: PointerEvent
           ): NodeBoundsChange | undefined => {
+            const registered = registeredResizes.get(resize)
+
+            if (registered !== undefined) {
+              return registeredResizeCandidate(registered, event)
+            }
+
             const current = findNode(resize.nodeId)
 
             if (current === undefined) {
@@ -7666,6 +8387,22 @@ export const createFlowHost = (
                 change.size.height !== resize.sizeStart.height)
             ) {
               operations.publishChange(change)
+              expandParentAfterResize(change)
+            }
+
+            const registered = registeredResizes.get(resize)
+
+            if (
+              registered?.resized === true &&
+              registered.registration.onResizeEnd !== undefined
+            ) {
+              reportBoundaryCallback(
+                'Node resize end',
+                'node-resize',
+                (params: FlowResizeParams) =>
+                  registered.registration.onResizeEnd?.(event, params),
+                registered.params
+              )
             }
 
             runTelemetry(
@@ -7690,9 +8427,10 @@ export const createFlowHost = (
             return true
           }
 
+          // eslint-disable-next-line complexity -- one guard covers built-in and registered controls and every competing gesture.
           const startNodeResizeFromPointer = (
             event: PointerEvent,
-            resizeHandle: HTMLButtonElement
+            resizeHandle: HTMLElement
           ): void => {
             if (destroyed) {
               return
@@ -7702,9 +8440,18 @@ export const createFlowHost = (
             event.stopPropagation()
             const current = findNode(node.id)
 
+            const registration =
+              resizeHandle.dataset.resizerId === undefined
+                ? undefined
+                : nodeResizers
+                    .get(node.id)
+                    ?.get(Number(resizeHandle.dataset.resizerId))
+
             if (
               current === undefined ||
-              current.selected !== true ||
+              (registration === undefined && current.selected !== true) ||
+              (resizeHandle.dataset.resizerId !== undefined &&
+                registration === undefined) ||
               interactionSlots.activeNodeResize !== null ||
               activeKeyboardResize !== null ||
               interactionSlots.activeDrag !== null ||
@@ -7762,6 +8509,15 @@ export const createFlowHost = (
             )
             interactionSessions = started.sessions
 
+            if (registration !== undefined) {
+              beginRegisteredResize(
+                session.resize,
+                registration,
+                direction,
+                event
+              )
+            }
+
             if (!runEffect(browser.capturePointer(element, event.pointerId))) {
               cancelNodeResize('pointer-capture-failed')
 
@@ -7799,6 +8555,14 @@ export const createFlowHost = (
             if (isNodePointerTargetAllowed(content, event.target) === false) {
               return
             }
+
+            // React `dragHandle`: a press elsewhere on the node still selects
+            // on release, but never drags or pans.
+            pressOutsideDragHandle = !isInsideDragHandle(
+              element,
+              event.target,
+              findNode(node.id)?.dragHandle
+            )
 
             if (
               event.button !== 0 ||
@@ -7840,6 +8604,7 @@ export const createFlowHost = (
             dragPointerStart = { x: event.clientX, y: event.clientY }
 
             panHandOffAllowed =
+              !pressOutsideDragHandle &&
               isPanButtonEnabled(options.panOnDrag, event.button) &&
               isActivationModifierPressed(
                 event,
@@ -7881,9 +8646,9 @@ export const createFlowHost = (
             }
 
             const resizeHandle =
-              event.target instanceof HTMLElement
-                ? event.target.closest<HTMLButtonElement>(
-                    '.flow-node-resize-handle'
+              event.target instanceof Element
+                ? event.target.closest<HTMLElement>(
+                    '.flow-node-resize-handle, .flow-resize-control'
                   )
                 : null
 
@@ -7901,7 +8666,7 @@ export const createFlowHost = (
             if (handleElement !== null) {
               const current = findNode(node.id)
 
-              const handle = current?.handles?.find(
+              const handle = flowNodeHandles(current).find(
                 (item) => item.id === handleElement.dataset.handleId
               )
 
@@ -8043,13 +8808,38 @@ export const createFlowHost = (
                     options.snapGrid
                   )
 
-            const change = changeForFinishedDrag(
+            const boundedChange = changeForFinishedDrag(
               interactionSlots.activeDrag,
               candidate,
               boundedGroupChange,
               boundedNodePosition,
               localPositionFromAbsolute
             )
+
+            const boundedPositions =
+              boundedChange.kind === 'node-position'
+                ? [
+                    {
+                      nodeId: boundedChange.nodeId,
+                      position: boundedChange.position,
+                    },
+                  ]
+                : boundedChange.positions
+
+            const expandedPositions = wasActivated
+              ? previewExpandParent(drag, boundedPositions)
+              : boundedPositions
+
+            const change: NodePositionChange | NodePositionsChange =
+              boundedChange.kind === 'node-position'
+                ? {
+                    ...boundedChange,
+                    position:
+                      expandedPositions[0]?.position ?? boundedChange.position,
+                  }
+                : { ...boundedChange, positions: expandedPositions }
+
+            const expandCommit = expandParentCommit(drag, expandedPositions)
 
             const outcome = endSession('node-drag', event.pointerId, 'finished')
             interactionSlots.activeDrag = null
@@ -8109,8 +8899,16 @@ export const createFlowHost = (
               outcome.kind === 'finished' &&
               outcome.semanticEvent === change.kind
             ) {
-              operations.publishChange(change)
+              if (expandCommit?.withDrag !== true) {
+                operations.publishChange(change)
+              }
+
+              for (const expandChange of expandCommit?.changes ?? []) {
+                operations.publishChange(expandChange)
+              }
             }
+
+            revertExpandParentPreview(drag)
 
             notifyNodeDragStop(
               drag,
@@ -9128,6 +9926,7 @@ export const createFlowHost = (
       for (const { actor } of taken) {
         switch (actor.kind) {
           case 'activeDrag': {
+            revertExpandParentPreview(actor.record)
             endSession('node-drag', actor.record.pointerId, 'cancelled')
             dragPointerStart = null
             dragPointer = null
@@ -9788,7 +10587,7 @@ export const createFlowHost = (
             ({ id }) => id === pending.from.nodeId
           )
 
-          const handle = node?.handles?.find(
+          const handle = flowNodeHandles(node).find(
             ({ id }) => id === pending.from.handleId
           )
 
@@ -9827,7 +10626,7 @@ export const createFlowHost = (
         (node) => node.id === targetElement?.dataset.nodeId
       )
 
-      const targetHandle = targetNode?.handles?.find(
+      const targetHandle = flowNodeHandles(targetNode).find(
         (handle) => handle.id === targetElement?.dataset.handleId
       )
 
@@ -9928,7 +10727,7 @@ export const createFlowHost = (
           )
         : undefined
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         (item) => item.id === handleElement?.dataset.handleId
       )
 
@@ -10041,7 +10840,7 @@ export const createFlowHost = (
         (candidate) => candidate.id === handleElement.dataset.nodeId
       )
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         (candidate) => candidate.id === handleElement.dataset.handleId
       )
 
@@ -10622,6 +11421,8 @@ export const createFlowHost = (
                     y: parentPosition.y + focusedPosition.y,
                   }
 
+            a11yDescriptions.announceNodeMove({ key: event.key, ...absolute })
+
             const screen = flowToScreenPosition(absolute, renderedViewport)
             const measured = measurements.get(node.id)
             const width = measured?.width ?? node.size?.width ?? 150
@@ -11146,6 +11947,7 @@ export const createFlowHost = (
       {
         controls: options.ui?.controls === true,
         minimap: options.ui?.minimap === true,
+        ariaLabels: ariaLabels.config,
         toolbarContainers: options.toolbarContainers,
         panels: options.panels,
       },
@@ -11218,7 +12020,12 @@ export const createFlowHost = (
       panelParent,
       panelNextSibling
     )
-    canvas.append(viewport, connectionStatus, canvasUIHandle.current.element)
+    canvas.append(
+      viewport,
+      connectionStatus,
+      ...a11yDescriptions.elements,
+      canvasUIHandle.current.element
+    )
     updateCanvasMinimap()
 
     try {
@@ -11596,6 +12403,21 @@ export const createFlowHost = (
         return destroyPromise
       },
       getSnapshot: () => createFlowSnapshot(document, authoritativeViewport),
+      getAriaLabelConfig: () => ariaLabels.config,
+      registerNodeResizer: (nodeId, registration) =>
+        registerNodeResizer(
+          S.decodeUnknownSync(NodeIdSchema)(nodeId),
+          registration
+        ),
+      getColorMode: () => ({
+        mode: colorMode.get(),
+        resolved: colorMode.resolved(),
+      }),
+      setColorMode: (mode) => {
+        if (!destroyed) {
+          colorMode.set(mode)
+        }
+      },
       getDocumentRevision: () => documentRevision,
       getVersionedSavedSession: () =>
         encodeVersionedFlowSession(document, authoritativeViewport),
@@ -11606,13 +12428,19 @@ export const createFlowHost = (
       prepareRestore: (saved) =>
         Effect.runPromise(decodeSavedFlowSession(saved)),
       getNodes: () =>
-        createFlowSnapshot(document, authoritativeViewport).document.nodes,
+        createFlowSnapshot(document, authoritativeViewport).document.nodes.map(
+          withMeasured
+        ),
       getEdges: () =>
         createFlowSnapshot(document, authoritativeViewport).document.edges,
-      getNode: (id) =>
-        createFlowSnapshot(document, authoritativeViewport).document.nodes.find(
-          (node) => node.id === id
-        ),
+      getNode: (id) => {
+        const node = createFlowSnapshot(
+          document,
+          authoritativeViewport
+        ).document.nodes.find((candidate) => candidate.id === id)
+
+        return node === undefined ? undefined : withMeasured(node)
+      },
       getNodesData: (nodeIds) =>
         selectNodesData(
           document,
@@ -12017,14 +12845,7 @@ export const createFlowHost = (
           })
         }
 
-        const nodeIds =
-          fitOptions.nodes === 'selected'
-            ? new Set(
-                document.nodes
-                  .filter((node) => node.selected === true)
-                  .map((node) => node.id)
-              )
-            : undefined
+        const nodeIds = resolveFitViewNodeIds(document, fitOptions.nodes)
 
         const fitted = fitViewportToNodes({
           document,
@@ -12040,6 +12861,9 @@ export const createFlowHost = (
             width: 150,
             height: 44,
           },
+          includeHiddenNodes: fitOptions.includeHiddenNodes,
+          minZoom: fitOptions.minZoom,
+          maxZoom: fitOptions.maxZoom,
         })
 
         return performViewportOperation(constrainViewport(fitted), fitOptions)
@@ -12247,6 +13071,89 @@ export const acquireFlowHost = (
     (host) => Effect.promise(() => host.destroyAsync())
   )
 
+/** `FlowNodeResizeStart` built field by field for optional constraints. */
+type MutableResizeStart = {
+  -readonly [Key in keyof FlowNodeResizeStart]: FlowNodeResizeStart[Key]
+}
+
+/** React's default `snapGrid` when only `snapToGrid` is set. */
+const defaultSnapGrid: SnapGrid = { x: 15, y: 15 }
+
+/** `snapToGrid: false` turns `snapGrid` off; `true` alone uses 15x15. */
+const resolveSnapGrid = (options: {
+  readonly snapGrid?: SnapGrid | undefined
+  readonly snapToGrid?: boolean | undefined
+}): SnapGrid | undefined => {
+  if (options.snapToGrid === false) {
+    return undefined
+  }
+
+  return (
+    options.snapGrid ??
+    (options.snapToGrid === true ? defaultSnapGrid : undefined)
+  )
+}
+
+/** Decode the text entries; the live-message builder must be a function. */
+const decodeAriaLabelConfig = (
+  input: FlowAriaLabelConfigInput | undefined
+): FlowAriaLabelConfigInput | undefined => {
+  if (input === undefined) {
+    return undefined
+  }
+
+  const { 'node.a11yDescription.ariaLiveMessage': liveMessage, ...text } = input
+
+  if (liveMessage !== undefined && !Predicate.isFunction(liveMessage)) {
+    throw new CanvasUIOptionsError(
+      'ariaLabelConfig node.a11yDescription.ariaLiveMessage must be a function'
+    )
+  }
+
+  // Validates the text entries; the input itself already has the right shape.
+  S.decodeUnknownSync(FlowAriaLabelTextConfigSchema)(text)
+
+  return input
+}
+
+/** Frames to wait for node measurements before the initial fit gives up waiting. */
+const initialFitViewFrames = 60
+
+/**
+ * React `fitView` prop: fit once every visible node has been measured (or
+ * after `initialFitViewFrames` frames), as React queues the fit until the
+ * nodes are initialized.
+ */
+const scheduleInitialFitView = (
+  host: Pick<FlowController, 'nodesInitialized' | 'fitView'>,
+  fitOptions: FitViewOptions,
+  disposed: () => boolean
+): void => {
+  const fitOnce = async (): Promise<void> => {
+    try {
+      await host.fitView(fitOptions)
+    } catch {
+      // The initial fit is best effort; a disposed or detached canvas skips it.
+    }
+  }
+
+  const attempt = (frame: number): void => {
+    if (disposed()) {
+      return
+    }
+
+    if (host.nodesInitialized() || frame >= initialFitViewFrames) {
+      void fitOnce()
+
+      return
+    }
+
+    globalThis.requestAnimationFrame(() => attempt(frame + 1))
+  }
+
+  globalThis.requestAnimationFrame(() => attempt(0))
+}
+
 /** Late-bound host that drag listeners read their dragged nodes from. */
 interface DraggedNodesSource {
   current: FlowController | undefined
@@ -12264,8 +13171,24 @@ export const mountFlow = (
           decodeFlowDefaultEdgeOptions(inputOptions.defaultEdgeOptions)
         )
 
-  const options = Effect.runSync(
+  const decodedOptions = Effect.runSync(
     S.decodeUnknownEffect(FlowMountOptionsSchema)(inputOptions)
+  )
+
+  const options = {
+    ...decodedOptions,
+    snapGrid: resolveSnapGrid(decodedOptions),
+    viewport: {
+      ...decodedOptions.viewport,
+      extent: decodedOptions.translateExtent ?? decodedOptions.viewport.extent,
+    },
+    ariaLabelConfig: decodeAriaLabelConfig(inputOptions.ariaLabelConfig),
+  }
+
+  const initialFitViewOptions = Effect.runSync(
+    S.decodeUnknownEffect(FitViewOptionsSchema)(
+      inputOptions.fitViewOptions ?? {}
+    )
   )
 
   const document = Effect.runSync(decodeFlowDocument(input))
@@ -12370,7 +13293,13 @@ export const mountFlow = (
   const pendingDeleteRejectors = new Set<(error: Error) => void>()
 
   const controller: JavaScriptFlowController = {
+    ...createFlowInstanceApi(host),
     overlayPortal: host.overlayPortal,
+    getAriaLabelConfig: host.getAriaLabelConfig,
+    registerNodeResizer: host.registerNodeResizer,
+    getColorMode: host.getColorMode,
+    setColorMode: (mode) =>
+      host.setColorMode(S.decodeUnknownSync(FlowColorModeSchema)(mode)),
     mountViewportPortal: host.mountViewportPortal,
     getConnectionPreview: host.getConnectionPreview,
     subscribeConnectionPreview: host.subscribeConnectionPreview,
@@ -12952,6 +13881,18 @@ export const mountFlow = (
         Effect.runSync(S.decodeUnknownEffect(ViewportSchema)(viewportInput))
       )
     },
+  }
+
+  if (inputOptions.onSelectionChange !== undefined) {
+    host.subscribeSelection(inputOptions.onSelectionChange)
+  }
+
+  if (decodedOptions.fitView === true) {
+    scheduleInitialFitView(
+      host,
+      initialFitViewOptions,
+      () => controllerDisposed
+    )
   }
 
   try {

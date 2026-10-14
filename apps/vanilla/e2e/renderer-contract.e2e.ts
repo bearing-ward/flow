@@ -560,8 +560,7 @@ test('real Vanilla output conforms to the shared renderer fixture', async ({
       for (const marker of document.querySelectorAll<SVGMarkerElement>(
         '.flow-edges marker'
       )) {
-        const kind = marker.id.match(/-(?<kind>arrowclosed|arrow)-/u)?.groups
-          ?.kind
+        const kind = marker.dataset.markerType
 
         if (kind !== undefined) {
           markerKinds.set(marker.id, kind)

@@ -4,9 +4,13 @@ import {
   edgeAttachmentPosition,
   inferHandleMeasurement,
   edgeLabelPosition,
+  computeFlowStacking,
+  flowSelectedElementZ,
   flowEdgeRendererProps,
-  flowEdgeMarkerType,
   flowNodeBounds,
+  flowNodeHandles,
+  flowThemeValue,
+  resolveFlowEdgeMarker,
   orderFlowEdges,
   sameFlowEdgeRendererProps,
   resolveEdgeHandles,
@@ -18,8 +22,10 @@ import {
 import type {
   EdgeId,
   FlowDocument,
-  FlowEdgeMarker,
+  FlowEdgeMarkerOption,
   FlowNode,
+  FlowZIndexMode,
+  ResolvedFlowEdgeMarker,
   FlowDefaultEdgeOptions,
   FlowEdgeRendererProps,
   FlowGraphView,
@@ -38,6 +44,11 @@ import type {
   FlowEdgeRenderer,
   FlowEdgeRendererInstance,
 } from './mount-flow.ts'
+import {
+  applyFlowClassName,
+  applyFlowStyle,
+  applyEdgeLabelPresentation,
+} from './presentation.ts'
 
 export const measureNodeHandles = (
   node: FlowNode,
@@ -50,7 +61,7 @@ export const measureNodeHandles = (
   for (const handleElement of element.querySelectorAll<HTMLElement>(
     '.flow-handle'
   )) {
-    const handle = node.handles?.find(
+    const handle = flowNodeHandles(node).find(
       (candidate) => candidate.id === handleElement.dataset.handleId
     )
 
@@ -121,7 +132,17 @@ const customInteraction = (
   return Number.isFinite(width) && width > 0 ? { path, width } : { path }
 }
 
-const defaultStroke = '#64748b'
+/** Canvas options the edge layer reads on every pass. */
+export interface FlowEdgePresentationOptions {
+  readonly zIndexMode: FlowZIndexMode | undefined
+  readonly elevateEdgesOnSelect: boolean | undefined
+  readonly defaultMarkerColor: string | undefined
+  readonly edgesFocusable: boolean | undefined
+  readonly edgeDescriptionId: string | undefined
+}
+
+/** Markers on edges without a stroke follow the themed edge stroke. */
+const themedEdgeStroke = flowThemeValue('edge-stroke')
 
 let nextMarkerScope = 0
 
@@ -244,7 +265,8 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   ) => boolean,
   hostClosing: () => boolean,
   cleanupFailures: unknown[],
-  reportCallbackFailure: (label: string, error: Error) => void
+  reportCallbackFailure: (label: string, error: Error) => void,
+  presentation: () => FlowEdgePresentationOptions
 ) => {
   nextMarkerScope += 1
   const markerScope = nextMarkerScope
@@ -374,22 +396,26 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   const markers = new Map<string, SVGMarkerElement>()
   let visibleEdgeIds: ReadonlySet<EdgeId> | null = null
   let orderedEdges: readonly FlowDocument['edges'][number][] = []
+  let edgeZ: ReadonlyMap<EdgeId, number> = new Map()
   let edgeById = new Map<EdgeId, FlowDocument['edges'][number]>()
   let incidentEdges = new Map<NodeId, Set<EdgeId>>()
   let previousPositions = new Map<NodeId, XYPosition>()
 
-  const ensureMarker = (kind: FlowEdgeMarker, color: string): string => {
-    const id = `flow-marker-${markerScope}-${kind}-${color.slice(1).toLowerCase()}`
+  /** React `MarkerDefinitions`: one `<marker>` per resolved configuration. */
+  const ensureMarker = (resolved: ResolvedFlowEdgeMarker): string => {
+    const { id } = resolved
 
     if (!markers.has(id)) {
       const marker = globalThis.document.createElementNS(svgNamespace, 'marker')
+      const color = resolved.color ?? themedEdgeStroke
 
       marker.id = id
-      marker.setAttribute('markerWidth', '12.5')
-      marker.setAttribute('markerHeight', '12.5')
+      marker.dataset.markerType = resolved.type
+      marker.setAttribute('markerWidth', String(resolved.width))
+      marker.setAttribute('markerHeight', String(resolved.height))
       marker.setAttribute('viewBox', '-10 -10 20 20')
-      marker.setAttribute('markerUnits', 'strokeWidth')
-      marker.setAttribute('orient', 'auto-start-reverse')
+      marker.setAttribute('markerUnits', resolved.markerUnits)
+      marker.setAttribute('orient', resolved.orient)
       marker.setAttribute('refX', '0')
       marker.setAttribute('refY', '0')
 
@@ -400,10 +426,20 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
       arrow.setAttribute(
         'points',
-        kind === 'arrow' ? '-5,-4 0,0 -5,4' : '-5,-4 0,0 -5,4 -5,-4'
+        resolved.type === 'arrow' ? '-5,-4 0,0 -5,4' : '-5,-4 0,0 -5,4 -5,-4'
       )
-      arrow.setAttribute('stroke', color)
-      arrow.setAttribute('fill', kind === 'arrow' ? 'none' : color)
+      const fill = resolved.type === 'arrow' ? 'none' : color
+
+      // A themed `var(...)` color only resolves in CSS, not in attributes.
+      if (color.startsWith('var(')) {
+        arrow.style.stroke = color
+        arrow.style.fill = fill
+      } else {
+        arrow.setAttribute('stroke', color)
+        arrow.setAttribute('fill', fill)
+      }
+
+      arrow.setAttribute('stroke-width', String(resolved.strokeWidth))
       arrow.setAttribute('stroke-linecap', 'round')
       arrow.setAttribute('stroke-linejoin', 'round')
       marker.append(arrow)
@@ -512,11 +548,38 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
       previousPositions = new Map(
         [...graph.nodes].map(([id, node]) => [id, { ...node.absolutePosition }])
       )
-      orderedEdges = orderFlowEdges(
-        document.edges.map((edge) =>
-          applyDefaultEdgeOptions(edge, pass.inputs.defaults)
-        )
+
+      const withDefaults = document.edges.map((edge) =>
+        applyDefaultEdgeOptions(edge, pass.inputs.defaults)
       )
+
+      const canvasPresentation = presentation()
+
+      // One SVG layer: edges paint in `computeFlowStacking` order within it.
+      edgeZ = computeFlowStacking({
+        nodes: document.nodes,
+        edges: withDefaults,
+        zIndexMode: canvasPresentation.zIndexMode ?? 'basic',
+        elevateEdgesOnSelect: canvasPresentation.elevateEdgesOnSelect ?? false,
+      }).edges
+
+      // Vanilla still raises a selected edge within the edge layer.
+      const layerZ = (edge: FlowDocument['edges'][number]): number =>
+        (edgeZ.get(edge.id) ?? 0) +
+        (edge.selected === true &&
+        canvasPresentation.elevateEdgesOnSelect !== true &&
+        canvasPresentation.zIndexMode !== 'manual'
+          ? flowSelectedElementZ
+          : 0)
+
+      orderedEdges = orderFlowEdges(withDefaults)
+        .map((edge, index) => ({ edge, index }))
+        .toSorted(
+          (first, second) =>
+            layerZ(first.edge) - layerZ(second.edge) ||
+            first.index - second.index
+        )
+        .map(({ edge }) => edge)
       edgeById = new Map(orderedEdges.map((edge) => [edge.id, edge]))
       incidentEdges = new Map()
 
@@ -763,21 +826,27 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           ;({ pathData } = customGeometry)
         }
 
-        const stroke = edge.stroke ?? defaultStroke
+        const canvasPresentation = presentation()
 
-        const markerUrl = (kind: FlowEdgeMarker | undefined) => {
-          if (kind === undefined) {
+        const markerUrl = (marker: FlowEdgeMarkerOption | undefined) => {
+          const resolvedMarker = resolveFlowEdgeMarker(marker, {
+            scope: String(markerScope),
+            // Without either, the marker follows the themed edge stroke.
+            defaultColor: edge.stroke ?? canvasPresentation.defaultMarkerColor,
+          })
+
+          if (resolvedMarker === undefined) {
             return
           }
 
-          const markerId = ensureMarker(kind, stroke)
+          const markerId = ensureMarker(resolvedMarker)
           visibleMarkers.add(markerId)
 
           return `url(#${markerId})`
         }
 
-        const markerStart = markerUrl(flowEdgeMarkerType(edge.markerStart))
-        const markerEnd = markerUrl(flowEdgeMarkerType(edge.markerEnd))
+        const markerStart = markerUrl(edge.markerStart)
+        const markerEnd = markerUrl(edge.markerEnd)
 
         const labelAnchor =
           customGeometry?.labelAnchor ??
@@ -906,7 +975,25 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           'available',
           edge.reconnectable !== false && edge.reconnectable !== 'source'
         )
-        group.setAttribute('tabindex', edge.focusable === false ? '-1' : '0')
+        group.setAttribute(
+          'tabindex',
+          (edge.focusable ?? canvasPresentation.edgesFocusable) === false
+            ? '-1'
+            : '0'
+        )
+        applyFlowClassName(group, edge.className)
+        group.classList.toggle('animated', edge.animated === true)
+        group.dataset.zIndex = String(edgeZ.get(edge.id) ?? 0)
+
+        if (canvasPresentation.edgeDescriptionId === undefined) {
+          group.removeAttribute('aria-describedby')
+        } else {
+          group.setAttribute(
+            'aria-describedby',
+            canvasPresentation.edgeDescriptionId
+          )
+        }
+
         group.setAttribute('role', edge.selectable === false ? 'img' : 'button')
         group.setAttribute('aria-roledescription', 'edge')
 
@@ -921,8 +1008,17 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           edge.ariaLabel ??
             `Edge from ${resolved.sourceNode.label} to ${resolved.targetNode.label}`
         )
-        path.setAttribute('stroke', stroke)
+
+        // Without an edge stroke, CSS paints the themed `edge-stroke`.
+        if (edge.stroke === undefined) {
+          path.removeAttribute('stroke')
+        } else {
+          path.setAttribute('stroke', edge.stroke)
+        }
+
         path.setAttribute('stroke-width', String(edge.strokeWidth ?? 2))
+        // React spreads `style` over the default stroke on the edge path.
+        applyFlowStyle(path, edge.style)
 
         for (const [attribute, url] of [
           ['marker-start', markerStart],
@@ -968,7 +1064,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
             entry.label = label
           }
 
-          label.textContent = edge.label
+          applyEdgeLabelPresentation(label, edge)
           label.setAttribute('x', String(position.x))
           label.setAttribute('y', String(position.y))
           label.style.left = `${position.x}px`

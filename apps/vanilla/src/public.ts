@@ -45,6 +45,40 @@ export type {
 
 export { createFlowControls } from './controls.ts'
 
+export { createFlowMiniMap } from './minimap.ts'
+
+export type { FlowMiniMapMount, FlowMiniMapOptions } from './minimap.ts'
+
+export {
+  createFlowNodeResizeControl,
+  createFlowNodeResizer,
+} from './node-resizer.ts'
+
+export type {
+  FlowNodeResizeControlOptions,
+  FlowNodeResizerCallbacks,
+  FlowNodeResizerMount,
+  FlowNodeResizerOptions,
+} from './node-resizer.ts'
+
+export type {
+  FlowNodeResizerHandle,
+  FlowNodeResizerRegistration,
+  FlowResizeCallback,
+  FlowResizeControlSpec,
+} from './resize-controls.ts'
+
+export type {
+  FlowInstanceApi,
+  FlowNodeOrRect,
+  FlowStoreState,
+} from './instance-api.ts'
+
+export {
+  ensureFlowThemeStylesheet,
+  flowThemeRootSelector,
+} from './color-mode.ts'
+
 export { createFlowControlButton } from './ui/control-button.ts'
 
 export type { FlowControlButtonOptions } from './ui/control-button.ts'
@@ -93,6 +127,31 @@ export type {
   FlowInteractivity,
   FlowInteractivityInput,
   NodeChange,
+} from '@flow/core'
+
+export type {
+  CoordinateExtent,
+  FlowAriaLabelConfig,
+  FlowAriaLabelConfigInput,
+  FlowColorMode,
+  FlowDefaultEdgeOptions,
+  FlowEdge,
+  FlowEdgeMarkerConfiguration,
+  FlowEdgeMarkerOption,
+  FlowFitViewOptions,
+  FlowMiniMapNodeProps,
+  FlowNode,
+  FlowNodeData,
+  FlowObject,
+  FlowPanelPosition,
+  FlowRect,
+  FlowResizeControlDirection,
+  FlowResizeControlPosition,
+  FlowResizeControlVariant,
+  FlowResizeParams,
+  FlowResizeParamsWithDirection,
+  FlowStyle,
+  FlowZIndexMode,
 } from '@flow/core'
 
 export type {

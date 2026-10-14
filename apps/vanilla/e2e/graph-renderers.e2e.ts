@@ -1100,6 +1100,8 @@ test('overlapping nodes follow graph order and controlled zIndex updates retain 
         )
     )
     .toEqual(['parent', 'child', 'sibling'])
+  // React `zIndexMode: 'basic'` (computeFlowStacking): the child keeps its
+  // own zIndex 99 above the sibling's 10, whatever the DOM order.
   expect(
     await page.evaluate(() => {
       const node = globalThis.document
@@ -1108,7 +1110,7 @@ test('overlapping nodes follow graph order and controlled zIndex updates retain 
 
       return node instanceof HTMLElement ? node.dataset.nodeId : undefined
     })
-  ).toBe('sibling')
+  ).toBe('child')
   expect(
     await page.evaluate(() => {
       // SAFETY: This intersection adds only optional test-hook fields; reads are guarded or follow assignment in this test.
