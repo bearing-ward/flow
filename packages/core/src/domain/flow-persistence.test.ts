@@ -339,7 +339,9 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
       'scripts/capture-legacy-v1-persistence.ts',
       '--check',
     ])
-  })
+    // Rebuilding the frozen baseline spawns git and a bundler; allow for a
+    // loaded machine instead of vitest's 5s default.
+  }, 60_000)
 
   it('matches the baseline writer on the full nested representative field projection', () => {
     const fixture = S.decodeUnknownSync(
