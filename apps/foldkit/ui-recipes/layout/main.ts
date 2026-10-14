@@ -214,16 +214,17 @@ const createLayoutController = (
     }
   }
 
-  target.onAccepted(() => {
-    void request()
-  })
-  // React Flow `dimensions` node changes: lay out again when a measured size
-  // changes, including each node's first measurement.
-  target.runtime.ports.elementChanges.subscribe(({ nodes }) => {
-    if (nodes.some(({ type }) => type === 'dimensions')) {
+  // The React examples' `onNodesChange` trigger: lay out again on a
+  // `dimensions` change (a new measured size, including each added node's
+  // first measurement) or a `remove` change. Position changes, including the
+  // layout's own, do not re-run it.
+  const stop = target.runtime.ports.elementChanges.subscribe(({ nodes }) => {
+    if (nodes.some(({ type }) => type === 'dimensions' || type === 'remove')) {
       void request()
     }
   })
+
+  target.onDispose(stop)
   void request()
 
   return {

@@ -240,6 +240,7 @@ export {
   areFlowNodesInitialized,
   emptyFlowMeasurementState,
   getFlowInternalNode,
+  getFlowInternalNodes,
   pruneFlowMeasurements,
   setNodeMeasurementGenerations,
 } from './domain/flow-measurement.schema.ts'

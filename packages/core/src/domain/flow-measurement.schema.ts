@@ -2,6 +2,7 @@ import { Schema as S } from 'effect'
 
 import { MeasuredHandleSchema } from './flow-edge.schema.ts'
 import { createFlowGraph } from './flow-graph.ts'
+import type { FlowGraphNode } from './flow-graph.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { MeasuredNodeSchema } from './flow-runtime.schema.ts'
 import type { FlowDocument, NodeId } from './flow.schema.ts'
@@ -335,26 +336,10 @@ export const areFlowNodesInitialized = (
     .every(({ id }) => measurements.has(id))
 }
 
-/** Return a detached, frozen projection of one accepted node and its runtime geometry. */
-export const getFlowInternalNode = (
-  document: FlowDocument,
-  state: FlowMeasurementState,
-  nodeId: NodeId
-): FlowInternalNode | undefined => {
-  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
-
-  const measurements = getFlowMeasuredNodes(validDocument, validState)
-
-  const graph = createFlowGraph(validDocument, measurements)
-  const item = graph.nodes.get(nodeId)
-
-  if (item === undefined) {
-    return undefined
-  }
-
-  const measured = measurements.get(nodeId)
-
+const projectInternalNode = (
+  item: FlowGraphNode,
+  measured: MeasuredNode | undefined
+): FlowInternalNode => {
   let measurementStatus: FlowInternalNode['measurementStatus'] = 'measured'
 
   if (item.hidden) {
@@ -384,6 +369,50 @@ export const getFlowInternalNode = (
       )
     ),
     node: Object.freeze(structuredClone(snapshot.node)),
+  })
+}
+
+/** Return a detached, frozen projection of one accepted node and its runtime geometry. */
+export const getFlowInternalNode = (
+  document: FlowDocument,
+  state: FlowMeasurementState,
+  nodeId: NodeId
+): FlowInternalNode | undefined => {
+  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
+  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
+
+  const measurements = getFlowMeasuredNodes(validDocument, validState)
+
+  const graph = createFlowGraph(validDocument, measurements)
+  const item = graph.nodes.get(nodeId)
+
+  return item === undefined
+    ? undefined
+    : projectInternalNode(item, measurements.get(nodeId))
+}
+
+/**
+ * Every accepted node's internal projection in document order, like React
+ * Flow's `nodeLookup` values. One graph build serves all nodes, so instance
+ * helpers over all nodes stay linear.
+ */
+export const getFlowInternalNodes = (
+  document: FlowDocument,
+  state: FlowMeasurementState
+): readonly FlowInternalNode[] => {
+  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
+  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
+
+  const measurements = getFlowMeasuredNodes(validDocument, validState)
+
+  const graph = createFlowGraph(validDocument, measurements)
+
+  return validDocument.nodes.flatMap((node) => {
+    const item = graph.nodes.get(node.id)
+
+    return item === undefined
+      ? []
+      : [projectInternalNode(item, measurements.get(node.id))]
   })
 }
 

@@ -44,6 +44,7 @@ export { MouseDetailSchema } from './mouse-observation.ts'
 export type { MouseDetail } from './mouse-observation.ts'
 
 export type {
+  FlowFitViewOptionsInput,
   ViewportClient,
   ViewportPaneMetrics,
   EditResponse,
@@ -86,6 +87,7 @@ export type {
   FoldkitEdgeRenderer,
   FoldkitEdgeTypes,
   FoldkitNodeRenderer,
+  FoldkitNodeRendererProps,
   FoldkitNodeTypes,
   FoldkitRendererRegistry,
   GraphInteractionOptions,
@@ -123,6 +125,7 @@ export type {
   FlowPanelOptions,
   FlowPanelPosition,
   FlowViewportPortalMount,
+  FoldkitMiniMapOptions,
 } from './ui.ts'
 
 export { flowBaseEdge, flowEdgeText } from './base-edge.ts'
@@ -250,3 +253,41 @@ export type {
   FoldkitTooltipMount,
   FoldkitTooltipOptions,
 } from './ui/tooltip.ts'
+
+export { createFoldkitFlowInstance } from './instance.ts'
+
+export type {
+  FoldkitFlowInstance,
+  FoldkitFlowInstanceOptions,
+  FoldkitFlowInstancePorts,
+  FoldkitNodeOrRect,
+  FoldkitUpdateOptions,
+} from './instance.ts'
+
+export { createFoldkitStore } from './store.ts'
+
+export type {
+  FoldkitFlowState,
+  FoldkitStore,
+  FoldkitStorePorts,
+} from './store.ts'
+
+export { createFoldkitLabeledGroupNode } from './ui/labeled-group.ts'
+
+export type {
+  FoldkitLabeledGroupOptions,
+  FoldkitLabeledGroupPosition,
+} from './ui/labeled-group.ts'
+
+export {
+  createFoldkitNodeResizeControl,
+  createFoldkitNodeResizer,
+} from './node-resizer.ts'
+
+export type {
+  FoldkitNodeResizeControl,
+  FoldkitNodeResizeControlOptions,
+  FoldkitNodeResizer,
+  FoldkitNodeResizerOptions,
+  FoldkitResizeCallbacks,
+} from './node-resizer.ts'

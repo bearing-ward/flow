@@ -86,6 +86,6 @@ test('Feature Overview shows the toolbar of the selected node, resizes it and zo
 
   // Controls zoom in around the pane center.
   const before = await zoomOf(page)
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect.poll(() => zoomOf(page)).toBeGreaterThan(before)
 })

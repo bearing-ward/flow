@@ -6,7 +6,16 @@ test('Button Handle activates its app action without dragging or changing connec
   await page.goto('/ui-recipes/button-handle/')
   const button = page.getByRole('button', { name: 'Run action' })
   const node = page.locator('.flow-foldkit-node[data-node-id="button-node"]')
-  const initial = await node.getAttribute('style')
+
+  // Selection may raise the node's z-index (elevateNodesOnSelect); the
+  // position must not change.
+  const placement = () =>
+    node.evaluate((element) => ({
+      left: element.style.left,
+      top: element.style.top,
+    }))
+
+  const initial = await placement()
   await button.focus()
   await expect(button).toBeFocused()
   await button.press('Enter')
@@ -24,7 +33,7 @@ test('Button Handle activates its app action without dragging or changing connec
 
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
   await expect(page.locator('#app')).toHaveAttribute('data-action-count', '3')
-  await expect(node).toHaveAttribute('style', initial ?? '')
+  await expect.poll(placement).toStrictEqual(initial)
   const buttonBox = await button.boundingBox()
 
   if (buttonBox === null) {
@@ -43,7 +52,7 @@ test('Button Handle activates its app action without dragging or changing connec
   )
   await page.mouse.up()
 
-  await expect(node).toHaveAttribute('style', initial ?? '')
+  await expect.poll(placement).toStrictEqual(initial)
   await expect(page.locator('#app')).toHaveAttribute('data-action-count', '3')
   await expect(page.locator('.flow-foldkit-edge')).toHaveCount(0)
   await page.reload()

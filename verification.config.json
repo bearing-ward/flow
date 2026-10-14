@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 114 core model fields, styling and canvas options (merged with Plans 111-113, 112b scope)",
+  "activeWork": "Plan 117 Foldkit final parity wiring (with Plan 114 core and Plans 111-113 scope)",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
@@ -54,7 +54,14 @@
       "shared-conformance.e2e.ts",
       "subflows-recipes.e2e.ts",
       "ui-controls.e2e.ts",
-      "whiteboard-recipes.e2e.ts"
+      "whiteboard-recipes.e2e.ts",
+      "model-styling.e2e.ts",
+      "node-resizer.e2e.ts",
+      "minimap-options.e2e.ts",
+      "minimap.e2e.ts",
+      "instance-api.e2e.ts",
+      "labeled-group-recipe.e2e.ts",
+      "canvas-ui-contract.e2e.ts"
     ]
   }
 }

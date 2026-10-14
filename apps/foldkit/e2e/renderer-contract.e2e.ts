@@ -690,7 +690,7 @@ test('Foldkit runtime output matches the shared renderer contract fixture', asyn
   expect(normalized.allEdgesAttachToMeasuredHandles).toBe(true)
 
   const customMarkerPaint = await page
-    .locator('.flow-foldkit-edge[data-edge-id="edge-custom"] marker path')
+    .locator('.flow-foldkit-edge[data-edge-id="edge-custom"] marker polyline')
     .evaluateAll((paths) =>
       paths.map((path) => ({
         fill: path.getAttribute('fill'),
@@ -778,7 +778,10 @@ test('Custom Node recipe updates displayed status and accepted data in place', a
     '.flow-foldkit-node[data-node-id="renderer-custom"]'
   )
 
-  const initialPosition = await nodes.first().getAttribute('style')
+  const initialPosition = await nodes
+    .first()
+    .evaluate((element) => `${element.style.left} ${element.style.top}`)
+
   const firstCard = page.locator('.custom-node-view').first()
   const originalCard = await firstCard.evaluate((element) => element)
 
@@ -800,6 +803,11 @@ test('Custom Node recipe updates displayed status and accepted data in place', a
     'All checks passed'
   )
   await expect(page.locator('.custom-node-status').last()).toHaveText('waiting')
-  expect(await nodes.first().getAttribute('style')).toBe(initialPosition)
+  // Selecting the node may raise its z-index; its position must not change.
+  expect(
+    await nodes
+      .first()
+      .evaluate((element) => `${element.style.left} ${element.style.top}`)
+  ).toBe(initialPosition)
   expect(await firstCard.evaluate((element) => element)).toBe(originalCard)
 })

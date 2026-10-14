@@ -1,0 +1,17 @@
+/* The group node itself is the translucent frame; its title sits in a corner. */
+.labeled-group-page .flow-foldkit-node:has(> .flow-foldkit-labeled-group) {
+  padding: 0;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  background: rgb(248 250 252 / 50%);
+  box-shadow: none;
+}
+
+.labeled-group-page .flow-foldkit-labeled-group-label {
+  padding: 4px 8px;
+  border-bottom-right-radius: 4px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 600;
+}

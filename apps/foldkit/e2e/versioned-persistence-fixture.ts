@@ -211,7 +211,7 @@ export const runVersionedPersistenceProof = async () => {
 
     try {
       await Effect.runPromise(
-        prepareVersionedSavedSession({ ...before.savedSession, version: 3 })
+        prepareVersionedSavedSession({ ...before.savedSession, version: 99 })
       )
     } catch {
       invalidRejected = true

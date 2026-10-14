@@ -97,7 +97,7 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
     )
   ).toBe(true)
 
-  const controls = page.getByRole('group', { name: 'Flow controls' })
+  const controls = page.getByRole('group', { name: 'Control Panel' })
   await expect(controls).toBeVisible()
   const canvas = page.locator('.flow-foldkit-canvas')
   const background = page.locator('.flow-foldkit-background-overlay')
@@ -131,9 +131,9 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
   )
 
   expect(controlsBounds.y).toBeGreaterThanOrEqual(canvasBounds.y)
-  const zoomIn = page.getByRole('button', { name: 'Zoom in' })
-  const zoomOut = page.getByRole('button', { name: 'Zoom out' })
-  const fit = page.getByRole('button', { name: 'Fit view' })
+  const zoomIn = page.getByRole('button', { name: 'Zoom In' })
+  const zoomOut = page.getByRole('button', { name: 'Zoom Out' })
+  const fit = page.getByRole('button', { name: 'Fit View' })
 
   const expectBackgroundAligned = async (): Promise<void> => {
     await expect
@@ -329,7 +329,7 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
   await expect(controls).toHaveCount(0)
   await page.reload()
   await expect(page.locator('.flow-foldkit-background-overlay')).toHaveCount(1)
-  await expect(page.getByRole('group', { name: 'Flow controls' })).toHaveCount(
+  await expect(page.getByRole('group', { name: 'Control Panel' })).toHaveCount(
     1
   )
 })

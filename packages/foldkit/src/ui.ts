@@ -1,17 +1,23 @@
 import {
+  FlowFitViewOptionsSchema,
   flowInteractivityFor,
+  resolveFlowAriaLabelConfig,
   isFlowInteractive,
-  selectFlowMiniMapProjection,
 } from '@flow/core'
 import type {
-  FlowGraphView,
+  FlowAriaLabelConfig,
+  FlowFitViewOptions,
   FlowInteractivity,
   FlowInteractivityInput,
-  ViewportPaddingSchema,
+  FlowPanelPosition as CoreFlowPanelPosition,
 } from '@flow/core'
-import { Effect } from 'effect'
+import { Effect, Schema as S } from 'effect'
 
 import type { ViewportClient } from './application.ts'
+
+export { createFlowMiniMap } from './ui/minimap.ts'
+
+export type { FlowMiniMapMount, FoldkitMiniMapOptions } from './ui/minimap.ts'
 
 const stopCanvasClick = (event: MouseEvent): void => event.stopPropagation()
 
@@ -180,25 +186,28 @@ export const alignFlowBackgroundToViewport = (
 }
 
 export interface FlowControlsOptions {
-  readonly position?:
-    | 'top-left'
-    | 'top-center'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-center'
-    | 'bottom-right'
+  readonly position?: FlowPanelPosition
   readonly orientation?: 'vertical' | 'horizontal'
   readonly showZoom?: boolean
   readonly showFitView?: boolean
   /** Show the lock button that toggles node and edge interactivity. Defaults to true. */
   readonly showInteractive?: boolean
-  readonly fitViewOptions?: {
-    readonly padding?: typeof ViewportPaddingSchema.Type
-  }
+  /**
+   * React `fitViewOptions` (`padding`, `nodes`, `includeHiddenNodes`,
+   * `minZoom`, `maxZoom`, `duration`, `easing`) for the fit button.
+   */
+  readonly fitViewOptions?: typeof FlowFitViewOptionsSchema.Encoded
   readonly minZoom?: number
   readonly maxZoom?: number
   readonly zoomStep?: number
+  /** Group label; wins over `ariaLabelConfig['controls.ariaLabel']`. */
   readonly ariaLabel?: string
+  /**
+   * Partial React `ariaLabelConfig` for the group and buttons, merged over
+   * React's defaults ('Control Panel', 'Zoom In', 'Zoom Out', 'Fit View',
+   * 'Toggle Interactivity').
+   */
+  readonly ariaLabelConfig?: Partial<FlowAriaLabelConfig>
   readonly className?: string
   readonly children?: readonly HTMLElement[]
   readonly onZoomIn?: () => void
@@ -248,22 +257,8 @@ export interface FlowCanvasUIOptions extends FlowControlsOptions {
   readonly background?: FlowBackgroundOptions
 }
 
-export interface FlowMiniMapMount {
-  readonly element: SVGSVGElement
-  readonly update: (
-    graph: FlowGraphView,
-    viewport: { readonly x: number; readonly y: number; readonly zoom: number }
-  ) => void
-  readonly dispose: () => void
-}
-
-export type FlowPanelPosition =
-  | 'top-left'
-  | 'top-center'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-center'
-  | 'bottom-right'
+/** React Flow `PanelPosition`, including `center-left` and `center-right`. */
+export type FlowPanelPosition = CoreFlowPanelPosition
 
 export interface FlowPanelOptions {
   readonly position?: FlowPanelPosition
@@ -434,153 +429,19 @@ export const mountFlowViewportPortal = (
   }
 }
 
-let miniMapInstance = 0
+const decodeFit = (
+  input: typeof FlowFitViewOptionsSchema.Encoded | undefined
+): FlowFitViewOptions | undefined =>
+  input === undefined
+    ? undefined
+    : S.decodeUnknownSync(FlowFitViewOptionsSchema)(input)
 
-/** Create an app-local, accessible graph overview for one Foldkit canvas. */
-export const createFlowMiniMap = (
-  owner: Document,
-  canvas: HTMLElement,
-  viewportClient: ViewportClient,
-  graph: FlowGraphView,
-  viewport: { readonly x: number; readonly y: number; readonly zoom: number }
-): FlowMiniMapMount => {
-  miniMapInstance += 1
-  const id = `flow-foldkit-minimap-${miniMapInstance}`
-  const width = 180
-  const height = 120
-  const svg = owner.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  const title = owner.createElementNS('http://www.w3.org/2000/svg', 'title')
-  title.id = `${id}-title`
-  svg.append(title)
-  svg.setAttribute('class', 'flow-foldkit-minimap flow-foldkit-nopan')
-  svg.setAttribute('width', String(width))
-  svg.setAttribute('height', String(height))
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
-  svg.dataset.flowMinimap = id
-
-  let current = selectFlowMiniMapProjection({
-    graph,
-    viewport,
-    canvas: { width: canvas.clientWidth, height: canvas.clientHeight },
-    size: { width, height },
-  })
-
-  let disposed = false
-
-  const render = (): void => {
-    for (const child of [...svg.children].slice(1)) {
-      child.remove()
-    }
-
-    const label =
-      current === undefined
-        ? 'Mini map (empty graph)'
-        : 'Mini map. Press Enter or Space to center the graph.'
-
-    title.textContent = label
-    svg.setAttribute('role', current === undefined ? 'img' : 'button')
-    svg.setAttribute('aria-label', label)
-    svg.setAttribute('aria-labelledby', title.id)
-
-    if (current === undefined) {
-      svg.removeAttribute('tabindex')
-
-      return
-    }
-
-    svg.setAttribute('tabindex', '0')
-    const bg = owner.createElementNS('http://www.w3.org/2000/svg', 'rect')
-    bg.setAttribute('class', 'flow-foldkit-minimap-background')
-    bg.setAttribute('width', String(width))
-    bg.setAttribute('height', String(height))
-    svg.append(bg)
-
-    for (const node of current.nodes) {
-      const rect = owner.createElementNS('http://www.w3.org/2000/svg', 'rect')
-      rect.setAttribute('class', 'flow-foldkit-minimap-node')
-      rect.dataset.minimapNode = node.id
-      rect.setAttribute('x', String(node.x))
-      rect.setAttribute('y', String(node.y))
-      rect.setAttribute('width', String(node.width))
-      rect.setAttribute('height', String(node.height))
-      svg.append(rect)
-    }
-
-    const mask = owner.createElementNS('http://www.w3.org/2000/svg', 'rect')
-    mask.setAttribute('class', 'flow-foldkit-minimap-viewport')
-
-    for (const key of ['x', 'y', 'width', 'height'] as const) {
-      mask.setAttribute(key, String(current.viewport[key]))
-    }
-
-    svg.append(mask)
-  }
-
-  const center = (point: { readonly x: number; readonly y: number }): void => {
-    void viewportClient.setCenter(point)
-  }
-
-  const onClick = (event: MouseEvent): void => {
-    event.stopPropagation()
-
-    if (current === undefined) {
-      return
-    }
-
-    const rect = svg.getBoundingClientRect()
-
-    if (rect.width <= 0 || rect.height <= 0) {
-      return
-    }
-
-    center(
-      current.pointToGraph({
-        x: ((event.clientX - rect.left) / rect.width) * width,
-        y: ((event.clientY - rect.top) / rect.height) * height,
-      })
-    )
-  }
-
-  const onKeydown = (event: KeyboardEvent): void => {
-    if (current === undefined || (event.key !== 'Enter' && event.key !== ' ')) {
-      return
-    }
-
-    event.preventDefault()
-    center(current.graphCenter)
-  }
-
-  svg.addEventListener('click', onClick)
-  svg.addEventListener('keydown', onKeydown)
-  canvas.append(svg)
-  render()
-
-  return {
-    element: svg,
-    update: (nextGraph, nextViewport) => {
-      if (disposed) {
-        return
-      }
-
-      current = selectFlowMiniMapProjection({
-        graph: nextGraph,
-        viewport: nextViewport,
-        canvas: { width: canvas.clientWidth, height: canvas.clientHeight },
-        size: { width, height },
-      })
-      render()
-    },
-    dispose: () => {
-      if (disposed) {
-        return
-      }
-
-      disposed = true
-      svg.removeEventListener('click', onClick)
-      svg.removeEventListener('keydown', onKeydown)
-      svg.remove()
-    },
-  }
+/** Run React `fitViewOptions` through the viewport client. */
+const fitView = async (
+  viewport: ViewportClient,
+  fit: FlowFitViewOptions | undefined
+): Promise<void> => {
+  await viewport.fitView(fit ?? 'all')
 }
 
 /** Create accessible native controls backed by Foldkit's public viewport client. */
@@ -600,6 +461,8 @@ export const createFlowControls = (
     )
   }
 
+  const fit = decodeFit(options.fitViewOptions)
+
   const group = owner.createElement('div')
   const listeners: (() => void)[] = []
   group.className = ['flow-foldkit-controls', options.className]
@@ -608,7 +471,13 @@ export const createFlowControls = (
   group.dataset.position = options.position ?? 'bottom-left'
   group.dataset.orientation = options.orientation ?? 'vertical'
   group.setAttribute('role', 'group')
-  group.setAttribute('aria-label', options.ariaLabel ?? 'Flow controls')
+  const labels = resolveFlowAriaLabelConfig(options.ariaLabelConfig)
+
+  // An explicit `ariaLabel` wins over `ariaLabelConfig`, as React.
+  group.setAttribute(
+    'aria-label',
+    options.ariaLabel ?? labels['controls.ariaLabel']
+  )
   group.dataset.flowNoPan = 'true'
   group.addEventListener('click', stopCanvasClick)
   listeners.push(() => group.removeEventListener('click', stopCanvasClick))
@@ -629,10 +498,10 @@ export const createFlowControls = (
     }
   }
 
-  const button = (label: string, action: () => Promise<void>) => {
+  const button = (text: string, label: string, action: () => Promise<void>) => {
     const element = owner.createElement('button')
     element.type = 'button'
-    element.textContent = label
+    element.textContent = text
     element.setAttribute('aria-label', label)
 
     const listener = async () => {
@@ -648,19 +517,27 @@ export const createFlowControls = (
   }
 
   if (options.showZoom !== false) {
-    zoomIn = button('Zoom in', async () => {
-      await viewport.zoomTo(Math.min(maxZoom, currentZoom * step))
-      options.onZoomIn?.()
-    })
-    zoomOut = button('Zoom out', async () => {
-      await viewport.zoomTo(Math.max(minZoom, currentZoom / step))
-      options.onZoomOut?.()
-    })
+    zoomIn = button(
+      'Zoom in',
+      labels['controls.zoomIn.ariaLabel'],
+      async () => {
+        await viewport.zoomTo(Math.min(maxZoom, currentZoom * step))
+        options.onZoomIn?.()
+      }
+    )
+    zoomOut = button(
+      'Zoom out',
+      labels['controls.zoomOut.ariaLabel'],
+      async () => {
+        await viewport.zoomTo(Math.max(minZoom, currentZoom / step))
+        options.onZoomOut?.()
+      }
+    )
   }
 
   if (options.showFitView !== false) {
-    button('Fit view', async () => {
-      await viewport.fitView('all', options.fitViewOptions?.padding)
+    button('Fit view', labels['controls.fitView.ariaLabel'], async () => {
+      await fitView(viewport, fit)
       options.onFitView?.()
     })
   }
@@ -709,13 +586,17 @@ export const createFlowControls = (
   }
 
   if (options.showInteractive !== false) {
-    lockButton = button('Toggle interactivity', () => {
-      const next = !isInteractive()
-      setInteractive(next)
-      options.onInteractiveChange?.(next)
+    lockButton = button(
+      'Toggle interactivity',
+      labels['controls.interactive.ariaLabel'],
+      () => {
+        const next = !isInteractive()
+        setInteractive(next)
+        options.onInteractiveChange?.(next)
 
-      return Promise.resolve()
-    })
+        return Promise.resolve()
+      }
+    )
   }
 
   renderLock(interactiveState)

@@ -46,8 +46,12 @@ test('Foldkit native controls and no-drag regions own nested pointer and keyboar
 
   await expect(targets).toHaveCount(8)
 
+  // Position only: selection may raise the node's z-index (elevateNodesOnSelect).
+  const placement = () =>
+    node.evaluate((element) => `${element.style.left} ${element.style.top}`)
+
   const initial = {
-    style: await node.getAttribute('style'),
+    placement: await placement(),
     selected: await node.getAttribute('data-selected'),
     transform: await page
       .locator('.flow-foldkit-canvas')
@@ -107,7 +111,7 @@ test('Foldkit native controls and no-drag regions own nested pointer and keyboar
     await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + 20)
     await page.mouse.up()
 
-    await expect(node).toHaveAttribute('style', initial.style ?? '')
+    await expect.poll(placement).toBe(initial.placement)
     expect(await node.getAttribute('data-selected')).toBe(initial.selected)
     expect(
       await page.locator('.flow-foldkit-canvas').first().getAttribute('style')

@@ -193,8 +193,13 @@ test('auto-layout re-runs when nodes are added or removed', async ({
   expect(firstChild.y).toBeGreaterThanOrEqual(root.y + root.height)
   expect(secondChild.y).toBeGreaterThanOrEqual(root.y + root.height)
 
-  // A selected node receives the next child.
-  await page.locator('[data-node-id="3"] .flow-foldkit-select-node').click()
+  // A node selected by clicking it, as in the React example, receives the
+  // next child.
+  const selectedParent = await nodeBox(page, '3')
+  await page.mouse.click(
+    selectedParent.x + selectedParent.width / 2,
+    selectedParent.y + selectedParent.height / 2
+  )
   const beforeThird = await layouts(page)
   await page.getByTestId('add-child').click()
   await expect.poll(() => layouts(page)).toBeGreaterThan(beforeThird)
@@ -289,8 +294,15 @@ test('dynamic-layouting grows the tree from placeholders', async ({ page }) => {
   const placeholder = await nodeBox(page, 'p-2')
   expect(placeholder.y).toBeGreaterThanOrEqual(converted.y + converted.height)
 
+  // A click on a regular node (`onNodeClick`) grows a new placeholder branch,
+  // and its first measurement lays the tree out again.
   const root = await nodeBox(page, 'root')
+  const beforeBranch = await layouts(page)
   await page.mouse.click(root.x + root.width / 2, root.y + root.height / 2)
   await expect(status(page)).toHaveAttribute('data-placeholders', '2')
+  await expect.poll(() => layouts(page)).toBeGreaterThan(beforeBranch)
   await expectLaidOut(page, 'TB')
+  const branched = await nodeBox(page, 'root')
+  const branch = await nodeBox(page, 'p-3')
+  expect(branch.y).toBeGreaterThanOrEqual(branched.y + branched.height)
 })

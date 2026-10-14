@@ -133,7 +133,7 @@ test('Foldkit UI catalog controls drive the viewport, lock, search and devtools'
   )
 
   // Lock toggle blocks drag, connect and select, and reports the change.
-  const lock = page.getByRole('button', { name: 'Toggle interactivity' })
+  const lock = page.getByRole('button', { name: 'Toggle Interactivity' })
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'true')
@@ -307,7 +307,7 @@ test('Foldkit UI catalog controls drive the viewport, lock, search and devtools'
   await page.evaluate(() => window.__flowFoldkitUiControls?.disposeAll())
   await expect(canvas.locator('[data-flow-ui]')).toHaveCount(0)
   await expect(
-    canvas.getByRole('group', { name: 'Flow controls' })
+    canvas.getByRole('group', { name: 'Control Panel' })
   ).toHaveCount(0)
 
   const nodeB = page.locator('.flow-foldkit-node[data-node-id="b"]')

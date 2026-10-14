@@ -9,6 +9,7 @@ import {
   areFlowNodesInitialized,
   emptyFlowMeasurementState,
   getFlowInternalNode,
+  getFlowInternalNodes,
   pruneFlowMeasurements,
 } from './flow-measurement.schema.ts'
 import {
@@ -112,6 +113,29 @@ describe('flow measurement state', () => {
       emptyReady: true,
       missing: undefined,
     })
+  })
+
+  it('projects every node in document order like the single-node read', () => {
+    const state = applyNodeMeasurement(document, emptyFlowMeasurementState(), {
+      generation: 1,
+      height: 20,
+      nodeId: id('child'),
+      width: 30,
+    })
+
+    const all = getFlowInternalNodes(document, state)
+
+    expect(all.map(({ node }) => node.id)).toStrictEqual(
+      document.nodes.map((node) => node.id)
+    )
+    expect(all).toStrictEqual(
+      document.nodes.map((node) =>
+        getFlowInternalNode(document, state, node.id)
+      )
+    )
+    expect(all.map(({ measurementStatus }) => measurementStatus)).toStrictEqual(
+      ['unmeasured', 'measured', 'hidden']
+    )
   })
 
   it('ignores stale results and nodes removed from the accepted document', () => {

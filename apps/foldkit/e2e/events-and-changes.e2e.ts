@@ -294,7 +294,7 @@ test('Foldkit runtime switches gate drag, connect and select without blocking pa
   // Controls start from the switches: all off reads as locked.
   await page.evaluate(() => window.__flowFoldkitEvents?.mountControls())
 
-  const lock = page.getByRole('button', { name: 'Toggle interactivity' })
+  const lock = page.getByRole('button', { name: 'Toggle Interactivity' })
   await expect(lock).toHaveAttribute('aria-pressed', 'true')
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
@@ -620,7 +620,7 @@ test('Foldkit switches come from the Runtime and the lock follows app changes', 
 
   await page.evaluate(() => window.__flowFoldkitEvents?.mountControls())
 
-  const lock = page.getByRole('button', { name: 'Toggle interactivity' })
+  const lock = page.getByRole('button', { name: 'Toggle Interactivity' })
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
 
   // The lock re-renders when the app changes the switches itself.
