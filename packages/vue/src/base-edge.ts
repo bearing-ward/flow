@@ -139,9 +139,8 @@ export const FlowBaseEdge = defineComponent({
     return () =>
       h(Fragment, [
         h('path', {
-          // Default presentation matches FlowCanvas's built-in edge; caller
-          // attributes and CSS styles override it.
-          stroke: '#64748b',
+          // Default presentation matches FlowCanvas's built-in edge: without a
+          // caller stroke the themed `--flow-edge-stroke` applies.
           'stroke-width': 1.5,
           ...attrs,
           d: props.path,

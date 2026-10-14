@@ -6,7 +6,7 @@ test('Vue mini map renders visible graph geometry and recenters the canvas', asy
 }) => {
   await page.goto('/minimap-test.html')
 
-  const miniMap = page.getByRole('button', { name: /Mini map/u })
+  const miniMap = page.getByRole('button', { name: /Mini map/iu })
   await expect(miniMap).toBeVisible()
   await expect(miniMap.locator('[data-minimap-node="near"]')).toHaveCount(1)
   await expect(miniMap.locator('[data-minimap-node="far"]')).toHaveCount(1)
@@ -102,7 +102,7 @@ test('Vue mini map isolates canvas pointer, mouse, wheel, and context events', a
 }) => {
   await page.goto('/minimap-test.html')
 
-  const miniMap = page.getByRole('button', { name: /Mini map/u })
+  const miniMap = page.getByRole('button', { name: /Mini map/iu })
   const box = await miniMap.boundingBox()
 
   if (box === null) {
@@ -169,7 +169,7 @@ const assertKeyboardCenter = async (
 ): Promise<void> => {
   await page.goto('/minimap-test.html')
 
-  const miniMap = page.getByRole('button', { name: /Mini map/u })
+  const miniMap = page.getByRole('button', { name: /Mini map/iu })
   await miniMap.focus()
   await expect(miniMap).toBeFocused()
   await miniMap.press(key)
@@ -219,7 +219,7 @@ test('Vue mini map keyboard activation preserves an active canvas selection', as
   await expect(selectionStatus).toBeVisible()
   await expect(selectionRect).toBeVisible()
 
-  const miniMap = page.getByRole('button', { name: /Mini map/u })
+  const miniMap = page.getByRole('button', { name: /Mini map/iu })
   await miniMap.focus()
   await miniMap.press('Enter')
 
