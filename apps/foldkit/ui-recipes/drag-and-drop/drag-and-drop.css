@@ -1,0 +1,36 @@
+.dnd-sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid #eee;
+  background: #fcfcfc;
+  font-size: 12px;
+}
+
+.dnd-item {
+  width: 120px;
+  padding: 8px;
+  border: 1px solid #1a192b;
+  border-radius: 3px;
+  background: #fff;
+  text-align: center;
+  cursor: grab;
+}
+
+.dnd-item.dnd-node-input {
+  border-color: #0041d0;
+}
+
+.dnd-item.dnd-node-output {
+  border-color: #ff0072;
+}
+
+.drag-and-drop-page .flow-foldkit-node.dnd-node-input {
+  border-color: #0041d0;
+}
+
+.drag-and-drop-page .flow-foldkit-node.dnd-node-output {
+  border-color: #ff0072;
+}

@@ -86,6 +86,7 @@ import {
 import { FoldkitConnectionStateSchema } from './connection-observer.ts'
 import { registerConnectionRule } from './connection-rules.ts'
 import {
+  KeyboardDeleteSelectionSchema,
   DeleteApprovalRequestedSchema,
   DeleteApprovalResponseSchema,
   DeleteCancellationAckSchema,
@@ -174,6 +175,7 @@ const defaultViewportLimits: typeof ViewportLimitsSchema.Type = {
 }
 
 export const HostAction = FoldMessage.defineMessageUnion({
+  RefreshRenderers: {},
   ReplaceDocument: { document: FlowDocumentSchema },
   ReplaceViewport: { viewport: ViewportSchema },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
@@ -413,6 +415,7 @@ export const ports = {
     snapshotFailures: Port.outbound(LegacySnapshotFailureSchema),
     acceptedStates: Port.outbound(FlowStateChangeSchema),
     editResults: Port.outbound(EditResponseSchema),
+    keyboardDeleteRequests: Port.outbound(KeyboardDeleteSelectionSchema),
     deleteApprovalRequests: Port.outbound(DeleteApprovalRequestedSchema),
     deleteResults: Port.outbound(DeleteResultSchema),
     deleteCancellationAcks: Port.outbound(DeleteCancellationAckSchema),
@@ -754,6 +757,10 @@ const ChangePublicationSchema = Schema.Struct({
 })
 
 const PublicationSchema = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal('keyboard-delete'),
+    selection: KeyboardDeleteSelectionSchema,
+  }),
   ChangePublicationSchema,
   Schema.Struct({
     kind: Schema.Literal('connection'),
@@ -805,6 +812,21 @@ const respondEdit = (response: typeof EditResponseSchema.Type) => {
 const emitPublication = (
   item: PublicationItem
 ): Effect.Effect<AppMessageData> => {
+  if (item.kind === 'keyboard-delete') {
+    return Effect.logInfo('Foldkit keyboard deletion requested').pipe(
+      Effect.annotateLogs({
+        [FlowAttribute.inputKind]: 'keyboard',
+        [FlowAttribute.nodeCount]: item.selection.nodeIds.length,
+        [FlowAttribute.edgeCount]: item.selection.edgeIds.length,
+      }),
+      Effect.andThen(
+        Port.emit(ports.outbound.keyboardDeleteRequests, item.selection)
+      ),
+      Effect.withSpan(FlowSpan.editPrepare),
+      Effect.as(AppMessage.DeleteApprovalPublished())
+    )
+  }
+
   if (item.kind === 'interaction') {
     return Effect.sync(() => {
       for (const event of item.events) {
@@ -2088,6 +2110,116 @@ const dimensionsChange = (
       }
 }
 
+const calculateFitView = (model: Model, request: ViewportRequest) => {
+  let nodeIds: ReadonlySet<typeof NodeIdSchema.Type> | undefined
+
+  if (request.nodes === 'selected') {
+    nodeIds = new Set(
+      model.graph.document.nodes
+        .filter((node) => node.selected === true)
+        .map((node) => node.id)
+    )
+  } else if (request.nodes !== undefined && request.nodes !== 'all') {
+    nodeIds = new Set(request.nodes.map((id) => NodeIdSchema.make(id)))
+  }
+
+  const measurements = new Map(
+    model.graph.measurements.nodes.map(({ measurement }) => [
+      measurement.nodeId,
+      measurement,
+    ])
+  )
+
+  const bounds = graphBounds(
+    createFlowGraph(model.graph.document, measurements),
+    nodeIds,
+    { includeHidden: request.includeHiddenNodes === true }
+  )
+
+  return bounds === undefined
+    ? undefined
+    : calculateViewportForBounds({
+        bounds,
+        width: request.width,
+        height: request.height,
+        limits: {
+          minZoom: request.minZoom ?? model.viewportLimits.minZoom,
+          maxZoom: request.maxZoom ?? model.viewportLimits.maxZoom,
+        },
+        padding: request.padding,
+      })
+}
+
+// oxlint-disable-next-line complexity -- Initial fitting combines measurement readiness, pane readiness and optional fitting parameters.
+const fitInitialView = (model: Model, initial: AppReduction): AppReduction => {
+  let measured = initial
+
+  if (
+    measured.model.graph.fitViewPending &&
+    Graph.selectNodesInitialized(measured.model.graph)
+  ) {
+    const { graph } = measured.model
+
+    const canvas = globalThis.document?.querySelector<HTMLElement>(
+      `[data-flow-instance="${CSS.escape(graph.instanceId)}"]`
+    )
+
+    if (
+      canvas !== null &&
+      canvas !== undefined &&
+      canvas.clientWidth > 0 &&
+      canvas.clientHeight > 0
+    ) {
+      const options = graph.fitViewOptions
+
+      const viewport = calculateFitView(measured.model, {
+        requestId: 'initial-fit',
+        kind: 'fitView',
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+        originX: 0,
+        originY: 0,
+        padding: options.padding ?? 0.1,
+        includeHiddenNodes: options.includeHiddenNodes ?? false,
+        minZoom: options.minZoom ?? model.viewportLimits.minZoom,
+        maxZoom: options.maxZoom ?? model.viewportLimits.maxZoom,
+        nodes:
+          options.nodes === undefined ||
+          options.nodes === 'all' ||
+          options.nodes === 'selected'
+            ? options.nodes
+            : options.nodes.map(({ id }) => id),
+      })
+
+      const fitted =
+        viewport === undefined
+          ? measured
+          : graphFold(
+              measured.model,
+              Graph.Message.ReplaceViewport({ viewport })
+            )
+
+      measured = {
+        ...fitted,
+        model: {
+          ...fitted.model,
+          graph: { ...fitted.model.graph, fitViewPending: false },
+        },
+        outMessage: [
+          ...(measured.outMessage ?? []),
+          ...(fitted === measured ? [] : (fitted.outMessage ?? [])),
+        ],
+        commands: [
+          ...(measured.commands ?? []),
+          ...(fitted === measured ? [] : (fitted.commands ?? [])),
+        ],
+      }
+    }
+  }
+
+  return measured
+}
+
 const routeAction = (model: Model, action: HostActionData) =>
   HostAction.match(action, {
     ReplaceDocument: ({ document }) =>
@@ -2106,6 +2238,7 @@ const routeAction = (model: Model, action: HostActionData) =>
         'allowed-targets-changed'
       )
     },
+    RefreshRenderers: () => graphFold(model, Graph.Message.RefreshRenderers()),
     DispatchCommand: ({ command }) =>
       graphFold(model, Graph.Message.DispatchCommand({ command })),
     SetColorMode: ({ mode }) =>
@@ -2136,10 +2269,12 @@ const routeAction = (model: Model, action: HostActionData) =>
       }
     },
     MeasureNode: ({ requestId, measurement }) => {
-      const measured = graphFold(
+      let measured = graphFold(
         model,
         Graph.Message.MeasureNode({ measurement })
       )
+
+      measured = fitInitialView(model, measured)
 
       const dimensions = dimensionsChange(
         model.graph,
@@ -2299,46 +2434,6 @@ const viewportPanEvents = (
   }
 
   return []
-}
-
-const calculateFitView = (model: Model, request: ViewportRequest) => {
-  let nodeIds: ReadonlySet<typeof NodeIdSchema.Type> | undefined
-
-  if (request.nodes === 'selected') {
-    nodeIds = new Set(
-      model.graph.document.nodes
-        .filter((node) => node.selected === true)
-        .map((node) => node.id)
-    )
-  } else if (request.nodes !== undefined && request.nodes !== 'all') {
-    nodeIds = new Set(request.nodes.map((id) => NodeIdSchema.make(id)))
-  }
-
-  const measurements = new Map(
-    model.graph.measurements.nodes.map(({ measurement }) => [
-      measurement.nodeId,
-      measurement,
-    ])
-  )
-
-  const bounds = graphBounds(
-    createFlowGraph(model.graph.document, measurements),
-    nodeIds,
-    { includeHidden: request.includeHiddenNodes === true }
-  )
-
-  return bounds === undefined
-    ? undefined
-    : calculateViewportForBounds({
-        bounds,
-        width: request.width,
-        height: request.height,
-        limits: {
-          minZoom: request.minZoom ?? model.viewportLimits.minZoom,
-          maxZoom: request.maxZoom ?? model.viewportLimits.maxZoom,
-        },
-        padding: request.padding,
-      })
 }
 
 interface ViewportCandidate {
@@ -2556,6 +2651,25 @@ const selectionChangePublication = (
 export const update = (model: Model, message: AppMessageData): AppReduction => {
   const updateResult = AppMessage.match(message, {
     GraphMessage: ({ message: graphMessage }) => {
+      if (Predicate.isTagged('DeleteSelected')(graphMessage)) {
+        return {
+          model,
+          outMessage: [
+            {
+              kind: 'keyboard-delete',
+              selection: {
+                nodeIds: model.graph.document.nodes
+                  .filter(({ selected }) => selected === true)
+                  .map(({ id }) => id),
+                edgeIds: model.graph.document.edges
+                  .filter(({ selected }) => selected === true)
+                  .map(({ id }) => id),
+              },
+            },
+          ],
+        }
+      }
+
       const result = graphFold(model, graphMessage, 'full')
 
       const readyModel = model.lifecycleReady
@@ -3564,7 +3678,8 @@ export const createProgram = (
   const graphView = Graph.makeView(
     rendererRegistry,
     instanceId,
-    pointerResource
+    pointerResource,
+    interactionOptions.ariaLabelConfig?.['node.a11yDescription.ariaLiveMessage']
   )
 
   return Runtime.makeElement({

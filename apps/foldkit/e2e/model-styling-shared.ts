@@ -42,6 +42,22 @@ export const mountModelStyling = async (
     )
   }, input)
   await expect(page.locator('[data-testid="flow-node"]').first()).toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        const id = document.querySelector<HTMLElement>(
+          '[data-testid="flow-node"]'
+        )?.dataset.nodeId
+
+        const measured =
+          id === undefined
+            ? undefined
+            : await window.__flowFoldkitModelStyling?.node(id)
+
+        return measured?.measured !== undefined
+      })
+    )
+    .toBe(true)
 }
 
 export const nodeLocator = (page: Page, nodeId: string): Locator =>

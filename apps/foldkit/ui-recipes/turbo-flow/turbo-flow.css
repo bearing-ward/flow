@@ -1,0 +1,24 @@
+.turbo-flow-page .recipe-frame {
+  background: #141821;
+}
+.turbo-flow-page .flow-foldkit-node {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+.turbo-node {
+  height: 100%;
+  padding: 2px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff0072, #00d4ff);
+}
+.turbo-node-inner {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: white;
+  background: #222735;
+}

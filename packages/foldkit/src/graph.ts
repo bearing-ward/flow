@@ -176,6 +176,12 @@ import {
 import { Message as FoldMessage, Submodel, Subscription } from 'foldkit'
 import type { Html as FoldHtml, Update } from 'foldkit'
 
+import { observeCanvasInput } from './canvas-input.ts'
+import {
+  ClosingOptionsSchema,
+  defaultClosingOptions,
+} from './closing-options.ts'
+import type { ClosingOptions } from './closing-options.ts'
 import {
   connectionPermitted,
   connectionRuleAccepts,
@@ -347,6 +353,10 @@ const PointerSessionSchema = Schema.Union([
     nodeIds: Schema.Array(NodeIdSchema),
     /** Where the drag found each dragged node, with its size and extent. */
     origins: Schema.Array(NodeDragOriginSchema),
+    startMeasurements: Schema.optional(FlowMeasurementStateSchema),
+    panOffset: Schema.optional(
+      Schema.Struct({ x: Schema.Finite, y: Schema.Finite })
+    ),
     /** A dragged node has `expandParent`, so frames may grow its parent. */
     expandParent: Schema.optional(Schema.Boolean),
     /** The pointer's latest client position, for the live drag preview. */
@@ -458,6 +468,19 @@ const ResizeAcceptanceSchema = Schema.Struct({
 })
 
 export const ModelSchema = Schema.Struct({
+  ...ClosingOptionsSchema.fields,
+  fitViewPending: Schema.Boolean,
+  rendererRevision: Schema.Number,
+  selectionKeyPressed: Schema.Boolean,
+  multiSelectionKeyPressed: Schema.Boolean,
+  zoomKeyPressed: Schema.Boolean,
+  ariaLiveMessage: Schema.NullOr(
+    Schema.Struct({
+      direction: Schema.String,
+      x: Schema.Number,
+      y: Schema.Number,
+    })
+  ),
   instanceId: Schema.String,
   document: FlowDocumentSchema,
   viewport: ViewportSchema,
@@ -677,6 +700,19 @@ export const OutMessage = FoldMessage.defineMessageUnion({
 export type OutMessageData = typeof OutMessage.Type
 
 export const Message = FoldMessage.defineMessageUnion({
+  ClearClickSuppression: {},
+  RefreshRenderers: {},
+  DeleteSelected: {},
+  SetCanvasKey: {
+    kind: Schema.Literals(['selection', 'multiSelection', 'zoom']),
+    pressed: Schema.Boolean,
+  },
+  MoveNodeByKeyboard: {
+    nodeId: NodeIdSchema,
+    key: Schema.String,
+    shift: Schema.optional(Schema.Boolean),
+  },
+  AutoPan: { x: Schema.Finite, y: Schema.Finite },
   IgnoreInput: {},
   ObserveMouse: {
     name: ObservedMouseNameSchema,
@@ -814,7 +850,7 @@ const noChange = (
   model,
 })
 
-export interface GraphInteractionOptions {
+export interface GraphInteractionOptions extends Partial<ClosingOptions> {
   readonly nodeDragThreshold?: typeof NodeDragThresholdSchema.Type | undefined
   readonly connectionDragThreshold?:
     | typeof ConnectionDragThresholdSchema.Type
@@ -999,6 +1035,55 @@ export const selectInternalNode = (
     : getFlowInternalNode(model.document, model.measurements, nodeId)
 }
 
+const edgeCrossesViewport = (
+  model: Model,
+  graph: FlowGraphView,
+  edge: FlowEdge
+): boolean => {
+  const source = graph.nodes.get(edge.source)
+  const target = graph.nodes.get(edge.target)
+
+  if (source === undefined || target === undefined) {
+    return false
+  }
+
+  const canvas = canvasForModel(model)
+
+  const left =
+    Math.min(source.absolutePosition.x, target.absolutePosition.x) *
+      model.viewport.zoom +
+    model.viewport.x
+
+  const top =
+    Math.min(source.absolutePosition.y, target.absolutePosition.y) *
+      model.viewport.zoom +
+    model.viewport.y
+
+  const right =
+    Math.max(
+      source.absolutePosition.x + source.dimensions.width,
+      target.absolutePosition.x + target.dimensions.width
+    ) *
+      model.viewport.zoom +
+    model.viewport.x
+
+  const bottom =
+    Math.max(
+      source.absolutePosition.y + source.dimensions.height,
+      target.absolutePosition.y + target.dimensions.height
+    ) *
+      model.viewport.zoom +
+    model.viewport.y
+
+  return (
+    left < (canvas?.clientWidth ?? 960) &&
+    top < (canvas?.clientHeight ?? 640) &&
+    right > 0 &&
+    bottom > 0
+  )
+}
+
+// oxlint-disable-next-line complexity -- Visibility combines hidden state, initial fitting and viewport bounds.
 const selectMountedNodeIds = (
   model: Model,
   measurements = getFlowMeasuredNodes(model.document, model.measurements),
@@ -1007,6 +1092,7 @@ const selectMountedNodeIds = (
   const { zoom } = model.viewport
 
   return new Set(
+    // oxlint-disable-next-line complexity -- Visibility combines hidden state, initial fitting and viewport bounds.
     graph.orderedNodes.flatMap(({ node }) => {
       const graphNode = graph.nodes.get(node.id)
 
@@ -1014,17 +1100,20 @@ const selectMountedNodeIds = (
         return []
       }
 
+      if (!model.onlyRenderVisibleElements || model.fitViewPending) {
+        return [node.id]
+      }
+
       const { x, y } = graphNode.absolutePosition
       const left = x * zoom + model.viewport.x
       const top = y * zoom + model.viewport.y
 
-      const measured = measurements.get(node.id)
+      const { width, height } = graphNode.dimensions
 
-      const width = measured?.width ?? node.size?.width ?? 150
-      const height = measured?.height ?? node.size?.height ?? 44
+      const canvas = canvasForModel(model)
 
-      return left < 960 &&
-        top < 640 &&
+      return left < (canvas?.clientWidth ?? 960) &&
+        top < (canvas?.clientHeight ?? 640) &&
         left + width * zoom > 0 &&
         top + height * zoom > 0
         ? [node.id]
@@ -1424,7 +1513,10 @@ type NodeDragSession = Extract<
 const nodeDragStart = (
   model: Model,
   nodeId: NodeId
-): Pick<NodeDragSession, 'nodeIds' | 'origins' | 'expandParent'> => {
+): Pick<
+  NodeDragSession,
+  'nodeIds' | 'origins' | 'expandParent' | 'startMeasurements'
+> => {
   const interactivity = selectInteractivity(model)
 
   const graph = createFlowGraph(
@@ -1534,6 +1626,15 @@ const nodeDragStart = (
     (item) => item.parentId !== undefined && item.node.expandParent === true
   )
 
+  if (expandParent) {
+    return {
+      nodeIds,
+      origins,
+      expandParent,
+      startMeasurements: model.measurements,
+    }
+  }
+
   return { nodeIds, origins, expandParent }
 }
 
@@ -1568,8 +1669,12 @@ const nodeDragPositions = (
   return placeDraggedNodes(
     origins,
     {
-      x: (clientX - session.startX) / model.viewport.zoom,
-      y: (clientY - session.startY) / model.viewport.zoom,
+      x:
+        (clientX - session.startX - (session.panOffset?.x ?? 0)) /
+        model.viewport.zoom,
+      y:
+        (clientY - session.startY - (session.panOffset?.y ?? 0)) /
+        model.viewport.zoom,
     },
     model.snapToGrid ? model.snapGrid : undefined
   )
@@ -1588,7 +1693,12 @@ const expandParentDragDocument = (
 ): FlowDocument => {
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
+    getFlowMeasuredNodes(
+      model.document,
+      model.pointerSession?.kind === 'node-drag'
+        ? (model.pointerSession.startMeasurements ?? model.measurements)
+        : model.measurements
+    )
   )
 
   const changes = calculateFlowExpandParentDrag(
@@ -1866,6 +1976,7 @@ const finishKeyboardTargetClick = (
   return null
 }
 
+// oxlint-disable-next-line complexity -- Pending promotion rechecks endpoint and host eligibility.
 const pendingEligible = (
   model: Model,
   pending: typeof PendingConnectionSchema.Type
@@ -1920,6 +2031,7 @@ const pendingEligible = (
     edge !== undefined &&
     edge.hidden !== true &&
     edge.selected === true &&
+    (edge.reconnectable ?? model.edgesReconnectable) !== false &&
     canReconnectEdge(edge, pending.endpoint) &&
     resolved !== undefined &&
     edge.source === pending.source.nodeId &&
@@ -2468,6 +2580,29 @@ const applyExpandParentChanges = (
   }
 }
 
+const previewMeasurements = (model: Model, document: FlowDocument) => {
+  const measurements = new Map(
+    getFlowMeasuredNodes(document, model.measurements)
+  )
+
+  const acceptedSizes = new Map(
+    model.document.nodes.map(({ id, size }) => [id, size])
+  )
+
+  for (const node of document.nodes) {
+    const accepted = acceptedSizes.get(node.id)
+
+    if (
+      node.size?.width !== accepted?.width ||
+      node.size?.height !== accepted?.height
+    ) {
+      measurements.delete(node.id)
+    }
+  }
+
+  return measurements
+}
+
 /**
  * React `NodeResizeControl` `onChange` for an `expandParent` child
  * (`NodeResizeControl.tsx:88-120`): grow the parent around the child's
@@ -2482,10 +2617,7 @@ const expandParentResizeStep = (
 ): FlowDocument => {
   const base = applyResizerPatches(model.document, session.expandPatches ?? [])
 
-  const graph = createFlowGraph(
-    base,
-    getFlowMeasuredNodes(base, model.measurements)
-  )
+  const graph = createFlowGraph(base, previewMeasurements(model, base))
 
   const resolved = graph.nodes.get(session.nodeId)
 
@@ -2852,7 +2984,16 @@ const selectClickedNode = (
   }
 
   const multi =
-    observed.pointer?.metaKey === true || observed.pointer?.ctrlKey === true
+    model.multiSelectionKeyPressed ||
+    [model.multiSelectionKeyCode]
+      .flat()
+      .some(
+        (key) =>
+          (key === 'Meta' && observed.pointer?.metaKey === true) ||
+          (key === 'Control' && observed.pointer?.ctrlKey === true) ||
+          (key === 'Alt' && observed.pointer?.altKey === true) ||
+          (key === 'Shift' && observed.pointer?.shiftKey === true)
+      )
 
   if (multi) {
     return toggleNodeSelection(model, node.id)
@@ -2893,6 +3034,142 @@ const updateState = (
   message: GraphMessageData
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> =>
   Message.match(message, {
+    ClearClickSuppression: () => ({
+      model: { ...model, nodeClickSuppressed: false },
+    }),
+    RefreshRenderers: () => ({
+      model: { ...model, rendererRevision: model.rendererRevision + 1 },
+    }),
+    DeleteSelected: () => noChange(model),
+    SetCanvasKey: ({ kind, pressed }) => ({
+      model: { ...model, [`${kind}KeyPressed`]: pressed },
+    }),
+    AutoPan: ({ x, y }) => {
+      if (model.viewportMode === 'controlled') {
+        return noChange(model)
+      }
+
+      const viewport = translateConstrained(
+        model,
+        panViewport(model.viewport, { x, y })
+      )
+
+      const dx = viewport.x - model.viewport.x
+      const dy = viewport.y - model.viewport.y
+      const session = model.pointerSession
+      const gesture = model.gestureSession
+
+      return acceptReplacement(
+        model,
+        {
+          ...model,
+          viewport,
+          pointerSession:
+            session?.kind === 'node-drag'
+              ? {
+                  ...session,
+                  panOffset: {
+                    x: (session.panOffset?.x ?? 0) + dx,
+                    y: (session.panOffset?.y ?? 0) + dy,
+                  },
+                }
+              : session,
+          gestureSession:
+            gesture?.kind === 'selection'
+              ? {
+                  ...gesture,
+                  currentX: gesture.currentX - dx / viewport.zoom,
+                  currentY: gesture.currentY - dy / viewport.zoom,
+                }
+              : gesture,
+        },
+        'viewport-update'
+      )
+    },
+    MoveNodeByKeyboard: ({ nodeId, key, shift }) => {
+      if (model.disableKeyboardA11y || !model.keyboardActivation) {
+        return noChange(model)
+      }
+
+      if (
+        model.gestureSession?.kind === 'selection' &&
+        model.gestureSession.pointerId === -2
+      ) {
+        return updateState(
+          model,
+          Message.KeyboardSelectionKey({ nodeId, key, shift: shift ?? false })
+        )
+      }
+
+      const node = model.document.nodes.find(({ id }) => id === nodeId)
+
+      const deltas = new Map<string, XYPosition>(
+        Object.entries({
+          ArrowLeft: { x: -5, y: 0 },
+          ArrowRight: { x: 5, y: 0 },
+          ArrowUp: { x: 0, y: -5 },
+          ArrowDown: { x: 0, y: 5 },
+        })
+      )
+
+      const delta = deltas.get(key)
+
+      if (
+        node === undefined ||
+        node.selected !== true ||
+        !isNodeDraggable(selectInteractivity(model), node) ||
+        delta === undefined
+      ) {
+        return noChange(model)
+      }
+
+      const factor = shift === true ? 4 : 1
+
+      const velocity = {
+        x: (delta.x / 5) * (model.snapToGrid ? model.snapGrid.x : 5) * factor,
+        y: (delta.y / 5) * (model.snapToGrid ? model.snapGrid.y : 5) * factor,
+      }
+
+      const items = nodeDragStart(model, nodeId)
+
+      const positions = placeDraggedNodes(
+        items.origins,
+        velocity,
+        model.snapToGrid ? model.snapGrid : undefined
+      )
+
+      const absolute =
+        createFlowGraph(
+          model.document,
+          getFlowMeasuredNodes(model.document, model.measurements)
+        ).nodes.get(nodeId)?.absolutePosition ?? node.position
+
+      const result = updateState(
+        model,
+        Message.EditRequest({
+          requestId: 'keyboard-move',
+          transaction: {
+            operations: positions.map(({ nodeId: id, position }) => ({
+              kind: 'update-node',
+              nodeId: id,
+              patch: { position },
+            })),
+          },
+        })
+      )
+
+      return {
+        ...result,
+        model: {
+          ...result.model,
+          ariaLiveMessage: {
+            direction: key.slice(5).toLowerCase(),
+            x: Math.trunc(absolute.x),
+            y: Math.trunc(absolute.y),
+          },
+        },
+      }
+    },
     IgnoreInput: () => noChange(model),
     SetColorMode: ({ mode }) => ({
       model: {
@@ -2913,7 +3190,7 @@ const updateState = (
       const { viewport: currentViewport } = model
       let viewport = currentViewport
 
-      if (model.zoomOnScroll) {
+      if (model.zoomOnScroll || model.zoomKeyPressed) {
         viewport = zoomViewportAt(
           model,
           clientX,
@@ -3469,7 +3746,9 @@ const updateState = (
         (candidate) => candidate.id === edgeId
       )
 
-      return edge !== undefined && canReconnectEdge(edge, endpoint)
+      return edge !== undefined &&
+        (edge.reconnectable ?? model.edgesReconnectable) !== false &&
+        canReconnectEdge(edge, endpoint)
         ? {
             model: {
               ...model,
@@ -3499,7 +3778,7 @@ const updateState = (
       }
 
       if (nodeId === null) {
-        if (allowPan && model.panOnDrag) {
+        if (allowPan && model.panOnDrag && !model.selectionKeyPressed) {
           return {
             model: {
               ...model,
@@ -3517,7 +3796,10 @@ const updateState = (
           }
         }
 
-        if (!model.selectionOnDrag || !model.elementsSelectable) {
+        if (
+          (!model.selectionOnDrag && !model.selectionKeyPressed) ||
+          !model.elementsSelectable
+        ) {
           return noChange(model)
         }
 
@@ -4002,7 +4284,7 @@ const updateState = (
             }
       }
 
-      if (key === ' ' && !shift && nodeId !== null) {
+      if ((key === ' ' || key === 'Enter') && !shift && nodeId !== null) {
         return updateState(model, Message.ToggleNodeSelection({ nodeId }))
       }
 
@@ -4251,6 +4533,19 @@ const outsideNodeDragHandle = (
   }
 }
 
+const matchesCanvasClass = (
+  target: Element,
+  key: 'noDragClass' | 'noPanClass' | 'noWheelClass'
+): boolean => {
+  const name = target.closest<HTMLElement>('.flow-foldkit-canvas')?.dataset[key]
+
+  return (
+    name !== undefined &&
+    name !== '' &&
+    target.closest(`.${CSS.escape(name)}`) !== null
+  )
+}
+
 const shouldIgnoreNodePointer = (target: Element): boolean => {
   const node = target.closest<HTMLElement>('[data-node-id]')
 
@@ -4274,6 +4569,7 @@ const shouldIgnoreNodePointer = (target: Element): boolean => {
   )
 
   return (
+    matchesCanvasClass(target, 'noDragClass') ||
     noDragControl !== null ||
     outsideNodeDragHandle(node, target) ||
     (hasMarkedDragHandle && isMarkedDragHandle === false) ||
@@ -4346,9 +4642,10 @@ const beginPointer = (
         direction: null,
         allowPan:
           !(target instanceof Element) ||
-          target.closest(
-            '[data-flow-no-pan], .flow-flow__nopan, .flow-foldkit-nopan'
-          ) === null,
+          (!matchesCanvasClass(target, 'noPanClass') &&
+            target.closest(
+              '[data-flow-no-pan], .flow-flow__nopan, .flow-foldkit-nopan'
+            ) === null),
         screenX: clientX,
         screenY: clientY,
       })
@@ -5027,6 +5324,7 @@ const edgeVisuals = (
   options: {
     readonly defaultMarkerColor: string | undefined
     readonly descriptionId: string
+    readonly disableKeyboardA11y: boolean
   }
 ) => {
   const ariaLabel = edge.ariaLabel ?? edge.label ?? `Edge ${edge.id}`
@@ -5097,7 +5395,7 @@ const edgeVisuals = (
     // Clicks and mouse movement are observed by the pointer resource, which
     // reads client positions and modifier keys from the native event.
     h.OnKeyDownPreventDefault((key) =>
-      key === 'Enter' || key === ' '
+      !options.disableKeyboardA11y && (key === 'Enter' || key === ' ')
         ? Option.some(Message.SelectEdge({ edgeId: edge.id }))
         : Option.none()
     ),
@@ -5111,7 +5409,8 @@ const edgeReconnectControls = (
   geometry: FoldkitEdgeGeometry,
   ariaLabel: string,
   h: FoldHtml.HtmlBuilder<GraphMessageData>,
-  zIndex: number
+  zIndex: number,
+  model: Model
 ): NonNullable<FoldHtml.Html>[] => {
   if (edge.selected !== true) {
     return []
@@ -5123,7 +5422,10 @@ const edgeReconnectControls = (
   ] as const
 
   return endpoints.flatMap(([endpoint, point]) => {
-    if (!canReconnectEdge(edge, endpoint)) {
+    if (
+      !(edge.reconnectable ?? model.edgesReconnectable) ||
+      !canReconnectEdge(edge, endpoint)
+    ) {
       return []
     }
 
@@ -5137,6 +5439,8 @@ const edgeReconnectControls = (
         left: `${point.x}px`,
         top: `${point.y}px`,
         zIndex: String(zIndex),
+        width: `${model.reconnectRadius * 2}px`,
+        height: `${model.reconnectRadius * 2}px`,
       }),
       h.OnKeyDownPreventDefault((key) =>
         key === 'Enter' || key === ' '
@@ -5389,7 +5693,12 @@ const nodeFrame = (
 
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
+    getFlowMeasuredNodes(
+      model.document,
+      model.pointerSession?.kind === 'node-drag'
+        ? (model.pointerSession.startMeasurements ?? model.measurements)
+        : model.measurements
+    )
   )
 
   const resolved = graph.nodes.get(node.id)
@@ -5782,7 +6091,9 @@ export const createPointerResource = (initial: Model) => {
                     y: message.clientY - bounds.top,
                   },
                   origin.coordinateCanvas.clientWidth,
-                  origin.coordinateCanvas.clientHeight
+                  origin.coordinateCanvas.clientHeight,
+                  40,
+                  current.autoPanSpeed
                 )
               : { x: 0, y: 0 },
         }),
@@ -5967,6 +6278,10 @@ export const createPointerResource = (initial: Model) => {
   ): GestureDownMessage | undefined => {
     if (
       !current.panOnDrag ||
+      (raw.target instanceof Element &&
+        current.noPanClassName !== '' &&
+        raw.target.closest(`.${CSS.escape(current.noPanClassName)}`) !==
+          null) ||
       !(raw.target instanceof Element) ||
       raw.target.closest(
         '[data-flow-no-pan], .flow-flow__nopan, .flow-foldkit-nopan'
@@ -6325,6 +6640,16 @@ export const createPointerResource = (initial: Model) => {
         throw new Error('Pointer resource cannot be reacquired')
       }
 
+      const stopCanvasInput = observeCanvasInput(
+        Message,
+        () => current,
+        () => canvasForModel(current),
+        () => nativeCurrent?.native === 'pressed',
+        (message) => {
+          Queue.offerUnsafe(queue, message)
+        }
+      )
+
       document.addEventListener('pointermove', move, true)
       document.addEventListener('pointerup', up, true)
       document.addEventListener('pointercancel', pointerCancel, true)
@@ -6336,11 +6661,19 @@ export const createPointerResource = (initial: Model) => {
       const stopMouse = observeCanvasMouse(
         document,
         () => canvasForModel(current),
-        observeMouse
+        observeMouse,
+        () => ({
+          paneClickDistance: current.paneClickDistance,
+          nodeClickDistance: current.nodeClickDistance,
+        }),
+        () => {
+          Queue.offerUnsafe(queue, Message.ClearClickSuppression())
+        }
       )
 
       removeListeners = () => {
         stopMouse()
+        stopCanvasInput()
         document.removeEventListener('pointermove', move, true)
         document.removeEventListener('pointerup', up, true)
         document.removeEventListener('pointercancel', pointerCancel, true)
@@ -6475,7 +6808,10 @@ const foldkitNodeDescription =
 const graphView = (
   renderers: FoldkitRendererRegistry,
   markerScope: string,
-  pointerResource: ReturnType<typeof createPointerResource>
+  pointerResource: ReturnType<typeof createPointerResource>,
+  ariaLive: NonNullable<
+    FlowAriaLabelConfigInput['node.a11yDescription.ariaLiveMessage']
+  > = defaultFlowAriaLabelConfig['node.a11yDescription.ariaLiveMessage']
 ) =>
   Submodel.defineView<Model, GraphMessageData>((model, h) => {
     const measurements = getFlowMeasuredNodes(
@@ -6518,7 +6854,7 @@ const graphView = (
         ? liveDocument
         : (applyNodeBoundsChange(liveDocument, resizeChange) ?? liveDocument)
 
-    const renderMeasurements = new Map(measurements)
+    const renderMeasurements = previewMeasurements(model, renderDocument)
 
     if (resizeChange !== undefined) {
       renderMeasurements.delete(resizeChange.nodeId)
@@ -6547,7 +6883,7 @@ const graphView = (
         const position =
           graph.nodes.get(node.id)?.absolutePosition ?? node.position
 
-        const measured = measurements.get(node.id)
+        const measured = renderMeasurements.get(node.id)
 
         const size = measured ?? node.size
 
@@ -6687,6 +7023,7 @@ const graphView = (
                   h.Attribute('type', 'button'),
                   h.AriaDisabled(!isNodeSelectable(interactivity, node)),
                   h.AriaLabel(`Toggle selection for ${node.label}`),
+                  h.Tabindex(model.disableKeyboardA11y ? -1 : 0),
                   h.OnClick(Message.ToggleNodeSelection({ nodeId: node.id })),
                 ]),
               ]
@@ -6723,7 +7060,16 @@ const graphView = (
               ? []
               : [h.DataAttribute('drag-handle', node.dragHandle)]),
             h.Attribute('tabindex', node.focusable === false ? '-1' : '0'),
-            h.AriaDescribedBy(nodeDescriptionId),
+            h.Attribute('role', node.ariaRole ?? 'group'),
+            ...(node.ariaLabel === undefined
+              ? []
+              : [h.AriaLabel(node.ariaLabel)]),
+            ...(node.ariaDescription === undefined
+              ? []
+              : [h.Attribute('aria-description', node.ariaDescription)]),
+            ...(model.disableKeyboardA11y
+              ? []
+              : [h.AriaDescribedBy(nodeDescriptionId)]),
             h.Style(style),
           ],
           [...contents, ...handles, ...resizeHandles, ...selectionControl]
@@ -6739,10 +7085,15 @@ const graphView = (
     const visibleEdges = orderFlowEdges(renderEdges)
       .filter(
         (edge) =>
+          (!model.onlyRenderVisibleElements ||
+            mountedNodeIds.has(edge.source) ||
+            mountedNodeIds.has(edge.target) ||
+            edgeCrossesViewport(model, graph, edge)) &&
           edge.hidden !== true &&
           graph.nodes.get(edge.source)?.hidden !== true &&
           graph.nodes.get(edge.target)?.hidden !== true
       )
+      // oxlint-disable-next-line complexity -- Edge presentation combines visibility, labels, markers and custom renderers.
       .map((edge) => {
         const source = graph.nodes.get(edge.source)
         const target = graph.nodes.get(edge.target)
@@ -6777,7 +7128,8 @@ const graphView = (
             geometry,
             ariaLabel,
             h,
-            Math.max(edgeZ, topNodeZ) + 1
+            Math.max(edgeZ, topNodeZ) + 1,
+            model
           )
         )
 
@@ -6826,6 +7178,7 @@ const graphView = (
           {
             defaultMarkerColor: model.defaultMarkerColor ?? undefined,
             descriptionId: edgeDescriptionId,
+            disableKeyboardA11y: model.disableKeyboardA11y,
           }
         )
 
@@ -6858,7 +7211,7 @@ const graphView = (
             ),
             h.DataAttribute('selected', String(edge.selected === true)),
             h.DataAttribute('testid', 'flow-edge'),
-            h.Attribute('role', 'group'),
+            h.Attribute('role', edge.ariaRole ?? 'group'),
             h.AriaLabel(ariaLabel),
             h.Attribute('width', '960'),
             h.Attribute('height', '640'),
@@ -6905,7 +7258,11 @@ const graphView = (
               h.Attribute('width', '960'),
               h.Attribute('height', '640'),
               h.ViewBox('0 0 960 640'),
-              h.Style({ overflow: 'visible', pointerEvents: 'none' }),
+              h.Style({
+                ...foldkitStyle(model.connectionLineContainerStyle),
+                overflow: 'visible',
+                pointerEvents: 'none',
+              }),
             ],
             [
               h.path([
@@ -6916,6 +7273,7 @@ const graphView = (
                 h.Stroke(previewState.valid === false ? '#dc2626' : '#2563eb'),
                 h.StrokeWidth('2'),
                 h.StrokeDasharray('6 4'),
+                h.Style(foldkitStyle(model.connectionLineStyle)),
               ]),
             ]
           ))
@@ -6930,6 +7288,9 @@ const graphView = (
         ),
         h.DataAttribute('color-mode', model.colorMode),
         h.DataAttribute('flow-instance', model.instanceId),
+        h.DataAttribute('no-drag-class', model.noDragClassName),
+        h.DataAttribute('no-pan-class', model.noPanClassName),
+        h.DataAttribute('no-wheel-class', model.noWheelClassName),
         h.DataAttribute('testid', 'flow-canvas'),
         h.Tabindex(0),
         h.OnPointerDown(
@@ -7001,7 +7362,22 @@ const graphView = (
               ),
             ]
           : []),
-        h.div([h.Class('flow-foldkit-change-kinds'), h.AriaLive('polite')], []),
+        ...(model.disableKeyboardA11y
+          ? []
+          : [
+              h.div(
+                [
+                  h.Class('flow-foldkit-change-kinds'),
+                  h.AriaLive('assertive'),
+                  h.Attribute('aria-atomic', 'true'),
+                ],
+                [
+                  model.ariaLiveMessage === null
+                    ? ''
+                    : ariaLive(model.ariaLiveMessage),
+                ]
+              ),
+            ]),
         // React A11yDescriptions: the texts nodes and edges are described by.
         h.div(
           [
@@ -7010,12 +7386,14 @@ const graphView = (
             h.Style({ display: 'none' }),
           ],
           [
-            // Foldkit has no arrow-key node move and no built-in Delete key
-            // (hosts delete through the delete client), so React's texts
-            // would mislead. Describe Foldkit's keys unless the host
-            // configured the text.
-            model.ariaLabelConfig['node.a11yDescription.default'] ??
-              foldkitNodeDescription,
+            // The delete key routes through the composed approval client.
+            model.disableKeyboardA11y
+              ? ariaLabels['node.a11yDescription.default']
+              : (model.ariaLabelConfig[
+                  'node.a11yDescription.keyboardDisabled'
+                ] ??
+                model.ariaLabelConfig['node.a11yDescription.default'] ??
+                foldkitNodeDescription),
           ]
         ),
         h.div(
@@ -7033,8 +7411,9 @@ const graphView = (
 export const makeView = (
   renderers: FoldkitRendererRegistry,
   markerScope: string,
-  pointerResource: ReturnType<typeof createPointerResource>
-) => graphView(renderers, markerScope, pointerResource)
+  pointerResource: ReturnType<typeof createPointerResource>,
+  ariaLive?: FlowAriaLabelConfigInput['node.a11yDescription.ariaLiveMessage']
+) => graphView(renderers, markerScope, pointerResource, ariaLive)
 
 // oxlint-disable anti-slop(require-readable-spacing)
 const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
@@ -7068,17 +7447,20 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
   ),
   viewportGestures: entry(
     {
+      instanceId: Schema.String,
       panOnScroll: Schema.Boolean,
       zoomOnScroll: Schema.Boolean,
       zoomOnDoubleClick: Schema.Boolean,
     },
     {
       modelToDependencies: (model) => ({
+        instanceId: model.instanceId,
         panOnScroll: model.panOnScroll,
-        zoomOnScroll: model.zoomOnScroll,
+        zoomOnScroll: model.zoomOnScroll || model.zoomKeyPressed,
         zoomOnDoubleClick: model.zoomOnDoubleClick,
       }),
       dependenciesToStream: ({
+        instanceId,
         panOnScroll,
         zoomOnScroll,
         zoomOnDoubleClick,
@@ -7105,7 +7487,14 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                       )
                     : null
 
-                if (canvas === null || noWheel !== null) {
+                if (
+                  canvas === null ||
+                  !(canvas instanceof HTMLElement) ||
+                  canvas.dataset.flowInstance !== instanceId ||
+                  noWheel !== null ||
+                  (target instanceof Element &&
+                    matchesCanvasClass(target, 'noWheelClass'))
+                ) {
                   return Option.none()
                 }
 
@@ -7142,7 +7531,12 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                       )
                     : null
 
-                return canvas === null || noWheel !== null
+                return canvas === null ||
+                  !(canvas instanceof HTMLElement) ||
+                  canvas.dataset.flowInstance !== instanceId ||
+                  noWheel !== null ||
+                  (target instanceof Element &&
+                    matchesCanvasClass(target, 'noWheelClass'))
                   ? Option.none()
                   : Option.some(
                       Message.ViewportDoubleClick({
@@ -7223,16 +7617,27 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
     }
   ),
   keyboardSelectionEvents: entry(
-    { active: Schema.Boolean },
+    { active: Schema.Boolean, instanceId: Schema.String },
     {
-      modelToDependencies: () => ({ active: true }),
-      dependenciesToStream: ({ active }) =>
+      modelToDependencies: (model) => ({
+        active: !model.disableKeyboardA11y,
+        instanceId: model.instanceId,
+      }),
+      dependenciesToStream: ({ active, instanceId }) =>
         active
           ? Subscription.fromEvent({
               target: document,
               type: 'keydown',
               mapEvent: (event: KeyboardEvent): GraphMessageData => {
                 const { target } = event
+
+                if (
+                  !(target instanceof Element) ||
+                  target.closest<HTMLElement>('.flow-foldkit-canvas')?.dataset
+                    .flowInstance !== instanceId
+                ) {
+                  return Message.IgnoreInput({})
+                }
 
                 const nativeControl =
                   target instanceof Element
@@ -7251,14 +7656,27 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                     : null
 
                 const nodeId =
-                  control?.closest<HTMLElement>('[data-node-id]')?.dataset
-                    .nodeId
+                  target.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
 
                 if (
                   (event.key === ' ' || event.key === 'Enter') &&
-                  control !== null
+                  nodeId !== undefined
                 ) {
                   event.preventDefault()
+                }
+
+                if (
+                  nodeId !== undefined &&
+                  control === null &&
+                  event.key.startsWith('Arrow')
+                ) {
+                  event.preventDefault()
+
+                  return Message.MoveNodeByKeyboard({
+                    nodeId: Schema.decodeUnknownSync(NodeIdSchema)(nodeId),
+                    key: event.key,
+                    shift: event.shiftKey,
+                  })
                 }
 
                 return Message.KeyboardSelectionKey({
@@ -7317,6 +7735,16 @@ export const initialModel = (
   interactionOptions: GraphInteractionOptions = defaultInteractionOptions,
   instanceId = 'flow-foldkit-default'
 ): Model => ({
+  ...Schema.decodeUnknownSync(ClosingOptionsSchema)({
+    ...defaultClosingOptions,
+    ...interactionOptions,
+  }),
+  fitViewPending: interactionOptions.fitView === true,
+  rendererRevision: 0,
+  selectionKeyPressed: false,
+  multiSelectionKeyPressed: false,
+  zoomKeyPressed: false,
+  ariaLiveMessage: null,
   instanceId,
   document,
   viewport,
@@ -7344,7 +7772,10 @@ export const initialModel = (
   panOnScrollMode: interactionOptions.panOnScrollMode ?? 'free',
   zoomOnScroll: interactionOptions.zoomOnScroll ?? false,
   zoomOnDoubleClick: interactionOptions.zoomOnDoubleClick ?? false,
-  keyboardActivation: interactionOptions.keyboardActivation ?? true,
+  keyboardActivation:
+    interactionOptions.disableKeyboardA11y === true
+      ? false
+      : (interactionOptions.keyboardActivation ?? true),
   connectOnClick: interactionOptions.connectOnClick ?? true,
   nodesResizable: interactionOptions.nodesResizable ?? false,
   snapToGrid: interactionOptions.snapToGrid ?? false,
@@ -7361,6 +7792,9 @@ export const initialModel = (
   elevateEdgesOnSelect: interactionOptions.elevateEdgesOnSelect ?? false,
   ariaLabelConfig: ariaLabelTextConfig(interactionOptions.ariaLabelConfig),
   defaultMarkerColor: interactionOptions.defaultMarkerColor ?? null,
+  fitViewOptions: Schema.decodeUnknownSync(
+    ClosingOptionsSchema.fields.fitViewOptions
+  )(interactionOptions.fitViewOptions ?? {}),
   defaultEdgeOptions: Effect.runSync(
     decodeFlowDefaultEdgeOptions(interactionOptions.defaultEdgeOptions ?? {})
   ),

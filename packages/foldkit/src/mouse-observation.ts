@@ -87,7 +87,12 @@ const edgeIdOf = (element: Element | null): string | null =>
 export const observeCanvasMouse = (
   owner: Document,
   canvas: () => HTMLElement | null,
-  emit: (record: ObservedMouse) => void
+  emit: (record: ObservedMouse) => void,
+  distances: () => {
+    readonly paneClickDistance: number
+    readonly nodeClickDistance: number
+  } = () => ({ paneClickDistance: 0, nodeClickDistance: 0 }),
+  onSuppressedClick?: () => void
 ): (() => void) => {
   const scoped = (target: EventTarget | null) => {
     const root = canvas()
@@ -116,6 +121,23 @@ export const observeCanvasMouse = (
       select,
     })
 
+  let press: { x: number; y: number; distance: number } | undefined
+
+  const down = (event: PointerEvent): void => {
+    if (scoped(event.target) !== undefined) {
+      press = { x: event.clientX, y: event.clientY, distance: 0 }
+    }
+  }
+
+  const travel = (event: PointerEvent): void => {
+    if (press !== undefined) {
+      press.distance = Math.max(
+        press.distance,
+        Math.hypot(event.clientX - press.x, event.clientY - press.y)
+      )
+    }
+  }
+
   const click = (event: MouseEvent): void => {
     const target = scoped(event.target)
 
@@ -124,6 +146,24 @@ export const observeCanvasMouse = (
     }
 
     const node = nodeElement(target.element)
+
+    const limit =
+      node === null
+        ? distances().paneClickDistance
+        : distances().nodeClickDistance
+
+    const travelled = press?.distance ?? 0
+    press = undefined
+
+    if (
+      event.detail !== 0 &&
+      travelled > limit &&
+      (node === null || limit > 0)
+    ) {
+      onSuppressedClick?.()
+
+      return
+    }
 
     if (node !== null) {
       observe(
@@ -256,6 +296,8 @@ export const observeCanvasMouse = (
 
   const out = (event: MouseEvent): void => crossing(event, false)
 
+  owner.addEventListener('pointerdown', down, true)
+  owner.addEventListener('pointermove', travel, true)
   owner.addEventListener('click', click)
   owner.addEventListener('contextmenu', contextMenu)
   owner.addEventListener('mousemove', move)
@@ -263,6 +305,8 @@ export const observeCanvasMouse = (
   owner.addEventListener('mouseout', out)
 
   return () => {
+    owner.removeEventListener('pointerdown', down, true)
+    owner.removeEventListener('pointermove', travel, true)
     owner.removeEventListener('click', click)
     owner.removeEventListener('contextmenu', contextMenu)
     owner.removeEventListener('mousemove', move)

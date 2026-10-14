@@ -125,6 +125,29 @@ test('Node Resizer: keepAspectRatio and a horizontal NodeResizeControl line', as
   expect(log.at(-1)?.name).toBe('controlEnd')
 })
 
+test('Node Resizer: NodeResizeControl renders custom children that start the resize', async ({
+  page,
+}) => {
+  await mountModelStyling(page, {
+    document: { nodes: [resizable('icon', 'icon')], edges: [] },
+  })
+
+  const icon = nodeLocator(page, 'icon').locator('[data-testid="resize-icon"]')
+  await expect(icon).toHaveCount(1)
+  await expect(
+    nodeLocator(page, 'icon').locator(
+      '.flow-foldkit-resize-control-bottom.flow-foldkit-resize-control-right [data-testid="resize-icon"]'
+    )
+  ).toHaveCount(1)
+
+  await dragBy(page, icon, 40, 30)
+  await expect
+    .poll(() => size(page, 'icon'))
+    .toEqual({ width: 190, height: 110 })
+  const log = await resizeLog(page)
+  expect(log.at(-1)?.name).toBe('iconEnd')
+})
+
 test('Node Resizer: shouldResize vetoes, isVisible follows selection, handles auto-scale', async ({
   page,
 }) => {
