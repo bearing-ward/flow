@@ -12,10 +12,10 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 174,
+    "inScopeCloseAllHosts": 176,
     "inScopeCloseByHost": {
       "vanilla": 185,
-      "vue": 176,
+      "vue": 185,
       "foldkit": 176
     },
     "reaudit": "2026-10-14 independent re-audit after Plans 105-117 (statuses above are the re-audit ratings)"
@@ -34,7 +34,7 @@
       "section": "api-reference overview",
       "name": "<ReactFlow />",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 4,
@@ -46,7 +46,7 @@
         "missing": "Unmapped props: key codes, autoPan*, onlyRenderVisibleElements (Foldkit), fitView on init",
         "evidence": "plans/117-foldkit-final-wiring.md:30"
       },
-      "updatedBy": ["Plan 118"]
+      "updatedBy": ["Plan 118", "Plan 119"]
     },
     {
       "section": "api-reference overview",
@@ -920,14 +920,14 @@
       "section": "api-reference types",
       "name": "AriaLabelConfig",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Global localized aria-label config object for canvas/controls/live region",
       "effort": "M",
       "theme": "a11y",
-      "updatedBy": ["Plan 116", "Plan 115"],
+      "updatedBy": ["Plan 116", "Plan 115", "Plan 119"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vue/Foldkit: ariaLiveMessage and keyboardDisabled unused; no node move announcements",
@@ -1377,14 +1377,14 @@
       "section": "api-reference types",
       "name": "Node",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": 3,
       "missing": "Add style/className/source/targetPosition/dragHandle/measured/expandParent",
       "effort": "M",
       "theme": "node-model",
-      "updatedBy": ["Plan 116", "Plan 115"],
+      "updatedBy": ["Plan 116", "Plan 115", "Plan 119"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vue/Foldkit do not render node ariaLabel, ariaDescription, ariaRole",
@@ -2354,7 +2354,7 @@
       "section": "examples edges",
       "name": "Delete Edge on Drop",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": null,
@@ -2366,7 +2366,7 @@
         "missing": "No recipe/test deleting an edge when reconnect drops on pane",
         "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:690"
       },
-      "updatedBy": ["Plan 118"]
+      "updatedBy": ["Plan 118", "Plan 119"]
     },
     {
       "section": "examples edges",
@@ -2635,7 +2635,7 @@
       "section": "examples interaction",
       "name": "Contextual Zoom",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 3,
@@ -2647,13 +2647,13 @@
         "missing": "Vanilla/Vue zoom-dependent node recipe and test",
         "evidence": "apps/foldkit/e2e/model-styling.e2e.ts:409"
       },
-      "updatedBy": ["Plan 118"]
+      "updatedBy": ["Plan 118", "Plan 119"]
     },
     {
       "section": "examples interaction",
       "name": "Drag and Drop",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": null,
@@ -2665,20 +2665,20 @@
         "missing": "Sidebar HTML5 drop-to-create recipe and e2e per host",
         "evidence": "no dataTransfer/drop test in apps/*/e2e"
       },
-      "updatedBy": ["Plan 118"]
+      "updatedBy": ["Plan 118", "Plan 119"]
     },
     {
       "section": "examples interaction",
       "name": "Preventing Cycles",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "C",
       "scope": "parity",
       "wave": 2,
       "missing": "Foldkit lacks isValidConnection callback",
       "effort": "S",
       "theme": "validation",
-      "updatedBy": ["Plan 108", "Plan 118"],
+      "updatedBy": ["Plan 108", "Plan 118", "Plan 119"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vanilla/Vue getOutgoers+isValidConnection cycle test",
@@ -3075,7 +3075,7 @@
       "section": "examples styling",
       "name": "Turbo Flow",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": null,
@@ -3087,7 +3087,7 @@
         "missing": "Gradient custom node/edge recipe and test per host",
         "evidence": "no turbo recipe in apps/*/ui-recipes"
       },
-      "updatedBy": ["Plan 118"]
+      "updatedBy": ["Plan 118", "Plan 119"]
     },
     {
       "section": "examples whiteboard",
@@ -3165,7 +3165,7 @@
       "section": "examples misc",
       "name": "Download Image",
       "vanilla": "C",
-      "vue": "P",
+      "vue": "C",
       "foldkit": "P",
       "scope": "parity",
       "wave": null,
@@ -3177,7 +3177,7 @@
         "missing": "html-to-image export recipe and e2e; only getViewportForBounds exists",
         "evidence": "packages/core/src/public.ts:216"
       },
-      "updatedBy": ["Plan 118"]
+      "updatedBy": ["Plan 118", "Plan 119"]
     },
     {
       "section": "examples misc",
