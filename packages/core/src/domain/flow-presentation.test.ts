@@ -1,7 +1,7 @@
 import { Effect, Exit, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { flowNodeHandles, resolveEdgeHandles } from './flow-edge.schema.ts'
+import { resolveEdgeHandles } from './flow-edge.schema.ts'
 import { createFlowGraph } from './flow-graph.ts'
 import {
   decodeVersionedFlowDocument,
@@ -10,7 +10,11 @@ import {
   encodeVersionedFlowDocument,
   encodeVersionedFlowSession,
 } from './flow-persistence.ts'
-import { decodeFlowDocument, FlowNodeSchema } from './flow.schema.ts'
+import {
+  decodeFlowDocument,
+  flowNodeHandles,
+  FlowNodeSchema,
+} from './flow.schema.ts'
 
 const presentationDocument = Effect.runSync(
   decodeFlowDocument({

@@ -77,6 +77,46 @@ export const FlowHandleSchema = S.Struct({
 
 export type FlowHandle = typeof FlowHandleSchema.Type
 
+/**
+ * Declared handles, or React-style default handles when a node declares none
+ * but sets `sourcePosition`/`targetPosition`: one `target` handle (default
+ * top) and one `source` handle (default bottom), as the React default node.
+ */
+export const flowNodeHandles = (
+  node:
+    | {
+        readonly handles?: readonly FlowHandle[] | undefined
+        readonly sourcePosition?: FlowHandleSide | undefined
+        readonly targetPosition?: FlowHandleSide | undefined
+      }
+    | undefined
+): readonly FlowHandle[] => {
+  if (node === undefined) {
+    return []
+  }
+
+  if (node.handles !== undefined) {
+    return node.handles
+  }
+
+  if (node.sourcePosition === undefined && node.targetPosition === undefined) {
+    return []
+  }
+
+  return [
+    {
+      id: HandleIdSchema.make('target'),
+      kind: 'target',
+      side: node.targetPosition ?? 'top',
+    },
+    {
+      id: HandleIdSchema.make('source'),
+      kind: 'source',
+      side: node.sourcePosition ?? 'bottom',
+    },
+  ]
+}
+
 export const NodeSizeSchema = S.Struct({
   width: S.Finite.check(S.isGreaterThan(0)),
   height: S.Finite.check(S.isGreaterThan(0)),
@@ -305,7 +345,7 @@ export type FlowDocument = typeof FlowDocumentSchema.Type
 
 export type FlowIntegrityNode = Pick<
   FlowNode,
-  'id' | 'parentId' | 'extent' | 'handles'
+  'id' | 'parentId' | 'extent' | 'handles' | 'sourcePosition' | 'targetPosition'
 >
 
 export type FlowIntegrityEdge = Pick<
@@ -442,7 +482,7 @@ const findDuplicateHandleId = (
   for (const node of nodes) {
     const handleIds = new Set<string>()
 
-    for (const handle of node.handles ?? []) {
+    for (const handle of flowNodeHandles(node)) {
       if (handleIds.has(handle.id)) {
         return new DuplicateHandleId({ handleId: handle.id, nodeId: node.id })
       }
@@ -491,7 +531,7 @@ const findEdgeReferenceError = (
       const nodeId = edge[endpoint]
       const node = nodesById.get(nodeId)
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         (candidate) => candidate.id === handleId
       )
 

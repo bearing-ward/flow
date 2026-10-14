@@ -1,4 +1,5 @@
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type {
   FlowDocument,
   FlowHandle,
@@ -67,7 +68,7 @@ export const getFlowLayoutInput = (
     }
 
     const declared = new Map(
-      (node.handles ?? []).map((handle) => [handle.id, handle])
+      flowNodeHandles(node).map((handle) => [handle.id, handle])
     )
 
     nodes.push({
@@ -154,20 +155,30 @@ export const orientFlowHandles = (
   nodes: readonly FlowNode[],
   direction: FlowLayoutDirection
 ): readonly FlowNode[] =>
-  nodes.map((node) =>
-    node.handles === undefined
-      ? node
-      : {
-          ...node,
-          handles: node.handles.map((handle) => {
-            if (handle.kind === 'source') {
-              return {
-                ...handle,
-                side: direction === 'TB' ? 'bottom' : 'right',
-              }
-            }
+  nodes.map((node) => {
+    if (node.handles === undefined) {
+      // Default handles follow sourcePosition/targetPosition, as React's layout examples.
+      return node.sourcePosition === undefined &&
+        node.targetPosition === undefined
+        ? node
+        : {
+            ...node,
+            sourcePosition: direction === 'TB' ? 'bottom' : 'right',
+            targetPosition: direction === 'TB' ? 'top' : 'left',
+          }
+    }
 
-            return { ...handle, side: direction === 'TB' ? 'top' : 'left' }
-          }),
+    return {
+      ...node,
+      handles: node.handles.map((handle) => {
+        if (handle.kind === 'source') {
+          return {
+            ...handle,
+            side: direction === 'TB' ? 'bottom' : 'right',
+          }
         }
-  )
+
+        return { ...handle, side: direction === 'TB' ? 'top' : 'left' }
+      }),
+    }
+  })

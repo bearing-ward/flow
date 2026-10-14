@@ -12,6 +12,7 @@ import {
   isNodeDraggable,
   isNodeSelectable,
 } from './flow-interactivity.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type {
   EdgeId,
   FlowEdge,
@@ -419,7 +420,7 @@ export const flowConnectionLineProps = (
 
   const fromGraphNode = origin && graphNodeById(input.graph, origin.nodeId)
 
-  const fromHandle = fromGraphNode?.node.handles?.find(
+  const fromHandle = flowNodeHandles(fromGraphNode?.node).find(
     ({ id }) => id === origin?.handleId
   )
 
@@ -447,7 +448,7 @@ export const flowConnectionLineProps = (
   const toGraphNode =
     toEnd === undefined ? undefined : input.graph.nodes.get(toEnd.nodeId)
 
-  const toHandle = toGraphNode?.node.handles?.find(
+  const toHandle = flowNodeHandles(toGraphNode?.node).find(
     ({ id }) => id === toEnd?.handleId
   )
 

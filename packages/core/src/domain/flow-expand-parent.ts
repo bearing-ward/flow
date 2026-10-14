@@ -1,5 +1,5 @@
 import type { FlowGraphView } from './flow-graph.ts'
-import { resolveNodeOrigin } from './flow-origin.schema.ts'
+import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
 import type { NodeId, XYPosition } from './flow.schema.ts'
 
@@ -144,4 +144,74 @@ export const calculateFlowExpandParent = (
   return [...expansions].flatMap(([parentId, expanded]) =>
     parentExpansionChanges(graph, parentId, expanded, movedIds)
   )
+}
+
+/** One dragged node with its proposed stored (parent-relative anchor) position. */
+export interface FlowExpandParentDragItem {
+  readonly id: NodeId
+  readonly position: XYPosition
+}
+
+/**
+ * React `updateNodePositions` for one drag step: each dragged node gets a
+ * position change; an `expandParent` child is clamped to `Math.max(0, …)`
+ * within its parent, and its unclamped rectangle grows the parent through
+ * `calculateFlowExpandParent`. Hosts skip the `extent: 'parent'` clamp for
+ * these children, as React does, and commit all changes together.
+ */
+export const calculateFlowExpandParentDrag = (
+  graph: FlowGraphView,
+  items: readonly FlowExpandParentDragItem[]
+): readonly FlowExpandParentChange[] => {
+  const positions: FlowExpandParentChange[] = []
+  const children: FlowExpandParentChild[] = []
+
+  for (const item of items) {
+    const node = graph.nodes.get(item.id)
+    const parentId = node?.parentId
+
+    const parent =
+      parentId === undefined ? undefined : graph.nodes.get(parentId)
+
+    if (
+      node === undefined ||
+      parentId === undefined ||
+      parent === undefined ||
+      node.node.expandParent !== true
+    ) {
+      positions.push({
+        kind: 'position',
+        nodeId: item.id,
+        position: item.position,
+      })
+      continue
+    }
+
+    positions.push({
+      kind: 'position',
+      nodeId: item.id,
+      position: {
+        x: Math.max(0, item.position.x),
+        y: Math.max(0, item.position.y),
+      },
+    })
+
+    const topLeft = nodeAnchorToTopLeft(
+      item.position,
+      node.dimensions,
+      resolveNodeOrigin(node.node, graph.document)
+    )
+
+    children.push({
+      id: item.id,
+      parentId,
+      rect: {
+        x: parent.absolutePosition.x + topLeft.x,
+        y: parent.absolutePosition.y + topLeft.y,
+        ...node.dimensions,
+      },
+    })
+  }
+
+  return [...positions, ...calculateFlowExpandParent(graph, children)]
 }

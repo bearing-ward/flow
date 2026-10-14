@@ -51,6 +51,7 @@ export {
   NodeIdSchema,
   XYPositionSchema,
   decodeFlowDocument,
+  flowNodeHandles,
   validateFlowDocument,
   validateFlowGraphDocument,
 } from './domain/flow.schema.ts'
@@ -789,7 +790,6 @@ export {
   bezierEdgePath,
   edgeAttachmentPosition,
   inferHandleMeasurement,
-  flowNodeHandles,
   edgeLabelPosition,
   resolveEdgeHandles,
   straightEdgePath,
@@ -1011,9 +1011,13 @@ export type {
   FlowResizeParamsWithDirection,
 } from './domain/flow-node-resizer.ts'
 
-export { calculateFlowExpandParent } from './domain/flow-expand-parent.ts'
+export {
+  calculateFlowExpandParent,
+  calculateFlowExpandParentDrag,
+} from './domain/flow-expand-parent.ts'
 
 export type {
   FlowExpandParentChange,
   FlowExpandParentChild,
+  FlowExpandParentDragItem,
 } from './domain/flow-expand-parent.ts'

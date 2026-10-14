@@ -7,6 +7,7 @@ import {
   XYPositionSchema,
 } from './flow-values.ts'
 import type { HandleId, XYPosition } from './flow-values.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type {
   FlowDocument,
   FlowEdge,
@@ -48,36 +49,6 @@ export const inferHandleMeasurement = (
   width: 11,
   height: 11,
 })
-
-/**
- * Declared handles, or React-style default handles when a node declares none
- * but sets `sourcePosition`/`targetPosition`: one `target` handle (default
- * top) and one `source` handle (default bottom), as the React default node.
- */
-export const flowNodeHandles = (
-  node: Pick<FlowNode, 'handles' | 'sourcePosition' | 'targetPosition'>
-): readonly FlowHandle[] => {
-  if (node.handles !== undefined) {
-    return node.handles
-  }
-
-  if (node.sourcePosition === undefined && node.targetPosition === undefined) {
-    return []
-  }
-
-  return [
-    {
-      id: HandleIdSchema.make('target'),
-      kind: 'target',
-      side: node.targetPosition ?? 'top',
-    },
-    {
-      id: HandleIdSchema.make('source'),
-      kind: 'source',
-      side: node.sourcePosition ?? 'bottom',
-    },
-  ]
-}
 
 const selectHandle = (
   node: FlowNode,

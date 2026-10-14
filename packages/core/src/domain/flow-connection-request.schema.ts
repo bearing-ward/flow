@@ -10,6 +10,7 @@ import type {
   ConnectionMode,
 } from './flow-connection.schema.ts'
 import { HandleIdSchema, NodeIdSchema } from './flow-values.ts'
+import { flowNodeHandles } from './flow.schema.ts'
 import type { FlowDocument } from './flow.schema.ts'
 
 /** Public default selection is distinct from a resolved physical connection. */
@@ -90,13 +91,13 @@ export const resolveFlowConnectionRequest = (
       return yield* rejectConnectionRequest(request, 'missing-target-node')
     }
 
-    const sourceHandle = source?.handles?.find((handle) =>
+    const sourceHandle = flowNodeHandles(source).find((handle) =>
       request.sourceHandle === null
         ? handle.kind === 'source'
         : handle.id === request.sourceHandle
     )
 
-    const targetHandle = target?.handles?.find((handle) =>
+    const targetHandle = flowNodeHandles(target).find((handle) =>
       request.targetHandle === null
         ? handle.kind === 'target'
         : handle.id === request.targetHandle
