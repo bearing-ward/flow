@@ -221,7 +221,8 @@ const control = <Message>(
   h: ControlBuilder<Message>,
   resizerId: string,
   spec: ControlSpec,
-  zoom: number
+  zoom: number,
+  children: readonly Html.Html[] = []
 ): Html.Html => {
   const style = controlStyle(spec, zoom)
 
@@ -250,7 +251,8 @@ const control = <Message>(
       h.AriaLabel(`Resize from ${spec.position.replaceAll('-', ' ')}`),
       ...(Object.keys(style).length === 0 ? [] : [h.Style(style)]),
     ],
-    []
+    // React `NodeResizeControl` children, e.g. a custom icon.
+    [...children]
   )
 }
 
@@ -300,10 +302,17 @@ export interface FoldkitNodeResizer {
 
 export interface FoldkitNodeResizeControl {
   readonly id: string
-  /** One React `NodeResizeControl` for a node view. */
+  /**
+   * One React `NodeResizeControl` for a node view. `children` is the
+   * control's content (React `children`), built with the same `h`; pressing
+   * anywhere on it starts the resize.
+   */
   readonly view: <Message>(
     h: ControlBuilder<Message>,
-    props: { readonly zoom: number }
+    props: {
+      readonly zoom: number
+      readonly children?: readonly Html.Html[]
+    }
   ) => Html.Html
   readonly dispose: () => void
 }
@@ -383,7 +392,7 @@ export const createFoldkitNodeResizeControl = (
 
   return {
     id,
-    view: (h, props) => control(h, id, spec, props.zoom),
+    view: (h, props) => control(h, id, spec, props.zoom, props.children),
     dispose: () => {
       callbacks.delete(id)
     },

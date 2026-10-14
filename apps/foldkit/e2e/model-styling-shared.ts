@@ -26,6 +26,27 @@ export const mountModelStyling = async (
       throw new Error('Missing Foldkit fixture host')
     }
 
+    if (fixtureInput.shadowCanvas) {
+      const shadowHost = document.createElement('div')
+      host.append(shadowHost)
+      const root = shadowHost.attachShadow({ mode: 'open' })
+      const owner = document.createElement('div')
+      owner.innerHTML = '<div id="model-styling-fixture"></div>'
+      root.append(owner)
+      const container = owner.firstElementChild
+
+      if (!(container instanceof HTMLElement)) {
+        throw new Error('Missing shadow fixture container')
+      }
+
+      window.__flowFoldkitModelStyling = mountFoldkitModelStylingFixture(
+        container,
+        fixtureInput
+      )
+
+      return
+    }
+
     host.innerHTML = '<div id="model-styling-fixture"></div>'
 
     const container = document.querySelector<HTMLElement>(
@@ -41,7 +62,35 @@ export const mountModelStyling = async (
       fixtureInput
     )
   }, input)
-  await expect(page.locator('[data-testid="flow-node"]').first()).toBeVisible()
+  await expect(page.locator('[data-testid="flow-node"]').first()).toHaveCount(1)
+
+  if (input.initialPaneSize?.width !== 0) {
+    await expect(
+      page.locator('[data-testid="flow-node"]').first()
+    ).toBeVisible()
+  }
+
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        const id =
+          document.querySelector<HTMLElement>('[data-testid="flow-node"]')
+            ?.dataset.nodeId ??
+          document
+            .querySelector('#app > div')
+            ?.shadowRoot?.querySelector<HTMLElement>(
+              '[data-testid="flow-node"]'
+            )?.dataset.nodeId
+
+        const measured =
+          id === undefined
+            ? undefined
+            : await window.__flowFoldkitModelStyling?.node(id)
+
+        return measured?.measured !== undefined
+      })
+    )
+    .toBe(true)
 }
 
 export const nodeLocator = (page: Page, nodeId: string): Locator =>

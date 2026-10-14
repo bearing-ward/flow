@@ -432,8 +432,23 @@ test('Foldkit active gesture stays inside its host when two programs are mounted
     const harnessPath = '/e2e/test-harness.ts'
     await import(harnessPath)
     await window.__flowFoldkitTest?.startRendererContract()
-    window.__flowFoldkitTest?.clearRendererInteractionEvents()
   })
+
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [0, 1].map(
+          (index) =>
+            window.__flowFoldkitTest
+              ?.rendererInteractionEvents(index)
+              .some(({ name }) => name === 'onInit') ?? false
+        )
+      )
+    )
+    .toEqual([true, true])
+  await page.evaluate(() =>
+    window.__flowFoldkitTest?.clearRendererInteractionEvents()
+  )
 
   const firstNode = page
     .locator('.flow-foldkit-node[data-node-id="renderer-custom"]')

@@ -152,6 +152,20 @@ export const setupPointer = (threshold = 5) => {
   })
   const windowOwner = new EventTarget()
   vi.stubGlobal('window', windowOwner)
+  vi.stubGlobal(
+    'addEventListener',
+    windowOwner.addEventListener.bind(windowOwner)
+  )
+  vi.stubGlobal(
+    'removeEventListener',
+    windowOwner.removeEventListener.bind(windowOwner)
+  )
+  // This fixture proves pointer FIFO; real animation frames are exercised in e2e.
+  vi.stubGlobal(
+    'requestAnimationFrame',
+    vi.fn(() => 1)
+  )
+  vi.stubGlobal('cancelAnimationFrame', vi.fn())
   vi.stubGlobal('document', dom)
   vi.stubGlobal('CSS', { escape: (value: string) => value })
   vi.stubGlobal('Node', TestElement)

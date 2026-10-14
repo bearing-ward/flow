@@ -6,6 +6,8 @@ import type {
   Viewport,
 } from '@flow/core'
 import {
+  createFoldkitDeleteClient,
+  updateFoldkitRendererRegistry,
   createFoldkitNodeMeasurementObserver,
   createFoldkitNodeResizeControl,
   createFoldkitNodeResizer,
@@ -19,6 +21,7 @@ import type {
   EditResponse,
   FlowFitViewOptionsInput,
   FoldkitNodeTypes,
+  FoldkitRendererRegistry,
   GraphInteractionOptions,
   InteractionEventSchema,
   ports,
@@ -41,6 +44,9 @@ export interface ResizeLogEntry {
 }
 
 export interface FoldkitModelStylingFixture {
+  readonly deleteResults: () => number
+  readonly deleteApprovals: () => number
+  readonly replaceRenderers: () => void
   readonly events: () => readonly InteractionEvent[]
   readonly resizeLog: () => readonly ResizeLogEntry[]
   readonly changeKinds: () => readonly string[]
@@ -55,7 +61,11 @@ export interface FoldkitModelStylingFixture {
 }
 
 export interface FoldkitModelStylingInput {
+  readonly shadowCanvas?: boolean
+  readonly initialPaneSize?: { readonly width: number; readonly height: number }
   readonly document: unknown
+  readonly approveDeletion?: boolean
+  readonly liveMessages?: boolean
   readonly options?: Partial<GraphInteractionOptions>
   readonly viewport?: Viewport
 }
@@ -70,10 +80,23 @@ export const mountFoldkitModelStylingFixture = (
   container: HTMLElement,
   input: FoldkitModelStylingInput
 ): FoldkitModelStylingFixture => {
+  const owner = container.parentElement ?? container
+
   const style = document.createElement('style')
-  style.textContent =
-    '#app .flow-foldkit-canvas { position: relative; width: 800px; height: 500px; overflow: hidden; } #app .flow-foldkit-node { box-sizing: border-box; }'
-  document.head.append(style)
+  style.textContent = `.flow-foldkit-canvas { position: relative; width: ${input.initialPaneSize?.width ?? 800}px; height: ${input.initialPaneSize?.height ?? 500}px; overflow: hidden; } .flow-foldkit-node { box-sizing: border-box; }`
+  const root = container.getRootNode()
+
+  if (root instanceof ShadowRoot) {
+    for (const sheet of document.querySelectorAll(
+      'style, link[rel="stylesheet"]'
+    )) {
+      root.append(sheet.cloneNode(true))
+    }
+
+    root.append(style)
+  } else {
+    document.head.append(style)
+  }
 
   const events: InteractionEvent[] = []
   const resizeLog: ResizeLogEntry[] = []
@@ -119,7 +142,36 @@ export const mountFoldkitModelStylingFixture = (
     onResizeEnd: log('controlEnd'),
   })
 
+  // React Node Resizer example: a NodeResizeControl with an icon child.
+  const iconControl = createFoldkitNodeResizeControl({
+    style: { background: 'transparent', border: 'none' },
+    minWidth: 100,
+    minHeight: 50,
+    onResizeEnd: log('iconEnd'),
+  })
+
   const nodeTypes = {
+    icon: (node, h, props) =>
+      h.div(
+        [],
+        [
+          node.label,
+          iconControl.view(h, {
+            zoom: props.zoom,
+            children: [
+              h.svg(
+                [
+                  h.DataAttribute('testid', 'resize-icon'),
+                  h.Attribute('width', '20'),
+                  h.Attribute('height', '20'),
+                  h.ViewBox('0 0 24 24'),
+                ],
+                [h.path([h.D('M16 20l4 0l0 -4'), h.Stroke('#ff0071')])]
+              ),
+            ],
+          }),
+        ]
+      ),
     resizable: (node, h, props) =>
       h.div(
         [h.Class('fixture-resizable')],
@@ -162,6 +214,18 @@ export const mountFoldkitModelStylingFixture = (
 
   const viewport = input.viewport ?? { x: 0, y: 0, zoom: 1 }
 
+  const ariaLabelConfig = { ...input.options?.ariaLabelConfig }
+
+  if (input.liveMessages) {
+    ariaLabelConfig['node.a11yDescription.ariaLiveMessage'] = ({
+      direction,
+      x,
+      y,
+    }) => `Live ${direction} ${x}/${y}`
+  }
+
+  const registry: FoldkitRendererRegistry = { nodeTypes }
+
   const active = Runtime.embed<typeof ports, never, 'Element'>(
     createProgram(
       container,
@@ -170,12 +234,29 @@ export const mountFoldkitModelStylingFixture = (
       [],
       'uncontrolled',
       'uncontrolled',
-      { nodeTypes },
+      registry,
       undefined,
       'full',
-      { ...defaultInteractionOptions, ...input.options }
+      {
+        ...defaultInteractionOptions,
+        ...input.options,
+        ariaLabelConfig,
+      }
     )
   )
+
+  let deleteApprovals = 0
+  let deleteResults = 0
+
+  active.ports.deleteResults.subscribe(() => {
+    deleteResults += 1
+  })
+
+  createFoldkitDeleteClient(active, () => {
+    deleteApprovals += 1
+
+    return input.approveDeletion ?? true
+  })
 
   const snapshots = createFoldkitSnapshotClient(active.ports)
 
@@ -204,12 +285,15 @@ export const mountFoldkitModelStylingFixture = (
   active.ports.changes.subscribe((change) => {
     changeKinds.push(change.kind)
   })
+  active.ports.acceptedStates.subscribe((state) => {
+    ;({ zoom } = state.current.viewport)
+  })
   active.ports.viewportResults.subscribe((response) => {
     ;({ zoom } = response.viewport)
   })
 
   createFoldkitNodeMeasurementObserver({
-    owner: container,
+    owner,
     zoom: () => zoom,
     onMeasure: ({ requestId, measurement }) =>
       send(
@@ -228,6 +312,30 @@ export const mountFoldkitModelStylingFixture = (
   })
 
   return {
+    deleteResults: () => deleteResults,
+    deleteApprovals: () => deleteApprovals,
+    replaceRenderers: () =>
+      updateFoldkitRendererRegistry(
+        registry,
+        {
+          nodeTypes: {
+            zoom: (node, h) =>
+              h.div(
+                [h.DataAttribute('testid', 'replaced-node')],
+                [`Replacement ${node.label}`]
+              ),
+          },
+          edgeTypes: {
+            custom: (_edge, geometry, h) =>
+              h.path([
+                h.DataAttribute('testid', 'replaced-edge'),
+                h.D(geometry.path),
+                h.Stroke('red'),
+              ]),
+          },
+        },
+        active.ports.actions
+      ),
     events: () => events,
     resizeLog: () => resizeLog,
     changeKinds: () => changeKinds,

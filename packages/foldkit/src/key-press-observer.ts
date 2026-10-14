@@ -48,7 +48,7 @@ const useKeyOrCode = (
 const isElementNode = (target: EventTarget | null): target is Element =>
   target !== null && 'nodeType' in target && target.nodeType === 1
 
-const firstEventElement = (event: KeyboardEvent): Element | null => {
+export const firstEventElement = (event: KeyboardEvent): Element | null => {
   const first = event.composedPath?.()[0] ?? event.target
 
   return isElementNode(first) ? first : null
@@ -62,7 +62,7 @@ const hasKeyboardEventFields = (event: Event): event is KeyboardEvent =>
   'metaKey' in event &&
   'shiftKey' in event
 
-const isInputDOMNode = (event: KeyboardEvent): boolean => {
+export const isInputDOMNode = (event: KeyboardEvent): boolean => {
   const element = firstEventElement(event)
 
   if (element === null) {
@@ -81,7 +81,7 @@ const isInputDOMNode = (event: KeyboardEvent): boolean => {
 /** Attach one owner-scoped observer for a key or key combination. */
 export const observeKeyPress = (
   keyCode: FlowKeyCode,
-  listener: (pressed: boolean) => void,
+  listener: (pressed: boolean, event?: KeyboardEvent) => void,
   options: FlowKeyPressOptions = {}
 ): (() => void) => {
   const defaultTarget = typeof document === 'undefined' ? null : document
@@ -97,13 +97,13 @@ export const observeKeyPress = (
 
   listener(false)
 
-  const notify = (next: boolean): void => {
+  const notify = (next: boolean, event?: KeyboardEvent): void => {
     if (disposed || pressed === next) {
       return
     }
 
     pressed = next
-    listener(next)
+    listener(next, event)
   }
 
   if (keyCode === null || target === null || alternatives.length === 0) {
@@ -136,7 +136,7 @@ export const observeKeyPress = (
         event.preventDefault()
       }
 
-      notify(true)
+      notify(true, event)
     }
   }
 

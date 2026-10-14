@@ -9,6 +9,7 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       'foldkit/brand',
+      'html-to-image',
       '@dagrejs/dagre',
       'd3-force',
       'elkjs/lib/elk-api',

@@ -291,3 +291,5 @@ export type {
   FoldkitNodeResizerOptions,
   FoldkitResizeCallbacks,
 } from './node-resizer.ts'
+
+export { updateFoldkitRendererRegistry } from './renderer-registry.ts'

@@ -10,6 +10,11 @@ import {
 } from '@flow/core'
 import { Exit, Schema } from 'effect'
 
+export const KeyboardDeleteSelectionSchema = Schema.Struct({
+  nodeIds: Schema.Array(Schema.String),
+  edgeIds: Schema.Array(Schema.String),
+})
+
 /** Serializable host request; no callback crosses the Foldkit port boundary. */
 export const DeleteApprovalRequestedSchema = Schema.Struct({
   operationId: Schema.String,
@@ -106,6 +111,9 @@ interface DeleteApprovalOutputPort<Value> {
 
 interface FoldkitDeleteHandle {
   readonly ports: {
+    readonly keyboardDeleteRequests?: DeleteApprovalOutputPort<
+      typeof KeyboardDeleteSelectionSchema.Encoded
+    >
     readonly deleteRequests: DeleteApprovalPort<DeleteRequest>
     readonly deleteCancellations: DeleteApprovalPort<DeleteCancellation>
     readonly deleteApprovalResponses: DeleteApprovalPort<DeleteApprovalResponse>
@@ -415,84 +423,94 @@ export const createFoldkitDeleteClient = (
     }
   })
 
-  return {
-    deleteElements: ({ nodeIds, edgeIds }, requestOptions = {}) => {
-      requestNumber += 1
-      const operationId = `foldkit-delete-${requestNumber}`
-      const { promise, resolve } = Promise.withResolvers<DeleteResult>()
-      const { signal } = requestOptions
+  const deleteElements: FoldkitDeleteClient['deleteElements'] = (
+    { nodeIds, edgeIds },
+    requestOptions = {}
+  ) => {
+    requestNumber += 1
+    const operationId = `foldkit-delete-${requestNumber}`
+    const { promise, resolve } = Promise.withResolvers<DeleteResult>()
+    const { signal } = requestOptions
 
-      if (disposed) {
-        resolve({
-          operationId,
-          error: FlowEditDisposedSchema.make({}),
-        })
-
-        return promise
-      }
-
-      if (signal?.aborted) {
-        resolve({
-          operationId,
-          error: new FlowDeleteCancelled({ operationId }),
-        })
-
-        return promise
-      }
-
-      if (pending.size >= maxPending) {
-        resolve({
-          operationId,
-          error: new FlowDeleteInProgress({ operationId }),
-        })
-
-        return promise
-      }
-
-      const abortController = new AbortController()
-
-      const onAbort =
-        signal === undefined ? undefined : () => cancel(operationId)
-
-      const entry: PendingDelete = {
-        resolve,
-        baseRevision: revision,
-        abortController,
-        cancellationRequested: false,
-        timeoutId: undefined,
-      }
-
-      if (signal !== undefined && onAbort !== undefined) {
-        entry.signal = signal
-        entry.onAbort = onAbort
-      }
-
-      pending.set(operationId, entry)
-
-      if (signal !== undefined && onAbort !== undefined) {
-        signal.addEventListener('abort', onAbort, { once: true })
-      }
-
-      entry.timeoutId = setTimeout(() => {
-        cancel(operationId, 'timed-out')
-      }, approvalTimeoutMs)
-
-      const sent = handle.ports.deleteRequests.send({
+    if (disposed) {
+      resolve({
         operationId,
-        baseRevision: entry.baseRevision,
-        nodeIds: [...nodeIds],
-        edgeIds: [...edgeIds],
+        error: FlowEditDisposedSchema.make({}),
       })
 
-      if (Exit.isFailure(sent)) {
-        settle(operationId, {
-          operationId,
-          error: FlowEditDisposedSchema.make({}),
-        })
-      }
+      return promise
+    }
+
+    if (signal?.aborted) {
+      resolve({
+        operationId,
+        error: new FlowDeleteCancelled({ operationId }),
+      })
 
       return promise
-    },
+    }
+
+    if (pending.size >= maxPending) {
+      resolve({
+        operationId,
+        error: new FlowDeleteInProgress({ operationId }),
+      })
+
+      return promise
+    }
+
+    const abortController = new AbortController()
+
+    const onAbort = signal === undefined ? undefined : () => cancel(operationId)
+
+    const entry: PendingDelete = {
+      resolve,
+      baseRevision: revision,
+      abortController,
+      cancellationRequested: false,
+      timeoutId: undefined,
+    }
+
+    if (signal !== undefined && onAbort !== undefined) {
+      entry.signal = signal
+      entry.onAbort = onAbort
+    }
+
+    pending.set(operationId, entry)
+
+    if (signal !== undefined && onAbort !== undefined) {
+      signal.addEventListener('abort', onAbort, { once: true })
+    }
+
+    entry.timeoutId = setTimeout(() => {
+      cancel(operationId, 'timed-out')
+    }, approvalTimeoutMs)
+
+    const sent = handle.ports.deleteRequests.send({
+      operationId,
+      baseRevision: entry.baseRevision,
+      nodeIds: [...nodeIds],
+      edgeIds: [...edgeIds],
+    })
+
+    if (Exit.isFailure(sent)) {
+      settle(operationId, {
+        operationId,
+        error: FlowEditDisposedSchema.make({}),
+      })
+    }
+
+    return promise
+  }
+
+  const stopKeyboard = handle.ports.keyboardDeleteRequests?.subscribe(
+    (selection) => {
+      void deleteElements(selection)
+    }
+  )
+
+  return {
+    deleteElements,
     dispose: () => {
       if (disposed) {
         return
@@ -503,6 +521,7 @@ export const createFoldkitDeleteClient = (
       stopResults()
       stopCancellationAcks()
       stopAcceptedStates()
+      stopKeyboard?.()
 
       for (const operationId of pending.keys()) {
         settle(operationId, {

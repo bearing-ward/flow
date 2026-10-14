@@ -1043,7 +1043,11 @@ const mount = async (
     undefined,
     selectionMode,
     // Conformance fixtures exercise resize controls.
-    { ...interactionOptions, nodesResizable: true }
+    {
+      ...interactionOptions,
+      nodesResizable: true,
+      onlyRenderVisibleElements: fixture.renderOnlyVisible ?? true,
+    }
   )
 
   handle = Runtime.embed<typeof ports, never, 'Element'>(program)
@@ -1093,7 +1097,7 @@ const mount = async (
 
 const mountMeasurementDocument = async (
   documentInput: typeof FlowDocumentSchema.Encoded,
-  _renderOnlyVisible: boolean
+  renderOnlyVisible: boolean
 ): Promise<void> => {
   disposeHandle(handle)
   const container = document.querySelector<HTMLElement>('#app')
@@ -1110,7 +1114,14 @@ const mountMeasurementDocument = async (
     { x: 0, y: 0, zoom: 1 },
     [],
     'uncontrolled',
-    'uncontrolled'
+    'uncontrolled',
+    {},
+    undefined,
+    'full',
+    {
+      ...defaultInteractionOptions,
+      onlyRenderVisibleElements: renderOnlyVisible,
+    }
   )
 
   handle = Runtime.embed<typeof ports, never, 'Element'>(program)
@@ -1344,7 +1355,11 @@ const publicProgram = (
     { minZoom: 0.25, maxZoom: 4 },
     'full',
     // Conformance fixtures exercise resize controls.
-    { ...interactionOptions, nodesResizable: true }
+    {
+      onlyRenderVisibleElements: true,
+      ...interactionOptions,
+      nodesResizable: true,
+    }
   )
 
   const active = Runtime.embed<typeof ports, never, 'Element'>(program)
