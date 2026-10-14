@@ -137,6 +137,8 @@ export interface FlowEdgePresentationOptions {
   readonly zIndexMode: FlowZIndexMode | undefined
   readonly elevateEdgesOnSelect: boolean | undefined
   readonly defaultMarkerColor: string | undefined
+  readonly edgesReconnectable: boolean | undefined
+  readonly reconnectRadius: number | undefined
   readonly edgesFocusable: boolean | undefined
   readonly edgeDescriptionId: string | undefined
 }
@@ -483,7 +485,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     sourceAnchor.classList.add('flow-edge-reconnect-anchor')
     sourceAnchor.dataset.endpoint = 'source'
     sourceAnchor.dataset.testid = 'flow-edge-reconnect-anchor'
-    sourceAnchor.setAttribute('r', '8')
+    sourceAnchor.setAttribute('r', String(presentation().reconnectRadius ?? 8))
 
     const targetAnchor = globalThis.document.createElementNS(
       svgNamespace,
@@ -493,7 +495,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     targetAnchor.classList.add('flow-edge-reconnect-anchor')
     targetAnchor.dataset.endpoint = 'target'
     targetAnchor.dataset.testid = 'flow-edge-reconnect-anchor'
-    targetAnchor.setAttribute('r', '8')
+    targetAnchor.setAttribute('r', String(presentation().reconnectRadius ?? 8))
 
     group.append(path, hit, visual)
     anchorGroup.append(sourceAnchor, targetAnchor)
@@ -965,15 +967,19 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         group.classList.toggle('selected', edge.selected === true)
         anchorGroup.classList.toggle(
           'selected',
-          edge.selected === true && edge.reconnectable !== false
+          edge.selected === true &&
+            (edge.reconnectable ?? canvasPresentation.edgesReconnectable) !==
+              false
         )
         sourceAnchor.classList.toggle(
           'available',
-          edge.reconnectable !== false && edge.reconnectable !== 'target'
+          (edge.reconnectable ?? canvasPresentation.edgesReconnectable) !==
+            false && edge.reconnectable !== 'target'
         )
         targetAnchor.classList.toggle(
           'available',
-          edge.reconnectable !== false && edge.reconnectable !== 'source'
+          (edge.reconnectable ?? canvasPresentation.edgesReconnectable) !==
+            false && edge.reconnectable !== 'source'
         )
         group.setAttribute(
           'tabindex',

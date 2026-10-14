@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 117 Foldkit final parity wiring and Plan 116 Vue final parity wiring (with Plan 114 core and Plans 111-113 scope)",
+  "activeWork": "Plan 118 Vanilla closing gaps, preserving main Plan 111-117 verification scope",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
@@ -28,7 +28,9 @@
       "styling-recipes.e2e.ts",
       "ui-controls.e2e.ts",
       "versioned-persistence.e2e.ts",
-      "whiteboard-recipes.e2e.ts"
+      "whiteboard-recipes.e2e.ts",
+      "closing-options.e2e.ts",
+      "closing-recipes.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",

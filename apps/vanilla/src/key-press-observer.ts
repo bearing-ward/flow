@@ -9,6 +9,7 @@ export type FlowKeyPressTarget =
 
 export interface FlowKeyPressOptions {
   readonly target?: FlowKeyPressTarget
+  readonly capture?: boolean
   readonly actInsideInputWithModifier?: boolean
   readonly preventDefault?: boolean
 }
@@ -86,6 +87,7 @@ export const observeKeyPress = (
 ): (() => void) => {
   const defaultTarget = typeof document === 'undefined' ? null : document
   const target = options.target ?? defaultTarget
+  const capture = options.capture ?? false
   const actInsideInputWithModifier = options.actInsideInputWithModifier ?? true
   const preventDefault = options.preventDefault ?? true
   const alternatives = parseKeyCode(keyCode)
@@ -175,8 +177,8 @@ export const observeKeyPress = (
     }
   }
 
-  target.addEventListener('keydown', onKeyDown)
-  target.addEventListener('keyup', onKeyUp)
+  target.addEventListener('keydown', onKeyDown, capture)
+  target.addEventListener('keyup', onKeyUp, capture)
   globalThis.addEventListener('blur', resetHandler)
   globalThis.addEventListener('contextmenu', resetHandler)
 
@@ -188,8 +190,8 @@ export const observeKeyPress = (
     disposed = true
     pressedKeys.clear()
     pressed = false
-    target.removeEventListener('keydown', onKeyDown)
-    target.removeEventListener('keyup', onKeyUp)
+    target.removeEventListener('keydown', onKeyDown, capture)
+    target.removeEventListener('keyup', onKeyUp, capture)
     globalThis.removeEventListener('blur', resetHandler)
     globalThis.removeEventListener('contextmenu', resetHandler)
   }

@@ -118,6 +118,7 @@ export type {
   FlowNodeDragPayload,
   FlowNodeDragStopPayload,
   FlowCanvasEventPayload,
+  FlowPaneScrollPayload,
 } from './mount-flow.ts'
 
 export type {

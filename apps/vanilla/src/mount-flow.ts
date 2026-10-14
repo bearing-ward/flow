@@ -246,6 +246,15 @@ import {
   resolveVanillaAriaLabels,
 } from './aria-labels.ts'
 import type { FlowResolvedAriaLabels } from './aria-labels.ts'
+import {
+  CanvasInteractionOptionsSchema,
+  bindCanvasKeys,
+  focusPanDelta,
+  allowsCanvasWheel,
+  noGestureSelector,
+  reconnectableEdge,
+} from './canvas-interaction-options.ts'
+import type { CanvasInteractionOptions } from './canvas-interaction-options.ts'
 import { createCanvasUI } from './canvas-ui.ts'
 import { bindFlowColorMode } from './color-mode.ts'
 import { createEdgeRenderer, measureNodeHandles } from './edge-renderer.ts'
@@ -262,7 +271,7 @@ import type { FlowInstanceApi } from './instance-api.ts'
 import { observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 import { createMeasuredDimensionsTracker } from './measured-dimensions.ts'
-import { applyNodePresentation } from './presentation.ts'
+import { applyFlowStyle, applyNodePresentation } from './presentation.ts'
 import { renderRegisteredResizeControls } from './resize-controls.ts'
 import type {
   FlowNodeResizerHandle,
@@ -416,6 +425,7 @@ export const CanvasUISchema = S.Struct({
 })
 
 export const FlowMountOptionsSchema = S.Struct({
+  ...CanvasInteractionOptionsSchema.fields,
   documentMode: FlowControlModeSchema,
   connectionDragThreshold: S.optional(ConnectionDragThresholdSchema),
   nodeDragThreshold: S.optional(NodeDragThresholdSchema),
@@ -687,6 +697,10 @@ export interface FlowCanvasEventPayload {
   readonly edgeId?: string | undefined
 }
 
+export interface FlowPaneScrollPayload extends FlowCanvasEventPayload {
+  readonly event: WheelEvent
+}
+
 type FlowCanvasEventListener = (event: FlowCanvasEventPayload) => void
 
 type FlowCanvasEventTarget =
@@ -896,7 +910,7 @@ export interface FlowEdgeRenderer {
   ) => FlowEdgeRendererInstance
 }
 
-export interface FlowHostOptions {
+export interface FlowHostOptions extends CanvasInteractionOptions {
   readonly documentMode: FlowControlMode
   readonly connectionDragThreshold?:
     | typeof ConnectionDragThresholdSchema.Type
@@ -945,11 +959,20 @@ export interface FlowHostOptions {
   readonly onConnectStart?:
     | ((connection: FlowConnectStartPayload) => void)
     | undefined
+  readonly onClickConnectStart?:
+    | ((connection: FlowConnectStartPayload) => void)
+    | undefined
   readonly onConnect?:
     | ((connection: FlowConnectionCandidate) => void)
     | undefined
   /** The end payload, then React Flow's final connection state and release. */
   readonly onConnectEnd?:
+    | ((
+        connection: FlowConnectEndPayload,
+        details: FlowConnectionEndDetails
+      ) => void)
+    | undefined
+  readonly onClickConnectEnd?:
     | ((
         connection: FlowConnectEndPayload,
         details: FlowConnectionEndDetails
@@ -980,6 +1003,7 @@ export interface FlowHostOptions {
     | ((selection: FlowSelectionContextMenuPayload) => void)
     | undefined
   readonly onPaneClick?: FlowCanvasEventListener | undefined
+  readonly onPaneScroll?: ((payload: FlowPaneScrollPayload) => void) | undefined
   readonly onPaneDoubleClick?: FlowCanvasEventListener | undefined
   readonly onPaneContextMenu?: FlowCanvasEventListener | undefined
   readonly onPaneMouseEnter?: FlowCanvasEventListener | undefined
@@ -1295,11 +1319,20 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly onConnectStart?:
     | ((connection: FlowConnectStartPayload) => void)
     | undefined
+  readonly onClickConnectStart?:
+    | ((connection: FlowConnectStartPayload) => void)
+    | undefined
   readonly onConnect?:
     | ((connection: FlowConnectionCandidate) => void)
     | undefined
   /** The end payload, then React Flow's final connection state and release. */
   readonly onConnectEnd?:
+    | ((
+        connection: FlowConnectEndPayload,
+        details: FlowConnectionEndDetails
+      ) => void)
+    | undefined
+  readonly onClickConnectEnd?:
     | ((
         connection: FlowConnectEndPayload,
         details: FlowConnectionEndDetails
@@ -1331,6 +1364,7 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
     | ((selection: FlowSelectionContextMenuPayload) => void)
     | undefined
   readonly onPaneClick?: FlowCanvasEventListener | undefined
+  readonly onPaneScroll?: ((payload: FlowPaneScrollPayload) => void) | undefined
   readonly onPaneDoubleClick?: FlowCanvasEventListener | undefined
   readonly onPaneContextMenu?: FlowCanvasEventListener | undefined
   readonly onPaneMouseEnter?: FlowCanvasEventListener | undefined
@@ -1859,13 +1893,14 @@ const isCanvasGraphTarget = (target: EventTarget | null): boolean =>
 
 const isNodePointerTargetAllowed = (
   content: HTMLElement,
-  target: EventTarget | null
+  target: EventTarget | null,
+  noDragClassName: string | undefined
 ): boolean => {
   const contentTarget =
     target instanceof Element && content.contains(target) ? target : null
 
   const noDragTarget = contentTarget?.closest(
-    '[data-flow-no-drag], [data-flow-nodrag], .nodrag'
+    noGestureSelector('drag', noDragClassName)
   )
 
   if (
@@ -2001,7 +2036,7 @@ type CanvasFamilyOf<Key> =
     ? Family
     : never
 
-type CanvasCallbackFamily = CanvasFamilyOf<CanvasCallbackKey>
+type CanvasCallbackFamily = Exclude<CanvasFamilyOf<CanvasCallbackKey>, 'Scroll'>
 
 type CanvasCallbackKeys = {
   readonly [Kind in CanvasTargetKind]: {
@@ -2880,6 +2915,7 @@ export const createFlowHost = (
     >()
 
     const keyPressDisposers = new Set<() => void>()
+    const canvasKeys = bindCanvasKeys(options, keyPressDisposers)
 
     const viewportListeners = new Set<(event: ViewportObservation) => void>()
 
@@ -2943,6 +2979,16 @@ export const createFlowHost = (
 
     const hostRendererScope = runEffect(Scope.fork(hostScope, 'sequential'))
     const hostBrowserScope = runEffect(Scope.fork(hostScope, 'sequential'))
+    yield* Scope.addFinalizer(
+      hostBrowserScope,
+      Effect.sync(() => {
+        for (const dispose of keyPressDisposers) {
+          dispose()
+        }
+
+        keyPressDisposers.clear()
+      })
+    )
 
     let interactionSessions: FlowInteractionSessions = []
 
@@ -3233,6 +3279,8 @@ export const createFlowHost = (
         elevateEdgesOnSelect: options.elevateEdgesOnSelect,
         defaultMarkerColor: options.defaultMarkerColor,
         edgesFocusable: options.edgesFocusable,
+        edgesReconnectable: options.edgesReconnectable,
+        reconnectRadius: options.reconnectRadius,
         edgeDescriptionId: a11yDescriptions.edgeDescriptionId,
       })
     )
@@ -4034,6 +4082,41 @@ export const createFlowHost = (
     }
 
     let clickSuppression: ClickSuppressionReceipt | null = null
+
+    let clickStart:
+      | {
+          readonly x: number
+          readonly y: number
+          readonly kind: 'pane' | 'node' | 'edge'
+          readonly pointerId: number
+          maxDistance: number
+        }
+      | undefined
+
+    const clickWithinDistance = (event: MouseEvent): boolean => {
+      const start = clickStart
+      clickStart = undefined
+
+      if (start === undefined || event.detail === 0) {
+        return true
+      }
+
+      let distance: number | undefined
+
+      if (start.kind === 'node') {
+        distance = options.nodeClickDistance
+      } else if (start.kind === 'pane') {
+        distance = options.paneClickDistance
+      }
+
+      return (
+        distance === undefined ||
+        Math.max(
+          start.maxDistance,
+          Math.hypot(event.clientX - start.x, event.clientY - start.y)
+        ) <= distance
+      )
+    }
 
     const suppressClickThroughDispatch = (gesture = false): void => {
       const receipt: ClickSuppressionReceipt = {
@@ -5213,6 +5296,18 @@ export const createFlowHost = (
     const notifyConnectStart = (connection: FlowConnectStartPayload): void => {
       connectionEndEvent = undefined
 
+      if (
+        connection.inputKind === 'click-connect' &&
+        options.onClickConnectStart !== undefined
+      ) {
+        reportBoundaryCallback(
+          'Click connection start',
+          connection.inputKind,
+          options.onClickConnectStart,
+          connection
+        )
+      }
+
       if (options.onConnectStart !== undefined) {
         reportBoundaryCallback(
           'Connection start',
@@ -5249,6 +5344,20 @@ export const createFlowHost = (
 
     const notifyConnectEnd = (connection: FlowConnectEndPayload): void => {
       const details = connectionEndDetails()
+
+      if (
+        connection.inputKind === 'click-connect' &&
+        options.onClickConnectEnd !== undefined
+      ) {
+        reportBoundaryCallback(
+          'Click connection end',
+          connection.inputKind,
+          (payload: FlowConnectEndPayload) =>
+            options.onClickConnectEnd?.(payload, details),
+          connection
+        )
+      }
+
       const { onConnectEnd } = options
 
       if (onConnectEnd !== undefined) {
@@ -5306,6 +5415,7 @@ export const createFlowHost = (
 
       preview.classList.add('flow-connection-preview')
       preview.dataset.testid = 'flow-connection-preview'
+      applyFlowStyle(preview, options.connectionLineContainerStyle)
 
       const line = globalThis.document.createElementNS(
         'http://www.w3.org/2000/svg',
@@ -5324,6 +5434,7 @@ export const createFlowHost = (
         line.setAttribute('display', 'none')
       }
 
+      applyFlowStyle(line, options.connectionLineStyle)
       preview.append(line)
 
       if (
@@ -5337,6 +5448,7 @@ export const createFlowHost = (
 
         typedLine.classList.add('flow-connection-preview-path')
         typedLine.dataset.connectionLineType = options.connectionLineType
+        applyFlowStyle(typedLine, options.connectionLineStyle)
         preview.append(typedLine)
       }
 
@@ -5610,7 +5722,10 @@ export const createFlowHost = (
         edge !== undefined &&
         edge.selected === true &&
         edge.hidden !== true &&
-        canReconnectEdge(edge, pending.endpoint) &&
+        canReconnectEdge(
+          reconnectableEdge(edge, options.edgesReconnectable),
+          pending.endpoint
+        ) &&
         resolved !== undefined &&
         edge.source === pending.source.nodeId &&
         edge.target === pending.target.nodeId &&
@@ -5784,7 +5899,10 @@ export const createFlowHost = (
         pendingConnection !== null ||
         edge?.selected !== true ||
         (endpoint !== 'source' && endpoint !== 'target') ||
-        !canReconnectEdge(edge, endpoint) ||
+        !canReconnectEdge(
+          reconnectableEdge(edge, options.edgesReconnectable),
+          endpoint
+        ) ||
         interactionSlots.activeReconnection !== null ||
         interactionSlots.activeConnection !== null ||
         activeClickConnection !== null ||
@@ -5883,7 +6001,9 @@ export const createFlowHost = (
         const delta = selectionAutoPanDelta(
           pointer,
           canvas.clientWidth,
-          canvas.clientHeight
+          canvas.clientHeight,
+          40,
+          options.autoPanSpeed ?? 15
         )
 
         if (delta.x === 0 && delta.y === 0) {
@@ -6367,7 +6487,7 @@ export const createFlowHost = (
     }
 
     const scheduleNodeFrame = (sample: NodeSample): void => {
-      if (!nodeSampleLive(sample)) {
+      if (!nodeSampleLive(sample) || options.autoPanOnNodeDrag === false) {
         return
       }
 
@@ -6385,7 +6505,9 @@ export const createFlowHost = (
       const admissionDelta = selectionAutoPanDelta(
         admissionPoint,
         canvas.clientWidth,
-        canvas.clientHeight
+        canvas.clientHeight,
+        40,
+        options.autoPanSpeed ?? 15
       )
 
       if (admissionDelta.x === 0 && admissionDelta.y === 0) {
@@ -6469,7 +6591,9 @@ export const createFlowHost = (
         const delta = selectionAutoPanDelta(
           point,
           canvas.clientWidth,
-          canvas.clientHeight
+          canvas.clientHeight,
+          40,
+          options.autoPanSpeed ?? 15
         )
 
         const previous = renderedViewport
@@ -6941,7 +7065,10 @@ export const createFlowHost = (
 
       if (
         nextEdge.selected !== true ||
-        !canReconnectEdge(nextEdge, endpoint) ||
+        !canReconnectEdge(
+          reconnectableEdge(nextEdge, options.edgesReconnectable),
+          endpoint
+        ) ||
         (activeEdge !== undefined &&
           (nextEdge.source !== activeEdge.source ||
             nextEdge.sourceHandle !== activeEdge.sourceHandle ||
@@ -8652,7 +8779,13 @@ export const createFlowHost = (
               return
             }
 
-            if (isNodePointerTargetAllowed(content, event.target) === false) {
+            if (
+              isNodePointerTargetAllowed(
+                content,
+                event.target,
+                options.noDragClassName
+              ) === false
+            ) {
               return
             }
 
@@ -8712,7 +8845,9 @@ export const createFlowHost = (
               ) &&
               !(
                 event.target instanceof Element &&
-                event.target.closest('.nopan, [data-flow-no-pan]') !== null
+                event.target.closest(
+                  noGestureSelector('pan', options.noPanClassName)
+                ) !== null
               )
             dragPointer = pointerInCanvas(event)
 
@@ -8972,7 +9107,7 @@ export const createFlowHost = (
 
               if (
                 isNodeSelectable(interactivity, current) &&
-                (event.metaKey || event.ctrlKey)
+                canvasKeys.multiSelection(event)
               ) {
                 operations.toggleNodeSelection(current)
               } else if (
@@ -9251,6 +9386,10 @@ export const createFlowHost = (
     const scheduleSelectionFrame = (
       active: NonNullable<FlowInteractionSlots['activeSelectionRect']>
     ): void => {
+      if (options.autoPanOnSelection === false) {
+        return
+      }
+
       const handle = globalThis.requestAnimationFrame(() => {
         if (
           destroyed ||
@@ -9270,7 +9409,9 @@ export const createFlowHost = (
         const delta = selectionAutoPanDelta(
           pointer,
           canvas.clientWidth,
-          canvas.clientHeight
+          canvas.clientHeight,
+          40,
+          options.autoPanSpeed ?? 15
         )
 
         if (delta.x === 0 && delta.y === 0) {
@@ -9467,7 +9608,8 @@ export const createFlowHost = (
       if (
         isCanvasUiTarget(target) ||
         (target instanceof Element &&
-          target.closest('.nopan, [data-flow-no-pan]') !== null)
+          target.closest(noGestureSelector('pan', options.noPanClassName)) !==
+            null)
       ) {
         return
       }
@@ -9497,7 +9639,9 @@ export const createFlowHost = (
 
       if (
         interactivity.elementsSelectable &&
-        isSelectionActivationEnabled(options, event)
+        (options.selectionKeyCode === undefined
+          ? isSelectionActivationEnabled(options, event)
+          : options.selectionOnDrag === true || canvasKeys.selectionHeld)
       ) {
         const pointerStart = pointerInCanvas(event)
 
@@ -9603,7 +9747,9 @@ export const createFlowHost = (
 
       if (
         target instanceof Element &&
-        target.closest('.flow-canvas-ui, .nopan, [data-flow-no-pan]') !== null
+        target.closest(
+          `.flow-canvas-ui, ${noGestureSelector('pan', options.noPanClassName)}`
+        ) !== null
       ) {
         return
       }
@@ -11021,7 +11167,7 @@ export const createFlowHost = (
         )
 
         const noDragTarget = target.closest(
-          '[data-flow-no-drag], [data-flow-nodrag], .nodrag'
+          noGestureSelector('drag', options.noDragClassName)
         )
 
         if (
@@ -11060,7 +11206,7 @@ export const createFlowHost = (
 
           if (
             isEdgeSelectable(interactivity, edge) &&
-            (event.metaKey || event.ctrlKey)
+            canvasKeys.multiSelection(event)
           ) {
             operations.toggleEdgeSelection(edge)
           } else if (
@@ -11099,7 +11245,7 @@ export const createFlowHost = (
 
           if (
             isNodeSelectable(interactivity, node) &&
-            (event.metaKey || event.ctrlKey)
+            canvasKeys.multiSelection(event)
           ) {
             operations.toggleNodeSelection(node)
           } else if (
@@ -11386,6 +11532,55 @@ export const createFlowHost = (
         }
       }
 
+      if (canvasKeys.deletePressed(event)) {
+        event.preventDefault()
+
+        if (!event.repeat) {
+          const nodeIds = document.nodes
+            .filter(
+              (node) => node.selected === true && node.deletable !== false
+            )
+            .map((node) => node.id)
+
+          const edgeIds = document.edges
+            .filter(
+              (edge) => edge.selected === true && edge.deletable !== false
+            )
+            .map((edge) => edge.id)
+
+          const [edgeId] = edgeIds
+
+          if (
+            nodeIds.length === 0 &&
+            edgeIds.length === 1 &&
+            edgeId !== undefined
+          ) {
+            operations.publishChange({ kind: 'edge-remove', edgeId })
+          } else if (nodeIds.length + edgeIds.length > 0) {
+            reportBoundaryCallback(
+              'Keyboard deletion',
+              'keyboard',
+              () => {
+                const result = Effect.runSync(
+                  prepareFlowEdit(document, {
+                    operations: [{ kind: 'delete-elements', nodeIds, edgeIds }],
+                  })
+                )
+
+                operations.publishChange({
+                  kind: 'edit-proposal',
+                  document: result.document,
+                  deletion: result.deletion,
+                })
+              },
+              event
+            )
+          }
+        }
+
+        return
+      }
+
       const nodeElement =
         target instanceof Element && target.closest('.flow-handle') === null
           ? target.closest<HTMLElement>('.flow-node')
@@ -11500,7 +11695,10 @@ export const createFlowHost = (
             ({ nodeId }) => nodeId === node.id
           )?.position
 
-          if (focusedPosition !== undefined) {
+          if (
+            focusedPosition !== undefined &&
+            options.autoPanOnNodeFocus !== false
+          ) {
             const parentPosition =
               node.parentId === undefined
                 ? { x: 0, y: 0 }
@@ -11577,7 +11775,7 @@ export const createFlowHost = (
 
           if (
             isNodeSelectable(interactivity, node) &&
-            (event.metaKey || event.ctrlKey)
+            canvasKeys.multiSelection(event)
           ) {
             operations.toggleNodeSelection(node)
           } else if (
@@ -11623,22 +11821,12 @@ export const createFlowHost = (
             selected: false,
           })
         }
-      } else if (
-        (event.key === 'Delete' || event.key === 'Backspace') &&
-        edge.selected === true &&
-        edge.deletable !== false
-      ) {
-        event.preventDefault()
-
-        if (!event.repeat) {
-          operations.publishChange({ kind: 'edge-remove', edgeId: edge.id })
-        }
       } else if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
 
         if (
           isEdgeSelectable(interactivity, edge) &&
-          (event.metaKey || event.ctrlKey)
+          canvasKeys.multiSelection(event)
         ) {
           operations.toggleEdgeSelection(edge)
         } else if (
@@ -11752,34 +11940,41 @@ export const createFlowHost = (
       )
     }
 
+    // eslint-disable-next-line complexity -- Wheel entry orders embedded controls, active gestures, scrolling, pinch and zoom modes.
     const onCanvasWheel = (event: WheelEvent): void => {
       if (destroyed) {
         return
       }
 
-      const { target } = event
+      if (options.onPaneScroll !== undefined) {
+        reportBoundaryCallback('Pane scroll', 'wheel', options.onPaneScroll, {
+          event,
+          position: pointerInCanvas(event),
+        })
+      }
 
-      if (target instanceof Element) {
-        const nativeControl = target.closest(
-          'button, input, select, textarea, a[href], [contenteditable="true"]'
-        )
-
-        const noWheelTarget = target.closest(
-          '[data-flow-no-wheel], [data-flow-nowheel], .nowheel'
-        )
-
-        if (nativeControl !== null || noWheelTarget !== null) {
-          return
-        }
+      if (!allowsCanvasWheel(event.target, options.noWheelClassName)) {
+        return
       }
 
       if (interactionSlots.activeViewportPan !== null) {
         return
       }
 
-      if (options.panOnScroll === true) {
-        const observation = beginUserViewportObservation()
+      if (options.preventScrolling !== false) {
         event.preventDefault()
+      }
+
+      const zoomActive =
+        canvasKeys.zoomHeld ||
+        (options.zoomActivationKeyCode === undefined &&
+          (event.ctrlKey || event.metaKey))
+
+      if (options.panOnScroll === true && !zoomActive && !event.ctrlKey) {
+        const observation = beginUserViewportObservation()
+
+        event.preventDefault()
+
         const speed = options.panOnScrollSpeed ?? 1
         const mode = options.panOnScrollMode ?? 'free'
         const deltaX = mode === 'vertical' ? 0 : event.deltaX
@@ -11798,7 +11993,15 @@ export const createFlowHost = (
         return
       }
 
-      if (options.zoomOnScroll === false) {
+      if (
+        event.ctrlKey
+          ? options.zoomOnPinch === false
+          : options.zoomOnScroll === false && !zoomActive
+      ) {
+        return
+      }
+
+      if (options.preventScrolling === false && !event.ctrlKey) {
         return
       }
 
@@ -11823,7 +12026,9 @@ export const createFlowHost = (
       )
 
       const observation = beginUserViewportObservation()
+
       event.preventDefault()
+
       operations.publishChange({ kind: 'viewport', viewport: candidate })
       endUserViewportObservation(observation)
       runTelemetry(
@@ -11941,15 +12146,91 @@ export const createFlowHost = (
       hostBrowserScope
     )
     yield* Scope.provide(
+      browser.listen(
+        canvas,
+        'pointerdown',
+        (event) => {
+          clickStart = {
+            x: event.clientX,
+            y: event.clientY,
+            kind: getFlowCanvasEventTarget(event.target).kind,
+            pointerId: event.pointerId,
+            maxDistance: 0,
+          }
+        },
+        { capture: true }
+      ),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
+      browser.listen(
+        canvas,
+        'pointermove',
+        (event) => {
+          if (clickStart?.pointerId === event.pointerId) {
+            clickStart.maxDistance = Math.max(
+              clickStart.maxDistance,
+              Math.hypot(
+                event.clientX - clickStart.x,
+                event.clientY - clickStart.y
+              )
+            )
+          }
+        },
+        { capture: true }
+      ),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
       browser.listen(canvas, 'click', (event) => {
         // A click that ends a drag, resize, pan or connection reaches neither
         // selection nor the click callbacks, as in React Flow.
         const suppressed = clickSuppression?.gesture === true
 
+        if (!clickWithinDistance(event)) {
+          clickSuppression = null
+
+          return
+        }
+
         onCanvasClick(event)
 
         if (!suppressed) {
           dispatchCanvasEvent('Click', event)
+        }
+      }),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
+      browser.listen(canvas, 'focusin', (event) => {
+        if (
+          options.autoPanOnNodeFocus === false ||
+          !(event.target instanceof HTMLElement)
+        ) {
+          return
+        }
+
+        const node = event.target.closest<HTMLElement>('.flow-node')
+
+        if (
+          node === null ||
+          options.keyboardActivation === false ||
+          !node.matches(':focus-visible')
+        ) {
+          return
+        }
+
+        const box = node.getBoundingClientRect()
+        const pane = canvas.getBoundingClientRect()
+        const { x: dx, y: dy } = focusPanDelta(box, pane)
+
+        if (dx !== 0 || dy !== 0) {
+          operations.publishChange({
+            kind: 'viewport',
+            viewport: constrainViewport(
+              panViewport(renderedViewport, { x: dx, y: dy })
+            ),
+          })
         }
       }),
       hostBrowserScope
@@ -13356,8 +13637,10 @@ export const mountFlow = (
         inputOptions.onSelectionDragStop
       ),
       onConnectStart: inputOptions.onConnectStart,
+      onClickConnectStart: inputOptions.onClickConnectStart,
       onConnect: inputOptions.onConnect,
       onConnectEnd: inputOptions.onConnectEnd,
+      onClickConnectEnd: inputOptions.onClickConnectEnd,
       onReconnectStart: inputOptions.onReconnectStart,
       onReconnect: inputOptions.onReconnect,
       onReconnectEnd: inputOptions.onReconnectEnd,
@@ -13366,6 +13649,7 @@ export const mountFlow = (
       onSelectionEnd: inputOptions.onSelectionEnd,
       onSelectionContextMenu: inputOptions.onSelectionContextMenu,
       onPaneClick: inputOptions.onPaneClick,
+      onPaneScroll: inputOptions.onPaneScroll,
       onPaneDoubleClick: inputOptions.onPaneDoubleClick,
       onPaneContextMenu: inputOptions.onPaneContextMenu,
       onPaneMouseEnter: inputOptions.onPaneMouseEnter,

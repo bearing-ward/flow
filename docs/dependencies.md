@@ -39,3 +39,11 @@ These packages serve the layout recipes in `apps/{vanilla,vue,foldkit}/ui-recipe
 | `@dagrejs/dagre` 3.1.1 | The three example apps | Layered tree layout for the Dagre Tree, Auto Layout and Dynamic Layouting recipes. It ships ESM and its own types. | The unmaintained `dagre` 0.8 package needs separate types and CommonJS interop. `d3-hierarchy` lays out only trees, not general graphs. | Remove with the layout recipes, or when the recipes move to another engine. |
 | `elkjs` 0.12.0 | The three example apps | ELK layered layout with fixed-position ports for the Elkjs Tree and Elkjs Multiple Handles recipes. The recipes import the bundled build, which runs on the main thread without a worker. | Dagre has no port constraints, so it cannot place edges by measured handle position. A web-worker ELK setup adds a worker URL per host for no gain at recipe size. | Remove with the ELK recipes. |
 | `d3-force` 3.0.0 and `@types/d3-force` 3.0.10 | The three example apps | Force simulation for the Force Layout recipe. The recipe drives ticks from its own animation frame loop and writes positions through public edits. | A hand-written spring simulation would duplicate a well-tested solver. `d3-force` has no DOM dependency and needs no other d3 module. | Remove with the Force Layout recipe. |
+
+## html-to-image 1.11.11
+
+- Owner: Vanilla example app (`apps/vanilla` development dependency).
+- Purpose: the Download Image recipe exports the measured graph viewport as PNG using public bounds and viewport helpers.
+- Version: match the [React Flow example's working pin](https://reactflow.dev/examples/misc/download-image), which records export regressions in later versions.
+- Alternatives considered: native canvas redraw requires a second node/edge renderer; manual SVG foreignObject serialization duplicates image, font and stylesheet embedding.
+- Removal boundary: remove with the example recipe or replace its DOM rasterizer. It is never imported by `@flow/vanilla`'s public entry point or core.
