@@ -98,18 +98,22 @@ test('Vue FlowCanvas matches shared renderer fixture semantics and measured geom
           path: fixtureEdge.path ?? 'straight',
           label: label?.textContent ?? null,
           markerStart: ((reference: string | null) => {
-            const match = /marker-(?<kind>arrowclosed|arrow)-/u.exec(
-              reference ?? ''
-            )
+            const markerId = /url\(#(?<id>.+)\)/u.exec(reference ?? '')?.groups
+              ?.id
 
-            return match?.groups?.kind ?? null
+            return markerId === undefined
+              ? null
+              : (document.querySelector<HTMLElement>(`#${CSS.escape(markerId)}`)
+                  ?.dataset.markerType ?? null)
           })(path.getAttribute('marker-start')),
           markerEnd: ((reference: string | null) => {
-            const match = /marker-(?<kind>arrowclosed|arrow)-/u.exec(
-              reference ?? ''
-            )
+            const markerId = /url\(#(?<id>.+)\)/u.exec(reference ?? '')?.groups
+              ?.id
 
-            return match?.groups?.kind ?? null
+            return markerId === undefined
+              ? null
+              : (document.querySelector<HTMLElement>(`#${CSS.escape(markerId)}`)
+                  ?.dataset.markerType ?? null)
           })(path.getAttribute('marker-end')),
           source: fixtureEdge.source,
           sourceHandle: fixtureEdge.sourceHandle ?? 'default',

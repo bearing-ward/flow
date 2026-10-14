@@ -1,3 +1,4 @@
+import { flowNodeHandles } from '@flow/core'
 import type { FlowNode, MeasuredHandle } from '@flow/core'
 
 /**
@@ -39,7 +40,7 @@ export const collectNodeHandles = (
   for (const handleElement of element.querySelectorAll<HTMLElement>(
     '[data-handle-id]'
   )) {
-    const handle = node.handles?.find(
+    const handle = flowNodeHandles(node).find(
       (candidate) => candidate.id === handleElement.dataset.handleId
     )
 

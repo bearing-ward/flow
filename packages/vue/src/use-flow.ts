@@ -24,6 +24,9 @@ import type {
   FlowStateChange,
   FlowNodeConnection,
   FlowSelection,
+  FlowAriaLabelConfig,
+  FlowObject,
+  FlowRect,
   Viewport,
   ViewportAnimationOptions,
   ViewportBounds,
@@ -52,9 +55,14 @@ import {
   FlowDeleteApprovalFailed,
   FlowEditDisposed,
   FlowEditDisposedSchema,
+  defaultFlowAriaLabelConfig,
+  getIntersectingNodes,
+  getNodesBounds,
+  isNodeIntersecting,
+  toFlowObject,
 } from '@flow/core'
-import { Effect, Schema as S } from 'effect'
-import { computed, inject, onScopeDispose, watch } from 'vue'
+import { Effect, Predicate, Schema as S } from 'effect'
+import { computed, inject, onScopeDispose, toRaw, watch } from 'vue'
 import type { ComputedRef, DeepReadonly, InjectionKey, ShallowRef } from 'vue'
 
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
@@ -156,6 +164,18 @@ export interface FlowErrorReport {
   readonly boundary: FlowErrorBoundary
 }
 
+/**
+ * React Flow `FitViewOptions`. `nodes` also takes Flow's `all`/`selected`
+ * shorthands and plain id lists.
+ */
+export type FlowCanvasFitViewOptions = ViewportAnimationOptions & {
+  padding?: ViewportPadding
+  includeHiddenNodes?: boolean
+  minZoom?: number
+  maxZoom?: number
+  nodes?: 'all' | 'selected' | readonly string[] | readonly { id: string }[]
+}
+
 export interface FlowEditor {
   readonly document: ComputedRef<DeepReadonly<FlowDocument>>
   readonly viewport: ComputedRef<DeepReadonly<Viewport>>
@@ -231,10 +251,7 @@ export interface FlowEditor {
     options?: ViewportAnimationOptions & { padding?: ViewportPadding }
   ) => Promise<ViewportOperationResult>
   readonly fitView: (
-    options?: ViewportAnimationOptions & {
-      padding?: ViewportPadding
-      nodes?: 'all' | 'selected' | readonly string[]
-    }
+    options?: FlowCanvasFitViewOptions
   ) => Promise<ViewportOperationResult>
   readonly getViewportForBounds: (
     bounds: ViewportBounds,
@@ -246,6 +263,14 @@ export interface FlowEditor {
   readonly updateNodeInternals: (
     nodeIds: string | readonly string[]
   ) => Promise<readonly NodeInternalsRefreshResult[]>
+  /** Every internal node by id; optional for custom providers. */
+  readonly getInternalNodes?: () => ReadonlyMap<string, FlowInternalNode>
+  /** Last DOM sizes by node id (React `node.measured`); reactive. */
+  readonly measuredSizes?: ComputedRef<
+    ReadonlyMap<string, { readonly width: number; readonly height: number }>
+  >
+  /** Resolved `ariaLabelConfig` of the canvas. */
+  readonly ariaLabelConfig?: ComputedRef<FlowAriaLabelConfig>
 }
 
 export type FlowDeleteLifecycleOptions = FlowDeleteLifecycle & {
@@ -284,13 +309,41 @@ export interface FlowActions {
   readonly connectionState: FlowEditor['connectionState']
   readonly interactivity: FlowEditor['interactivity']
   readonly setInteractivity: FlowEditor['setInteractivity']
+  /** The canvas's resolved `ariaLabelConfig`. */
+  readonly ariaLabelConfig: ComputedRef<FlowAriaLabelConfig>
   readonly getSnapshot: () => DeepReadonly<FlowSnapshot>
   readonly getVersionedSavedSession: () => SavedVersionedFlowSession
   // oxlint-disable-next-line anti-slop/no-unknown-parameters -- Public persistence input is decoded by the versioned session boundary.
   readonly prepareVersionedRestore: (saved: unknown) => Promise<FlowSnapshot>
   readonly getSavedSession: () => SavedFlowSession
   readonly prepareRestore: (saved: SavedFlowSession) => Promise<FlowSnapshot>
+  /** The accepted node with `measured` set from the last DOM measurement. */
   readonly getNode: (id: string) => DeepReadonly<FlowNode> | undefined
+  /** React Flow `getNodes()`: accepted nodes with `measured` set. */
+  readonly getNodes: () => readonly DeepReadonly<FlowNode>[]
+  /** React Flow `getEdges()`. */
+  readonly getEdges: () => readonly DeepReadonly<FlowEdge>[]
+  /** React Flow `toObject()`: detached nodes, edges and viewport. */
+  readonly toObject: () => FlowObject
+  /**
+   * React Flow `getIntersectingNodes(nodeOrRect, partially, nodes)`: nodes
+   * whose measured bounds intersect the node (by id) or flow rectangle.
+   */
+  readonly getIntersectingNodes: (
+    nodeOrRect: FlowNodeReference | FlowRect,
+    partially?: boolean,
+    nodes?: readonly FlowNodeReference[]
+  ) => readonly DeepReadonly<FlowNode>[]
+  /** React Flow `isNodeIntersecting(nodeOrRect, area, partially)`. */
+  readonly isNodeIntersecting: (
+    nodeOrRect: FlowNodeReference | FlowRect,
+    area: FlowRect,
+    partially?: boolean
+  ) => boolean
+  /** React Flow `getNodesBounds(nodes)` over measured absolute bounds. */
+  readonly getNodesBounds: (
+    nodes: readonly (FlowNodeReference | string)[]
+  ) => FlowRect
   readonly getEdge: (id: string) => DeepReadonly<FlowEdge> | undefined
   readonly subscribeState: FlowEditor['subscribeState']
   readonly subscribeSelection: FlowEditor['subscribeSelection']
@@ -374,6 +427,11 @@ export interface FlowActions {
   readonly updateNodeInternals: FlowEditor['updateNodeInternals']
 }
 
+/** A node or anything carrying its id, as React instance methods accept. */
+export interface FlowNodeReference {
+  readonly id: string
+}
+
 export interface FlowNodeConnectionsOptions {
   readonly nodeId?: string
   readonly type?: 'source' | 'target'
@@ -391,6 +449,13 @@ export interface FlowHandleConnectionsOptions {
   readonly onDisconnect?: (connections: readonly FlowNodeConnection[]) => void
 }
 
+/** The internal node of a referenced node, or a rectangle as given. */
+const intersectionSubject = (
+  nodeOrRect: FlowNodeReference | FlowRect,
+  lookup: ReadonlyMap<string, FlowInternalNode>
+): FlowInternalNode | FlowRect | undefined =>
+  'id' in nodeOrRect ? lookup.get(nodeOrRect.id) : nodeOrRect
+
 export const useFlow = (): FlowActions => {
   const editor = inject(FlowEditorKey)
 
@@ -407,8 +472,33 @@ export const useFlow = (): FlowActions => {
   const getSavedSession = (): SavedFlowSession =>
     encodeSavedFlowSession(snapshot.value.document, snapshot.value.viewport)
 
-  const getNode = (id: string): DeepReadonly<FlowNode> | undefined =>
-    getSnapshot().document.nodes.find((node) => node.id === id)
+  const withMeasured = (
+    node: DeepReadonly<FlowNode>
+  ): DeepReadonly<FlowNode> => {
+    const size = editor.measuredSizes?.value.get(node.id)
+
+    return size === undefined
+      ? node
+      : { ...node, measured: { width: size.width, height: size.height } }
+  }
+
+  const getNode = (id: string): DeepReadonly<FlowNode> | undefined => {
+    const node = getSnapshot().document.nodes.find(
+      (candidate) => candidate.id === id
+    )
+
+    return node === undefined ? undefined : withMeasured(node)
+  }
+
+  const internalNodes = (): ReadonlyMap<string, FlowInternalNode> =>
+    editor.getInternalNodes?.() ??
+    new Map(
+      getSnapshot().document.nodes.flatMap((node) => {
+        const internal = editor.getInternalNode(node.id)
+
+        return internal === undefined ? [] : [[node.id, internal] as const]
+      })
+    )
 
   const getEdge = (id: string): DeepReadonly<FlowEdge> | undefined =>
     getSnapshot().document.edges.find((edge) => edge.id === id)
@@ -476,6 +566,8 @@ export const useFlow = (): FlowActions => {
     connectionState: editor.connectionState,
     interactivity: editor.interactivity,
     setInteractivity: editor.setInteractivity,
+    ariaLabelConfig:
+      editor.ariaLabelConfig ?? computed(() => defaultFlowAriaLabelConfig),
     getSnapshot,
     getVersionedSavedSession: () =>
       encodeVersionedFlowSession(
@@ -488,6 +580,47 @@ export const useFlow = (): FlowActions => {
     prepareRestore: prepareRestoreSession,
     getNode,
     getEdge,
+    getNodes: () => getSnapshot().document.nodes.map(withMeasured),
+    getEdges: () => getSnapshot().document.edges,
+    // SAFETY: the accepted snapshot is immutable data; toFlowObject deep-copies it.
+    toObject: () => toFlowObject(toRaw(getSnapshot()) as FlowSnapshot),
+    getIntersectingNodes: (nodeOrRect, partially, nodes) => {
+      const lookup = internalNodes()
+      const subject = intersectionSubject(nodeOrRect, lookup)
+
+      if (subject === undefined) {
+        return []
+      }
+
+      const candidates = (nodes ?? getSnapshot().document.nodes).flatMap(
+        ({ id }) => {
+          const internal = lookup.get(id)
+
+          return internal === undefined ? [] : [internal]
+        }
+      )
+
+      return getIntersectingNodes(
+        subject,
+        partially ?? true,
+        candidates
+      ).flatMap((internal) => getNode(internal.node.id) ?? [])
+    },
+    isNodeIntersecting: (nodeOrRect, area, partially = true) => {
+      const subject = intersectionSubject(nodeOrRect, internalNodes())
+
+      return (
+        subject !== undefined && isNodeIntersecting(subject, area, partially)
+      )
+    },
+    getNodesBounds: (nodes) => {
+      const nodeLookup = internalNodes()
+
+      return getNodesBounds(
+        nodes.map((node) => (Predicate.isString(node) ? node : node.id)),
+        { nodeLookup }
+      )
+    },
     getInternalNode: editor.getInternalNode,
     nodesInitialized: editor.nodesInitialized,
     updateNodeInternals: editor.updateNodeInternals,

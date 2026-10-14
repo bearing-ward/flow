@@ -1,20 +1,20 @@
-import { flowInteractivityFor, isFlowInteractive } from '@flow/core'
+import {
+  flowInteractivityFor,
+  flowPanelPositions,
+  flowThemeValue,
+  isFlowInteractive,
+} from '@flow/core'
+import type { FlowPanelPosition } from '@flow/core'
 import { Schema as S } from 'effect'
 import { computed, defineComponent, h, useId } from 'vue'
 import type { PropType, StyleValue } from 'vue'
 
 import { useFlow } from './use-flow.ts'
 
-const positions = [
-  'top-left',
-  'top-center',
-  'top-right',
-  'bottom-left',
-  'bottom-center',
-  'bottom-right',
-] as const
+/** React Flow `PanelPosition`, including `center-left` and `center-right`. */
+export type { FlowPanelPosition } from '@flow/core'
 
-export type FlowPanelPosition = (typeof positions)[number]
+const positions = flowPanelPositions
 
 type Position = FlowPanelPosition
 
@@ -101,7 +101,8 @@ export const FlowControls = defineComponent({
       type: Object as PropType<FitViewOptions>,
       default: undefined,
     },
-    ariaLabel: { type: String, default: 'Flow controls' },
+    /** Group label; defaults to `ariaLabelConfig['controls.ariaLabel']`. */
+    ariaLabel: { type: String, default: undefined },
     className: { type: String, default: '' },
     style: { type: [String, Object, Array] as PropType<StyleValue> },
     onZoomIn: { type: Function as PropType<() => void>, default: undefined },
@@ -114,6 +115,7 @@ export const FlowControls = defineComponent({
   },
   setup(props, { attrs, slots, expose }) {
     const flow = useFlow()
+    const labels = flow.ariaLabelConfig
 
     // React Flow Controls: interactive while any switch is on; the lock sets all three.
     const interactive = computed(() =>
@@ -162,21 +164,33 @@ export const FlowControls = defineComponent({
         props.showZoom
           ? h(
               FlowControlButton,
-              { 'aria-label': 'Zoom in', onClick: zoomIn },
+              {
+                'aria-label': labels.value['controls.zoomIn.ariaLabel'],
+                title: labels.value['controls.zoomIn.ariaLabel'],
+                onClick: zoomIn,
+              },
               { default: () => '+' }
             )
           : null,
         props.showZoom
           ? h(
               FlowControlButton,
-              { 'aria-label': 'Zoom out', onClick: zoomOut },
+              {
+                'aria-label': labels.value['controls.zoomOut.ariaLabel'],
+                title: labels.value['controls.zoomOut.ariaLabel'],
+                onClick: zoomOut,
+              },
               { default: () => '−' }
             )
           : null,
         props.showFitView
           ? h(
               FlowControlButton,
-              { 'aria-label': 'Fit view', onClick: fitView },
+              {
+                'aria-label': labels.value['controls.fitView.ariaLabel'],
+                title: labels.value['controls.fitView.ariaLabel'],
+                onClick: fitView,
+              },
               { default: () => 'Fit' }
             )
           : null,
@@ -184,7 +198,8 @@ export const FlowControls = defineComponent({
           ? h(
               FlowControlButton,
               {
-                'aria-label': 'Toggle interactivity',
+                'aria-label': labels.value['controls.interactive.ariaLabel'],
+                title: labels.value['controls.interactive.ariaLabel'],
                 'aria-pressed': String(!interactive.value),
                 onClick: toggleInteractivity,
               },
@@ -200,7 +215,7 @@ export const FlowControls = defineComponent({
           class: classes.value,
           style: [props.style, attrs.style],
           role: 'group',
-          'aria-label': props.ariaLabel,
+          'aria-label': props.ariaLabel ?? labels.value['controls.ariaLabel'],
           'data-flow-ui': 'controls',
           'data-interactive': String(interactive.value),
         },
@@ -275,8 +290,10 @@ export const FlowBackground = defineComponent({
       type: [Number, Array] as PropType<number | readonly [number, number]>,
       default: 0,
     },
-    color: { type: String, default: '#b1b1b7' },
-    bgColor: { type: String, default: 'transparent' },
+    /** Pattern colour; defaults to the themed `--flow-background-pattern-*-color`. */
+    color: { type: String, default: undefined },
+    /** Background fill; defaults to the themed `--flow-background-color`. */
+    bgColor: { type: String, default: undefined },
     lineWidth: { type: Number, default: 1 },
     id: { type: String, default: undefined },
     className: { type: String, default: '' },
@@ -348,14 +365,24 @@ export const FlowBackground = defineComponent({
                       cx: gapX / 2,
                       cy: gapY / 2,
                       r: size.value,
-                      fill: props.color,
+                      style: {
+                        fill:
+                          props.color ??
+                          flowThemeValue('background-pattern-dots-color'),
+                      },
                     }),
                   ]
                 : [
                     h('path', {
                       d: path,
                       fill: 'none',
-                      stroke: props.color,
+                      style: {
+                        stroke:
+                          props.color ??
+                          flowThemeValue(
+                            `background-pattern-${props.variant}-color`
+                          ),
+                      },
                       'stroke-width': props.lineWidth,
                     }),
                   ]
@@ -364,7 +391,9 @@ export const FlowBackground = defineComponent({
           h('rect', {
             width: '100%',
             height: '100%',
-            fill: props.bgColor,
+            style: {
+              fill: props.bgColor ?? flowThemeValue('background-color'),
+            },
           }),
           h('rect', {
             width: '100%',

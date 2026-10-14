@@ -1,5 +1,15 @@
 import {
-  flowEdgeMarkerType,
+  collectFlowEdgeMarkers,
+  resolveFlowEdgeMarker,
+  computeFlowStacking,
+  FlowExtentInputSchema,
+  FlowSnapGridInputSchema,
+  FlowFitViewOptionsSchema,
+  resolveFitViewNodeIds,
+  resolveFlowAriaLabelConfig,
+  flowNodeHandles,
+  flowClassNames,
+  constrainViewportToExtent,
   applyNodePositionChange,
   applyNodePositionsChange,
   applyNodeBoundsChange,
@@ -42,7 +52,6 @@ import {
   selectionInRect,
   calculateNodeResize,
   graphResizeChildExtent,
-  NodeExtentSchema,
   canReconnectEdge,
   reconnectFlowEdge,
   normalizeFlowConnection,
@@ -87,11 +96,19 @@ import {
   isNodeSelectable,
 } from '@flow/core'
 import type {
+  CoordinateExtent,
+  FlowAriaLabelConfigInput,
+  FlowColorMode,
+  FlowZIndexMode,
+  PanExtent,
+  SnapGrid,
+  SnapGridTuple,
   EdgeChange,
   FlowChange,
   FlowConnectionState,
   FlowFinalConnectionState,
   FlowGraphNode,
+  FlowGraphView,
   NodeChange,
   FlowConnection,
   ConnectionPreviewState,
@@ -132,6 +149,7 @@ import {
   computed,
   defineComponent,
   h,
+  inject,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -151,6 +169,17 @@ import type {
 } from 'vue'
 
 import {
+  ensureFlowVueThemeStylesheet,
+  flowVueEdgeClasses,
+  flowVueEdgeLabelBox,
+  flowVueLabelStyle,
+  flowVueStyle,
+  renderFlowEdgeMarker,
+  useFlowColorModeClass,
+} from './canvas-presentation.ts'
+import { constrainFlowVueDrag } from './drag-constraints.ts'
+import type { FlowVueDragStep } from './drag-constraints.ts'
+import {
   FlowEdgeInteractionRegistryKey,
   FlowEdgeScope,
 } from './edge-interaction.ts'
@@ -166,7 +195,6 @@ import type { FlowKeyPressOptions } from './key-press-observer.ts'
 import { FlowMiniMapContextKey } from './minimap.ts'
 import {
   dragGroupMembers,
-  dragGroupPositions,
   isMultiSelectionEvent,
   isNodeControl,
   selectionAfterEdgeClick,
@@ -175,9 +203,13 @@ import {
 } from './node-drag-group.ts'
 import type { DragMember } from './node-drag-group.ts'
 import { collectNodeHandles, renderedViewportZoom } from './node-measurement.ts'
+import { FlowNodeResizerRegistryKey } from './node-resizer.ts'
+import type { FlowNodeResizerHost } from './node-resizer.ts'
 import { FlowNodeToolbarContextKey } from './node-toolbar.ts'
+import { FlowProviderKey } from './provider.ts'
 import { FlowEditorKey, FlowNodeIdKey } from './use-flow.ts'
 import type {
+  FlowCanvasFitViewOptions,
   FlowEditor,
   FlowErrorBoundary,
   FlowErrorReport,
@@ -439,12 +471,14 @@ const FitBoundsOptionsSchema = S.Struct({
 })
 
 const FitViewOptionsSchema = S.Struct({
-  duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
-  easing: S.optional(S.Literals(['linear', 'ease-in-out'])),
+  ...FlowFitViewOptionsSchema.fields,
   nodes: S.optional(
-    S.Union([S.Literals(['all', 'selected']), S.Array(S.String)])
+    S.Union([
+      S.Literals(['all', 'selected']),
+      S.Array(S.String),
+      S.Array(S.Struct({ id: S.String })),
+    ])
   ),
-  padding: S.optional(ViewportPaddingSchema),
 })
 
 const unwrapReactive = <Value>(value: Value): Value => {
@@ -527,17 +561,13 @@ const renderDefaultEdgePath = (
     'data-testid': 'flow-edge-path',
     d: path,
     fill: 'none',
-    stroke: edge.stroke ?? '#64748b',
+    // Without an explicit stroke the themed CSS default applies.
+    stroke: edge.stroke,
     'stroke-width': edge.strokeWidth ?? 1.5,
+    style: flowVueStyle(edge.style),
     'marker-start': markerStart,
     'marker-end': markerEnd,
   })
-
-const markerId = (
-  canvasId: string,
-  kind: 'arrow' | 'arrowclosed',
-  stroke: string
-): string => `${canvasId}-marker-${kind}-${stroke.slice(1)}`
 
 const hasClassAncestor = (
   target: Element,
@@ -565,6 +595,28 @@ const isNodePointerTargetAllowed = (
   )
 
   return nativeControl === null || nativeControl === dragHandle
+}
+
+/**
+ * React `dragHandle`: with a selector, only a press inside a matching
+ * element of the node starts a drag. An invalid selector matches nothing.
+ */
+const insideDragHandle = (
+  content: HTMLElement,
+  target: HTMLElement,
+  dragHandle: string | undefined
+): boolean => {
+  if (dragHandle === undefined) {
+    return true
+  }
+
+  try {
+    const handle = target.closest(dragHandle)
+
+    return handle !== null && content.contains(handle)
+  } catch {
+    return false
+  }
 }
 
 // SAFETY: DefaultNode receives FlowNode values created from the decoded graph.
@@ -752,7 +804,58 @@ export const FlowCanvas = defineComponent({
     noWheelClassName: { type: String, default: 'flow-vue-no-wheel' },
     renderOnlyVisible: { type: Boolean, default: false },
     selectionMode: { type: String as PropType<SelectionMode>, default: 'full' },
-    nodeExtent: { type: Object as PropType<NodeExtent>, default: undefined },
+    /** Node drag and resize bounds: React `[[minX, minY], [maxX, maxY]]` or `{ minX, minY, maxX, maxY }`. */
+    nodeExtent: {
+      type: [Object, Array] as PropType<NodeExtent | CoordinateExtent>,
+      default: undefined,
+    },
+    /** Viewport pan bounds in flow coordinates, React `translateExtent`. */
+    translateExtent: {
+      type: [Object, Array] as PropType<PanExtent | CoordinateExtent>,
+      default: undefined,
+    },
+    /** Snap node drags and resizes to `snapGrid`. */
+    snapToGrid: { type: Boolean, default: false },
+    /** Grid step: React `[x, y]` or `{ x, y }`. */
+    snapGrid: {
+      type: [Array, Object] as PropType<SnapGridTuple | SnapGrid>,
+      default: () => [15, 15],
+    },
+    /** React `colorMode`: toggles the `dark` theme defaults on the canvas root. */
+    colorMode: {
+      type: String as PropType<FlowColorMode>,
+      default: 'light',
+    },
+    /** React `zIndexMode`. */
+    zIndexMode: {
+      type: String as PropType<FlowZIndexMode>,
+      default: 'basic',
+    },
+    elevateNodesOnSelect: { type: Boolean, default: true },
+    elevateEdgesOnSelect: { type: Boolean, default: false },
+    /** Partial React `ariaLabelConfig`; explicit component `ariaLabel` props win. */
+    ariaLabelConfig: {
+      type: Object as PropType<FlowAriaLabelConfigInput>,
+      default: undefined,
+    },
+    /** Marker colour for markers without their own colour on edges without a stroke. */
+    defaultMarkerColor: { type: String, default: undefined },
+    /** Fit the view to the nodes once they are first measured, React `fitView`. */
+    fitView: { type: Boolean, default: false },
+    /** Options of the initial `fitView` (React `FitViewOptions`). */
+    fitViewOptions: {
+      type: Object as PropType<FlowCanvasFitViewOptions>,
+      default: undefined,
+    },
+    /** React `minZoom`/`maxZoom`; override `viewportLimits` when set. */
+    minZoom: { type: Number, default: undefined },
+    maxZoom: { type: Number, default: undefined },
+    /** React `nodesFocusable`; a node's own `focusable` wins. */
+    nodesFocusable: { type: Boolean, default: true },
+    /** React `edgesFocusable`; an edge's own `focusable` wins. */
+    edgesFocusable: { type: Boolean, default: true },
+    /** React `edgesReconnectable`; an edge's own `reconnectable` wins. */
+    edgesReconnectable: { type: Boolean, default: true },
     /** Let nodes be dragged; a node's own `draggable` wins. */
     nodesDraggable: { type: Boolean, default: true },
     /** Let handles start and finish connections; node and handle flags win. */
@@ -936,14 +1039,31 @@ export const FlowCanvas = defineComponent({
     const withEdgeDefaults = (edge: FlowEdge): FlowEdge =>
       applyDefaultEdgeOptions(edge, defaultEdgeOptions.value)
 
-    const viewportLimits = S.decodeUnknownSync(ViewportLimitsSchema)(
-      props.viewportLimits
-    )
+    const viewportLimits = S.decodeUnknownSync(ViewportLimitsSchema)({
+      minZoom: props.minZoom ?? props.viewportLimits.minZoom,
+      maxZoom: props.maxZoom ?? props.viewportLimits.maxZoom,
+    })
 
-    const nodeExtent =
+    const nodeExtent: NodeExtent | undefined =
       props.nodeExtent === undefined
         ? undefined
-        : S.decodeUnknownSync(NodeExtentSchema)(props.nodeExtent)
+        : S.decodeUnknownSync(FlowExtentInputSchema)(props.nodeExtent)
+
+    const translateExtent = computed(() =>
+      props.translateExtent === undefined
+        ? undefined
+        : S.decodeUnknownSync(FlowExtentInputSchema)(props.translateExtent)
+    )
+
+    const snapGrid = computed(() =>
+      S.decodeUnknownSync(FlowSnapGridInputSchema)(props.snapGrid)
+    )
+
+    const ariaLabelConfig = computed(() =>
+      resolveFlowAriaLabelConfig(props.ariaLabelConfig)
+    )
+
+    const colorModeClass = useFlowColorModeClass(() => props.colorMode)
 
     const initialDocument = props.document ?? props.defaultDocument
     const hasSplitModel = props.nodes !== undefined || props.edges !== undefined
@@ -1270,6 +1390,26 @@ export const FlowCanvas = defineComponent({
     )
 
     /**
+     * The graph at drag start. Preview renders are measured while the drag
+     * runs, so later graphs would already contain a previewed parent growth.
+     */
+    let dragStartGraph: FlowGraphView | undefined
+
+    /** React z-index stacking for node wrappers and edge layers. */
+    const stacking = computed(() =>
+      computeFlowStacking({
+        nodes: activeDocument.value.nodes,
+        edges: activeDocument.value.edges.map(withEdgeDefaults),
+        zIndexMode: props.zIndexMode,
+        elevateNodesOnSelect: props.elevateNodesOnSelect,
+        elevateEdgesOnSelect: props.elevateEdgesOnSelect,
+      })
+    )
+
+    /** Nodes that render their own `FlowNodeResizer` or `FlowNodeResizeControl`. */
+    const nodeResizers = shallowReactive(new Map<FlowNode['id'], number>())
+
+    /**
      * A pointer drag in progress: its members, every node they carry along
      * (members and their descendants) and the flow-space delta so far.
      */
@@ -1277,6 +1417,10 @@ export const FlowCanvas = defineComponent({
       readonly members: ReadonlySet<FlowNode['id']>
       readonly moved: ReadonlySet<FlowNode['id']>
       readonly delta: XYPosition
+      /** Absolute travel of each moved node when members move differently. */
+      readonly deltas?: ReadonlyMap<FlowNode['id'], XYPosition>
+      /** A whole preview graph while `expandParent` grows a parent. */
+      readonly graph?: ReturnType<typeof createFlowGraph>
     }>()
 
     /**
@@ -1287,15 +1431,21 @@ export const FlowCanvas = defineComponent({
       const graphNode = graph.value.nodes.get(id)
       const preview = dragPreview.value
 
+      if (preview?.graph !== undefined) {
+        return preview.graph.nodes.get(id) ?? graphNode
+      }
+
       if (graphNode === undefined || preview?.moved.has(id) !== true) {
         return graphNode
       }
 
+      const delta = preview.deltas?.get(id) ?? preview.delta
+
       return {
         ...graphNode,
         absolutePosition: {
-          x: graphNode.absolutePosition.x + preview.delta.x,
-          y: graphNode.absolutePosition.y + preview.delta.y,
+          x: graphNode.absolutePosition.x + delta.x,
+          y: graphNode.absolutePosition.y + delta.y,
         },
       }
     }
@@ -1708,6 +1858,22 @@ export const FlowCanvas = defineComponent({
     const clickConnection = shallowRef<RetainedSource>()
     const canvasWidth = shallowRef(960)
     const canvasHeight = shallowRef(640)
+
+    /** React `translateExtent`: every viewport write stays inside it. */
+    const constrainTranslate = (viewport: Viewport): Viewport => {
+      const extent = translateExtent.value
+
+      return extent === undefined ||
+        canvasWidth.value <= 0 ||
+        canvasHeight.value <= 0
+        ? viewport
+        : constrainViewportToExtent(
+            viewport,
+            extent,
+            canvasWidth.value,
+            canvasHeight.value
+          )
+    }
 
     const nodeElements = new Map<string, HTMLElement>()
 
@@ -2150,7 +2316,8 @@ export const FlowCanvas = defineComponent({
         if (next !== undefined && hasSplitModel) {
           if (
             change.kind === 'node-position' ||
-            change.kind === 'node-positions'
+            change.kind === 'node-positions' ||
+            change.kind === 'node-bounds'
           ) {
             emit('update:nodes', next.nodes)
           }
@@ -3144,9 +3311,10 @@ export const FlowCanvas = defineComponent({
     }
 
     const writeViewport = (
-      next: Viewport,
+      proposed: Viewport,
       initiator: ViewportInitiator
     ): ViewportStep => {
+      const next = constrainTranslate(proposed)
       const reservation = acquireViewportWrite(initiator)
 
       if (reservation === undefined) {
@@ -3387,7 +3555,10 @@ export const FlowCanvas = defineComponent({
       target: Viewport,
       validOptions: ViewportAnimationOptions
     ): Promise<ViewportOperationResult> => {
-      const validTarget = decodeViewportRequestTarget(target)
+      const validTarget = constrainTranslate(
+        decodeViewportRequestTarget(target)
+      )
+
       const requestId = allocateViewportRequestId()
 
       if (stateDisposed) {
@@ -3685,12 +3856,7 @@ export const FlowCanvas = defineComponent({
           })
     }
 
-    const fitView = (
-      options?: ViewportAnimationOptions & {
-        padding?: ViewportPadding
-        nodes?: 'all' | 'selected' | readonly string[]
-      }
-    ) => {
+    const fitView = (options?: FlowCanvasFitViewOptions) => {
       const validOptions = S.decodeUnknownSync(FitViewOptionsSchema)(
         options ?? {}
       )
@@ -3705,23 +3871,19 @@ export const FlowCanvas = defineComponent({
 
       const nodeSelection = validOptions.nodes
 
-      let selectedIds:
-        | Set<(typeof activeDocument.value.nodes)[number]['id']>
-        | undefined
-
-      if (nodeSelection === 'selected') {
-        selectedIds = new Set(
-          activeDocument.value.nodes
-            .filter(({ selected }) => selected === true)
-            .map(({ id }) => id)
-        )
-      } else if (Array.isArray(nodeSelection)) {
-        selectedIds = new Set(
-          activeDocument.value.nodes
-            .filter(({ id }) => nodeSelection.includes(id))
-            .map(({ id }) => id)
-        )
-      }
+      const selectedIds =
+        nodeSelection === 'all' ||
+        nodeSelection === 'selected' ||
+        nodeSelection === undefined
+          ? resolveFitViewNodeIds(activeDocument.value, nodeSelection)
+          : resolveFitViewNodeIds(
+              activeDocument.value,
+              nodeSelection.map((item: string | { readonly id: string }) =>
+                Predicate.isString(item)
+                  ? { id: NodeIdSchema.make(item) }
+                  : { id: NodeIdSchema.make(item.id) }
+              )
+            )
 
       const target = fitViewportToNodes({
         document: activeDocument.value,
@@ -3737,6 +3899,9 @@ export const FlowCanvas = defineComponent({
         paneHeight: canvasHeight.value,
         limits: viewportLimits,
         padding: validOptions.padding,
+        includeHiddenNodes: validOptions.includeHiddenNodes,
+        minZoom: validOptions.minZoom,
+        maxZoom: validOptions.maxZoom,
       })
 
       return requestViewport(target, {
@@ -4452,7 +4617,7 @@ export const FlowCanvas = defineComponent({
       () =>
         activeDocument.value.nodes.map((node) => ({
           id: node.id,
-          handles: (node.handles ?? []).map(({ id, kind }) => `${kind}:${id}`),
+          handles: flowNodeHandles(node).map(({ id, kind }) => `${kind}:${id}`),
         })),
       // eslint-disable-next-line complexity -- This watcher settles the existing node, selection and connection ownership slots together.
       (nodes, previousNodes) => {
@@ -4650,6 +4815,28 @@ export const FlowCanvas = defineComponent({
       fitView,
       getViewportForBounds: getViewportForBoundsInCanvas,
       publish,
+      getInternalNodes: () =>
+        new Map(
+          activeDocument.value.nodes.flatMap((node) => {
+            const internal = getFlowInternalNode(
+              activeDocument.value,
+              measurementState,
+              node.id
+            )
+
+            return internal === undefined ? [] : [[node.id, internal] as const]
+          })
+        ),
+      measuredSizes: computed(
+        () =>
+          new Map(
+            [...measuredNodes.value].map(([id, measured]) => [
+              id,
+              { width: measured.width, height: measured.height },
+            ])
+          )
+      ),
+      ariaLabelConfig,
       getInternalNode: (id) => {
         const node = activeDocument.value.nodes.find(
           (candidate) => candidate.id === id
@@ -4821,6 +5008,14 @@ export const FlowCanvas = defineComponent({
       },
     }
 
+    const provider = inject(FlowProviderKey, null)
+
+    if (provider !== null) {
+      const release = provider.register(editor)
+      onBeforeUnmount(release)
+    }
+
+    provide(FlowProviderKey, null)
     provide(FlowEditorKey, editor)
     provide(FlowEdgeLabelRendererContextKey, edgeLabelRegistry.context)
     provide(FlowViewportPortalContextKey, {
@@ -4858,8 +5053,54 @@ export const FlowCanvas = defineComponent({
         height: canvasHeight.value,
       })),
     })
+
+    const resizerHost: FlowNodeResizerHost = {
+      register: (nodeId) => {
+        const id = NodeIdSchema.make(nodeId)
+        nodeResizers.set(id, (nodeResizers.get(id) ?? 0) + 1)
+
+        return () => {
+          const count = (nodeResizers.get(id) ?? 1) - 1
+
+          if (count <= 0) {
+            nodeResizers.delete(id)
+          } else {
+            nodeResizers.set(id, count)
+          }
+        }
+      },
+      graph: () => graph.value,
+      zoom: () => activeViewport.value.zoom,
+      pointerToFlow: (clientX, clientY) => clientToFlow(clientX, clientY),
+      snapGrid: () => (props.snapToGrid ? snapGrid.value : undefined),
+      publish: (change) => publish(change),
+    }
+
+    provide(FlowNodeResizerRegistryKey, resizerHost)
+
     expose({ editor })
     onMounted(() => emit('init', editor))
+
+    // React `fitView`: fit once, when the nodes are first measured.
+    let initialFitPending = props.fitView
+
+    watch(
+      measurementRevision,
+      () => {
+        if (
+          !initialFitPending ||
+          stateDisposed ||
+          !viewportInitialized() ||
+          !editor.nodesInitialized()
+        ) {
+          return
+        }
+
+        initialFitPending = false
+        void fitView(props.fitViewOptions)
+      },
+      { flush: 'post' }
+    )
 
     const nodePosition = (node: FlowNode): { x: number; y: number } =>
       renderGraphNode(node.id)?.absolutePosition ?? node.position
@@ -4893,7 +5134,7 @@ export const FlowCanvas = defineComponent({
         ({ id }) => id === identity.nodeId
       )
 
-      const handle = node?.handles?.find(
+      const handle = flowNodeHandles(node).find(
         ({ id, kind }) => id === identity.handleId && kind === identity.kind
       )
 
@@ -4980,7 +5221,7 @@ export const FlowCanvas = defineComponent({
           handleSignature: activeDocument.value.nodes
             .map(
               (node) =>
-                `${node.id}:${(node.handles ?? [])
+                `${node.id}:${flowNodeHandles(node)
                   .map(({ kind, id }) => `${kind}:${id}`)
                   .toSorted()
                   .join(',')}`
@@ -5351,6 +5592,7 @@ export const FlowCanvas = defineComponent({
         (active.members ?? []).map(({ nodeId }) => nodeId)
       )
 
+      dragStartGraph = graph.value
       dragPreview.value = {
         members: memberIds,
         moved: dragCarriedNodes(activeDocument.value, memberIds),
@@ -5385,6 +5627,171 @@ export const FlowCanvas = defineComponent({
       return active
     }
 
+    /** Snap, extent and `expandParent` rules for one drag step. */
+    const constrainedDragStep = (
+      members: readonly DragMember[],
+      anchor: FlowNode,
+      delta: XYPosition
+    ): FlowVueDragStep =>
+      constrainFlowVueDrag({
+        graph: dragStartGraph ?? graph.value,
+        members,
+        anchorId: anchor.id,
+        delta,
+        snapGrid: props.snapToGrid ? snapGrid.value : undefined,
+        nodeExtent,
+      })
+
+    /** The documents a drag step would commit, for previews and the drop. */
+    const documentForDragStep = (step: FlowVueDragStep): FlowDocument => {
+      const positions = new Map(step.positions)
+      const sizes = new Map<FlowNode['id'], { width: number; height: number }>()
+
+      for (const change of step.expand) {
+        if (change.kind === 'position') {
+          positions.set(change.nodeId, change.position)
+        } else {
+          sizes.set(change.nodeId, { ...change.size })
+        }
+      }
+
+      return {
+        ...activeDocument.value,
+        nodes: activeDocument.value.nodes.map((node) => {
+          const position = positions.get(node.id)
+          const size = sizes.get(node.id)
+
+          const next = { ...node }
+
+          if (position !== undefined) {
+            Object.assign(next, { position })
+          }
+
+          if (size !== undefined) {
+            Object.assign(next, { size })
+          }
+
+          return next
+        }),
+      }
+    }
+
+    /**
+     * Commit a drop. Without `expandParent` growth this is one position
+     * change; with it, each grown parent commits as one `node-bounds` change
+     * carrying its children, so the drop and the growth land together.
+     */
+    const publishDragCommit = (
+      committed: readonly {
+        readonly nodeId: FlowNode['id']
+        readonly position: XYPosition
+      }[],
+      step: FlowVueDragStep
+    ): void => {
+      const grown = [
+        ...new Set(
+          step.expand
+            .filter((change) => change.kind === 'size')
+            .map(({ nodeId }) => nodeId)
+        ),
+      ]
+
+      const next = grown.length === 0 ? undefined : documentForDragStep(step)
+      const covered = new Set<FlowNode['id']>()
+
+      for (const parentId of grown) {
+        const parent = next?.nodes.find(({ id }) => id === parentId)
+
+        if (parent?.size === undefined) {
+          continue
+        }
+
+        covered.add(parentId)
+
+        const childPositions = (next?.nodes ?? [])
+          .filter((node) => node.parentId === parentId)
+          .map(({ id, position }) => {
+            covered.add(id)
+
+            return { nodeId: id, position }
+          })
+
+        publish({
+          kind: 'node-bounds',
+          nodeId: parentId,
+          position: parent.position,
+          size: parent.size,
+          childPositions,
+        })
+      }
+
+      const rest = committed.filter(({ nodeId }) => !covered.has(nodeId))
+      const [only] = rest
+
+      if (rest.length === 1 && only !== undefined) {
+        publish({ kind: 'node-position', ...only })
+      } else if (rest.length > 1) {
+        publish({ kind: 'node-positions', positions: rest })
+      }
+    }
+
+    const previewForDragStep = (
+      preview: NonNullable<typeof dragPreview.value>,
+      members: readonly DragMember[],
+      step: FlowVueDragStep
+    ): NonNullable<typeof dragPreview.value> => {
+      if (step.expand.length > 0) {
+        return {
+          members: preview.members,
+          moved: preview.moved,
+          delta: preview.delta,
+          graph: createFlowGraph(
+            documentForDragStep(step),
+            measuredNodes.value
+          ),
+        }
+      }
+
+      const memberDeltas = new Map(
+        members.map(({ nodeId, origin }) => {
+          const position = step.positions.get(nodeId) ?? origin
+
+          return [
+            nodeId,
+            { x: position.x - origin.x, y: position.y - origin.y },
+          ] as const
+        })
+      )
+
+      const deltas = new Map<FlowNode['id'], XYPosition>()
+
+      for (const id of preview.moved) {
+        let current: FlowNode['id'] | undefined = id
+        const seen = new Set<FlowNode['id']>()
+
+        while (current !== undefined && !seen.has(current)) {
+          const memberDelta = memberDeltas.get(current)
+
+          if (memberDelta !== undefined) {
+            deltas.set(id, memberDelta)
+            break
+          }
+
+          seen.add(current)
+          current = graph.value.nodes.get(current)?.parentId
+        }
+      }
+
+      const [first] = memberDeltas.values()
+
+      return {
+        members: preview.members,
+        moved: preview.moved,
+        delta: first ?? preview.delta,
+        deltas,
+      }
+    }
+
     const moveNode = (active: Session, event: PointerEvent): void => {
       if (active.kind !== 'node' && active.kind !== 'node-pending') {
         return
@@ -5416,20 +5823,29 @@ export const FlowCanvas = defineComponent({
 
       const dy = (event.clientY - dragging.startY) / activeViewport.value.zoom
 
-      const positions = dragGroupPositions(dragging.members ?? [], {
+      const step = constrainedDragStep(dragging.members ?? [], dragging.node, {
         x: dx,
         y: dy,
       })
 
+      const { positions } = step
+
       if (dragPreview.value !== undefined) {
-        dragPreview.value = { ...dragPreview.value, delta: { x: dx, y: dy } }
+        dragPreview.value = previewForDragStep(
+          dragPreview.value,
+          dragging.members ?? [],
+          step
+        )
       }
 
       emit(
         'nodeDrag',
         {
           node: dragging.node,
-          position: { x: dragging.originX + dx, y: dragging.originY + dy },
+          position: positions.get(dragging.node.id) ?? {
+            x: dragging.originX + dx,
+            y: dragging.originY + dy,
+          },
         },
         event
       )
@@ -5574,7 +5990,10 @@ export const FlowCanvas = defineComponent({
       }
 
       if (handleId === undefined) {
-        if (!isNodePointerTargetAllowed(currentTarget, target)) {
+        if (
+          !isNodePointerTargetAllowed(currentTarget, target) ||
+          !insideDragHandle(currentTarget, target, node.dragHandle)
+        ) {
           return
         }
 
@@ -5583,7 +6002,9 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const sourceHandle = node.handles?.find(({ id }) => id === handleId)
+      const sourceHandle = flowNodeHandles(node).find(
+        ({ id }) => id === handleId
+      )
 
       if (
         sourceHandle === undefined ||
@@ -5640,7 +6061,7 @@ export const FlowCanvas = defineComponent({
         ({ id }) => id === targetNodeId
       )
 
-      const targetHandle = targetNode?.handles?.find(
+      const targetHandle = flowNodeHandles(targetNode).find(
         ({ id, kind }) =>
           id === targetHandleId &&
           (connectionMode.value === 'loose' ||
@@ -5803,7 +6224,7 @@ export const FlowCanvas = defineComponent({
       targetNodeId: string,
       targetHandleId: string
     ): ConnectionResult => {
-      const sourceHandle = sourceNode.handles?.find(
+      const sourceHandle = flowNodeHandles(sourceNode).find(
         ({ id }) => id === sourceHandleId
       )
 
@@ -5811,7 +6232,7 @@ export const FlowCanvas = defineComponent({
         ({ id }) => id === targetNodeId
       )
 
-      const targetHandle = targetNode?.handles?.find(
+      const targetHandle = flowNodeHandles(targetNode).find(
         ({ id }) => id === targetHandleId
       )
 
@@ -5938,7 +6359,7 @@ export const FlowCanvas = defineComponent({
       const candidates = activeDocument.value.nodes.flatMap((node) => {
         const graphNode = graph.value.nodes.get(node.id)
 
-        return (node.handles ?? []).flatMap((handle) => {
+        return flowNodeHandles(node).flatMap((handle) => {
           const reconnectSource = source.reconnect?.endpoint === 'source'
 
           if (
@@ -6037,7 +6458,9 @@ export const FlowCanvas = defineComponent({
         ({ id }) => id === target.nodeId
       )
 
-      const handle = node?.handles?.find(({ id }) => id === target.handleId)
+      const handle = flowNodeHandles(node).find(
+        ({ id }) => id === target.handleId
+      )
 
       return (
         node === undefined ||
@@ -6981,7 +7404,8 @@ export const FlowCanvas = defineComponent({
         nodeIds.has(nodeId)
       )
 
-      const positions = dragGroupPositions(members, { x: dx, y: dy })
+      const step = constrainedDragStep(members, active.node, { x: dx, y: dy })
+      const { positions } = step
 
       // Commit every drag member; the anchor is not one when its ancestor moves.
       const committed = members.flatMap(({ nodeId }) => {
@@ -6990,13 +7414,8 @@ export const FlowCanvas = defineComponent({
         return position === undefined ? [] : [{ nodeId, position }]
       })
 
-      const [only] = committed
-
-      if (committed.length === 1 && only !== undefined) {
-        publish({ kind: 'node-position', ...only })
-      } else if (committed.length > 1) {
-        publish({ kind: 'node-positions', positions: committed })
-      }
+      dragStartGraph = undefined
+      publishDragCommit(committed, step)
 
       endNodeDrag(
         active,
@@ -7753,7 +8172,10 @@ export const FlowCanvas = defineComponent({
         resizePreviewPosition(activeKeyboardResize?.change) ??
         nodePosition(node)
 
-      const size = activeKeyboardResize?.change.size ?? node.size
+      const size =
+        activeKeyboardResize?.change.size ??
+        dragPreview.value?.graph?.nodes.get(node.id)?.node.size ??
+        node.size
 
       const Node: NodeVisual =
         props.nodeTypes?.[node.type ?? 'default'] ??
@@ -7765,7 +8187,7 @@ export const FlowCanvas = defineComponent({
           ? undefined
           : { default: () => slots.node?.({ node }) }
 
-      const handleChildren = (node.handles ?? []).map((handle) =>
+      const handleChildren = flowNodeHandles(node).map((handle) =>
         h('button', {
           key: handle.id,
           type: 'button',
@@ -7783,14 +8205,18 @@ export const FlowCanvas = defineComponent({
           ],
           'data-handle-id': handle.id,
           'data-handle-kind': handle.kind,
-          'aria-label': `${handle.kind} handle ${handle.id}`,
+          'aria-label':
+            props.ariaLabelConfig?.['handle.ariaLabel'] ??
+            `${handle.kind} handle ${handle.id}`,
           onKeydown: (event: KeyboardEvent) =>
             onConnectionHandleKeydown(node, handle, event),
         })
       )
 
       const resizeChildren =
-        props.nodesResizable && node.selected === true
+        props.nodesResizable &&
+        node.selected === true &&
+        !nodeResizers.has(node.id)
           ? (
               [
                 'top',
@@ -7967,16 +8393,28 @@ export const FlowCanvas = defineComponent({
         style.height = `${size.height}px`
       }
 
+      const focusable = node.focusable ?? props.nodesFocusable
+
       return h(
         'div',
         {
           key: node.id,
-          class: 'flow-vue-node',
+          class: [
+            'flow-vue-node',
+            { selected: node.selected === true },
+            flowClassNames(node.className),
+          ],
           'data-testid': 'flow-node',
           'data-node-id': node.id,
-          tabindex: node.focusable === false ? -1 : 0,
+          tabindex: focusable ? 0 : -1,
+          'aria-describedby': `${canvasId}-node-description`,
           ref: nodeRef(node),
-          style,
+          // React order: z-index, then the node style, then position and size.
+          style: [
+            { zIndex: stacking.value.nodes.get(node.id) ?? 0 },
+            flowVueStyle(node.style),
+            style,
+          ],
           onPointerdown: (event: PointerEvent) => {
             nodePress = {
               x: event.clientX,
@@ -8053,57 +8491,16 @@ export const FlowCanvas = defineComponent({
     }
 
     const renderMarkers = (): VNode[] => {
-      const markers = new Map<string, VNode>()
+      const options = { scope: canvasId }
 
-      for (const storedEdge of activeDocument.value.edges) {
-        const edge = withEdgeDefaults(storedEdge)
-        const stroke = edge.stroke ?? '#64748b'
-
-        for (const kind of [
-          flowEdgeMarkerType(edge.markerStart),
-          flowEdgeMarkerType(edge.markerEnd),
-        ]) {
-          if (kind === undefined) {
-            continue
-          }
-
-          const id = markerId(canvasId, kind, stroke)
-
-          if (markers.has(id)) {
-            continue
-          }
-
-          markers.set(
-            id,
-            h(
-              'marker',
-              {
-                id,
-                key: id,
-                markerWidth: 10,
-                markerHeight: 10,
-                refX: 9,
-                refY: 5,
-                orient: 'auto-start-reverse',
-                markerUnits: 'strokeWidth',
-                viewBox: '0 0 10 10',
-              },
-              [
-                h('path', {
-                  d:
-                    kind === 'arrowclosed'
-                      ? 'M 0 0 L 10 5 L 0 10 z'
-                      : 'M 0 0 L 10 5 L 0 10',
-                  fill: kind === 'arrowclosed' ? stroke : 'none',
-                  stroke,
-                }),
-              ]
-            )
-          )
-        }
+      if (props.defaultMarkerColor !== undefined) {
+        Object.assign(options, { defaultColor: props.defaultMarkerColor })
       }
 
-      return [...markers.values()]
+      return collectFlowEdgeMarkers(
+        activeDocument.value.edges.map(withEdgeDefaults),
+        options
+      ).map(renderFlowEdgeMarker)
     }
 
     const resolveRenderedEdge = (edge: FlowEdge) => {
@@ -8190,8 +8587,9 @@ export const FlowCanvas = defineComponent({
         stroke: 'rgba(0, 0, 0, 0.001)',
         'stroke-width': edge.interactionWidth ?? 20,
         'pointer-events': 'stroke',
-        tabindex: edge.focusable === false ? -1 : 0,
+        tabindex: (edge.focusable ?? props.edgesFocusable) ? 0 : -1,
         role: edge.selectable === false ? 'img' : 'button',
+        'aria-describedby': `${canvasId}-edge-description`,
         'aria-label':
           edge.ariaLabel ?? `Edge from ${sourceLabel} to ${targetLabel}`,
         onPointerdown: (event: PointerEvent) => {
@@ -8220,24 +8618,19 @@ export const FlowCanvas = defineComponent({
         },
       })
 
-    const edgeMarkers = (storedEdge: FlowEdge) => {
-      const edge = {
-        stroke: storedEdge.stroke,
-        markerStart: flowEdgeMarkerType(storedEdge.markerStart),
-        markerEnd: flowEdgeMarkerType(storedEdge.markerEnd),
+    const edgeMarkers = (edge: FlowEdge) => {
+      const markerUrl = (marker: FlowEdge['markerStart']) => {
+        const resolved = resolveFlowEdgeMarker(marker, {
+          scope: canvasId,
+          defaultColor: edge.stroke ?? props.defaultMarkerColor,
+        })
+
+        return resolved === undefined ? undefined : `url(#${resolved.id})`
       }
 
-      const stroke = edge.stroke ?? '#64748b'
-
       return {
-        markerStart:
-          edge.markerStart === undefined
-            ? undefined
-            : `url(#${markerId(canvasId, edge.markerStart, stroke)})`,
-        markerEnd:
-          edge.markerEnd === undefined
-            ? undefined
-            : `url(#${markerId(canvasId, edge.markerEnd, stroke)})`,
+        markerStart: markerUrl(edge.markerStart),
+        markerEnd: markerUrl(edge.markerEnd),
       }
     }
 
@@ -8355,7 +8748,10 @@ export const FlowCanvas = defineComponent({
 
         if (edge.selected === true) {
           for (const endpoint of ['source', 'target'] as const) {
-            if (!canReconnectEdge(edge, endpoint)) {
+            if (
+              (edge.reconnectable === undefined && !props.edgesReconnectable) ||
+              !canReconnectEdge(edge, endpoint)
+            ) {
               continue
             }
 
@@ -8488,7 +8884,7 @@ export const FlowCanvas = defineComponent({
                   const handleSignature = activeDocument.value.nodes
                     .map(
                       (candidate) =>
-                        `${candidate.id}:${(candidate.handles ?? [])
+                        `${candidate.id}:${flowNodeHandles(candidate)
                           .map(({ kind, id }) => `${kind}:${id}`)
                           .toSorted()
                           .join(',')}`
@@ -8544,7 +8940,12 @@ export const FlowCanvas = defineComponent({
 
       return h(
         'g',
-        { key: edge.id, 'data-testid': 'flow-edge', 'data-edge-id': edge.id },
+        {
+          key: edge.id,
+          class: flowVueEdgeClasses(edge),
+          'data-testid': 'flow-edge',
+          'data-edge-id': edge.id,
+        },
         edgeChildren
       )
     }
@@ -8627,9 +9028,25 @@ export const FlowCanvas = defineComponent({
           style: {
             left: `${position.x}px`,
             top: `${position.y}px`,
+            ...flowVueEdgeLabelBox(edge),
           },
         },
-        edge.label
+        [
+          edge.labelShowBg === false
+            ? null
+            : h('span', {
+                class: 'flow-vue-edge-label-bg',
+                style: flowVueLabelStyle(edge.labelBgStyle, 'background'),
+              }),
+          h(
+            'span',
+            {
+              class: 'flow-vue-edge-label-text',
+              style: flowVueLabelStyle(edge.labelStyle, 'text'),
+            },
+            edge.label
+          ),
+        ]
       )
     }
 
@@ -9072,6 +9489,28 @@ export const FlowCanvas = defineComponent({
 
     onBeforeUnmount(disposeComponent)
 
+    /** Edges at z-index 0 or below stay under every node; the rest are layered with them. */
+    const layerEdges = () => {
+      const base: FlowEdge[] = []
+      const elevated = new Map<number, FlowEdge[]>()
+
+      for (const stored of activeDocument.value.edges) {
+        const edge = withEdgeDefaults(stored)
+        const zIndex = stacking.value.edges.get(edge.id) ?? 0
+
+        if (zIndex <= 0) {
+          base.push(edge)
+        } else {
+          elevated.set(zIndex, [...(elevated.get(zIndex) ?? []), edge])
+        }
+      }
+
+      return {
+        base,
+        elevated: [...elevated].toSorted(([left], [right]) => left - right),
+      }
+    }
+
     return () => {
       const renderOwner = currentConnectionPreviewOwner()
 
@@ -9165,6 +9604,8 @@ export const FlowCanvas = defineComponent({
             ]
           : []
 
+      const edgeLayers = layerEdges()
+
       return h(
         'div',
         {
@@ -9174,6 +9615,8 @@ export const FlowCanvas = defineComponent({
             }
 
             if (element instanceof HTMLElement && canvas.value !== element) {
+              ensureFlowVueThemeStylesheet(element.ownerDocument)
+
               if (canvas.value !== undefined) {
                 resizeObserver.unobserve(canvas.value)
               }
@@ -9185,8 +9628,9 @@ export const FlowCanvas = defineComponent({
               globalThis.addEventListener('keyup', onWindowKeyUp, true)
             }
           },
-          class: 'flow-vue-canvas',
+          class: ['flow-vue-canvas', colorModeClass.value],
           'data-testid': 'flow-canvas',
+          'data-color-mode': colorModeClass.value,
           // eslint-disable-next-line complexity -- Movement dispatches the closed session union with owner checks after observable effects.
           onPointermove: (event: PointerEvent) => {
             if (!prepareConnectionMove(event)) {
@@ -9487,9 +9931,7 @@ export const FlowCanvas = defineComponent({
             },
             [
               h('defs', renderMarkers()),
-              ...activeDocument.value.edges.map((edge) =>
-                renderEdge(withEdgeDefaults(edge))
-              ),
+              ...edgeLayers.base.map(renderEdge),
               ...connectionPreview,
             ]
           ),
@@ -9516,6 +9958,20 @@ export const FlowCanvas = defineComponent({
               },
             },
             [
+              // Elevated edges share the nodes' stacking context, as React's
+              // per-z-level edge SVGs do.
+              ...edgeLayers.elevated.map(([zIndex, edges]) =>
+                h(
+                  'svg',
+                  {
+                    key: `edges-${zIndex}`,
+                    class: 'flow-vue-edges flow-vue-edges-elevated',
+                    'data-z-index': zIndex,
+                    style: { zIndex },
+                  },
+                  edges.map(renderEdge)
+                )
+              ),
               ...graph.value.orderedNodes.map(({ node }) => renderNode(node)),
               h('div', {
                 class: 'flow-vue-viewport-portal-target',
@@ -9554,6 +10010,22 @@ export const FlowCanvas = defineComponent({
                 element instanceof HTMLElement ? element : null
             },
           }),
+          h(
+            'div',
+            {
+              id: `${canvasId}-node-description`,
+              class: 'flow-vue-a11y-description',
+            },
+            ariaLabelConfig.value['node.a11yDescription.default']
+          ),
+          h(
+            'div',
+            {
+              id: `${canvasId}-edge-description`,
+              class: 'flow-vue-a11y-description',
+            },
+            ariaLabelConfig.value['edge.a11yDescription.default']
+          ),
           slots.default?.({}),
         ]
       )

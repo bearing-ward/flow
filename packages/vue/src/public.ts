@@ -117,3 +117,32 @@ export { FlowNodeSearch } from './ui/node-search.ts'
 export { FlowDevTools } from './ui/devtools.ts'
 
 export type { FlowDevToolsPanel } from './ui/devtools.ts'
+
+export { FlowProvider } from './provider.ts'
+
+export { useKeyPress, useStore } from './use-store.ts'
+
+export type { FlowStoreState } from './use-store.ts'
+
+export { FlowNodeResizeControl, FlowNodeResizer } from './node-resizer.ts'
+
+export type { FlowCanvasFitViewOptions, FlowNodeReference } from './use-flow.ts'
+
+export type {
+  CoordinateExtent,
+  FlowAriaLabelConfig,
+  FlowAriaLabelConfigInput,
+  FlowColorMode,
+  FlowMiniMapNodeProps,
+  FlowObject,
+  FlowResizeControlDirection,
+  FlowResizeControlPosition,
+  FlowResizeControlVariant,
+  FlowResizeParams,
+  FlowResizeParamsWithDirection,
+  FlowZIndexMode,
+  SnapGrid,
+  SnapGridTuple,
+} from '@flow/core'
+
+export { FlowLabeledGroupNode } from './ui/labeled-group.ts'

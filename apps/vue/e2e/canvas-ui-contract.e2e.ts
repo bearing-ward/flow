@@ -24,7 +24,7 @@ test('Vue controls use public viewport actions and background tracks the viewpor
 
   await expect(controls).toHaveAttribute('role', 'group')
 
-  await expect(controls).toHaveAttribute('aria-label', 'Flow controls')
+  await expect(controls).toHaveAttribute('aria-label', 'Control Panel')
   await expect(controls).toHaveClass(/flow-vue-controls-bottom-center/u)
   await expect(controls).toHaveClass(/flow-vue-controls-horizontal/u)
   await expect(backgrounds).toHaveCount(3)
