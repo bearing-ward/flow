@@ -1,0 +1,19 @@
+.turbo-node {
+  background: linear-gradient(110deg, #ff0072, #00d4ff);
+  border: none;
+  padding: 2px;
+  border-radius: 12px;
+}
+
+.turbo-card {
+  background: #151515;
+  color: white;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+[data-testid='sidebar-node'] {
+  padding: 8px;
+  border: 1px solid #555;
+  cursor: grab;
+}

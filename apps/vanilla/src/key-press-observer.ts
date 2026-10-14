@@ -9,6 +9,7 @@ export type FlowKeyPressTarget =
 
 export interface FlowKeyPressOptions {
   readonly target?: FlowKeyPressTarget
+  readonly capture?: boolean
   readonly actInsideInputWithModifier?: boolean
   readonly preventDefault?: boolean
 }
@@ -62,7 +63,7 @@ const hasKeyboardEventFields = (event: Event): event is KeyboardEvent =>
   'metaKey' in event &&
   'shiftKey' in event
 
-const isInputDOMNode = (event: KeyboardEvent): boolean => {
+export const isInputDOMNode = (event: KeyboardEvent): boolean => {
   const element = firstEventElement(event)
 
   if (element === null) {
@@ -73,10 +74,18 @@ const isInputDOMNode = (event: KeyboardEvent): boolean => {
     element.nodeName === 'INPUT' ||
     element.nodeName === 'SELECT' ||
     element.nodeName === 'TEXTAREA' ||
-    element.hasAttribute('contenteditable') ||
+    element.closest('[contenteditable]') !== null ||
     element.closest('.nokey') !== null
   )
 }
+
+export const isKeyPressTrigger = (
+  event: KeyboardEvent,
+  keyCode: FlowKeyCode
+): boolean =>
+  parseKeyCode(keyCode).some(
+    (keys) => keys.includes(event.key) || keys.includes(event.code)
+  )
 
 /** Attach one owner-scoped observer for a key or key combination. */
 export const observeKeyPress = (
@@ -86,6 +95,7 @@ export const observeKeyPress = (
 ): (() => void) => {
   const defaultTarget = typeof document === 'undefined' ? null : document
   const target = options.target ?? defaultTarget
+  const capture = options.capture ?? false
   const actInsideInputWithModifier = options.actInsideInputWithModifier ?? true
   const preventDefault = options.preventDefault ?? true
   const alternatives = parseKeyCode(keyCode)
@@ -175,8 +185,8 @@ export const observeKeyPress = (
     }
   }
 
-  target.addEventListener('keydown', onKeyDown)
-  target.addEventListener('keyup', onKeyUp)
+  target.addEventListener('keydown', onKeyDown, capture)
+  target.addEventListener('keyup', onKeyUp, capture)
   globalThis.addEventListener('blur', resetHandler)
   globalThis.addEventListener('contextmenu', resetHandler)
 
@@ -188,8 +198,8 @@ export const observeKeyPress = (
     disposed = true
     pressedKeys.clear()
     pressed = false
-    target.removeEventListener('keydown', onKeyDown)
-    target.removeEventListener('keyup', onKeyUp)
+    target.removeEventListener('keydown', onKeyDown, capture)
+    target.removeEventListener('keyup', onKeyUp, capture)
     globalThis.removeEventListener('blur', resetHandler)
     globalThis.removeEventListener('contextmenu', resetHandler)
   }
