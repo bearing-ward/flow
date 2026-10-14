@@ -33,6 +33,8 @@ export interface FlowVueDragInput {
   readonly delta: XYPosition
   /** Set when `snapToGrid` is on. */
   readonly snapGrid?: SnapGrid | undefined
+  /** Keyboard movement snaps and constrains each member independently. */
+  readonly individualNodes?: boolean | undefined
   readonly nodeExtent?: NodeExtent | undefined
 }
 
@@ -49,6 +51,7 @@ export const constrainFlowVueDrag = ({
   delta,
   snapGrid,
   nodeExtent,
+  individualNodes = false,
 }: FlowVueDragInput): FlowVueDragStep => {
   const anchor = graph.nodes.get(anchorId)
 
@@ -73,17 +76,39 @@ export const constrainFlowVueDrag = ({
   const items = members.map(({ nodeId, origin }) => {
     const node = graph.nodes.get(nodeId)
 
+    let memberDelta = individualNodes ? delta : snapped
+
+    if (individualNodes && snapGrid !== undefined && node !== undefined) {
+      memberDelta = snapGroupDelta(node.absolutePosition, delta, snapGrid)
+    }
+
     const parent =
       node?.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
 
     if (node === undefined || parent === undefined) {
+      let boundedDelta = individualNodes ? memberDelta : rootDelta
+
+      if (individualNodes && nodeExtent !== undefined && node !== undefined) {
+        boundedDelta = constrainNodeGroupDelta(
+          [{ position: node.absolutePosition, ...node.dimensions }],
+          memberDelta,
+          nodeExtent
+        )
+      }
+
       return {
         id: nodeId,
-        position: { x: origin.x + rootDelta.x, y: origin.y + rootDelta.y },
+        position: {
+          x: origin.x + boundedDelta.x,
+          y: origin.y + boundedDelta.y,
+        },
       }
     }
 
-    const proposed = { x: origin.x + snapped.x, y: origin.y + snapped.y }
+    const proposed = {
+      x: origin.x + memberDelta.x,
+      y: origin.y + memberDelta.y,
+    }
 
     if (node.node.extent !== 'parent' || node.node.expandParent === true) {
       return { id: nodeId, position: proposed }

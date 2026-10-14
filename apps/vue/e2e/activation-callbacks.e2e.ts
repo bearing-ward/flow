@@ -28,6 +28,7 @@ test('Vue activation options and lifecycle callbacks run on FlowCanvas', async (
     window.__flowVueTest?.setGestureOptions({
       panOnDrag: false,
       selectionOnDrag: true,
+      autoPanOnSelection: false,
       panOnScroll: true,
       zoomOnScroll: false,
       zoomOnDoubleClick: false,

@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 118 Vanilla review fixes, preserving main Plan 111-117 verification scope",
+  "activeWork": "Plans 118-119 closing gaps merged (Vanilla, Vue), preserving main Plan 111-117 verification scope",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
@@ -53,7 +53,9 @@
       "minimap.e2e.ts",
       "base-edge.e2e.ts",
       "canvas-ui-contract.e2e.ts",
-      "panel.e2e.ts"
+      "panel.e2e.ts",
+      "closing-gaps.e2e.ts",
+      "closing-recipes.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",

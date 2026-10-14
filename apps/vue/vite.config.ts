@@ -7,6 +7,7 @@ export default defineConfig({
     include: [
       '@dagrejs/dagre',
       'd3-force',
+      'html-to-image',
       'elkjs/lib/elk-api',
       'elkjs/lib/elk.bundled.js',
     ],

@@ -2041,6 +2041,9 @@ test('Vue rectangle selection honors full and partial modes', async ({
       (mode) => window.__flowVueTest?.setSelectionMode(mode),
       selectionCase.mode
     )
+    await page.evaluate(() =>
+      window.__flowVueTest?.setGestureOptions({ autoPanOnSelection: false })
+    )
     const canvas = await page.getByTestId('flow-canvas').boundingBox()
 
     if (canvas === null) {
@@ -3127,7 +3130,7 @@ test('Vue honors node drag/focus and edge select/focus flags', async ({
 
   const source = page.locator('[data-node-id="source"]')
 
-  await expect(source).toHaveAttribute('tabindex', '-1')
+  await expect(source).not.toHaveAttribute('tabindex')
   const sourceBounds = await source.boundingBox()
 
   if (sourceBounds === null) {

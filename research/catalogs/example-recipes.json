@@ -1114,8 +1114,9 @@
           "status": "planned"
         },
         "vue": {
-          "path": "/examples/edges/delete-edge-on-drop",
-          "status": "planned"
+          "path": "/ui-recipes/closing-gaps/?recipe=delete-edge-on-drop",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/closing-recipes.ts"
         },
         "foldkit": {
           "path": "/examples/edges/delete-edge-on-drop",
@@ -1129,22 +1130,22 @@
         "licenseReview": "required-before-copy",
         "comparison": "unverified"
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "partial",
       "testedResult": {
         "vanilla": {
           "status": "not-tested",
           "path": null
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
           "path": null
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "implemented",
       "dependencyDecision": "none-identified",
       "testBoundary": {
         "automated": "In each host, run the journey: Drag an existing edge endpoint onto the designated delete area and then release another edge elsewhere. Assert: The edge released on the delete area is removed; the other edge remains connected and rendered. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
@@ -2026,8 +2027,9 @@
           "status": "planned"
         },
         "vue": {
-          "path": "/examples/interaction/contextual-zoom",
-          "status": "planned"
+          "path": "/ui-recipes/closing-gaps/?recipe=contextual-zoom",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/closing-recipes.ts"
         },
         "foldkit": {
           "path": "/examples/interaction/contextual-zoom",
@@ -2041,22 +2043,22 @@
         "licenseReview": "required-before-copy",
         "comparison": "unverified"
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "partial",
       "testedResult": {
         "vanilla": {
           "status": "not-tested",
           "path": null
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
           "path": null
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "implemented",
       "dependencyDecision": "none-identified",
       "testBoundary": {
         "automated": "In each host, run the journey: Zoom into a dense region and compare node detail at the configured zoom thresholds. Assert: The chosen contextual labels or details appear at the correct zoom levels without changing graph positions or connections. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
@@ -2083,8 +2085,9 @@
           "status": "planned"
         },
         "vue": {
-          "path": "/examples/interaction/drag-and-drop",
-          "status": "planned"
+          "path": "/ui-recipes/closing-gaps/?recipe=drag-and-drop",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/closing-recipes.ts"
         },
         "foldkit": {
           "path": "/examples/interaction/drag-and-drop",
@@ -2098,22 +2101,22 @@
         "licenseReview": "required-before-copy",
         "comparison": "unverified"
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "partial",
       "testedResult": {
         "vanilla": {
           "status": "not-tested",
           "path": null
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
           "path": null
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "implemented",
       "dependencyDecision": "none-identified",
       "testBoundary": {
         "automated": "In each host, run the journey: Drag a node type from the palette onto empty canvas space, then repeat outside the canvas. Assert: A node is created at the translated flow-coordinate drop point inside the canvas; an outside drop creates nothing. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
@@ -2140,8 +2143,9 @@
           "status": "planned"
         },
         "vue": {
-          "path": "/examples/interaction/prevent-cycles",
-          "status": "planned"
+          "path": "/ui-recipes/closing-gaps/?recipe=preventing-cycles",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/closing-recipes.ts"
         },
         "foldkit": {
           "path": "/examples/interaction/prevent-cycles",
@@ -2155,22 +2159,22 @@
         "licenseReview": "required-before-copy",
         "comparison": "unverified"
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "partial",
       "testedResult": {
         "vanilla": {
           "status": "not-tested",
           "path": null
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
           "path": null
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "implemented",
       "dependencyDecision": "none-identified",
       "testBoundary": {
         "automated": "In each host, run the journey: Attempt to add a forward edge that is acyclic, then add a reverse edge that would close a cycle. Assert: The acyclic edge is accepted; the cycle-forming edge is rejected and the graph remains without a directed cycle. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
@@ -3356,8 +3360,9 @@
           "status": "planned"
         },
         "vue": {
-          "path": "/examples/styling/turbo-flow",
-          "status": "planned"
+          "path": "/ui-recipes/closing-gaps/?recipe=turbo-flow",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/closing-recipes.ts"
         },
         "foldkit": {
           "path": "/examples/styling/turbo-flow",
@@ -3371,22 +3376,22 @@
         "licenseReview": "required-before-copy",
         "comparison": "unverified"
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "partial",
       "testedResult": {
         "vanilla": {
           "status": "not-tested",
           "path": null
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
           "path": null
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "implemented",
       "dependencyDecision": "none-identified",
       "testBoundary": {
         "automated": "In each host, run the journey: Load the Turbo Flow fixture and compare its node, edge, and background treatment with the base style. Assert: The specialized visual theme is applied to all intended elements and the graph remains interactive. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
@@ -3616,8 +3621,9 @@
           "status": "planned"
         },
         "vue": {
-          "path": "/examples/misc/download-image",
-          "status": "planned"
+          "path": "/ui-recipes/closing-gaps/?recipe=download-image",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/closing-recipes.ts"
         },
         "foldkit": {
           "path": "/examples/misc/download-image",
@@ -3631,22 +3637,22 @@
         "licenseReview": "required-before-copy",
         "comparison": "unverified"
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "partial",
       "testedResult": {
         "vanilla": {
           "status": "not-tested",
           "path": null
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
           "path": null
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "implemented",
       "dependencyDecision": "pending",
       "testBoundary": {
         "automated": "In each host, run the journey: Request a browser image download with visible nodes, labels, and a non-default theme. Assert: The downloaded image has nonzero dimensions and includes the expected graph content and styles; export failures are reported. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",

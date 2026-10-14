@@ -79,6 +79,36 @@ describe(constrainFlowVueDrag, () => {
     expect(step.expand).toStrictEqual([])
   })
 
+  it('snaps keyboard members independently in absolute coordinates', () => {
+    const step = constrainFlowVueDrag({
+      graph,
+      members: [member('root'), member('other'), member('clamped')],
+      anchorId: id('root'),
+      delta: { x: 25, y: 0 },
+      snapGrid: { x: 25, y: 25 },
+      individualNodes: true,
+    })
+
+    expect(step.positions.get(id('root'))).toStrictEqual({ x: 125, y: 100 })
+    expect(step.positions.get(id('other'))).toStrictEqual({ x: 325, y: 300 })
+    expect(step.positions.get(id('clamped'))).toStrictEqual({ x: 50, y: 45 })
+    expect(step.expand).toStrictEqual([])
+  })
+
+  it('constrains keyboard members individually without blocking the others', () => {
+    const step = constrainFlowVueDrag({
+      graph,
+      members: [member('root'), member('other')],
+      anchorId: id('root'),
+      delta: { x: -300, y: 0 },
+      nodeExtent: { minX: 0, minY: 0, maxX: 700, maxY: 500 },
+      individualNodes: true,
+    })
+
+    expect(step.positions.get(id('root'))).toStrictEqual({ x: 0, y: 97 })
+    expect(step.positions.get(id('other'))).toStrictEqual({ x: 0, y: 300 })
+  })
+
   it('keeps root members inside nodeExtent as one group', () => {
     const step = constrainFlowVueDrag({
       graph,

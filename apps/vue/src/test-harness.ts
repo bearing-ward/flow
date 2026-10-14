@@ -307,6 +307,7 @@ interface CanvasHarnessProps {
   connectionMode?: ConnectionMode
   connectionRadius?: ConnectionRadius
   autoPanOnConnect?: boolean
+  autoPanOnSelection?: boolean
   connectionPreview?: VueComponent<{
     readonly preview: ConnectionPreviewState
   }>
@@ -355,6 +356,7 @@ interface CanvasHarnessProps {
 }
 
 interface GestureHarnessOptions {
+  readonly autoPanOnSelection?: boolean
   readonly panOnDrag?: boolean
   readonly selectionOnDrag?: boolean
   readonly panOnScroll?: boolean

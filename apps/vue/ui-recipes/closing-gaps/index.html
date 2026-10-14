@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flow Vue closing recipes</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+      #app .flow-vue-canvas {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+      #app .closing-drag-and-drop {
+        width: calc(100vw - 250px);
+      }
+      .closing-panel {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px;
+        background: #ffffffee;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 12px;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 6px;
+      }
+      .sidebar-node {
+        padding: 12px;
+        border: 1px dashed #777;
+        cursor: grab;
+      }
+      .turbo-node {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
+        border-radius: 6px;
+        background: linear-gradient(120deg, #ff0072, #00d4ff);
+        color: #111;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/closing-recipes.ts"></script>
+  </body>
+</html>

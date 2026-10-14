@@ -788,6 +788,7 @@ export const mountFinalWiringFixture = (
         ariaLabelConfig: {
           'controls.zoomIn.ariaLabel': 'Vergrößern',
           'node.a11yDescription.default': 'Knoten auswählen',
+          'node.a11yDescription.keyboardDisabled': 'Knoten auswählen',
           'edge.a11yDescription.default': 'Kante auswählen',
         },
         defaultMarkerColor: '#123456',

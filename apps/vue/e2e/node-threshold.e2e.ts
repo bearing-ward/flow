@@ -973,7 +973,7 @@ for (const threshold of [0, 5]) {
                 ? reconnectPreview
                 : {
                     ...reconnectPreview,
-                    to: { x: 210, y: 43.5 },
+                    to: { x: 212, y: 43.5 },
                     candidate: {
                       source: 'a',
                       sourceHandle: 'out',
@@ -3520,31 +3520,14 @@ for (const entry of ['editor', 'renderer'] as const) {
         result.events
           .filter((event) => event.name === 'validate')
           .map((event) => event.payload)
-      ).toStrictEqual(
-        entry === 'renderer' && mode === 'ordinary'
-          ? [
-              {
-                source: 'c',
-                sourceHandle: 'out',
-                target: 'b',
-                targetHandle: 'in',
-              },
-              {
-                source: 'c',
-                sourceHandle: 'out',
-                target: 'b',
-                targetHandle: 'in',
-              },
-            ]
-          : [
-              {
-                source: 'c',
-                sourceHandle: 'out',
-                target: 'b',
-                targetHandle: 'in',
-              },
-            ]
-      )
+      ).toStrictEqual([
+        {
+          source: 'c',
+          sourceHandle: 'out',
+          target: 'b',
+          targetHandle: 'in',
+        },
+      ])
 
       if (mode !== 'ordinary') {
         expect(result.preview).toBeNull()
