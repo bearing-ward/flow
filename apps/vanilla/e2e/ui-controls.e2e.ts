@@ -221,7 +221,7 @@ test('Vanilla UI catalog controls drive the viewport, lock, toolbars, search and
 
   // Lock toggle turns the runtime switches off and reports the change.
   // Dragging a locked node pans the canvas instead, as in React Flow.
-  const lock = page.getByRole('button', { name: 'Toggle interactivity' })
+  const lock = page.getByRole('button', { name: 'Toggle Interactivity' })
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
   await lock.click()
   await expect(lock).toHaveAttribute('aria-pressed', 'true')

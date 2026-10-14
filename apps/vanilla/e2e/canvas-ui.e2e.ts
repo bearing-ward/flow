@@ -60,13 +60,13 @@ test('optional canvas controls, minimap, background, and zoom affordances', asyn
   const canvas = page.getByTestId('flow-canvas')
   await expect(canvas).toHaveAttribute('data-background', 'lines')
   await expect(canvas).toHaveCSS('--flow-background-spacing', '32px')
-  await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Zoom out' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Fit view' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Zoom In' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Zoom Out' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Fit View' })).toBeVisible()
   await expect(
     page.getByRole('button', { name: 'Switch to pan mode' })
   ).toHaveAttribute('aria-pressed', 'false')
-  await expect(page.getByRole('img', { name: 'Graph minimap' })).toBeVisible()
+  await expect(page.getByRole('img', { name: 'Mini Map' })).toBeVisible()
   await expect(page.locator('.flow-minimap-node')).toHaveCount(2)
   await expect(page.getByTestId('flow-minimap-viewport')).toBeVisible()
   await expect(page).toHaveScreenshot('canvas-ui.png', {
@@ -109,12 +109,12 @@ test('optional canvas controls, minimap, background, and zoom affordances', asyn
     'data-x',
     String(anchor.x - flowAnchor.x * 1.2)
   )
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect(page.getByTestId('flow-viewport')).toHaveAttribute(
     'data-zoom',
     '1.25'
   )
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect(page.getByTestId('flow-viewport')).toHaveAttribute(
     'data-zoom',
     '1.25'
@@ -126,7 +126,7 @@ test('optional canvas controls, minimap, background, and zoom affordances', asyn
     'data-x',
     '0'
   )
-  await page.getByRole('button', { name: 'Fit view' }).click()
+  await page.getByRole('button', { name: 'Fit View' }).click()
   await expect(page.getByTestId('flow-viewport')).not.toHaveAttribute(
     'data-x',
     '0'
@@ -202,7 +202,7 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
     .getByTestId('flow-viewport')
     .getAttribute('data-zoom')
 
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect(page.getByTestId('flow-viewport')).not.toHaveAttribute(
     'data-zoom',
     zoomBeforeControlClick ?? '1'

@@ -99,24 +99,40 @@ export const createFlowBackground = (
     )
   }
 
+  // Without `color`, the pattern follows the canvas theme (`colorMode`).
+  const paint = (
+    element: SVGElement,
+    property: 'fill' | 'stroke',
+    token: 'dots' | 'lines' | 'cross'
+  ): void => {
+    if (options.color === undefined) {
+      element.style.setProperty(
+        property,
+        `var(--flow-background-pattern-${token}-color, var(--flow-background-pattern-${token}-color-default, #cbd5e1))`
+      )
+    } else {
+      element.setAttribute(property, options.color)
+    }
+  }
+
   if (variant === 'dots') {
     const circle = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'circle'
     )
 
-    circle.setAttribute('fill', options.color ?? '#cbd5e1')
+    paint(circle, 'fill', 'dots')
     pattern.append(circle)
   } else if (variant === 'lines') {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
     path.setAttribute('fill', 'none')
-    path.setAttribute('stroke', options.color ?? '#cbd5e1')
+    paint(path, 'stroke', 'lines')
     path.setAttribute('stroke-width', String(options.lineWidth ?? 1))
     pattern.append(path)
   } else {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
     path.setAttribute('fill', 'none')
-    path.setAttribute('stroke', options.color ?? '#cbd5e1')
+    paint(path, 'stroke', 'cross')
     path.setAttribute('stroke-width', String(options.lineWidth ?? 1))
     pattern.append(path)
   }

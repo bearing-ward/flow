@@ -5,6 +5,7 @@ export default defineConfig({
     include: [
       'packages/**/*.test.ts',
       'apps/foldkit/src/**/*.test.ts',
+      'apps/vanilla/src/**/*.test.ts',
       'scripts/check-api-members.test.ts',
       'scripts/check-api-member-contracts.test.ts',
       'scripts/check-proof-matrix.test.ts',

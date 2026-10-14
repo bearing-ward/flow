@@ -8,7 +8,15 @@ test('Button Handle activates its app action without dragging or changing connec
   const node = page.locator('.flow-node[data-node-id="button-node"]')
   await expect(node).toHaveAttribute('data-measured-width', '190')
   await expect(node).toHaveAttribute('data-measured-height', '100')
-  const initial = await node.getAttribute('style')
+
+  // Selecting the node elevates its z-index (React elevateNodesOnSelect); the
+  // rest of its inline style (size and position) must not change.
+  const placement = () =>
+    node.evaluate((element) =>
+      element.getAttribute('style')?.replace(/ ?z-index: \d+;/u, '')
+    )
+
+  const initial = await placement()
   await button.focus()
   await expect(button).toBeFocused()
   await button.press('Enter')
@@ -26,7 +34,7 @@ test('Button Handle activates its app action without dragging or changing connec
 
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
   await expect(page.locator('#app')).toHaveAttribute('data-action-count', '3')
-  await expect(node).toHaveAttribute('style', initial ?? '')
+  await expect.poll(placement).toBe(initial)
   const buttonBox = await button.boundingBox()
 
   if (buttonBox === null) {
@@ -45,7 +53,7 @@ test('Button Handle activates its app action without dragging or changing connec
   )
   await page.mouse.up()
 
-  await expect(node).toHaveAttribute('style', initial ?? '')
+  await expect.poll(placement).toBe(initial)
   await expect(page.locator('#app')).toHaveAttribute('data-action-count', '3')
   await expect(page.locator('#app')).toHaveAttribute('data-edge-count', '0')
   await page.reload()

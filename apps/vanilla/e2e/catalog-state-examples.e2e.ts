@@ -57,7 +57,7 @@ test('Vanilla playground demonstrates public graph reads and session restore', a
     panel.getByRole('button', { name: 'Restore snapshot' })
   ).toBeDisabled()
   await expect(panel.getByLabel('Node label')).toHaveValue('Validate')
-  await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Zoom In' })).toBeVisible()
   await page.locator('.flow-demo-panel').evaluate((element) => {
     element.scrollTop = 0
   })

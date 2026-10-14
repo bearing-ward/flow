@@ -686,7 +686,7 @@ playwrightTest(
     await expectPage(path).toHaveCSS('stroke', 'rgb(255, 0, 0)')
     await expectPage(path).toHaveAttribute(
       'marker-end',
-      /url\(#flow-marker-\d+-arrowclosed-ff0000\)/u
+      /url\(#flow-marker-\d+__color_3d__23_ff0000_26_type_3d_arrowclosed\)/u
     )
     await expectPage(page.getByTestId('flow-edge-label')).toHaveText('Message')
 
@@ -887,12 +887,8 @@ playwrightTest(
       .getByTestId('flow-edge-path')
       .getAttribute('marker-end')
 
-    expectPage(firstMarker).toMatch(
-      /^url\(#flow-marker-\d+-arrowclosed-64748b\)$/u
-    )
-    expectPage(secondMarker).toMatch(
-      /^url\(#flow-marker-\d+-arrowclosed-64748b\)$/u
-    )
+    expectPage(firstMarker).toMatch(/^url\(#flow-marker-\d+__arrowclosed\)$/u)
+    expectPage(secondMarker).toMatch(/^url\(#flow-marker-\d+__arrowclosed\)$/u)
     expectPage(firstMarker).not.toBe(secondMarker)
 
     await page.evaluate(() => globalThis.flowController?.destroy())
@@ -915,11 +911,11 @@ playwrightTest(
     const path = page.getByTestId('flow-edge-path')
     await expectPage(path).toHaveAttribute(
       'marker-start',
-      /url\(#flow-marker-\d+-arrowclosed-ff0000\)/u
+      /url\(#flow-marker-\d+__color_3d__23_ff0000_26_type_3d_arrowclosed\)/u
     )
     await expectPage(path).toHaveAttribute(
       'marker-end',
-      /url\(#flow-marker-\d+-arrow-ff0000\)/u
+      /url\(#flow-marker-\d+__color_3d__23_ff0000_26_type_3d_arrow\)/u
     )
     await expectPage(path).toHaveCSS('stroke', 'rgb(255, 0, 0)')
     await expectPage(path).toHaveCSS('stroke-width', '3px')
@@ -938,7 +934,7 @@ playwrightTest(
     })
     await expectPage(path).toHaveAttribute(
       'marker-start',
-      /url\(#flow-marker-\d+-arrow-0000ff\)/u
+      /url\(#flow-marker-\d+__color_3d__23_0000ff_26_type_3d_arrow\)/u
     )
     await expectPage(path).not.toHaveAttribute('marker-end')
     await expectPage(path).toHaveCSS('stroke', 'rgb(0, 0, 255)')

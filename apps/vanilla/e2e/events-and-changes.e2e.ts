@@ -139,7 +139,7 @@ test.describe('Vanilla events, changes and connection rules', () => {
       elementsSelectable: false,
     })
 
-    const lock = page.getByRole('button', { name: 'Toggle interactivity' })
+    const lock = page.getByRole('button', { name: 'Toggle Interactivity' })
     await expect(lock).toHaveAttribute('aria-pressed', 'true')
     await expect(handle(page, 'a', 'out')).not.toHaveClass(/connectable/u)
 

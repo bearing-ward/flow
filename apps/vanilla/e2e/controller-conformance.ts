@@ -460,10 +460,24 @@ export const createVanillaConformanceAdapter = (
           throw new Error('Missing conformance controller')
         }
 
+        // `measured` is the transient DOM read model (Plan 115); the shared
+        // fixtures compare the stored node, so the read drops it.
+        const stored = (() => {
+          const node =
+            nodeId === undefined ? undefined : controller.getNode(nodeId)
+
+          if (node === undefined) {
+            return null
+          }
+
+          const { measured: _measured, ...rest } = node
+
+          return rest
+        })()
+
         return {
           snapshot: controller.getSnapshot(),
-          node:
-            nodeId === undefined ? null : (controller.getNode(nodeId) ?? null),
+          node: stored,
           edge:
             edgeId === undefined ? null : (controller.getEdge(edgeId) ?? null),
         }

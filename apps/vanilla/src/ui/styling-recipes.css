@@ -1,0 +1,39 @@
+/* Base Style: a node class from the page stylesheet. */
+.flow-node.recipe-accent-node {
+  border-color: #7c3aed;
+  background: #ede9fe;
+  color: #4c1d95;
+}
+
+/* Labeled Group Node: a translucent group with its title in the top-left corner. */
+.flow-node.recipe-labeled-group {
+  place-items: start;
+  padding: 0;
+  border: 1px solid #94a3b8;
+  background: rgb(148 163 184 / 12%);
+  box-shadow: none;
+}
+
+.recipe-labeled-group-title {
+  padding: 4px 8px;
+  border-right: 1px solid #94a3b8;
+  border-bottom: 1px solid #94a3b8;
+  border-bottom-right-radius: 4px;
+  background: #fff;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.flow-canvas.dark .recipe-labeled-group-title {
+  background: #1e1e1e;
+  color: #f8f8f8;
+}
+
+.recipe-resize-icon {
+  display: block;
+  color: #ff0071;
+  font-size: 14px;
+  line-height: 1;
+  translate: -4px -4px;
+}

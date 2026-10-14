@@ -86,7 +86,7 @@ export const runVersionedPersistenceProof = async () => {
     let invalidRejected = false
 
     try {
-      await controller.prepareVersionedRestore({ ...fresh, version: 3 })
+      await controller.prepareVersionedRestore({ ...fresh, version: 99 })
     } catch {
       invalidRejected = true
     }

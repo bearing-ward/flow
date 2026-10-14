@@ -1,4 +1,10 @@
-import { flowInteractivityFor, isFlowInteractive } from '@flow/core'
+import {
+  FlowPanelPositionSchema,
+  flowInteractivityFor,
+  isFlowInteractive,
+  resolveFlowAriaLabelConfig,
+} from '@flow/core'
+import type { FlowAriaLabelConfig } from '@flow/core'
 import * as S from 'effect/Schema'
 
 import type { FitViewOptions, FlowController } from './mount-flow.ts'
@@ -7,16 +13,7 @@ const ControlsOptionsSchema = S.Struct({
   showZoom: S.optional(S.Boolean),
   showFitView: S.optional(S.Boolean),
   showInteractive: S.optional(S.Boolean),
-  position: S.optional(
-    S.Literals([
-      'top-left',
-      'top-center',
-      'top-right',
-      'bottom-left',
-      'bottom-center',
-      'bottom-right',
-    ])
-  ),
+  position: S.optional(FlowPanelPositionSchema),
   orientation: S.optional(S.Literals(['vertical', 'horizontal'])),
   className: S.optional(S.String),
   ariaLabel: S.optional(S.NonEmptyString),
@@ -43,11 +40,20 @@ export interface FlowControlsMount {
 
 type ControlAction = 'zoom-in' | 'zoom-out' | 'fit' | 'interactive'
 
-const actionLabels: Record<ControlAction, { label: string; text: string }> = {
-  'zoom-in': { label: 'Zoom in', text: '+' },
-  'zoom-out': { label: 'Zoom out', text: '−' },
-  fit: { label: 'Fit view', text: 'Fit' },
-  interactive: { label: 'Toggle interactivity', text: 'Lock' },
+const actionLabels: Record<
+  ControlAction,
+  {
+    label: Exclude<
+      keyof FlowAriaLabelConfig,
+      'node.a11yDescription.ariaLiveMessage'
+    >
+    text: string
+  }
+> = {
+  'zoom-in': { label: 'controls.zoomIn.ariaLabel', text: '+' },
+  'zoom-out': { label: 'controls.zoomOut.ariaLabel', text: '−' },
+  fit: { label: 'controls.fitView.ariaLabel', text: 'Fit' },
+  interactive: { label: 'controls.interactive.ariaLabel', text: 'Lock' },
 }
 
 interface RestoredButton {
@@ -71,7 +77,8 @@ export const createFlowControls = (
     | 'getInteractivity'
     | 'setInteractivity'
     | 'subscribeInteractivity'
-  >,
+  > &
+    Partial<Pick<FlowController, 'getAriaLabelConfig'>>,
   input: FlowControlsOptions = {}
 ): FlowControlsMount => {
   const options = {
@@ -90,7 +97,15 @@ export const createFlowControls = (
   group.dataset.position = options.position ?? 'bottom-left'
   group.dataset.orientation = options.orientation ?? 'vertical'
   group.setAttribute('role', 'group')
-  group.setAttribute('aria-label', options.ariaLabel ?? 'Flow controls')
+
+  // The canvas `ariaLabelConfig`; an explicit `ariaLabel` still wins.
+  const labels =
+    controller.getAriaLabelConfig?.() ?? resolveFlowAriaLabelConfig()
+
+  group.setAttribute(
+    'aria-label',
+    options.ariaLabel ?? labels['controls.ariaLabel']
+  )
 
   if (options.className) {
     group.classList.add(...options.className.split(/\s+/u).filter(Boolean))
@@ -112,7 +127,7 @@ export const createFlowControls = (
     button.type = 'button'
     button.className = 'flow-control-button'
     button.dataset.action = action
-    button.setAttribute('aria-label', label)
+    button.setAttribute('aria-label', labels[label])
     button.textContent = text
     buttons.set(action, button)
     group.append(button)
