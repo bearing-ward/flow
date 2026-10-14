@@ -17,7 +17,7 @@ const mount = async (page: Page, options: ClosingCanvasOptions = {}) => {
 
     mountClosingGapsFixture(root, initial)
   }, options)
-  await expect(page.locator('[data-node-id="a"]')).toBeVisible()
+  await expect(page.locator('[data-node-id="a"]').first()).toBeVisible()
 }
 
 const boxOf = async (locator: Locator) => {
@@ -83,22 +83,29 @@ test('node and edge roles, label and description render from the model', async (
     'role',
     'link'
   )
+
+  const anchor = page.locator(
+    '[data-testid="flow-edge-reconnect-anchor"][data-endpoint="source"]'
+  )
+
+  await expect(anchor).toHaveAttribute('r', '10')
+  await expect(anchor).toHaveAttribute('cx', '215')
 })
 
 test('configured node description and live message accompany selected-node arrow movement', async ({
   page,
 }) => {
-  await mount(page)
+  await mount(page, { snapGrid: [15, 25], snapToGrid: false })
   await expect(page.getByTestId('flow-node-description')).toHaveText(
     'Use arrows to move'
   )
   await page.locator('[data-node-id="a"]').focus()
   await page.keyboard.press('ArrowRight')
-  await expect.poll(() => position(page)).toEqual({ x: 81, y: 100 })
+  await expect.poll(() => position(page)).toEqual({ x: 85, y: 100 })
   await expect(page.getByTestId('flow-aria-live')).toHaveText('right:80,100')
   await page.keyboard.press('Shift+ArrowDown')
-  await expect.poll(() => position(page)).toEqual({ x: 81, y: 104 })
-  await expect(page.getByTestId('flow-aria-live')).toHaveText('down:81,100')
+  await expect.poll(() => position(page)).toEqual({ x: 85, y: 120 })
+  await expect(page.getByTestId('flow-aria-live')).toHaveText('down:85,100')
   await expect(page.getByTestId('flow-aria-live')).toHaveAttribute(
     'aria-live',
     'assertive'
@@ -127,6 +134,15 @@ test('disableKeyboardA11y prevents arrow movement, selection and focus pan', asy
   await page.locator('[data-node-id="a"]').focus()
   await page.keyboard.press('ArrowRight')
   expect(await position(page)).toEqual({ x: 80, y: 100 })
+  expect(
+    await page.evaluate(
+      () =>
+        window.__flowVueClosing
+          ?.flow()
+          .getNodes()
+          .find(({ id }) => id === 'a')?.selected
+    )
+  ).toBe(true)
   await page.keyboard.press('Tab')
   await page.locator('[data-node-id="offscreen"]').focus()
   expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
@@ -309,26 +325,139 @@ test('connection container style and reconnect radius reach the rendered SVG', a
   await page.mouse.up()
 })
 
-test('delete keys listen outside the canvas and ignore editable fields and null', async ({
+for (const field of [
+  'input',
+  'textarea',
+  'select',
+  'editable',
+  'plaintext',
+  'noneditable',
+  'panel',
+  'label',
+  'shadow',
+  'null',
+  'modifier',
+  'extra-key',
+] as const) {
+  test(`delete guard protects ${field} until a confirmed positive delete`, async ({
+    page,
+  }) => {
+    await mount(page, field === 'null' ? { deleteKeyCode: null } : {})
+    await page.evaluate((kind) => {
+      if (kind === 'panel' || kind === 'label') {
+        document
+          .querySelector<HTMLElement>(
+            `[data-testid="${kind === 'panel' ? 'panel' : 'edge-label'}-input"]`
+          )
+          ?.focus()
+
+        return
+      }
+
+      let tag = 'div'
+
+      if (kind === 'textarea' || kind === 'select') {
+        tag = kind
+      } else if (kind === 'input' || kind === 'shadow') {
+        tag = 'input'
+      }
+
+      const element = document.createElement(tag)
+
+      element.tabIndex = 0
+
+      if (
+        kind === 'editable' ||
+        kind === 'plaintext' ||
+        kind === 'noneditable'
+      ) {
+        let editable = 'false'
+
+        if (kind === 'editable') {
+          editable = 'true'
+        } else if (kind === 'plaintext') {
+          editable = 'plaintext-only'
+        }
+
+        element.setAttribute('contenteditable', editable)
+      }
+
+      if (kind === 'shadow') {
+        const host = document.createElement('div')
+        document.querySelector('[data-primary-canvas]')?.append(host)
+        host.attachShadow({ mode: 'open' }).append(element)
+      } else {
+        document.body.append(element)
+      }
+
+      element.focus()
+    }, field)
+
+    if (field === 'extra-key') {
+      await page.keyboard.down('a')
+    }
+
+    await page.keyboard.press(
+      field === 'modifier' ? 'Meta+Backspace' : 'Backspace'
+    )
+
+    if (field === 'extra-key') {
+      await page.keyboard.up('a')
+    }
+
+    await frames(page)
+    // A real deletion after the guarded event proves the asynchronous delete path has completed.
+    await page.evaluate(async () => {
+      const flow = window.__flowVueClosing?.flow()
+      await flow?.applyEdit({
+        operations: [
+          {
+            kind: 'set-nodes',
+            nodes: flow
+              .getNodes()
+              .map((node) => ({ ...node, selected: node.id === 'b' })),
+          },
+        ],
+      })
+      window.__flowVueClosing?.configure({ deleteKeyCode: 'Delete' })
+      document
+        .querySelector<HTMLElement>('[data-testid="outside-button"]')
+        ?.focus()
+    })
+    await page.keyboard.press('Delete')
+    await expect(page.locator('[data-node-id="b"]')).toHaveCount(0)
+    await expect(page.locator('[data-node-id="a"]')).toHaveCount(1)
+    await expect(page.locator('[data-flow-edge-hit="ab"]')).toHaveCount(0)
+  })
+}
+
+test('document deletion accepts an exact configured modifier combination', async ({
   page,
 }) => {
-  await mount(page)
-  await page.getByTestId('outside-input').focus()
-  await page.keyboard.press('Backspace')
-  await expect(page.locator('[data-node-id="a"]')).toHaveCount(1)
-  await page.evaluate(() =>
-    window.__flowVueClosing?.configure({ deleteKeyCode: null })
-  )
+  await mount(page, { deleteKeyCode: 'Meta+Backspace' })
   await page.getByTestId('outside-button').focus()
-  await page.keyboard.press('Backspace')
-  await expect(page.locator('[data-node-id="a"]')).toHaveCount(1)
-  await page.evaluate(() =>
-    window.__flowVueClosing?.configure({ deleteKeyCode: 'Delete' })
-  )
-  await page.keyboard.press('Delete')
+  await page.keyboard.press('Meta+Backspace')
   await expect(page.locator('[data-node-id="a"]')).toHaveCount(0)
-  await expect(page.locator('[data-flow-edge-hit="ab"]')).toHaveCount(0)
 })
+
+for (const layout of ['siblings', 'nested'] as const) {
+  test(`Delete belongs to the focused ${layout} canvas, including outside controls`, async ({
+    page,
+  }) => {
+    await mount(page, { deleteKeyCode: 'Delete', multipleCanvases: layout })
+    const primary = page.locator('[data-primary-canvas]')
+    const secondary = page.getByTestId('secondary-canvas')
+    await secondary.locator('[data-node-id="a"]').focus()
+    await page.keyboard.press('Delete')
+    await expect(secondary.locator('[data-node-id="a"]')).toHaveCount(0)
+    await expect(primary.locator('[data-node-id="a"]')).toHaveCount(1)
+    await primary.locator('[data-node-id="a"]').focus()
+    await page.getByTestId('outside-button').focus()
+    await page.keyboard.press('Delete')
+    await expect(primary.locator('[data-node-id="a"]')).toHaveCount(0)
+    await expect(secondary.locator('[data-node-id="b"]')).toHaveCount(1)
+  })
+}
 
 test('click-distance equality counts as a click and an excursion followed by return does not', async ({
   page,
@@ -417,4 +546,124 @@ test('paneClickDistance also gates selection movement, with the selection key by
   )
   await page.mouse.up()
   await page.keyboard.up('Shift')
+})
+
+test('grid keyboard moves snap each selected absolute position and use Shift grid steps', async ({
+  page,
+}) => {
+  await mount(page, { snapToGrid: true, snapGrid: [15, 25] })
+  await page.evaluate(async () => {
+    const flow = window.__flowVueClosing?.flow()
+    await flow?.applyEdit({
+      operations: [
+        {
+          kind: 'set-nodes',
+          nodes: flow.getNodes().map((node) => ({
+            ...node,
+            selected: node.id !== 'offscreen',
+            position: node.id === 'a' ? { x: 7, y: 103 } : node.position,
+          })),
+        },
+      ],
+    })
+  })
+  await page.locator('[data-node-id="a"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => position(page)).toEqual({ x: 15, y: 100 })
+  await expect.poll(() => position(page, 'b')).toEqual({ x: 360, y: 175 })
+  await page.keyboard.press('Shift+ArrowDown')
+  await expect.poll(() => position(page)).toEqual({ x: 15, y: 200 })
+  await expect.poll(() => position(page, 'b')).toEqual({ x: 360, y: 275 })
+})
+
+test('unfocusable nodes have no keyboard movement, selection or focus pan', async ({
+  page,
+}) => {
+  await mount(page)
+  await page.evaluate(async () => {
+    const flow = window.__flowVueClosing?.flow()
+    await flow?.applyEdit({
+      operations: [
+        {
+          kind: 'set-nodes',
+          nodes: flow.getNodes().map((node) => ({ ...node, focusable: false })),
+        },
+      ],
+    })
+  })
+  const node = page.locator('[data-node-id="a"]')
+  await expect(node).not.toHaveAttribute('tabindex')
+  await node.click()
+  // Consumers may explicitly focus an unfocusable wrapper, but it still has no keyboard handlers.
+  await node.evaluate((element) => {
+    element.setAttribute('tabindex', '-1')
+    element.focus()
+  })
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Enter')
+  await frames(page)
+  expect(await position(page)).toEqual({ x: 80, y: 100 })
+  expect(
+    await page.evaluate(
+      () =>
+        window.__flowVueClosing
+          ?.flow()
+          .getNodes()
+          .find(({ id }) => id === 'a')?.selected
+    )
+  ).toBe(true)
+  await page.keyboard.press('Tab')
+  await page.locator('[data-node-id="offscreen"]').evaluate((element) => {
+    element.setAttribute('tabindex', '-1')
+    element.focus()
+  })
+  await frames(page)
+  expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
+})
+
+test('non-draggable nodes admit clicks beyond nodeClickDistance', async ({
+  page,
+}) => {
+  await mount(page, { nodesDraggable: false, nodeClickDistance: 0 })
+  const node = await boxOf(page.locator('[data-node-id="b"]'))
+  await page.mouse.move(node.x + 30, node.y + 25)
+  await page.mouse.down()
+  await page.mouse.move(node.x + 45, node.y + 25)
+  await page.mouse.up()
+  await expect.poll(() => events(page)).toContain('node-click')
+  expect(
+    await page.evaluate(
+      () =>
+        window.__flowVueClosing
+          ?.flow()
+          .getNodes()
+          .find(({ id }) => id === 'b')?.selected
+    )
+  ).toBe(true)
+})
+
+test('empty node ariaDescription falls back to the shared description', async ({
+  page,
+}) => {
+  await mount(page)
+  await page.evaluate(async () => {
+    const flow = window.__flowVueClosing?.flow()
+    await flow?.applyEdit({
+      operations: [
+        {
+          kind: 'set-nodes',
+          nodes: flow
+            .getNodes()
+            .map((node) => ({ ...node, ariaDescription: '' })),
+        },
+      ],
+    })
+  })
+  await expect(page.locator('[data-node-id="a"]')).not.toHaveAttribute(
+    'aria-description'
+  )
+  await expect(page.locator('[data-node-id="a"]')).toHaveAttribute(
+    'aria-describedby',
+    /-node-description$/u
+  )
 })

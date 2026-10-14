@@ -3130,7 +3130,7 @@ test('Vue honors node drag/focus and edge select/focus flags', async ({
 
   const source = page.locator('[data-node-id="source"]')
 
-  await expect(source).toHaveAttribute('tabindex', '-1')
+  await expect(source).not.toHaveAttribute('tabindex')
   const sourceBounds = await source.boundingBox()
 
   if (sourceBounds === null) {

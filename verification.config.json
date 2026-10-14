@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 119 Vue closing gaps, with the unchanged main focused scope",
+  "activeWork": "Plan 119 Vue review fixes: keyboard grid movement, editable deletion and canvas ownership, preserving main focused scope",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [

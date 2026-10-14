@@ -381,6 +381,9 @@ const viewportKey = (viewport: Viewport): string =>
 
 const noopUnsubscribe = (): boolean => false
 
+/** The last canvas focused in each document owns keys from outside controls. */
+const focusedCanvasOwners = new WeakMap<Document, HTMLElement>()
+
 const keyboardResizeDelta = (
   key: string,
   step: number
@@ -2555,6 +2558,7 @@ export const FlowCanvas = defineComponent({
     }
 
     const pressedKeys = new Set<string>()
+    const keyboardPressedCodes = new Map<string, string>()
 
     /** Whether a key name is held, reading modifiers from the event. */
     const keyHeld = (
@@ -2600,7 +2604,7 @@ export const FlowCanvas = defineComponent({
     }
 
     /** React `deleteKeyCode` matching: one key or `+` combination per alternative. */
-    const deleteKeyMatches = (event: KeyboardEvent): boolean => {
+    const deleteKeyMatches = (): boolean => {
       const code = props.deleteKeyCode
 
       if (code === null) {
@@ -2611,14 +2615,23 @@ export const FlowCanvas = defineComponent({
         ? code
         : [code]
 
-      return alternatives.some((alternative: string) =>
-        alternative
-          .split('+')
-          .every(
-            (key: string) =>
-              key === event.key || key === event.code || keyHeld(key, event)
-          )
+      const keysToWatch = new Set(
+        alternatives.flatMap((value) => value.split('+'))
       )
+
+      const pressed = new Set(
+        [...keyboardPressedCodes].map(([key, eventCode]) =>
+          keysToWatch.has(eventCode) ? eventCode : key
+        )
+      )
+
+      return alternatives.some((alternative: string) => {
+        const keys = alternative.split('+')
+
+        return (
+          keys.length === pressed.size && keys.every((key) => pressed.has(key))
+        )
+      })
     }
 
     /** The dragged nodes at the given positions, or at drag start. */
@@ -2756,7 +2769,8 @@ export const FlowCanvas = defineComponent({
         press === undefined ||
         press.onControl ||
         event.button !== 0 ||
-        press.distance > props.nodeClickDistance ||
+        (isNodeDraggable(interactivity.value, node) &&
+          press.distance > props.nodeClickDistance) ||
         isNodeControl(event.target, event.currentTarget)
       ) {
         return
@@ -6053,13 +6067,22 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const step = constrainedDragStep(
-        dragGroupMembers(activeDocument.value, interactivity.value, node),
-        node,
-        props.snapToGrid
-          ? { x: delta.x * snapGrid.value.x, y: delta.y * snapGrid.value.y }
-          : delta
-      )
+      const step = constrainFlowVueDrag({
+        graph: graph.value,
+        members: dragGroupMembers(
+          activeDocument.value,
+          interactivity.value,
+          node
+        ),
+        anchorId: node.id,
+        delta: {
+          x: delta.x * (props.snapToGrid ? snapGrid.value.x : 5),
+          y: delta.y * (props.snapToGrid ? snapGrid.value.y : 5),
+        },
+        snapGrid: props.snapToGrid ? snapGrid.value : undefined,
+        individualNodes: true,
+        nodeExtent,
+      })
 
       publishDragCommit(
         [...step.positions].map(([nodeId, position]) => ({ nodeId, position })),
@@ -7832,7 +7855,8 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      const { target } = event
+      const path = event.composedPath()
+      const target = path[0] ?? event.target
 
       if (
         target instanceof Element &&
@@ -7841,25 +7865,46 @@ export const FlowCanvas = defineComponent({
         return
       }
 
+      keyboardPressedCodes.set(event.key, event.code)
       pressedKeys.add(event.key)
       pressedKeys.add(event.code)
 
       const active = session.value
 
-      // React listens for `deleteKeyCode` on the document. Keys aimed at
-      // another canvas stay with that canvas.
+      const eventCanvas = path.find(
+        (element) =>
+          element instanceof HTMLElement &&
+          element.classList.contains('flow-vue-canvas')
+      )
+
+      const focusedOwner =
+        canvas.value === undefined
+          ? undefined
+          : focusedCanvasOwners.get(canvas.value.ownerDocument)
+
+      let ownsDelete = eventCanvas === canvas.value
+
+      if (eventCanvas === undefined) {
+        ownsDelete =
+          focusedOwner?.isConnected === true
+            ? focusedOwner === canvas.value
+            : canvas.value?.ownerDocument.querySelectorAll('.flow-vue-canvas')
+                .length === 1
+      }
+
+      // The nearest canvas in the composed path owns a nested or shadow-DOM event.
       if (
         active === undefined &&
         !event.repeat &&
+        !event.defaultPrevented &&
+        ownsDelete &&
         target instanceof Element &&
-        (canvas.value?.contains(target) === true ||
-          target.closest('.flow-vue-canvas') === null) &&
-        target.closest(
-          'input, textarea, select, [contenteditable=""], [contenteditable="true"], .nokey'
-        ) === null &&
-        deleteKeyMatches(event)
+        target.closest('input, textarea, select, [contenteditable], .nokey') ===
+          null &&
+        deleteKeyMatches()
       ) {
         event.preventDefault()
+        event.stopPropagation()
         void deleteSelectedElements()
 
         return
@@ -8064,6 +8109,7 @@ export const FlowCanvas = defineComponent({
       }
 
       pressedKeys.clear()
+      keyboardPressedCodes.clear()
       cancelActiveSession('blur')
     }
 
@@ -8090,6 +8136,12 @@ export const FlowCanvas = defineComponent({
     const onWindowKeyUp = (event: KeyboardEvent): void => {
       if (stateDisposed) {
         return
+      }
+
+      keyboardPressedCodes.delete(event.key)
+
+      if (event.key === 'Meta') {
+        keyboardPressedCodes.clear()
       }
 
       pressedKeys.delete(event.key)
@@ -8866,15 +8918,15 @@ export const FlowCanvas = defineComponent({
           ],
           'data-testid': 'flow-node',
           'data-node-id': node.id,
-          tabindex: focusable ? 0 : -1,
+          tabindex: focusable ? 0 : undefined,
           // React `NodeWrapper` roles and labels; a node's own
           // `ariaDescription` replaces the shared description.
           role: node.ariaRole ?? (focusable ? 'group' : undefined),
           'aria-roledescription': 'node',
           'aria-label': node.ariaLabel,
-          'aria-description': node.ariaDescription,
+          'aria-description': node.ariaDescription || undefined,
           'aria-describedby':
-            props.disableKeyboardA11y || node.ariaDescription !== undefined
+            props.disableKeyboardA11y || Boolean(node.ariaDescription)
               ? undefined
               : `${canvasId}-node-description`,
           ref: nodeRef(node),
@@ -8907,6 +8959,7 @@ export const FlowCanvas = defineComponent({
             // React `nodeClickDistance`: a press that travelled further is a
             // drag, not a click.
             if (
+              isNodeDraggable(interactivity.value, node) &&
               nodePress !== undefined &&
               nodePress.distance > props.nodeClickDistance
             ) {
@@ -8918,50 +8971,54 @@ export const FlowCanvas = defineComponent({
             emit('nodeClick', node, event)
             selectNodeOnClick(node, event)
           },
-          onFocus: (event: FocusEvent) => panToFocusedNode(node, event),
+          onFocus: focusable
+            ? (event: FocusEvent) => panToFocusedNode(node, event)
+            : undefined,
           onDblclick: (event: MouseEvent) =>
             emit('nodeDoubleClick', node, event),
           onContextmenu: (event: MouseEvent) =>
             emit('nodeContextMenu', node, event),
-          onKeydown: (event: KeyboardEvent) => {
-            if (
-              event.target !== event.currentTarget ||
-              props.disableKeyboardA11y
-            ) {
-              return
-            }
+          onKeydown: focusable
+            ? (event: KeyboardEvent) => {
+                if (
+                  event.target !== event.currentTarget ||
+                  props.disableKeyboardA11y
+                ) {
+                  return
+                }
 
-            if (keyboardResizeDelta(event.key, 1) !== undefined) {
-              moveSelectedNodesByKey(node, event)
+                if (keyboardResizeDelta(event.key, 1) !== undefined) {
+                  moveSelectedNodesByKey(node, event)
 
-              return
-            }
+                  return
+                }
 
-            if (
-              !isNodeSelectable(interactivity.value, node) ||
-              (event.key !== ' ' && event.key !== 'Enter')
-            ) {
-              return
-            }
+                if (
+                  !isNodeSelectable(interactivity.value, node) ||
+                  (event.key !== ' ' && event.key !== 'Enter')
+                ) {
+                  return
+                }
 
-            event.preventDefault()
+                event.preventDefault()
 
-            const nodeIds = activeDocument.value.nodes
-              .filter(
-                (candidate) =>
-                  isNodeSelectable(interactivity.value, candidate) &&
-                  (candidate.id === node.id
-                    ? candidate.selected !== true
-                    : candidate.selected === true)
-              )
-              .map(({ id }) => id)
+                const nodeIds = activeDocument.value.nodes
+                  .filter(
+                    (candidate) =>
+                      isNodeSelectable(interactivity.value, candidate) &&
+                      (candidate.id === node.id
+                        ? candidate.selected !== true
+                        : candidate.selected === true)
+                  )
+                  .map(({ id }) => id)
 
-            const edgeIds = activeDocument.value.edges
-              .filter((edge) => edge.selected === true)
-              .map(({ id }) => id)
+                const edgeIds = activeDocument.value.edges
+                  .filter((edge) => edge.selected === true)
+                  .map(({ id }) => id)
 
-            publish({ kind: 'selection-set', nodeIds, edgeIds })
-          },
+                publish({ kind: 'selection-set', nodeIds, edgeIds })
+              }
+            : undefined,
         },
         [
           h(
@@ -9798,9 +9855,18 @@ export const FlowCanvas = defineComponent({
       nodeElements.clear()
       nodeRefCallbacks.clear()
       pendingGenerations.clear()
+
+      if (
+        canvas.value !== undefined &&
+        focusedCanvasOwners.get(canvas.value.ownerDocument) === canvas.value
+      ) {
+        focusedCanvasOwners.delete(canvas.value.ownerDocument)
+      }
+
       stateListeners.clear()
       stateQueue.length = 0
       pressedKeys.clear()
+      keyboardPressedCodes.clear()
 
       return {
         next: 0,
@@ -10499,6 +10565,19 @@ export const FlowCanvas = defineComponent({
 
             if (session.value?.kind === 'node') {
               scheduleGesturePan(event)
+            }
+          },
+          onFocusin: (event: FocusEvent) => {
+            const owner = event
+              .composedPath()
+              .find(
+                (element) =>
+                  element instanceof HTMLElement &&
+                  element.classList.contains('flow-vue-canvas')
+              )
+
+            if (owner === canvas.value && canvas.value !== undefined) {
+              focusedCanvasOwners.set(canvas.value.ownerDocument, canvas.value)
             }
           },
           onPointerdown: onCanvasPointerDown,

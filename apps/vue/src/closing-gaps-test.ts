@@ -1,5 +1,10 @@
 import { decodeFlowDocument } from '@flow/core'
-import { FlowCanvas, useFlow } from '@flow/vue'
+import {
+  FlowCanvas,
+  FlowEdgeLabelRenderer,
+  FlowPanel,
+  useFlow,
+} from '@flow/vue'
 import type { FlowActions } from '@flow/vue'
 import { Effect } from 'effect'
 import { createApp, defineComponent, h, shallowRef } from 'vue'
@@ -19,6 +24,9 @@ export interface ClosingCanvasOptions {
   readonly selectionOnDrag?: boolean
   readonly reconnectRadius?: number
   readonly deleteKeyCode?: string | null
+  readonly snapToGrid?: boolean
+  readonly snapGrid?: readonly [number, number]
+  readonly multipleCanvases?: 'siblings' | 'nested'
   readonly interruptPan?: 'unmount' | 'replace'
 }
 
@@ -26,6 +34,7 @@ declare global {
   interface Window {
     __flowVueClosing?: {
       readonly flow: () => FlowActions
+      readonly otherFlow: () => FlowActions
       readonly events: () => readonly string[]
       readonly configure: (options: ClosingCanvasOptions) => void
       readonly unmount: () => void
@@ -87,6 +96,7 @@ export const mountClosingGapsFixture = (
   const options = shallowRef(initial)
   const events: string[] = []
   let flow: FlowActions | undefined
+  let otherFlow: FlowActions | undefined
 
   const Probe = defineComponent({
     setup() {
@@ -95,6 +105,34 @@ export const mountClosingGapsFixture = (
       return () => null
     },
   })
+
+  const OtherProbe = defineComponent({
+    setup() {
+      otherFlow = useFlow()
+
+      return () => null
+    },
+  })
+
+  const FixtureNode = defineComponent({
+    inheritAttrs: false,
+    setup(_, { slots }) {
+      return () => h('div', slots.default?.())
+    },
+  })
+
+  const secondCanvas = () =>
+    h(
+      FlowCanvas,
+      {
+        defaultDocument: document,
+        deleteKeyCode: 'Delete',
+        panOnDrag: false,
+        'data-testid': 'secondary-canvas',
+        style: { width: '300px', height: '250px' },
+      },
+      { default: () => h(OtherProbe) }
+    )
 
   const app = createApp(
     defineComponent({
@@ -111,6 +149,8 @@ export const mountClosingGapsFixture = (
               FlowCanvas,
               {
                 defaultDocument: document,
+                nodeComponent: FixtureNode,
+                'data-primary-canvas': '',
                 ...options.value,
                 panOnDrag: false,
                 style: { width: '800px', height: '520px', margin: 0 },
@@ -148,8 +188,39 @@ export const mountClosingGapsFixture = (
                   }
                 },
               },
-              { default: () => h(Probe) }
+              {
+                default: () => [
+                  h(Probe),
+                  h(
+                    FlowPanel,
+                    { position: 'top-right' },
+                    {
+                      default: () =>
+                        h('input', { 'data-testid': 'panel-input' }),
+                    }
+                  ),
+                  h(FlowEdgeLabelRenderer, null, {
+                    default: () =>
+                      h('input', {
+                        'data-testid': 'edge-label-input',
+                        style: {
+                          position: 'absolute',
+                          left: '240px',
+                          top: '160px',
+                          pointerEvents: 'all',
+                        },
+                      }),
+                  }),
+                ],
+                node: ({ node }: { readonly node: { readonly id: string } }) =>
+                  options.value.multipleCanvases === 'nested' && node.id === 'b'
+                    ? secondCanvas()
+                    : node.id,
+              }
             ),
+            ...(options.value.multipleCanvases === 'siblings'
+              ? [secondCanvas()]
+              : []),
           ])
       },
     })
@@ -163,6 +234,13 @@ export const mountClosingGapsFixture = (
       }
 
       return flow
+    },
+    otherFlow: () => {
+      if (otherFlow === undefined) {
+        throw new Error('Missing second fixture flow')
+      }
+
+      return otherFlow
     },
     events: () => [...events],
     configure: (next) => {
