@@ -12,11 +12,11 @@
     "inScope": 185,
     "stretch": 13,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 176,
+    "inScopeCloseAllHosts": 185,
     "inScopeCloseByHost": {
       "vanilla": 185,
       "vue": 185,
-      "foldkit": 176
+      "foldkit": 185
     },
     "reaudit": "2026-10-14 independent re-audit after Plans 105-117 (statuses above are the re-audit ratings)"
   },
@@ -35,7 +35,7 @@
       "name": "<ReactFlow />",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 4,
       "missing": "Remaining canvas props/events, notably onNodesChange/onEdgesChange controlled flow",
@@ -46,7 +46,7 @@
         "missing": "Unmapped props: key codes, autoPan*, onlyRenderVisibleElements (Foldkit), fitView on init",
         "evidence": "plans/117-foldkit-final-wiring.md:30"
       },
-      "updatedBy": ["Plan 118", "Plan 119"]
+      "updatedBy": ["Plan 118", "Plan 119", "Plan 120"]
     },
     {
       "section": "api-reference overview",
@@ -229,13 +229,13 @@
       "name": "<NodeResizeControl />",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 5,
       "missing": "Public single resize control with position, variant, constraints",
       "effort": "M",
       "theme": "resize",
-      "updatedBy": ["Plan 116", "Plan 115"],
+      "updatedBy": ["Plan 116", "Plan 115", "Plan 120"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit control renders empty div; no custom children/content like React",
@@ -921,13 +921,13 @@
       "name": "AriaLabelConfig",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Global localized aria-label config object for canvas/controls/live region",
       "effort": "M",
       "theme": "a11y",
-      "updatedBy": ["Plan 116", "Plan 115", "Plan 119"],
+      "updatedBy": ["Plan 116", "Plan 115", "Plan 119", "Plan 120"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vue/Foldkit: ariaLiveMessage and keyboardDisabled unused; no node move announcements",
@@ -1132,13 +1132,13 @@
       "name": "Edge",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Add style/className/animated/label styling/marker config fields",
       "effort": "M",
       "theme": "edge-model",
-      "updatedBy": ["Plan 116", "Plan 115"],
+      "updatedBy": ["Plan 116", "Plan 115", "Plan 120"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Foldkit ignores edge.reconnectable; ariaRole unrendered in all hosts",
@@ -1378,13 +1378,13 @@
       "name": "Node",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 3,
       "missing": "Add style/className/source/targetPosition/dragHandle/measured/expandParent",
       "effort": "M",
       "theme": "node-model",
-      "updatedBy": ["Plan 116", "Plan 115", "Plan 119"],
+      "updatedBy": ["Plan 116", "Plan 115", "Plan 119", "Plan 120"],
       "reaudit": {
         "on": "2026-10-14",
         "missing": "Vue/Foldkit do not render node ariaLabel, ariaDescription, ariaRole",
@@ -2355,7 +2355,7 @@
       "name": "Delete Edge on Drop",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": null,
       "missing": "Gallery route only; reconnectEnd outcome exists",
@@ -2366,7 +2366,7 @@
         "missing": "No recipe/test deleting an edge when reconnect drops on pane",
         "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:690"
       },
-      "updatedBy": ["Plan 118", "Plan 119"]
+      "updatedBy": ["Plan 118", "Plan 119", "Plan 120"]
     },
     {
       "section": "examples edges",
@@ -2654,7 +2654,7 @@
       "name": "Drag and Drop",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": null,
       "missing": "Gallery route only; screenToFlow plus edits exist",
@@ -2665,7 +2665,7 @@
         "missing": "Sidebar HTML5 drop-to-create recipe and e2e per host",
         "evidence": "no dataTransfer/drop test in apps/*/e2e"
       },
-      "updatedBy": ["Plan 118", "Plan 119"]
+      "updatedBy": ["Plan 118", "Plan 119", "Plan 120"]
     },
     {
       "section": "examples interaction",
@@ -3076,7 +3076,7 @@
       "name": "Turbo Flow",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": null,
       "missing": "Gallery route only; custom nodes/edges with gradients",
@@ -3087,7 +3087,7 @@
         "missing": "Gradient custom node/edge recipe and test per host",
         "evidence": "no turbo recipe in apps/*/ui-recipes"
       },
-      "updatedBy": ["Plan 118", "Plan 119"]
+      "updatedBy": ["Plan 118", "Plan 119", "Plan 120"]
     },
     {
       "section": "examples whiteboard",
@@ -3166,7 +3166,7 @@
       "name": "Download Image",
       "vanilla": "C",
       "vue": "C",
-      "foldkit": "P",
+      "foldkit": "C",
       "scope": "parity",
       "wave": null,
       "missing": "html-to-image integration; getViewportForBounds exists",
@@ -3177,7 +3177,7 @@
         "missing": "html-to-image export recipe and e2e; only getViewportForBounds exists",
         "evidence": "packages/core/src/public.ts:216"
       },
-      "updatedBy": ["Plan 118", "Plan 119"]
+      "updatedBy": ["Plan 118", "Plan 119", "Plan 120"]
     },
     {
       "section": "examples misc",

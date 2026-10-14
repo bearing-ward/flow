@@ -2,7 +2,7 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project. Long-form plan and review narratives that used to live here are archived verbatim in [docs/archive/PROGRESS-narratives-2026-10-13.md](../docs/archive/PROGRESS-narratives-2026-10-13.md).
 
-### Current status (2026-10-13)
+### Current status (2026-10-14)
 
 - Latest integrated features: `connectionDragThreshold` (Plan 098) and `nodeDragThreshold` (Plan 099) in Vanilla, Vue, and Foldkit.
 - Main was red after Plan 099 because broad tests were deferred. The 2026-10-13 recovery fixed:
@@ -12,14 +12,13 @@ Checked items work in the repository today. Unchecked items are still part of th
 - Open gap: Foldkit rectangle selection and node resize never take pointer capture, so a real capture loss (for example, an interrupted touch) does not cancel them. Vue and xyflow do take capture for these gestures. The former Foldkit capture-loss rows for these gestures only passed against synthetic events and were removed.
 - Delivery loop from 2026-10-13: one plan of a page or less per feature, then implementation, targeted tests plus `bun run verify`, and one review pass before commit. No multi-judge reviews, hash ledgers, or recovery packets.
 - Parity scope (decided 2026-10-13): parity means functional parity. An outcome counts once a developer or end user can achieve it with public Flow APIs in Vanilla, Vue and Foldkit. Stretch goals (Pro outcomes, the Workflow Editor templates and other long-tail entries) and intentional gaps (`useStoreApi()`, `ProOptions`) do not count toward parity.
-- Current gap: the [2026-10-13 parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) puts 185 of 200 catalog entries in scope. 93 of those are close equivalents in all three hosts; per host, Vanilla has 119, Vue 116 and Foldkit 99. The open in-scope entries are grouped into six waves:
-  1. renderer props contract;
-  2. events, changes and connection rules;
-  3. model fields and styling;
-  4. instance and store APIs;
-  5. UI catalog completion;
-  6. example gallery and integrations.
-- Next work: wave 1, the renderer props contract.
+- Functional parity reached (2026-10-14): Plans 105-120 closed all six waves. The [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) now rates all 185 in-scope entries as close equivalents in Vanilla, Vue and Foldkit. Plans 105-117 carry the 2026-10-14 independent re-audit ratings. Plans 118-120 were rated by their implementers and checked by one independent review each. `bun run verify:full` passed on main after the Plan 120 merge:
+  - 2494 unit tests;
+  - Vanilla 628 browser tests passed, with 2 skipped;
+  - Vue 799 browser tests passed;
+  - Foldkit 373 browser tests passed.
+- This is functional parity, not reference conformity: no live React comparison has been run. Each plan's "Conformity and deviations" section lists its intentional differences.
+- Next work: a fresh independent re-audit of the Plan 118-120 entries; then reference evidence (the unchecked item below), or the stretch entries.
 
 ### Definitive project goal
 
@@ -34,7 +33,7 @@ Review upstream additions at milestone boundaries. Detailed mapping should accou
 - [ ] Example coverage: demonstrate every catalog example through supported APIs, including required optional integrations.
 - [ ] UI coverage: provide equivalents for every catalog component and template.
 - [ ] Framework coverage: prove mapped capabilities separately in plain JavaScript, Vue, Foldkit, and future supported adapters.
-- [ ] Functional parity: every in-scope entry in the [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) is achievable in all three hosts. Stretch entries and intentional gaps are excluded.
+- [x] Functional parity: every in-scope entry in the [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) is achievable in all three hosts. Stretch entries and intentional gaps are excluded.
 - [ ] Parity evidence: connect each claim to reference comparisons, runnable examples, and applicable interaction, visual, accessibility, and lifecycle checks.
 - [ ] Upstream review: review catalog changes at milestone boundaries and keep omissions visible in the checklist.
 
