@@ -268,7 +268,7 @@ import type {
 import { createFlowGraphCache } from './flow-graph-cache.ts'
 import { createFlowInstanceApi } from './instance-api.ts'
 import type { FlowInstanceApi } from './instance-api.ts'
-import { observeKeyPress } from './key-press-observer.ts'
+import { isInputDOMNode, observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 import { createMeasuredDimensionsTracker } from './measured-dimensions.ts'
 import { applyFlowStyle, applyNodePresentation } from './presentation.ts'
@@ -11533,6 +11533,31 @@ export const createFlowHost = (
       }
 
       if (canvasKeys.deletePressed(event)) {
+        if (isInputDOMNode(event)) {
+          return
+        }
+
+        if (options.deleteKeyCode === undefined) {
+          const edgeGroup =
+            target instanceof Element
+              ? target.closest<SVGGElement>('.flow-edge-group')
+              : null
+
+          const edge = document.edges.find(
+            (candidate) => candidate.id === edgeGroup?.dataset.edgeId
+          )
+
+          if (edge?.selected === true && edge.deletable !== false) {
+            event.preventDefault()
+
+            if (!event.repeat) {
+              operations.publishChange({ kind: 'edge-remove', edgeId: edge.id })
+            }
+          }
+
+          return
+        }
+
         event.preventDefault()
 
         if (!event.repeat) {
@@ -11695,10 +11720,7 @@ export const createFlowHost = (
             ({ nodeId }) => nodeId === node.id
           )?.position
 
-          if (
-            focusedPosition !== undefined &&
-            options.autoPanOnNodeFocus !== false
-          ) {
+          if (focusedPosition !== undefined) {
             const parentPosition =
               node.parentId === undefined
                 ? { x: 0, y: 0 }
@@ -11714,30 +11736,32 @@ export const createFlowHost = (
 
             a11yDescriptions.announceNodeMove({ key: event.key, ...absolute })
 
-            const screen = flowToScreenPosition(absolute, renderedViewport)
-            const measured = measurements.get(node.id)
-            const width = measured?.width ?? node.size?.width ?? 150
-            const height = measured?.height ?? node.size?.height ?? 44
-            const right = screen.x + width * renderedViewport.zoom
-            const bottom = screen.y + height * renderedViewport.zoom
+            if (options.autoPanOnNodeFocus !== false) {
+              const screen = flowToScreenPosition(absolute, renderedViewport)
+              const measured = measurements.get(node.id)
+              const width = measured?.width ?? node.size?.width ?? 150
+              const height = measured?.height ?? node.size?.height ?? 44
+              const right = screen.x + width * renderedViewport.zoom
+              const bottom = screen.y + height * renderedViewport.zoom
 
-            let dx = 0
-            let dy = 0
+              let dx = 0
+              let dy = 0
 
-            if (screen.x < 0) {
-              dx = -screen.x
-            } else if (right > canvas.clientWidth) {
-              dx = canvas.clientWidth - right
-            }
+              if (screen.x < 0) {
+                dx = -screen.x
+              } else if (right > canvas.clientWidth) {
+                dx = canvas.clientWidth - right
+              }
 
-            if (screen.y < 0) {
-              dy = -screen.y
-            } else if (bottom > canvas.clientHeight) {
-              dy = canvas.clientHeight - bottom
-            }
+              if (screen.y < 0) {
+                dy = -screen.y
+              } else if (bottom > canvas.clientHeight) {
+                dy = canvas.clientHeight - bottom
+              }
 
-            if (dx !== 0 || dy !== 0) {
-              renderViewport(panViewport(renderedViewport, { x: dx, y: dy }))
+              if (dx !== 0 || dy !== 0) {
+                renderViewport(panViewport(renderedViewport, { x: dx, y: dy }))
+              }
             }
           }
 
@@ -11946,7 +11970,10 @@ export const createFlowHost = (
         return
       }
 
-      if (options.onPaneScroll !== undefined) {
+      if (
+        (event.target === canvas || event.target === viewport) &&
+        options.onPaneScroll !== undefined
+      ) {
         reportBoundaryCallback('Pane scroll', 'wheel', options.onPaneScroll, {
           event,
           position: pointerInCanvas(event),
@@ -12220,17 +12247,23 @@ export const createFlowHost = (
           return
         }
 
+        canvas.scrollLeft = 0
+        canvas.scrollTop = 0
+
         const box = node.getBoundingClientRect()
         const pane = canvas.getBoundingClientRect()
         const { x: dx, y: dy } = focusPanDelta(box, pane)
 
         if (dx !== 0 || dy !== 0) {
+          const observation = beginUserViewportObservation()
+
           operations.publishChange({
             kind: 'viewport',
             viewport: constrainViewport(
               panViewport(renderedViewport, { x: dx, y: dy })
             ),
           })
+          endUserViewportObservation(observation)
         }
       }),
       hostBrowserScope

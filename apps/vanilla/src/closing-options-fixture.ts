@@ -1,6 +1,10 @@
 import type { FlowDocumentInput, FlowMountOptionsInput } from './mount-flow.ts'
 import { mountFlow } from './public.ts'
-import type { JavaScriptFlowController, FlowNodeRenderer } from './public.ts'
+import type {
+  JavaScriptFlowController,
+  FlowNodeRenderer,
+  FlowEdgeRenderer,
+} from './public.ts'
 
 import './style.css'
 
@@ -18,6 +22,8 @@ type SerializableOptions = Omit<
 export interface ClosingOptionsInput {
   readonly options?: SerializableOptions
   readonly document?: FlowDocumentInput
+  readonly trackMoves?: boolean
+  readonly editingControls?: boolean
   readonly customContent?: boolean
 }
 
@@ -43,6 +49,32 @@ const contentRenderer: FlowNodeRenderer = (_node, content) => {
   }
 }
 
+const editingEdge: FlowEdgeRenderer = {
+  render: (_edge, context, visual) => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute('d', context.pathData)
+    visual.append(path)
+
+    const label = document.createElement('div')
+    label.style.position = 'absolute'
+    label.style.left = '280px'
+    label.style.top = '250px'
+    label.style.pointerEvents = 'all'
+
+    const input = document.createElement('input')
+    input.dataset.testid = 'edge-label-input'
+    label.append(input)
+    context.edgeLabelRenderer.append(label)
+
+    return {
+      update: (_next, nextContext) => {
+        path.setAttribute('d', nextContext.pathData)
+      },
+      destroy: () => label.remove(),
+    }
+  },
+}
+
 export const mountClosingOptions = (
   root: HTMLElement,
   input: ClosingOptionsInput
@@ -50,6 +82,19 @@ export const mountClosingOptions = (
   root.style.width = '800px'
   root.style.height = '500px'
   const events: string[] = []
+  const panel = document.createElement('div')
+
+  for (const tag of ['input', 'textarea', 'select', 'div']) {
+    const control = document.createElement(tag)
+    control.dataset.testid = `panel-${tag}`
+
+    if (tag === 'div') {
+      control.contentEditable = 'true'
+      control.innerHTML = '<span>Editable text</span>'
+    }
+
+    panel.append(control)
+  }
 
   const controller = mountFlow(
     root,
@@ -72,7 +117,15 @@ export const mountClosingOptions = (
           targetPosition: 'left',
         },
       ],
-      edges: [{ id: 'a-b', source: 'a', target: 'b', selected: true }],
+      edges: [
+        {
+          id: 'a-b',
+          source: 'a',
+          target: 'b',
+          selected: true,
+          type: input.editingControls ? 'editing' : 'default',
+        },
+      ],
     },
     {
       ...input.options,
@@ -83,6 +136,25 @@ export const mountClosingOptions = (
         limits: { minZoom: 0.2, maxZoom: 3 },
       },
       nodeRenderers: { custom: contentRenderer },
+      edgeRenderers: { editing: editingEdge },
+      panels: input.editingControls
+        ? [{ id: 'editing', element: panel, placement: 'bottom-left' }]
+        : [],
+      onMoveStart: () => {
+        if (input.trackMoves) {
+          events.push('move-start')
+        }
+      },
+      onMove: () => {
+        if (input.trackMoves) {
+          events.push('move')
+        }
+      },
+      onMoveEnd: () => {
+        if (input.trackMoves) {
+          events.push('move-end')
+        }
+      },
       onPaneClick: () => {
         events.push('pane-click')
       },

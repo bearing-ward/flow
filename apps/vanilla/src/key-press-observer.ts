@@ -63,7 +63,7 @@ const hasKeyboardEventFields = (event: Event): event is KeyboardEvent =>
   'metaKey' in event &&
   'shiftKey' in event
 
-const isInputDOMNode = (event: KeyboardEvent): boolean => {
+export const isInputDOMNode = (event: KeyboardEvent): boolean => {
   const element = firstEventElement(event)
 
   if (element === null) {
@@ -74,10 +74,18 @@ const isInputDOMNode = (event: KeyboardEvent): boolean => {
     element.nodeName === 'INPUT' ||
     element.nodeName === 'SELECT' ||
     element.nodeName === 'TEXTAREA' ||
-    element.hasAttribute('contenteditable') ||
+    element.closest('[contenteditable]') !== null ||
     element.closest('.nokey') !== null
   )
 }
+
+export const isKeyPressTrigger = (
+  event: KeyboardEvent,
+  keyCode: FlowKeyCode
+): boolean =>
+  parseKeyCode(keyCode).some(
+    (keys) => keys.includes(event.key) || keys.includes(event.code)
+  )
 
 /** Attach one owner-scoped observer for a key or key combination. */
 export const observeKeyPress = (

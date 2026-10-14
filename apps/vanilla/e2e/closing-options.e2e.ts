@@ -103,6 +103,86 @@ const panePoint = async (page: Page, x: number, y: number) => {
   return { x: box.x + x, y: box.y + y }
 }
 
+test('default deletion exempts Panel controls and edge-label HTML and preserves selected nodes', async ({
+  page,
+}) => {
+  await mount(page, { editingControls: true })
+  await node(page, 'a').click()
+  await page.evaluate(async () => {
+    await globalThis.closingOptions?.controller.updateEdge('a-b', {
+      selected: true,
+    })
+  })
+
+  for (const testId of [
+    'panel-input',
+    'panel-textarea',
+    'panel-select',
+    'panel-div',
+    'edge-label-input',
+  ]) {
+    const control = page.getByTestId(testId)
+    await control.focus()
+    await page.keyboard.press('Backspace')
+    await page.keyboard.press('Delete')
+    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(page.locator('.flow-edge-group')).toHaveCount(1)
+  }
+
+  await page.getByTestId('panel-input').fill('typing')
+  await page.keyboard.press('Backspace')
+  await expect(page.getByTestId('panel-input')).toHaveValue('typin')
+  await node(page, 'a').focus()
+  await page.keyboard.press('Backspace')
+  await expect(node(page, 'a')).toBeVisible()
+  await expect(page.locator('.flow-edge-group')).toHaveCount(1)
+})
+
+test('default deletion still removes only the focused selected edge', async ({
+  page,
+}) => {
+  for (const key of ['Backspace', 'Delete']) {
+    await mount(page)
+    await page.evaluate(async () => {
+      await globalThis.closingOptions?.controller.updateNode('a', {
+        selected: true,
+      })
+    })
+    await page.locator('.flow-edge-group').focus()
+    await page.keyboard.press(key)
+    await expect(page.locator('.flow-edge-group')).toHaveCount(0)
+    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(node(page, 'b')).toBeVisible()
+  }
+})
+
+test('explicit deletion exempts editable controls and only fires on a configured key', async ({
+  page,
+}) => {
+  await mount(page, {
+    editingControls: true,
+    options: { deleteKeyCode: 'Delete' },
+  })
+  await node(page, 'a').click()
+  await page.getByTestId('panel-input').fill('text')
+  await page.keyboard.press('Delete')
+  await expect(node(page, 'a')).toBeVisible()
+  await page.getByTestId('edge-label-input').focus()
+  await page.keyboard.press('Delete')
+  await expect(node(page, 'a')).toBeVisible()
+  await page.locator('.flow-canvas').focus()
+  await page.keyboard.down('Delete')
+  await expect(node(page, 'a')).toHaveCount(0)
+  await page.evaluate(async () => {
+    await globalThis.closingOptions?.controller.updateNode('b', {
+      selected: true,
+    })
+  })
+  await page.keyboard.press('q')
+  await expect(node(page, 'b')).toBeVisible()
+  await page.keyboard.up('Delete')
+})
+
 test('deleteKeyCode alternatives and chords delete selected nodes, incident edges and selected edges', async ({
   page,
 }) => {
@@ -273,6 +353,67 @@ test('preventScrolling controls wheel cancellation and onPaneScroll observes whe
     expect(canceled).toBe(preventScrolling)
     expect(await events(page)).toEqual(['scroll'])
     expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
+  }
+})
+
+test('onPaneScroll ignores nodes, nowheel content, controls, Panels and minimap', async ({
+  page,
+}) => {
+  await mount(page, {
+    customContent: true,
+    editingControls: true,
+    options: { ui: { minimap: true }, noWheelClassName: 'stop-wheel' },
+  })
+
+  for (const target of [
+    node(page, 'a'),
+    page.getByTestId('stop-wheel'),
+    page.getByTestId('panel-input'),
+    page.locator('.flow-panel-slot'),
+    page.locator('.flow-minimap'),
+  ]) {
+    await target.evaluate((element) =>
+      element.dispatchEvent(
+        new WheelEvent('wheel', { deltaY: 40, bubbles: true, cancelable: true })
+      )
+    )
+  }
+
+  expect(await events(page)).not.toContain('scroll')
+})
+
+test('preventScrolling false lets native wheel scroll the page when zoomOnScroll is false', async ({
+  page,
+}) => {
+  await mount(page, {
+    options: { preventScrolling: false, zoomOnScroll: false },
+  })
+  await page.evaluate(() => {
+    document.body.style.height = '2000px'
+    document.body.style.overflow = 'auto'
+    document.documentElement.style.overflow = 'auto'
+  })
+  const point = await panePoint(page, 650, 350)
+  await page.mouse.move(point.x, point.y)
+  await page.mouse.wheel(0, 100)
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(0)
+  expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
+  expect(await events(page)).toEqual(['scroll'])
+})
+
+test('default Ctrl and Meta wheel zoom instead of scroll panning', async ({
+  page,
+}) => {
+  for (const modifier of ['Control', 'Meta']) {
+    await mount(page, { options: { panOnScroll: true, zoomOnScroll: false } })
+    const point = await panePoint(page, 650, 350)
+    await page.mouse.move(point.x, point.y)
+    await page.keyboard.down(modifier)
+    await page.mouse.wheel(0, -100)
+    await page.keyboard.up(modifier)
+    await expect.poll(() => viewportZoom(page)).toBeGreaterThan(1)
   }
 })
 
@@ -527,25 +668,62 @@ test('autoPanOnSelection gates rectangle auto-pan with the configured speed', as
   }
 })
 
-test('autoPanOnNodeFocus gates viewport movement when an offscreen node receives focus', async ({
+test('autoPanOnNodeFocus brings keyboard Tab focus inside the viewport and emits move lifecycle by default', async ({
   page,
 }) => {
-  for (const autoPanOnNodeFocus of [false, true]) {
+  for (const autoPanOnNodeFocus of [false, true, undefined]) {
     await mount(page, {
-      options: { autoPanOnNodeFocus },
+      trackMoves: true,
+      options: autoPanOnNodeFocus === undefined ? {} : { autoPanOnNodeFocus },
       document: {
         nodes: [{ id: 'a', label: 'Offscreen', position: { x: 900, y: 100 } }],
         edges: [],
       },
     })
-    await node(page, 'a').evaluate((element) => {
-      if (element instanceof HTMLElement) {
-        element.focus({ preventScroll: true })
-      }
+    await page.evaluate(() => {
+      globalThis.closingOptions?.events.splice(0)
     })
-    const current = await viewport(page)
-    expect(autoPanOnNodeFocus ? (current?.x ?? 0) < 0 : current?.x === 0).toBe(
-      true
-    )
+    await page.locator('.flow-canvas').focus()
+    await page.keyboard.press('Tab')
+    await expect(node(page, 'a')).toBeFocused()
+
+    if (autoPanOnNodeFocus === false) {
+      expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
+      expect(await events(page)).toEqual([])
+    } else {
+      const current = await viewport(page)
+
+      expect(current?.x).toBeLessThan(0)
+      expect(
+        await page
+          .locator('.flow-canvas')
+          .evaluate((canvas) => ({ x: canvas.scrollLeft, y: canvas.scrollTop }))
+      ).toEqual({ x: 0, y: 0 })
+      const box = await node(page, 'a').boundingBox()
+      const pane = await page.locator('.flow-canvas').boundingBox()
+
+      if (box === null || pane === null) {
+        throw new Error('Missing focused node or pane')
+      }
+
+      expect(box.x).toBeGreaterThanOrEqual(pane.x)
+      expect(box.y).toBeGreaterThanOrEqual(pane.y)
+      expect(box.x + box.width).toBeLessThanOrEqual(pane.x + pane.width)
+      expect(box.y + box.height).toBeLessThanOrEqual(pane.y + pane.height)
+      expect(await events(page)).toEqual(['move-start', 'move', 'move-end'])
+    }
   }
+})
+
+test('autoPanOnNodeFocus false preserves keyboard node move announcements', async ({
+  page,
+}) => {
+  await mount(page, { options: { autoPanOnNodeFocus: false } })
+  await node(page, 'a').focus()
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByTestId('flow-aria-live')).toHaveText(
+    'Moved selected node right. New position, x: 85, y: 80'
+  )
+  expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
 })

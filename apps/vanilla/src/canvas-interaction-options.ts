@@ -3,7 +3,7 @@ import type { FlowEdge } from '@flow/core'
 import { Schema as S } from 'effect'
 
 import type { FlowKeyCode } from './key-press-observer.ts'
-import { observeKeyPress } from './key-press-observer.ts'
+import { isKeyPressTrigger, observeKeyPress } from './key-press-observer.ts'
 
 const keyCode = S.Union([S.String, S.Array(S.String), S.Null])
 
@@ -121,7 +121,7 @@ export const bindCanvasKeys = (
     deletePressed: (event: KeyboardEvent): boolean =>
       options.deleteKeyCode === undefined
         ? matchesKeyEvent(event, ['Delete', 'Backspace'])
-        : deleteHeld,
+        : deleteHeld && isKeyPressTrigger(event, options.deleteKeyCode),
     get selectionHeld() {
       return selectionHeld
     },

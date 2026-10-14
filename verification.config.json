@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 118 Vanilla closing gaps, preserving main Plan 111-117 verification scope",
+  "activeWork": "Plan 118 Vanilla review fixes, preserving main Plan 111-117 verification scope",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
   "browserTests": {
     "vanilla": [
