@@ -175,6 +175,38 @@ test('S3 connects field handles, rejects duplicates, and refreshes collapsed anc
         await inspectModel(page, (value) => value.relationships.length)
     )
     .toBe(15)
+  const connectedModel = await model(page)
+  const created = connectedModel.relationships.at(-1)
+  expect(created).toMatchObject({
+    sourceCardinality: 'one',
+    targetCardinality: 'one',
+  })
+  expect(connectedModel.relationships[0]).toMatchObject({
+    sourceCardinality: 'many',
+    targetCardinality: 'one',
+  })
+  expect(connectedModel.relationships.at(13)).toMatchObject({
+    sourceCardinality: 'one',
+    targetCardinality: 'one',
+  })
+  await expect(page.getByTestId(`cardinality-${created?.id}`)).toHaveText(
+    '1 : 1'
+  )
+  await expect(page.getByTestId(`relationship-${created?.id}`)).toHaveAttribute(
+    'marker-start',
+    /-one-(?:left|right)-normal\)/u
+  )
+
+  const oneGlyph = await page
+    .locator('marker[id="studio-relation-0-one-left-normal"] path')
+    .getAttribute('d')
+
+  const manyGlyph = await page
+    .locator('marker[id="studio-relation-0-many-left-normal"] path')
+    .getAttribute('d')
+
+  expect(oneGlyph).toBe('M8 2V14 M13 2V14')
+  expect(manyGlyph).toBe('M1 8L15 2 M1 8H15 M1 8L15 14')
   await expect(page.getByTestId('studio-status')).toContainText(
     '15 relationships'
   )
@@ -200,43 +232,69 @@ test('S3 connects field handles, rejects duplicates, and refreshes collapsed anc
   )
 })
 
-test('S4 flips relationship sides when the target crosses the source', async ({
+test('S4 reproduces the captured books.publisher_id side flip', async ({
   page,
 }) => {
-  const edge = () => page.getByTestId('relationship-relation-0')
-  const before = await edge().getAttribute('d')
+  const edge = page.getByTestId('relationship-relation-0')
+  // S4 starts right -> left. The original seed intentionally has a different layout.
   const { zoom } = await viewport(page)
   await drag(page, heading(page, 'publishers'), 900 * zoom, 0)
-  await expect
-    .poll(async () => {
-      const edges = S.decodeUnknownSync(
-        S.fromJsonString(S.Array(FlowEdgeSchema))
-      )(await status(page).getAttribute('data-edges'))
+  await expect(edge).toHaveAttribute(
+    'marker-start',
+    'url(#studio-relation-0-many-right-normal)'
+  )
+  await expect(edge).toHaveAttribute(
+    'marker-end',
+    'url(#studio-relation-0-one-left-normal)'
+  )
+  const before = await edge.getAttribute('d')
+  await drag(page, heading(page, 'publishers'), -1250 * zoom, 0)
+  await expect(edge).toHaveAttribute(
+    'marker-start',
+    'url(#studio-relation-0-many-left-normal)'
+  )
+  await expect(edge).toHaveAttribute(
+    'marker-end',
+    'url(#studio-relation-0-one-right-normal)'
+  )
 
-      return edges.find((candidate) => candidate.id === 'relation-0')
-        ?.sourceHandle
-    })
-    .toBe('f3-right')
-  await expect(edge()).toHaveAttribute('d', /^M/u)
-  expect(await edge().getAttribute('d')).not.toBe(before)
+  const edges = S.decodeUnknownSync(S.fromJsonString(S.Array(FlowEdgeSchema)))(
+    await status(page).getAttribute('data-edges')
+  )
+
+  expect(
+    edges.find((candidate) => candidate.id === 'relation-0')
+  ).toMatchObject({ sourceHandle: 'f3-left', targetHandle: 'f0-right' })
+  expect(await edge.getAttribute('d')).not.toBe(before)
 })
 
-test('S5 selection highlights relationships, raises their z index and drives the list', async ({
+test('S5 elevates and animates connected edges with normal strokes; only the selected edge uses accent', async ({
   page,
 }) => {
+  const edge = page.getByTestId('relationship-relation-0')
   await select(page, 'books')
-  await expect(page.getByTestId('relationship-relation-0')).toHaveAttribute(
-    'data-highlighted',
-    'true'
-  )
-  await expect(page.getByTestId('relationship-relation-0')).toHaveCSS(
-    'stroke-width',
-    '3px'
-  )
+  await expect(edge).toHaveAttribute('data-highlighted', 'true')
+  await expect(edge).toHaveCSS('stroke', 'rgb(100, 133, 147)')
+  await expect(edge).toHaveCSS('stroke-width', '1.5px')
+  const connected = page.locator('.flow-edge-group[data-edge-id="relation-0"]')
+  await expect(connected).toHaveAttribute('data-z-index', '1')
+  await expect(connected).toHaveClass(/animated/u)
+  await expect(edge).toHaveCSS('animation-name', 'flow-dashdraw')
   await expect(
-    page.locator('.flow-edge-group[data-edge-id="relation-0"]')
-  ).toHaveAttribute('data-z-index', '1021')
+    page.locator('.flow-edge-group[data-edge-id="relation-6"]')
+  ).toHaveAttribute('data-z-index', '0')
+  await expect(node(page, 'books')).toHaveCSS('z-index', '1000')
+  await expect(node(page, 'authors')).toHaveCSS('z-index', '0')
+  await expect(edge).toHaveAttribute('marker-start', /-normal\)/u)
   await expect(page.locator('[data-node-toolbar="books"]')).toBeVisible()
+  await page.getByTestId('cardinality-relation-0').click()
+  await expect(edge).toHaveCSS('stroke', 'rgb(221, 90, 36)')
+  await expect(edge).toHaveAttribute('marker-start', /-selected\)/u)
+  await expect(edge).toHaveAttribute('marker-end', /-selected\)/u)
+  await expect(page.getByTestId('relationship-relation-1')).toHaveCSS(
+    'stroke',
+    'rgb(100, 133, 147)'
+  )
 })
 
 test('S6 protects editable targets including shadow DOM and deletes with both keys', async ({
@@ -297,6 +355,31 @@ test('S6 protects editable targets including shadow DOM and deletes with both ke
   await expect(status(page)).toContainText('10 tables')
 })
 
+test('S6 select and nokey descendants retain both delete keys', async ({
+  page,
+}) => {
+  await select(page, 'authors')
+  await page.evaluate(() => {
+    const dropdown = document.createElement('select')
+    dropdown.dataset.testid = 'select-editor'
+    dropdown.append(new Option('Keep selection', 'keep'))
+    const exempt = document.createElement('div')
+    exempt.className = 'nokey'
+    const child = document.createElement('button')
+    child.dataset.testid = 'nokey-child'
+    child.textContent = 'Keep table'
+    exempt.append(child)
+    document.body.append(dropdown, exempt)
+  })
+  await page.getByTestId('select-editor').press('Delete')
+  await page.getByTestId('select-editor').press('Backspace')
+  await page.getByTestId('nokey-child').press('Delete')
+  await page.getByTestId('nokey-child').press('Backspace')
+  await settle(page)
+  await expect(status(page)).toContainText('12 tables')
+  await expect(node(page, 'authors')).toBeVisible()
+})
+
 test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle', async ({
   page,
 }) => {
@@ -312,17 +395,17 @@ test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle'
         element === document.querySelector('.flow-node[data-node-id="authors"]')
     )
   ).toBe(true)
-  await expect(page.locator('.studio-list [aria-pressed="true"]')).toHaveCount(
-    2
-  )
+  await expect(
+    page.locator('.studio-list [data-table][aria-pressed="true"]')
+  ).toHaveCount(2)
   await heading(page, 'genres').click({ modifiers: ['Meta'] })
-  await expect(page.locator('.studio-list [aria-pressed="true"]')).toHaveCount(
-    3
-  )
+  await expect(
+    page.locator('.studio-list [data-table][aria-pressed="true"]')
+  ).toHaveCount(3)
   await heading(page, 'publishers').click({ modifiers: ['Control'] })
-  await expect(page.locator('.studio-list [aria-pressed="true"]')).toHaveCount(
-    4
-  )
+  await expect(
+    page.locator('.studio-list [data-table][aria-pressed="true"]')
+  ).toHaveCount(4)
   const a = await bounds(node(page, 'authors'))
   const b = await bounds(node(page, 'books'))
   const zoom = await inspectViewport(page, (value) => value.zoom)
@@ -336,9 +419,9 @@ test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle'
   await expect(page.getByTestId('flow-selection-rect')).toBeVisible()
   await page.mouse.up()
   await settle(page)
-  await expect(page.locator('.studio-list [aria-pressed="true"]')).toHaveCount(
-    2
-  )
+  await expect(
+    page.locator('.studio-list [data-table][aria-pressed="true"]')
+  ).toHaveCount(2)
   await expect(
     page.locator('.studio-list [data-table="authors"]')
   ).toHaveAttribute('aria-pressed', 'true')
@@ -367,83 +450,93 @@ test('S8 area dragging carries fully contained tables', async ({ page }) => {
     .toEqual({ x: 1120, y: 120 })
 })
 
-test('S9 resizes tables horizontally, notes and areas', async ({ page }) => {
+test('S9 enforces captured resize constraints with no note or area upper limits', async ({
+  page,
+}) => {
+  const size = (id: string) =>
+    inspectModel(page, (value) => {
+      const item = value.items.find((candidate) => candidate.id === id)
+
+      return { width: item?.width, height: item?.height }
+    })
+
   await focus(page, 'authors')
-  await select(page, 'authors')
+  const original = await size('authors')
+  await expect(
+    node(page, 'authors').locator('[data-direction="bottom-right"]')
+  ).toBeHidden()
+  await expect(
+    node(page, 'authors').locator('[data-direction="top"]')
+  ).toBeHidden()
   await drag(
     page,
     node(page, 'authors').locator('[data-direction="right"]'),
-    70,
-    0
+    -100,
+    80
   )
   await expect
-    .poll(
-      async () =>
-        (await inspectModel(
-          page,
-          (value) => value.items.find((item) => item.id === 'authors')?.width
-        )) ?? 0
-    )
-    .toBeGreaterThan(290)
-
-  const resizedWidth = await inspectModel(
+    .poll(() => size('authors'))
+    .toEqual({ width: 224, height: original.height })
+  await drag(
     page,
-    (value) => value.items.find((item) => item.id === 'authors')?.width
+    node(page, 'authors').locator('[data-direction="right"]'),
+    500,
+    100
   )
-
+  await expect
+    .poll(() => size('authors'))
+    .toEqual({ width: 450, height: original.height })
   await page.getByRole('button', { name: 'Undo', exact: true }).click()
   await expect
-    .poll(() =>
-      inspectModel(
-        page,
-        (value) => value.items.find((item) => item.id === 'authors')?.width
-      )
-    )
-    .toBe(250)
+    .poll(() => size('authors'))
+    .toEqual({ width: 224, height: original.height })
   await page.getByRole('button', { name: 'Redo', exact: true }).click()
   await expect
-    .poll(() =>
-      inspectModel(
-        page,
-        (value) => value.items.find((item) => item.id === 'authors')?.width
-      )
-    )
-    .toBe(resizedWidth)
+    .poll(() => size('authors'))
+    .toEqual({ width: 450, height: original.height })
   await page.getByRole('button', { name: 'Show all', exact: true }).click()
   await settle(page)
   await heading(page, 'prices-note').click()
   await drag(
     page,
     node(page, 'prices-note').locator('[data-direction="bottom-right"]'),
-    30,
-    25
+    -300,
+    -300
   )
   await expect
-    .poll(
-      async () =>
-        (await inspectModel(
-          page,
-          (value) =>
-            value.items.find((item) => item.id === 'prices-note')?.height
-        )) ?? 0
-    )
-    .toBeGreaterThan(165)
+    .poll(() => size('prices-note'))
+    .toEqual({ width: 200, height: 150 })
+  await drag(
+    page,
+    node(page, 'prices-note').locator('[data-direction="bottom-right"]'),
+    7000,
+    7000
+  )
+  const note = await size('prices-note')
+  expect(note.width).toBeGreaterThan(10_000)
+  expect(note.height).toBeGreaterThan(10_000)
+  await page.getByRole('button', { name: 'Undo', exact: true }).click()
+  await page.getByRole('button', { name: 'Show all', exact: true }).click()
+  await settle(page)
   await heading(page, 'sales-area').click()
   await drag(
     page,
     node(page, 'sales-area').locator('[data-direction="bottom-right"]'),
-    30,
-    25
+    -600,
+    -600
   )
   await expect
-    .poll(
-      async () =>
-        (await inspectModel(
-          page,
-          (value) => value.items.find((item) => item.id === 'sales-area')?.width
-        )) ?? 0
-    )
-    .toBeGreaterThan(1000)
+    .poll(() => size('sales-area'))
+    .toEqual({ width: 100, height: 100 })
+  await drag(
+    page,
+    node(page, 'sales-area').locator('[data-direction="bottom-right"]'),
+    7000,
+    7000
+  )
+  const area = await size('sales-area')
+  expect(area.width).toBeGreaterThan(10_000)
+  expect(area.height).toBeGreaterThan(10_000)
 })
 
 test('S10 zoom controls clamp at 0.1 and 5', async ({ page }) => {
@@ -466,43 +559,72 @@ test('S10 zoom controls clamp at 0.1 and 5', async ({ page }) => {
     .toBe(5)
 })
 
-test('S11 toggles pan-on-scroll without changing zoom', async ({ page }) => {
-  await page
-    .getByRole('checkbox', { name: 'Pan on scroll', exact: true })
-    .check()
-  const before = await viewport(page)
-  await page.mouse.move(1300, 800)
-  await page.mouse.wheel(120, 180)
-  await settle(page)
-  await expect
-    .poll(async () => await inspectViewport(page, (value) => value.y))
-    .toBeLessThan(before.y)
-  expect(await inspectViewport(page, (value) => value.zoom)).toBe(before.zoom)
-  await page
-    .getByRole('checkbox', { name: 'Pan on scroll', exact: true })
-    .uncheck()
-  await page.mouse.move(1300, 800)
-  await page.mouse.wheel(0, -120)
-  await settle(page)
-  await expect
-    .poll(async () => await inspectViewport(page, (value) => value.zoom))
-    .toBeGreaterThan(before.zoom)
-})
-
-test('S12 filters by schema, fits, and recovers from a lost viewport', async ({
+test('S11 defaults to free pan at speed 0.5 and switches to wheel zoom without remounting', async ({
   page,
 }) => {
-  await page.getByRole('searchbox').fill('public')
-  await settle(page)
-  await expect(page.locator('.studio-table:visible')).toHaveCount(12)
-  await expect(heading(page, 'authors')).toBeInViewport()
+  const setting = page.getByRole('checkbox', {
+    name: 'Zoom on scroll',
+    exact: true,
+  })
+
+  await expect(setting).not.toBeChecked()
+  const retained = await node(page, 'books').elementHandle()
+  const before = await viewport(page)
+  await page.mouse.move(1300, 800)
+  await page.mouse.wheel(80, 120)
+  await expect
+    .poll(() => viewport(page))
+    .toEqual({ x: before.x - 40, y: before.y - 60, zoom: before.zoom })
+  expect(await page.evaluate(() => ({ x: scrollX, y: scrollY }))).toEqual({
+    x: 0,
+    y: 0,
+  })
+  await setting.check()
+  await page.mouse.move(1300, 800)
+  await page.mouse.wheel(80, 120)
+  await expect
+    .poll(() => inspectViewport(page, (value) => value.zoom))
+    .toBeLessThan(before.zoom)
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element === document.querySelector('.flow-node[data-node-id="books"]')
+    )
+  ).toBe(true)
+  await setting.uncheck()
+  const pan = await viewport(page)
+  await page.mouse.move(1300, 800)
+  await page.mouse.wheel(-80, -120)
+  await expect
+    .poll(() => viewport(page))
+    .toEqual({ x: pan.x + 40, y: pan.y + 60, zoom: pan.zoom })
+})
+
+test('S12 searches only the list, toggles canvas visibility and recovers only when all nodes leave the viewport', async ({
+  page,
+}) => {
+  const before = await viewport(page)
   await page.getByRole('searchbox').fill('books')
+  await expect(page.locator('.studio-list [data-table]')).toHaveCount(1)
+  await expect(page.locator('.studio-table:visible')).toHaveCount(12)
+  expect(await viewport(page)).toEqual(before)
+  await page
+    .getByRole('button', { name: 'Canvas visibility for books' })
+    .click()
   await settle(page)
-  await expect(page.locator('.studio-table:visible')).toHaveCount(1)
-  await expect(heading(page, 'books')).toBeInViewport()
-  await page.getByRole('checkbox', { name: 'Pan on scroll' }).check()
+  await expect(node(page, 'books')).toBeHidden()
+  await expect(
+    page.getByRole('button', { name: 'Canvas visibility for books' })
+  ).toHaveAttribute('aria-pressed', 'false')
+  await page
+    .getByRole('button', { name: 'Canvas visibility for books' })
+    .click()
+  await settle(page)
+  await expect(node(page, 'books')).toBeVisible()
+
   await page.mouse.move(1300, 800)
   await page.mouse.wheel(20_000, 20_000)
+  await expect(page.locator('.studio-node')).toHaveCount(0)
   await expect(
     page.getByRole('button', { name: 'Lost in canvas · Show all' })
   ).toBeVisible()
@@ -512,6 +634,9 @@ test('S12 filters by schema, fits, and recovers from a lost viewport', async ({
   await expect(
     page.getByRole('button', { name: 'Lost in canvas · Show all' })
   ).toBeHidden()
+  expect(
+    await inspectViewport(page, (value) => value.zoom)
+  ).toBeLessThanOrEqual(0.8)
 })
 
 test('S13 focuses and selects a table from the list with an animated fit', async ({
@@ -520,12 +645,86 @@ test('S13 focuses and selects a table from the list with an animated fit', async
   const before = await viewport(page)
   await focus(page, 'reviews')
   await expect(heading(page, 'reviews')).toBeInViewport()
-  expect(await inspectViewport(page, (value) => value.zoom)).toBeGreaterThan(
-    before.zoom
-  )
+  expect(await inspectViewport(page, (value) => value.zoom)).toBe(1)
+  expect(before.zoom).toBeLessThan(1)
   await expect(
     page.locator('.studio-list [data-table="reviews"]')
   ).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('S1/S13 fits use captured 0.1 padding, 0.8 cap, zoom-one focus and 500ms animations', async ({
+  page,
+}) => {
+  const canvas = await bounds(page.locator('.studio-canvas'))
+  const started = await page.evaluate(() => performance.now())
+  await page.locator('.studio-list [data-table="books"]').click()
+  await expect(status(page)).toHaveAttribute('data-busy', 'true')
+  await settle(page)
+  expect(
+    (await page.evaluate(() => performance.now())) - started
+  ).toBeGreaterThanOrEqual(500)
+  expect(await inspectViewport(page, (value) => value.zoom)).toBe(1)
+  const focusBox = await bounds(node(page, 'books'))
+  expect(focusBox.x + focusBox.width / 2).toBeCloseTo(
+    canvas.x + canvas.width / 2,
+    0
+  )
+  expect(focusBox.y + focusBox.height / 2).toBeCloseTo(
+    canvas.y + canvas.height / 2,
+    0
+  )
+  const fitStarted = await page.evaluate(() => performance.now())
+  await page.getByRole('button', { name: 'Show all', exact: true }).click()
+  await expect(status(page)).toHaveAttribute('data-busy', 'true')
+  await settle(page)
+  expect(
+    (await page.evaluate(() => performance.now())) - fitStarted
+  ).toBeGreaterThanOrEqual(500)
+  // Fixed original fixture bounds: (40,40)-(2060,1310). Padding is 10% of each canvas dimension.
+  const fit = await viewport(page)
+
+  const zoom = Math.min(
+    0.8,
+    (canvas.width * 0.8) / 2020,
+    (canvas.height * 0.8) / 1270
+  )
+
+  expect(fit.zoom).toBeCloseTo(zoom, 6)
+  expect(fit.x).toBeCloseTo(canvas.width / 2 - 1050 * zoom, 6)
+  expect(fit.y).toBeCloseTo(canvas.height / 2 - 675 * zoom, 6)
+})
+
+test('S1/S12 keeps a note-only viewport found and caps Show all at 0.8', async ({
+  page,
+}) => {
+  const saved = await model(page)
+
+  const noteOnly = {
+    ...saved,
+    items: saved.items.filter((item) => item.id === 'prices-note'),
+    relationships: [],
+  }
+
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Import JSON', exact: true }).click()
+  const picker = await chooser
+  await picker.setFiles({
+    name: 'note-only.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(noteOnly)),
+  })
+  await settle(page)
+  await expect(page.locator('.studio-table')).toHaveCount(0)
+  await expect(heading(page, 'prices-note')).toBeInViewport()
+  await expect(
+    page.getByRole('button', { name: 'Lost in canvas · Show all' })
+  ).toBeHidden()
+  await page.getByRole('button', { name: 'Show all', exact: true }).click()
+  await settle(page)
+  expect(await inspectViewport(page, (value) => value.zoom)).toBeCloseTo(
+    0.8,
+    12
+  )
 })
 
 test('S14 context menus add at the pointer and duplicate or edit nodes', async ({
@@ -602,7 +801,38 @@ test('S16 undo/redo, persistence and a valid PNG export', async ({ page }) => {
 
   const bytes = Buffer.concat(chunks)
   expect(bytes.length).toBeGreaterThan(10_000)
-  expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([1235, 904])
+  expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([4940, 3616])
+
+  const pixels = await page.evaluate(async (base64) => {
+    const response = await fetch(`data:image/png;base64,${base64}`)
+    const image = await createImageBitmap(await response.blob())
+    const surface = document.createElement('canvas')
+    surface.width = image.width
+    surface.height = image.height
+    const context = surface.getContext('2d')
+
+    if (context === null) {
+      throw new Error('2D context unavailable')
+    }
+
+    context.drawImage(image, 0, 0)
+    const sample = context.getImageData(image.width - 400, 40, 300, 100).data
+    const colors = new Set<string>()
+    let opaque = true
+
+    for (let index = 0; index < sample.length; index += 4) {
+      opaque &&= sample[index + 3] === 255
+      colors.add(`${sample[index]},${sample[index + 1]},${sample[index + 2]}`)
+    }
+
+    image.close()
+
+    return { opaque, colors: [...colors] }
+  }, bytes.toString('base64'))
+
+  expect(pixels.opaque).toBe(true)
+  expect(pixels.colors).toContain('245,247,245')
+  expect(pixels.colors.length).toBeGreaterThan(1)
   expect(bytes.subarray(0, 8)).toEqual(
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
   )
@@ -656,7 +886,7 @@ test('Beyond: HTML cardinality popover changes markers and is undoable', async (
   await expect(page.getByTestId('cardinality-relation-0')).toHaveText('1 : N')
   await expect(page.getByTestId('relationship-relation-0')).toHaveAttribute(
     'marker-end',
-    'url(#studio-relation-0-many)'
+    'url(#studio-relation-0-many-right-selected)'
   )
   await page.getByRole('button', { name: 'Undo', exact: true }).click()
   await expect(page.getByTestId('cardinality-relation-0')).toHaveText('N : 1')

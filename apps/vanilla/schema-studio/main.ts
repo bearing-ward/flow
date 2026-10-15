@@ -142,9 +142,11 @@ let snap = false
 
 let shift = false
 
-let panScroll = false
+let panScroll = true
 
-let visibleOnly = false
+let visibleOnly = true
+
+const hiddenTables = new Set<string>()
 
 let dependencies = true
 
@@ -184,7 +186,7 @@ const graph = () => {
   const base = projectGraph(state.present, {
     selected,
     selectedEdges,
-    filter: filterInput.value,
+    hiddenTables,
     dependencies,
     highlightOverlaps: overlapHighlight,
   })
@@ -261,7 +263,9 @@ const updateStatus = (): void => {
   status.dataset.redo = String(state.future.length)
   status.value = `${state.present.items.filter((item) => item.kind === 'table').length} tables · ${state.present.relationships.length} relationships · ${Math.round((view?.zoom ?? 1) * 100)}%`
 
-  for (const element of list.querySelectorAll<HTMLButtonElement>('button')) {
+  for (const element of list.querySelectorAll<HTMLButtonElement>(
+    '[data-table]'
+  )) {
     element.setAttribute(
       'aria-pressed',
       String(selected.has(element.dataset.table ?? ''))
@@ -278,12 +282,7 @@ const updateStatus = (): void => {
         { x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y },
         true
       )
-      .filter(
-        (node) =>
-          node.type === 'studio' &&
-          node.className?.includes('studio-table') &&
-          !node.hidden
-      )
+      .filter((node) => node.type === 'studio' && !node.hidden)
 
     lost.hidden = inView.length > 0
   }
@@ -300,7 +299,13 @@ const persist = (): void => {
 const renderList = (): void => {
   list.replaceChildren(
     ...state.present.items
-      .filter((item) => item.kind === 'table')
+      .filter(
+        (item) =>
+          item.kind === 'table' &&
+          `${item.schema}.${item.name}`
+            .toLowerCase()
+            .includes(filterInput.value.toLowerCase())
+      )
       .map((item) => {
         const entry = button(item.name, () => {
           selected = new Set([item.id])
@@ -309,15 +314,42 @@ const renderList = (): void => {
           void settle(
             controller().fitView({
               nodes: [{ id: item.id }],
-              duration: 220,
-              maxZoom: 1.2,
+              duration: 500,
+              minZoom: 1,
+              maxZoom: 1,
             })
           )
         })
 
         entry.dataset.table = item.id
 
-        return entry
+        const row = document.createElement('div')
+        row.className = 'studio-list-row'
+
+        const visibility = button('', () => {
+          if (hiddenTables.has(item.id)) {
+            hiddenTables.delete(item.id)
+          } else {
+            hiddenTables.add(item.id)
+          }
+
+          syncGraph()
+          showAll()
+        })
+
+        visibility.setAttribute(
+          'aria-label',
+          `Canvas visibility for ${item.name}`
+        )
+        visibility.setAttribute(
+          'aria-pressed',
+          String(!hiddenTables.has(item.id))
+        )
+        visibility.innerHTML =
+          '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M2 12Q12 0 22 12Q12 24 2 12Z" fill="none" stroke="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>'
+        row.append(entry, visibility)
+
+        return row
       })
   )
 }
@@ -732,7 +764,7 @@ const addRelationship = (
           id: crypto.randomUUID(),
           source,
           target,
-          sourceCardinality: 'many',
+          sourceCardinality: 'one',
           targetCardinality: 'one',
         },
       ],
@@ -819,6 +851,8 @@ const updateCanvasOptions = (): void => {
     snapToGrid: snap || shift,
     snapGrid: { x: 20, y: 20 },
     panOnScroll: panScroll,
+    panOnScrollSpeed: 0.5,
+    panOnScrollMode: 'free',
     zoomOnScroll: !panScroll,
     renderOnlyVisible: visibleOnly,
   })
@@ -860,9 +894,12 @@ const mountCanvas = (): void => {
     selectionMode: 'full',
     multiSelectionKeyCode: ['Shift', 'Meta', 'Control'],
     deleteKeyCode: null,
+    zIndexMode: 'manual',
     snapToGrid: snap || shift,
     snapGrid: { x: 20, y: 20 },
     panOnScroll: panScroll,
+    panOnScrollSpeed: 0.5,
+    panOnScrollMode: 'free',
     zoomOnScroll: !panScroll,
     renderOnlyVisible: visibleOnly,
     autoPanOnConnect: false,
@@ -1064,6 +1101,24 @@ const mountCanvas = (): void => {
   updateStatus()
 }
 
+const resizeOptions = (item: Item) => {
+  if (item.kind === 'table') {
+    return {
+      minWidth: 224,
+      maxWidth: 450,
+      minHeight: tableHeight(item),
+      maxHeight: tableHeight(item),
+      handleStyle: { display: 'none' },
+      lineClassName: 'studio-table-resize',
+    }
+  }
+
+  return {
+    minWidth: item.kind === 'note' ? 200 : 100,
+    minHeight: item.kind === 'note' ? 150 : 100,
+  }
+}
+
 const attachTools = (mounted: JavaScriptFlowController, item: Item): void => {
   toolIds.add(item.id)
 
@@ -1087,9 +1142,7 @@ const attachTools = (mounted: JavaScriptFlowController, item: Item): void => {
 
   const resize = createFlowNodeResizer(mounted, item.id, {
     ...callbacks,
-    minWidth: 190,
-    minHeight: item.kind === 'table' ? tableHeight(item) : 80,
-    maxHeight: item.kind === 'table' ? tableHeight(item) : 10_000,
+    ...resizeOptions(item),
     isVisible: selected.has(item.id),
   })
 
@@ -1100,9 +1153,7 @@ const attachTools = (mounted: JavaScriptFlowController, item: Item): void => {
     resize.update({
       ...callbacks,
       isVisible: selected.has(item.id),
-      minWidth: 190,
-      minHeight: latest.kind === 'table' ? tableHeight(latest) : 80,
-      maxHeight: latest.kind === 'table' ? tableHeight(latest) : 10_000,
+      ...resizeOptions(latest),
     })
   }
 
@@ -1146,9 +1197,13 @@ const attachTools = (mounted: JavaScriptFlowController, item: Item): void => {
   }
 }
 
-lost.addEventListener('click', () => {
-  void settle(controller().fitView({ duration: 200 }))
-})
+const showAll = (): void => {
+  void settle(
+    controller().fitView({ padding: 0.1, maxZoom: 0.8, duration: 500 })
+  )
+}
+
+lost.addEventListener('click', showAll)
 
 lost.className = 'studio-lost'
 
@@ -1166,9 +1221,7 @@ snapButton.setAttribute('aria-pressed', 'false')
 
 controls.append(
   button('Show all', () => {
-    filterInput.value = ''
-    paint()
-    void settle(controller().fitView({ duration: 200 }))
+    showAll()
   }),
   button('Zoom in', () => {
     void settle(controller().zoomIn())
@@ -1254,8 +1307,8 @@ setting('Minimap', minimap, (value) => {
   }
 })
 
-setting('Pan on scroll', panScroll, (value) => {
-  panScroll = value
+setting('Zoom on scroll', !panScroll, (value) => {
+  panScroll = !value
   updateCanvasOptions()
 })
 
@@ -1302,19 +1355,7 @@ settings.append(
   })
 )
 
-filterInput.addEventListener('input', () => {
-  paint()
-  void settle(
-    controller().fitView({
-      nodes: controller()
-        .getNodes()
-        .filter(
-          (node) => node.className?.includes('studio-table') && !node.hidden
-        ),
-      duration: 200,
-    })
-  )
-})
+filterInput.addEventListener('input', renderList)
 
 const download = (name: string, href: string): void => {
   const link = document.createElement('a')
@@ -1328,7 +1369,8 @@ const exportImage = async (): Promise<void> => {
     await document.fonts.ready
 
     const url = await toPng(canvas, {
-      pixelRatio: 1,
+      pixelRatio: 4,
+      skipAutoScale: true,
       backgroundColor: dark ? '#18242e' : '#f5f7f5',
       filter: (node) =>
         !(node instanceof Element) ||
@@ -1395,7 +1437,7 @@ const editableTarget = (event: KeyboardEvent): boolean => {
   return (
     target instanceof Element &&
     (target.closest(
-      'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+      'input, textarea, select, .nokey, [contenteditable]:not([contenteditable="false"])'
     ) !== null ||
       (target instanceof HTMLElement && target.isContentEditable))
   )
@@ -1518,4 +1560,4 @@ mountCanvas()
 
 renderList()
 
-void settle(controller().fitView({ padding: 0.12 }))
+showAll()

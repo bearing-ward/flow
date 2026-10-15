@@ -137,18 +137,39 @@ describe('Schema Studio domain', () => {
     ).toBeUndefined()
   })
 
-  it('chooses sides from centres including unequal widths and equality', () => {
-    const a = { position: { x: 100, y: 0 }, width: 100, height: 20 }
+  it('chooses the nearest endpoint pair including overlap and unequal widths', () => {
+    const source = { position: { x: 100, y: 0 }, width: 100, height: 20 }
     expect(
-      relationshipSides(a, { ...a, position: { x: 0, y: 0 } })
+      relationshipSides(source, { ...source, position: { x: 0, y: 0 } })
     ).toStrictEqual({ source: 'left', target: 'right' })
     expect(
-      relationshipSides(a, { ...a, width: 500, position: { x: 0, y: 0 } })
+      relationshipSides(source, { ...source, position: { x: 300, y: 0 } })
     ).toStrictEqual({ source: 'right', target: 'left' })
-    expect(relationshipSides(a, a)).toStrictEqual({
-      source: 'right',
+    expect(
+      relationshipSides(source, {
+        ...source,
+        width: 500,
+        position: { x: 0, y: 0 },
+      })
+    ).toStrictEqual({ source: 'left', target: 'left' })
+    expect(
+      relationshipSides(source, { ...source, position: { x: 150, y: 80 } })
+    ).toStrictEqual({ source: 'left', target: 'left' })
+  })
+
+  it('breaks ties deterministically and supports same-side right endpoints', () => {
+    const source = { position: { x: 100, y: 0 }, width: 100, height: 20 }
+    expect(relationshipSides(source, source)).toStrictEqual({
+      source: 'left',
       target: 'left',
     })
+    expect(
+      relationshipSides(source, {
+        ...source,
+        width: 50,
+        position: { x: 160, y: 0 },
+      })
+    ).toStrictEqual({ source: 'right', target: 'right' })
   })
 
   it('validates both endpoints and rejects reverse duplicates and self fields', () => {

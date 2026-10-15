@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 121 review-fix round 2 runtime canvas options and native keyboard movement; preserving Plans 111-120 host scope",
+  "activeWork": "Plan 121 round 3 captured ChartDB behaviour alignment; preserving Plans 111-120 host scope",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples", "build"],
   "browserTests": {
     "vanilla": [
