@@ -782,7 +782,17 @@ test.describe('Vanilla MiniMap component', () => {
     await page.mouse.move(start.x + 3, start.y + 3)
     await page.mouse.move(start.x + 150, start.y, { steps: 6 })
     await expect(rect).not.toHaveAttribute('x', before ?? '')
-    expect(await positionOf(page, 'a')).toStrictEqual({ x: 0, y: 0 })
+    // Instance reads are live like React's nodeLookup (Plan 122); the
+    // accepted document still waits for the drop.
+    expect(
+      await page.evaluate(
+        () =>
+          globalThis.wiringFixture?.controller
+            .toObject()
+            .nodes.find((candidate) => candidate.id === 'a')?.position
+      )
+    ).toStrictEqual({ x: 0, y: 0 })
+    expect(await xOf(page, 'a')).toBeGreaterThan(0)
     await page.mouse.up()
 
     // React XYMinimap: zoom * 2 ** (-deltaY * 0.002 * zoomStep).
