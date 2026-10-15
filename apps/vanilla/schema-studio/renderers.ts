@@ -202,27 +202,31 @@ export const relationshipRenderer = (
       const prefix = `studio-${edge.id}`
 
       for (const cardinality of ['one', 'many']) {
-        const marker = document.createElementNS(namespace, 'marker')
-        marker.id = `${prefix}-${cardinality}`
-        marker.setAttribute('viewBox', '0 0 16 16')
-        marker.setAttribute('refX', '15')
-        marker.setAttribute('refY', '8')
-        marker.setAttribute('markerWidth', '16')
-        marker.setAttribute('markerHeight', '16')
-        marker.setAttribute('orient', 'auto-start-reverse')
-        marker.setAttribute('markerUnits', 'userSpaceOnUse')
-        const path = document.createElementNS(namespace, 'path')
-        path.setAttribute(
-          'd',
-          cardinality === 'one'
-            ? 'M8 2V14 M13 2V14'
-            : 'M1 8L15 2 M1 8H15 M1 8L15 14'
-        )
-        path.setAttribute('fill', 'none')
-        path.setAttribute('stroke', 'context-stroke')
-        path.setAttribute('stroke-width', '1.5')
-        marker.append(path)
-        definitions.append(marker)
+        for (const side of ['left', 'right']) {
+          for (const selected of [false, true]) {
+            const marker = document.createElementNS(namespace, 'marker')
+            marker.id = `${prefix}-${cardinality}-${side}-${selected ? 'selected' : 'normal'}`
+            marker.setAttribute('viewBox', '0 0 16 16')
+            marker.setAttribute('refX', '15')
+            marker.setAttribute('refY', '8')
+            marker.setAttribute('markerWidth', '16')
+            marker.setAttribute('markerHeight', '16')
+            marker.setAttribute('orient', 'auto-start-reverse')
+            marker.setAttribute('markerUnits', 'userSpaceOnUse')
+            const path = document.createElementNS(namespace, 'path')
+            path.setAttribute(
+              'd',
+              cardinality === 'one'
+                ? 'M8 2V14 M13 2V14'
+                : 'M1 8L15 2 M1 8H15 M1 8L15 14'
+            )
+            path.setAttribute('fill', 'none')
+            path.setAttribute('stroke', selected ? '#dd5a24' : '#648593')
+            path.setAttribute('stroke-width', '1.5')
+            marker.append(path)
+            definitions.append(marker)
+          }
+        }
       }
 
       let currentPath = context.pathData
@@ -247,13 +251,38 @@ export const relationshipRenderer = (
         )
 
         const highlighted = next.data?.highlighted === true
+        const source = controller()?.getInternalNode(next.source)
+        const target = controller()?.getInternalNode(next.target)
+
+        const sides =
+          source !== undefined && target !== undefined
+            ? relationshipSides(
+                {
+                  position: source.absolutePosition,
+                  width: source.width,
+                  height: source.height,
+                },
+                {
+                  position: target.absolutePosition,
+                  width: target.width,
+                  height: target.height,
+                }
+              )
+            : {
+                source: next.sourceHandle?.endsWith('-left') ? 'left' : 'right',
+                target: next.targetHandle?.endsWith('-right')
+                  ? 'right'
+                  : 'left',
+              }
+
+        const variant = next.selected ? 'selected' : 'normal'
         base.update({
           path: nextContext.pathData,
-          markerStart: `url(#${prefix}-${relation.sourceCardinality})`,
-          markerEnd: `url(#${prefix}-${relation.targetCardinality})`,
+          markerStart: `url(#${prefix}-${relation.sourceCardinality}-${sides.source}-${variant})`,
+          markerEnd: `url(#${prefix}-${relation.targetCardinality}-${sides.target}-${variant})`,
           style: {
-            stroke: highlighted ? '#dd5a24' : '#648593',
-            strokeWidth: highlighted ? '3' : '1.5',
+            stroke: next.selected ? '#dd5a24' : '#648593',
+            strokeWidth: '1.5',
           },
           attributes: {
             'data-testid': `relationship-${edge.id}`,

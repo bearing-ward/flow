@@ -61,7 +61,7 @@ const handlesFor = (item: Item) => {
 export interface GraphSettings {
   readonly selected: ReadonlySet<string>
   readonly selectedEdges: ReadonlySet<string>
-  readonly filter: string
+  readonly hiddenTables: ReadonlySet<string>
   readonly dependencies: boolean
   readonly highlightOverlaps: boolean
 }
@@ -71,10 +71,7 @@ export const projectGraph = (
   settings: GraphSettings
 ): FlowDocument => {
   const hidden = (item: Item): boolean =>
-    item.kind === 'table' &&
-    !`${item.schema}.${item.name}`
-      .toLowerCase()
-      .includes(settings.filter.toLowerCase())
+    item.kind === 'table' && settings.hiddenTables.has(item.id)
 
   const nodes = studio.items.map((item) => {
     const parent = areaFor(item, studio.items)
@@ -107,7 +104,10 @@ export const projectGraph = (
       selected: settings.selected.has(item.id),
       hidden: hidden(item),
       handles,
-      zIndex: item.kind === 'area' ? -10 : 1,
+      zIndex:
+        { area: -10, note: 50, table: 0, view: 0 }[item.kind] +
+        (settings.selected.has(item.id) ? 1000 : 0) -
+        1,
       className: `studio-node studio-${item.kind}${overlap ? ' studio-overlap' : ''}`,
       dragHandle: '.studio-drag',
       data: {
@@ -148,7 +148,8 @@ export const projectGraph = (
         path: 'smoothstep',
         selected: settings.selectedEdges.has(relation.id),
         hidden: hidden(source) || hidden(target),
-        zIndex: highlighted ? 20 : 0,
+        zIndex: highlighted || settings.selectedEdges.has(relation.id) ? 1 : 0,
+        animated: highlighted,
         reconnectable: true,
         data: { relation, highlighted },
       },

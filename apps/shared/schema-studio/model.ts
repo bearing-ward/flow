@@ -112,10 +112,43 @@ export const relationshipSides = (
 ): {
   readonly source: 'left' | 'right'
   readonly target: 'left' | 'right'
-} =>
-  source.position.x + source.width / 2 <= target.position.x + target.width / 2
-    ? { source: 'right', target: 'left' }
-    : { source: 'left', target: 'right' }
+} => {
+  const pairs = [
+    { source: 'left', target: 'left' },
+    { source: 'left', target: 'right' },
+    { source: 'right', target: 'left' },
+    { source: 'right', target: 'right' },
+  ] satisfies ReturnType<typeof relationshipSides>[]
+
+  const distance = (pair: ReturnType<typeof relationshipSides>): number => {
+    const x =
+      source.position.x +
+      (pair.source === 'right' ? source.width : 0) -
+      target.position.x -
+      (pair.target === 'right' ? target.width : 0)
+
+    const y =
+      source.position.y +
+      source.height / 2 -
+      target.position.y -
+      target.height / 2
+
+    return x * x + y * y
+  }
+
+  let nearest: ReturnType<typeof relationshipSides> = {
+    source: 'left',
+    target: 'left',
+  }
+
+  for (const pair of pairs) {
+    if (distance(pair) < distance(nearest)) {
+      nearest = pair
+    }
+  }
+
+  return nearest
+}
 
 export const canConnect = (
   studio: Studio,
