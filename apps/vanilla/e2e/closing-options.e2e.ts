@@ -727,3 +727,237 @@ test('autoPanOnNodeFocus false preserves keyboard node move announcements', asyn
   )
   expect(await viewport(page)).toEqual({ x: 0, y: 0, zoom: 1 })
 })
+
+test('setCanvasOptions changes snapping on the next move of an active drag and retains a disabled grid', async ({
+  page,
+}) => {
+  await mount(page, {
+    options: {
+      snapToGrid: false,
+      snapGrid: [20, 20],
+      autoPanOnNodeDrag: false,
+    },
+  })
+  const retained = await node(page, 'a').elementHandle()
+  const start = await center(node(page, 'a'))
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 7, start.y + 7)
+  await expect.poll(() => nodeX(page, 'a')).toBe(87)
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({ snapToGrid: true })
+  )
+  await page.mouse.move(start.x + 33, start.y + 27)
+  await expect.poll(() => nodeX(page, 'a')).toBe(120)
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      snapGrid: { x: 30, y: 30 },
+    })
+  )
+  await page.mouse.move(start.x + 55, start.y + 45)
+  await expect.poll(() => nodeX(page, 'a')).toBe(150)
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      snapToGrid: false,
+    })
+  )
+  await page.mouse.move(start.x + 63, start.y + 55)
+  await expect.poll(() => nodeX(page, 'a')).toBe(143)
+  await page.mouse.up()
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element === document.querySelector('.flow-node[data-node-id="a"]')
+    )
+  ).toBe(true)
+})
+
+test('setCanvasOptions switches scroll modes without replacing node DOM', async ({
+  page,
+}) => {
+  await mount(page)
+  const retained = await node(page, 'a').elementHandle()
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      panOnScroll: true,
+      zoomOnScroll: false,
+      panOnScrollMode: 'horizontal',
+      panOnScrollSpeed: 2,
+    })
+  )
+  const point = await panePoint(page, 650, 350)
+  await page.mouse.move(point.x, point.y)
+  await page.mouse.wheel(50, 40)
+  await expect.poll(() => viewport(page)).toEqual({ x: -100, y: 0, zoom: 1 })
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      panOnScrollMode: 'vertical',
+    })
+  )
+  await page.mouse.wheel(50, 40)
+  await expect.poll(() => viewport(page)).toEqual({ x: -100, y: -80, zoom: 1 })
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      panOnScroll: false,
+      zoomOnScroll: true,
+    })
+  )
+  await page.mouse.wheel(0, -100)
+  await expect.poll(() => viewportZoom(page)).toBeGreaterThan(1)
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element === document.querySelector('.flow-node[data-node-id="a"]')
+    )
+  ).toBe(true)
+})
+
+test('setCanvasOptions toggles culling and decodes options atomically with mount defaults', async ({
+  page,
+}) => {
+  await mount(page, {
+    document: {
+      nodes: [
+        {
+          id: 'a',
+          label: 'Visible',
+          position: { x: 80, y: 80 },
+          selected: true,
+        },
+        { id: 'b', label: 'Offscreen', position: { x: 1800, y: 80 } },
+      ],
+      edges: [],
+    },
+  })
+  const retained = await node(page, 'a').elementHandle()
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      renderOnlyVisible: true,
+    })
+  )
+  await expect(node(page, 'b')).toHaveCount(0)
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({
+      renderOnlyVisible: false,
+    })
+  )
+  await expect(node(page, 'b')).toHaveCount(1)
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element === document.querySelector('.flow-node[data-node-id="a"]')
+    )
+  ).toBe(true)
+
+  const invalid = await page.evaluate(() => {
+    try {
+      globalThis.closingOptions?.controller.setCanvasOptions({
+        renderOnlyVisible: true,
+        panOnScrollSpeed: 0,
+      })
+
+      return false
+    } catch {
+      return true
+    }
+  })
+
+  expect(invalid).toBe(true)
+  await expect(node(page, 'b')).toHaveCount(1)
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({ snapToGrid: true })
+  )
+  await node(page, 'a').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => nodeX(page, 'a')).toBe(90)
+})
+
+test('built-in keyboard movement uses 5/20 unsnapped and 20/80 snapped with native announcements', async ({
+  page,
+}) => {
+  await mount(page, { options: { snapToGrid: false, snapGrid: [20, 20] } })
+  await node(page, 'a').click()
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => nodeX(page, 'a')).toBe(85)
+  await page.keyboard.press('Shift+ArrowRight')
+  await expect.poll(() => nodeX(page, 'a')).toBe(105)
+  await expect(page.getByTestId('flow-aria-live')).toHaveText(
+    'Moved selected node right. New position, x: 105, y: 80'
+  )
+  await page.keyboard.press('ArrowLeft')
+  await page.evaluate(() =>
+    globalThis.closingOptions?.controller.setCanvasOptions({ snapToGrid: true })
+  )
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => nodeX(page, 'a')).toBe(120)
+  await page.keyboard.press('Shift+ArrowRight')
+  await expect.poll(() => nodeX(page, 'a')).toBe(200)
+  await expect(page.getByTestId('flow-aria-live')).toHaveText(
+    'Moved selected node right. New position, x: 200, y: 80'
+  )
+})
+
+test('data-only onHandleRender refresh preserves the source of an active connection', async ({
+  page,
+}) => {
+  await mount(page, {
+    handleRender: true,
+    document: {
+      nodes: [
+        {
+          id: 'a',
+          label: 'Source',
+          position: { x: 80, y: 80 },
+          sourcePosition: 'right',
+          data: { name: 'before' },
+        },
+        {
+          id: 'b',
+          label: 'Target',
+          position: { x: 380, y: 80 },
+          targetPosition: 'left',
+        },
+      ],
+      edges: [],
+    },
+  })
+
+  const source = page.locator(
+    '.flow-handle[data-node-id="a"][data-kind="source"]'
+  )
+
+  const retained = await source.elementHandle()
+  const start = await center(source)
+
+  const end = await center(
+    page.locator('.flow-handle[data-node-id="b"][data-kind="target"]')
+  )
+
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 20, start.y + 20)
+  await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
+  await page.evaluate(async () => {
+    await globalThis.closingOptions?.controller.updateNodeData('a', {
+      name: 'after',
+    })
+  })
+  await expect(source).toHaveAttribute('title', '{"name":"after"}')
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element ===
+        document.querySelector(
+          '.flow-handle[data-node-id="a"][data-kind="source"]'
+        )
+    )
+  ).toBe(true)
+  await expect(page.getByTestId('flow-connection-preview')).toBeVisible()
+  await page.mouse.move(end.x, end.y, { steps: 5 })
+  await page.mouse.up()
+  await expect(page.locator('.flow-edge-group')).toHaveCount(1)
+  expect(await events(page)).toEqual([
+    'start:pointer-connect',
+    'end:pointer-connect',
+  ])
+})

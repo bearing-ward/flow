@@ -1,7 +1,7 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 118-120 closing gaps merged (Vanilla, Vue, Foldkit), preserving main Plan 111-117 verification scope",
-  "checks": ["api-members", "catalog", "consumer", "docs", "examples"],
+  "activeWork": "Plan 121 review-fix round 2 runtime canvas options and native keyboard movement; preserving Plans 111-120 host scope",
+  "checks": ["api-members", "catalog", "consumer", "docs", "examples", "build"],
   "browserTests": {
     "vanilla": [
       "advanced-gestures.e2e.ts",
@@ -30,7 +30,8 @@
       "versioned-persistence.e2e.ts",
       "whiteboard-recipes.e2e.ts",
       "closing-options.e2e.ts",
-      "closing-recipes.e2e.ts"
+      "closing-recipes.e2e.ts",
+      "schema-studio.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",

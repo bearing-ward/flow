@@ -28,6 +28,8 @@
   "include": [
     "packages/*/src/**/*.ts",
     "apps/*/src/**/*.ts",
+    "apps/shared/schema-studio/**/*.ts",
+    "apps/vanilla/schema-studio/**/*.ts",
     "apps/*/e2e/**/*.ts",
     "scripts/**/*.ts",
     "playwright.config.ts",

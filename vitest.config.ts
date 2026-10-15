@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     include: [
       'packages/**/*.test.ts',
+      'apps/shared/schema-studio/**/*.test.ts',
       'apps/foldkit/src/**/*.test.ts',
       'apps/vanilla/src/**/*.test.ts',
       'scripts/check-api-members.test.ts',

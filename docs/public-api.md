@@ -175,9 +175,19 @@ This source stage does not establish all-host rendered origin restoration, nativ
 
 React-specific Zustand `useStore`/`useStoreApi` mutation and equality callbacks have no direct Flow API. Flow deliberately does not expose the host's mutable internals; use the read projections and state subscriptions supported by each adapter. Provider properties that configure React-only context, server dimensions, or default element behavior remain individually mapped as gaps where Flow has no tested host-native equivalent.
 
+## Runtime Vanilla canvas options
+
+Vanilla controllers expose `setCanvasOptions(partial: FlowCanvasOptionsInput)`. It decodes the partial with `FlowCanvasOptionsSchema`, derived from the mount-option fields, before applying it. Invalid input throws without changing settings. Omitted fields keep their configured values. Explicit `undefined` restores that field's mount default. No mount default changes.
+
+Supported fields are `snapToGrid`, `snapGrid`, `panOnScroll`, `panOnScrollSpeed`, `panOnScrollMode`, `zoomOnScroll`, `zoomOnPinch`, `zoomOnDoubleClick`, `preventScrolling`, and `renderOnlyVisible`. Snap grids accept `{ x, y }` or `[x, y]`. `snapToGrid: false` disables snapping while retaining the configured grid; enabling it again uses that grid, or 15×15 when no grid is configured. A grid alone keeps the existing mount behavior of enabling snapping.
+
+The controller, selection, and viewport remain in place. Drag and scroll handlers read the current settings on their next event without replacing node elements or interrupting those gestures. Changing `renderOnlyVisible` immediately reconciles visibility, retaining elements that remain visible. Vanilla's `closing-options.e2e.ts` tests mid-drag changes, scroll modes with element identity, culling, decode rejection, snap defaults, built-in keyboard steps, and handle identity during a connection. Vue and Foldkit do not expose this setter.
+
 ## Measured handle refresh
 
 `updateNodeInternals(id)` and `updateNodeInternals([id, ...])` request host measurements. Vanilla and Vue expose this through their controller/composable; Foldkit exports `createFoldkitNodeInternalsRefresher` with owner-local lookup and observer dispatch callbacks. Each call deduplicates IDs in input order. Overlapping calls coalesce in one animation frame and all callers settle. Results are `requested`, `missing`, `failed`, or `disposed`; `requested` means the host dispatched measurement, not a new document edit.
+
+Vanilla mount options also accept `onHandleRender(node, handle, element)`. The host calls it on each newly created handle button and again on existing buttons when node data changes. Data-only refreshes retain button identity, including the source of an active connection. Changed handle declarations recreate the buttons. Use the supplied button to set field-row offsets or accessible labels, then call `updateNodeInternals` after changing layout. The host keeps ownership of the button and its connection lifecycle. The callback is opt-in and does not change default placement. Schema Studio's S3 browser test checks field spacing and collapsed-handle refresh; Vue and Foldkit do not expose this hook.
 
 `getInternalNode(id).handles` exposes detached frozen node-local centers and dimensions from the current measurement generation. Arrays, handle objects and offsets are frozen. Removed declarations, changed kind/side, hidden ancestors and old generations cannot expose stale handles. Rendered edge endpoints and pointer connection targeting consume the same projection. Measurements never enter saved-v1 data. DOM rectangles convert through the owning viewport zoom once.
 
