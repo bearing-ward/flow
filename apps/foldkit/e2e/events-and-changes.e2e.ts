@@ -395,6 +395,13 @@ test('Foldkit Context Menu opens at the event position for nodes and edges', asy
   page,
 }) => {
   await mount(page, 'editor')
+  await page.evaluate(() => {
+    const defaults: boolean[] = []
+    window.addEventListener('contextmenu', (event) => {
+      defaults.push(event.defaultPrevented)
+      document.body.dataset.contextDefaults = JSON.stringify(defaults)
+    })
+  })
 
   const point = await centre(
     page.locator('.flow-foldkit-node[data-node-id="b"]')
@@ -447,6 +454,10 @@ test('Foldkit Context Menu opens at the event position for nodes and edges', asy
       clientX: pane.x,
       clientY: pane.y,
     })
+  await expect(page.locator('body')).toHaveAttribute(
+    'data-context-defaults',
+    '[true,true,true]'
+  )
 })
 
 test('Foldkit Add Node On Edge Drop and Temporary Edges use the connect end payload', async ({

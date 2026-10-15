@@ -800,10 +800,21 @@ test('S1/S12 keeps a note-only viewport found and caps Show all at 0.8', async (
 test('S14 context menus add at the pointer and duplicate or edit nodes', async ({
   page,
 }) => {
+  await page.evaluate(() => {
+    const defaults: boolean[] = []
+    window.addEventListener('contextmenu', (event) => {
+      defaults.push(event.defaultPrevented)
+      document.body.dataset.contextDefaults = JSON.stringify(defaults)
+    })
+  })
   const before = await viewport(page)
   const rect = await bounds(page.locator('.studio-canvas'))
   const point = { x: 1250, y: 850 }
   await page.mouse.click(point.x, point.y, { button: 'right' })
+  await expect(page.locator('body')).toHaveAttribute(
+    'data-context-defaults',
+    '[true]'
+  )
   await page.getByRole('menuitem', { name: 'Add table', exact: true }).click()
   await expect(status(page)).toContainText('13 tables')
 
@@ -818,6 +829,20 @@ test('S14 context menus add at the pointer and duplicate or edit nodes', async (
   expect(added?.position.y).toBeCloseTo(
     (point.y - rect.y - before.y) / before.zoom,
     0
+  )
+
+  if (added === undefined) {
+    throw new Error('Missing added table')
+  }
+
+  await focus(page, added.id)
+  await heading(page, added.id).click({ button: 'right' })
+  await expect(
+    page.getByRole('menuitem', { name: 'Duplicate item', exact: true })
+  ).toBeVisible()
+  await expect(page.locator('body')).toHaveAttribute(
+    'data-context-defaults',
+    '[true,true]'
   )
 })
 

@@ -1049,21 +1049,25 @@ const mountCanvas = (): void => {
         edit(item)
       }
     },
-    onPaneContextMenu: ({ position }) =>
+    onPaneContextMenu: ({ position, event }) => {
+      event.preventDefault()
       showMenu(
         controller().screenToFlowPosition({
           x: position.x + canvas.getBoundingClientRect().left,
           y: position.y + canvas.getBoundingClientRect().top,
         })
-      ),
-    onNodeContextMenu: ({ position, nodeId }) =>
+      )
+    },
+    onNodeContextMenu: ({ position, nodeId, event }) => {
+      event.preventDefault()
       showMenu(
         controller().screenToFlowPosition({
           x: position.x + canvas.getBoundingClientRect().left,
           y: position.y + canvas.getBoundingClientRect().top,
         }),
         nodeId
-      ),
+      )
+    },
     onEdgeClick: ({ edgeId, position }) => {
       if (edgeId !== undefined) {
         const rect = canvas.getBoundingClientRect()

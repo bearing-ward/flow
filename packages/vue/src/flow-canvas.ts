@@ -825,9 +825,9 @@ export const FlowCanvas = defineComponent({
       default: 20,
     },
     autoPanOnConnect: { type: Boolean, default: true },
-    /** Enable primary-button viewport dragging. Shift-drag remains available for selection. */
+    /** Enable viewport dragging with the primary button or an explicit button list. */
     panOnDrag: {
-      type: Boolean,
+      type: [Boolean, Array] as PropType<boolean | readonly number[]>,
       default: true,
     },
     /** Start a selection rectangle on an unmodified primary-button drag. */
@@ -1070,8 +1070,10 @@ export const FlowCanvas = defineComponent({
       true,
     paneMouseLeave: (_position: { readonly x: number; readonly y: number }) =>
       true,
-    paneContextMenu: (_position: { readonly x: number; readonly y: number }) =>
-      true,
+    paneContextMenu: (
+      _position: { readonly x: number; readonly y: number },
+      _event: MouseEvent
+    ) => true,
     paneScroll: (_payload: {
       readonly position: { readonly x: number; readonly y: number }
       readonly deltaX: number
@@ -8245,7 +8247,6 @@ export const FlowCanvas = defineComponent({
       }
 
       if (
-        event.button !== 0 ||
         session.value !== undefined ||
         !(target instanceof Element) ||
         !(currentTarget instanceof HTMLElement)
@@ -8272,13 +8273,19 @@ export const FlowCanvas = defineComponent({
       // React Flow draws a selection box only while elements are selectable,
       // and only from the pane.
       const isSelection =
+        event.button === 0 &&
         !onNode &&
         interactivity.value.elementsSelectable &&
         (selectionKeyHeld(event) || props.selectionOnDrag)
 
+      const panButtonEnabled = Array.isArray(props.panOnDrag)
+        ? props.panOnDrag.includes(event.button)
+        : props.panOnDrag && event.button === 0
+
       if (
         excludedFromDrag ||
-        (!isSelection && (excludedFromPan || !props.panOnDrag || !panKeyActive))
+        (!isSelection &&
+          (excludedFromPan || !panButtonEnabled || !panKeyActive))
       ) {
         return
       }
@@ -10690,9 +10697,19 @@ export const FlowCanvas = defineComponent({
               target instanceof Element &&
               target.closest('[data-node-id], [data-flow-edge-hit]') === null
             ) {
+              if (
+                Array.isArray(props.panOnDrag) &&
+                props.panOnDrag.includes(2)
+              ) {
+                event.preventDefault()
+
+                return
+              }
+
               emit(
                 'paneContextMenu',
-                clientToFlow(event.clientX, event.clientY)
+                clientToFlow(event.clientX, event.clientY),
+                event
               )
             }
           },

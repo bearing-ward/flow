@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plan 122 live internal-node reads during drag and resize previews; preserving Plans 111-121 host scope",
+  "activeWork": "Plans 122-123 live internal-node reads and cancellable context-menu events; preserving Plans 111-121 host scope",
   "checks": ["api-members", "catalog", "consumer", "docs", "examples", "build"],
   "browserTests": {
     "vanilla": [
@@ -32,7 +32,8 @@
       "closing-options.e2e.ts",
       "closing-recipes.e2e.ts",
       "schema-studio.e2e.ts",
-      "live-internal-node.e2e.ts"
+      "live-internal-node.e2e.ts",
+      "context-menu-event.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -58,7 +59,8 @@
       "panel.e2e.ts",
       "closing-gaps.e2e.ts",
       "closing-recipes.e2e.ts",
-      "live-internal-node.e2e.ts"
+      "live-internal-node.e2e.ts",
+      "context-menu-event.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
