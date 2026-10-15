@@ -686,12 +686,14 @@ export interface FlowSelectionEndPayload extends FlowSelectionRectPayload {
 }
 
 export interface FlowSelectionContextMenuPayload {
+  readonly event: MouseEvent
   readonly nodeIds: readonly string[]
   readonly edgeIds: readonly string[]
   readonly position: XYPosition
 }
 
 export interface FlowCanvasEventPayload {
+  readonly event: MouseEvent
   readonly position: XYPosition
   readonly nodeId?: string | undefined
   readonly edgeId?: string | undefined
@@ -11993,6 +11995,7 @@ export const createFlowHost = (
       const bounds = canvas.getBoundingClientRect()
 
       const payload: FlowCanvasEventPayload = {
+        event,
         position: {
           x: event.clientX - bounds.left,
           y: event.clientY - bounds.top,
@@ -12016,7 +12019,19 @@ export const createFlowHost = (
     }
 
     const onCanvasContextMenu = (event: MouseEvent): void => {
-      dispatchCanvasEvent('ContextMenu', event)
+      const target = getFlowCanvasEventTarget(event.target)
+
+      if (
+        target.kind === 'pane' &&
+        Array.isArray(options.panOnDrag) &&
+        options.panOnDrag.includes(2)
+      ) {
+        event.preventDefault()
+
+        return
+      }
+
+      dispatchCanvasEvent('ContextMenu', event, target)
 
       if (options.onSelectionContextMenu === undefined) {
         return
@@ -12041,6 +12056,7 @@ export const createFlowHost = (
         'context-menu',
         options.onSelectionContextMenu,
         {
+          event,
           nodeIds,
           edgeIds,
           position: {
