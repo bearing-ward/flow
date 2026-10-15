@@ -212,7 +212,7 @@ test('keyboard node movement uses the custom aria-live callback', async ({
     .poll(() => readNode(page, 'a').then((n) => n?.position))
     .toEqual({ x: 105, y: 100 })
   await expect(page.locator('[aria-live="assertive"]')).toHaveText(
-    'Live right 100/100'
+    'Live right 105/100'
   )
 })
 

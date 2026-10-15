@@ -18,5 +18,14 @@ export default defineConfig({
   },
   root: import.meta.dirname,
   server: { host: '127.0.0.1', port: 4175, strictPort: true },
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: `${import.meta.dirname}/index.html`,
+        schemaStudio: `${import.meta.dirname}/schema-studio/index.html`,
+      },
+    },
+  },
 })
