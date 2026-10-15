@@ -30,6 +30,8 @@
     "apps/*/src/**/*.ts",
     "apps/shared/schema-studio/**/*.ts",
     "apps/vanilla/schema-studio/**/*.ts",
+    "apps/foldkit/schema-studio/**/*.ts",
+    "apps/foldkit/live-internal-node/**/*.ts",
     "apps/*/e2e/**/*.ts",
     "scripts/**/*.ts",
     "playwright.config.ts",

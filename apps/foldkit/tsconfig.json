@@ -1,4 +1,10 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*.ts", "e2e/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "e2e/**/*.ts",
+    "schema-studio/**/*.ts",
+    "live-internal-node/**/*.ts",
+    "../shared/schema-studio/assets.d.ts"
+  ]
 }

@@ -14,6 +14,7 @@ export const updateFoldkitRendererRegistry = (
   Object.assign(
     registry,
     {
+      handleAttributes: undefined,
       nodeTypes: undefined,
       edgeTypes: undefined,
       connectionPreview: undefined,

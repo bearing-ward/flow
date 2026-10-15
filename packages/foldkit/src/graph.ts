@@ -56,6 +56,7 @@ import {
   applyNodeMeasurement,
   pruneFlowMeasurements,
   getFlowInternalNode,
+  projectFlowInternalNode,
   getFlowMeasuredNodes,
   inferHandleMeasurement,
   areFlowNodesInitialized,
@@ -549,6 +550,22 @@ const prefersDarkColorScheme = (): boolean =>
 
 export type Model = typeof ModelSchema.Type
 
+/** Runtime canvas patches retain the active gesture and disabled snap grid. */
+export const CanvasOptionsSchema = Schema.Struct({
+  snapToGrid: Schema.optional(ModelSchema.fields.snapToGrid),
+  snapGrid: Schema.optional(FlowSnapGridInputSchema),
+  panOnDrag: Schema.optional(ModelSchema.fields.panOnDrag),
+  selectionOnDrag: Schema.optional(ModelSchema.fields.selectionOnDrag),
+  panOnScroll: Schema.optional(ModelSchema.fields.panOnScroll),
+  panOnScrollSpeed: Schema.optional(ModelSchema.fields.panOnScrollSpeed),
+  panOnScrollMode: Schema.optional(ModelSchema.fields.panOnScrollMode),
+  zoomOnScroll: Schema.optional(ModelSchema.fields.zoomOnScroll),
+  zoomOnDoubleClick: Schema.optional(ModelSchema.fields.zoomOnDoubleClick),
+  onlyRenderVisibleElements: Schema.optional(
+    ModelSchema.fields.onlyRenderVisibleElements
+  ),
+})
+
 const canvasForInstance = (instanceId: string): HTMLElement | null =>
   globalThis.document?.querySelector<HTMLElement>(
     `[data-flow-instance="${CSS.escape(instanceId)}"]`
@@ -739,6 +756,7 @@ export const Message = FoldMessage.defineMessageUnion({
   ReplaceViewport: { viewport: ViewportSchema },
   SetSelectionMode: { mode: SelectionModeSchema },
   /** React Flow `colorMode` changed at runtime. */
+  SetCanvasOptions: { options: CanvasOptionsSchema },
   SetColorMode: { mode: FlowColorModeSchema },
   /** The `prefers-color-scheme: dark` match changed. */
   SystemColorScheme: { prefersDark: Schema.Boolean },
@@ -1923,13 +1941,6 @@ export const selectLiveDocument = (model: Model): FlowDocument => {
   }
 }
 
-/** The model as a reader sees it mid-drag: live positions, same everything else. */
-export const selectLiveModel = (model: Model): Model => {
-  const document = selectLiveDocument(model)
-
-  return document === model.document ? model : { ...model, document }
-}
-
 /**
  * Live positions of every dragged node, with the pointer at `at` or at the
  * session's latest point. Undefined when no node drag is active.
@@ -2645,11 +2656,109 @@ const previewMeasurements = (model: Model, document: FlowDocument) => {
       node.size?.width !== accepted?.width ||
       node.size?.height !== accepted?.height
     ) {
-      measurements.delete(node.id)
+      const measured = measurements.get(node.id)
+
+      if (measured !== undefined && node.size !== undefined) {
+        const { size } = node
+        measurements.set(node.id, {
+          ...measured,
+          ...size,
+          handles: measured.handles?.map((handle) => ({
+            ...handle,
+            offset: {
+              x:
+                handle.offset.x +
+                (flowNodeHandles(node).find(({ id }) => id === handle.handleId)
+                  ?.side === 'right'
+                  ? size.width - measured.width
+                  : 0),
+              y:
+                handle.offset.y +
+                (flowNodeHandles(node).find(({ id }) => id === handle.handleId)
+                  ?.side === 'bottom'
+                  ? size.height - measured.height
+                  : 0),
+            },
+          })),
+        })
+      }
     }
   }
 
   return measurements
+}
+
+/** The geometry shared by view rendering and public instance reads. Accepted state stays untouched. */
+export const selectLiveModel = (model: Model): Model => {
+  const resizeSession =
+    model.gestureSession?.kind === 'resize'
+      ? model.gestureSession
+      : model.keyboardResizeSession
+
+  const change =
+    resizeSession === null
+      ? selectResizerPreview(model)
+      : resizeProposal(
+          model.document,
+          resizeSession.nodeId,
+          resizeSession.input
+        )
+
+  const live = selectLiveDocument(model)
+
+  const document =
+    change === undefined ? live : (applyNodeBoundsChange(live, change) ?? live)
+
+  if (document === model.document) {
+    return model
+  }
+
+  if (
+    change === undefined &&
+    model.pointerSession?.kind === 'node-drag' &&
+    model.pointerSession.expandParent !== true
+  ) {
+    return { ...model, document }
+  }
+
+  const samples = previewMeasurements(model, document)
+  const gesture = model.gestureSession
+
+  const measurement =
+    gesture?.kind === 'resize'
+      ? gesture.measurement
+      : model.keyboardResizeSession?.measurement
+
+  if (measurement !== undefined) {
+    const node = document.nodes.find(({ id }) => id === measurement.nodeId)
+
+    if (
+      node !== undefined &&
+      node.size !== undefined &&
+      node.size.width === measurement.width &&
+      node.size.height === measurement.height
+    ) {
+      samples.set(measurement.nodeId, measurement)
+    }
+  }
+
+  return {
+    ...model,
+    document,
+    measurements: {
+      ...model.measurements,
+      nodes: [...samples].map(([nodeId, sample]) => ({
+        generation:
+          model.measurements.generations.find(
+            (entry) => entry.nodeId === nodeId
+          )?.generation ?? 0,
+        measurement: sample,
+        handleDeclarations: flowNodeHandles(
+          document.nodes.find((node) => node.id === nodeId)
+        ),
+      })),
+    },
+  }
 }
 
 /**
@@ -3012,7 +3121,13 @@ const selectClickedNode = (
   model: Model,
   observed: ObserveMouseMessage
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
-  if (observed.name !== 'onNodeClick') {
+  const controlClick =
+    observed.name === 'onNodeContextMenu' &&
+    observed.pointer?.button === 0 &&
+    observed.pointer.ctrlKey &&
+    [model.multiSelectionKeyCode].flat().includes('Control')
+
+  if (observed.name !== 'onNodeClick' && !controlClick) {
     return noChange(model)
   }
 
@@ -3024,7 +3139,7 @@ const selectClickedNode = (
   const node = model.document.nodes.find(({ id }) => id === observed.nodeId)
 
   if (
-    observed.select !== true ||
+    (observed.select !== true && !controlClick) ||
     node === undefined ||
     node.hidden === true ||
     !isNodeSelectable(interactivity, node)
@@ -3248,7 +3363,9 @@ const updateState = (
       })
 
       const absolute =
-        graph.nodes.get(nodeId)?.absolutePosition ?? node.position
+        updatedAbsolute.get(nodeId) ??
+        graph.nodes.get(nodeId)?.absolutePosition ??
+        node.position
 
       const result = updateState(
         model,
@@ -3281,6 +3398,27 @@ const updateState = (
       }
     },
     IgnoreInput: () => noChange(model),
+    SetCanvasOptions: ({ options }) => ({
+      model: {
+        ...model,
+        snapToGrid: options.snapToGrid ?? model.snapToGrid,
+        panOnDrag: options.panOnDrag ?? model.panOnDrag,
+        selectionOnDrag: options.selectionOnDrag ?? model.selectionOnDrag,
+        panOnScroll: options.panOnScroll ?? model.panOnScroll,
+        panOnScrollSpeed: options.panOnScrollSpeed ?? model.panOnScrollSpeed,
+        panOnScrollMode: options.panOnScrollMode ?? model.panOnScrollMode,
+        zoomOnScroll: options.zoomOnScroll ?? model.zoomOnScroll,
+        zoomOnDoubleClick: options.zoomOnDoubleClick ?? model.zoomOnDoubleClick,
+        onlyRenderVisibleElements:
+          options.onlyRenderVisibleElements ?? model.onlyRenderVisibleElements,
+        snapGrid:
+          options.snapGrid === undefined
+            ? model.snapGrid
+            : Schema.decodeUnknownSync(FlowSnapGridInputSchema)(
+                options.snapGrid
+              ),
+      },
+    }),
     SetColorMode: ({ mode }) => ({
       model: {
         ...model,
@@ -4797,6 +4935,9 @@ const beginPointer = (
 }
 
 export interface FoldkitEdgeGeometry {
+  /** Detached endpoint projections from this render, including resize previews. */
+  readonly sourceNode: FlowInternalNode
+  readonly targetNode: FlowInternalNode
   readonly path: string
   readonly labelPosition: { readonly x: number; readonly y: number }
   readonly start: { readonly x: number; readonly y: number }
@@ -4808,6 +4949,12 @@ export interface FoldkitEdgeGeometry {
 }
 
 export interface FoldkitRendererRegistry {
+  /** Attributes for the runtime-owned connection buttons, recomputed each view. */
+  readonly handleAttributes?: (
+    node: FlowNode,
+    handle: FlowHandle,
+    h: FoldHtml.HtmlBuilder<GraphMessageData>
+  ) => readonly FoldHtml.Attribute<GraphMessageData>[]
   readonly nodeTypes?: FoldkitNodeTypes
   readonly edgeTypes?: FoldkitEdgeTypes
   readonly connectionPreview?: FoldkitConnectionPreviewRenderer
@@ -5039,6 +5186,14 @@ const calculateEdgeGeometry = (
   )
 
   const geometry: FoldkitEdgeGeometry = {
+    sourceNode: projectFlowInternalNode(
+      source,
+      measurements.get(source.node.id)
+    ),
+    targetNode: projectFlowInternalNode(
+      target,
+      measurements.get(target.node.id)
+    ),
     path,
     start,
     end,
@@ -6927,21 +7082,13 @@ const graphView = (
       model.measurements
     )
 
-    const resizeSession =
-      model.gestureSession?.kind === 'resize'
-        ? model.gestureSession
-        : model.keyboardResizeSession
+    const liveModel = selectLiveModel(model)
+    const renderDocument = liveModel.document
 
-    const resizeChange =
-      resizeSession === null
-        ? selectResizerPreview(model)
-        : resizeProposal(
-            model.document,
-            resizeSession.nodeId,
-            resizeSession.input
-          )
-
-    const liveDocument = selectLiveDocument(model)
+    const renderMeasurements = getFlowMeasuredNodes(
+      renderDocument,
+      liveModel.measurements
+    )
 
     // React `ariaLabelConfig` text entries over the English defaults.
     const ariaLabels = {
@@ -6956,17 +7103,6 @@ const graphView = (
     const nodeDescriptionId = `${model.instanceId}-node-desc`
 
     const edgeDescriptionId = `${model.instanceId}-edge-desc`
-
-    const renderDocument =
-      resizeChange === undefined
-        ? liveDocument
-        : (applyNodeBoundsChange(liveDocument, resizeChange) ?? liveDocument)
-
-    const renderMeasurements = previewMeasurements(model, renderDocument)
-
-    if (resizeChange !== undefined) {
-      renderMeasurements.delete(resizeChange.nodeId)
-    }
 
     const graph = createFlowGraph(renderDocument, renderMeasurements)
     const mountedNodeIds = selectMountedNodeIds(model, measurements, graph)
@@ -6997,8 +7133,7 @@ const graphView = (
 
         const renderPosition = position
 
-        const renderSize =
-          resizeChange?.nodeId === node.id ? resizeChange.size : size
+        const renderSize = size
 
         // React NodeWrapper: user style first, then position, stacking and
         // dimensions win.
@@ -7027,6 +7162,7 @@ const graphView = (
                 ...handleConnectabilityClasses(interactivity, node, handle),
               ].join(' ')
             ),
+            ...(renderers.handleAttributes?.(node, handle, h) ?? []),
             h.DataAttribute('handle-id', handle.id),
             h.DataAttribute('handle-side', handle.side),
             h.AriaLabel(

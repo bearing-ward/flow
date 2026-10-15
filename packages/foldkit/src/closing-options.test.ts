@@ -256,7 +256,7 @@ describe('keyboard canvas options', () => {
     expect(result.model.ariaLiveMessage).toBeNull()
   })
 
-  it('moves the selected draggable group with Shift acceleration and announces the focused origin', () => {
+  it('moves the selected draggable group with Shift acceleration and announces the resulting absolute position', () => {
     const result = move(start(), true)
 
     expect(
@@ -268,7 +268,7 @@ describe('keyboard canvas options', () => {
     ])
     expect(result.model.ariaLiveMessage).toStrictEqual({
       direction: 'right',
-      x: 20,
+      x: 40,
       y: 20,
     })
   })

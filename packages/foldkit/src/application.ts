@@ -176,6 +176,7 @@ const defaultViewportLimits: typeof ViewportLimitsSchema.Type = {
 
 export const HostAction = FoldMessage.defineMessageUnion({
   RefreshRenderers: {},
+  SetCanvasOptions: { options: Graph.CanvasOptionsSchema },
   ReplaceDocument: { document: FlowDocumentSchema },
   ReplaceViewport: { viewport: ViewportSchema },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
@@ -2229,6 +2230,8 @@ const routeAction = (model: Model, action: HostActionData) =>
         'allowed-targets-changed'
       )
     },
+    SetCanvasOptions: ({ options }) =>
+      graphFold(model, Graph.Message.SetCanvasOptions({ options })),
     RefreshRenderers: () => graphFold(model, Graph.Message.RefreshRenderers()),
     DispatchCommand: ({ command }) =>
       graphFold(model, Graph.Message.DispatchCommand({ command })),

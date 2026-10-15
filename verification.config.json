@@ -1,7 +1,16 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 122-123 live internal-node reads and cancellable context-menu events; preserving Plans 111-121 host scope",
-  "checks": ["api-members", "catalog", "consumer", "docs", "examples", "build"],
+  "activeWork": "Plan 124 Schema Studio Foldkit; preserving all existing broad host scope",
+  "checks": [
+    "api-members",
+    "catalog",
+    "consumer",
+    "docs",
+    "examples",
+    "build",
+    "foldkit-build",
+    "traces"
+  ],
   "browserTests": {
     "vanilla": [
       "advanced-gestures.e2e.ts",
@@ -92,7 +101,9 @@
       "closing-gaps.e2e.ts",
       "closing-recipes.e2e.ts",
       "delete-edge-on-drop-recipe.e2e.ts",
-      "drag-and-drop-recipe.e2e.ts"
+      "drag-and-drop-recipe.e2e.ts",
+      "schema-studio.e2e.ts",
+      "live-internal-node.e2e.ts"
     ]
   }
 }
