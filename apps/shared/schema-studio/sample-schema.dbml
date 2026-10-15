@@ -1,0 +1,112 @@
+// Schema Studio sample: an original bookshop schema shared by the Flow clone
+// (apps/*/schema-studio) and the ChartDB reference harness
+// (research/references/chartdb). Plan 121.
+
+Table authors {
+  id integer [pk]
+  name varchar [not null]
+  country_code char(2)
+  born_on date
+}
+
+Table books {
+  id integer [pk]
+  title varchar [not null]
+  isbn varchar [unique]
+  publisher_id integer
+  published_on date
+  price_cents integer [not null]
+}
+
+Table book_authors {
+  book_id integer [pk]
+  author_id integer [pk]
+  role varchar
+}
+
+Table publishers {
+  id integer [pk]
+  name varchar [not null]
+  country_code char(2)
+}
+
+Table genres {
+  id integer [pk]
+  name varchar [not null, unique]
+  parent_id integer
+}
+
+Table book_genres {
+  book_id integer [pk]
+  genre_id integer [pk]
+}
+
+Table customers {
+  id integer [pk]
+  email varchar [not null, unique]
+  display_name varchar
+  created_at timestamp [not null]
+}
+
+Table addresses {
+  id integer [pk]
+  customer_id integer [not null]
+  line_1 varchar [not null]
+  city varchar [not null]
+  postal_code varchar
+  country_code char(2) [not null]
+}
+
+Table orders {
+  id integer [pk]
+  customer_id integer [not null]
+  shipping_address_id integer
+  status varchar [not null]
+  placed_at timestamp [not null]
+}
+
+Table order_items {
+  id integer [pk]
+  order_id integer [not null]
+  book_id integer [not null]
+  quantity integer [not null]
+  unit_price_cents integer [not null]
+}
+
+Table reviews {
+  id integer [pk]
+  book_id integer [not null]
+  customer_id integer [not null]
+  rating smallint [not null]
+  body text
+  created_at timestamp [not null]
+}
+
+Table inventory {
+  book_id integer [pk]
+  warehouse varchar [pk]
+  on_hand integer [not null]
+  reorder_level integer
+}
+
+Ref: books.publisher_id > publishers.id
+Ref: book_authors.book_id > books.id
+Ref: book_authors.author_id > authors.id
+Ref: genres.parent_id > genres.id
+Ref: book_genres.book_id > books.id
+Ref: book_genres.genre_id > genres.id
+Ref: addresses.customer_id > customers.id
+Ref: orders.customer_id > customers.id
+Ref: orders.shipping_address_id > addresses.id
+Ref: order_items.order_id > orders.id
+Ref: order_items.book_id > books.id
+Ref: reviews.book_id > books.id
+Ref: reviews.customer_id > customers.id
+Ref: inventory.book_id - books.id
+
+// Canvas-only elements (not expressible in DBML; create through each app's UI
+// or seed): area "Catalog" containing authors, books, book_authors, publishers,
+// genres, book_genres; area "Sales" containing customers, addresses, orders,
+// order_items; note "Prices are stored in cents." near order_items; note
+// "Reviews are moderated before display." near reviews; view
+// "bestsellers" depending on books and order_items.
