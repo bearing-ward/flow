@@ -1,0 +1,18 @@
+{
+  "run": "2026-10-15T00:59:42.325Z",
+  "playwright": {
+    "startTime": "2026-10-15T00:58:23.097Z",
+    "duration": 267398.632,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "validation": {
+    "scenarios": 16,
+    "pairedScreenshots": 32,
+    "pngDownload": true,
+    "sourceHashes": 38,
+    "explicitEndpointSides": true
+  }
+}

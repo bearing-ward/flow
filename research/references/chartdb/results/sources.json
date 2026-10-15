@@ -1,0 +1,200 @@
+{
+  "checkout": "/tmp/chartdb-ref/src",
+  "commit": "c24936a402bb3e24b4858f05282d69a04fcfe25b",
+  "packageLockSha256": "fc218770f67a893461000b3996c7c2e149b8db9db048ea9d7db0caa2bb49240f",
+  "reactFlow": "12.10.0",
+  "xyflowSystem": "0.0.74",
+  "sampleDbmlSha256": "4f91390aca7ede6b79c9103bcc5b08054337d9af39a573718162637ac3b27f1e",
+  "files": [
+    {
+      "path": "src/pages/editor-page/canvas/canvas.tsx",
+      "sha256": "a45cb4cd586b0afe202651cffe6a70e2dcb37fe116cb7d16c98ceb74634071e3",
+      "lines": 1909
+    },
+    {
+      "path": "src/pages/editor-page/canvas/canvas-utils.ts",
+      "sha256": "b75126d237c3dd6c99f9bfb883dcf04a8b189409368e9ee388ce931e82c00a3d",
+      "lines": 116
+    },
+    {
+      "path": "src/pages/editor-page/canvas/marker-definitions.tsx",
+      "sha256": "76920c7467c95d8d59cb896c72eaf23f21447a9c12195ef8a83dda186bd20429",
+      "lines": 75
+    },
+    {
+      "path": "src/pages/editor-page/canvas/show-all-button.tsx",
+      "sha256": "403e96063519440b5f8be36ceb1acbc8cca6e9dee0e08fcbdcf6f16e37877fc2",
+      "lines": 66
+    },
+    {
+      "path": "src/lib/utils/area-utils.ts",
+      "sha256": "f8b166d38dcebba81b516e452e46bafeea8969d8954a4aecf858661350c17cbb",
+      "lines": 153
+    },
+    {
+      "path": "src/context/storage-context/storage-provider.tsx",
+      "sha256": "c950393f2c254aedd24a778b35ed652840f237b154a158aa59d961662e09e689",
+      "lines": 934
+    },
+    {
+      "path": "src/pages/editor-page/editor-page.tsx",
+      "sha256": "1b05c90c553ad08cb3c8908aee81031ec80bbbce821f151bf2d7a7c25e34ec64",
+      "lines": 151
+    },
+    {
+      "path": "src/pages/editor-page/canvas/canvas-context-menu.tsx",
+      "sha256": "5e5292bf4ba2a4531390f8b7a49eb04cf9fe6cbefa88f81e2cc49caf468fc4bf",
+      "lines": 398
+    },
+    {
+      "path": "src/pages/editor-page/canvas/table-node/table-node.tsx",
+      "sha256": "e3a8ab7884b5aaafbc6f5d29e1fa8ceb07d1185631e85f4dfcebed0d10588aef",
+      "lines": 657
+    },
+    {
+      "path": "src/pages/editor-page/canvas/table-node/table-node-field.tsx",
+      "sha256": "28241f58415820e1ed338119b7fd960413d9355da400c9402ba74e71ca84165b",
+      "lines": 635
+    },
+    {
+      "path": "src/pages/editor-page/canvas/table-node/table-node-dependency-indicator.tsx",
+      "sha256": "60e9cbc38c68e76aacda1c71b1af7b9385fdb24fc419f2149bd19cb188c6ff8d",
+      "lines": 125
+    },
+    {
+      "path": "src/pages/editor-page/canvas/table-node/table-node-context-menu.tsx",
+      "sha256": "96424da210c6f3c7c677276685737bc79c88756474583560bd57b17f1216dd6f",
+      "lines": 322
+    },
+    {
+      "path": "src/pages/editor-page/canvas/area-node/area-node.tsx",
+      "sha256": "5f567940a9f515d9e4b3fa0d2386c4fd8470ba0297ed1ab503c7530aa070de4f",
+      "lines": 277
+    },
+    {
+      "path": "src/pages/editor-page/canvas/note-node/note-node.tsx",
+      "sha256": "0222459c6aca2d2aee49ae921cbaf8b2f8b39f6fc9c3d34686e6c2457a4e46fa",
+      "lines": 376
+    },
+    {
+      "path": "src/pages/editor-page/canvas/relationship-edge/relationship-edge.tsx",
+      "sha256": "d719f7ea10314516c4075862d15605b7c731589eb5bc09336e9169fd5dada951",
+      "lines": 459
+    },
+    {
+      "path": "src/pages/editor-page/canvas/dependency-edge/dependency-edge.tsx",
+      "sha256": "fb6ee0193acca1785178b7eafad14a2afbc4b56edeba7f3234d0c43d3bfce88c",
+      "lines": 169
+    },
+    {
+      "path": "src/pages/editor-page/canvas/toolbar/toolbar.tsx",
+      "sha256": "af37422c8cc6cc70e6b54b7c3da735b8d539207a91c51ffeb948285a70e0a56a",
+      "lines": 239
+    },
+    {
+      "path": "src/pages/editor-page/canvas/canvas-filter/canvas-filter.tsx",
+      "sha256": "3eddf9f500cd525b0422f9fb1b09320cc308c112e67b552402c7ed1860338c26",
+      "lines": 390
+    },
+    {
+      "path": "src/pages/editor-page/canvas/canvas-filter/filter-item-actions.tsx",
+      "sha256": "0fccfbdd87c9ed92ce60b8422fc542ea38da9ea7abfe973c84d934777379b23b",
+      "lines": 191
+    },
+    {
+      "path": "src/pages/editor-page/top-navbar/menu/menu.tsx",
+      "sha256": "dba36a6331f24b08559e1d58b55bb860f5c0cbae944eee50301514da67694e75",
+      "lines": 503
+    },
+    {
+      "path": "src/pages/editor-page/side-panel/tables-section/table-list/table-list-item/table-list-item-header/table-list-item-header.tsx",
+      "sha256": "6ef3e3b0a237fa93f58463f92034a79e879f4d5381e6716efb8d40cb03f8f3f7",
+      "lines": 334
+    },
+    {
+      "path": "src/dialogs/create-diagram-dialog/create-diagram-dialog.tsx",
+      "sha256": "f8b9ff5195505b3e5c4d367cf5b34f20d99ea928465b8c259d5a2966c82ec8af",
+      "lines": 284
+    },
+    {
+      "path": "src/dialogs/common/import-database/import-database.tsx",
+      "sha256": "aa12de7af3fea25b2281c8534c720cc0b83a55ba48af74ade2065d01f23bdf68",
+      "lines": 737
+    },
+    {
+      "path": "src/dialogs/import-database-dialog/import-database-dialog.tsx",
+      "sha256": "77c6b9cf05112523d9339d5bbc4de275bf2cc14fa3febc9153770b5563a69d37",
+      "lines": 183
+    },
+    {
+      "path": "src/lib/dbml/dbml-import/dbml-import.ts",
+      "sha256": "9e1ace6d42ff33f480b03e25691f8863fa28af2888e7e6fadcedc254346ba901",
+      "lines": 1101
+    },
+    {
+      "path": "src/lib/domain/db-table.ts",
+      "sha256": "8870a0ebc211260219e5ce39b8ab05a8716051b9b9edf46b4b6cacae0d6418ed",
+      "lines": 558
+    },
+    {
+      "path": "src/hooks/use-focus-on.ts",
+      "sha256": "c669c712eb39484255336665e3ed4b8f24b890145a5e8eff8d67ee7fd801110f",
+      "lines": 182
+    },
+    {
+      "path": "src/pages/editor-page/canvas/hooks/use-is-lost-in-canvas.tsx",
+      "sha256": "18c47001657c188411688c537d54bcf4cec70d8b39bb3dc64ece1a9a3aaa502c",
+      "lines": 87
+    },
+    {
+      "path": "src/hooks/use-update-table.ts",
+      "sha256": "fc1d9a88088601e129c9391bd905715aba0908c9e784c167f0f014975e54bdbc",
+      "lines": 43
+    },
+    {
+      "path": "src/context/local-config-context/local-config-provider.tsx",
+      "sha256": "152cec1ca34d960db5b99595adbee13c3feebf963da345d7d6b2bbbfcc781fa9",
+      "lines": 112
+    },
+    {
+      "path": "src/context/chartdb-context/chartdb-provider.tsx",
+      "sha256": "804305c0061410c40c40c8e47b8fac1eb916ebea6be010c8f3360d416e5b1fd0",
+      "lines": 2189
+    },
+    {
+      "path": "src/context/history-context/history-provider.tsx",
+      "sha256": "aec182cb15341d4f4045b58f8c7cedf7530f7f0bce65aee594e037fa815a07b3",
+      "lines": 420
+    },
+    {
+      "path": "src/context/keyboard-shortcuts-context/keyboard-shortcuts.ts",
+      "sha256": "226df40a2fad45d4f561d6fe71932ff88b8d6bdc52968d01e26cffd15b858fe9",
+      "lines": 119
+    },
+    {
+      "path": "src/context/keyboard-shortcuts-context/keyboard-shortcuts-provider.tsx",
+      "sha256": "50e3099195ad93ff0436d499c3c7fb84d9c075a2adb025f8c250f4569035d8d5",
+      "lines": 87
+    },
+    {
+      "path": "src/context/export-image-context/export-image-provider.tsx",
+      "sha256": "bfa3fc9a7466e4d95f489cc6ad3315e15b56d9bb1f1ea529584d319247bca2e7",
+      "lines": 387
+    },
+    {
+      "path": "src/dialogs/export-image-dialog/export-image-dialog.tsx",
+      "sha256": "7737696bda48203c5a9b4166fae5dc3fb894eddc380ab783e35582820ac57189",
+      "lines": 178
+    },
+    {
+      "path": "node_modules/@xyflow/react/dist/esm/index.mjs",
+      "sha256": "a64c65791e3e5531c2f10726d60c96965f7a107b77f65b44fcae618b7780afb7",
+      "lines": 4963
+    },
+    {
+      "path": "node_modules/@xyflow/system/dist/esm/index.mjs",
+      "sha256": "109d27b83c72b0a661676594d9aeb7d8bfbb8be5b052c092f7b0f041a55442b3",
+      "lines": 3514
+    }
+  ]
+}

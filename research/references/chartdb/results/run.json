@@ -1,0 +1,15 @@
+{
+  "capturedAt": "2026-10-15T00:59:42.325Z",
+  "browser": "151.0.7922.34",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "devicePixelRatio": 1,
+  "fixtureUrl": "http://127.0.0.1:4190/diagrams/q74dl2ulg169",
+  "fixtureCreatedThrough": "UI",
+  "scenarioReset": "Playwright storageState including IndexedDB"
+}

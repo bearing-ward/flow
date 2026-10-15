@@ -1,0 +1,93 @@
+$ ultracite check
+Checking formatting...
+
+plans/121-schema-studio-vanilla.md (27ms)
+
+Format issues found in above 1 files. Run without `--check` to fix.
+Finished in 1310ms on 1501 files using 16 threads.
+error: script "check" exited with code 1
+$ bun run scripts/verify.ts --focused
+[21:03:21.404] INFO (#2): Verification selection {
+  profile: "focused",
+  activeWork: "Plan 121 ChartDB reference capture, with no Flow browser suites",
+  checks: [ "quality check", "architecture boundaries", "package builds", "typecheck", "unit tests" ],
+  fullSuite: false,
+}
+[21:03:21.406] INFO (#2): Starting quality check
+$ ultracite check
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1384ms on 1501 files using 16 threads.
+[21:03:24.522] INFO (#2): Passed quality check {
+  elapsedMs: 3116,
+}
+[21:03:24.522] INFO (#2): Starting architecture boundaries
+$ bun run scripts/check-architecture.ts
+[21:03:24.930] INFO (#2): Verified architecture boundaries across 376 production source files; all rule fixtures passed
+[21:03:24.936] INFO (#2): Passed architecture boundaries {
+  elapsedMs: 414,
+}
+[21:03:24.936] INFO (#2): Starting package builds
+$ bun run --cwd packages/core build && bun run --cwd apps/vanilla build:package && bun run --cwd packages/vue build && bun run --cwd packages/foldkit build && bun -e 'for (const root of ["packages/core/dist", "apps/vanilla/dist", "packages/vue/dist", "packages/foldkit/dist"]) for await (const path of new Bun.Glob("**/*.d.ts").scan({ cwd: root })) { const file = `${root}/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\.ts(?=[\x27\x22])/g, ".js")); }'
+$ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect && tsc --project tsconfig.build.json
+Bundled 81 modules in 6ms
+
+  public.js  0.29 MB  (entry point)
+
+$ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json
+Bundled 35 modules in 17ms
+
+  public.js  0.45 MB  (entry point)
+
+Bundled 1 module in 14ms
+
+  style.css  28.33 KB  (asset)
+
+$ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external vue --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json
+Bundled 33 modules in 9ms
+
+  public.js  0.35 MB  (entry point)
+
+Bundled 1 module in 4ms
+
+  style.css  16.47 KB  (asset)
+
+$ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external foldkit --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json
+Bundled 42 modules in 8ms
+
+  public.js  0.39 MB  (entry point)
+
+Bundled 1 module in 4ms
+
+  style.css  18.83 KB  (asset)
+
+[21:03:32.484] INFO (#2): Passed package builds {
+  elapsedMs: 7548,
+}
+[21:03:32.484] INFO (#2): Starting typecheck
+[21:03:41.531] INFO (#2): Passed typecheck {
+  elapsedMs: 9047,
+}
+[21:03:41.531] INFO (#2): Starting unit tests
+$ vitest run
+
+ RUN  v5.0.1 /private/var/folders/kd/6rwxf_c92zn45w5n_75r3gx80000gn/T/chartdb-flow-verify-495v03
+
+
+ Test Files  94 passed (94)
+      Tests  2494 passed (2494)
+   Start at  21:03:41
+   Duration  3.40s (import 53%, transform 23%, tests 23%, worker 1%)
+
+    Isolate  94 workers spawned · ~66ms startup each (spawn + environment, per file)
+             at least ~348ms faster with isolate: false — reuses workers across files instead of one per file
+
+[21:03:45.369] INFO (#2): Passed unit tests {
+  elapsedMs: 3838,
+}
+[21:03:45.369] INFO (#2): Verification passed {
+  profile: "focused",
+  fullSuite: false,
+  elapsedMs: 23963,
+}
