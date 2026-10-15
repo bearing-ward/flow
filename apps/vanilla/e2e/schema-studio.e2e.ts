@@ -410,6 +410,7 @@ test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle'
   const b = await bounds(node(page, 'books'))
   const zoom = await inspectViewport(page, (value) => value.zoom)
   await page.mouse.move(a.x - 55 * zoom, a.y - 10)
+  await page.keyboard.down('Shift')
   await page.mouse.down()
   await page.mouse.move(
     b.x + b.width + 10,
@@ -418,6 +419,7 @@ test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle'
   )
   await expect(page.getByTestId('flow-selection-rect')).toBeVisible()
   await page.mouse.up()
+  await page.keyboard.up('Shift')
   await settle(page)
   await expect(
     page.locator('.studio-list [data-table][aria-pressed="true"]')
@@ -425,6 +427,38 @@ test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle'
   await expect(
     page.locator('.studio-list [data-table="authors"]')
   ).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('blank left-button drag pans like the reference', async ({ page }) => {
+  // Measure on screen: a pan moves every node by the pointer delta.
+  const before = await bounds(node(page, 'authors'))
+  const { zoom } = await viewport(page)
+  expect(
+    await page.evaluate(() =>
+      document.elementFromPoint(1000, 950)?.classList.contains('flow-canvas')
+    )
+  ).toBe(true)
+  await page.mouse.move(1000, 950)
+  await page.mouse.down()
+  await page.mouse.move(900, 900, { steps: 10 })
+  await expect(page.getByTestId('flow-selection-rect')).toHaveCount(0)
+  await page.mouse.up()
+  await settle(page)
+  await expect
+    .poll(async () => {
+      const after = await bounds(node(page, 'authors'))
+
+      return {
+        x: Math.round(after.x - before.x),
+        y: Math.round(after.y - before.y),
+      }
+    })
+    .toEqual({ x: -100, y: -50 })
+  const after = await viewport(page)
+  expect(after.zoom).toBe(zoom)
+  await expect(
+    page.locator('.studio-list [data-table][aria-pressed="true"]')
+  ).toHaveCount(0)
 })
 
 test('S8 area dragging carries fully contained tables', async ({ page }) => {
