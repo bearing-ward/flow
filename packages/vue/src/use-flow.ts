@@ -483,11 +483,18 @@ export const useFlow = (): FlowActions => {
   }
 
   const getNode = (id: string): DeepReadonly<FlowNode> | undefined => {
-    const node = getSnapshot().document.nodes.find(
-      (candidate) => candidate.id === id
-    )
+    const internal = editor.getInternalNode(id)
 
-    return node === undefined ? undefined : withMeasured(node)
+    if (internal === undefined) {
+      return undefined
+    }
+
+    return internal.measurementStatus === 'measured'
+      ? {
+          ...internal.node,
+          measured: { width: internal.width, height: internal.height },
+        }
+      : withMeasured(internal.node)
   }
 
   const internalNodes = (): ReadonlyMap<string, FlowInternalNode> =>
@@ -580,7 +587,12 @@ export const useFlow = (): FlowActions => {
     prepareRestore: prepareRestoreSession,
     getNode,
     getEdge,
-    getNodes: () => getSnapshot().document.nodes.map(withMeasured),
+    getNodes: () =>
+      getSnapshot().document.nodes.flatMap(({ id }) => {
+        const node = getNode(id)
+
+        return node === undefined ? [] : [node]
+      }),
     getEdges: () => getSnapshot().document.edges,
     // SAFETY: the accepted snapshot is immutable data; toFlowObject deep-copies it.
     toObject: () => toFlowObject(toRaw(getSnapshot()) as FlowSnapshot),

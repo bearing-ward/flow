@@ -25,6 +25,7 @@ import {
   edgeLabelPosition,
   fitViewportToNodes,
   emptyFlowMeasurementState,
+  projectFlowInternalNode,
   getFlowInternalNode,
   getFlowMeasuredNodes,
   getViewportForBounds,
@@ -97,6 +98,7 @@ import {
   isNodeSelectable,
 } from '@flow/core'
 import type {
+  FlowInternalNode,
   CoordinateExtent,
   FlowStyle,
   FlowAriaLabelConfigInput,
@@ -1550,6 +1552,15 @@ export const FlowCanvas = defineComponent({
 
       return {
         ...graphNode,
+        node: preview.members.has(id)
+          ? {
+              ...graphNode.node,
+              position: {
+                x: graphNode.node.position.x + delta.x,
+                y: graphNode.node.position.y + delta.y,
+              },
+            }
+          : graphNode.node,
         absolutePosition: {
           x: graphNode.absolutePosition.x + delta.x,
           y: graphNode.absolutePosition.y + delta.y,
@@ -4337,6 +4348,12 @@ export const FlowCanvas = defineComponent({
       transaction: FlowEditTransactionInput
     ): Promise<FlowEditResult> => applyEditResolved(() => transaction)
 
+    const liveResizePreview = shallowRef<{
+      readonly change: NodeBoundsChange
+      readonly graph: FlowGraphView
+      readonly size: { readonly width: number; readonly height: number }
+    }>()
+
     const resizePreviewGraph = (change: NodeBoundsChange) => {
       const positions = new Map([
         ...change.childPositions.map(
@@ -4362,9 +4379,8 @@ export const FlowCanvas = defineComponent({
       element: HTMLElement,
       change: NodeBoundsChange
     ): void => {
-      const position = resizePreviewGraph(change).nodes.get(
-        change.nodeId
-      )?.absolutePosition
+      const previewGraph = resizePreviewGraph(change)
+      const position = previewGraph.nodes.get(change.nodeId)?.absolutePosition
 
       if (position === undefined) {
         return
@@ -4374,6 +4390,16 @@ export const FlowCanvas = defineComponent({
       element.style.top = `${position.y}px`
       element.style.width = `${change.size.width}px`
       element.style.height = `${change.size.height}px`
+      const rect = element.getBoundingClientRect()
+      const zoom = renderedViewportZoom(element, activeViewport.value.zoom)
+      liveResizePreview.value = {
+        change,
+        graph: previewGraph,
+        size: {
+          width: rect.width / zoom,
+          height: rect.height / zoom,
+        },
+      }
     }
 
     type TerminalPort =
@@ -4692,6 +4718,7 @@ export const FlowCanvas = defineComponent({
           size: active.size,
           childPositions: [],
         })
+        liveResizePreview.value = undefined
       }
     }
 
@@ -5060,6 +5087,39 @@ export const FlowCanvas = defineComponent({
       })
     )
 
+    const readInternalNode = (id: string): FlowInternalNode | undefined => {
+      const nodeId = NodeIdSchema.make(id)
+      const resize = liveResizePreview.value
+      const item = resize?.graph.nodes.get(nodeId) ?? renderGraphNode(nodeId)
+
+      if (item === undefined) {
+        return undefined
+      }
+
+      const measured = measuredNodes.value.get(nodeId)
+      const change = resize?.change
+
+      const position =
+        change?.nodeId === nodeId
+          ? change.position
+          : change?.childPositions.find((child) => child.nodeId === nodeId)
+              ?.position
+
+      return projectFlowInternalNode(
+        item,
+        change?.nodeId === nodeId
+          ? {
+              ...measured,
+              nodeId,
+              ...(resize?.size ?? change.size),
+              handles: measured?.handles ?? [],
+            }
+          : measured,
+        position,
+        change?.nodeId === nodeId ? resize?.size : undefined
+      )
+    }
+
     const editor: FlowEditor = {
       document: computed(() => stateSnapshot.value.document),
       viewport: computed(() => stateSnapshot.value.viewport),
@@ -5109,11 +5169,7 @@ export const FlowCanvas = defineComponent({
       getInternalNodes: () =>
         new Map(
           activeDocument.value.nodes.flatMap((node) => {
-            const internal = getFlowInternalNode(
-              activeDocument.value,
-              measurementState,
-              node.id
-            )
+            const internal = readInternalNode(node.id)
 
             return internal === undefined ? [] : [[node.id, internal] as const]
           })
@@ -5128,15 +5184,7 @@ export const FlowCanvas = defineComponent({
           )
       ),
       ariaLabelConfig,
-      getInternalNode: (id) => {
-        const node = activeDocument.value.nodes.find(
-          (candidate) => candidate.id === id
-        )
-
-        return node === undefined
-          ? undefined
-          : getFlowInternalNode(activeDocument.value, measurementState, node.id)
-      },
+      getInternalNode: readInternalNode,
       nodesInitialized: (options) =>
         areFlowNodesInitialized(activeDocument.value, measurementState, {
           ...options,
