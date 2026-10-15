@@ -7,10 +7,8 @@ const json = async (name) =>
 const run = await json('run'),
   sources = await json('sources'),
   settings = await json('settings')
-const verification = await json('verification-scope').catch(() => null)
-const verificationBoundary = verification?.baselineException
-  ? 'Focused verification passes in the temporary copy after normalizing the pre-existing one-line Plan 121 formatting issue there. The original worktree quality gate still fails on that unchanged plan. Root lint and formatting excluding that plan pass. The exact scope and exception are in results/verification-scope.json; results/verification.log includes the original failure and the focused pass.'
-  : 'results/verification-scope.json and results/verification.log record the focused Flow baseline with browser lists empty. The original worktree quality check runs separately.'
+const verificationBoundary =
+  'The harness changes only research/references/chartdb and is not part of bun run verify. Plan 121 integration ran focused Flow verification on main after merging it.'
 const spec = (
   await readFile(new URL('scenarios.spec.mjs', import.meta.url), 'utf8')
 ).split('\n')
@@ -357,7 +355,7 @@ lines.push(
   ...scenarios
     .filter((s) => s.status !== 'observed')
     .map((s) => `Unverified ${s.id}: ${s.error}`),
-  `Verification boundary: ${verificationBoundary} A temporary copy runs bun run verify --focused because this checkout has no browser-skip CLI. This is not full-suite, integration, collector, or release acceptance.`,
+  `Verification boundary: ${verificationBoundary} This is not full-suite, integration, collector, or release acceptance.`,
   ''
 )
 await writeFile(new URL('REFERENCE.md', import.meta.url), lines.join('\n'))

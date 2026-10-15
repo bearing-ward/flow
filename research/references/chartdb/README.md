@@ -30,18 +30,4 @@ Each scenario restores a browser storage snapshot of that UI-built fixture in a 
 
 `results/screenshots/` contains light and dark captures. `results/export.png` is the actual UI download. `results/sources.json` identifies the reference commit, installed React Flow versions, sample and lockfile hashes, and hashes of cited source files. Generated output is overwritten on rerun. Playwright scratch files and reports stay under `/tmp/chartdb-ref/`.
 
-Run focused Flow verification without changing the worktree's saved browser scope:
-
-```sh
-node research/references/chartdb/verify-focused.mjs
-```
-
-This checkout's verifier has no browser-skip CLI. The script checks quality in the original worktree, copies the current tree to a temporary directory, gives that copy a focused config with empty browser lists, and runs `bun run verify --focused` there. It records the scope and output under `results/`. This runs quality, architecture, package builds, typechecking, and unit tests. It does not claim full-suite, integration, or Schema Studio acceptance.
-
-The supplied Plan 121 currently has one pre-existing missing blank line before a list. If it remains unchanged, the original quality gate fails. To verify the rest without expanding this worktree's write scope, use:
-
-```sh
-node research/references/chartdb/verify-focused.mjs --normalize-baseline-plan
-```
-
-This option checks lint and all other formatting in the original worktree. It normalizes only that exact blank line in the temporary verification copy, then runs the focused verifier. The receipt records the original quality failure and the copy-only exception. It does not establish that the original worktree's full quality gate passed. The proposed change is in [verification-plan-format.patch](verification-plan-format.patch).
+The harness is outside Flow's test globs and is not part of `bun run verify`; its scripts are excluded from lint in `oxlint.config.ts`.
