@@ -1,0 +1,25 @@
+{
+  "command": "bun run verify --focused",
+  "cwd": "/var/folders/kd/6rwxf_c92zn45w5n_75r3gx80000gn/T/chartdb-flow-verify-495v03",
+  "config": {
+    "defaultProfile": "focused",
+    "activeWork": "Plan 121 ChartDB reference capture, with no Flow browser suites",
+    "checks": [],
+    "browserTests": {
+      "vanilla": [],
+      "vue": [],
+      "foldkit": []
+    }
+  },
+  "exitCode": 0,
+  "originalConfigSha256": "50273933757d745218d78e8b45f52d96828dd78487a1244fa419dfb047c6c476",
+  "originalWorktreeQualityExitCode": 1,
+  "baselineException": {
+    "path": "plans/121-schema-studio-vanilla.md",
+    "change": "one missing blank line before a list",
+    "normalizedInTemporaryCopyOnly": true,
+    "rootLintExitCode": 0,
+    "rootFormatExcludingThisPlanExitCode": 0
+  },
+  "reason": "This copy changes verification scope and the documented one-line baseline formatting exception. The original verification config and plan remain unchanged."
+}

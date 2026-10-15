@@ -1,0 +1,265 @@
+{
+  "commit": "c24936a402bb3e24b4858f05282d69a04fcfe25b",
+  "reactFlow": "12.10.0",
+  "xyflowSystem": "0.0.74",
+  "settings": [
+    {
+      "name": "minZoom",
+      "value": 0.1,
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1684",
+      "evidenceBoundary": "S10"
+    },
+    {
+      "name": "maxZoom",
+      "value": 5,
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1683",
+      "evidenceBoundary": "S10"
+    },
+    {
+      "name": "snapGrid",
+      "value": [20, 20],
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1698",
+      "evidenceBoundary": "S2"
+    },
+    {
+      "name": "snapToGrid",
+      "value": "button enabled OR Shift held; button starts false",
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:360,1697",
+      "evidenceBoundary": "S2"
+    },
+    {
+      "name": "selectionMode",
+      "value": "Full",
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1699",
+      "evidenceBoundary": "S7"
+    },
+    {
+      "name": "multiSelectionKeyCode",
+      "value": ["Shift", "Meta", "Control"],
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1703",
+      "evidenceBoundary": "S7"
+    },
+    {
+      "name": "selectionKeyCode",
+      "value": "Shift",
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:3576",
+      "evidenceBoundary": "S7"
+    },
+    {
+      "name": "selectionOnDrag",
+      "value": false,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:3576",
+      "evidenceBoundary": "S7"
+    },
+    {
+      "name": "deleteKeyCode",
+      "value": ["Backspace", "Delete"],
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1702",
+      "evidenceBoundary": "S6"
+    },
+    {
+      "name": "editableDeleteExemptions",
+      "value": "INPUT, SELECT, TEXTAREA, contenteditable, .nokey",
+      "origin": "React Flow implementation",
+      "source": "node_modules/@xyflow/system/dist/esm/index.mjs:845-854",
+      "evidenceBoundary": "S6 tests input and textarea only"
+    },
+    {
+      "name": "panOnScroll",
+      "value": "scroll_action === pan; fresh provider defaults pan",
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1696; src/context/local-config-context/local-config-provider.tsx:22-24",
+      "evidenceBoundary": "S11"
+    },
+    {
+      "name": "panOnScrollSpeed",
+      "value": 0.5,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283",
+      "evidenceBoundary": "S11"
+    },
+    {
+      "name": "panOnScrollMode",
+      "value": "free",
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283",
+      "evidenceBoundary": "S11"
+    },
+    {
+      "name": "zoomOnScroll",
+      "value": true,
+      "origin": "React Flow default, panOnScroll chooses the pan handler",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283; node_modules/@xyflow/system/dist/esm/index.mjs:2908-2958",
+      "evidenceBoundary": "S11"
+    },
+    {
+      "name": "zoomOnPinch",
+      "value": true,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283",
+      "evidenceBoundary": "unverified pinch input"
+    },
+    {
+      "name": "zoomOnDoubleClick",
+      "value": true,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283",
+      "evidenceBoundary": "unverified canvas double-click zoom"
+    },
+    {
+      "name": "panOnDrag",
+      "value": true,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283",
+      "evidenceBoundary": "setup uses canvas scrolling; unverified dedicated pan gesture"
+    },
+    {
+      "name": "panActivationKeyCode",
+      "value": "Space",
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:3576",
+      "evidenceBoundary": "unverified"
+    },
+    {
+      "name": "preventScrolling",
+      "value": true,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:1283",
+      "evidenceBoundary": "S11"
+    },
+    {
+      "name": "onlyRenderVisibleElements",
+      "value": true,
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1673",
+      "evidenceBoundary": "S12"
+    },
+    {
+      "name": "fitView",
+      "value": false,
+      "origin": "explicit; initial and button fits happen separately",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:1689,395-405; src/pages/editor-page/canvas/toolbar/toolbar.tsx:72-80",
+      "evidenceBoundary": "S1"
+    },
+    {
+      "name": "showAllFit",
+      "value": "padding 0.1, maxZoom 0.8, duration 500ms",
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/toolbar/toolbar.tsx:72-80",
+      "evidenceBoundary": "S1 S12"
+    },
+    {
+      "name": "sideListFocus",
+      "value": "minZoom 1, maxZoom 1, duration 500ms; selects table",
+      "origin": "explicit",
+      "source": "src/hooks/use-focus-on.ts:53-86",
+      "evidenceBoundary": "S13"
+    },
+    {
+      "name": "tableResize",
+      "value": "width 224 to 450; only dy=0; corner handles hidden",
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/table-node/table-node.tsx:464-471; src/lib/domain/db-table.ts:13-15",
+      "evidenceBoundary": "S9"
+    },
+    {
+      "name": "noteResizeMinimum",
+      "value": {
+        "width": 200,
+        "height": 150
+      },
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/note-node/note-node.tsx:161-168",
+      "evidenceBoundary": "S9"
+    },
+    {
+      "name": "areaResizeMinimum",
+      "value": {
+        "width": 100,
+        "height": 100
+      },
+      "origin": "explicit",
+      "source": "src/pages/editor-page/canvas/area-node/area-node.tsx:162-167",
+      "evidenceBoundary": "S9"
+    },
+    {
+      "name": "zIndex",
+      "value": "area -10; note 50; table base 0; connected highlighted edge 1",
+      "origin": "explicit and React Flow base",
+      "source": "src/pages/editor-page/canvas/canvas.tsx:125-126,249-267,518-584",
+      "evidenceBoundary": "S5 S8 S9"
+    },
+    {
+      "name": "elevateNodesOnSelect",
+      "value": true,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:3189",
+      "evidenceBoundary": "S5"
+    },
+    {
+      "name": "elevateEdgesOnSelect",
+      "value": true,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:3190",
+      "evidenceBoundary": "S5"
+    },
+    {
+      "name": "nodeDragThreshold",
+      "value": 1,
+      "origin": "React Flow default",
+      "source": "node_modules/@xyflow/react/dist/esm/index.mjs:3179",
+      "evidenceBoundary": "source-defined; no threshold-boundary test"
+    },
+    {
+      "name": "showMiniMapOnCanvas",
+      "value": true,
+      "origin": "fresh provider default",
+      "source": "src/context/local-config-context/local-config-provider.tsx:48-51",
+      "evidenceBoundary": "S15"
+    },
+    {
+      "name": "showDBViews",
+      "value": false,
+      "origin": "fresh provider default; fixture enables through UI",
+      "source": "src/context/local-config-context/local-config-provider.tsx:26-28",
+      "evidenceBoundary": "fixture and S15"
+    },
+    {
+      "name": "showCardinality",
+      "value": true,
+      "origin": "fresh provider default",
+      "source": "src/context/local-config-context/local-config-provider.tsx:30-32",
+      "evidenceBoundary": "S3 S4 S5"
+    },
+    {
+      "name": "theme",
+      "value": "system; harness browser light; explicit UI light/dark captures",
+      "origin": "fresh provider default",
+      "source": "src/context/local-config-context/local-config-provider.tsx:18-20",
+      "evidenceBoundary": "S15 and screenshot pairs"
+    },
+    {
+      "name": "export",
+      "value": "PNG, scale 4, background pattern true, transparent false",
+      "origin": "dialog defaults",
+      "source": "src/dialogs/export-image-dialog/export-image-dialog.tsx:31-34",
+      "evidenceBoundary": "S16"
+    },
+    {
+      "name": "newRelationshipCardinality",
+      "value": ["one", "one"],
+      "origin": "ChartDB createRelationship defaults",
+      "source": "src/context/chartdb-context/chartdb-provider.tsx:1317-1348",
+      "evidenceBoundary": "S3"
+    }
+  ]
+}

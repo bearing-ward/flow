@@ -17,6 +17,7 @@ const localIgnores = [
   'apps/vanilla/dist/**',
   'research/artifacts/**',
   'research/generated/**',
+  'research/references/chartdb/**/*.mjs',
   'tools/oxlint/anti-slop/**',
 ]
 
