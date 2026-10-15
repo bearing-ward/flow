@@ -864,6 +864,131 @@ test('S14 context menus add at the pointer and duplicate or edit nodes', async (
   await expect(node(page, added.id)).toHaveCount(0)
 })
 
+test('Menu dismissal: primary pointerdown on bare pane preserves panning', async ({
+  page,
+}) => {
+  await page.mouse.click(1000, 800, { button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  const before = await viewport(page)
+  await page.mouse.move(1150, 900)
+  await page.mouse.down()
+  await expect(page.getByRole('menu')).toBeHidden()
+  await page.mouse.move(1190, 920, { steps: 5 })
+  await page.mouse.up()
+  await expect
+    .poll(() => inspectViewport(page, (value) => value.x))
+    .toBeCloseTo(before.x + 40, 0)
+  await expect
+    .poll(() => inspectViewport(page, (value) => value.y))
+    .toBeCloseTo(before.y + 20, 0)
+})
+
+test('Menu dismissal: table heading still selects the table', async ({
+  page,
+}) => {
+  await page.mouse.click(1000, 800, { button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  await heading(page, 'authors').click()
+  await expect(page.getByRole('menu')).toBeHidden()
+  await expect(
+    page.locator('.studio-list [data-table="authors"]')
+  ).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('Menu dismissal: side panel still selects after a table context menu', async ({
+  page,
+}) => {
+  await heading(page, 'authors').click({ button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  await page.locator('.studio-list [data-table="books"]').click()
+  await expect(page.getByRole('menu')).toBeHidden()
+  await expect(
+    page.locator('.studio-list [data-table="books"]')
+  ).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('Menu dismissal: right-click replaces the menu at the new point', async ({
+  page,
+}) => {
+  await page.mouse.click(1000, 800, { button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  await page.mouse.click(950, 900, { button: 'right' })
+  await expect(page.locator('.studio-menu')).toHaveCount(1)
+  await expect(page.getByRole('menu')).toHaveCSS('left', '950px')
+  await expect(page.getByRole('menu')).toHaveCSS('top', '740px')
+  await expect(
+    page.getByRole('menuitem', { name: 'Add table', exact: true })
+  ).toBeVisible()
+})
+
+test('Menu dismissal: cardinality opening click survives until outside pointerdown', async ({
+  page,
+}) => {
+  await page.getByTestId('cardinality-relation-0').click()
+  await expect(page.getByRole('menu')).toBeVisible()
+  await expect(
+    page.getByRole('menuitem', { name: 'one to many', exact: true })
+  ).toBeVisible()
+  await page.mouse.click(1150, 900)
+  await expect(page.getByRole('menu')).toBeHidden()
+})
+
+test('Menu dismissal: Escape closes context menu and cardinality popover', async ({
+  page,
+}) => {
+  await page.mouse.click(1000, 800, { button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('menu')).toBeHidden()
+  await page.getByTestId('cardinality-relation-0').click()
+  await expect(page.getByRole('menu')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('menu')).toBeHidden()
+})
+
+for (const id of ['prices-note', 'sales-area']) {
+  test(`Menu dismissal: ${id} still selects on outside click`, async ({
+    page,
+  }) => {
+    await page.mouse.click(1000, 800, { button: 'right' })
+    await expect(page.getByRole('menu')).toBeVisible()
+    await heading(page, id).click()
+    await expect(page.getByRole('menu')).toBeHidden()
+    await expect(status(page)).toHaveAttribute(
+      'data-selected',
+      JSON.stringify([id])
+    )
+  })
+}
+
+test('Menu dismissal: toolbar zoom still runs on outside click', async ({
+  page,
+}) => {
+  await page.mouse.click(1000, 800, { button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  const before = await viewport(page)
+  await page.getByRole('button', { name: 'Zoom in', exact: true }).click()
+  await expect(page.getByRole('menu')).toBeHidden()
+  await expect
+    .poll(() => inspectViewport(page, (value) => value.zoom))
+    .toBeGreaterThan(before.zoom)
+})
+
+test('Menu dismissal: edge label dismisses on pointerdown and opens its popover on click', async ({
+  page,
+}) => {
+  await page.mouse.click(1000, 800, { button: 'right' })
+  await expect(page.getByRole('menu')).toBeVisible()
+  const rect = await bounds(page.getByTestId('cardinality-relation-0'))
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
+  await page.mouse.down()
+  await expect(page.getByRole('menu')).toBeHidden()
+  await page.mouse.up()
+  await expect(
+    page.getByRole('menuitem', { name: 'one to many', exact: true })
+  ).toBeVisible()
+})
+
 test('S15 toggles minimap and dark mode and renders dependencies', async ({
   page,
 }) => {

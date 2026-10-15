@@ -779,6 +779,20 @@ const editable = (event: KeyboardEvent) => {
   )
 }
 
+const dismissMenu = (event: PointerEvent): void => {
+  if (event.button !== 0 || model.menu.kind === 'closed') {
+    return
+  }
+
+  const menu = root.querySelector('.studio-menu')
+
+  if (menu !== null && !event.composedPath().includes(menu)) {
+    send(Msg.CloseMenu())
+  }
+}
+
+window.addEventListener('pointerdown', dismissMenu, { capture: true })
+
 window.addEventListener(
   'keydown',
   (event) => {
@@ -837,6 +851,7 @@ window.addEventListener('blur', () => {
 window.addEventListener(
   'pagehide',
   () => {
+    window.removeEventListener('pointerdown', dismissMenu, { capture: true })
     measurements.dispose()
     mini?.dispose()
     renderers.dispose()
