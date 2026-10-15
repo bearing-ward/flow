@@ -268,6 +268,22 @@ test('S4 reproduces the captured books.publisher_id side flip', async ({
   expect(await edge.getAttribute('d')).not.toBe(before)
 })
 
+test('relationship edges follow a table during the drag', async ({ page }) => {
+  const edge = page.getByTestId('relationship-relation-0')
+  const before = await edge.getAttribute('d')
+  const rect = await bounds(heading(page, 'publishers'))
+  const start = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 60, start.y + 80, { steps: 8 })
+  // Pointer still down: the path must already match where the drop leaves it.
+  await expect.poll(() => edge.getAttribute('d')).not.toBe(before)
+  const during = await edge.getAttribute('d')
+  await page.mouse.up()
+  await settle(page)
+  expect(await edge.getAttribute('d')).toBe(during)
+})
+
 test('S5 elevates and animates connected edges with normal strokes; only the selected edge uses accent', async ({
   page,
 }) => {
@@ -482,6 +498,26 @@ test('S8 area dragging carries fully contained tables', async ({ page }) => {
   await expect
     .poll(() => position(page, 'customers'))
     .toEqual({ x: 1120, y: 120 })
+})
+
+test('relationship edges follow tables carried by the Catalog area', async ({
+  page,
+}) => {
+  const edge = page.getByTestId('relationship-relation-0')
+  const before = await edge.getAttribute('d')
+  const tableBefore = await bounds(node(page, 'publishers'))
+  const rect = await bounds(heading(page, 'catalog-area'))
+  const start = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 40, start.y + 30, { steps: 8 })
+  await expect.poll(() => edge.getAttribute('d')).not.toBe(before)
+  const tableDuring = await bounds(node(page, 'publishers'))
+  expect(tableDuring.x).toBeCloseTo(tableBefore.x + 40, 0)
+  const during = await edge.getAttribute('d')
+  await page.mouse.up()
+  await settle(page)
+  expect(await edge.getAttribute('d')).toBe(during)
 })
 
 test('S9 enforces captured resize constraints with no note or area upper limits', async ({

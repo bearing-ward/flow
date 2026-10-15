@@ -1,6 +1,7 @@
 import { Effect, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
+import { createFlowGraph } from './flow-graph.ts'
 import {
   NodeMeasurementInputSchema,
   advanceNodeMeasurementGeneration,
@@ -10,6 +11,7 @@ import {
   emptyFlowMeasurementState,
   getFlowInternalNode,
   getFlowInternalNodes,
+  projectFlowInternalNode,
   pruneFlowMeasurements,
 } from './flow-measurement.schema.ts'
 import {
@@ -471,5 +473,39 @@ describe('original 065 dimension absence boundary, unit path', () => {
         height: 0,
       })
     ).toMatchObject({ width: 0, height: 0 })
+  })
+})
+
+describe('paint graph internal-node projection', () => {
+  it('projects detached live geometry and preserves accepted local positions', () => {
+    const offset = { x: 80, y: 50 }
+    const positions = new Map([[id('parent'), offset]])
+    const graph = createFlowGraph(document, new Map(), positions)
+    const item = graph.nodes.get(id('child'))
+    const parent = graph.nodes.get(id('parent'))
+
+    if (item === undefined || parent === undefined) {
+      throw new Error('Missing fixture nodes')
+    }
+
+    const projected = projectFlowInternalNode(item)
+
+    const live = projectFlowInternalNode(
+      parent,
+      undefined,
+      positions.get(id('parent'))
+    )
+
+    offset.x = 100
+    offset.y = 200
+    expect({
+      absolute: projected.absolutePosition,
+      local: projected.node.position,
+    }).toStrictEqual({ absolute: { x: 90, y: 62 }, local: { x: 10, y: 12 } })
+    expect(live.node.position).toStrictEqual({ x: 80, y: 50 })
+    expect(document.nodes[0]?.position).toStrictEqual({ x: 0, y: 0 })
+    expect(
+      [live, live.node, live.absolutePosition].every(Object.isFrozen)
+    ).toBeTruthy()
   })
 })

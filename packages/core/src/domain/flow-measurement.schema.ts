@@ -5,7 +5,12 @@ import { createFlowGraph } from './flow-graph.ts'
 import type { FlowGraphNode } from './flow-graph.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { MeasuredNodeSchema } from './flow-runtime.schema.ts'
-import type { FlowDocument, NodeId } from './flow.schema.ts'
+import type {
+  FlowDocument,
+  FlowNode,
+  NodeId,
+  XYPosition,
+} from './flow.schema.ts'
 import {
   FlowDocumentSchema,
   FlowHandleSchema,
@@ -336,9 +341,12 @@ export const areFlowNodesInitialized = (
     .every(({ id }) => measurements.has(id))
 }
 
-const projectInternalNode = (
+/** Project a node from an existing paint graph without rebuilding the graph. */
+export const projectFlowInternalNode = (
   item: FlowGraphNode,
-  measured: MeasuredNode | undefined
+  measured: MeasuredNode | undefined = undefined,
+  position: XYPosition = item.node.position,
+  size: FlowNode['size'] = item.node.size
 ): FlowInternalNode => {
   let measurementStatus: FlowInternalNode['measurementStatus'] = 'measured'
 
@@ -348,12 +356,18 @@ const projectInternalNode = (
     measurementStatus = 'unmeasured'
   }
 
+  const node = { ...item.node, position }
+
+  if (size !== undefined) {
+    Object.assign(node, { size })
+  }
+
   const snapshot = S.decodeUnknownSync(FlowInternalNodeSchema)({
     absolutePosition: item.absolutePosition,
     handles: item.hidden ? [] : (measured?.handles ?? []),
     height: measured?.height ?? item.dimensions.height,
     measurementStatus,
-    node: item.node,
+    node,
     width: measured?.width ?? item.dimensions.width,
   })
 
@@ -388,7 +402,7 @@ export const getFlowInternalNode = (
 
   return item === undefined
     ? undefined
-    : projectInternalNode(item, measurements.get(nodeId))
+    : projectFlowInternalNode(item, measurements.get(nodeId))
 }
 
 /**
@@ -412,7 +426,7 @@ export const getFlowInternalNodes = (
 
     return item === undefined
       ? []
-      : [projectInternalNode(item, measurements.get(node.id))]
+      : [projectFlowInternalNode(item, measurements.get(node.id))]
   })
 }
 

@@ -241,6 +241,7 @@ export {
   emptyFlowMeasurementState,
   getFlowInternalNode,
   getFlowInternalNodes,
+  projectFlowInternalNode,
   pruneFlowMeasurements,
   setNodeMeasurementGenerations,
 } from './domain/flow-measurement.schema.ts'

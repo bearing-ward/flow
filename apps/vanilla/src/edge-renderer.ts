@@ -50,6 +50,11 @@ import {
   applyEdgeLabelPresentation,
 } from './presentation.ts'
 
+// Client rectangles use float coordinates after zoom. Normalize below CSS
+// layout precision so translating a node cannot change its local handle offsets.
+const localHandleCoordinate = (value: number): number =>
+  Math.round(value * 1024) / 1024
+
 export const measureNodeHandles = (
   node: FlowNode,
   element: HTMLElement,
@@ -79,8 +84,12 @@ export const measureNodeHandles = (
       nodeId: node.id,
       handleId: handle.id,
       offset: {
-        x: (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom,
-        y: (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom,
+        x: localHandleCoordinate(
+          (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom
+        ),
+        y: localHandleCoordinate(
+          (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom
+        ),
       },
       width: bounds.width / zoom,
       height: bounds.height / zoom,

@@ -78,7 +78,7 @@ import {
   ViewportPaddingSchema,
   createFlowGraph,
   emptyFlowMeasurementState,
-  getFlowInternalNode,
+  projectFlowInternalNode,
   getFlowMeasuredNodes,
   inferHandleMeasurement,
   graphBounds,
@@ -2610,16 +2610,18 @@ export const createFlowHost = (
     let destroyPromise: Promise<void> | undefined
 
     /** React `node.measured`: the last DOM measurement on public reads. */
-    const withMeasured = (node: FlowNode): FlowNode => {
-      const measured = measurements.get(node.id)
-
-      return measured === undefined
+    const withMeasured = (
+      node: FlowNode,
+      measured:
+        | { readonly width: number; readonly height: number }
+        | undefined = measurements.get(node.id)
+    ): FlowNode =>
+      measured === undefined
         ? node
         : {
             ...node,
             measured: { width: measured.width, height: measured.height },
           }
-    }
 
     // Accepted documents are replaced, never mutated, so an index per
     // document identity keeps node lookups constant-time on hot paths.
@@ -3344,6 +3346,14 @@ export const createFlowHost = (
       })
     )
 
+    let instanceProjection:
+      | {
+          readonly document: FlowDocument
+          readonly measurements: typeof measurements
+          readonly pass: HostProjection
+        }
+      | undefined
+
     const captureProjection = (
       target: FlowDocument = document,
       origin?: PaintOrigin
@@ -3370,7 +3380,7 @@ export const createFlowHost = (
       const nodes = new Map(nodeSlots)
       const edges = edgeRenderer.captureEntryCohort()
 
-      return {
+      const pass: HostProjection = {
         origin: origin ?? { kind: 'semantic', document: target },
         graph: createFlowGraph(values, measured, positions),
         inputs: {
@@ -3402,6 +3412,12 @@ export const createFlowHost = (
         cohort: { nodes, edges },
         entryClaims: { nodes: new Map(nodes), edges: new Map(edges) },
       }
+
+      if (target === document) {
+        instanceProjection = { document, measurements, pass }
+      }
+
+      return pass
     }
 
     type HostProjection = Parameters<typeof edgeRenderer.reconcile>[0]
@@ -3873,6 +3889,58 @@ export const createFlowHost = (
       target: FlowDocument = document,
       overrides: ReadonlyMap<NodeId, XYPosition> = renderedNodePositions
     ) => createFlowGraph(target, measurements, overrides)
+
+    let acceptedInstanceGraph:
+      | {
+          readonly document: FlowDocument
+          readonly measurements: typeof measurements
+          readonly graph: ReturnType<typeof createFlowGraph>
+        }
+      | undefined
+
+    const readInternalNode = (id: string): FlowInternalNode | undefined => {
+      const resize = interactionSlots.activeNodeResize ?? activeKeyboardResize
+
+      const previewActive =
+        interactionSlots.activeDrag !== null || resize !== null
+
+      const pass =
+        instanceProjection?.document === document &&
+        instanceProjection.measurements === measurements
+          ? instanceProjection.pass
+          : captureProjection()
+
+      if (
+        !previewActive &&
+        (acceptedInstanceGraph?.document !== document ||
+          acceptedInstanceGraph.measurements !== measurements)
+      ) {
+        acceptedInstanceGraph = {
+          document,
+          measurements,
+          graph: createFlowGraph(document, measurements),
+        }
+      }
+
+      const graph = previewActive ? pass.graph : acceptedInstanceGraph?.graph
+      const item = graph?.nodes.get(NodeIdSchema.make(id))
+
+      const measured =
+        item === undefined ? undefined : pass.inputs.measurements.get(item.id)
+
+      const resizeId = resize?.nodeId
+
+      return item === undefined
+        ? undefined
+        : projectFlowInternalNode(
+            item,
+            measured,
+            previewActive ? pass.inputs.positions.get(item.id) : undefined,
+            item.id === resizeId && measured !== undefined
+              ? { width: measured.width, height: measured.height }
+              : undefined
+          )
+    }
 
     const fitViewControlHandle: FitViewControlHandle = { current: undefined }
 
@@ -12983,18 +13051,31 @@ export const createFlowHost = (
       prepareRestore: (saved) =>
         Effect.runPromise(decodeSavedFlowSession(saved)),
       getNodes: () =>
-        createFlowSnapshot(document, authoritativeViewport).document.nodes.map(
-          withMeasured
-        ),
+        document.nodes.flatMap((node) => {
+          const internal = readInternalNode(node.id)
+
+          return internal === undefined
+            ? []
+            : [
+                withMeasured(
+                  internal.node,
+                  internal.measurementStatus === 'measured'
+                    ? internal
+                    : undefined
+                ),
+              ]
+        }),
       getEdges: () =>
         createFlowSnapshot(document, authoritativeViewport).document.edges,
       getNode: (id) => {
-        const node = createFlowSnapshot(
-          document,
-          authoritativeViewport
-        ).document.nodes.find((candidate) => candidate.id === id)
+        const internal = readInternalNode(id)
 
-        return node === undefined ? undefined : withMeasured(node)
+        return internal === undefined
+          ? undefined
+          : withMeasured(
+              internal.node,
+              internal.measurementStatus === 'measured' ? internal : undefined
+            )
       },
       getNodesData: (nodeIds) =>
         selectNodesData(
@@ -13153,13 +13234,7 @@ export const createFlowHost = (
           document,
           S.decodeUnknownSync(FlowHandleConnectionsQuerySchema)(query)
         ),
-      getInternalNode: (id) => {
-        const node = document.nodes.find((candidate) => candidate.id === id)
-
-        return node === undefined
-          ? undefined
-          : getFlowInternalNode(document, measurementState, node.id)
-      },
+      getInternalNode: readInternalNode,
       nodesInitialized: (readinessOptions) =>
         areFlowNodesInitialized(document, measurementState, {
           ...readinessOptions,
