@@ -24,6 +24,7 @@ export interface ClosingOptionsInput {
   readonly document?: FlowDocumentInput
   readonly trackMoves?: boolean
   readonly editingControls?: boolean
+  readonly handleRender?: boolean
   readonly customContent?: boolean
 }
 
@@ -135,6 +136,11 @@ export const mountClosingOptions = (
         initial: { x: 0, y: 0, zoom: 1 },
         limits: { minZoom: 0.2, maxZoom: 3 },
       },
+      onHandleRender: input.handleRender
+        ? (node, _handle, element) => {
+            element.title = JSON.stringify(node.data)
+          }
+        : undefined,
       nodeRenderers: { custom: contentRenderer },
       edgeRenderers: { editing: editingEdge },
       panels: input.editingControls

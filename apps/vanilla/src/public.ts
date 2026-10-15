@@ -1,5 +1,6 @@
 export {
   FlowMountOptionsSchema,
+  FlowCanvasOptionsSchema,
   FitBoundsOptionsSchema,
   FitViewOptionsSchema,
   acquireFlowHost,
@@ -100,6 +101,7 @@ export type {
   CanvasPanelPlacement,
   FlowPanelOption,
   FlowCreateOptions,
+  FlowCanvasOptionsInput,
   FlowHostOptions,
   FlowMountOptions,
   JavaScriptFlowController,

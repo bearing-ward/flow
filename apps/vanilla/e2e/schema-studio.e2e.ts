@@ -127,6 +127,35 @@ test('S2 drags on a 20px grid with toggle and held Shift', async ({ page }) => {
   await drag(page, heading(page, 'authors'), 31 * zoom, 28 * zoom)
   await page.keyboard.up('Shift')
   await expect.poll(() => position(page, 'authors')).toEqual({ x: 200, y: 180 })
+  const retained = await node(page, 'authors').elementHandle()
+  const rect = await bounds(heading(page, 'authors'))
+  const start = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+  const before = await bounds(node(page, 'authors'))
+
+  const renderedX = async () => {
+    const box = await bounds(node(page, 'authors'))
+
+    return box.x
+  }
+
+  await page.mouse.move(start.x, start.y)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 7 * zoom, start.y + 7 * zoom)
+  await expect.poll(renderedX).toBeCloseTo(before.x + 7 * zoom, 0)
+  await page.keyboard.down('Shift')
+  await page.mouse.move(start.x + 33 * zoom, start.y + 27 * zoom)
+  await expect.poll(renderedX).toBeCloseTo(before.x + 40 * zoom, 0)
+  await page.mouse.move(start.x + 53 * zoom, start.y + 47 * zoom)
+  await expect.poll(renderedX).toBeCloseTo(before.x + 60 * zoom, 0)
+  await page.mouse.up()
+  await page.keyboard.up('Shift')
+  await expect.poll(() => position(page, 'authors')).toEqual({ x: 260, y: 220 })
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element === document.querySelector('.flow-node[data-node-id="authors"]')
+    )
+  ).toBe(true)
 })
 
 test('S3 connects field handles, rejects duplicates, and refreshes collapsed anchors', async ({
@@ -272,10 +301,17 @@ test('S7 multi-selects with Shift, Meta, Control and a full selection rectangle'
   page,
 }) => {
   await select(page, 'authors')
+  const retained = await node(page, 'authors').elementHandle()
   await page.keyboard.down('Shift')
   await settle(page)
   await heading(page, 'books').click()
   await page.keyboard.up('Shift')
+  expect(
+    await retained?.evaluate(
+      (element) =>
+        element === document.querySelector('.flow-node[data-node-id="authors"]')
+    )
+  ).toBe(true)
   await expect(page.locator('.studio-list [aria-pressed="true"]')).toHaveCount(
     2
   )
@@ -572,7 +608,7 @@ test('S16 undo/redo, persistence and a valid PNG export', async ({ page }) => {
   )
 })
 
-test('Beyond: keyboard movement announces 5px and Shift 20px moves, then copy/paste', async ({
+test('Beyond: built-in keyboard movement announces 5px and snapped 20/80px moves, then copy/paste', async ({
   page,
 }) => {
   await focus(page, 'authors')
@@ -580,19 +616,22 @@ test('Beyond: keyboard movement announces 5px and Shift 20px moves, then copy/pa
   await page.keyboard.press('ArrowRight')
   await settle(page)
   await expect.poll(() => position(page, 'authors')).toEqual({ x: 85, y: 120 })
-  await expect(page.locator('.studio-announcement')).toHaveText(
-    'authors moved to 85, 120'
+  await expect(page.getByTestId('flow-aria-live')).toHaveText(
+    'Moved selected node right. New position, x: 85, y: 120'
   )
   await page.keyboard.press('ArrowLeft')
   await settle(page)
+  await page.getByRole('button', { name: 'Snap 20', exact: true }).click()
+  await node(page, 'authors').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => position(page, 'authors')).toEqual({ x: 100, y: 120 })
   await page.keyboard.down('Shift')
-  await settle(page)
   await page.keyboard.press('ArrowDown')
   await page.keyboard.up('Shift')
   await settle(page)
-  await expect.poll(() => position(page, 'authors')).toEqual({ x: 80, y: 140 })
-  await expect(page.locator('.studio-announcement')).toHaveText(
-    'authors moved to 80, 140'
+  await expect.poll(() => position(page, 'authors')).toEqual({ x: 100, y: 200 })
+  await expect(page.getByTestId('flow-aria-live')).toHaveText(
+    'Moved selected node down. New position, x: 100, y: 200'
   )
   await page.keyboard.press('Control+c')
   await page.keyboard.press('Control+v')
@@ -606,7 +645,7 @@ test('Beyond: keyboard movement announces 5px and Shift 20px moves, then copy/pa
           value.items.find((item) => item.name === 'authors copy')?.position
       )
     )
-    .toEqual({ x: 120, y: 180 })
+    .toEqual({ x: 140, y: 240 })
 })
 
 test('Beyond: HTML cardinality popover changes markers and is undoable', async ({

@@ -1026,6 +1026,7 @@ export interface FlowHostOptions extends CanvasInteractionOptions {
   /** Built-in connection line path; unset keeps the straight preview line. */
   readonly connectionLineType?: FlowConnectionLineType | undefined
   readonly autoPanOnConnect?: boolean | undefined
+  readonly snapToGrid?: boolean | undefined
   readonly snapGrid?: SnapGrid | undefined
   readonly connectionRadius?: ConnectionRadius | undefined
   readonly isValidConnection?: FlowConnectionValidator | undefined
@@ -1110,6 +1111,22 @@ const isSelectionActivationEnabled = (
     options.selectionActivationModifier ?? 'shift'
   )
 
+/** Runtime canvas settings share the mount boundary's schemas and defaults. */
+export const FlowCanvasOptionsSchema = S.Struct({
+  snapGrid: FlowMountOptionsSchema.fields.snapGrid,
+  snapToGrid: FlowMountOptionsSchema.fields.snapToGrid,
+  panOnScroll: FlowMountOptionsSchema.fields.panOnScroll,
+  panOnScrollSpeed: FlowMountOptionsSchema.fields.panOnScrollSpeed,
+  panOnScrollMode: FlowMountOptionsSchema.fields.panOnScrollMode,
+  zoomOnScroll: FlowMountOptionsSchema.fields.zoomOnScroll,
+  zoomOnPinch: FlowMountOptionsSchema.fields.zoomOnPinch,
+  zoomOnDoubleClick: FlowMountOptionsSchema.fields.zoomOnDoubleClick,
+  renderOnlyVisible: FlowMountOptionsSchema.fields.renderOnlyVisible,
+  preventScrolling: FlowMountOptionsSchema.fields.preventScrolling,
+})
+
+export type FlowCanvasOptionsInput = typeof FlowCanvasOptionsSchema.Encoded
+
 const projectHandleConnectionEdges = (edges: readonly FlowEdge[]) =>
   edges.map(({ id, source, target, sourceHandle, targetHandle }) => ({
     edgeId: id,
@@ -1129,6 +1146,8 @@ export interface FlowController {
     readonly resolved: 'light' | 'dark'
   }
   readonly setColorMode: (mode: FlowColorMode) => void
+  /** Update canvas settings without replacing the host or interrupting gestures. */
+  readonly setCanvasOptions: (next: FlowCanvasOptionsInput) => void
   /**
    * Stored positions as currently drawn: drag and resize previews override
    * the accepted ones (parent-relative anchors, like `node.position`).
@@ -1420,6 +1439,7 @@ export interface JavaScriptFlowController extends FlowInstanceApi {
   readonly getAriaLabelConfig: FlowController['getAriaLabelConfig']
   readonly getColorMode: FlowController['getColorMode']
   readonly setColorMode: FlowController['setColorMode']
+  readonly setCanvasOptions: FlowController['setCanvasOptions']
   readonly getRenderedNodePositions: FlowController['getRenderedNodePositions']
   readonly subscribeRenderedPositions: FlowController['subscribeRenderedPositions']
   readonly registerNodeResizer: FlowController['registerNodeResizer']
@@ -2084,24 +2104,53 @@ const canvasCallbackKeys = {
   },
 } satisfies CanvasCallbackKeys
 
+/** React's default `snapGrid` when only `snapToGrid` is set. */
+const defaultSnapGrid: SnapGrid = { x: 15, y: 15 }
+
+/** `snapToGrid: false` turns `snapGrid` off; `true` alone uses 15x15. */
+const resolveSnapGrid = (options: {
+  readonly snapGrid?: SnapGrid | undefined
+  readonly snapToGrid?: boolean | undefined
+}): SnapGrid | undefined => {
+  if (options.snapToGrid === false) {
+    return undefined
+  }
+
+  return (
+    options.snapGrid ??
+    (options.snapToGrid === true ? defaultSnapGrid : undefined)
+  )
+}
+
 export const createFlowHost = (
   root: HTMLElement,
   initialDocument: FlowDocument,
-  options: FlowHostOptions
+  initialOptions: FlowHostOptions
 ) => {
-  const nodeDragThreshold = decodeNodeDragThreshold(options.nodeDragThreshold)
+  const nodeDragThreshold = decodeNodeDragThreshold(
+    initialOptions.nodeDragThreshold
+  )
 
   const connectionDragThreshold = S.decodeUnknownSync(
     ConnectionDragThresholdSchema
   )(
-    options.connectionDragThreshold === undefined
+    initialOptions.connectionDragThreshold === undefined
       ? defaultConnectionDragThreshold
-      : options.connectionDragThreshold
+      : initialOptions.connectionDragThreshold
   )
 
-  validateCanvasPanelOptions(options.panel, options.panels)
+  validateCanvasPanelOptions(initialOptions.panel, initialOptions.panels)
 
   return Effect.gen(function* buildFlowHost() {
+    let configuredCanvasOptions = S.decodeUnknownSync(FlowCanvasOptionsSchema)(
+      initialOptions
+    )
+
+    let options = {
+      ...initialOptions,
+      snapGrid: resolveSnapGrid(configuredCanvasOptions),
+    }
+
     const browser = yield* FlowBrowser
     const { documentMode, runEffect } = options
     let interactivity: FlowInteractivity = resolveFlowInteractivity(options)
@@ -7720,10 +7769,7 @@ export const createFlowHost = (
 
             if (
               JSON.stringify(flowNodeHandles(previousNode)) !==
-                JSON.stringify(flowNodeHandles(node)) ||
-              (options.onHandleRender !== undefined &&
-                JSON.stringify(previousNode?.data) !==
-                  JSON.stringify(node.data))
+              JSON.stringify(flowNodeHandles(node))
             ) {
               renderNodeHandles(
                 entry.handles,
@@ -7732,6 +7778,22 @@ export const createFlowHost = (
                 ariaLabels,
                 options.onHandleRender
               )
+            } else if (
+              options.onHandleRender !== undefined &&
+              JSON.stringify(previousNode?.data) !== JSON.stringify(node.data)
+            ) {
+              for (const handle of flowNodeHandles(node)) {
+                const button = [...entry.handles.children].find(
+                  (child) =>
+                    child instanceof HTMLButtonElement &&
+                    child.dataset.handleId === handle.id &&
+                    child.dataset.kind === handle.kind
+                )
+
+                if (button instanceof HTMLButtonElement) {
+                  options.onHandleRender(node, handle, button)
+                }
+              }
             }
 
             applyDeclaredNodeSize(entry.element, node)
@@ -12692,6 +12754,51 @@ export const createFlowHost = (
           applyInteractivity(next)
         }
       },
+      setCanvasOptions: (next) => {
+        const decoded = Effect.runSync(
+          S.decodeUnknownEffect(FlowCanvasOptionsSchema)(next).pipe(
+            // oxlint-disable-next-line promise/prefer-await-to-callbacks -- Effect observes typed schema failures synchronously, not through a Promise callback.
+            Effect.tapError((error) =>
+              Effect.logWarning('Invalid flow canvas options').pipe(
+                Effect.annotateLogs({
+                  [FlowAttribute.changeKind]: 'canvas-options-decode',
+                  [FlowAttribute.failureName]: error.name,
+                  [FlowAttribute.failureMessage]: error.message,
+                })
+              )
+            ),
+            Effect.withSpan(FlowSpan.controllerUpdate, {
+              attributes: {
+                [FlowAttribute.changeKind]: 'canvas-options-decode',
+              },
+            })
+          )
+        )
+
+        if (destroyed) {
+          return
+        }
+
+        const previousCulling = options.renderOnlyVisible
+        configuredCanvasOptions = { ...configuredCanvasOptions, ...decoded }
+        options = {
+          ...options,
+          ...configuredCanvasOptions,
+          snapGrid: resolveSnapGrid(configuredCanvasOptions),
+        }
+
+        const attributes = { [FlowAttribute.changeKind]: 'canvas-options' }
+        runTelemetry(
+          Effect.logDebug('Changed flow canvas options').pipe(
+            Effect.annotateLogs(attributes),
+            Effect.withSpan(FlowSpan.controllerUpdate, { attributes })
+          )
+        )
+
+        if (previousCulling !== options.renderOnlyVisible) {
+          reconcileVisible?.()
+        }
+      },
       subscribeInteractivity: (listener) => {
         if (destroyed) {
           return noopUnsubscribe
@@ -13489,21 +13596,21 @@ export const createFlowHost = (
     Effect.tap(() =>
       Effect.logDebug('Mounted flow host').pipe(
         Effect.annotateLogs({
-          [FlowAttribute.controlMode]: options.documentMode,
+          [FlowAttribute.controlMode]: initialOptions.documentMode,
           [FlowAttribute.nodeCount]: initialDocument.nodes.length,
-          [FlowAttribute.viewportX]: options.viewport.initial.x,
-          [FlowAttribute.viewportY]: options.viewport.initial.y,
-          [FlowAttribute.viewportZoom]: options.viewport.initial.zoom,
+          [FlowAttribute.viewportX]: initialOptions.viewport.initial.x,
+          [FlowAttribute.viewportY]: initialOptions.viewport.initial.y,
+          [FlowAttribute.viewportZoom]: initialOptions.viewport.initial.zoom,
         })
       )
     ),
     Effect.withSpan(FlowSpan.hostMount, {
       attributes: {
-        [FlowAttribute.controlMode]: options.documentMode,
+        [FlowAttribute.controlMode]: initialOptions.documentMode,
         [FlowAttribute.nodeCount]: initialDocument.nodes.length,
-        [FlowAttribute.viewportX]: options.viewport.initial.x,
-        [FlowAttribute.viewportY]: options.viewport.initial.y,
-        [FlowAttribute.viewportZoom]: options.viewport.initial.zoom,
+        [FlowAttribute.viewportX]: initialOptions.viewport.initial.x,
+        [FlowAttribute.viewportY]: initialOptions.viewport.initial.y,
+        [FlowAttribute.viewportZoom]: initialOptions.viewport.initial.zoom,
       },
     })
   )
@@ -13522,24 +13629,6 @@ export const acquireFlowHost = (
 /** `FlowNodeResizeStart` built field by field for optional constraints. */
 type MutableResizeStart = {
   -readonly [Key in keyof FlowNodeResizeStart]: FlowNodeResizeStart[Key]
-}
-
-/** React's default `snapGrid` when only `snapToGrid` is set. */
-const defaultSnapGrid: SnapGrid = { x: 15, y: 15 }
-
-/** `snapToGrid: false` turns `snapGrid` off; `true` alone uses 15x15. */
-const resolveSnapGrid = (options: {
-  readonly snapGrid?: SnapGrid | undefined
-  readonly snapToGrid?: boolean | undefined
-}): SnapGrid | undefined => {
-  if (options.snapToGrid === false) {
-    return undefined
-  }
-
-  return (
-    options.snapGrid ??
-    (options.snapToGrid === true ? defaultSnapGrid : undefined)
-  )
 }
 
 /** Decode the text entries; the live-message builder must be a function. */
@@ -13625,7 +13714,6 @@ export const mountFlow = (
 
   const options = {
     ...decodedOptions,
-    snapGrid: resolveSnapGrid(decodedOptions),
     viewport: {
       ...decodedOptions.viewport,
       extent: decodedOptions.translateExtent ?? decodedOptions.viewport.extent,
@@ -13761,6 +13849,7 @@ export const mountFlow = (
     subscribeConnection: host.subscribeConnection,
     getInteractivity: host.getInteractivity,
     setInteractivity: host.setInteractivity,
+    setCanvasOptions: host.setCanvasOptions,
     subscribeInteractivity: host.subscribeInteractivity,
     subscribeSelection: host.subscribeSelection,
     observeKeyPress: host.observeKeyPress,

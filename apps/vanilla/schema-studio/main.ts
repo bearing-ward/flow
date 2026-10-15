@@ -1,7 +1,6 @@
 // oxlint-disable eslint/no-use-before-define -- This app composes mutually dependent event callbacks before mounting at the end of the module.
 import { Graph, layout } from '@dagrejs/dagre'
 import { FlowAttribute, FlowSpan, FlowDocumentSchema } from '@flow/core'
-import type { Viewport } from '@flow/core'
 import { Effect, Schema as S } from 'effect'
 import { toPng } from 'html-to-image'
 
@@ -10,7 +9,6 @@ import {
   exportStudio,
   history,
   importStudio,
-  moveItems,
   record,
   redo,
   undo,
@@ -160,9 +158,9 @@ let painting = false
 
 let pendingSync = false
 
-let mountedDisposers: (() => void)[] = []
+const mountedDisposers: (() => void)[] = []
 
-let toolIds = new Set<string>()
+const toolIds = new Set<string>()
 
 const renderedContents = new Map<string, HTMLElement>()
 
@@ -816,19 +814,20 @@ const scheduleSync = (): void => {
   })
 }
 
-const remount = (): void => {
-  const viewport: Viewport = current?.getViewport() ?? { x: 0, y: 0, zoom: 1 }
+const updateCanvasOptions = (): void => {
+  controller().setCanvasOptions({
+    snapToGrid: snap || shift,
+    snapGrid: { x: 20, y: 20 },
+    panOnScroll: panScroll,
+    zoomOnScroll: !panScroll,
+    renderOnlyVisible: visibleOnly,
+  })
+  canvas.classList.toggle('studio-snapping', shift)
+  updateStatus()
+}
 
-  for (const dispose of mountedDisposers) {
-    dispose()
-  }
-
-  mountedDisposers = []
-  toolIds = new Set()
-  mini?.destroy()
-  mini = undefined
-  current?.destroy()
-  current = undefined
+const mountCanvas = (): void => {
+  const viewport = { x: 0, y: 0, zoom: 1 }
 
   const renderer = nodeRenderer({
     contents: renderedContents,
@@ -1158,7 +1157,7 @@ lost.hidden = true
 snapButton.addEventListener('click', () => {
   snap = !snap
   snapButton.setAttribute('aria-pressed', String(snap))
-  remount()
+  updateCanvasOptions()
 })
 
 controls.append(snapButton)
@@ -1257,12 +1256,12 @@ setting('Minimap', minimap, (value) => {
 
 setting('Pan on scroll', panScroll, (value) => {
   panScroll = value
-  remount()
+  updateCanvasOptions()
 })
 
 setting('Render only visible', visibleOnly, (value) => {
   visibleOnly = value
-  remount()
+  updateCanvasOptions()
 })
 
 setting('View dependencies', dependencies, (value) => {
@@ -1374,7 +1373,6 @@ const importFile = async (): Promise<void> => {
       const next = importStudio(content)
       telemetry(FlowSpan.documentDecode, 'import')
       commit(next, 'import')
-      remount()
       void settle(controller().fitView())
     }
   } catch (error) {
@@ -1440,45 +1438,6 @@ const handleShortcut = (event: KeyboardEvent): boolean => {
   return false
 }
 
-const moveWithKeyboard = (event: KeyboardEvent): void => {
-  const modifier = event.metaKey || event.ctrlKey
-
-  if (
-    event.key.startsWith('Arrow') &&
-    !modifier &&
-    !event.altKey &&
-    (canvas.contains(document.activeElement) ||
-      (shift && document.activeElement === document.body)) &&
-    selected.size > 0
-  ) {
-    event.preventDefault()
-    event.stopImmediatePropagation()
-    const step = event.shiftKey ? 20 : 5
-
-    const direction = new Map([
-      ['ArrowLeft', { x: -1, y: 0 }],
-      ['ArrowRight', { x: 1, y: 0 }],
-      ['ArrowUp', { x: 0, y: -1 }],
-      ['ArrowDown', { x: 0, y: 1 }],
-    ]).get(event.key) ?? { x: 0, y: 0 }
-
-    const delta = { x: direction.x * step, y: direction.y * step }
-    commit(
-      moveItems(state.present, selected, delta, snap || shift),
-      'keyboard-move'
-    )
-
-    const item = state.present.items.find((candidate) =>
-      selected.has(candidate.id)
-    )
-
-    announcement.textContent =
-      item === undefined
-        ? ''
-        : `${item.name} moved to ${item.position.x}, ${item.position.y}`
-  }
-}
-
 window.addEventListener(
   'keydown',
   (event) => {
@@ -1488,7 +1447,7 @@ window.addEventListener(
 
     if (event.key === 'Shift' && !shift) {
       shift = true
-      remount()
+      updateCanvasOptions()
     }
 
     if (event.key === 'Escape') {
@@ -1509,11 +1468,7 @@ window.addEventListener(
       if (!event.repeat) {
         void deleteSelected()
       }
-
-      return
     }
-
-    moveWithKeyboard(event)
   },
   { capture: true }
 )
@@ -1521,14 +1476,14 @@ window.addEventListener(
 window.addEventListener('keyup', (event) => {
   if (event.key === 'Shift' && shift) {
     shift = false
-    remount()
+    updateCanvasOptions()
   }
 })
 
 window.addEventListener('blur', () => {
   if (shift) {
     shift = false
-    remount()
+    updateCanvasOptions()
   }
 })
 
@@ -1559,7 +1514,7 @@ window.addEventListener(
   { once: true }
 )
 
-remount()
+mountCanvas()
 
 renderList()
 
