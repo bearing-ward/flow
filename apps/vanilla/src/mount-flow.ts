@@ -1053,6 +1053,10 @@ export interface FlowHostOptions extends CanvasInteractionOptions {
         readonly edges?: Readonly<Record<string, HTMLElement>> | undefined
       }
     | undefined
+  /** Style each host-owned handle without querying canvas DOM. */
+  readonly onHandleRender?:
+    | ((node: FlowNode, handle: FlowHandle, element: HTMLButtonElement) => void)
+    | undefined
   readonly nodeRenderers?:
     | Readonly<Record<string, FlowNodeRenderer>>
     | undefined
@@ -1385,6 +1389,10 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
   readonly onError?: ((error: Error) => void) | undefined
   readonly isValidConnection?: FlowConnectionValidator | undefined
   readonly connectionPreview?: FlowConnectionPreviewRenderer | undefined
+  /** Style each host-owned handle without querying canvas DOM. */
+  readonly onHandleRender?:
+    | ((node: FlowNode, handle: FlowHandle, element: HTMLButtonElement) => void)
+    | undefined
   readonly nodeRenderers?:
     | Readonly<Record<string, FlowNodeRenderer>>
     | undefined
@@ -1785,7 +1793,8 @@ const renderNodeHandles = (
   handles: HTMLElement,
   node: FlowNode,
   interactivity: FlowInteractivity,
-  labels: FlowResolvedAriaLabels
+  labels: FlowResolvedAriaLabels,
+  onHandleRender: FlowHostOptions['onHandleRender']
 ): void => {
   handles.replaceChildren()
 
@@ -1804,6 +1813,7 @@ const renderNodeHandles = (
         : `${handle.kind} handle ${handle.id}`
     )
     markHandleConnectability(button, node, handle, interactivity)
+    onHandleRender?.(node, handle, button)
     handles.append(button)
   }
 }
@@ -7710,9 +7720,18 @@ export const createFlowHost = (
 
             if (
               JSON.stringify(flowNodeHandles(previousNode)) !==
-              JSON.stringify(flowNodeHandles(node))
+                JSON.stringify(flowNodeHandles(node)) ||
+              (options.onHandleRender !== undefined &&
+                JSON.stringify(previousNode?.data) !==
+                  JSON.stringify(node.data))
             ) {
-              renderNodeHandles(entry.handles, node, interactivity, ariaLabels)
+              renderNodeHandles(
+                entry.handles,
+                node,
+                interactivity,
+                ariaLabels,
+                options.onHandleRender
+              )
             }
 
             applyDeclaredNodeSize(entry.element, node)
@@ -8346,7 +8365,13 @@ export const createFlowHost = (
             return undefined
           }
 
-          renderNodeHandles(handles, node, interactivity, ariaLabels)
+          renderNodeHandles(
+            handles,
+            node,
+            interactivity,
+            ariaLabels,
+            options.onHandleRender
+          )
           renderResizeControls(element, node)
 
           // The press started outside the node's `dragHandle` selector.
@@ -13703,6 +13728,7 @@ export const mountFlow = (
       onError: inputOptions.onError,
       isValidConnection: inputOptions.isValidConnection,
       connectionPreview: inputOptions.connectionPreview,
+      onHandleRender: inputOptions.onHandleRender,
       nodeRenderers: inputOptions.nodeRenderers,
       edgeRenderers: inputOptions.edgeRenderers,
       onToolbarAnchors: inputOptions.onToolbarAnchors,

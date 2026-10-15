@@ -15,6 +15,16 @@ export default defineConfig(({ mode }) => {
     environment.OTEL_SDK_DISABLED === 'true'
 
   return {
+    build: {
+      rolldownOptions: {
+        input: {
+          main: fileURLToPath(new URL('index.html', import.meta.url)),
+          schemaStudio: fileURLToPath(
+            new URL('schema-studio/index.html', import.meta.url)
+          ),
+        },
+      },
+    },
     plugins: [
       {
         name: 'flow-ui-recipes-routes',
