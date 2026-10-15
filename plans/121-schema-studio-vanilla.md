@@ -31,6 +31,7 @@ ChartDB parity, each item through public Flow APIs:
   - **Persistence and history:** undo/redo with keyboard shortcuts, PNG export with `html-to-image`, and localStorage persistence.
 
 Beyond ChartDB, where the editor naturally uses them, add:
+
 - a node toolbar on the selected table;
 - edge labels rendered as HTML for cardinality;
 - edge reconnection by dragging an endpoint to another field;
