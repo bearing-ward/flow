@@ -1481,6 +1481,22 @@ const handleShortcut = (event: KeyboardEvent): boolean => {
   return false
 }
 
+const dismissMenu = (event: PointerEvent): void => {
+  if (
+    event.button === 0 &&
+    !menu.hidden &&
+    !event.composedPath().includes(menu)
+  ) {
+    menu.hidden = true
+  }
+}
+
+window.addEventListener('pointerdown', dismissMenu, { capture: true })
+
+mountedDisposers.push(() => {
+  window.removeEventListener('pointerdown', dismissMenu, { capture: true })
+})
+
 window.addEventListener(
   'keydown',
   (event) => {
