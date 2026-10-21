@@ -1,0 +1,4353 @@
+{
+  "revision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "cases": [
+    {
+      "id": "UP-126-001",
+      "upstream": "tests/playwright/e2e/background.spec.ts:8",
+      "title": "Background > centers the dot pattern with default gap and no offset (zoom 1, pan 0,0)",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The dot patternTransform is translate(0 0) scale(1), rather than translate(-10,-10)."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The dot pattern has no patternTransform attribute; upstream requires translate(-10,-10)."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/background.ts:12"
+    },
+    {
+      "id": "UP-126-002",
+      "upstream": "tests/playwright/e2e/background.spec.ts:17",
+      "title": "Background > applies both the offset and the half-cell centering for a non-zero offset",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The line patternTransform is translate(2 2) scale(1), rather than translate(-52,-52)."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The line pattern has no patternTransform attribute; upstream requires translate(-52,-52)."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/background.ts:27"
+    },
+    {
+      "id": "UP-126-003",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:15",
+      "title": "Edges > selection > selecting an edge by click",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "Clicking the rendered edge hit path leaves its wrapper without the selected class."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:17"
+    },
+    {
+      "id": "UP-126-004",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:23",
+      "title": "Edges > selection > selecting multiple edges by meta-click",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "After holding s and clicking the second edge, edge-with-style has no selected class."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The first edge lacks the selected class after click; the second-click multi-selection assertions are not reached."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:26"
+    },
+    {
+      "id": "UP-126-005",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:44",
+      "title": "Edges > properties > classes get applied",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:50"
+    },
+    {
+      "id": "UP-126-006",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:50",
+      "title": "Edges > properties > styles get applied",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:57"
+    },
+    {
+      "id": "UP-126-007",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:56",
+      "title": "Edges > properties > hidden=true hides edge",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:66"
+    },
+    {
+      "id": "UP-126-008",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:62",
+      "title": "Edges > properties > animated=true add \"animated\" class",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:73"
+    },
+    {
+      "id": "UP-126-009",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:68",
+      "title": "Edges > properties > selectable=false prevents selecting of edges",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:82"
+    },
+    {
+      "id": "UP-126-010",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:87",
+      "title": "Edges > properties > deleting edges is possible",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The edge lacks the selected class after click; the deletion assertion is not reached."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:107"
+    },
+    {
+      "id": "UP-126-011",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:100",
+      "title": "Edges > properties > deletable=false prevents deleting of edges",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The protected edge lacks the selected class after its midpoint click; the deletion check is not reached."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:121"
+    },
+    {
+      "id": "UP-126-012",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:121",
+      "title": "Edges > properties > zIndex sets z-index of edge svgs",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The containing edge SVG computes z-index auto rather than 3141592."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:148"
+    },
+    {
+      "id": "UP-126-013",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:128",
+      "title": "Edges > properties > aria-lable is working",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The aria-label edge wrapper has no aria-label-test attribute value."
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:158"
+    },
+    {
+      "id": "UP-126-014",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:134",
+      "title": "Edges > properties > interactionWidth is working",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The click 21 pixels to the right of the interaction-width edge center does not select it."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The click 21 pixels to the right of the interaction-width edge center does not select it."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The click 21 pixels to the right of the edge center leaves its wrapper without the selected class."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:165"
+    },
+    {
+      "id": "UP-126-015",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:148",
+      "title": "Edges > properties > marker-start, marker-end set markers",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "intentional-difference",
+          "reason": "Flow emits instance-scoped validated marker IDs instead of the pinned literal url('#1__type=arrowclosed'). Existing marker ownership and custom-ID deviation: research/traces/edge-markers-styling.md:27 and research/traces/edge-markers-styling.md:34. The exact upstream marker-start/end assertions remain unchanged."
+        },
+        "vue": {
+          "status": "intentional-difference",
+          "reason": "Flow emits instance-scoped validated marker IDs instead of the pinned literal url('#1__type=arrowclosed'). Existing marker ownership and custom-ID deviation: research/traces/edge-markers-styling.md:27 and research/traces/edge-markers-styling.md:34. The exact upstream marker-start/end assertions remain unchanged."
+        },
+        "foldkit": {
+          "status": "intentional-difference",
+          "reason": "Flow emits instance-scoped validated marker IDs instead of the pinned literal url('#1__type=arrowclosed'). Existing marker ownership and custom-ID deviation: research/traces/edge-markers-styling.md:27 and research/traces/edge-markers-styling.md:34. The exact upstream marker-start/end assertions remain unchanged."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:183"
+    },
+    {
+      "id": "UP-126-016",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:157",
+      "title": "Edges > properties > z-index",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The normal edge SVG computes z-index auto rather than 0."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The normal edge SVG computes z-index 1 rather than 0."
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:203"
+    },
+    {
+      "id": "UP-126-017",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:164",
+      "title": "Edges > properties > sub flow: normal node to child node, z-index",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The normal-to-child edge SVG computes z-index auto rather than 1."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:211"
+    },
+    {
+      "id": "UP-126-018",
+      "upstream": "tests/playwright/e2e/edges.spec.ts:171",
+      "title": "Edges > properties > sub flow: child node to child node, z-index",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The child-to-child edge SVG computes z-index auto rather than 1."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/edges.ts:221"
+    },
+    {
+      "id": "UP-126-019",
+      "upstream": "tests/playwright/e2e/node-toolbar.spec.ts:34",
+      "title": "Node Toolbar > all toolbars are positioned correctly",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/node-toolbar.ts:44"
+    },
+    {
+      "id": "UP-126-020",
+      "upstream": "tests/playwright/e2e/node-toolbar.spec.ts:84",
+      "title": "Node Toolbar > toolbar default behaviour",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The default toolbar remains attached while unselected; upstream requires it to be detached."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The default toolbar remains attached while unselected; upstream requires it to be detached."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/node-toolbar.ts:132"
+    },
+    {
+      "id": "UP-126-021",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:13",
+      "title": "Nodes > selection > selecting a node by click",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "Clicking the first node with nodeDragThreshold 0 leaves it without the selected class."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "Clicking the first node leaves its wrapper without the selected class."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:15"
+    },
+    {
+      "id": "UP-126-022",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:20",
+      "title": "Nodes > selection > selecting multiple nodes with shift drag",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The three nodes become selected, but no persistent multi-selection rectangle is rendered after release."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The three nodes become selected, but no persistent multi-selection rectangle is rendered after release."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "After Shift-drag selection, the first node wrapper has no selected class; the persistent-rectangle assertion is not reached."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:23"
+    },
+    {
+      "id": "UP-126-023",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:49",
+      "title": "Nodes > selection > panning from a multi-selection rectangle with the middle mouse button",
+      "phase": 126,
+      "guards": [
+        {
+          "upstream": "tests/playwright/e2e/nodes.spec.ts:50",
+          "condition": "FRAMEWORK !== 'react'",
+          "reason": "The React selection rectangle has its own drag handler"
+        }
+      ],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:57"
+    },
+    {
+      "id": "UP-126-024",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:85",
+      "title": "Nodes > selection > selectable=false prevents selection",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:100"
+    },
+    {
+      "id": "UP-126-025",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:95",
+      "title": "Nodes > dragging > dragging a node",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:118"
+    },
+    {
+      "id": "UP-126-026",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:116",
+      "title": "Nodes > dragging > draggable=false prevents dragging",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:136"
+    },
+    {
+      "id": "UP-126-027",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:136",
+      "title": "Nodes > dragging > custom drag handle works",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:158"
+    },
+    {
+      "id": "UP-126-028",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:172",
+      "title": "Nodes > deleting > deleting a node and its edges",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "Clicking Node-1 then pressing d leaves Node-1 attached in the threshold-0 fixture."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "Clicking Node-1 then pressing d leaves Node-1 attached in the threshold-0 fixture."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:192"
+    },
+    {
+      "id": "UP-126-029",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:185",
+      "title": "Nodes > deleting > deletable=false prevents deletion",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:209"
+    },
+    {
+      "id": "UP-126-030",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:200",
+      "title": "Nodes > connecting > connecting two nodes",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:230"
+    },
+    {
+      "id": "UP-126-031",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:224",
+      "title": "Nodes > connecting > connecting two output handles does not work",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:268"
+    },
+    {
+      "id": "UP-126-032",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:252",
+      "title": "Nodes > connecting > connecting two input handles does not work",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:310"
+    },
+    {
+      "id": "UP-126-033",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:283",
+      "title": "Nodes > connecting > connectable=false prevents connections",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:353"
+    },
+    {
+      "id": "UP-126-034",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:306",
+      "title": "Nodes > hidden=true hides the node",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:384"
+    },
+    {
+      "id": "UP-126-035",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:312",
+      "title": "Nodes > classes get applied",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:393"
+    },
+    {
+      "id": "UP-126-036",
+      "upstream": "tests/playwright/e2e/nodes.spec.ts:319",
+      "title": "Nodes > styles get applied",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/nodes.ts:404"
+    },
+    {
+      "id": "UP-126-037",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:58",
+      "title": "Pane default > pan & zoom > panning the pane moves it",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:80"
+    },
+    {
+      "id": "UP-126-038",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:82",
+      "title": "Pane default > pan & zoom > scrolling the default pane zooms it",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:111"
+    },
+    {
+      "id": "UP-126-039",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:100",
+      "title": "Pane default > minZoom & maxZoom > minZoom",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "A 5000/5000 wheel event clamps zoom to 0.1 rather than the configured minimum 0.25."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:132"
+    },
+    {
+      "id": "UP-126-040",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:115",
+      "title": "Pane default > minZoom & maxZoom > maxZoom",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "A -5000/-5000 wheel event clamps zoom to 2 rather than the configured maximum 4."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:148"
+    },
+    {
+      "id": "UP-126-041",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:132",
+      "title": "Pane default > autoPan > autoPanOnNodeDrag",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:166"
+    },
+    {
+      "id": "UP-126-042",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:153",
+      "title": "Pane default > autoPan > autoPanOnConnect",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:192"
+    },
+    {
+      "id": "UP-126-043",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:185",
+      "title": "Pane non-default > pan & zoom > panOnScroll pans the pane on scrolling",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:235"
+    },
+    {
+      "id": "UP-126-044",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:202",
+      "title": "Pane non-default > pan & zoom > intialViewport",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:255"
+    },
+    {
+      "id": "UP-126-045",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:219",
+      "title": "Pane non-default > pan & zoom > touch input > touch drag pans when primary mouse drag is reserved for selection",
+      "phase": 126,
+      "guards": [
+        {
+          "upstream": "tests/playwright/e2e/pane.spec.ts:220",
+          "condition": "browserName !== 'chromium'",
+          "reason": "CDP touch input is only available in Chromium."
+        }
+      ],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "The touch drag leaves translateX at 1.23 instead of panning."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "The touch drag leaves translateX at 1.23 instead of panning."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "The touch drag leaves translateX at 1.23 instead of panning."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:273"
+    },
+    {
+      "id": "UP-126-046",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:237",
+      "title": "Pane non-default > pan & zoom > touch input > selection key keeps touch drag in selection mode",
+      "phase": 126,
+      "guards": [
+        {
+          "upstream": "tests/playwright/e2e/pane.spec.ts:238",
+          "condition": "browserName !== 'chromium'",
+          "reason": "CDP touch input is only available in Chromium."
+        }
+      ],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "Holding Shift does not add the selection class to the pane; the touch-selection assertions are not reached."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "Holding Shift does not add the selection class to the pane; the touch-selection assertions are not reached."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "Holding Shift does not add the selection class to the pane; the touch-selection assertions are not reached."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:304"
+    },
+    {
+      "id": "UP-126-047",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:263",
+      "title": "Pane non-default > pan & zoom > primary mouse drag still creates a selection marquee",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "Primary-button drag with selectionOnDrag true and panOnDrag [1,2] creates no visible marquee."
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:337"
+    },
+    {
+      "id": "UP-126-048",
+      "upstream": "tests/playwright/e2e/pane.spec.ts:293",
+      "title": "Pane activation keys > Control and primary-button drag pans the pane",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "fail",
+          "reason": "Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis."
+        },
+        "vue": {
+          "status": "fail",
+          "reason": "Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis."
+        },
+        "foldkit": {
+          "status": "fail",
+          "reason": "Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis."
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/pane.ts:372"
+    },
+    {
+      "id": "UP-126-049",
+      "upstream": "tests/playwright/e2e/props.spec.ts:7",
+      "title": "Props > colorMode > render default light color mode",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/props.ts:9"
+    },
+    {
+      "id": "UP-126-050",
+      "upstream": "tests/playwright/e2e/props.spec.ts:15",
+      "title": "Props > colorMode > render dark color mode",
+      "phase": 126,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "pass"
+        },
+        "vue": {
+          "status": "pass"
+        },
+        "foldkit": {
+          "status": "pass"
+        }
+      },
+      "flowTest": "apps/shared-e2e/upstream/props.ts:22"
+    },
+    {
+      "id": "UP-127-001",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:6",
+      "title": "Basic Flow Rendering > renders a flow with three nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-002",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:14",
+      "title": "Basic Flow Rendering > renders a grid",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-003",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:18",
+      "title": "Basic Flow Rendering > selects two nodes by clicks",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-004",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:31",
+      "title": "Basic Flow Rendering > selects a node by click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-005",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:35",
+      "title": "Basic Flow Rendering > deselects node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-006",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:40",
+      "title": "Basic Flow Rendering > selects an edge by click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-007",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:45",
+      "title": "Basic Flow Rendering > deselects edge",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-008",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:50",
+      "title": "Basic Flow Rendering > selects one node with a selection",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-009",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:65",
+      "title": "Basic Flow Rendering > selects all nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-010",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:83",
+      "title": "Basic Flow Rendering > removes selection",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-011",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:88",
+      "title": "Basic Flow Rendering > selects an edge",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-012",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:92",
+      "title": "Basic Flow Rendering > drags a node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-013",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:101",
+      "title": "Basic Flow Rendering > removes a node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-014",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:109",
+      "title": "Basic Flow Rendering > connects nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-015",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:126",
+      "title": "Basic Flow Rendering > removes an edge",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-016",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:133",
+      "title": "Basic Flow Rendering > drags the pane",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-017",
+      "upstream": "examples/react/cypress/e2e/basic.cy.ts:151",
+      "title": "Basic Flow Rendering > zooms the pane",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-018",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:6",
+      "title": "Controls Testing > renders the control panel",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-019",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:10",
+      "title": "Controls Testing > zooms in",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-020",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:21",
+      "title": "Controls Testing > zooms out",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-021",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:33",
+      "title": "Controls Testing > drags the pane",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-022",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:51",
+      "title": "Controls Testing > fits view",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-023",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:62",
+      "title": "Controls Testing > uses interactive control - not interactive",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-024",
+      "upstream": "examples/react/cypress/e2e/controls.cy.ts:74",
+      "title": "Controls Testing > uses interactive control - interactive",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-025",
+      "upstream": "examples/react/cypress/e2e/draghandle.cy.ts:6",
+      "title": "DragHandle Flow Rendering > renders a flow with a node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-026",
+      "upstream": "examples/react/cypress/e2e/draghandle.cy.ts:11",
+      "title": "DragHandle Flow Rendering > tries to drag a node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-027",
+      "upstream": "examples/react/cypress/e2e/draghandle.cy.ts:21",
+      "title": "DragHandle Flow Rendering > drags a node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-028",
+      "upstream": "examples/react/cypress/e2e/empty.cy.ts:6",
+      "title": "Empty Flow Rendering > renders an empty flow",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-029",
+      "upstream": "examples/react/cypress/e2e/empty.cy.ts:12",
+      "title": "Empty Flow Rendering > renders empty selection",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-030",
+      "upstream": "examples/react/cypress/e2e/empty.cy.ts:26",
+      "title": "Empty Flow Rendering > adds two nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-031",
+      "upstream": "examples/react/cypress/e2e/empty.cy.ts:31",
+      "title": "Empty Flow Rendering > connects nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-032",
+      "upstream": "examples/react/cypress/e2e/figma.cy.ts:6",
+      "title": "Figma Flow UI > renders a flow with three nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-033",
+      "upstream": "examples/react/cypress/e2e/figma.cy.ts:13",
+      "title": "Figma Flow UI > renders a grid",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-034",
+      "upstream": "examples/react/cypress/e2e/figma.cy.ts:17",
+      "title": "Figma Flow UI > selects all nodes by drag",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-035",
+      "upstream": "examples/react/cypress/e2e/figma.cy.ts:30",
+      "title": "Figma Flow UI > removes selection",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-036",
+      "upstream": "examples/react/cypress/e2e/figma.cy.ts:35",
+      "title": "Figma Flow UI > drags using right click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-037",
+      "upstream": "examples/react/cypress/e2e/hidden.cy.ts:6",
+      "title": "Hidden Flow Rendering > renders empty flow",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-038",
+      "upstream": "examples/react/cypress/e2e/hidden.cy.ts:12",
+      "title": "Hidden Flow Rendering > toggles isHidden mode",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-039",
+      "upstream": "examples/react/cypress/e2e/hidden.cy.ts:16",
+      "title": "Hidden Flow Rendering > renders initial flow",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-040",
+      "upstream": "examples/react/cypress/e2e/hidden.cy.ts:23",
+      "title": "Hidden Flow Rendering > toggles isHidden mode again",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-041",
+      "upstream": "examples/react/cypress/e2e/hidden.cy.ts:27",
+      "title": "Hidden Flow Rendering > renders empty flow",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-042",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:6",
+      "title": "Interaction Flow Rendering > renders initial flow",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-043",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:13",
+      "title": "Interaction Flow Rendering > tries to select a node by click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-044",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:18",
+      "title": "Interaction Flow Rendering > tries to select an edge by click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-045",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:23",
+      "title": "Interaction Flow Rendering > toggles on capture element click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-046",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:27",
+      "title": "Interaction Flow Rendering > allows node clicks when enabled",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-047",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:32",
+      "title": "Interaction Flow Rendering > allows edge clicks when enabled",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-048",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:37",
+      "title": "Interaction Flow Rendering > tries to do a selection",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-049",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:53",
+      "title": "Interaction Flow Rendering > tries to connect to nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-050",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:63",
+      "title": "Interaction Flow Rendering > tries to zoom by double click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-051",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:74",
+      "title": "Interaction Flow Rendering > tries to zoom by scroll",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-052",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:85",
+      "title": "Interaction Flow Rendering > toggles draggable mode",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-053",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:89",
+      "title": "Interaction Flow Rendering > drags a node",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-054",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:98",
+      "title": "Interaction Flow Rendering > toggles selectable mode",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-055",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:102",
+      "title": "Interaction Flow Rendering > selects a node by click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-056",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:106",
+      "title": "Interaction Flow Rendering > selects an edge by click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-057",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:111",
+      "title": "Interaction Flow Rendering > toggles connectable mode",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-058",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:115",
+      "title": "Interaction Flow Rendering > connects two nodes",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-059",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:130",
+      "title": "Interaction Flow Rendering > toggles zoom on scroll",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-060",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:134",
+      "title": "Interaction Flow Rendering > zooms by scroll",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-061",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:146",
+      "title": "Interaction Flow Rendering > toggles zoom on double click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-062",
+      "upstream": "examples/react/cypress/e2e/interaction.cy.ts:150",
+      "title": "Interaction Flow Rendering > zooms by double click",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-063",
+      "upstream": "examples/react/cypress/e2e/minimap.cy.ts:6",
+      "title": "Minimap Testing > renders the mini map",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-064",
+      "upstream": "examples/react/cypress/e2e/minimap.cy.ts:11",
+      "title": "Minimap Testing > has same number of nodes as the pane",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-065",
+      "upstream": "examples/react/cypress/e2e/minimap.cy.ts:20",
+      "title": "Minimap Testing > changes zoom level",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-066",
+      "upstream": "examples/react/cypress/e2e/minimap.cy.ts:36",
+      "title": "Minimap Testing > changes node position",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-127-067",
+      "upstream": "examples/react/cypress/e2e/minimap.cy.ts:54",
+      "title": "Minimap Testing > changes node positions via pane drag",
+      "phase": 127,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-001",
+      "upstream": "examples/react/cypress/components/hooks/useEdges.cy.tsx:7",
+      "title": "useEdges.cy.tsx > handles edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-002",
+      "upstream": "examples/react/cypress/components/hooks/useEdges.cy.tsx:19",
+      "title": "useEdges.cy.tsx > handles defaultEdges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-003",
+      "upstream": "examples/react/cypress/components/hooks/useNodes.cy.tsx:24",
+      "title": "useNodes.cy.tsx > handles nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-004",
+      "upstream": "examples/react/cypress/components/hooks/useNodes.cy.tsx:36",
+      "title": "useNodes.cy.tsx > handles defaultNodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-005",
+      "upstream": "examples/react/cypress/components/hooks/useNodesInitialized.cy.tsx:7",
+      "title": "useNodesInitialized.cy.tsx > returns false for no nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-006",
+      "upstream": "examples/react/cypress/components/hooks/useNodesInitialized.cy.tsx:20",
+      "title": "useNodesInitialized.cy.tsx > returns false without onNodesChange",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-007",
+      "upstream": "examples/react/cypress/components/hooks/useNodesInitialized.cy.tsx:33",
+      "title": "useNodesInitialized.cy.tsx > returns true for defaultNodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-008",
+      "upstream": "examples/react/cypress/components/hooks/useNodesInitialized.cy.tsx:46",
+      "title": "useNodesInitialized.cy.tsx > returns true for nodes + onNodesChange",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-009",
+      "upstream": "examples/react/cypress/components/hooks/useOnViewportChange.cy.tsx:4",
+      "title": "useOnViewportChange.cy.tsx > listen to viewport drag",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-010",
+      "upstream": "examples/react/cypress/components/hooks/useOnViewportChange.cy.tsx:22",
+      "title": "useOnViewportChange.cy.tsx > handles zoom in",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-011",
+      "upstream": "examples/react/cypress/components/hooks/useOnViewportChange.cy.tsx:42",
+      "title": "useOnViewportChange.cy.tsx > handles zoom out",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-012",
+      "upstream": "examples/react/cypress/components/hooks/useOnViewportChange.cy.tsx:62",
+      "title": "useOnViewportChange.cy.tsx > handles default viewport",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-013",
+      "upstream": "examples/react/cypress/components/hooks/useViewport.cy.tsx:4",
+      "title": "useViewport.cy.tsx > handles drag",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-014",
+      "upstream": "examples/react/cypress/components/hooks/useViewport.cy.tsx:23",
+      "title": "useViewport.cy.tsx > handles zoom in",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-015",
+      "upstream": "examples/react/cypress/components/hooks/useViewport.cy.tsx:38",
+      "title": "useViewport.cy.tsx > handles zoom out",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-016",
+      "upstream": "examples/react/cypress/components/hooks/useViewport.cy.tsx:53",
+      "title": "useViewport.cy.tsx > handles default viewport",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-017",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:12",
+      "title": "<ReactFlow />: Basic Props > uses defaultNodes and defaultEdges > mounts nodes and edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-018",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:17",
+      "title": "<ReactFlow />: Basic Props > uses defaultNodes and defaultEdges > drags a node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-019",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:38",
+      "title": "<ReactFlow />: Basic Props > uses nodes and edges > mounts nodes and edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-020",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:43",
+      "title": "<ReactFlow />: Basic Props > uses nodes and edges > can not drag a node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-021",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:58",
+      "title": "<ReactFlow />: Basic Props > uses onNodesChange handler > mounts nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-022",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:63",
+      "title": "<ReactFlow />: Basic Props > uses onNodesChange handler > drags a node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-023",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:72",
+      "title": "<ReactFlow />: Basic Props > uses onNodesChange handler > can not connect nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-024",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:90",
+      "title": "<ReactFlow />: Basic Props > uses onEdgeChange handler > mounts nodes and edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-025",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:95",
+      "title": "<ReactFlow />: Basic Props > uses onEdgeChange handler > selects an edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-026",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:105",
+      "title": "<ReactFlow />: Basic Props > uses onConnect handlers > mounts nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-027",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:110",
+      "title": "<ReactFlow />: Basic Props > uses onConnect handlers > connects nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-028",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:124",
+      "title": "<ReactFlow />: Basic Props > uses nodeTypes > renders custom nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-029",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:140",
+      "title": "<ReactFlow />: Basic Props > uses nodeTypes > tries invalid node type - should fallback to default",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-030",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:154",
+      "title": "<ReactFlow />: Basic Props > uses edgeTypes > renders custom edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-031",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:171",
+      "title": "<ReactFlow />: Basic Props > uses edgeTypes > tries invalid edge type - should fallback to default",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-032",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:184",
+      "title": "<ReactFlow />: Basic Props > uses style",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-033",
+      "upstream": "examples/react/cypress/components/reactflow/basic-props.cy.tsx:193",
+      "title": "<ReactFlow />: Basic Props > uses classname",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-034",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:8",
+      "title": "<ReactFlow />: Event handlers > Node event handlers > handles onInit",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-035",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:18",
+      "title": "<ReactFlow />: Event handlers > Node event handlers > handles onNodeClick",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-036",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:31",
+      "title": "<ReactFlow />: Event handlers > Node event handlers > handles onNodeDrag handlers",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-037",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:57",
+      "title": "<ReactFlow />: Event handlers > Node event handlers > handles onNodeMouse handlers",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-038",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:108",
+      "title": "<ReactFlow />: Event handlers > Edge event handlers > handles onEdgeClick",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-039",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:121",
+      "title": "<ReactFlow />: Event handlers > Edge event handlers > handles onEdgeMouse handlers",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-040",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:171",
+      "title": "<ReactFlow />: Event handlers > Pane event handlers > handles onMove handlers",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-041",
+      "upstream": "examples/react/cypress/components/reactflow/event-handlers.cy.tsx:191",
+      "title": "<ReactFlow />: Event handlers > Pane event handlers > handles click handlers",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-042",
+      "upstream": "examples/react/cypress/components/reactflow/multiple-instance.cy.tsx:47",
+      "title": "<ReactFlow />: Multiple Instances > render EdgeLabelRenderer > Each ReactFlow instance has one edge label in EdgeLabelRenderer",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-043",
+      "upstream": "examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:25",
+      "title": "<ReactFlow />: onNodesChange > receive initial dimension change",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-044",
+      "upstream": "examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:36",
+      "title": "<ReactFlow />: onNodesChange > receive replace and dimension change",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-045",
+      "upstream": "examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:75",
+      "title": "<ReactFlow />: onNodesChange > receive select and unselect change",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-046",
+      "upstream": "examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:86",
+      "title": "<ReactFlow />: onNodesChange > receive position change",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-047",
+      "upstream": "examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:97",
+      "title": "<ReactFlow />: onNodesChange > receive remove change",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-048",
+      "upstream": "examples/react/cypress/components/reactflow/storeAvailabilityOnRemount.cy.tsx:39",
+      "title": "<ReactFlow /> remount: store availability > node useEffect sees populated store after <ReactFlow> key remount",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-049",
+      "upstream": "examples/react/cypress/components/reactflow/storeAvailabilityOnRemount.cy.tsx:58",
+      "title": "<ReactFlow /> remount: store availability > node useLayoutEffect sees populated store after <ReactFlow> key remount",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-050",
+      "upstream": "examples/react/cypress/components/reactflow/storeAvailabilityOnRemount.cy.tsx:77",
+      "title": "<ReactFlow /> remount: store availability > node useEffect sees populated store after <ReactFlow> key remount with defaultNodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-051",
+      "upstream": "examples/react/cypress/components/reactflow/uncontrolled.cy.tsx:10",
+      "title": "<ReactFlow />: Uncontrolled Flow > mounts nodes and edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-052",
+      "upstream": "examples/react/cypress/components/reactflow/uncontrolled.cy.tsx:15",
+      "title": "<ReactFlow />: Uncontrolled Flow > selects a node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-053",
+      "upstream": "examples/react/cypress/components/reactflow/uncontrolled.cy.tsx:21",
+      "title": "<ReactFlow />: Uncontrolled Flow > drags a node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-054",
+      "upstream": "examples/react/cypress/components/reactflow/uncontrolled.cy.tsx:30",
+      "title": "<ReactFlow />: Uncontrolled Flow > selects an edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-055",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:24",
+      "title": "<ReactFlow />: View Props > uses fitView",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-056",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:29",
+      "title": "<ReactFlow />: View Props > uses fitViewOptions",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-057",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:37",
+      "title": "<ReactFlow />: View Props > uses minZoom > minZoom: 0.2",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-058",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:46",
+      "title": "<ReactFlow />: View Props > uses minZoom > minZoom: 1",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-059",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:55",
+      "title": "<ReactFlow />: View Props > uses minZoom > sets invalid defaultZoom",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-060",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:67",
+      "title": "<ReactFlow />: View Props > uses maxZoom > maxZoom: 1",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-061",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:76",
+      "title": "<ReactFlow />: View Props > uses maxZoom > maxZoom: 2",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-062",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:85",
+      "title": "<ReactFlow />: View Props > uses maxZoom > sets invalid defaultZoom",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-063",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:97",
+      "title": "<ReactFlow />: View Props > uses defaultViewport > defaultViewport: { x: 0, y: 0, zoom: 1 }",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-064",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:106",
+      "title": "<ReactFlow />: View Props > uses defaultViewport > defaultViewport: { x: 0, y: 0, zoom: 1.5 }",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-065",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:115",
+      "title": "<ReactFlow />: View Props > uses defaultViewport > defaultViewport: { x: 100, y: 100, zoom: 1.5 }",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-066",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:124",
+      "title": "<ReactFlow />: View Props > uses defaultViewport > defaultViewport: invalid { x: 0, y: 0, zoom: -1 }",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-067",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:134",
+      "title": "<ReactFlow />: View Props > uses defaultViewport > defaultViewport: invalid { x: 0, y: 0, zoom: 100 }",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-068",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:145",
+      "title": "<ReactFlow />: View Props > uses snapGrid and snapToGrid",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-069",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:158",
+      "title": "<ReactFlow />: View Props > uses onlyRenderVisibleElements > displays no nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-070",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:164",
+      "title": "<ReactFlow />: View Props > uses onlyRenderVisibleElements > displays one node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-071",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:177",
+      "title": "<ReactFlow />: View Props > uses translateExtent",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-072",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:193",
+      "title": "<ReactFlow />: View Props > uses nodeExtent",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-073",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:228",
+      "title": "<ReactFlow />: View Props > uses preventScrolling > lets user scroll",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-074",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:246",
+      "title": "<ReactFlow />: View Props > uses preventScrolling > does not user scroll",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-075",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:264",
+      "title": "<ReactFlow />: View Props > uses attributionPosition > displays it on the bottom right",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-076",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:275",
+      "title": "<ReactFlow />: View Props > uses attributionPosition > displays it on the top left",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-077",
+      "upstream": "examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:5",
+      "title": "adoptUserNodes Testing > builds node lookup",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-078",
+      "upstream": "examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:23",
+      "title": "adoptUserNodes Testing > calculates positionAbsolute with nodeOrigin",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-079",
+      "upstream": "examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:48",
+      "title": "adoptUserNodes Testing > calculates positionAbsolute with nodeExtent",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-080",
+      "upstream": "examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:73",
+      "title": "adoptUserNodes Testing > calculates positionAbsolute for sub flow",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-081",
+      "upstream": "examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:106",
+      "title": "adoptUserNodes Testing > calculates positionAbsolute for sub flow with nodeOrigin",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-082",
+      "upstream": "examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:146",
+      "title": "adoptUserNodes Testing > calculates positionAbsolute for sub flow with nodeExtent",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-083",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:30",
+      "title": "applyChanges Testing > adds a node/edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-084",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:43",
+      "title": "applyChanges Testing > adds multiple nodes/edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-085",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:61",
+      "title": "applyChanges Testing > removes a node/edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-086",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:75",
+      "title": "applyChanges Testing > removes multiple node/edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-087",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:95",
+      "title": "applyChanges Testing > selects a node/edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-088",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:105",
+      "title": "applyChanges Testing > deselects a node/edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-089",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:123",
+      "title": "applyChanges Testing > updates node position",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-090",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:131",
+      "title": "applyChanges Testing > updates node dimensions",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-091",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:145",
+      "title": "applyChanges Testing > updates node position and dimensions",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-092",
+      "upstream": "examples/react/cypress/components/utils/apply-changes.cy.ts:159",
+      "title": "applyChanges Testing > replaces nodes/edges",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-093",
+      "upstream": "examples/react/cypress/components/utils/calculate-node-position.cy.ts:5",
+      "title": "calculateNodePosition > clamps a child with extent 'parent' to a parent that has an intrinsic size but is not measured yet",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-094",
+      "upstream": "examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:5",
+      "title": "getNodesBounds Testing > calculates bounds for a node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-095",
+      "upstream": "examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:28",
+      "title": "getNodesBounds Testing > calculates bounds for a node (-x, -y)",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-096",
+      "upstream": "examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:51",
+      "title": "getNodesBounds Testing > calculates bounds for multitple nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-097",
+      "upstream": "examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:80",
+      "title": "getNodesBounds Testing > calculates bounds for a node with a child node",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-098",
+      "upstream": "examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:117",
+      "title": "getNodesBounds Testing > calculates bounds for child nodes",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-099",
+      "upstream": "examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:154",
+      "title": "getNodesBounds Testing > ignores unresolvable ids instead of stretching the bounds to the origin",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-100",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:22",
+      "title": "Graph Utils Testing > tests isNode function",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-101",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:27",
+      "title": "Graph Utils Testing > tests isEdge function",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-102",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:32",
+      "title": "Graph Utils Testing > tests getOutgoers function",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-103",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:41",
+      "title": "Graph Utils Testing > tests getIncomers function",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-104",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:50",
+      "title": "Graph Utils Testing > tests addEdge function > adds edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-105",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:57",
+      "title": "Graph Utils Testing > tests addEdge function > tries to add existing edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-106",
+      "upstream": "examples/react/cypress/components/utils/graph-utils.cy.ts:64",
+      "title": "Graph Utils Testing > tests addEdge function > tries to add invalid edge",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    },
+    {
+      "id": "UP-128-107",
+      "upstream": "examples/react/cypress/components/utils/update-node-internals.cy.ts:17",
+      "title": "updateNodeInternals with a missing parent > does not crash when a node parent is absent from nodeLookup",
+      "phase": 128,
+      "guards": [],
+      "hosts": {
+        "vanilla": {
+          "status": "not-ported"
+        },
+        "vue": {
+          "status": "not-ported"
+        },
+        "foldkit": {
+          "status": "not-ported"
+        }
+      },
+      "flowTest": null
+    }
+  ],
+  "unmappedProps": [
+    {
+      "host": "foldkit",
+      "config": "pane/activation-keys",
+      "upstream": "examples/react/src/generic-tests/pane/activation-keys.ts:4",
+      "prop": "panOnDrag: [1]",
+      "reason": "The public GraphInteractionOptions.panOnDrag accepts only a boolean. The fixture uses false for primary-button drag. It cannot express the upstream middle-button policy."
+    },
+    {
+      "host": "foldkit",
+      "config": "pane/activation-keys",
+      "upstream": "examples/react/src/generic-tests/pane/activation-keys.ts:5",
+      "prop": "panActivationKeyCode: 'Control'",
+      "reason": "The public GraphInteractionOptions has no pan activation key option. The fixture cannot install the Control override. UP-126-048 retains the upstream assertion."
+    },
+    {
+      "host": "foldkit",
+      "config": "pane/non-defaults",
+      "upstream": "examples/react/src/generic-tests/pane/non-defaults.ts:4",
+      "prop": "panOnDrag: [1, 2]",
+      "reason": "The public GraphInteractionOptions.panOnDrag accepts only a boolean. The fixture uses false with selectionOnDrag true for primary-button selection. Middle/right-button policy remains unrepresented."
+    }
+  ]
+}

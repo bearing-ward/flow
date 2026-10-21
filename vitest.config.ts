@@ -15,6 +15,7 @@ export default defineConfig({
       'scripts/package-archive.test.ts',
       'scripts/collector-delivery-query.test.ts',
       'scripts/verification-plan.test.ts',
+      'scripts/upstream-test-cases.test.ts',
     ],
   },
 })

@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 
+import { upstreamFixtureRoute } from '../shared/upstream/vite.ts'
+
 export default defineConfig({
+  plugins: [upstreamFixtureRoute()],
   // Example layout libraries are only reached from recipe pages, after Vite's
   // initial dependency scan; pre-bundle them so first loads do not reload.
   optimizeDeps: {

@@ -16,6 +16,7 @@ const extraCheckNames = [
   'build',
   'vue-build',
   'foldkit-build',
+  'upstream-ledger',
 ] as const
 
 const ExtraCheckSchema = S.Literals(extraCheckNames)
@@ -70,6 +71,10 @@ const baselineChecks = [
 ]
 
 const extraChecks = {
+  'upstream-ledger': bunCheck('upstream test ledger', [
+    'run',
+    'scripts/check-upstream-test-ledger.ts',
+  ]),
   docs: bunCheck('documentation', ['run', 'docs:check']),
   catalog: bunCheck('React Flow catalog coverage', [
     'run',
