@@ -85,7 +85,7 @@ export const createVueConformanceAdapter = (
         .locator(`[data-node-id="${nodeId}"]`)
         .evaluate((element, nextSize) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected measured Vue node element')
+            throw new TypeError('Expected measured Vue node element')
           }
 
           element.style.boxSizing = 'border-box'

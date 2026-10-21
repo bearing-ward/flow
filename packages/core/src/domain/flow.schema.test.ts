@@ -249,7 +249,7 @@ describe('FlowDocumentSchema', () => {
     )
 
     if (!(error instanceof DuplicateNodeId)) {
-      throw new Error('Expected DuplicateNodeId')
+      throw new TypeError('Expected DuplicateNodeId')
     }
 
     expect(error.nodeId).toBe('node-1')
@@ -329,7 +329,7 @@ describe('FlowDocumentSchema', () => {
     )
 
     if (!(error instanceof DuplicateEdgeId)) {
-      throw new Error('Expected DuplicateEdgeId')
+      throw new TypeError('Expected DuplicateEdgeId')
     }
 
     expect(error.edgeId).toBe('edge-1')
@@ -348,7 +348,7 @@ describe('FlowDocumentSchema', () => {
     )
 
     if (!(error instanceof MissingEdgeEndpoint)) {
-      throw new Error('Expected MissingEdgeEndpoint')
+      throw new TypeError('Expected MissingEdgeEndpoint')
     }
 
     expect(error.edgeId).toBe('edge-1')
@@ -367,7 +367,7 @@ describe('FlowDocumentSchema', () => {
     )
 
     if (!(error instanceof MissingEdgeEndpoint)) {
-      throw new Error('Expected MissingEdgeEndpoint')
+      throw new TypeError('Expected MissingEdgeEndpoint')
     }
 
     expect(error.edgeId).toBe('edge-1')

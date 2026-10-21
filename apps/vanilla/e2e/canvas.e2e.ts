@@ -86,6 +86,9 @@ const mountConnectionScenario = async (
     },
     { documentMode: mode, withInitialEdge: initialEdge }
   )
+
+  await expectPage(page.locator('article[data-node-id="first"]')).toBeVisible()
+  await expectPage(page.locator('article[data-node-id="second"]')).toBeVisible()
 }
 
 const dragBetweenHandles = async (

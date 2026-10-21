@@ -271,7 +271,7 @@ export const createVanillaConformanceAdapter = (
         .locator(`[data-node-id="${nodeId}"]`)
         .evaluate((element, nextSize) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected measured node element')
+            throw new TypeError('Expected measured node element')
           }
 
           element.style.boxSizing = 'border-box'
@@ -441,7 +441,7 @@ export const createVanillaConformanceAdapter = (
         .locator(`[data-node-id="${nodeId}"]`)
         .evaluate((node, value) => {
           if (!(node instanceof HTMLElement)) {
-            throw new Error('Expected an HTML flow node')
+            throw new TypeError('Expected an HTML flow node')
           }
 
           node.dataset.identity = value

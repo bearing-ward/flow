@@ -2008,36 +2008,37 @@ const graphFold = (
 }
 
 const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
-  actions: Port.subscription(ports.inbound.actions, (action) =>
+  actions: Port.subscriptionEntry(ports.inbound.actions, (action) =>
     AppMessage.HostAction({ action })
   ),
-  versionedSnapshotRequests: Port.subscription(
+  versionedSnapshotRequests: Port.subscriptionEntry(
     ports.inbound.versionedSnapshotRequests,
     (request) => AppMessage.VersionedSnapshotRequest({ request })
   ),
-  snapshotRequests: Port.subscription(
+  snapshotRequests: Port.subscriptionEntry(
     ports.inbound.snapshotRequests,
     (request) => AppMessage.SnapshotRequest({ request })
   ),
-  editRequests: Port.subscription(ports.inbound.editRequests, (request) =>
+  editRequests: Port.subscriptionEntry(ports.inbound.editRequests, (request) =>
     AppMessage.EditRequest({ request })
   ),
-  deleteRequests: Port.subscription(ports.inbound.deleteRequests, (request) =>
-    AppMessage.DeleteRequest({ request })
+  deleteRequests: Port.subscriptionEntry(
+    ports.inbound.deleteRequests,
+    (request) => AppMessage.DeleteRequest({ request })
   ),
-  deleteCancellations: Port.subscription(
+  deleteCancellations: Port.subscriptionEntry(
     ports.inbound.deleteCancellations,
     (cancellation) => AppMessage.DeleteCancellation({ cancellation })
   ),
-  deleteApprovalResponses: Port.subscription(
+  deleteApprovalResponses: Port.subscriptionEntry(
     ports.inbound.deleteApprovalResponses,
     (response) => AppMessage.DeleteApprovalResponse({ response })
   ),
-  viewportRequests: Port.subscription(
+  viewportRequests: Port.subscriptionEntry(
     ports.inbound.viewportRequests,
     (request) => AppMessage.ViewportRequest({ request })
   ),
-  viewportFrames: Subscription.animationFrame<Model, AppMessageData>({
+  viewportFrames: Subscription.animationFrameEntry<Model, AppMessageData>({
     isActive: (model) => model.viewportAnimation !== null,
     toMessage: (delta) => AppMessage.ViewportFrame({ delta }),
   }),
@@ -2643,7 +2644,7 @@ const selectionChangePublication = (
 }
 
 export const update = (model: Model, message: AppMessageData): AppReduction => {
-  const updateResult = AppMessage.match(message, {
+  const updateResult = AppMessage.match<AppReduction>(message, {
     GraphMessage: ({ message: graphMessage }) => {
       if (Predicate.isTagged('DeleteSelected')(graphMessage)) {
         return {
@@ -3712,7 +3713,7 @@ export const createProgram = (
         ),
       })),
       Subscription.lift(Graph.subscriptions)({
-        toChildModel: (model: Model) => model.graph,
+        read: (model: Model) => Option.some(model.graph),
         toParentMessage: (message: typeof Graph.Message.Type) =>
           wrapGraphMessage({ message }),
       })

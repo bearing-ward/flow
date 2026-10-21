@@ -36,7 +36,7 @@ export const mountModelStyling = async (
       const container = owner.firstElementChild
 
       if (!(container instanceof HTMLElement)) {
-        throw new Error('Missing shadow fixture container')
+        throw new TypeError('Missing shadow fixture container')
       }
 
       window.__flowFoldkitModelStyling = mountFoldkitModelStylingFixture(

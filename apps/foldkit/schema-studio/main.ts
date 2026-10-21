@@ -460,7 +460,7 @@ const app = Runtime.embed<typeof appPorts, never, 'Element'>(
     },
     view,
     subscriptions: Subscription.make<Model, StudioMessage>()(() => ({
-      messages: Port.subscription(
+      messages: Port.subscriptionEntry(
         appPorts.inbound.messages,
         (message) => message
       ),

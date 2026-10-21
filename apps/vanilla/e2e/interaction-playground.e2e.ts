@@ -46,6 +46,7 @@ test('playground connection, resize, drag-handle, and touch-ready scenes are usa
     '.flow-node-resize-handle[data-direction="bottom-right"]'
   )
 
+  await expect(resizeControl).toBeVisible()
   const before = await nodeBounds(page, 'container')
   await resizeControl.focus()
   await page.keyboard.press('ArrowRight')

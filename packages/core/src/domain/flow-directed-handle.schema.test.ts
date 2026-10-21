@@ -332,7 +332,7 @@ describe('directed named-handle core public boundary', () => {
       expect(failure).toBeInstanceOf(InvalidFlowConnection)
 
       if (!(failure instanceof InvalidFlowConnection)) {
-        throw new Error('Expected resolved validation failure')
+        throw new TypeError('Expected resolved validation failure')
       }
 
       expect(failure.reason).toBe('duplicate-connection')

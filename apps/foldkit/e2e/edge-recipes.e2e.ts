@@ -27,7 +27,7 @@ const edgePath = (page: Page, edgeId: string) =>
 const pointAt = (path: Locator, fraction: number): Promise<Point> =>
   path.evaluate((element, at) => {
     if (!(element instanceof SVGPathElement)) {
-      throw new Error('Expected an SVG path')
+      throw new TypeError('Expected an SVG path')
     }
 
     const matrix = element.getScreenCTM()
@@ -346,6 +346,7 @@ test('Edge Markers resolve built-in and custom marker references', async ({
   page,
 }) => {
   await open(page, 'edge-markers')
+  await expect(page.getByTestId('flow-edge')).toHaveCount(4)
 
   const refs = await page.evaluate(() =>
     [...document.querySelectorAll<SVGElement>('[data-testid="flow-edge"]')].map(

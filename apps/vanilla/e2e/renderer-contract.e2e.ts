@@ -628,6 +628,12 @@ test('real Vanilla output conforms to the shared renderer fixture', async ({
     .poll(() => page.locator('.flow-edge-path').count())
     .toBe(rendererContractFixture.document.edges.length)
 
+  await Promise.all(
+    rendererContractFixture.document.nodes.map(({ id }) =>
+      expect(page.locator(`.flow-node[data-node-id="${id}"]`)).toBeVisible()
+    )
+  )
+
   const observed = await readObserved()
   const normalized = normalizeRendererContractOutput(observed)
 

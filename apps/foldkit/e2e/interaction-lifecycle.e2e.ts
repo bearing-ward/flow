@@ -498,7 +498,7 @@ test('Foldkit completes a synthetic touch connection through production handles'
       const sourceHandle = document.querySelector(selector)
 
       if (!(sourceHandle instanceof HTMLElement)) {
-        throw new Error('Missing live Foldkit touch source handle')
+        throw new TypeError('Missing live Foldkit touch source handle')
       }
 
       const originalCapture = HTMLElement.prototype.setPointerCapture
@@ -1327,6 +1327,10 @@ test('Foldkit connectionRadius stays in screen pixels across viewport zoom', asy
     await page.evaluate((nextZoom) => {
       window.__flowFoldkitTest?.replaceViewport({ x: 0, y: 0, zoom: nextZoom })
     }, zoom)
+    await expect(page.locator('.flow-foldkit-viewport')).toHaveCSS(
+      'transform',
+      `matrix(${zoom}, 0, 0, ${zoom}, 0, 0)`
+    )
 
     const source = page.locator(
       '[data-node-id="source"] [data-handle-id="out"]'

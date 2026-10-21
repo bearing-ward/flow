@@ -1,7 +1,7 @@
 {
   "revision": "de36b4f64fe80d99886c0b7a9fb505258b872ac9",
   "bun": "1.4.3",
-  "effect": "4.0.0-rc.116",
+  "effect": "4.0.0",
   "typescript": "5.9.3",
   "packageHash": "26101c75bc93ddfda7f644fcf637c9e51eb49fc1cd46ff8ec9203bc66079518e",
   "entry": "packages/core/src/domain/flow-persistence.ts",

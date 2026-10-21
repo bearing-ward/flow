@@ -379,7 +379,7 @@ const mountResizeScenario = async (
     await resizeHandles.evaluateAll((buttons) =>
       buttons.map((button) => {
         if (!(button instanceof HTMLButtonElement)) {
-          throw new Error('Expected resize handle button')
+          throw new TypeError('Expected resize handle button')
         }
 
         return button.getAttribute('aria-label')
@@ -435,7 +435,7 @@ const beginResize = async (
 const currentSize = (page: Page) =>
   page.locator('.flow-node[data-node-id="source"]').evaluate((node) => {
     if (!(node instanceof HTMLElement)) {
-      throw new Error('Expected source HTML node')
+      throw new TypeError('Expected source HTML node')
     }
 
     return {
@@ -835,7 +835,7 @@ test('removing a dragged node clears its preview and releases gesture resources'
   expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([])
   await element.evaluate((node) => {
     if (!(node instanceof HTMLElement)) {
-      throw new Error('Detached node is not an HTMLElement')
+      throw new TypeError('Detached node is not an HTMLElement')
     }
 
     node.dataset.measuredWidth = 'released'
@@ -900,7 +900,7 @@ test('unmounting during a drag releases capture and resize observation', async (
   expect(await page.evaluate(() => globalThis.flowChanges)).toEqual([])
   await element.evaluate((node) => {
     if (!(node instanceof HTMLElement)) {
-      throw new Error('Detached node is not an HTMLElement')
+      throw new TypeError('Detached node is not an HTMLElement')
     }
 
     node.dataset.measuredWidth = 'released'
@@ -1121,7 +1121,7 @@ for (const zoom of [1, 2] as const) {
     const source = page.locator('.flow-node[data-node-id="source"]')
     await source.evaluate((node) => {
       if (!(node instanceof HTMLElement)) {
-        throw new Error('Expected source HTML node')
+        throw new TypeError('Expected source HTML node')
       }
 
       node.blur()

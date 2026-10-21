@@ -5,7 +5,7 @@ import type { Page } from '@playwright/test'
 const viewportData = (page: Page, key: 'x' | 'y' | 'zoom') =>
   page.getByTestId('flow-viewport').evaluate((element, datasetKey) => {
     if (!(element instanceof HTMLElement)) {
-      throw new Error('Expected the viewport to be an HTML element')
+      throw new TypeError('Expected the viewport to be an HTML element')
     }
 
     return element.dataset[datasetKey]
@@ -77,7 +77,7 @@ test('optional canvas controls, minimap, background, and zoom affordances', asyn
     .getByTestId('flow-viewport')
     .evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected the viewport to be an HTML element')
+        throw new TypeError('Expected the viewport to be an HTML element')
       }
 
       return {
@@ -146,7 +146,7 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
 
   const beforeTransform = await node.evaluate((element) => {
     if (!(element instanceof HTMLElement)) {
-      throw new Error('Expected HTML element')
+      throw new TypeError('Expected HTML element')
     }
 
     return element.style.transform
@@ -158,7 +158,7 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
     .getByTestId('flow-viewport')
     .evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected the viewport to be an HTML element')
+        throw new TypeError('Expected the viewport to be an HTML element')
       }
 
       return { x: Number(element.dataset.x), y: Number(element.dataset.y) }
@@ -190,7 +190,7 @@ test('interaction mode pans over nodes without starting node gestures and keeps 
     .poll(() =>
       node.evaluate((element) => {
         if (!(element instanceof HTMLElement)) {
-          throw new Error('Expected HTML element')
+          throw new TypeError('Expected HTML element')
         }
 
         return element.style.transform
@@ -313,7 +313,7 @@ test('canvas UI stays optional and caller panel survives keyed document updates'
     .locator('[data-toolbar-kind=node][data-toolbar-id=a]')
     .evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -323,7 +323,7 @@ test('canvas UI stays optional and caller panel survives keyed document updates'
     .locator('[data-toolbar-kind=edge][data-toolbar-id=ab]')
     .evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -338,7 +338,7 @@ test('canvas UI stays optional and caller panel survives keyed document updates'
         .locator('[data-toolbar-kind=node][data-toolbar-id=a]')
         .evaluate((element) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected HTML element')
+            throw new TypeError('Expected HTML element')
           }
 
           return element.style.transform
@@ -351,7 +351,7 @@ test('canvas UI stays optional and caller panel survives keyed document updates'
         .locator('[data-toolbar-kind=edge][data-toolbar-id=ab]')
         .evaluate((element) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected HTML element')
+            throw new TypeError('Expected HTML element')
           }
 
           return element.style.transform
@@ -370,7 +370,7 @@ test('canvas UI stays optional and caller panel survives keyed document updates'
     .poll(() =>
       page.locator('#node-toolbar-container').evaluate((element) => {
         if (!(element instanceof HTMLElement)) {
-          throw new Error('Expected node toolbar element')
+          throw new TypeError('Expected node toolbar element')
         }
 
         const toolbar = element
@@ -522,7 +522,7 @@ test('placed panels preserve identity, focus, actions, and exact restoration', a
   expect(
     await page.locator('#panel-0 input').evaluate((element) => {
       if (!(element instanceof HTMLInputElement)) {
-        throw new Error('Expected panel input')
+        throw new TypeError('Expected panel input')
       }
 
       return { start: element.selectionStart, end: element.selectionEnd }
@@ -554,7 +554,7 @@ test('placed panels preserve identity, focus, actions, and exact restoration', a
   expect(
     await page.locator('#panel-0 input').evaluate((element) => {
       if (!(element instanceof HTMLInputElement)) {
-        throw new Error('Expected panel input')
+        throw new TypeError('Expected panel input')
       }
 
       return { start: element.selectionStart, end: element.selectionEnd }
@@ -580,7 +580,7 @@ test('placed panels preserve identity, focus, actions, and exact restoration', a
     .locator('[data-node-id="far"]')
     .evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -602,7 +602,7 @@ test('placed panels preserve identity, focus, actions, and exact restoration', a
   expect(
     await page.locator('[data-node-id="far"]').evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -613,7 +613,7 @@ test('placed panels preserve identity, focus, actions, and exact restoration', a
   )
   await page.locator('#panel-0 input').evaluate((element) => {
     if (!(element instanceof HTMLInputElement)) {
-      throw new Error('Expected panel input')
+      throw new TypeError('Expected panel input')
     }
 
     element.focus()
@@ -624,7 +624,7 @@ test('placed panels preserve identity, focus, actions, and exact restoration', a
   expect(
     await page.locator('#panel-0 input').evaluate((element) => {
       if (!(element instanceof HTMLInputElement)) {
-        throw new Error('Expected panel input')
+        throw new TypeError('Expected panel input')
       }
 
       return { start: element.selectionStart, end: element.selectionEnd }

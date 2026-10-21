@@ -79,6 +79,7 @@ import type {
   FoldkitRendererRegistry,
   FoldkitHostOptions,
 } from '@flow/foldkit'
+
 import '@flow/foldkit/style.css'
 import './playground.css'
 ```

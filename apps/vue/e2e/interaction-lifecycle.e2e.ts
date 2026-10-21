@@ -596,7 +596,7 @@ test('Vue production pointer handlers complete a synthetic touch connection', as
         !(targetHandle instanceof HTMLElement) ||
         !(canvas instanceof HTMLElement)
       ) {
-        throw new Error('Missing live touch connection targets')
+        throw new TypeError('Missing live touch connection targets')
       }
 
       // Synthetic touch pointers cannot hold real capture, so emulate it for
@@ -669,7 +669,7 @@ test('Vue production pointer handlers complete a synthetic touch connection', as
       const canvas = document.querySelector('[data-testid="flow-canvas"]')
 
       if (!(canvas instanceof HTMLElement)) {
-        throw new Error('Missing live touch connection canvas')
+        throw new TypeError('Missing live touch connection canvas')
       }
 
       canvas.dispatchEvent(
@@ -1894,7 +1894,7 @@ test('Vue gives a native input ownership of Escape and wheel events', async ({
     const node = document.querySelector('[data-node-id="source"]')
 
     if (!(node instanceof HTMLElement)) {
-      throw new Error('Missing Vue source node')
+      throw new TypeError('Missing Vue source node')
     }
 
     const controls = [

@@ -754,11 +754,7 @@ test.describe('Vanilla MiniMap component', () => {
     })
 
     const minimap = page.getByTestId('flow-minimap')
-    const nodeA = await box(minimap.locator('[data-node-id="a"]'))
-    await page.mouse.click(
-      nodeA.x + nodeA.width / 2,
-      nodeA.y + nodeA.height / 2
-    )
+    await minimap.locator('[data-node-id="a"]').click()
 
     const points = await page.evaluate(
       () => globalThis.wiringFixture?.minimapPoints

@@ -192,7 +192,7 @@ describe(prepareFlowEdit, () => {
     )
 
     if (!(failure instanceof ProtectedDeletionConflict)) {
-      throw new Error('Expected a protected deletion conflict')
+      throw new TypeError('Expected a protected deletion conflict')
     }
 
     expect(failure.nodeIds).toStrictEqual(['child'])

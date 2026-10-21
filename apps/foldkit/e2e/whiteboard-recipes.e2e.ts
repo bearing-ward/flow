@@ -129,7 +129,7 @@ test('Eraser Tool deletes the nodes and edges its trail crosses', async ({
     .locator('[data-edge-id="e-c-y"] .flow-foldkit-edge-path')
     .evaluate((element) => {
       if (!(element instanceof SVGPathElement)) {
-        throw new Error('Expected an SVG path')
+        throw new TypeError('Expected an SVG path')
       }
 
       const matrix = element.getScreenCTM()

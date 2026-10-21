@@ -1,6 +1,6 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path, Schema as S } from 'effect'
-import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
+import { ChildProcess, ChildProcessSpawner } from 'effect/process'
 
 import { checkPackageArchive } from './package-archive'
 
@@ -22,7 +22,7 @@ const ReleaseManifestSchema = S.Struct({
       version: S.NonEmptyString,
     })
   ),
-  effectVersion: S.Literal('4.0.0-rc.116'),
+  effectVersion: S.Literal('4.0.0'),
   flowLicenseStatus: S.Literal('deferred'),
   publishCalled: S.Literal(false),
   upstreamResearchLicense: S.Literal('MIT'),
@@ -48,9 +48,9 @@ const ExternalManifestSchema = S.Struct({
 
 const hasAlignedEffectLockRecords = (lockfile: string): boolean =>
   !lockfile.includes('4.0.0-rc.117') &&
-  lockfile.includes('"effect@4.0.0-rc.116"') &&
-  lockfile.includes('"@effect/platform-browser@4.0.0-rc.116"') &&
-  lockfile.includes('"@effect/platform-node-shared@4.0.0-rc.116"')
+  lockfile.includes('"effect@4.0.0"') &&
+  lockfile.includes('"@effect/platform-browser@4.0.0"') &&
+  lockfile.includes('"@effect/platform-node-shared@4.0.0"')
 
 const program = Effect.gen(function* releaseDryRun() {
   const fileSystem = yield* FileSystem.FileSystem
@@ -111,20 +111,18 @@ const program = Effect.gen(function* releaseDryRun() {
     ]: ReleasePackageManifests
   ): boolean =>
     [
-      rootManifest.dependencies?.effect === '4.0.0-rc.116',
-      rootManifest.dependencies?.['@effect/platform-browser'] ===
-        '4.0.0-rc.116',
-      rootManifest.dependencies?.['@effect/platform-bun'] === '4.0.0-rc.116',
-      rootManifest.dependencies?.['@effect/platform-node-shared'] ===
-        '4.0.0-rc.116',
-      coreManifest.dependencies?.effect === '4.0.0-rc.116',
-      vanillaManifest.dependencies?.effect === '4.0.0-rc.116',
-      vueManifest.dependencies?.effect === '4.0.0-rc.116',
+      rootManifest.dependencies?.effect === '4.0.0',
+      rootManifest.dependencies?.['@effect/platform-browser'] === '4.0.0',
+      rootManifest.dependencies?.['@effect/platform-bun'] === '4.0.0',
+      rootManifest.dependencies?.['@effect/platform-node-shared'] === '4.0.0',
+      coreManifest.dependencies?.effect === '4.0.0',
+      vanillaManifest.dependencies?.effect === '4.0.0',
+      vueManifest.dependencies?.effect === '4.0.0',
       vueManifest.peerDependencies?.vue === '^3.5.43',
-      foldkitManifest.dependencies?.effect === '4.0.0-rc.116',
-      foldkitManifest.peerDependencies?.foldkit === '0.163.0',
+      foldkitManifest.dependencies?.effect === '4.0.0',
+      foldkitManifest.peerDependencies?.foldkit === '0.169.0',
       foldkitManifest.peerDependencies?.['@effect/platform-browser'] ===
-        '4.0.0-rc.116',
+        '4.0.0',
     ].every(Boolean)
 
   const validateEffectAlignment = (
@@ -135,14 +133,14 @@ const program = Effect.gen(function* releaseDryRun() {
     Effect.gen(function* checkAlignedEffectRuntime() {
       if (!hasAlignedEffectVersions(rootManifest, manifests)) {
         return yield* Effect.die(
-          new Error('Effect packages must all be pinned to 4.0.0-rc.116')
+          new Error('Effect packages must all be pinned to 4.0.0')
         )
       }
 
       if (!hasAlignedEffectLockRecords(lockfile)) {
         return yield* Effect.die(
           new Error(
-            'bun.lock must contain only the aligned Effect rc.116 package records'
+            'bun.lock must contain only the aligned Effect 4.0.0 package records'
           )
         )
       }
@@ -300,7 +298,7 @@ const program = Effect.gen(function* releaseDryRun() {
     const manifest = S.decodeUnknownSync(ReleaseManifestSchema)({
       archives,
       dependencyNotices,
-      effectVersion: '4.0.0-rc.116',
+      effectVersion: '4.0.0',
       flowLicenseStatus: 'deferred',
       publishCalled: false,
       upstreamResearchLicense: 'MIT',

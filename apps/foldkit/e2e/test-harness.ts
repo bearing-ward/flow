@@ -254,6 +254,25 @@ const nextAnimationFrame = (): Promise<void> => {
   return promise
 }
 
+const waitForMountedRoot = (): Promise<void> => {
+  if (document.querySelector('.flow-foldkit-root') !== null) {
+    return Promise.resolve()
+  }
+
+  const { promise, resolve } = Promise.withResolvers<undefined>()
+
+  const observer = new MutationObserver(() => {
+    if (document.querySelector('.flow-foldkit-root') !== null) {
+      observer.disconnect()
+      resolve()
+    }
+  })
+
+  observer.observe(document.body, { childList: true, subtree: true })
+
+  return promise
+}
+
 let unsubscribe: (() => void) | undefined
 
 let changesAtDispose = 0
@@ -1092,6 +1111,7 @@ const mount = async (
     }
   }
 
+  await waitForMountedRoot()
   await nextAnimationFrame()
 }
 
@@ -1136,6 +1156,7 @@ const mountMeasurementDocument = async (
     pendingMountedMeasurements.get(response.requestId)?.(response)
     pendingMountedMeasurements.delete(response.requestId)
   })
+  await waitForMountedRoot()
   await nextAnimationFrame()
   await nextAnimationFrame()
 }

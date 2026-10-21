@@ -139,7 +139,7 @@ const Probe = () => {
       const extra = target.cloneNode(true)
 
       if (!(extra instanceof HTMLElement)) {
-        throw new Error('Expected HTML clone')
+        throw new TypeError('Expected HTML clone')
       }
 
       extra.dataset.handleid = 'added'

@@ -38,27 +38,27 @@
     "build:foldkit:package": "bun run --cwd packages/core build && bun run --cwd packages/foldkit build && bun -e 'for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: \"packages/foldkit/dist\" })) { const file = `packages/foldkit/dist/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=[\\x27\\x22])/g, \".js\")); }'"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0-rc.116",
-    "@effect/platform-bun": "4.0.0-rc.116",
-    "@effect/platform-node-shared": "4.0.0-rc.116",
-    "effect": "4.0.0-rc.116",
-    "foldkit": "0.163.0",
-    "vue": "3.5.43"
+    "@effect/platform-browser": "4.0.0",
+    "@effect/platform-bun": "4.0.0",
+    "@effect/platform-node-shared": "4.0.0",
+    "effect": "4.0.0",
+    "foldkit": "0.169.0",
+    "vue": "3.5.44"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.87.2",
-    "@oxlint/plugins": "1.85.0",
-    "@playwright/test": "1.62.1",
+    "@effect/language-service": "0.87.5",
+    "@oxlint/plugins": "1.89.0",
+    "@playwright/test": "1.64.1",
     "@types/bun": "1.4.3",
-    "oxfmt": "0.70.0",
-    "oxlint": "1.85.0",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.89.0",
     "typescript": "5.9.3",
     "ultracite": "7.12.0",
-    "vite": "8.0.13",
-    "vitest": "5.0.1"
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
   },
   "overrides": {
-    "@effect/platform-node-shared": "4.0.0-rc.116"
+    "@effect/platform-node-shared": "4.0.0"
   },
   "hvs": {
     "baseline": "275c2013b54920055db091be00ca29ef096af3b8",

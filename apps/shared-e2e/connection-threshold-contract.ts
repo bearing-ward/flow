@@ -246,7 +246,7 @@ export const connectionThresholdTests = (
                 : element.querySelector('path')
 
             if (!(path instanceof SVGPathElement)) {
-              throw new Error('Missing preview path')
+              throw new TypeError('Missing preview path')
             }
 
             const end = path.getPointAtLength(path.getTotalLength())
@@ -682,7 +682,7 @@ export const connectionThresholdTests = (
           .locator('.flow-foldkit-edge-label')
           .evaluate((label, overlapPoint) => {
             if (!(label instanceof HTMLElement)) {
-              throw new Error('Missing label')
+              throw new TypeError('Missing label')
             }
 
             label.style.pointerEvents = 'auto'

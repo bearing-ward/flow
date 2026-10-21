@@ -174,7 +174,7 @@ import {
   Schema,
   Stream,
 } from 'effect'
-import { Message as FoldMessage, Submodel, Subscription } from 'foldkit'
+import { Dom, Message as FoldMessage, Submodel, Subscription } from 'foldkit'
 import type { Html as FoldHtml, Update } from 'foldkit'
 
 import { observeCanvasInput } from './canvas-input.ts'
@@ -3197,7 +3197,9 @@ const updateState = (
   model: Model,
   message: GraphMessageData
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> =>
-  Message.match(message, {
+  Message.match<
+    Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData>
+  >(message, {
     ClearClickSuppression: () => ({
       model: { ...model, nodeClickSuppressed: false },
     }),
@@ -4427,7 +4429,12 @@ const updateState = (
         return noChange(model)
       }
 
-      const change = { kind: 'edge-selection' as const, edgeId, selected: true }
+      const change = {
+        kind: 'edge-selection' as const,
+        edgeId,
+        selected: true,
+      }
+
       const document = applyEdgeSelectionChange(model.document, change)
 
       return document === undefined
@@ -7682,7 +7689,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
       }),
       dependenciesToStream: ({ active }) =>
         active
-          ? Subscription.fromEventFilterMapPreventDefault({
+          ? Dom.streamFromEventFilterMapPreventDefault({
               target: document,
               type: 'keydown',
               filterMapEvent: (event): Option.Option<GraphMessageData> =>
@@ -7717,7 +7724,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
 
         if (panOnScroll || zoomOnScroll) {
           events.push(
-            Subscription.fromEventFilterMapPreventDefault({
+            Dom.streamFromEventFilterMapPreventDefault({
               target: document,
               type: 'wheel',
               filterMapEvent: (event): Option.Option<GraphMessageData> => {
@@ -7761,7 +7768,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
 
         if (zoomOnDoubleClick) {
           events.push(
-            Subscription.fromEventFilterMapPreventDefault({
+            Dom.streamFromEventFilterMapPreventDefault({
               target: document,
               type: 'dblclick',
               filterMapEvent: (event): Option.Option<GraphMessageData> => {
@@ -7814,7 +7821,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
         const query = globalThis.matchMedia?.(flowColorModeMediaQuery)
 
         return active && query !== undefined
-          ? Subscription.fromEvent({
+          ? Dom.streamFromEvent({
               target: query,
               type: 'change',
               mapEvent: (event: MediaQueryListEvent): GraphMessageData =>
@@ -7824,7 +7831,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
       },
     }
   ),
-  connectionAutoPan: Subscription.animationFrame<Model, GraphMessageData>({
+  connectionAutoPan: Subscription.animationFrameEntry<Model, GraphMessageData>({
     isActive: (model) => {
       const session = model.pointerSession
 
@@ -7847,13 +7854,13 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
         active
           ? Stream.mergeAll(
               [
-                Subscription.fromEvent({
+                Dom.streamFromEvent({
                   target: document,
                   type: 'keyup',
                   mapEvent: (event: KeyboardEvent): GraphMessageData =>
                     Message.FinishKeyboardResize({ key: event.key }),
                 }),
-                Subscription.fromEvent({
+                Dom.streamFromEvent({
                   target: window,
                   type: 'blur',
                   mapEvent: (): GraphMessageData => Message.CancelGesture({}),
@@ -7901,7 +7908,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
         movableNodeIds,
       }) =>
         active
-          ? Subscription.fromEvent({
+          ? Dom.streamFromEvent({
               target: document,
               type: 'keydown',
               mapEvent: (event: KeyboardEvent): GraphMessageData => {

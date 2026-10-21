@@ -178,7 +178,7 @@ const assertKeyboardCenter = async (
     .locator('.flow-vue-canvas')
     .evaluate((canvas) => {
       if (!(canvas instanceof HTMLElement)) {
-        throw new Error('Canvas fixture element is not an HTMLElement')
+        throw new TypeError('Canvas fixture element is not an HTMLElement')
       }
 
       return {
@@ -227,7 +227,7 @@ test('Vue mini map keyboard activation preserves an active canvas selection', as
     .locator('.flow-vue-canvas')
     .evaluate((canvas) => {
       if (!(canvas instanceof HTMLElement)) {
-        throw new Error('Canvas fixture element is not an HTMLElement')
+        throw new TypeError('Canvas fixture element is not an HTMLElement')
       }
 
       return {

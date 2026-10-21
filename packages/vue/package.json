@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@flow/core": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   },
   "peerDependencies": {
     "vue": "^3.5.43"

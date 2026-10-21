@@ -46,11 +46,6 @@ const claimViewport = { x: 0, y: 0, zoom: 1 }
 
 const cancelledClaim = { status: 'cancelled', reason: 'superseded' }
 
-const frameworkRecursion = {
-  name: 'TypeError',
-  message: "Cannot read properties of null (reading 'component')",
-}
-
 const claimEvent = <Payload>(name: string, payload: Payload, held = 0) => ({
   name,
   payload,
@@ -688,7 +683,6 @@ for (const route of [
         claimEvent('beforeUnmount', 2),
         ...variant.end,
         claimEvent('nested:return', null),
-        claimEvent('outer:error', frameworkRecursion),
         claimEvent('outer:return', null),
       ]
 
@@ -704,7 +698,7 @@ for (const route of [
           },
           viewport: claimViewport,
         },
-        frameworkError: nested ? frameworkRecursion : null,
+        frameworkError: null,
       })
     })
   }
@@ -878,14 +872,7 @@ for (const live of [
         live === 'physical-connect' || live === 'retained-click' ? 3 : 2
       )
       expect(result.repeat.before).toEqual(result.repeat.after)
-      expect(result.frameworkError).toEqual(
-        recursive && live !== 'node-control'
-          ? {
-              name: 'TypeError',
-              message: "Cannot read properties of null (reading 'component')",
-            }
-          : null
-      )
+      expect(result.frameworkError).toBeNull()
     })
   }
 }
@@ -1367,7 +1354,6 @@ for (const liveCase of liveClaimCases) {
 
           const nestedTail = [
             claimEvent('nested:return', null),
-            claimEvent('outer:error', frameworkRecursion),
             claimEvent('outer:return', null),
           ]
 
@@ -4126,9 +4112,7 @@ for (const recursive of [false, true]) {
         payload: { viewport: { x: 0, y: 0, zoom: 1 }, status: 'disposed' },
       },
     ])
-    expect(result.frameworkError).toStrictEqual(
-      recursive ? frameworkRecursion : null
-    )
+    expect(result.frameworkError).toBeNull()
   })
 }
 

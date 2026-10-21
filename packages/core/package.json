@@ -19,6 +19,6 @@
     "build": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect && tsc --project tsconfig.build.json"
   },
   "dependencies": {
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   }
 }
