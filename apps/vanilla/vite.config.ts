@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url'
 
 import { defineConfig, loadEnv } from 'vite'
 
+import { upstreamFixtureRoute } from '../shared/upstream/vite.ts'
+
 const workspaceRoot = fileURLToPath(new URL('../..', import.meta.url))
 
 const firstConfigured = (...values: readonly (string | undefined)[]): string =>
@@ -26,6 +28,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
+      upstreamFixtureRoute(),
       {
         name: 'flow-ui-recipes-routes',
         configureServer(server) {

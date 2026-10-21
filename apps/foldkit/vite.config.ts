@@ -1,8 +1,10 @@
 import { foldkit } from '@foldkit/vite-plugin'
 import { defineConfig } from 'vite'
 
+import { upstreamFixtureRoute } from '../shared/upstream/vite.ts'
+
 export default defineConfig({
-  plugins: [foldkit()],
+  plugins: [foldkit(), upstreamFixtureRoute()],
   // The plugin injects this import after Vite's dependency scan.
   // Example layout libraries are only reached from recipe pages, after Vite's
   // initial dependency scan; pre-bundle them so first loads do not reload.

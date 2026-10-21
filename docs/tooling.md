@@ -49,7 +49,7 @@ Keep the scope for ongoing work in the root `verification.config.json`:
 }
 ```
 
-Update `activeWork`, `checks`, and `browserTests` when changing tasks. `--check` accepts `docs`, `catalog`, `api-members`, `contracts`, `proof`, `calibration`, `examples`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, and `foldkit-build`. For example, public export changes should include `consumer`; research or catalog edits should include their corresponding check. These additions are explicit because the baseline alone does not cover those contracts.
+Update `activeWork`, `checks`, and `browserTests` when changing tasks. `--check` accepts `docs`, `catalog`, `api-members`, `contracts`, `proof`, `calibration`, `examples`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, and `upstream-ledger`. For example, public export changes should include `consumer`; research or catalog edits should include their corresponding check. These additions are explicit because the baseline alone does not cover those contracts.
 
 The full profile includes all these extra checks, all three application builds, packed consumers, and every browser suite. Use it at integration and release milestones. `--full` ignores focused browser filters and runs all suites; `--focused` overrides a full configured default. `--list` previews either profile without executing checks. Logs name the selected profile and checks and report elapsed time; record that scope when reporting acceptance.
 
@@ -90,3 +90,20 @@ Both verification profiles start with `bun run check`. Keep the quality gate rea
 ## Anti-slop provenance
 
 The anti-slop source is vendored at `tools/oxlint/anti-slop/`. Its `UPSTREAM.md` records the exact upstream commit and installed entry points. Update it through the installed `install-anti-slop` skill. Do not replace local source without reviewing upstream and preserving local changes.
+
+## Upstream executable test ledger
+
+`bun run scripts/check-upstream-test-ledger.ts` enumerates executable `test` and `it` declarations in the pinned artifacts, including declared `skip` and `only` tests. Inline conditional skips belong to their parent test as guard metadata. The check validates case identity, nested titles, guards, phase, host status and reason, and the exact port location. It prints per-phase host counts. `unmappedProps` records fixture options that a host public API cannot represent.
+
+The three `upstream-playwright.e2e.ts` runners use shared assertions and public host fixtures at `/upstream/<config-path>`. Selector adapters map host wrappers, handles, positioning styles, and edge SVG ancestry. Literal upstream assertions and thresholds remain in the shared contracts. Ledger failures use Playwright expected failures and become errors if they unexpectedly pass.
+
+Serialize browser commands with the owner-token wrapper and select one worker:
+
+```sh
+scripts/with-flow-browser-lock.sh bun run playwright test apps/vanilla/e2e/upstream-playwright.e2e.ts --workers=1
+scripts/with-flow-browser-lock.sh bun run playwright test --config apps/vue/playwright.config.ts apps/vue/e2e/upstream-playwright.e2e.ts --workers=1
+scripts/with-flow-browser-lock.sh bun run playwright test --config apps/foldkit/playwright.config.ts apps/foldkit/e2e/upstream-playwright.e2e.ts --workers=1
+scripts/with-flow-browser-lock.sh bun run verify
+```
+
+The wrapper waits for `/tmp/flow-browser.lock`, writes its owner token, sets `OTEL_SDK_DISABLED=true`, and releases only its own lock on exit. The focused verifier supplies `--workers=1` to each selected host suite.

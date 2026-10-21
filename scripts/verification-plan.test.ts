@@ -87,7 +87,7 @@ describe('verification profiles', () => {
 
     const checks = selectVerificationChecks(config, request)
 
-    expect(checks).toHaveLength(21)
+    expect(checks).toHaveLength(22)
     expect(checks.map((check) => check.name)).toStrictEqual(
       expect.arrayContaining([
         'documentation',
@@ -103,6 +103,7 @@ describe('verification profiles', () => {
         'Vanilla app build',
         'Vue app build',
         'Foldkit app build',
+        'upstream test ledger',
         'vanilla browser tests',
         'vue browser tests',
         'foldkit browser tests',
@@ -126,7 +127,7 @@ describe('verification profiles', () => {
 
     expect(
       selectVerificationChecks(fullConfig, parseVerificationArguments([]))
-    ).toHaveLength(21)
+    ).toHaveLength(22)
     expect(
       selectVerificationChecks(
         fullConfig,
