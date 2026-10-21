@@ -3867,7 +3867,7 @@ export const continuationRoundFourRequestError = async (
     const viewportElement = requiredElement(root, '.flow-vue-viewport')
 
     if (!(viewportElement instanceof HTMLElement)) {
-      throw new Error('Missing viewport')
+      throw new TypeError('Missing viewport')
     }
 
     editor.subscribeState((value) => states.push(structuredClone(value)))
@@ -4235,7 +4235,7 @@ export const ownershipRoundFiveViewport = async (
     const viewportElement = requiredElement(root, '.flow-vue-viewport')
 
     if (!(viewportElement instanceof HTMLElement)) {
-      throw new Error('Missing viewport element')
+      throw new TypeError('Missing viewport element')
     }
 
     const observeResult = async (

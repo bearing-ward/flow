@@ -76,7 +76,7 @@ export const createFoldkitConformanceAdapter = (
         .locator(`[data-node-id="${nodeId}"]`)
         .evaluate((element, nextSize) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected measured Foldkit node element')
+            throw new TypeError('Expected measured Foldkit node element')
           }
 
           element.style.boxSizing = 'border-box'

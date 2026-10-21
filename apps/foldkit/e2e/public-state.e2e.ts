@@ -918,7 +918,7 @@ test('Foldkit viewport requests return controlled proposals and drive the render
     const pane = document.querySelector('.flow-foldkit-canvas')
 
     if (!(pane instanceof HTMLElement)) {
-      throw new Error('Missing Foldkit pane')
+      throw new TypeError('Missing Foldkit pane')
     }
 
     const rect = pane.getBoundingClientRect()
@@ -1152,23 +1152,25 @@ test('Foldkit fitView measures and fits selected nodes', async ({ page }) => {
   expect(selectedFit).toMatchObject({ status: 'accepted', complete: true })
   expect(selectedFit?.viewport.zoom).toBeGreaterThan(0)
 
-  const transform = await page
-    .locator('.flow-foldkit-viewport')
-    .first()
-    .evaluate((element) => getComputedStyle(element).transform)
+  await expect
+    .poll(() =>
+      page
+        .locator('.flow-foldkit-viewport')
+        .first()
+        .evaluate((element) => {
+          const matrix = new DOMMatrix(getComputedStyle(element).transform)
 
-  const matrix = transform
-    .match(/^matrix\((?<values>.*)\)$/u)
-    ?.groups?.values?.split(',')
-    .map(Number)
-
-  expect(matrix).toHaveLength(6)
-  expect(matrix?.[0]).toBeCloseTo(selectedFit?.viewport.zoom ?? 0, 4)
-  expect(matrix?.[1]).toBeCloseTo(0, 4)
-  expect(matrix?.[2]).toBeCloseTo(0, 4)
-  expect(matrix?.[3]).toBeCloseTo(selectedFit?.viewport.zoom ?? 0, 4)
-  expect(matrix?.[4]).toBeCloseTo(selectedFit?.viewport.x ?? 0, 4)
-  expect(matrix?.[5]).toBeCloseTo(selectedFit?.viewport.y ?? 0, 4)
+          return [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f]
+        })
+    )
+    .toEqual([
+      expect.closeTo(selectedFit?.viewport.zoom ?? 0, 4),
+      0,
+      0,
+      expect.closeTo(selectedFit?.viewport.zoom ?? 0, 4),
+      expect.closeTo(selectedFit?.viewport.x ?? 0, 4),
+      expect.closeTo(selectedFit?.viewport.y ?? 0, 4),
+    ])
 })
 
 test('Foldkit viewport client honors reduced motion and settles pending work on disposal', async ({

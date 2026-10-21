@@ -80,7 +80,6 @@ export const validateFlowGraphDocument = <D extends FlowIntegrityDocument>(docum
 These are design declarations requiring compilation against real exported product source during089. They reuse accepted087 C/RI/failures unchanged. Functions/capabilities are local interfaces, never serialized Schemas. Serializable values derive from Schemas.
 
 ```ts
-import { Effect, Option, Schema as S, Scope } from 'effect'
 import type {
   FlowDataContract,
   FlowGraphCodec,
@@ -92,6 +91,7 @@ import type {
   EdgeId,
   Viewport,
 } from '@flow/core'
+import { Effect, Option, Schema as S, Scope } from 'effect'
 // Use the core's existing ViewportSchema import in the production module.
 
 // Production definitions use existing ViewportSchema and the authoritative C.

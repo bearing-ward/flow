@@ -4,7 +4,7 @@ import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { chromium } from '@playwright/test'
 import type { Page, Locator } from '@playwright/test'
 import { Effect, FileSystem, Path, Schema } from 'effect'
-import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
+import { ChildProcess, ChildProcessSpawner } from 'effect/process'
 import { createServer } from 'vite'
 
 import type { FoldkitSnapshotResult } from '../packages/foldkit/src/snapshot-client.ts'
@@ -726,7 +726,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
           'tutorial-first-canvas.ts',
           'tsconfig.json',
         ],
-        peers: { effect: '4.0.0-rc.116' },
+        peers: { effect: '4.0.0' },
       },
       {
         host: 'vue' as const,
@@ -739,7 +739,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
           'styles.d.ts',
           'tsconfig.json',
         ],
-        peers: { effect: '4.0.0-rc.116', vue: '3.5.43' },
+        peers: { effect: '4.0.0', vue: '3.5.44' },
       },
       {
         host: 'foldkit' as const,
@@ -753,9 +753,9 @@ const program = Effect.gen(function* checkPackedConsumers() {
           'tsconfig.json',
         ],
         peers: {
-          effect: '4.0.0-rc.116',
-          foldkit: '0.163.0',
-          '@effect/platform-browser': '4.0.0-rc.116',
+          effect: '4.0.0',
+          foldkit: '0.169.0',
+          '@effect/platform-browser': '4.0.0',
         },
       },
     ]
@@ -783,17 +783,17 @@ const program = Effect.gen(function* checkPackedConsumers() {
       const dependencies = {
         '@flow/core': archivePath('core'),
         [consumer.adapter]: archivePath(consumer.host),
-        effect: '4.0.0-rc.116',
+        effect: '4.0.0',
       }
 
       if (consumer.host === 'vue') {
-        Object.assign(dependencies, { vue: '3.5.43' })
+        Object.assign(dependencies, { vue: '3.5.44' })
       }
 
       if (consumer.host === 'foldkit') {
         Object.assign(dependencies, {
-          foldkit: '0.163.0',
-          '@effect/platform-browser': '4.0.0-rc.116',
+          foldkit: '0.169.0',
+          '@effect/platform-browser': '4.0.0',
         })
       }
 

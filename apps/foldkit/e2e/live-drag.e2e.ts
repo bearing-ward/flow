@@ -63,7 +63,7 @@ const centre = async (page: Page, nodeId: string): Promise<Point> => {
 const pointAt = (path: Locator, fraction: number): Promise<Point> =>
   path.evaluate((element, at) => {
     if (!(element instanceof SVGPathElement)) {
-      throw new Error('Expected an SVG path')
+      throw new TypeError('Expected an SVG path')
     }
 
     const matrix = element.getScreenCTM()

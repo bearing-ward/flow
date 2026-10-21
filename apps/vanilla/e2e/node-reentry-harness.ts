@@ -757,7 +757,7 @@ export const mountNativeCaptureProof = async () => {
   const node = requiredElement(root, '.flow-node[data-node-id="a"]')
 
   if (!(node instanceof HTMLElement)) {
-    throw new Error('Missing node')
+    throw new TypeError('Missing node')
   }
 
   active = node
@@ -1246,7 +1246,7 @@ export const continuationRoundFourNode = async (
   const b = requiredElement(root, '.flow-node[data-node-id="b"]')
 
   if (!(a instanceof HTMLElement && b instanceof HTMLElement)) {
-    throw new Error('Missing nodes')
+    throw new TypeError('Missing nodes')
   }
 
   const nativeFrame = globalThis.requestAnimationFrame
@@ -1693,7 +1693,7 @@ export const continuationRoundFourAcquisition = async (
       viewport instanceof HTMLElement
     )
   ) {
-    throw new Error('Missing exact retained DOM')
+    throw new TypeError('Missing exact retained DOM')
   }
 
   const publications: { name: string; payload: unknown }[] = []
@@ -2245,7 +2245,7 @@ export const continuationRoundFourRenderer = async (
     const canvas = requiredElement(root, '.flow-canvas')
 
     if (!(canvas instanceof HTMLElement)) {
-      throw new Error('Missing canvas')
+      throw new TypeError('Missing canvas')
     }
 
     canvas.style.cssText =
@@ -2714,7 +2714,7 @@ export const continuationRoundFourReadyRenderer = async (
     const canvas = requiredElement(root, '.flow-canvas')
 
     if (!(canvas instanceof HTMLElement)) {
-      throw new Error('Missing canvas')
+      throw new TypeError('Missing canvas')
     }
 
     canvas.style.cssText =
@@ -3000,7 +3000,7 @@ export const continuationRoundFourResizeRestoration = async (
   const node = requiredElement(root, '[data-node-id="b"]')
 
   if (!(node instanceof HTMLElement)) {
-    throw new Error('Missing node')
+    throw new TypeError('Missing node')
   }
 
   const handle = requiredElement(node, '[data-direction="right"]')
@@ -3240,7 +3240,7 @@ export const ownershipRoundFiveProjection = async (
     const canvas = requiredElement(root, '.flow-canvas')
 
     if (!(canvas instanceof HTMLElement)) {
-      throw new Error('Missing canvas')
+      throw new TypeError('Missing canvas')
     }
 
     canvas.style.cssText =

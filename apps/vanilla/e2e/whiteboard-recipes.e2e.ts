@@ -87,7 +87,7 @@ const pathPoint = (page: Page, selector: string, fraction: number) =>
       const path = document.querySelector(target)
 
       if (!(path instanceof SVGPathElement)) {
-        throw new Error(`Missing path ${target}`)
+        throw new TypeError(`Missing path ${target}`)
       }
 
       const matrix = path.getScreenCTM()

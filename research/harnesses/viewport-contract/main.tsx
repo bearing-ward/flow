@@ -174,7 +174,7 @@ const App = () => {
 const root = document.querySelector('#root')
 
 if (!(root instanceof HTMLElement)) {
-  throw new Error('Missing viewport capture root')
+  throw new TypeError('Missing viewport capture root')
 }
 
 createRoot(root).render(<App />)

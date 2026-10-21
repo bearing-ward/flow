@@ -14,7 +14,7 @@ test('Appendix discloses app content by keyboard without moving the graph', asyn
   const readNodeTransform = () =>
     node.evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Appendix node must be an HTML element')
+        throw new TypeError('Appendix node must be an HTML element')
       }
 
       return element.style.transform
@@ -211,7 +211,7 @@ test('Tooltip supports pointer and keyboard descriptions without moving the grap
   expect(
     await node.evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Tooltip node must be an HTML element')
+        throw new TypeError('Tooltip node must be an HTML element')
       }
 
       return element.style.transform

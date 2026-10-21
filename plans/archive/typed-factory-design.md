@@ -22,6 +22,7 @@ Initial product citations below were read from accepted 082 at `/Users/richardmc
 
 ```ts
 import { Effect, Schema as S, Struct } from 'effect'
+
 import type {
   FlowDocument,
   FlowDocumentIntegrityError,

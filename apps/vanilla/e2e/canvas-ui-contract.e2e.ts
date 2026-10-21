@@ -212,7 +212,7 @@ test('public backgrounds and controls operate per host and clean up on remount',
         .getByTestId('flow-viewport')
         .evaluate((element) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected viewport element')
+            throw new TypeError('Expected viewport element')
           }
 
           return element.dataset.zoom
@@ -292,7 +292,7 @@ test('public backgrounds and controls operate per host and clean up on remount',
         .getByTestId('flow-viewport')
         .evaluate((element) => {
           if (!(element instanceof HTMLElement)) {
-            throw new Error('Expected viewport element')
+            throw new TypeError('Expected viewport element')
           }
 
           return element.dataset.zoom

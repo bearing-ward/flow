@@ -55,13 +55,13 @@ Do not add an unchecked branded `SyncCodec` constructor that merely takes a sche
 The declarations below are the proposed public contract, not current package exports. Implement them in `packages/core` first, with host-specific composition in the adapter packages. Existing `FlowNode`, `FlowEdge`, controller, Vue composable, createProgram and saved-v1 APIs keep their exact concrete signatures.
 
 ```ts
-import { Effect, Option, Schema as S, Scope } from 'effect'
 import type {
   FlowNode,
   FlowEdge,
   FlowDocumentIntegrityError,
   Viewport,
 } from '@flow/core'
+import { Effect, Option, Schema as S, Scope } from 'effect'
 import type { Html } from 'foldkit'
 
 type NodeGeometry = Omit<FlowNode, 'data' | 'type'> & {

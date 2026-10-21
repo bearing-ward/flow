@@ -346,7 +346,7 @@ export const createUpdate = (host: Host) => {
     model: Model,
     message: StudioMessage
   ): Update.Return<Model, StudioMessage> =>
-    Msg.match(message, {
+    Msg.match<Update.Return<Model, StudioMessage>>(message, {
       Done: () => ({ model }),
       Ready: () => ({ model: { ...model, busy: Math.max(0, model.busy - 1) } }),
       Failure: ({ message: text }) => ({

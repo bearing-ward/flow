@@ -36,11 +36,7 @@ const typescript = Schema.decodeUnknownSync(packageVersion)(
   )
 ).version
 
-if (
-  effect !== '4.0.0-rc.116' ||
-  typescript !== '5.9.3' ||
-  Bun.version !== '1.4.3'
-) {
+if (effect !== '4.0.0' || typescript !== '5.9.3' || Bun.version !== '1.4.3') {
   throw new Error(
     `Frozen capture runtime drift: Bun ${Bun.version}, Effect ${effect}, TypeScript ${typescript}`
   )

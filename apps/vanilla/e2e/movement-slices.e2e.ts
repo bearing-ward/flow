@@ -7,7 +7,7 @@ import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.
 const readViewportX = (page: Page) =>
   page.locator('.flow-viewport').evaluate((element) => {
     if (!(element instanceof HTMLElement)) {
-      throw new Error('Expected the viewport to be an HTML element')
+      throw new TypeError('Expected the viewport to be an HTML element')
     }
 
     return element.dataset.x
@@ -144,6 +144,8 @@ const mountGraph = async (
     },
     options
   )
+
+  await expect(page.locator('.flow-node[data-node-id="a"]')).toBeVisible()
 }
 
 const touch = (x: number, y: number) => ({ x, y })

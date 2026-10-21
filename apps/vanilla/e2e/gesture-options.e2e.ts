@@ -75,6 +75,9 @@ const mountScenario = async (page: Page, scenario: Scenario): Promise<void> => {
     )
     globalThis.flowController = controller
   }, scenario)
+  await page.waitForFunction(() =>
+    globalThis.flowController?.nodesInitialized()
+  )
 }
 
 const centerOf = async (
@@ -1178,6 +1181,7 @@ test('pointer UI callbacks stay host-native and keyboard drag has one lifecycle'
     )
   })
   const node = page.locator('.flow-node[data-node-id="a"]')
+  await expect(node).toBeVisible()
   await node.focus()
   await page.keyboard.press('ArrowRight')
   await node.hover()

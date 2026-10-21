@@ -3,9 +3,9 @@
 Flow uses Ultracite with the Oxlint and Oxfmt toolchain. All four direct development dependencies use exact versions:
 
 - `ultracite@7.12.0`
-- `oxlint@1.85.0`
-- `@oxlint/plugins@1.85.0`
-- `oxfmt@0.70.0`
+- `oxlint@1.89.0`
+- `@oxlint/plugins@1.89.0`
+- `oxfmt@0.74.0`
 
 `oxlint.config.ts` extends the Ultracite core and Vitest presets. It also loads the vendored anti-slop generic and Effect plugins. `oxfmt.config.ts` uses the Ultracite Oxfmt preset. Both configurations ignore imported research evidence, generated research indexes, build output, agent directories, and the vendored plugin source. Oxfmt also skips `docs/api-reference.md` because it is generated; `bun run docs:check` verifies its freshness and links without rewriting generated TypeScript code blocks.
 

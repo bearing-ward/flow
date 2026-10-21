@@ -42,6 +42,12 @@ const mount = async (page: Page, customPreview: boolean) => {
       updateViewport: (viewport) => controller.updateViewport(viewport),
     }
   }, customPreview)
+
+  await Promise.all(
+    ['a', 'b', 'c'].map((id) =>
+      expect(page.locator(`.flow-node[data-node-id="${id}"]`)).toBeVisible()
+    )
+  )
 }
 
 const bezierLinePath = (

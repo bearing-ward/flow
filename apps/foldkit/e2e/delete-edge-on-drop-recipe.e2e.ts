@@ -27,7 +27,7 @@ const selectEdge = async (page: Page, edgeId: string) => {
     .locator(`[data-edge-id="${edgeId}"] .flow-foldkit-edge-path`)
     .evaluate((element) => {
       if (!(element instanceof SVGPathElement)) {
-        throw new Error('Expected an SVG path')
+        throw new TypeError('Expected an SVG path')
       }
 
       const matrix = element.getScreenCTM()

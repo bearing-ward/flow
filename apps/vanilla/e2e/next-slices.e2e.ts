@@ -442,6 +442,7 @@ test('hidden nodes suppress connected edges and return after update', async ({
   await updateVisibility(false)
   await expect(beta).toHaveCount(1)
   await expect(edge).toHaveCount(1)
+  await expect(beta).toBeVisible()
   await beta.focus()
   await updateVisibility(true)
   await expect(beta).toHaveCount(0)

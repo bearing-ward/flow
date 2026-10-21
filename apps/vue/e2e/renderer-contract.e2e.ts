@@ -285,7 +285,7 @@ test('Vue edge labels follow path geometry, custom anchors, and visibility', asy
     .locator('[data-edge-id="edge-bezier"] [data-testid="flow-edge-path"]')
     .evaluate((path) => {
       if (!(path instanceof SVGPathElement)) {
-        throw new Error('Expected a Bezier SVG path')
+        throw new TypeError('Expected a Bezier SVG path')
       }
 
       const start = path.getPointAtLength(0)
@@ -391,7 +391,7 @@ test('Vue renderer registries preserve renderer and geometry contracts', async (
 
   const hitPoint = await hitTarget.evaluate((path) => {
     if (!(path instanceof SVGPathElement)) {
-      throw new Error('Expected an SVG path hit target')
+      throw new TypeError('Expected an SVG path hit target')
     }
 
     const svg = path.ownerSVGElement

@@ -9,19 +9,19 @@
     "test:conformance": "playwright test -c playwright.config.ts"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0-rc.116",
+    "@effect/platform-browser": "4.0.0",
     "@flow/core": "workspace:*",
     "@flow/foldkit": "workspace:*",
-    "effect": "4.0.0-rc.116",
-    "foldkit": "0.163.0"
+    "effect": "4.0.0",
+    "foldkit": "0.169.0"
   },
   "devDependencies": {
     "@dagrejs/dagre": "3.1.1",
-    "@foldkit/vite-plugin": "0.24.0",
+    "@foldkit/vite-plugin": "0.28.0",
     "@types/d3-force": "3.0.10",
     "d3-force": "3.0.0",
     "elkjs": "0.12.0",
-    "html-to-image": "1.11.11",
-    "vite": "8.0.13"
+    "html-to-image": "1.11.13",
+    "vite": "8.3.5"
   }
 }

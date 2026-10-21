@@ -62,7 +62,7 @@ test('Foldkit desktop interaction demos are keyboard accessible and expose their
 
   const positionBefore = await validateNode.evaluate((node) => {
     if (!(node instanceof HTMLElement)) {
-      throw new Error('Missing Validate node element')
+      throw new TypeError('Missing Validate node element')
     }
 
     return node.style.left
@@ -74,7 +74,7 @@ test('Foldkit desktop interaction demos are keyboard accessible and expose their
     .poll(() =>
       validateNode.evaluate((node) => {
         if (!(node instanceof HTMLElement)) {
-          throw new Error('Missing Validate node element')
+          throw new TypeError('Missing Validate node element')
         }
 
         return node.style.left
@@ -124,7 +124,7 @@ test('Foldkit touch-ready scene offers larger targets and completes a touch poin
 
   const positionBefore = await node.evaluate((element) => {
     if (!(element instanceof HTMLElement)) {
-      throw new Error('Missing touch drag node')
+      throw new TypeError('Missing touch drag node')
     }
 
     return element.style.left
@@ -141,7 +141,7 @@ test('Foldkit touch-ready scene offers larger targets and completes a touch poin
       const target = document.querySelector('[data-node-id="validate"]')
 
       if (!(target instanceof HTMLElement)) {
-        throw new Error('Missing live touch drag node')
+        throw new TypeError('Missing live touch drag node')
       }
 
       const originalCapture = HTMLElement.prototype.setPointerCapture
@@ -189,7 +189,7 @@ test('Foldkit touch-ready scene offers larger targets and completes a touch poin
     .poll(() =>
       node.evaluate((element) => {
         if (!(element instanceof HTMLElement)) {
-          throw new Error('Missing touch drag node')
+          throw new TypeError('Missing touch drag node')
         }
 
         return element.style.left

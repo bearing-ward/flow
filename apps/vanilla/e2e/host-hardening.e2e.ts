@@ -10,6 +10,9 @@ declare global {
   var hardeningFixture: HardeningFixture | undefined
 }
 
+const node = (page: Page, nodeId: string) =>
+  page.locator(`.flow-node[data-node-id="${nodeId}"]`)
+
 const mount = async (page: Page, options: HardeningFixtureOptions) => {
   await page.goto('/')
   await page.evaluate(() => globalThis.dispatchEvent(new Event('beforeunload')))
@@ -24,10 +27,10 @@ const mount = async (page: Page, options: HardeningFixtureOptions) => {
 
     globalThis.hardeningFixture = mountHardeningFixture(root, fixtureOptions)
   }, options)
-}
 
-const node = (page: Page, nodeId: string) =>
-  page.locator(`.flow-node[data-node-id="${nodeId}"]`)
+  await expect(node(page, 'a')).toBeVisible()
+  await expect(node(page, 'b')).toBeVisible()
+}
 
 const centre = async (locator: Locator) => {
   const box = await locator.boundingBox()
@@ -90,7 +93,7 @@ const floatingPoint = (page: Page, fraction: number) =>
     const path = document.querySelector('[data-testid="floating-path"]')
 
     if (!(path instanceof SVGPathElement)) {
-      throw new Error('Missing floating path')
+      throw new TypeError('Missing floating path')
     }
 
     const matrix = path.getScreenCTM()

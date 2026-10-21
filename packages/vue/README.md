@@ -4,6 +4,7 @@ Vue 3 adapter for Flow. The package owns the Vue component, composable, injectio
 
 ```ts
 import { FlowCanvas, useFlow } from '@flow/vue'
+
 import '@flow/vue/style.css'
 ```
 

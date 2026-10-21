@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises'
+import { rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -44,7 +44,11 @@ if (address?.port === undefined) {
   throw new Error('Foldkit HMR consumer server did not expose a TCP port')
 }
 
-await writeFile(readyFile, JSON.stringify({ port: address.port }))
+const pendingReadyFile = `${readyFile}.tmp`
+
+await writeFile(pendingReadyFile, JSON.stringify({ port: address.port }))
+
+await rename(pendingReadyFile, readyFile)
 
 process.once('SIGTERM', async () => {
   await server.close()

@@ -404,7 +404,7 @@ test('custom drag handle gates pointer movement and keeps its visual state stabl
 
   const alphaTransformBefore = await alpha.evaluate((element) => {
     if (!(element instanceof HTMLElement)) {
-      throw new Error('Expected HTML element')
+      throw new TypeError('Expected HTML element')
     }
 
     return element.style.transform
@@ -428,7 +428,7 @@ test('custom drag handle gates pointer movement and keeps its visual state stabl
   const outsideHandleTransformChanged =
     (await alpha.evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -465,7 +465,7 @@ test('custom drag handle gates pointer movement and keeps its visual state stabl
   expect(
     await alpha.evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -501,7 +501,7 @@ test('custom drag handle gates pointer movement and keeps its visual state stabl
   const handleTransformChanged =
     (await alpha.evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -720,7 +720,7 @@ for (const documentMode of ['uncontrolled', 'controlled'] as const) {
 
     const initialTransform = await node.evaluate((element) => {
       if (!(element instanceof HTMLElement)) {
-        throw new Error('Expected HTML element')
+        throw new TypeError('Expected HTML element')
       }
 
       return element.style.transform
@@ -768,7 +768,7 @@ for (const documentMode of ['uncontrolled', 'controlled'] as const) {
     await textarea.focus()
     await textarea.evaluate((element) => {
       if (!(element instanceof HTMLTextAreaElement)) {
-        throw new Error('Expected a textarea editor')
+        throw new TypeError('Expected a textarea editor')
       }
 
       element.setSelectionRange(7, 7)
@@ -798,7 +798,7 @@ for (const documentMode of ['uncontrolled', 'controlled'] as const) {
     expect(
       await inheritedEditor.evaluate((element) => {
         if (!(element instanceof HTMLElement)) {
-          throw new Error('Expected an HTML editor element')
+          throw new TypeError('Expected an HTML editor element')
         }
 
         return element.isContentEditable
@@ -845,7 +845,7 @@ for (const documentMode of ['uncontrolled', 'controlled'] as const) {
     expect(
       await node.evaluate((element) => {
         if (!(element instanceof HTMLElement)) {
-          throw new Error('Expected HTML element')
+          throw new TypeError('Expected HTML element')
         }
 
         return element.style.transform
@@ -1523,6 +1523,7 @@ test('typed node and edge renderers keep host interactions and clean up by key',
 
   const source = page.locator('.flow-node[data-node-id="source"]')
   const edgePath = page.locator('[data-edge-id="edge"] .flow-edge-hit')
+  await expect(source).toBeVisible()
   await expect(source).toHaveCSS('width', '120px')
   await expect(source.locator("[data-custom-node='alpha']")).toHaveText('first')
   await expect(source.locator('.flow-handle')).toHaveCount(1)
@@ -1590,7 +1591,7 @@ test('typed node and edge renderers keep host interactions and clean up by key',
 
   await source.locator("[data-custom-node='alpha']").evaluate((element) => {
     if (!(element instanceof HTMLElement)) {
-      throw new Error('Expected a custom HTML node')
+      throw new TypeError('Expected a custom HTML node')
     }
 
     element.dataset.identity = 'kept'

@@ -220,8 +220,13 @@ export const nestedResizeContainment = (
                     height: node?.height,
                   }))
                 )
-                .toEqual({ width: 300, height: 190 })
+                .toEqual({
+                  width: horizontalExpected.width,
+                  height: horizontalExpected.height,
+                })
             }
+
+            const acceptedBeforeGesture = await adapter.acceptedStates()
 
             await startGesture()
             await expect
@@ -231,11 +236,46 @@ export const nestedResizeContainment = (
             await expect.poll(() => geometry(child)).toEqual(childBefore)
             await expect.poll(() => geometry(ordinary)).toEqual(ordinaryBefore)
             const previewState = await adapter.readState({ nodeId: 'parent' })
-            expect(previewState.node?.position).toEqual({ x: 100, y: 100 })
+
+            // Foldkit snapshot ports expose live geometry; the Vue probe reads accepted editor state.
+            const expectedRead =
+              host === 'Foldkit'
+                ? {
+                    position: {
+                      x: 100 + horizontalExpected.x - parentBefore.x,
+                      y: 100 + horizontalExpected.y - parentBefore.y,
+                    },
+                    size: {
+                      width: horizontalExpected.width,
+                      height: horizontalExpected.height,
+                    },
+                  }
+                : {
+                    position: { x: 100, y: 100 },
+                    size: { width: 300, height: 190 },
+                  }
+
+            expect(previewState.node).toMatchObject(expectedRead)
+            expect(
+              previewState.snapshot.document.nodes.find(
+                ({ id }) => id === 'parent'
+              )
+            ).toMatchObject(expectedRead)
+            expect(await adapter.acceptedStates()).toEqual(
+              acceptedBeforeGesture
+            )
             await page.keyboard.press('Escape')
             await finishGesture()
             await expect.poll(() => geometry(parent)).toEqual(parentBefore)
             await expect.poll(() => geometry(child)).toEqual(childBefore)
+            await expect
+              .poll(() =>
+                adapter.internalNode('parent').then((node) => ({
+                  width: node?.width,
+                  height: node?.height,
+                }))
+              )
+              .toEqual({ width: 300, height: 190 })
             expect(await adapter.changeKinds()).toEqual([])
             await startGesture()
             await expect

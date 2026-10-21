@@ -117,6 +117,7 @@ for (const input of ['pointer', 'keyboard']) {
     page,
   }) => {
     const { adapter, parent, child } = await mount(page)
+    const acceptedBeforeGesture = await adapter.acceptedStates()
     await preview(page, parent, input)
     await expect
       .poll(() => geometry(parent))
@@ -131,10 +132,11 @@ for (const input of ['pointer', 'keyboard']) {
       )
       .toEqual({ nodeId: 'parent', width: 180, height: 102 })
     expect(await adapter.internalNode('parent')).toMatchObject({
-      width: 300,
-      height: 190,
+      width: 180,
+      height: 102,
       measurementStatus: 'measured',
     })
+    expect(await adapter.acceptedStates()).toEqual(acceptedBeforeGesture)
     await page.evaluate(
       (document) => window.__flowFoldkitTest?.acknowledgeNextResize(document),
       fixture.document

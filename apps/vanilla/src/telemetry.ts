@@ -9,8 +9,8 @@ import {
   Option,
   References,
 } from 'effect'
-import { FetchHttpClient } from 'effect/unstable/http'
-import { Otlp } from 'effect/unstable/observability'
+import { FetchHttpClient } from 'effect/http'
+import { Otlp } from 'effect/observability'
 
 import { FlowBrowserLive } from './flow-browser.ts'
 

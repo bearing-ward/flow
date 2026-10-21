@@ -1,6 +1,6 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Schema as S } from 'effect'
-import { ChildProcess, ChildProcessSpawner } from 'effect/unstable/process'
+import { ChildProcess, ChildProcessSpawner } from 'effect/process'
 
 import {
   parseVerificationArguments,

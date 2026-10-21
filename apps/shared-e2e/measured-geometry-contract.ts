@@ -104,7 +104,7 @@ const assertCulled = async (
   }
 
   const internal = await adapter.internalNode(node.id)
-  expect(await adapter.renderedNodeExists(node.id)).toBe(false)
+  await expect.poll(() => adapter.renderedNodeExists(node.id)).toBe(false)
   expect(internal?.measurementStatus).toBe('unmeasured')
   expect(internal?.width).toBe(dimensions.width)
   expect(internal?.height).toBe(dimensions.height)

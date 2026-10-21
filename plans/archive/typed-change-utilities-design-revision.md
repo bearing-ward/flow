@@ -45,7 +45,8 @@ type PossibleWriteKeys<W, K> = {
 type IndexWrites<W, K> = W[PossibleWriteKeys<W, K>]
 type NodeRest<N> = {
   [K in keyof N as K extends keyof NodeWrites ? never : K]:
-    N[K] | IndexWrites<NodeWrites, K>
+    | N[K]
+    | IndexWrites<NodeWrites, K>
 }
 type ApplyNodeChangesResult<N> = NodeRest<N> & NodeWrites
 ```

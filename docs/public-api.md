@@ -133,6 +133,7 @@ import {
   createFlowControls,
   mountFlow,
 } from '@flow/vanilla'
+
 import '@flow/vanilla/style.css'
 
 const controller = mountFlow(canvas, documentValue)
@@ -306,8 +307,8 @@ Schema-derived contracts, accepted geometry/metadata and ordered integrity confo
 `makeTypedFlow` creates one scoped core graph owner from a `FlowDataContract` and an encoded or decoded initial document. The actor retains the codec's exact decoded node, edge and whole-document metadata types. Its methods return Effects; provide services when executing each method. The actor captures that execution's Context, including services supplied after construction.
 
 ```ts
-import { Effect } from 'effect'
 import { makeTypedFlow } from '@flow/core'
+import { Effect } from 'effect'
 
 const program = Effect.scoped(
   Effect.gen(function* () {
