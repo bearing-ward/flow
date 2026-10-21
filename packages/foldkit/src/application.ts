@@ -1,7 +1,5 @@
 import {
   FlowChangeSchema,
-  FlowCommandSchema,
-  FlowDocumentSchema,
   FlowEdgeSchema,
   FlowEditErrorSchema,
   FlowEditResultSchema,
@@ -28,7 +26,6 @@ import {
   getFlowInternalNodes,
   FlowStateChangeSchema,
   ViewportSchema,
-  NodeMeasurementInputSchema,
   FlowInternalNodeSchema,
   ViewportAnimationOptionsSchema,
   ViewportBoundsSchema,
@@ -47,7 +44,6 @@ import {
   NodeChangeSchema,
   flowChangeElementChanges,
   flowNodeHandles,
-  FlowColorModeSchema,
   FlowFitViewOptionsSchema,
   flowSelectionEqual,
   resolveEdgeHandles,
@@ -97,7 +93,13 @@ import {
   MAX_PENDING_DELETE_APPROVALS,
 } from './delete-approval.ts'
 import * as Graph from './graph.ts'
+import { HostAction } from './host-action.ts'
+import type { HostActionData } from './host-action.ts'
 import { notifyResizer } from './node-resizer.ts'
+
+export { HostAction } from './host-action.ts'
+
+export type { HostActionData } from './host-action.ts'
 
 const interactionCompletionSpan = (
   change: typeof FlowChangeSchema.Type
@@ -173,29 +175,6 @@ const defaultViewportLimits: typeof ViewportLimitsSchema.Type = {
   minZoom: 0.1,
   maxZoom: 2,
 }
-
-export const HostAction = FoldMessage.defineMessageUnion({
-  RefreshRenderers: {},
-  SetCanvasOptions: { options: Graph.CanvasOptionsSchema },
-  ReplaceDocument: { document: FlowDocumentSchema },
-  ReplaceViewport: { viewport: ViewportSchema },
-  SetAllowedTargets: { targets: Schema.Array(Schema.String) },
-  DispatchCommand: { command: FlowCommandSchema },
-  MeasureNode: {
-    requestId: Schema.String,
-    measurement: NodeMeasurementInputSchema,
-  },
-  /** React Flow `colorMode` (`light`, `dark` or `system`) at runtime. */
-  SetColorMode: { mode: FlowColorModeSchema },
-  /** Change `nodesDraggable`, `nodesConnectable` and `elementsSelectable` at runtime. */
-  SetInteractivity: {
-    nodesDraggable: Schema.optional(Schema.Boolean),
-    nodesConnectable: Schema.optional(Schema.Boolean),
-    elementsSelectable: Schema.optional(Schema.Boolean),
-  },
-})
-
-export type HostActionData = typeof HostAction.Type
 
 /** The Runtime's current interaction switches, published after every `SetInteractivity`. */
 export const FoldkitInteractivitySchema = Schema.Struct({
@@ -416,6 +395,7 @@ export const ports = {
     snapshotFailures: Port.outbound(LegacySnapshotFailureSchema),
     acceptedStates: Port.outbound(FlowStateChangeSchema),
     editResults: Port.outbound(EditResponseSchema),
+    keyboardDeleteIntents: Port.outbound(Schema.Null),
     keyboardDeleteRequests: Port.outbound(KeyboardDeleteSelectionSchema),
     deleteApprovalRequests: Port.outbound(DeleteApprovalRequestedSchema),
     deleteResults: Port.outbound(DeleteResultSchema),
@@ -758,6 +738,7 @@ const ChangePublicationSchema = Schema.Struct({
 })
 
 const PublicationSchema = Schema.Union([
+  Schema.Struct({ kind: Schema.Literal('keyboard-delete-intent') }),
   Schema.Struct({
     kind: Schema.Literal('keyboard-delete'),
     selection: KeyboardDeleteSelectionSchema,
@@ -813,6 +794,12 @@ const respondEdit = (response: typeof EditResponseSchema.Type) => {
 const emitPublication = (
   item: PublicationItem
 ): Effect.Effect<AppMessageData> => {
+  if (item.kind === 'keyboard-delete-intent') {
+    return Port.emit(ports.outbound.keyboardDeleteIntents, null).pipe(
+      Effect.as(AppMessage.DeleteApprovalPublished())
+    )
+  }
+
   if (item.kind === 'keyboard-delete') {
     return Effect.logInfo('Foldkit keyboard deletion requested').pipe(
       Effect.annotateLogs({
@@ -2214,7 +2201,24 @@ const fitInitialView = (model: Model, initial: AppReduction): AppReduction => {
 }
 
 const routeAction = (model: Model, action: HostActionData) =>
-  HostAction.match(action, {
+  HostAction.match<AppReduction>(action, {
+    RequestKeyboardDelete: () => ({
+      model,
+      outMessage: [
+        {
+          kind: 'keyboard-delete',
+          selection: {
+            baseRevision: model.acceptedDocumentRevision,
+            nodeIds: model.graph.document.nodes
+              .filter(({ selected }) => selected === true)
+              .map(({ id }) => id),
+            edgeIds: model.graph.document.edges
+              .filter(({ selected }) => selected === true)
+              .map(({ id }) => id),
+          },
+        },
+      ],
+    }),
     ReplaceDocument: ({ document }) =>
       graphFold(model, Graph.Message.ReplaceDocument({ document }), 'full'),
     ReplaceViewport: ({ viewport }) =>
@@ -2651,15 +2655,7 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
           model,
           outMessage: [
             {
-              kind: 'keyboard-delete',
-              selection: {
-                nodeIds: model.graph.document.nodes
-                  .filter(({ selected }) => selected === true)
-                  .map(({ id }) => id),
-                edgeIds: model.graph.document.edges
-                  .filter(({ selected }) => selected === true)
-                  .map(({ id }) => id),
-              },
+              kind: 'keyboard-delete-intent',
             },
           ],
         }

@@ -285,9 +285,11 @@ test('dynamic-layouting grows the tree from placeholders', async ({ page }) => {
 
   await expectLaidOut(page, 'TB')
   const first = await nodeBox(page, 'p-1')
+  const beforeConversion = await layouts(page)
   await page.mouse.click(first.x + first.width / 2, first.y + first.height / 2)
   await expect(status(page)).toHaveAttribute('data-nodes', '2')
   await expect(status(page)).toHaveAttribute('data-placeholders', '1')
+  await expect.poll(() => layouts(page)).toBeGreaterThan(beforeConversion)
   await expectLaidOut(page, 'TB')
 
   const converted = await nodeBox(page, 'p-1')

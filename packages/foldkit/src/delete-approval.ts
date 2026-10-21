@@ -10,7 +10,13 @@ import {
 } from '@flow/core'
 import { Exit, Schema } from 'effect'
 
+import { HostAction } from './host-action.ts'
+import type { HostActionData } from './host-action.ts'
+
 export const KeyboardDeleteSelectionSchema = Schema.Struct({
+  baseRevision: Schema.optional(
+    Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))
+  ),
   nodeIds: Schema.Array(Schema.String),
   edgeIds: Schema.Array(Schema.String),
 })
@@ -111,6 +117,10 @@ interface DeleteApprovalOutputPort<Value> {
 
 interface FoldkitDeleteHandle {
   readonly ports: {
+    readonly actions?: DeleteApprovalPort<
+      Extract<HostActionData, { readonly _tag: 'RequestKeyboardDelete' }>
+    >
+    readonly keyboardDeleteIntents?: DeleteApprovalOutputPort<null>
     readonly keyboardDeleteRequests?: DeleteApprovalOutputPort<
       typeof KeyboardDeleteSelectionSchema.Encoded
     >
@@ -423,10 +433,11 @@ export const createFoldkitDeleteClient = (
     }
   })
 
-  const deleteElements: FoldkitDeleteClient['deleteElements'] = (
-    { nodeIds, edgeIds },
-    requestOptions = {}
-  ) => {
+  const deleteElementsAtRevision = (
+    { nodeIds, edgeIds }: Parameters<FoldkitDeleteClient['deleteElements']>[0],
+    requestOptions: Parameters<FoldkitDeleteClient['deleteElements']>[1] = {},
+    baseRevision = revision
+  ): Promise<DeleteResult> => {
     requestNumber += 1
     const operationId = `foldkit-delete-${requestNumber}`
     const { promise, resolve } = Promise.withResolvers<DeleteResult>()
@@ -465,7 +476,7 @@ export const createFoldkitDeleteClient = (
 
     const entry: PendingDelete = {
       resolve,
-      baseRevision: revision,
+      baseRevision,
       abortController,
       cancellationRequested: false,
       timeoutId: undefined,
@@ -503,14 +514,25 @@ export const createFoldkitDeleteClient = (
     return promise
   }
 
+  // Both sends enter the owner's actions stream, after its synchronous
+  // changes acknowledgements. Selection and revision are read at that boundary.
+  const stopKeyboardIntents = handle.ports.keyboardDeleteIntents?.subscribe(
+    () => handle.ports.actions?.send(HostAction.RequestKeyboardDelete())
+  )
+
   const stopKeyboard = handle.ports.keyboardDeleteRequests?.subscribe(
     (selection) => {
-      void deleteElements(selection)
+      void deleteElementsAtRevision(
+        selection,
+        {},
+        selection.baseRevision ?? revision
+      )
     }
   )
 
   return {
-    deleteElements,
+    deleteElements: (input, requestOptions) =>
+      deleteElementsAtRevision(input, requestOptions),
     dispose: () => {
       if (disposed) {
         return
@@ -521,6 +543,7 @@ export const createFoldkitDeleteClient = (
       stopResults()
       stopCancellationAcks()
       stopAcceptedStates()
+      stopKeyboardIntents?.()
       stopKeyboard?.()
 
       for (const operationId of pending.keys()) {
