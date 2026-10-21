@@ -1,4 +1,9 @@
-import { FlowDocumentSchema } from '@flow/core'
+import {
+  addEdge,
+  applyFlowChangeToDocument,
+  FlowDocumentSchema,
+} from '@flow/core'
+import type { FlowChange, FlowDocument } from '@flow/core'
 import { Schema as S } from 'effect'
 
 const OptionsSchema = S.Struct({
@@ -39,3 +44,23 @@ export const toolbarOptions = (
       toolbarVisible: S.optional(S.Boolean),
     })
   )(node.data)
+
+/** Generic upstream handles are unnamed; Flow's in/out IDs are physical defaults. */
+export const applyUpstreamChange = (
+  document: FlowDocument,
+  change: FlowChange
+): FlowDocument =>
+  change.kind === 'edge-add'
+    ? {
+        ...document,
+        edges: addEdge(
+          {
+            source: change.edge.source,
+            sourceHandle: null,
+            target: change.edge.target,
+            targetHandle: null,
+          },
+          document.edges
+        ),
+      }
+    : (applyFlowChangeToDocument(document, change) ?? document)

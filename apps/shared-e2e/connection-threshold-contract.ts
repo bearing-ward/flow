@@ -876,7 +876,7 @@ export const connectionThresholdTests = (
       const receipt16 = await call(page, 'read')
       expect(
         receipt16.events.filter((event: string) => event.endsWith('Start'))
-      ).toEqual(loose ? ['connectStart'] : [])
+      ).toEqual(['connectStart'])
       await page.mouse.up()
     })
   }

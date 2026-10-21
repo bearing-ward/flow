@@ -71,8 +71,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After holding s and clicking the second edge, edge-with-style has no selected class."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -599,16 +598,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:230"
@@ -621,16 +617,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:268"

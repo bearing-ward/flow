@@ -5588,9 +5588,6 @@ export const FlowCanvas = defineComponent({
 
         if (
           source === undefined ||
-          (connectionMode.value === 'strict' &&
-            source.handle.kind !== 'source' &&
-            pending.sourceAssociation.kind === 'fresh') ||
           (pending.sourceAssociation.kind === 'fresh' &&
             !isHandleConnectable(
               interactivity.value,
@@ -6434,9 +6431,6 @@ export const FlowCanvas = defineComponent({
       if (
         sourceHandle === undefined ||
         connectionDragThreshold === undefined ||
-        (connectionMode.value === 'strict' &&
-          sourceHandle.kind !== 'source' &&
-          clickConnection.value === undefined) ||
         (clickConnection.value === undefined &&
           !isHandleConnectable(
             interactivity.value,

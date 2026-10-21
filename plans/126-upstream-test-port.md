@@ -123,7 +123,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 | UP-126-023 | panning from a multi-selection rectangle with the middle mouse button | **vanilla**: No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port.<br>**vue**: No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port.<br>**foldkit**: No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port. |
 | UP-126-028 | deleting a node and its edges | **vanilla**: Clicking Node-1 then pressing d leaves Node-1 attached in the threshold-0 fixture.<br>**foldkit**: Clicking Node-1 then pressing d leaves Node-1 attached in the threshold-0 fixture. |
 
-#### [Connection previews and identity](126-follow-up-connection-input.md)
+#### [Connection previews and identity](128-connection-input.md)
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -176,7 +176,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 - `packages/conformance/src/upstream-generic/pane/general.ts`
 - `packages/conformance/src/upstream-generic/pane/non-defaults.ts`
 - `plans/126-follow-up-background-transforms.md`
-- `plans/126-follow-up-connection-input.md`
+- `plans/128-connection-input.md`
 - `plans/126-follow-up-edge-interaction.md`
 - `plans/126-follow-up-edge-stacking.md`
 - `plans/126-follow-up-node-input.md`

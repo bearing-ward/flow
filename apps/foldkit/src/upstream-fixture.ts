@@ -1,6 +1,7 @@
 import {
   createFlowGraph,
   FlowDocumentSchema,
+  FlowChangeSchema,
   ViewportSchema,
   NodeIdSchema,
 } from '@flow/core'
@@ -20,6 +21,7 @@ import { Runtime } from 'foldkit'
 
 import {
   upstreamGenericConfig,
+  applyUpstreamChange,
   toolbarOptions,
 } from '../../../packages/conformance/src/upstream-generic/index.ts'
 import {
@@ -62,7 +64,7 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     config.document,
     viewport,
     [],
-    'uncontrolled',
+    'controlled',
     'uncontrolled',
     {
       nodeTypes: {
@@ -78,6 +80,7 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     'full',
     {
       ...defaultInteractionOptions,
+      isValidConnection: () => true,
       fitView: options.fitView ?? false,
       deleteKeyCode: options.deleteKeyCode ?? 'Backspace',
       multiSelectionKeyCode: options.multiSelectionKeyCode ?? [
@@ -174,6 +177,18 @@ const unsubscribeMeasurements = runtime.ports.measurementResults.subscribe(
   }
 )
 
+const unsubscribeChanges = runtime.ports.changes.subscribe((change) => {
+  const next = applyUpstreamChange(
+    acceptedDocument,
+    Schema.decodeUnknownSync(FlowChangeSchema)(change)
+  )
+
+  if (next !== acceptedDocument) {
+    acceptedDocument = next
+    runtime.ports.actions.send(HostAction.ReplaceDocument({ document: next }))
+  }
+})
+
 const unsubscribe = runtime.ports.acceptedStates.subscribe((change) => {
   viewport = Schema.decodeUnknownSync(ViewportSchema)(change.current.viewport)
 
@@ -220,6 +235,7 @@ window.addEventListener(
     observer.dispose()
     viewportClient.dispose()
     unsubscribe()
+    unsubscribeChanges()
     unsubscribeMeasurements()
 
     for (const toolbar of toolbars) {

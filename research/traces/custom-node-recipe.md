@@ -6,7 +6,7 @@ This trace covers the dated React Flow `Custom Node` journey through Flow's exis
 
 ### Vanilla
 
-`mountFlow` accepts a type-keyed `nodeRenderers` registry whose renderer receives the decoded `FlowNode` and a content element (`apps/vanilla/src/mount-flow.ts:584`, `apps/vanilla/src/mount-flow.ts:792`). When an accepted graph update arrives, the host resolves the renderer by node type and updates the existing instance; the returned update callback can refresh custom DOM from the next node data (`apps/vanilla/src/mount-flow.ts:4230`). The public controller's `updateNodeData` builds an `update-node-data` operation from the current document (`apps/vanilla/src/mount-flow.ts:8978`). Core merges this data into the matching node (`packages/core/src/domain/flow-edit.ts:189`).
+`mountFlow` accepts a type-keyed `nodeRenderers` registry whose renderer receives the decoded `FlowNode` and a content element (`apps/vanilla/src/mount-flow.ts:584`, `apps/vanilla/src/mount-flow.ts:792`). When an accepted graph update arrives, the host resolves the renderer by node type and updates the existing instance; the returned update callback can refresh custom DOM from the next node data (`apps/vanilla/src/mount-flow.ts:4230`). The public controller's `updateNodeData` builds an `update-node-data` operation from the current document (`apps/vanilla/src/mount-flow.ts:8974`). Core merges this data into the matching node (`packages/core/src/domain/flow-edit.ts:189`).
 
 ### Vue
 
@@ -14,7 +14,7 @@ This trace covers the dated React Flow `Custom Node` journey through Flow's exis
 
 ### Foldkit
 
-The renderer registry maps node types to `FoldkitNodeRenderer` callbacks receiving a `FlowNode` and Html builder (`packages/foldkit/src/graph.ts:2260`). Foldkit's graph message accepts a schema-validated `FlowEditTransaction` (`packages/foldkit/src/graph.ts:317`) and routes it through `requestEdit` (`packages/foldkit/src/graph.ts:1191`). Core applies `update-node-data` to the accepted node document (`packages/core/src/domain/flow-edit.ts:189`).
+The renderer registry maps node types to `FoldkitNodeRenderer` callbacks receiving a `FlowNode` and Html builder (`packages/foldkit/src/graph.ts:2257`). Foldkit's graph message accepts a schema-validated `FlowEditTransaction` (`packages/foldkit/src/graph.ts:317`) and routes it through `requestEdit` (`packages/foldkit/src/graph.ts:1191`). Core applies `update-node-data` to the accepted node document (`packages/core/src/domain/flow-edit.ts:189`).
 
 ## Mounted test paths
 
