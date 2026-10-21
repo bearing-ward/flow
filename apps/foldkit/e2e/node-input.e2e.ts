@@ -40,4 +40,14 @@ test('keyboard deletion uses the approval client after explicit selection', asyn
   await expect(page.locator('.flow-foldkit-edge')).toHaveCount(0)
 })
 
+test('controlled owner acknowledges click selection before immediate keyboard deletion', async ({
+  page,
+}) => {
+  const node = page.locator('.flow-foldkit-node[data-node-id="Node-1"]')
+  await node.click()
+  await page.keyboard.press('d')
+  await expect(node).not.toBeAttached()
+  await expect(page.locator('.flow-foldkit-edge')).toHaveCount(0)
+})
+
 selectionBoundsContract('foldkit')

@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-128 upstream port and node/connection follow-ups; preserving all existing scope",
+  "activeWork": "Plans 126-128 upstream port and node/connection follow-ups; preserving all existing scope; Plan 129 controlled selection/delete",
   "checks": [
     "api-members",
     "catalog",
@@ -129,6 +129,11 @@
       "canvas-ui-contract.e2e.ts",
       "closing-gaps.e2e.ts",
       "closing-recipes.e2e.ts",
+      "native-schema.e2e.ts",
+      "viewport-controls.e2e.ts",
+      "viewport-observer.e2e.ts",
+      "delete-approval.e2e.ts",
+      "public-edits.e2e.ts",
       "delete-edge-on-drop-recipe.e2e.ts",
       "drag-and-drop-recipe.e2e.ts",
       "schema-studio.e2e.ts",

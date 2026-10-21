@@ -12,6 +12,7 @@ import type {
   DeleteCancellation,
   DeleteRequest,
   DeleteResult,
+  KeyboardDeleteSelectionSchema,
 } from './delete-approval.ts'
 import * as Graph from './graph.ts'
 
@@ -87,6 +88,70 @@ const approve = (
   )
 
 describe('Foldkit delete approval reducer', () => {
+  test.each([true, false])(
+    'keyboard selection is read after the controlled owner accepts=%s',
+    (accepted) => {
+      const initial = makeModel(document, 'controlled')
+
+      const clicked = Application.update(
+        initial,
+        Application.wrapGraphMessage({
+          message: Graph.Message.ObserveMouse({
+            name: 'onNodeClick',
+            nodeId: 'candidate',
+            edgeId: null,
+            select: true,
+          }),
+        })
+      )
+
+      const keyed = Application.update(
+        clicked.model,
+        Application.wrapGraphMessage({
+          message: Graph.Message.DeleteSelected(),
+        })
+      )
+
+      expect(keyed.model.graph.document).toStrictEqual(document)
+      expect(keyed.outMessage).toStrictEqual([
+        { kind: 'keyboard-delete-intent' },
+      ])
+
+      const acknowledged = Application.update(
+        keyed.model,
+        Application.AppMessage.HostAction({
+          action: Application.HostAction.ReplaceDocument({
+            document: {
+              ...document,
+              nodes: document.nodes.map((node) => ({
+                ...node,
+                selected: accepted && node.id === 'candidate',
+              })),
+            },
+          }),
+        })
+      )
+
+      const resolved = Application.update(
+        acknowledged.model,
+        Application.AppMessage.HostAction({
+          action: Application.HostAction.RequestKeyboardDelete(),
+        })
+      )
+
+      expect(resolved.outMessage).toStrictEqual([
+        {
+          kind: 'keyboard-delete',
+          selection: {
+            baseRevision: 1,
+            nodeIds: accepted ? ['candidate'] : [],
+            edgeIds: [],
+          },
+        },
+      ])
+    }
+  )
+
   test('prepares a candidate, accepts a narrowed decision, and publishes only an owner proposal when controlled', () => {
     const initial = makeModel(document, 'controlled')
 
@@ -613,10 +678,22 @@ describe('Foldkit delete client disposal', () => {
     }>()
 
     const deleteRequests: DeleteRequest[] = []
+    const keyboard = source<typeof KeyboardDeleteSelectionSchema.Encoded>()
+    const intents = source<null>()
+    const actions: string[] = []
 
     const client = createFoldkitDeleteClient(
       {
         ports: {
+          keyboardDeleteRequests: keyboard.port,
+          keyboardDeleteIntents: intents.port,
+          actions: {
+            send: (action) => {
+              actions.push(action._tag)
+
+              return Exit.void
+            },
+          },
           deleteRequests: {
             send: (value) => {
               deleteRequests.push(value)
@@ -668,9 +745,13 @@ describe('Foldkit delete client disposal', () => {
     })
     pending.push(client.deleteElements({ nodeIds: ['candidate'], edgeIds: [] }))
 
+    intents.publish(null)
+    expect(actions).toStrictEqual(['RequestKeyboardDelete'])
+    keyboard.publish({ baseRevision: 7, nodeIds: ['candidate'], edgeIds: [] })
+
     expect(
       deleteRequests.map(({ baseRevision }) => baseRevision)
-    ).toStrictEqual([0, 0, 1])
+    ).toStrictEqual([0, 0, 1, 7])
     client.dispose()
     const settled = await Promise.all(pending)
     expect(settled).toHaveLength(3)
