@@ -411,15 +411,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Clicking the first node with nodeDragThreshold 0 leaves it without the selected class."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Clicking the first node leaves its wrapper without the selected class."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:15"
@@ -432,16 +430,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The three nodes become selected, but no persistent multi-selection rectangle is rendered after release."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The three nodes become selected, but no persistent multi-selection rectangle is rendered after release."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "After Shift-drag selection, the first node wrapper has no selected class; the persistent-rectangle assertion is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:23"
@@ -460,16 +455,13 @@
       ],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "No persistent multi-selection rectangle is rendered, so the middle-button pan cannot proceed. The upstream React-only guard at tests/playwright/e2e/nodes.spec.ts:56 is retained as metadata and is not applied to this port."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:57"
@@ -558,15 +550,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Clicking Node-1 then pressing d leaves Node-1 attached in the threshold-0 fixture."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Clicking Node-1 then pressing d leaves Node-1 attached in the threshold-0 fixture."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:192"

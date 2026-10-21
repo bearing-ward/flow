@@ -114,7 +114,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 | UP-126-017 | sub flow: normal node to child node, z-index | **vanilla**: The normal-to-child edge SVG computes z-index auto rather than 1. |
 | UP-126-018 | sub flow: child node to child node, z-index | **vanilla**: The child-to-child edge SVG computes z-index auto rather than 1. |
 
-#### [Node selection and deletion](126-follow-up-node-input.md)
+#### [Node selection and deletion](127-node-input.md)
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -179,7 +179,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 - `plans/128-connection-input.md`
 - `plans/126-follow-up-edge-interaction.md`
 - `plans/126-follow-up-edge-stacking.md`
-- `plans/126-follow-up-node-input.md`
+- `plans/127-node-input.md`
 - `plans/126-follow-up-pane-input.md`
 - `plans/126-follow-up-toolbar-layout.md`
 - `research/catalogs/upstream-test-ledger.json`

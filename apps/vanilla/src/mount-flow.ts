@@ -1100,7 +1100,7 @@ const isPanButtonEnabled = (
   button: number
 ): boolean =>
   option !== false &&
-  (Array.isArray(option) ? option.includes(button) : button === 0)
+  (Array.isArray(option) ? option.includes(button) : button <= 1)
 
 const isSelectionActivationEnabled = (
   options: FlowHostOptions,
@@ -3892,6 +3892,32 @@ export const createFlowHost = (
       overrides: ReadonlyMap<NodeId, XYPosition> = renderedNodePositions
     ) => createFlowGraph(target, measurements, overrides)
 
+    let selectionBoundsActive = false
+    const selectionBox = globalThis.document.createElement('div')
+
+    selectionBox.className = 'flow-selection-box'
+    selectionBox.hidden = true
+
+    const renderSelectionBounds = (graph = graphFor()): void => {
+      const ids = new Set(
+        graph.document.nodes.filter((node) => node.selected).map(({ id }) => id)
+      )
+
+      const bounds = selectionBoundsActive ? graphBounds(graph, ids) : undefined
+
+      selectionBox.hidden =
+        bounds === undefined || interactionSlots.activeSelectionRect !== null
+
+      if (bounds !== undefined) {
+        Object.assign(selectionBox.style, {
+          left: `${bounds.x}px`,
+          top: `${bounds.y}px`,
+          width: `${bounds.width}px`,
+          height: `${bounds.height}px`,
+        })
+      }
+    }
+
     let acceptedInstanceGraph:
       | {
           readonly document: FlowDocument
@@ -3978,6 +4004,7 @@ export const createFlowHost = (
       graphFor().nodes.get(nodeId)?.absolutePosition ?? { x: 0, y: 0 }
 
     const updateToolbarAnchors = (pass = captureProjection()): void => {
+      renderSelectionBounds(pass.graph)
       const target = pass.inputs.document
       const anchors = flowToolbarAnchors(pass.graph, pass.inputs.viewport)
       const visibleNodes = new Set<string>(entries.keys())
@@ -8564,6 +8591,40 @@ export const createFlowHost = (
             }
 
             interactionSessions = activation.sessions
+
+            // Pinned packages/system/src/xydrag/XYDrag.ts:282 selects before drag-start callbacks.
+            if (
+              nodeDragThreshold === 0 &&
+              options.selectNodesOnDrag !== false
+            ) {
+              const current = findNode(node.id)
+              selectionBoundsActive = false
+              renderSelectionBounds()
+
+              if (current?.focusable !== false) {
+                element.focus()
+              }
+
+              if (
+                current !== undefined &&
+                isNodeSelectable(interactivity, current)
+              ) {
+                if (canvasKeys.multiSelection(event)) {
+                  operations.toggleNodeSelection(current)
+                } else if (current.selected !== true) {
+                  operations.publishChange({
+                    kind: 'node-selection',
+                    nodeId: current.id,
+                    selected: true,
+                  })
+                }
+              }
+
+              if (destroyed || interactionSlots.activeDrag !== drag) {
+                return false
+              }
+            }
+
             element.classList.add('dragging')
             draggingNodeIds.add(node.id)
             refreshNodeRendererProps(nodeEntry, findNode(node.id), graphFor())
@@ -9254,6 +9315,9 @@ export const createFlowHost = (
             const current = findNode(node.id)
 
             if (current !== undefined && !wasActivated) {
+              selectionBoundsActive = false
+              renderSelectionBounds()
+
               if (current.focusable !== false) {
                 element.focus()
               }
@@ -9661,7 +9725,9 @@ export const createFlowHost = (
         outcome.kind === 'finished' &&
         outcome.semanticEvent === change.kind
       ) {
+        selectionBoundsActive = change.nodeIds.length > 0
         operations.publishChange(change)
+        renderSelectionBounds()
       }
 
       if (panned) {
@@ -9783,14 +9849,14 @@ export const createFlowHost = (
       }
 
       if (
-        event.button !== 0 ||
         hasCanvasPointerGesture() ||
-        isCanvasGraphTarget(target)
+        (event.button !== 1 && isCanvasGraphTarget(target))
       ) {
         return
       }
 
       if (
+        event.button === 0 &&
         interactivity.elementsSelectable &&
         (options.selectionKeyCode === undefined
           ? isSelectionActivationEnabled(options, event)
@@ -9809,6 +9875,8 @@ export const createFlowHost = (
         }
 
         interactionSlots.activeSelectionRect = selection
+        selectionBoundsActive = false
+        renderSelectionBounds()
         selectionOverlay = globalThis.document.createElement('div')
         selectionOverlay.className = 'flow-selection-rect'
         selectionOverlay.dataset.testid = 'flow-selection-rect'
@@ -11310,6 +11378,9 @@ export const createFlowHost = (
         return
       }
 
+      selectionBoundsActive = false
+      renderSelectionBounds()
+
       const { target } = event
 
       if (target instanceof Element) {
@@ -12600,6 +12671,7 @@ export const createFlowHost = (
       ...a11yDescriptions.elements,
       canvasUIHandle.current.element
     )
+    viewport.append(selectionBox)
     updateCanvasMinimap()
 
     try {

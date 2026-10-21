@@ -312,6 +312,8 @@ test('pending click status is announced and focus returns on all exits', async (
   await expect(status).toHaveAttribute('role', 'status')
   await expect(status).toHaveAttribute('aria-live', 'polite')
 
+  // Pinned packages/react/src/components/NodeWrapper/index.tsx:207 hides unmeasured nodes before focus is possible.
+  await source.waitFor({ state: 'visible' })
   await source.focus()
   await page.keyboard.press('Enter')
   await expect(status).toContainText(/connection|target/iu)

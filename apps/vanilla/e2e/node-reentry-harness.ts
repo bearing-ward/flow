@@ -721,7 +721,7 @@ export const aggregateEntryProof = async (
   }
 }
 
-export const mountNativeCaptureProof = async () => {
+export const mountNativeCaptureProof = async (selectNodesOnDrag = false) => {
   const root = reentryRoot()
   root.id = 'vanilla-native-proof'
   const events: { name: string; payload: unknown; held: boolean }[] = []
@@ -742,7 +742,7 @@ export const mountNativeCaptureProof = async () => {
     documentMode: 'uncontrolled',
     nodesResizable: true,
     nodeDragThreshold: 0,
-    selectNodesOnDrag: false,
+    selectNodesOnDrag,
     viewport: {
       mode: 'uncontrolled',
       initial: { x: 0, y: 0, zoom: 1 },

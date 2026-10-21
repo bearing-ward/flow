@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Dependency refresh 2026-10-21; preserving all existing checks and host scope",
+  "activeWork": "Plans 126-128 upstream port and node/connection follow-ups; preserving all existing scope",
   "checks": [
     "api-members",
     "catalog",
@@ -49,7 +49,17 @@
       "interaction-playground.e2e.ts",
       "upstream-playwright.e2e.ts",
       "connection-threshold.e2e.ts",
-      "interaction-lifecycle.e2e.ts"
+      "interaction-lifecycle.e2e.ts",
+      "node-input.e2e.ts",
+      "catalog-state-examples.e2e.ts",
+      "control-button.e2e.ts",
+      "feature-overview-recipes.e2e.ts",
+      "flow-followups.e2e.ts",
+      "graph-editing-examples.e2e.ts",
+      "public-state.e2e.ts",
+      "subflows-recipes.e2e.ts",
+      "ui-recipes.e2e.ts",
+      "viewport-portal.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -80,7 +90,15 @@
       "nested-resize-containment.e2e.ts",
       "upstream-playwright.e2e.ts",
       "handle-connections.e2e.ts",
-      "node-connections.e2e.ts"
+      "node-connections.e2e.ts",
+      "node-input.e2e.ts",
+      "appendix-recipe.e2e.ts",
+      "catalog-state-examples.e2e.ts",
+      "demo.e2e.ts",
+      "graph-editing-examples.e2e.ts",
+      "public-state.e2e.ts",
+      "viewport-operations.e2e.ts",
+      "viewport-portal.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -118,7 +136,18 @@
       "measured-geometry.e2e.ts",
       "nested-resize-containment.e2e.ts",
       "resize-measurement-lifecycle.e2e.ts",
-      "upstream-playwright.e2e.ts"
+      "upstream-playwright.e2e.ts",
+      "node-input.e2e.ts",
+      "button-handle-recipe.e2e.ts",
+      "catalog-state-examples.e2e.ts",
+      "control-button.e2e.ts",
+      "graph-editing-examples.e2e.ts",
+      "input-ownership.e2e.ts",
+      "panel.e2e.ts",
+      "placeholder-recipe.e2e.ts",
+      "toolbars.e2e.ts",
+      "ui-recipes.e2e.ts",
+      "viewport-portal.e2e.ts"
     ]
   }
 }

@@ -3421,6 +3421,7 @@ for (const route of [
       `${JSON.stringify({ receipt: testInfo.title, result })}\n`
     )
 
+    // eslint-disable-next-line complexity -- Literal selection receipts retain every projection route's ownership assertions.
     const lanes = (() => {
       const visibility = [
         'offscreen-control',
@@ -3455,27 +3456,71 @@ for (const route of [
         ],
       }
 
-      const finalDocument = visibility ? initial : moved
+      // Pinned packages/system/src/xydrag/XYDrag.ts:282 selects before drag-start and cancellation callbacks.
+      const selectsOnPress = route === 'cancel-control' || restored
 
-      const states = restored
-        ? []
-        : [
+      const pressedDocument = selectsOnPress
+        ? {
+            nodes: [
+              { ...terminalNodeA, selected: true },
+              { ...terminalNodeB, selected: false },
+              { ...terminalNodeC, selected: false },
+            ],
+            edges: [{ ...edge, selected: false }],
+          }
+        : initial
+
+      const finalDocument = visibility ? pressedDocument : moved
+
+      const selectionStates = selectsOnPress
+        ? [
             {
               previous: {
                 document: initial,
                 viewport: { x: 0, y: 0, zoom: 1 },
               },
-              current: { document: finalDocument, viewport: movedViewport },
-              cause:
-                visibility || route === 'plain'
-                  ? 'semantic-change'
-                  : 'viewport-update',
+              current: {
+                document: pressedDocument,
+                viewport: { x: 0, y: 0, zoom: 1 },
+              },
+              cause: 'semantic-change',
             },
           ]
+        : []
 
-      const changes = visibility
-        ? [{ kind: 'viewport', viewport: { x: -2000, y: 0, zoom: 1 } }]
-        : [{ kind: 'node-position', nodeId: 'a', position: { x: 40, y: 20 } }]
+      const states = [
+        ...selectionStates,
+        ...(restored
+          ? []
+          : [
+              {
+                previous: {
+                  document: pressedDocument,
+                  viewport: { x: 0, y: 0, zoom: 1 },
+                },
+                current: { document: finalDocument, viewport: movedViewport },
+                cause:
+                  visibility || route === 'plain'
+                    ? 'semantic-change'
+                    : 'viewport-update',
+              },
+            ]),
+      ]
+
+      const changes = [
+        ...(selectsOnPress
+          ? [{ kind: 'node-selection', nodeId: 'a', selected: true }]
+          : []),
+        ...(visibility
+          ? [{ kind: 'viewport', viewport: { x: -2000, y: 0, zoom: 1 } }]
+          : [
+              {
+                kind: 'node-position',
+                nodeId: 'a',
+                position: { x: 40, y: 20 },
+              },
+            ]),
+      ]
 
       const events =
         visibility && route !== 'offscreen-control'
@@ -3496,7 +3541,7 @@ for (const route of [
                     {
                       name: 'restored',
                       payload: {
-                        document: initial,
+                        document: pressedDocument,
                         viewport: { x: 0, y: 0, zoom: 1 },
                       },
                     },

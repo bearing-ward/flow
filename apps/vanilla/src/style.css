@@ -1481,3 +1481,15 @@ body,
 .flow-edge-toolbar[hidden] {
   display: none !important;
 }
+
+.flow-selection-box {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 3;
+  border: var(--flow-selection-border, var(--flow-selection-border-default));
+  background: var(
+    --flow-selection-background-color,
+    var(--flow-selection-background-color-default)
+  );
+  pointer-events: none;
+}
