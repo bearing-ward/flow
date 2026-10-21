@@ -1025,6 +1025,11 @@ test('overlapping nodes follow graph order and controlled zIndex updates retain 
     testGlobal.stackingGraph = graph
   })
 
+  // Pinned packages/react/src/components/NodeWrapper/index.tsx:207 hides unmeasured nodes from hit testing.
+  await page
+    .locator('.flow-node[data-node-id="child"]')
+    .waitFor({ state: 'visible' })
+
   const parent = page.locator('.flow-node[data-node-id="parent"]')
   await page.evaluate(() => {
     // SAFETY: This intersection adds only optional test-hook fields; reads are guarded or follow assignment in this test.

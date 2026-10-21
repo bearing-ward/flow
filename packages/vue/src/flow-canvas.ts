@@ -85,6 +85,7 @@ import {
   flowConnectionLineProps,
   flowEdgeRendererProps,
   flowNodeBounds,
+  graphBounds,
   flowNodeRendererProps,
   sameFlowEdgeRendererProps,
   sameFlowNodeRendererProps,
@@ -1267,6 +1268,7 @@ export const FlowCanvas = defineComponent({
     const viewportPortalTarget = shallowRef<HTMLElement | null>(null)
     const edgeLabelRegistry = createEdgeLabelRegistry()
     const toolbarOverlayTarget = shallowRef<HTMLElement | null>(null)
+    const selectionBoundsActive = shallowRef(false)
     let acceptedSnapshot = stateSnapshot.value
     let documentRevision = 0
     let deleteApprovalPending = false
@@ -2774,6 +2776,7 @@ export const FlowCanvas = defineComponent({
      * their own click behaviour.
      */
     const selectNodeOnClick = (node: FlowNode, event: MouseEvent): void => {
+      selectionBoundsActive.value = false
       const press = nodePress
       nodePress = undefined
 
@@ -7786,6 +7789,7 @@ export const FlowCanvas = defineComponent({
             return
           }
 
+          selectionBoundsActive.value = true
           publish(selectionInRect(graph.value, rect, props.selectionMode))
           finishSelection(
             claim,
@@ -8257,7 +8261,7 @@ export const FlowCanvas = defineComponent({
       const nodeElement = target.closest<HTMLElement>('[data-node-id]')
       const onNode = nodeElement !== null
 
-      if (onNode && !pansFromNode(target)) {
+      if (event.button !== 1 && onNode && !pansFromNode(target)) {
         return
       }
 
@@ -8280,7 +8284,7 @@ export const FlowCanvas = defineComponent({
 
       const panButtonEnabled = Array.isArray(props.panOnDrag)
         ? props.panOnDrag.includes(event.button)
-        : props.panOnDrag && event.button === 0
+        : props.panOnDrag && event.button <= 1
 
       if (
         excludedFromDrag ||
@@ -8332,6 +8336,11 @@ export const FlowCanvas = defineComponent({
           }
 
       const admitted = session.value
+
+      if (isSelection) {
+        selectionBoundsActive.value = false
+      }
+
       panCaptureTarget.setPointerCapture?.(event.pointerId)
 
       if (isSelection) {
@@ -10388,6 +10397,33 @@ export const FlowCanvas = defineComponent({
               }),
             ]
 
+      const selectedBounds =
+        selectionBoundsActive.value && selection === undefined
+          ? graphBounds(
+              graph.value,
+              new Set(
+                activeDocument.value.nodes
+                  .filter((node) => node.selected)
+                  .map(({ id }) => id)
+              )
+            )
+          : undefined
+
+      const selectionBounds =
+        selectedBounds === undefined
+          ? []
+          : [
+              h('div', {
+                class: 'flow-vue-selection-box',
+                style: {
+                  left: `${selectedBounds.x * activeViewport.value.zoom + activeViewport.value.x}px`,
+                  top: `${selectedBounds.y * activeViewport.value.zoom + activeViewport.value.y}px`,
+                  width: `${selectedBounds.width * activeViewport.value.zoom}px`,
+                  height: `${selectedBounds.height * activeViewport.value.zoom}px`,
+                },
+              }),
+            ]
+
       const selectionKeyboardStatus =
         selection?.pointerId === -1
           ? [
@@ -10670,6 +10706,7 @@ export const FlowCanvas = defineComponent({
                 press === undefined ||
                 press.distance <= props.paneClickDistance
               ) {
+                selectionBoundsActive.value = false
                 emit('paneClick', clientToFlow(event.clientX, event.clientY))
               }
             }
@@ -10798,6 +10835,7 @@ export const FlowCanvas = defineComponent({
           ),
           ...connectionKeyboardStatus,
           ...selectionPreview,
+          ...selectionBounds,
           ...selectionKeyboardStatus,
           h(
             'div',

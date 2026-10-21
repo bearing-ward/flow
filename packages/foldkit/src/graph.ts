@@ -83,6 +83,7 @@ import {
   SelectionModeSchema,
   ReconnectEndpointSchema,
   createFlowGraph,
+  graphBounds,
   nextConnectionEdge,
   prepareFlowEdit,
   validateFlowConnection,
@@ -543,6 +544,7 @@ export const ModelSchema = Schema.Struct({
   selectionMode: SelectionModeSchema,
   /** The click that ends a real node drag does not select, as with d3-drag. */
   nodeClickSuppressed: Schema.Boolean,
+  selectionBoundsActive: Schema.Boolean,
 })
 
 const prefersDarkColorScheme = (): boolean =>
@@ -3160,7 +3162,10 @@ const selectClickedNode = (
       )
 
   if (multi) {
-    return toggleNodeSelection(model, node.id)
+    return toggleNodeSelection(
+      { ...model, selectionBoundsActive: false },
+      node.id
+    )
   }
 
   const change = {
@@ -3181,11 +3186,12 @@ const selectClickedNode = (
     : applySelectionSetChange(model.document, change)
 
   return document === undefined
-    ? noChange(model)
+    ? { model: { ...model, selectionBoundsActive: false } }
     : report(
         model,
         {
           ...model,
+          selectionBoundsActive: false,
           document:
             model.documentMode === 'uncontrolled' ? document : model.document,
         },
@@ -3431,7 +3437,10 @@ const updateState = (
     SystemColorScheme: ({ prefersDark }) => ({
       model: { ...model, prefersDark },
     }),
-    ObserveMouse: (observed) => selectClickedNode(model, observed),
+    ObserveMouse: (observed) =>
+      observed.name === 'onPaneClick'
+        ? { model: { ...model, selectionBoundsActive: false } }
+        : selectClickedNode(model, observed),
     ViewportWheel: ({ deltaX, deltaY, clientX, clientY }) => {
       if (model.viewportMode === 'controlled') {
         return noChange(model)
@@ -4057,6 +4066,7 @@ const updateState = (
           model: {
             ...model,
             keyboardConnectionSession: null,
+            selectionBoundsActive: false,
             gestureSession: {
               kind: 'selection',
               pointerId,
@@ -4230,6 +4240,7 @@ const updateState = (
               model,
               {
                 ...cleared,
+                selectionBoundsActive: change.nodeIds.length > 0,
                 document:
                   model.documentMode === 'uncontrolled'
                     ? document
@@ -6601,13 +6612,30 @@ export const createPointerResource = (initial: Model) => {
   const admissionOpen = (): boolean =>
     ready && !closed && nativeCurrent?.native !== 'pressed'
 
+  const classifyPress = (
+    raw: Pick<
+      PointerEvent,
+      'button' | 'pointerId' | 'clientX' | 'clientY' | 'target'
+    >,
+    canvas: HTMLElement
+  ): Option.Option<GraphMessageData> =>
+    raw.button === 1
+      ? Option.fromUndefinedOr(nodePanGesture(raw, canvas))
+      : beginPointer(
+          raw.pointerId,
+          raw.clientX,
+          raw.clientY,
+          raw.target,
+          current.viewport
+        )
+
   const begin = (
     raw: Pick<
       PointerEvent,
       'button' | 'pointerId' | 'clientX' | 'clientY' | 'target'
     >
   ): Option.Option<never> => {
-    if (!admissionOpen() || raw.button !== 0) {
+    if (!admissionOpen() || raw.button > 1) {
       return Option.none()
     }
 
@@ -6621,13 +6649,7 @@ export const createPointerResource = (initial: Model) => {
       return Option.none()
     }
 
-    const classified = beginPointer(
-      raw.pointerId,
-      raw.clientX,
-      raw.clientY,
-      raw.target,
-      current.viewport
-    )
+    const classified = classifyPress(raw, canvas)
 
     if (Option.isNone(classified)) {
       return Option.none()
@@ -7299,6 +7321,7 @@ const graphView = (
             h.Class(
               flowClassNames(
                 'flow-foldkit-node',
+                node.selected === true && 'selected',
                 model.pointerSession?.kind === 'node-drag' &&
                   model.pointerSession.nodeIds.includes(node.id) &&
                   'dragging',
@@ -7533,6 +7556,18 @@ const graphView = (
             ]
           ))
 
+    const selectedBounds =
+      model.selectionBoundsActive && model.gestureSession?.kind !== 'selection'
+        ? graphBounds(
+            graph,
+            new Set(
+              model.document.nodes
+                .filter((node) => node.selected)
+                .map(({ id }) => id)
+            )
+          )
+        : undefined
+
     return h.div(
       [
         h.Class(
@@ -7596,6 +7631,22 @@ const graphView = (
               customEdgeLabels
             ),
             ...nodes,
+            ...(selectedBounds === undefined
+              ? []
+              : [
+                  h.div(
+                    [
+                      h.Class('flow-foldkit-selection-box'),
+                      h.Style({
+                        left: `${selectedBounds.x}px`,
+                        top: `${selectedBounds.y}px`,
+                        width: `${selectedBounds.width}px`,
+                        height: `${selectedBounds.height}px`,
+                      }),
+                    ],
+                    []
+                  ),
+                ]),
             ...reconnectControls,
             ...(connectionPreview === null ? [] : [connectionPreview]),
           ]
@@ -8121,6 +8172,7 @@ export const initialModel = (
   pendingResizeAcceptance: null,
   selectionMode,
   nodeClickSuppressed: false,
+  selectionBoundsActive: false,
 })
 
 export const subscriptions = PointerEvents

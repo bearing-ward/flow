@@ -1,6 +1,7 @@
 import '@flow/foldkit/style.css'
 import '../src/playground.css'
-import { decodeFlowDocument, NodeIdSchema } from '@flow/core'
+import { decodeFlowDocument, flowNodeHandles, NodeIdSchema } from '@flow/core'
+import type { FlowDocument } from '@flow/core'
 import {
   createProgram,
   createFoldkitNodeMeasurementObserver,
@@ -92,6 +93,60 @@ export const startHandleRefresh = async (
 
   const refreshReference = refresher.refresh
 
+  const waitForDeclaredHandles = (nextDocument: FlowDocument): Promise<void> =>
+    Effect.runPromise(
+      Effect.callback((resume) => {
+        const matches = () => {
+          const nodes = [
+            ...owner.querySelectorAll<HTMLElement>('[data-testid="flow-node"]'),
+          ]
+
+          return nextDocument.nodes
+            .filter((node) => node.hidden !== true)
+            .every((node) => {
+              const element = nodes.find(
+                (candidate) => candidate.dataset.nodeId === node.id
+              )
+
+              const actual = [
+                ...(element?.querySelectorAll<HTMLElement>(
+                  '[data-handle-id]'
+                ) ?? []),
+              ].map((handle) => handle.dataset.handleId)
+
+              const expected = flowNodeHandles(node).map((handle) => handle.id)
+
+              return (
+                element !== undefined &&
+                actual.length === expected.length &&
+                expected.every((id) => actual.includes(id))
+              )
+            })
+        }
+
+        const check = (commitObserver: MutationObserver) => {
+          if (matches()) {
+            commitObserver.disconnect()
+            resume(Effect.void)
+          }
+        }
+
+        const renderObserver = new MutationObserver(
+          (_records, commitObserver) => check(commitObserver)
+        )
+
+        renderObserver.observe(owner, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['data-node-id', 'data-handle-id'],
+        })
+        check(renderObserver)
+
+        return Effect.sync(() => renderObserver.disconnect())
+      }).pipe(Effect.asVoid)
+    )
+
   window.__handleRefresh = {
     refresh: (ids) =>
       refresher.refresh(
@@ -118,12 +173,13 @@ export const startHandleRefresh = async (
       return response.savedSession
     },
     replace: async (input) => {
+      const nextDocument = Effect.runSync(decodeFlowDocument(input))
       runtime.ports.actions.send(
-        HostAction.ReplaceDocument({
-          document: Effect.runSync(decodeFlowDocument(input)),
-        })
+        HostAction.ReplaceDocument({ document: nextDocument })
       )
       await request()
+      // Pinned packages/react/src/hooks/useUpdateNodeInternals.ts:67 measures after the DOM update, not the model acknowledgement.
+      await waitForDeclaredHandles(nextDocument)
     },
     refreshIdentity: () => refreshReference === refresher.refresh,
     rejectInvalidHandleId: async (variant) => {

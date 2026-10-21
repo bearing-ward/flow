@@ -12,6 +12,7 @@ import {
   createFoldkitNodeMeasurementObserver,
   mountFlowNodeToolbar,
   createFlowBackground,
+  createFoldkitDeleteClient,
   HostAction,
 } from '@flow/foldkit'
 import type { ports } from '@flow/foldkit'
@@ -94,6 +95,8 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     }
   )
 )
+
+const deleteClient = createFoldkitDeleteClient(runtime, () => true)
 
 const viewportClient = createViewportClient(
   runtime.ports,
@@ -226,7 +229,7 @@ window.addEventListener(
       toolbar.dispose()
     }
 
-    runtime.dispose()
+    deleteClient.dispose()
   },
   { once: true }
 )

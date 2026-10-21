@@ -882,3 +882,16 @@
   font-size: 12px;
   line-height: 1.2;
 }
+
+.flow-vue-selection-box {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 3;
+  border: var(--flow-selection-border, var(--flow-selection-border-default));
+  background: var(
+    --flow-selection-background-color,
+    var(--flow-selection-background-color-default)
+  );
+  transform-origin: 0 0;
+  pointer-events: none;
+}
