@@ -2079,10 +2079,7 @@ const pendingEligible = (
   if (pending.kind === 'connection-pending') {
     return (
       eligible(pending.from) &&
-      (model.keyboardConnectionSession !== null || startable(pending.from)) &&
-      (model.connectionMode === 'loose' ||
-        pending.from.kind === 'source' ||
-        model.keyboardConnectionSession !== null)
+      (model.keyboardConnectionSession !== null || startable(pending.from))
     )
   }
 

@@ -5891,8 +5891,6 @@ export const createFlowHost = (
           fromNode !== undefined &&
           fromHandle !== undefined &&
           isHandleConnectable(interactivity, fromNode, fromHandle, 'start') &&
-          (options.connectionMode === 'loose' ||
-            pending.from.kind === 'source') &&
           pendingHandleElement(pending.from, next) !== undefined
         )
       }
@@ -6084,7 +6082,6 @@ export const createFlowHost = (
       if (
         !isHandleConnectable(interactivity, node, handle, 'start') ||
         event.button !== 0 ||
-        (options.connectionMode !== 'loose' && handle.kind !== 'source') ||
         pendingConnection !== null ||
         interactionSlots.activeConnection !== null ||
         activeClickConnection !== null ||
@@ -7607,8 +7604,7 @@ export const createFlowHost = (
 
           const sourceStillExists = flowNodeHandles(source).some(
             (handle) =>
-              handle.id === interactionSlots.activeConnection?.sourceHandle &&
-              handle.kind === 'source'
+              handle.id === interactionSlots.activeConnection?.sourceHandle
           )
 
           if (!sourceStillExists || source?.hidden === true) {

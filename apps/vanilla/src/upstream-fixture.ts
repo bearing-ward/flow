@@ -6,6 +6,7 @@ import {
 
 import {
   upstreamGenericConfig,
+  applyUpstreamChange,
   toolbarOptions,
 } from '../../../packages/conformance/src/upstream-generic/index.ts'
 import {
@@ -34,7 +35,7 @@ const {
 
 const controller = mountFlow(root, config.document, {
   ...options,
-  documentMode: 'uncontrolled',
+  documentMode: 'controlled',
   panOnDrag: panOnDrag ?? true,
   panActivationModifier:
     panActivationKeyCode === undefined ? 'none' : 'control',
@@ -68,7 +69,18 @@ const controller = mountFlow(root, config.document, {
   },
 })
 
-const disposers: (() => void)[] = []
+let acceptedDocument = config.document
+
+const unsubscribe = controller.subscribe((change) => {
+  const next = applyUpstreamChange(acceptedDocument, change)
+
+  if (next !== acceptedDocument) {
+    acceptedDocument = next
+    controller.update(next)
+  }
+})
+
+const disposers: (() => void)[] = [unsubscribe]
 
 for (const node of config.document.nodes) {
   if (node.type !== 'ToolbarNode') {

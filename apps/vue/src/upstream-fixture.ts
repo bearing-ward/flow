@@ -1,9 +1,11 @@
+import type { FlowChange } from '@flow/core'
 import { FlowCanvas, FlowNodeToolbar, FlowBackground } from '@flow/vue'
 import type { FlowNodeSlot } from '@flow/vue'
 import { createApp, defineComponent, h, ref } from 'vue'
 
 import {
   upstreamGenericConfig,
+  applyUpstreamChange,
   toolbarOptions,
 } from '../../../packages/conformance/src/upstream-generic/index.ts'
 import {
@@ -37,6 +39,8 @@ if (options.multiSelectionKeyCode !== undefined) {
   panKeyOptions.multiSelectionKeyCode = options.multiSelectionKeyCode
 }
 
+const document = ref(config.document)
+
 const colorMode = ref<'light' | 'dark' | 'system'>('light')
 
 const DragHandleNode = defineComponent({
@@ -62,7 +66,10 @@ const canvasProps = () =>
     autoPanOnConnect: options.autoPanOnConnect ?? true,
     autoPanOnNodeDrag: options.autoPanOnNodeDrag ?? true,
     fitView: options.fitView ?? false,
-    defaultDocument: config.document,
+    document: document.value,
+    onChange: (change: FlowChange) => {
+      document.value = applyUpstreamChange(document.value, change)
+    },
     defaultViewport: defaultViewport ?? { x: 0, y: 0, zoom: 1 },
     viewportLimits: { minZoom: minZoom ?? 0.5, maxZoom: maxZoom ?? 2 },
     colorMode: colorMode.value,

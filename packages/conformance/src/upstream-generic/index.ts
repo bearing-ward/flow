@@ -6,7 +6,7 @@ import paneActivationKeys from './pane/activation-keys.ts'
 import paneGeneral from './pane/general.ts'
 import paneNonDefaults from './pane/non-defaults.ts'
 
-export { toolbarOptions } from './model.ts'
+export { applyUpstreamChange, toolbarOptions } from './model.ts'
 
 export type { GenericConfig } from './model.ts'
 
