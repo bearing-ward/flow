@@ -1023,3 +1023,5 @@ export type {
   FlowExpandParentChild,
   FlowExpandParentDragItem,
 } from './domain/flow-expand-parent.ts'
+
+export { decodeInitialViewport } from './domain/flow-initial-viewport.ts'

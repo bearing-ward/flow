@@ -1,5 +1,6 @@
 import {
   calculateFlowExpandParent,
+  decodeInitialViewport,
   calculateFlowExpandParentDrag,
   FlowResizeParamsWithDirectionSchema,
   snapPosition,
@@ -654,6 +655,7 @@ export const InteractionEventSchema = Schema.Struct({
     'onPaneMouseMove',
     'onPaneMouseLeave',
     'onNodeClick',
+    'onNodeDoubleClick',
     'onNodeContextMenu',
     'onNodeMouseEnter',
     'onNodeMouseMove',
@@ -8315,7 +8317,7 @@ export const initialModel = (
   ariaLiveMessage: null,
   instanceId,
   document,
-  viewport,
+  viewport: Effect.runSync(decodeInitialViewport(viewport, viewportLimits)),
   documentMode,
   viewportMode,
   allowedConnectionTargets: allowedTargets,

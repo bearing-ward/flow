@@ -4,7 +4,7 @@ Viewport operations change or inspect the canvas session. The flow document does
 
 ## Read and convert positions
 
-The JavaScript controller exposes `getViewport()` and `getZoom()`. Vue exposes the same reads through `useFlow()`. Foldkit exports a request-based `createViewportClient`; the demo creates a client scoped to its Runtime. A viewport is `{ x, y, zoom }`; `x` and `y` are pane-local translations, and `zoom` is positive.
+The JavaScript controller exposes `getViewport()` and `getZoom()`. Vue exposes the same reads through `useFlow()`. Foldkit exports a request-based `createViewportClient`; the demo creates a client scoped to its Runtime. A viewport is `{ x, y, zoom }`; `x` and `y` are pane-local translations, and `zoom` is positive. Finite default viewport zoom values are clamped to the configured minimum and maximum before runtime initialization in every host. Non-finite default viewport values are rejected at the mount boundary.
 
 `screenToFlowPosition()` accepts client coordinates. Hosts subtract the canvas's `getBoundingClientRect().left` and `.top`, then apply the viewport inverse. `flowToScreenPosition()` applies the forward transform and adds that canvas origin. This supports page scrolling and canvases placed inside offset containers. CSS scaling and rotation of the canvas are unsupported because a bounding rectangle alone cannot recover the pre-transform coordinate basis.
 

@@ -2921,8 +2921,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "A native stationary click reaches Node 1 with nodeDragThreshold=0, selects it, and leaves the registered onNodeClick count at 0 rather than 1."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -2966,8 +2965,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Native contextmenu and dblclick both reach Node 1; onNodeContextMenu fires once, but onNodeDoubleClick stays at 0. Later hover assertions are not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:49"
@@ -3337,16 +3335,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "fitView rejects padding=0.5 with the less-than-0.5 schema error; Node 1 remains outside the viewport with its right edge at -350."
+          "status": "intentional-difference",
+          "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
         },
         "vue": {
-          "status": "fail",
-          "reason": "fitView rejects padding=0.5 with the less-than-0.5 schema error; Node 1 remains outside the viewport with its right edge at -350."
+          "status": "intentional-difference",
+          "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "fitView rejects padding=0.5 with the less-than-0.5 schema error; Node 1 remains outside the viewport with its right edge at -350."
+          "status": "intentional-difference",
+          "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:27"
@@ -3530,16 +3528,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The public mount rejects default zoom -1 with a positive-zoom schema error, so no viewport is rendered at the required clamped zoom 0.5."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The rendered viewport and useViewport() retain default zoom -1 rather than clamping it to 0.5."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The public Runtime mount with default zoom -1 terminates in Application Crash, leaving no rendered viewport at the required clamped zoom 0.5."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:142"
@@ -3555,12 +3550,10 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "useViewport() retains default zoom 100 rather than clamping it to the default maximum 2."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The public store and rendered viewport retain default zoom 100 rather than clamping it to the default maximum 2."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:167"
@@ -3651,16 +3644,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The initial node transform has x=-50 rather than x=50 after applying the extent to its 150-pixel width; the y assertion is not reached."
+          "status": "intentional-difference",
+          "reason": "Flow documents measured adoption and centering oversized nodes at research/traces/node-extents.md:31 and research/traces/node-extents.md:44. The 150x44 node renders at (-50,6), while upstream initially clamps unknown dimensions to (50,50). Preserve the documented contract."
         },
         "vue": {
           "status": "fail",
-          "reason": "The initial node remains at x=200 rather than being adopted at x=50 inside nodeExtent; the y assertion is not reached."
+          "reason": "Initial nodeExtent adoption is missing: the 150x44 node remains at (200,200), expected (50,50). Repair is deferred because upstream unmeasured adoption conflicts with Flow documented measured/oversized-node policy at research/traces/node-extents.md:31; changing that policy needs a separate decision."
         },
         "foldkit": {
           "status": "fail",
-          "reason": "The initial node remains at x=200 rather than being adopted at x=50 inside nodeExtent; the y assertion is not reached."
+          "reason": "Initial nodeExtent adoption is missing: the 150x44 node remains at (200,200), expected (50,50). Repair is deferred because upstream unmeasured adoption conflicts with Flow documented measured/oversized-node policy at research/traces/node-extents.md:31; changing that policy needs a separate decision."
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:225"

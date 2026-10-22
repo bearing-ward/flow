@@ -100,7 +100,7 @@ Every fail is retained below. The table names the first failing assertion, and d
 | UP-128-046 | receive position change | vue | The position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload. |
 | UP-128-046 | receive position change | foldkit | The completed position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload. |
 
-#### [Node input callbacks](139-follow-up-input.md)
+#### [Node input callbacks](142-component-viewport-and-input.md#input-follow-up)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -114,7 +114,7 @@ Every fail is retained below. The table names the first failing assertion, and d
 | UP-128-042 | Each ReactFlow instance has one edge label in EdgeLabelRenderer | vanilla | Both edge-label layers mount, but the first contains zero custom labels: the default edge renderer registry is not selected for an edge with no explicit type. Later label checks are not reached. |
 | UP-128-042 | Each ReactFlow instance has one edge label in EdgeLabelRenderer | foldkit | Both edge-label layers mount, but the first contains zero custom labels: the default edge renderer registry is not selected for an edge with no explicit type. Later label checks are not reached. |
 
-#### [Viewport options and initial extents](139-follow-up-viewport.md)
+#### [Viewport options and initial extents](142-component-viewport-and-input.md#viewport-follow-up)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -164,11 +164,10 @@ No case is not-applicable. The three React store-remount cases port the visible 
 - `packages/conformance/src/upstream-component/graph-utils.test.ts`
 - `packages/conformance/src/upstream-component/update-node-internals.test.ts`
 - `plans/139-follow-up-change-events.md`
-- `plans/139-follow-up-input.md`
+- `plans/142-component-viewport-and-input.md`
 - `plans/139-follow-up-measurements.md`
 - `plans/139-follow-up-observers.md`
 - `plans/139-follow-up-renderers.md`
-- `plans/139-follow-up-viewport.md`
 - `plans/139-upstream-cypress-component-port.md`
 - `research/catalogs/upstream-component-evidence.json`
 
