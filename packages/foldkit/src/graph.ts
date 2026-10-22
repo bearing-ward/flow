@@ -515,6 +515,7 @@ export const ModelSchema = Schema.Struct({
     ),
   ]),
   selectionOnDrag: Schema.Boolean,
+  selectNodesOnDrag: Schema.Boolean,
   panOnScroll: Schema.Boolean,
   panOnScrollSpeed: Schema.Finite,
   panOnScrollMode: Schema.Literals(['free', 'vertical', 'horizontal']),
@@ -570,6 +571,7 @@ export const CanvasOptionsSchema = Schema.Struct({
   snapGrid: Schema.optional(FlowSnapGridInputSchema),
   panOnDrag: Schema.optional(ModelSchema.fields.panOnDrag),
   selectionOnDrag: Schema.optional(ModelSchema.fields.selectionOnDrag),
+  selectNodesOnDrag: Schema.optional(ModelSchema.fields.selectNodesOnDrag),
   panOnScroll: Schema.optional(ModelSchema.fields.panOnScroll),
   panOnScrollSpeed: Schema.optional(ModelSchema.fields.panOnScrollSpeed),
   panOnScrollMode: Schema.optional(ModelSchema.fields.panOnScrollMode),
@@ -908,6 +910,7 @@ export interface GraphInteractionOptions extends Partial<ClosingOptions> {
   /** Boolean pane panning or the allowed mouse buttons; arrays do not restrict touch. */
   readonly panOnDrag?: typeof ModelSchema.fields.panOnDrag.Type
   readonly selectionOnDrag?: boolean
+  readonly selectNodesOnDrag?: typeof ModelSchema.fields.selectNodesOnDrag.Type
   readonly panOnScroll?: boolean
   readonly panOnScrollSpeed?: number
   readonly panOnScrollMode?: 'free' | 'vertical' | 'horizontal'
@@ -967,6 +970,7 @@ export const defaultInteractionOptions: GraphInteractionOptions = {
   autoPanOnConnect: true,
   panOnDrag: false,
   selectionOnDrag: true,
+  selectNodesOnDrag: false,
   panOnScroll: false,
   panOnScrollSpeed: 1,
   panOnScrollMode: 'free',
@@ -3131,57 +3135,11 @@ const toggleNodeSelection = (
       )
 }
 
-type ObserveMouseMessage = Extract<
-  GraphMessageData,
-  { readonly _tag: 'ObserveMouse' }
->
-
-/**
- * React Flow `handleNodeClick`: a click selects only the node, or toggles it
- * while Meta or Control is held. The click that ends a node drag is consumed.
- */
-const selectClickedNode = (
+const selectNodeForInput = (
   model: Model,
-  observed: ObserveMouseMessage
+  node: FlowNode,
+  multi: boolean
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
-  const controlClick =
-    observed.name === 'onNodeContextMenu' &&
-    observed.pointer?.button === 0 &&
-    observed.pointer.ctrlKey &&
-    [model.multiSelectionKeyCode].flat().includes('Control')
-
-  if (observed.name !== 'onNodeClick' && !controlClick) {
-    return noChange(model)
-  }
-
-  if (model.nodeClickSuppressed) {
-    return { model: { ...model, nodeClickSuppressed: false } }
-  }
-
-  const interactivity = selectInteractivity(model)
-  const node = model.document.nodes.find(({ id }) => id === observed.nodeId)
-
-  if (
-    (observed.select !== true && !controlClick) ||
-    node === undefined ||
-    node.hidden === true ||
-    !isNodeSelectable(interactivity, node)
-  ) {
-    return noChange(model)
-  }
-
-  const multi =
-    model.multiSelectionKeyPressed ||
-    [model.multiSelectionKeyCode]
-      .flat()
-      .some(
-        (key) =>
-          (key === 'Meta' && observed.pointer?.metaKey === true) ||
-          (key === 'Control' && observed.pointer?.ctrlKey === true) ||
-          (key === 'Alt' && observed.pointer?.altKey === true) ||
-          (key === 'Shift' && observed.pointer?.shiftKey === true)
-      )
-
   if (multi) {
     return toggleNodeSelection(
       { ...model, selectionBoundsActive: false },
@@ -3218,6 +3176,63 @@ const selectClickedNode = (
         },
         change
       )
+}
+
+type ObserveMouseMessage = Extract<
+  GraphMessageData,
+  { readonly _tag: 'ObserveMouse' }
+>
+
+/**
+ * React Flow `handleNodeClick`: a click selects only the node, or toggles it
+ * while Meta or Control is held. The click that ends a node drag is consumed.
+ */
+const selectClickedNode = (
+  model: Model,
+  observed: ObserveMouseMessage
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const controlClick =
+    observed.name === 'onNodeContextMenu' &&
+    observed.pointer?.button === 0 &&
+    observed.pointer.ctrlKey &&
+    [model.multiSelectionKeyCode].flat().includes('Control')
+
+  if (observed.name !== 'onNodeClick' && !controlClick) {
+    return noChange(model)
+  }
+
+  if (model.nodeClickSuppressed) {
+    return { model: { ...model, nodeClickSuppressed: false } }
+  }
+
+  const interactivity = selectInteractivity(model)
+  const node = model.document.nodes.find(({ id }) => id === observed.nodeId)
+
+  if (
+    (observed.select !== true && !controlClick) ||
+    node === undefined ||
+    node.hidden === true ||
+    !isNodeSelectable(interactivity, node) ||
+    (model.selectNodesOnDrag &&
+      model.nodeDragThreshold === 0 &&
+      isNodeDraggable(interactivity, node))
+  ) {
+    return noChange(model)
+  }
+
+  const multi =
+    model.multiSelectionKeyPressed ||
+    [model.multiSelectionKeyCode]
+      .flat()
+      .some(
+        (key) =>
+          (key === 'Meta' && observed.pointer?.metaKey === true) ||
+          (key === 'Control' && observed.pointer?.ctrlKey === true) ||
+          (key === 'Alt' && observed.pointer?.altKey === true) ||
+          (key === 'Shift' && observed.pointer?.shiftKey === true)
+      )
+
+  return selectNodeForInput(model, node, multi)
 }
 
 const panePanEnabled = (
@@ -3465,6 +3480,7 @@ const updateState = (
         snapToGrid: options.snapToGrid ?? model.snapToGrid,
         panOnDrag: options.panOnDrag ?? model.panOnDrag,
         selectionOnDrag: options.selectionOnDrag ?? model.selectionOnDrag,
+        selectNodesOnDrag: options.selectNodesOnDrag ?? model.selectNodesOnDrag,
         panOnScroll: options.panOnScroll ?? model.panOnScroll,
         panOnScrollSpeed: options.panOnScrollSpeed ?? model.panOnScrollSpeed,
         panOnScrollMode: options.panOnScrollMode ?? model.panOnScrollMode,
@@ -3490,10 +3506,43 @@ const updateState = (
     SystemColorScheme: ({ prefersDark }) => ({
       model: { ...model, prefersDark },
     }),
-    ObserveMouse: (observed) =>
-      observed.name === 'onPaneClick'
-        ? { model: { ...model, selectionBoundsActive: false } }
-        : selectClickedNode(model, observed),
+    ObserveMouse: (observed) => {
+      if (observed.name !== 'onPaneClick') {
+        return selectClickedNode(model, observed)
+      }
+
+      const cleared = { ...model, selectionBoundsActive: false }
+
+      if (
+        !model.elementsSelectable ||
+        (!model.document.nodes.some((node) => node.selected === true) &&
+          !model.document.edges.some((edge) => edge.selected === true))
+      ) {
+        return { model: cleared }
+      }
+
+      const change = {
+        kind: 'selection-set' as const,
+        nodeIds: [],
+        edgeIds: [],
+      }
+
+      const document = applySelectionSetChange(model.document, change)
+
+      return document === undefined
+        ? { model: cleared }
+        : report(
+            model,
+            {
+              ...cleared,
+              document:
+                model.documentMode === 'uncontrolled'
+                  ? document
+                  : model.document,
+            },
+            change
+          )
+    },
     ViewportWheel: ({ deltaX, deltaY, clientX, clientY }) => {
       if (model.viewportMode === 'controlled') {
         return noChange(model)
@@ -4806,6 +4855,28 @@ export const update = (
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
   const result = updateState(model, message)
   const pending = result.model.pointerSession
+
+  if (
+    result.model.selectNodesOnDrag &&
+    pending?.kind === 'node-drag' &&
+    model.pointerSession?.kind !== 'node-drag'
+  ) {
+    const node = result.model.document.nodes.find(
+      ({ id }) => id === pending.nodeId
+    )
+
+    if (
+      node !== undefined &&
+      isNodeSelectable(selectInteractivity(result.model), node) &&
+      (node.selected !== true || result.model.multiSelectionKeyPressed)
+    ) {
+      return selectNodeForInput(
+        result.model,
+        node,
+        result.model.multiSelectionKeyPressed
+      )
+    }
+  }
 
   if (
     (pending?.kind === 'connection-pending' ||
@@ -8266,6 +8337,7 @@ export const initialModel = (
     interactionOptions.panOnDrag ?? false
   ),
   selectionOnDrag: interactionOptions.selectionOnDrag ?? true,
+  selectNodesOnDrag: interactionOptions.selectNodesOnDrag ?? false,
   panOnScroll: interactionOptions.panOnScroll ?? false,
   panOnScrollSpeed: interactionOptions.panOnScrollSpeed ?? 1,
   panOnScrollMode: interactionOptions.panOnScrollMode ?? 'free',

@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-133 upstream port and follow-ups; preserving all existing scope; Plan 134 Cypress e2e port; Plan 136 interaction policy styling; Plan 137 MiniMap viewport tracking",
+  "activeWork": "Plans 126-137 upstream ports and follow-ups; preserving all existing scope",
   "checks": [
     "api-members",
     "catalog",

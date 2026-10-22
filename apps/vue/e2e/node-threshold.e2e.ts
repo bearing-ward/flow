@@ -123,7 +123,7 @@ for (const phase of ['end', 'stop']) {
 for (const phase of ['end', 'stop']) {
   test(`synthetic capture: Vue unmount ${phase} reentry cannot acquire replacement`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.goto('/connection-threshold.html')
 
     const result = await page.evaluate(
@@ -153,6 +153,11 @@ for (const phase of ['end', 'stop']) {
       },
       { path: '/e2e/node-reentry-harness.ts', phase }
     )
+
+    await testInfo.attach('remount-admission', {
+      body: JSON.stringify(remounted),
+      contentType: 'application/json',
+    })
 
     expect({
       captured: remounted.replacementCaptured,
@@ -781,7 +786,8 @@ for (const mode of ['selectionChange', 'change', 'pan', 'auto-pan'] as const) {
         'viewportEnd',
         'moveEnd',
       ])
-      expect(result.final.accepted.viewport).toEqual({ x: 40, y: 40, zoom: 1 })
+      // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 retains the transform when no move preceded release.
+      expect(result.final.accepted.viewport).toEqual({ x: 0, y: 0, zoom: 1 })
     } else {
       expect(names).toEqual([
         'connectStart',
@@ -1555,6 +1561,7 @@ for (const disposeOnLoss of [false, true]) {
   })
 }
 
+// Pinned packages/system/src/xypanzoom/eventhandler.ts:238: release-only pans retain the initial transform.
 const continuationCallbackOracles = {
   'viewportStart:false': [
     {
@@ -2720,8 +2727,8 @@ const continuationCallbackOracles = {
     {
       name: 'viewportChange',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2729,8 +2736,8 @@ const continuationCallbackOracles = {
     {
       name: 'move',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2800,8 +2807,8 @@ const continuationCallbackOracles = {
     {
       name: 'viewportChange',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2809,8 +2816,8 @@ const continuationCallbackOracles = {
     {
       name: 'move',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2869,6 +2876,7 @@ const continuationCallbackOracles = {
   ],
 }
 
+// Pinned packages/system/src/xypanzoom/eventhandler.ts:238: nested writes do not make release coordinates a move.
 const continuationJoinedOracles = {
   false: [
     {
@@ -2892,8 +2900,8 @@ const continuationJoinedOracles = {
     {
       name: 'viewportChange',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2901,8 +2909,8 @@ const continuationJoinedOracles = {
     {
       name: 'move',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2972,8 +2980,8 @@ const continuationJoinedOracles = {
     {
       name: 'viewportChange',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -2981,8 +2989,8 @@ const continuationJoinedOracles = {
     {
       name: 'move',
       payload: {
-        x: 50,
-        y: 50,
+        x: 0,
+        y: 0,
         zoom: 1,
       },
       held: 1,
@@ -5253,15 +5261,14 @@ for (const mode of ['selectionChange', 'change', 'pan', 'auto-pan'] as const) {
         const status = controlled ? 'proposed' : 'accepted'
 
         if (mode === 'pan') {
-          const terminal = controlled
-            ? claimViewport
-            : { x: 40, y: 40, zoom: 1 }
+          // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 retains the last transform, not the release point.
+          const terminal = claimViewport
 
           expect(result.final.events).toStrictEqual([
             publicEvent('viewportStart', claimViewport),
             publicEvent('moveStart', claimViewport),
-            publicEvent('viewportChange', { x: 50, y: 50, zoom: 1 }),
-            publicEvent('move', { x: 50, y: 50, zoom: 1 }),
+            publicEvent('viewportChange', { x: 0, y: 0, zoom: 1 }),
+            publicEvent('move', { x: 0, y: 0, zoom: 1 }),
             publicEvent('viewportEnd', {
               viewport: claimViewport,
               status: 'superseded',
@@ -5272,8 +5279,8 @@ for (const mode of ['selectionChange', 'change', 'pan', 'auto-pan'] as const) {
             }),
             publicEvent('viewportStart', claimViewport),
             publicEvent('moveStart', claimViewport),
-            publicEvent('viewportChange', { x: 40, y: 40, zoom: 1 }),
-            publicEvent('move', { x: 40, y: 40, zoom: 1 }),
+            publicEvent('viewportChange', { x: 0, y: 0, zoom: 1 }),
+            publicEvent('move', { x: 0, y: 0, zoom: 1 }),
             publicEvent('viewportEnd', {
               viewport: terminal,
               status: 'accepted',
@@ -5513,23 +5520,25 @@ for (const route of ['wheel', 'doubleclick', 'editor'] as const) {
           publicEvent('moveEnd', { viewport: target, status }),
         ]
 
+        // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 keeps the current transform after a joined write.
+        const afterViewport = controlled ? claimViewport : target
+
         const panTail = [
-          publicEvent('viewportChange', claimViewport),
-          publicEvent('move', claimViewport),
+          publicEvent('viewportChange', afterViewport),
+          publicEvent('move', afterViewport),
           ...(controlled
             ? [publicEvent('update:viewport', claimViewport)]
             : []),
           publicEvent('viewportEnd', {
-            viewport: claimViewport,
+            viewport: afterViewport,
             status: 'accepted',
           }),
           publicEvent('moveEnd', {
-            viewport: claimViewport,
+            viewport: afterViewport,
             status: 'accepted',
           }),
         ]
 
-        const afterViewport = controlled ? claimViewport : target
         expect(result).toStrictEqual({
           afterWrite: {
             events: joined ? before : [...before, ...instantTail],
@@ -5539,7 +5548,7 @@ for (const route of ['wheel', 'doubleclick', 'editor'] as const) {
           events: [...before, ...(joined ? panTail : instantTail)],
           captures: joined ? capturePair('canvas', 7) : [],
           held: 0,
-          viewport: joined ? claimViewport : afterViewport,
+          viewport: afterViewport,
         })
       })
     }
@@ -5676,6 +5685,8 @@ for (const route of [
         { action: 'deliver', id: 103, time: 100 },
       ])
     } else if (route === 'partial' || route === 'pan') {
+      // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 retains the editor's latest transform.
+      const settled = { partial: { x: 7, y: 9, zoom: 1 }, pan: zero }[route]
       expect(result.events).toStrictEqual([
         ...(route === 'pan'
           ? [...continuationStart, ...continuationEnd('superseded', zero)]
@@ -5684,15 +5695,15 @@ for (const route of [
         ...(route === 'partial'
           ? continuationProgress({ x: 7, y: 9, zoom: 1 })
           : []),
-        ...continuationProgress(zero),
-        ...continuationEnd('accepted', zero),
+        ...continuationProgress(settled),
+        ...continuationEnd('accepted', settled),
       ])
       expect(result.results).toStrictEqual(
         route === 'pan'
           ? { A: { requestId: 1, status: 'superseded', viewport: zero } }
           : {}
       )
-      expect(result.viewport).toStrictEqual(zero)
+      expect(result.viewport).toStrictEqual(settled)
       expect(result.frames).toStrictEqual(
         route === 'pan'
           ? [
@@ -6465,6 +6476,8 @@ for (const route of [
             ...(route === 'request-during-pan'
               ? [...move(seven), ...end(seven), ...start(seven)]
               : []),
+            ...move(pan),
+            // The fixture now moves before release, as pinned packages/system/src/xypanzoom/eventhandler.ts:238 requires.
             ...move(pan),
             ...end(pan),
           ]

@@ -270,8 +270,21 @@ export const click = async (
   }))
 
   // Cypress mouse.click(forceEl) dispatches to that subject even when covered.
-  // Keep this synthetic test path separate from ordinary native hit testing.
   if (options?.force === true) {
+    const nativeTarget = await element.evaluate(
+      (el, at) => el.contains(document.elementFromPoint(at.x, at.y)),
+      coordinates
+    )
+
+    // An unobstructed subject can use native input, including active pointer capture.
+    if (nativeTarget) {
+      await page.mouse.click(coordinates.x, coordinates.y)
+      await page.waitForTimeout(50)
+
+      return
+    }
+
+    // Covered forced subjects retain Cypress's targeted synthetic dispatch.
     const modifiers = Number(
       await page.locator('html').getAttribute('data-upstream-modifiers')
     )

@@ -82,6 +82,7 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     {
       ...defaultInteractionOptions,
       ...options,
+      selectNodesOnDrag: options.selectNodesOnDrag ?? false,
       fitView: false,
       panOnDrag: options.panOnDrag ?? true,
       isValidConnection: () => true,

@@ -2771,10 +2771,31 @@ export const FlowCanvas = defineComponent({
       publish({ kind: 'selection-set', nodeIds: selectedNodeIds, edgeIds })
     }
 
-    /** Client position of the last primary press on the pane. */
+    /** Primary press origin and travel before capture retargets its click. */
     let panePress:
-      | { readonly x: number; readonly y: number; readonly distance: number }
+      | {
+          readonly x: number
+          readonly y: number
+          readonly distance: number
+          readonly onPane: boolean
+        }
       | undefined
+
+    const rememberPanePress = (event: PointerEvent): void => {
+      if (stateDisposed) {
+        return
+      }
+
+      panePress =
+        event.button === 0
+          ? {
+              x: event.clientX,
+              y: event.clientY,
+              distance: 0,
+              onPane: event.target === canvas.value,
+            }
+          : undefined
+    }
 
     /** React `ariaLiveMessage`: the last keyboard node move announcement. */
     const ariaLiveMessage = shallowRef('')
@@ -4499,6 +4520,11 @@ export const FlowCanvas = defineComponent({
           readonly kind: 'remove-keydown'
           readonly target: typeof globalThis
           readonly listener: typeof onKeyDown
+        }
+      | {
+          readonly kind: 'remove-pointerdown'
+          readonly target: HTMLElement
+          readonly listener: typeof rememberPanePress
         }
       | {
           readonly kind: 'remove-keyup'
@@ -7778,13 +7804,11 @@ export const FlowCanvas = defineComponent({
           return
         }
 
-        const result = writeViewport(
-          panViewport(active.viewportStart, {
-            x: event.clientX - active.startX,
-            y: event.clientY - active.startY,
-          }),
-          { kind: 'pan', active }
-        )
+        // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 ends with the last transform.
+        const result = writeViewport(activeViewport.value, {
+          kind: 'pan',
+          active,
+        })
 
         if (result === 'revoked' || active.owner.state.kind !== 'live') {
           return
@@ -8288,14 +8312,6 @@ export const FlowCanvas = defineComponent({
       }
 
       const { target, currentTarget } = event
-
-      if (
-        event.button === 0 &&
-        target instanceof Element &&
-        target.closest('[data-node-id], [data-flow-edge-hit]') === null
-      ) {
-        panePress = { x: event.clientX, y: event.clientY, distance: 0 }
-      }
 
       if (
         session.value !== undefined ||
@@ -9794,11 +9810,18 @@ export const FlowCanvas = defineComponent({
       keyPressDisposers.clear()
 
       if (canvas.value !== undefined) {
-        resources.push({
-          kind: 'unobserve-canvas',
-          observer: resizeObserver,
-          element: canvas.value,
-        })
+        resources.push(
+          {
+            kind: 'remove-pointerdown',
+            target: canvas.value,
+            listener: rememberPanePress,
+          },
+          {
+            kind: 'unobserve-canvas',
+            observer: resizeObserver,
+            element: canvas.value,
+          }
+        )
       }
 
       resources.push(
@@ -10073,6 +10096,15 @@ export const FlowCanvas = defineComponent({
         case 'remove-keydown': {
           resource.target.removeEventListener(
             'keydown',
+            resource.listener,
+            true
+          )
+          break
+        }
+
+        case 'remove-pointerdown': {
+          resource.target.removeEventListener(
+            'pointerdown',
             resource.listener,
             true
           )
@@ -10540,10 +10572,17 @@ export const FlowCanvas = defineComponent({
               ensureFlowVueThemeStylesheet(element.ownerDocument)
 
               if (canvas.value !== undefined) {
+                canvas.value.removeEventListener(
+                  'pointerdown',
+                  rememberPanePress,
+                  true
+                )
                 resizeObserver.unobserve(canvas.value)
               }
 
               canvas.value = element
+              // Native capture preserves origin without Vue's same-tick invoker stamp.
+              element.addEventListener('pointerdown', rememberPanePress, true)
               resizeObserver.observe(element)
               globalThis.addEventListener('keydown', onKeyDown, true)
               globalThis.addEventListener('blur', onWindowBlur)
@@ -10785,20 +10824,31 @@ export const FlowCanvas = defineComponent({
           },
           onClick: (event: MouseEvent) => {
             const { target } = event
+            const press = panePress
+            panePress = undefined
 
             if (
               target instanceof Element &&
-              target.closest('[data-node-id], [data-flow-edge-hit]') === null
+              target.closest('[data-node-id], [data-flow-edge-hit]') === null &&
+              (press === undefined || press.distance <= props.paneClickDistance)
             ) {
-              const press = panePress
-              panePress = undefined
+              selectionBoundsActive.value = false
+              emit('paneClick', clientToFlow(event.clientX, event.clientY))
 
               if (
-                press === undefined ||
-                press.distance <= props.paneClickDistance
+                target === canvas.value &&
+                (press?.onPane === true ||
+                  (press === undefined && event.detail === 0)) &&
+                !stateDisposed &&
+                interactivity.value.elementsSelectable &&
+                (activeDocument.value.nodes.some(
+                  (node) => node.selected === true
+                ) ||
+                  activeDocument.value.edges.some(
+                    (edge) => edge.selected === true
+                  ))
               ) {
-                selectionBoundsActive.value = false
-                emit('paneClick', clientToFlow(event.clientX, event.clientY))
+                publish({ kind: 'selection-set', nodeIds: [], edgeIds: [] })
               }
             }
           },

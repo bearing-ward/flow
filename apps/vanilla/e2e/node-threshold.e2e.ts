@@ -635,6 +635,8 @@ for (const route of [
         aEvents = [
           ...prefix,
           observation('observe', 'start', initial),
+          // The pan fixture moves before release, as pinned packages/system/src/xypanzoom/eventhandler.ts:238 requires.
+          ...(route === 'pan' ? movement : []),
           ...movement,
           change(viewport),
           ...end,
@@ -668,6 +670,8 @@ for (const route of [
 
       const suffix = successor
         ? [
+            observation('move', 'change', bViewport),
+            observation('observe', 'change', bViewport),
             observation('move', 'change', bViewport),
             observation('observe', 'change', bViewport),
             change(bViewport),
@@ -815,6 +819,12 @@ test('round three V3 native capture release ordering Vanilla', async ({
       held: false,
     },
     { name: 'native:loss', payload: { id: 1, trusted: true }, held: false },
+    // Pinned packages/react/src/components/NodeWrapper/index.tsx:109 selects a stationary click with selectNodesOnDrag=false.
+    {
+      name: 'change',
+      payload: { kind: 'node-selection', nodeId: 'a', selected: true },
+      held: false,
+    },
   ])
   await page.locator('#vanilla-native-proof').dispatchEvent('proof-cleanup')
 })

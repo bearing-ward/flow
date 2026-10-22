@@ -4318,6 +4318,12 @@ export const ownershipRoundFiveViewport = async (
     const afterCall = snapshot()
 
     if (pan) {
+      // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 needs a move to establish this displacement.
+      dispatchPointer(
+        requiredElement(root, '.flow-vue-canvas'),
+        'pointermove',
+        { x: 620, y: 310 }
+      )
       dispatchPointer(requiredElement(root, '.flow-vue-canvas'), 'pointerup', {
         x: 620,
         y: 310,

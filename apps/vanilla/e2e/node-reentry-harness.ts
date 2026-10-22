@@ -534,6 +534,8 @@ export const viewportContinuationProof = async (
       observationPointer(canvas, 'pointerdown', 7, 650, 350)
 
       if (route === 'pan') {
+        // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 ends the last move transform.
+        observationPointer(canvas, 'pointermove', 7, 670, 380)
         observationPointer(canvas, 'pointerup', 7, 670, 380)
       }
     }
@@ -546,6 +548,7 @@ export const viewportContinuationProof = async (
     }
 
     if (successor) {
+      observationPointer(canvas, 'pointermove', 8, 660, 370)
       observationPointer(canvas, 'pointerup', 8, 660, 370)
     }
 
@@ -1014,6 +1017,8 @@ export const suppressionTimerProof = async () => {
   try {
     const a = requiredElement(root, '.flow-node[data-node-id="a"]')
     dispatchPointer(a, 'pointerdown', { x: 40, y: 40 })
+    // Pinned packages/react/src/components/NodeWrapper/index.tsx:109 permits stationary clicks. Move to own a drag suppression receipt.
+    dispatchPointer(a, 'pointermove', { x: 41, y: 40 })
     dispatchPointer(a, 'pointerup', { x: 40, y: 40 })
     const [oldTimer] = timers
 
@@ -1021,6 +1026,7 @@ export const suppressionTimerProof = async () => {
       throw new Error('Missing A reset timer')
     }
 
+    dispatchPointer(b, 'pointermove', { x: 241, y: 40 })
     dispatchPointer(b, 'pointerup', { x: 240, y: 40 })
     oldTimer()
     b.dispatchEvent(new MouseEvent('click', { bubbles: true }))

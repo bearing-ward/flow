@@ -1026,8 +1026,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "A native Meta down/click/up reaches measured Node 1, but threshold-zero selection with selectNodesOnDrag=false leaves its wrapper unselected; the second-node assertions are not reached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1046,8 +1045,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Forced subject pointer and mouse events reach Node 1 without movement, but its wrapper stays unselected with nodeDragThreshold=0 and selectNodesOnDrag=false."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1069,12 +1067,10 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The native bottomLeft canvas click reaches the rectangular, borderless pane, but Node 1 remains selected."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The native bottomLeft click targets the rendered viewport, but Node 1 retains selected after the retrying assertion."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:59"
@@ -1114,8 +1110,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The native bottomLeft pane click arrives, but e1-2 retains selected rather than being deselected."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:78"
@@ -1128,8 +1123,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Shift is present on the native (1,10) to (1000,200) sequence, but selectNodesOnDrag=false admits pane pan; Node 1 moves outside the marquee instead of acquiring selected."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1148,8 +1142,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Shift is present from topRight to bottomLeft, but the pane pans with selectNodesOnDrag=false and no node acquires selected; persistent-selection assertion is not reached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1168,8 +1161,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After the native bottomLeft pane click, one .flow-selection-box remains attached with hidden presentation; upstream requires no selection rectangle DOM."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1228,8 +1220,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The native click reaches Node 1, but threshold-zero/selectNodesOnDrag=false leaves it unselected; Backspace and the node/edge count assertions are not reached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1248,8 +1239,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The 3-to-4 handle sequence creates xy-edge__3-4, but UP-127-013 left the original two edges intact, so the count is 3 rather than 1; this is a deletion-prerequisite failure."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1268,8 +1258,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The ordinary native click and Backspace delete e1-2, but UP-127-013 left the original graph intact. Two edges remain rather than zero; this is a deletion-prerequisite failure."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1421,16 +1410,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The initial click reaches Node 1 but leaves it unselected with threshold zero and selectNodesOnDrag=false; pane dismissal and the lock toggle are not reached."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Node 1 is selected, but the native topLeft pane click leaves it selected; the lock toggle is not reached."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Node 1 selects correctly, but a native topLeft pane click leaves it selected; the control toggle is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:58"
@@ -1443,8 +1429,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "UP-127-023 aborted before its lock toggle; this case therefore toggles the still-enabled control off, and the forced Node 1 click remains unselected."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1634,8 +1619,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The topLeft-to-bottomRight gesture reaches the Figma canvas, but selectNodesOnDrag=false suppresses marquee selection; no selected node is rendered."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1657,12 +1641,10 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After Figma selection, a native topLeft pane click leaves Nodes 1 and 2 selected rather than clearing all selection."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "After Figma selection, the native topLeft canvas click leaves Nodes 1 and 2 selected."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:50"
@@ -1675,16 +1657,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Right-button center-to-bottom movement reaches the Figma canvas, but the default center mouseup returns the final viewport to its initial position; Node 4 remains partly inside instead of entirely outside."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Right-button panning occurs, but the two nodes retained from UP-127-035 remain selected; the outside-viewport assertion is not reached."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The right-button pan moves the graph, but the two nodes retained from UP-127-035 remain selected; the final outside-viewport assertion is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:56"
@@ -4316,20 +4295,6 @@
     }
   ],
   "unmappedProps": [
-    {
-      "host": "foldkit",
-      "config": "upstream-examples/basic",
-      "upstream": "examples/react/src/examples/Basic/index.tsx:162",
-      "prop": "selectNodesOnDrag",
-      "reason": "The public Foldkit interaction options do not expose this switch. The false input is recorded in the neutral config but cannot be applied. See docs/react-flow-api-correspondence.md:72."
-    },
-    {
-      "host": "foldkit",
-      "config": "upstream-examples/figma",
-      "upstream": "examples/react/src/examples/Figma/index.tsx:42",
-      "prop": "selectNodesOnDrag",
-      "reason": "The public Foldkit interaction options do not expose this switch. The false input is recorded in the neutral config but cannot be applied. See docs/react-flow-api-correspondence.md:72."
-    },
     {
       "host": "vue",
       "config": "upstream-examples/figma",

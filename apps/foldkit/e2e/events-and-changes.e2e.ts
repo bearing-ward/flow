@@ -565,6 +565,11 @@ test('Foldkit interaction events carry mouse fields, dragged node ids and select
       clientY: pane.y,
     })
 
+  // Pinned packages/react/src/container/Pane/index.tsx:107 resets selection on a pane click.
+  await expect
+    .poll(() => lastEvent(page, 'onSelectionChange'))
+    .toMatchObject({ nodeIds: [], edgeIds: [] })
+
   await drag(page, point, { x: point.x + 20, y: point.y + 60 })
   await expect
     .poll(() => lastEvent(page, 'onNodeDragStop'))
@@ -583,7 +588,7 @@ test('Foldkit interaction events carry mouse fields, dragged node ids and select
   await expect
     .poll(() => lastEvent(page, 'onSelectionChange'))
     .toMatchObject({
-      nodeIds: ['a', 'b'],
+      nodeIds: ['b'],
       edgeIds: [],
     })
 

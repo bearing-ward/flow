@@ -177,10 +177,12 @@ export const observeCanvasMouse = (
       return
     }
 
-    const edgeId = edgeIdOf(edgeHitElement(target.element))
+    const edgeId = edgeIdOf(target.element)
 
     if (edgeId !== null) {
-      emit({ kind: 'select-edge', edgeId, pointer: mouseDetail(event) })
+      if (edgeHitElement(target.element) !== null) {
+        emit({ kind: 'select-edge', edgeId, pointer: mouseDetail(event) })
+      }
 
       return
     }

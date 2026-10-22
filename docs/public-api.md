@@ -436,12 +436,13 @@ Foldkit accepts these `GraphInteractionOptions` at `createProgram`:
 | --- | --- | --- |
 | `panOnDrag` | Boolean or an array of integers from `0` through `4`; `boolean \| readonly number[]` | `false` |
 | `panActivationKeyCode` | The existing key-code schema, a string, an array of alternative strings, or `null`; `string \| readonly string[] \| null` | `null` |
+| `selectNodesOnDrag` | Boolean; selects at node drag activation when true, or on a stationary click when false | `false` |
 
 `HostAction.SetCanvasOptions` also accepts the `panOnDrag` array form. The pan activation key uses the same startup key observation and disposal as Foldkit's other key-code options. The `viewportLimits` passed to `createProgram` apply to anchored wheel and double-click zoom as well as public viewport commands. Host defaults are unchanged.
 
 ## Foldkit runtime canvas options and renderer geometry
 
-`runtime.ports.actions.send(HostAction.SetCanvasOptions({ options }))` changes `snapToGrid`, `snapGrid`, `panOnDrag`, `selectionOnDrag`, `panOnScroll`, `panOnScrollSpeed`, `panOnScrollMode`, `zoomOnScroll`, `zoomOnDoubleClick`, and `onlyRenderVisibleElements`. The inbound port decodes the patch before dispatch. Omitted or undefined values retain the current setting. Snap grids accept `{ x, y }` or `[x, y]`; disabling snapping retains the grid. Patches preserve the active gesture, viewport, selection, and node elements. The next pointer or wheel event uses the new settings.
+`runtime.ports.actions.send(HostAction.SetCanvasOptions({ options }))` changes `snapToGrid`, `snapGrid`, `panOnDrag`, `selectionOnDrag`, `selectNodesOnDrag`, `panOnScroll`, `panOnScrollSpeed`, `panOnScrollMode`, `zoomOnScroll`, `zoomOnDoubleClick`, and `onlyRenderVisibleElements`. The inbound port decodes the patch before dispatch. Omitted or undefined values retain the current setting. Snap grids accept `{ x, y }` or `[x, y]`; disabling snapping retains the grid. Patches preserve the active gesture, viewport, selection, and node elements. The next pointer or wheel event uses the new settings.
 
 A `FoldkitRendererRegistry` can supply `handleAttributes(node, handle, h)`. It returns declarative attributes for the runtime-owned handle button on each render. Use `h.Style` for field-row offsets and attributes for application labels or test IDs. The runtime retains the connection messages, handle ID and side, and keyed node lifecycle. Existing nodes update without remounting. `createFoldkitNodeMeasurementObserver` measures the changed layout after resize or collapse.
 
