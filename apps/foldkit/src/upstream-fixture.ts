@@ -125,6 +125,8 @@ const expectedMeasurements = config.document.nodes.filter(
 
 let initialFitStarted = false
 
+let mountObserver: MutationObserver | undefined
+
 const completeMount = async () => {
   if (initialFitStarted || measurements.size < expectedMeasurements) {
     return
@@ -132,13 +134,29 @@ const completeMount = async () => {
 
   initialFitStarted = true
 
-  if (options.fitView === true) {
-    await viewportClient.fitView()
+  const { viewport: fittedViewport } =
+    options.fitView === true ? await viewportClient.fitView() : { viewport }
+
+  const expectedStyle = document.createElement('div').style
+  expectedStyle.transform = `translate(${fittedViewport.x}px, ${fittedViewport.y}px) scale(${fittedViewport.zoom})`
+
+  const completeRender = () => {
+    const rendered = root.querySelector<HTMLElement>('.flow-foldkit-viewport')
+
+    if (rendered?.style.transform === expectedStyle.transform) {
+      mountObserver?.disconnect()
+      root.dataset.upstreamReady = 'true'
+    }
   }
 
-  requestAnimationFrame(() => {
-    root.dataset.upstreamReady = 'true'
+  mountObserver = new MutationObserver(completeRender)
+  mountObserver.observe(root, {
+    attributes: true,
+    attributeFilter: ['style'],
+    childList: true,
+    subtree: true,
   })
+  completeRender()
 }
 
 const toolbars = config.document.nodes
@@ -235,6 +253,7 @@ if (path === 'backgrounds') {
 window.addEventListener(
   'pagehide',
   () => {
+    mountObserver?.disconnect()
     observer.dispose()
     viewportClient.dispose()
     unsubscribe()

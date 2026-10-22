@@ -2,7 +2,7 @@
 
 ## Entry and observed failure
 
-UP-126-028 enters through the real browser wrapper click, immediately presses `d`, then checks detachment and zero edges at `apps/shared-e2e/upstream/nodes.ts:192`. Foldkit registers the unchanged contract at `apps/foldkit/e2e/upstream-playwright.e2e.ts:21`. Its fixture embeds a controlled document at `apps/foldkit/src/upstream-fixture.ts:68`, installs the public delete client at `apps/foldkit/src/upstream-fixture.ts:102`, and synchronously applies each `changes` proposal and sends `HostAction.ReplaceDocument` at `apps/foldkit/src/upstream-fixture.ts:183`.
+UP-126-028 enters through the real browser wrapper click, immediately presses `d`, then checks detachment and zero edges at `apps/shared-e2e/upstream/nodes.ts:192`. Foldkit registers the unchanged contract at `apps/foldkit/e2e/upstream-playwright.e2e.ts:21`. Its fixture embeds a controlled document at `apps/foldkit/src/upstream-fixture.ts:68`, installs the public delete client at `apps/foldkit/src/upstream-fixture.ts:102`, and synchronously applies each `changes` proposal and sends `HostAction.ReplaceDocument` at `apps/foldkit/src/upstream-fixture.ts:201`.
 
 The baseline's initial single run passed. The repeated run then failed eight times before interruption, with one interrupted and eleven unexecuted repetitions. The separate new regression also failed against the original product code. Thus the planner's 20/20 report was not reproduced as that exact count in this environment; the race itself was reproduced.
 
