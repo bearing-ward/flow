@@ -5501,7 +5501,8 @@ for (const route of ['wheel', 'doubleclick', 'editor'] as const) {
 
         const target = {
           wheel: { x: -10, y: -20, zoom: 1 },
-          doubleclick: { x: -20, y: -10, zoom: 1.2 },
+          // Pinned d3-zoom@3.0.0 src/zoom.js:308 doubles around the pointer.
+          doubleclick: { x: -100, y: -50, zoom: 2 },
           editor: { x: 7, y: 9, zoom: 1 },
         }[route]
 
@@ -5635,7 +5636,8 @@ for (const route of [
           return { x: -10, y: -20, zoom: 1 }
         }
 
-        return { x: -20, y: -10, zoom: 1.2 }
+        // Pinned d3-zoom@3.0.0 src/zoom.js:308 doubles around the pointer.
+        return { x: -100, y: -50, zoom: 2 }
       })()
 
       expect(result.events).toStrictEqual([

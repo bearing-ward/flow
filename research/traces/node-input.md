@@ -24,9 +24,9 @@ Shift selection release at `apps/vanilla/src/mount-flow.ts:9794` uses the existi
 
 ## Vue production path
 
-The fixture mounts FlowCanvas at `apps/vue/src/upstream-fixture.ts:79` and supplies the unchanged threshold at `apps/vue/src/upstream-fixture.ts:61`. Pointer admission is `packages/vue/src/flow-canvas.ts:6461`. The existing click path at `packages/vue/src/flow-canvas.ts:2852` reads the pre-press selection and publishes its change independently of threshold-zero drag activation. Click selection and `d` deletion already pass the two ported cases in the baseline.
+The fixture mounts FlowCanvas at `apps/vue/src/upstream-fixture.ts:79` and supplies the unchanged threshold at `apps/vue/src/upstream-fixture.ts:61`. Pointer admission is `packages/vue/src/flow-canvas.ts:6466`. The existing click path at `packages/vue/src/flow-canvas.ts:2851` reads the pre-press selection and publishes its change independently of threshold-zero drag activation. Click selection and `d` deletion already pass the two ported cases in the baseline.
 
-Selection release at `packages/vue/src/flow-canvas.ts:7869` now retains the bounds presentation before publishing the existing selection change. `publish` at `packages/vue/src/flow-canvas.ts:2458` owns the existing uncontrolled document update. The rendered bounds at `packages/vue/src/flow-canvas.ts:10525` use the selected nodes' measured graph geometry and project their coordinates through the active viewport. The button policy at `packages/vue/src/flow-canvas.ts:8366` admits the middle button, including when the event starts over a draggable node. Node and pane clicks dismiss the retained bounds.
+Selection release at `packages/vue/src/flow-canvas.ts:7874` now retains the bounds presentation before publishing the existing selection change. `publish` at `packages/vue/src/flow-canvas.ts:2457` owns the existing uncontrolled document update. The rendered bounds at `packages/vue/src/flow-canvas.ts:10462` use the selected nodes' measured graph geometry and project their coordinates through the active viewport. The button policy at `packages/vue/src/flow-canvas.ts:8371` admits the middle button, including when the event starts over a draggable node. Node and pane clicks dismiss the retained bounds.
 
 ## Foldkit production path
 

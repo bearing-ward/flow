@@ -132,6 +132,8 @@ test('selected edge rises in keyed order and retains focus', async ({
         ],
       },
       {
+        // Pinned ReactFlow/index.tsx:130 defaults elevation off; this scenario opts in.
+        elevateEdgesOnSelect: true,
         documentMode: 'uncontrolled',
         viewport: {
           mode: 'uncontrolled',

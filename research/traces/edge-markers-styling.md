@@ -24,7 +24,7 @@ The shared browser suite opens the generic edge fixture at `tests/playwright/e2e
 
 ## Flow production and test paths
 
-Public `mountFlow` decodes the document at `apps/vanilla/src/mount-flow.ts:1614` and `apps/vanilla/src/mount-flow.ts:1623`. The schema limits markers to open or closed arrows and validates a six-digit stroke and positive width at `packages/core/src/domain/flow.schema.ts:63` and `packages/core/src/domain/flow.schema.ts:73`. The host creates instance-scoped SVG marker definitions at `apps/vanilla/src/edge-renderer.ts:59`, applies stroke and marker URLs to the keyed path at `apps/vanilla/src/edge-renderer.ts:316`, and removes unused definitions at `apps/vanilla/src/edge-renderer.ts:403`.
+Public `mountFlow` decodes the document at `apps/vanilla/src/mount-flow.ts:1614` and `apps/vanilla/src/mount-flow.ts:1623`. The schema limits markers to open or closed arrows and validates a six-digit stroke and positive width at `packages/core/src/domain/flow.schema.ts:63` and `packages/core/src/domain/flow.schema.ts:73`. The host creates instance-scoped SVG marker definitions at `apps/vanilla/src/edge-renderer.ts:57`, applies stroke and marker URLs to the keyed path at `apps/vanilla/src/edge-renderer.ts:314`, and removes unused definitions at `apps/vanilla/src/edge-renderer.ts:401`.
 
 Core decoding and rejection tests are at `packages/core/src/domain/flow-edge.schema.test.ts:164` and `packages/core/src/domain/flow-edge.schema.test.ts:190`. Browser tests enter through public mount, check open and closed markers, computed stroke and width, keyed updates, cleanup, and two-flow ID isolation at `apps/vanilla/e2e/canvas.e2e.ts:824` and `apps/vanilla/e2e/canvas.e2e.ts:911`. No direct reference-output comparison has run.
 

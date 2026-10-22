@@ -10,7 +10,7 @@ This trace covers the dated React Flow `Custom Node` journey through Flow's exis
 
 ### Vue
 
-`FlowCanvas` exposes `nodeTypes` as a type-keyed component registry (`packages/vue/src/flow-canvas.ts:486`). Rendering selects the component for the node type, falling back through `nodeComponent` to the default renderer (`packages/vue/src/flow-canvas.ts:4160`); `NodeWithIdContext` mounts it with the current node snapshot (`packages/vue/src/flow-canvas.ts:4401`). The fixture uses controlled `document` ownership: its custom control asks the owner to replace the matching node data through `decodeFlowDocument`, and passes that accepted document back to `FlowCanvas` (`apps/vue/src/custom-node-test.ts:66`, `apps/vue/src/custom-node-test.ts:83`). This test does not claim a renderer component can mutate the graph independently of its owner.
+`FlowCanvas` exposes `nodeTypes` as a type-keyed component registry (`packages/vue/src/flow-canvas.ts:485`). Rendering selects the component for the node type, falling back through `nodeComponent` to the default renderer (`packages/vue/src/flow-canvas.ts:4165`); `NodeWithIdContext` mounts it with the current node snapshot (`packages/vue/src/flow-canvas.ts:4406`). The fixture uses controlled `document` ownership: its custom control asks the owner to replace the matching node data through `decodeFlowDocument`, and passes that accepted document back to `FlowCanvas` (`apps/vue/src/custom-node-test.ts:66`, `apps/vue/src/custom-node-test.ts:83`). This test does not claim a renderer component can mutate the graph independently of its owner.
 
 ### Foldkit
 

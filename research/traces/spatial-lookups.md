@@ -14,7 +14,7 @@ The browser-facing `mountFlow` function decodes input, creates the host and retu
 
 Fit-view is exposed on the same controller and calls `fitViewportToNodes` (`apps/vanilla/src/mount-flow.ts:3581-3600`, `apps/vanilla/src/mount-flow.ts:3769-3777`). The core fit operation builds a graph with current measurements and preview positions, then uses `graphBounds`; an empty or fully hidden selection returns the current viewport because Flow bounds are `undefined` (`packages/core/src/domain/flow-fit-view.ts:57-67`). This differs from the reference helper's zero rectangle return for an empty/unresolved input (`packages/system/src/utils/graph.ts:202-235`).
 
-Flow's core tests cover nested absolute positions, measurements, hidden inheritance, bounds, intersections and directed edge lookup (`packages/core/src/domain/flow-graph.test.ts:10-165`). The browser culling case exercises a public `mountFlow`, viewport updates, mounted DOM membership and visible crossing-edge endpoints at 1,000 offscreen nodes (`apps/vanilla/e2e/next-slices.e2e.ts:276-321`). It verifies semantic visibility, not a latency limit.
+Flow's core tests cover nested absolute positions, measurements, hidden inheritance, bounds, intersections and directed edge lookup (`packages/core/src/domain/flow-graph.test.ts:10-165`). The browser culling case exercises a public `mountFlow`, viewport updates, mounted DOM membership and visible crossing-edge endpoints at 1,000 offscreen nodes (`apps/vanilla/e2e/next-slices.e2e.ts:278-321`). It verifies semantic visibility, not a latency limit.
 
 ## Conformity and deviations
 

@@ -1087,8 +1087,7 @@
           "reason": "Clicking e1-2 selects it and moves it after e1-3 in the shared SVG; the subsequent :first assertion reads unselected e1-3. Documented shared-SVG ordering: research/traces/edge-visibility-stacking.md:34."
         },
         "vue": {
-          "status": "fail",
-          "reason": "The native click selects e1-2, but elevation reorders wrappers so :first becomes unselected e1-3; the first-wrapper assertion fails."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -1184,8 +1183,7 @@
           "reason": "Clicking the first e1-2 path selects it, then shared-SVG selected elevation moves it after unselected e1-3, which becomes :first. Documented ordering: research/traces/edge-visibility-stacking.md:34."
         },
         "vue": {
-          "status": "fail",
-          "reason": "The native click selects e1-2, but elevation reorders wrappers so :first becomes unselected e1-3."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2037,12 +2035,10 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Forced subject events select e1-2, but it moves after e1-3, so the :first assertion reads unselected e1-3. Interaction never enables edge elevation; ignoring the default-false elevation policy is not covered by the documented Basic shared-SVG exception."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Forced pointer down/up and click reach e1-2 with selection enabled, but its wrapper stays unselected. The earlier UP-127-048 pan put the release point offscreen, where elementsFromPoint returns no hit; forced activation and native hit testing remain separate boundaries."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2156,8 +2152,7 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The control zoom-out and double-click factors cancel, leaving the final CSS transform equal to the synchronously captured pre-queue value after the upstream 50ms wait."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"

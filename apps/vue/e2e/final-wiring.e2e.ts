@@ -262,9 +262,25 @@ test.describe('Vue edge layers', () => {
 
     expect(hit).toBe('child-edge')
 
-    // elevateEdgesOnSelect moves a selected edge to a new layer; focus stays.
+    // Pinned EdgeRenderer/index.tsx:66 and EdgeWrapper/index.tsx:183
+    // preserve wrappers in document order while changing CSS z-index.
+    const edgeOrder = () =>
+      page
+        .locator('.flow-vue-edge')
+        .evaluateAll((edges) => edges.map((edge) => edge.dataset.edgeId))
+
+    await expect.poll(edgeOrder).toStrictEqual(['child-edge', 'root-edge'])
+
+    const originalChild = await page
+      .locator('[data-flow-edge-hit="child-edge"]')
+      .elementHandle()
+
     const rootHit = page.locator('[data-flow-edge-hit="root-edge"]')
+
     await rootHit.focus()
+
+    const originalRoot = await rootHit.elementHandle()
+
     await fixture(page, (api) =>
       api.flow().updateEdge('root-edge', { selected: true })
     )
@@ -283,6 +299,14 @@ test.describe('Vue edge layers', () => {
       )
       .toBe('root-edge')
 
+    expect(await originalRoot?.evaluate((element) => element.isConnected)).toBe(
+      true
+    )
+    expect(
+      await originalChild?.evaluate((element) => element.isConnected)
+    ).toBe(true)
+    await expect.poll(edgeOrder).toStrictEqual(['child-edge', 'root-edge'])
+
     // auto mode lifts the root group and everything inside it.
     await fixture(page, (api) => api.setZIndexMode('auto'))
     await expect(node(page, 'g')).toHaveCSS('z-index', '10')
@@ -297,6 +321,13 @@ test.describe('Vue edge layers', () => {
         '.flow-vue-edge-labels-elevated[data-z-index="11"] [data-flow-edge-label="child-edge"]'
       )
     ).toHaveCount(1)
+    expect(await originalRoot?.evaluate((element) => element.isConnected)).toBe(
+      true
+    )
+    expect(
+      await originalChild?.evaluate((element) => element.isConnected)
+    ).toBe(true)
+    await expect.poll(edgeOrder).toStrictEqual(['child-edge', 'root-edge'])
   })
 })
 

@@ -152,14 +152,13 @@ import type {
 } from '@flow/core'
 import { Effect, Exit, Predicate, Schema as S } from 'effect'
 import {
+  Fragment,
   computed,
   defineComponent,
   h,
   inject,
   onBeforeUnmount,
-  onBeforeUpdate,
   onMounted,
-  onUpdated,
   provide,
   shallowReactive,
   shallowRef,
@@ -2945,9 +2944,15 @@ export const FlowCanvas = defineComponent({
 
         view.removeEventListener('pointerup', release, true)
 
-        const hit = view.document
-          .elementFromPoint(event.clientX, event.clientY)
-          ?.closest<SVGElement>('[data-flow-edge-hit]')
+        const { target } = event
+
+        const hit =
+          (target instanceof Element
+            ? target.closest<SVGElement>('[data-flow-edge-hit]')
+            : null) ??
+          view.document
+            .elementFromPoint(event.clientX, event.clientY)
+            ?.closest<SVGElement>('[data-flow-edge-hit]')
 
         if (
           !stateDisposed &&
@@ -10236,74 +10241,6 @@ export const FlowCanvas = defineComponent({
 
     onBeforeUnmount(disposeComponent)
 
-    /**
-     * An edge moving between z layers is a new element. Keep keyboard focus
-     * on its hit target or reconnect anchor across that move.
-     */
-    let focusedEdgeSelector: string | undefined
-
-    onBeforeUpdate(() => {
-      focusedEdgeSelector = undefined
-
-      const active = canvas.value?.ownerDocument.activeElement
-
-      if (
-        !(active instanceof SVGElement) ||
-        canvas.value?.contains(active) !== true
-      ) {
-        return
-      }
-
-      const { flowEdgeHit, edgeId, endpoint } = active.dataset
-
-      if (flowEdgeHit !== undefined) {
-        focusedEdgeSelector = `[data-flow-edge-hit="${CSS.escape(flowEdgeHit)}"]`
-      } else if (edgeId !== undefined && endpoint !== undefined) {
-        focusedEdgeSelector = `[data-testid="flow-edge-reconnect-anchor"][data-edge-id="${CSS.escape(edgeId)}"][data-endpoint="${CSS.escape(endpoint)}"]`
-      }
-    })
-
-    onUpdated(() => {
-      const selector = focusedEdgeSelector
-      focusedEdgeSelector = undefined
-
-      if (selector === undefined || canvas.value === undefined) {
-        return
-      }
-
-      const active = canvas.value.ownerDocument.activeElement
-
-      if (active instanceof Element && active.matches(selector)) {
-        return
-      }
-
-      canvas.value
-        .querySelector<SVGElement>(selector)
-        ?.focus({ preventScroll: true })
-    })
-
-    /** Edges at z-index 0 or below stay under every node; the rest are layered with them. */
-    const layerEdges = () => {
-      const base: FlowEdge[] = []
-      const elevated = new Map<number, FlowEdge[]>()
-
-      for (const stored of activeDocument.value.edges) {
-        const edge = withEdgeDefaults(stored)
-        const zIndex = stacking.value.edges.get(edge.id) ?? 0
-
-        if (zIndex <= 0) {
-          base.push(edge)
-        } else {
-          elevated.set(zIndex, [...(elevated.get(zIndex) ?? []), edge])
-        }
-      }
-
-      return {
-        base,
-        elevated: [...elevated].toSorted(([left], [right]) => left - right),
-      }
-    }
-
     let gesturePanFrame: number | undefined
     let gesturePanEvent: PointerEvent | undefined
 
@@ -10558,7 +10495,7 @@ export const FlowCanvas = defineComponent({
             ]
           : []
 
-      const edgeLayers = layerEdges()
+      const edges = activeDocument.value.edges.map(withEdgeDefaults)
 
       return h(
         'div',
@@ -10914,7 +10851,7 @@ export const FlowCanvas = defineComponent({
               updateViewport(
                 zoomViewportAt(
                   activeViewport.value,
-                  activeViewport.value.zoom * 1.2,
+                  activeViewport.value.zoom * (event.shiftKey ? 0.5 : 2),
                   anchor,
                   viewportLimits
                 )
@@ -10960,20 +10897,9 @@ export const FlowCanvas = defineComponent({
                 transformOrigin: '0 0',
               },
             },
-            [h('defs', renderMarkers()), ...edgeLayers.base.map(renderEdge)]
+            [h('defs', renderMarkers())]
           ),
           ...connectionPreview,
-          h(
-            'div',
-            {
-              class: 'flow-vue-edge-label-renderer',
-              'data-testid': 'flow-edge-label-renderer',
-              style: {
-                transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
-              },
-            },
-            edgeLabelRegistry.render()
-          ),
           ...connectionKeyboardStatus,
           ...selectionPreview,
           ...selectionBounds,
@@ -10987,32 +10913,47 @@ export const FlowCanvas = defineComponent({
               },
             },
             [
-              // Elevated edges share the nodes' stacking context, as React's
-              // per-z-level edge SVGs do.
-              ...edgeLayers.elevated.flatMap(([zIndex, edges]) => [
-                h(
-                  'svg',
-                  {
-                    key: `edges-${zIndex}`,
-                    class: 'flow-vue-edges flow-vue-edges-elevated',
-                    'data-z-index': zIndex,
-                    style: { zIndex },
-                  },
-                  edges.map(renderEdge)
-                ),
-                // Labels share their edge's level, as React's SVG labels do.
-                h(
-                  'div',
-                  {
-                    key: `edge-labels-${zIndex}`,
-                    class: 'flow-vue-edge-labels flow-vue-edge-labels-elevated',
-                    'aria-hidden': 'true',
-                    'data-z-index': zIndex,
-                    style: { zIndex },
-                  },
-                  edges.map(renderEdgeLabel)
-                ),
-              ]),
+              // Pinned EdgeRenderer/index.tsx:66 and EdgeWrapper/index.tsx:183
+              // retain document order and change only each SVG's z-index.
+              edges.map((edge) => {
+                const zIndex = stacking.value.edges.get(edge.id) ?? 0
+
+                return h(Fragment, { key: edge.id }, [
+                  h(
+                    'svg',
+                    {
+                      class: [
+                        'flow-vue-edges',
+                        { 'flow-vue-edges-elevated': zIndex > 0 },
+                      ],
+                      'data-z-index': zIndex,
+                      style: { zIndex, overflow: 'visible' },
+                    },
+                    [renderEdge(edge)]
+                  ),
+                  h(
+                    'div',
+                    {
+                      class: [
+                        'flow-vue-edge-labels',
+                        { 'flow-vue-edge-labels-elevated': zIndex > 0 },
+                      ],
+                      'aria-hidden': 'true',
+                      'data-z-index': zIndex,
+                      style: { zIndex },
+                    },
+                    [renderEdgeLabel(edge)]
+                  ),
+                ])
+              }),
+              h(
+                'div',
+                {
+                  class: 'flow-vue-edge-label-renderer',
+                  'data-testid': 'flow-edge-label-renderer',
+                },
+                edgeLabelRegistry.render()
+              ),
               ...graph.value.orderedNodes.map(({ node }) => renderNode(node)),
               h('div', {
                 class: 'flow-vue-viewport-portal-target',
@@ -11026,17 +10967,6 @@ export const FlowCanvas = defineComponent({
                 },
               }),
             ]
-          ),
-          h(
-            'div',
-            {
-              class: 'flow-vue-edge-labels',
-              'aria-hidden': 'true',
-              style: {
-                transform: `translate(${activeViewport.value.x}px, ${activeViewport.value.y}px) scale(${activeViewport.value.zoom})`,
-              },
-            },
-            edgeLayers.base.map(renderEdgeLabel)
           ),
           h('div', {
             class: 'flow-vue-node-toolbar-layer',
