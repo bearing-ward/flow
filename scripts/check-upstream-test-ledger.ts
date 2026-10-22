@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 
 import { Schema as S } from 'effect'
 
@@ -74,6 +74,34 @@ const portSources = new Map(
   )
 )
 
+// Refresh declaration lines after formatting without changing recorded outcomes.
+if (process.argv.includes('--refresh-port-locations')) {
+  const cases = ledger.cases.map((entry) => {
+    if (entry.flowTest === null) {
+      return entry
+    }
+
+    const path = entry.flowTest.slice(0, entry.flowTest.lastIndexOf(':'))
+    const source = portSources.get(path)
+
+    const line = source
+      ?.split('\n')
+      .findIndex((text) => text.includes(`[${entry.id}]`))
+
+    if (line === undefined || line < 0) {
+      throw new Error(`Missing declaration: ${entry.id}`)
+    }
+
+    return { ...entry, flowTest: `${path}:${line + 1}` }
+  })
+
+  await writeFile(
+    'research/catalogs/upstream-test-ledger.json',
+    `${JSON.stringify({ revision: ledger.revision, cases, unmappedProps: ledger.unmappedProps }, null, 2)}\n`
+  )
+  process.exit(0)
+}
+
 const actual = new Map(ledger.cases.map((entry) => [entry.upstream, entry]))
 
 if (actual.size !== ledger.cases.length) {
@@ -102,12 +130,12 @@ for (const entry of upstream) {
   for (const host of ['vanilla', 'vue', 'foldkit'] as const) {
     const result = saved.hosts[host]
 
-    if (saved.phase !== 126 && result.status !== 'not-ported') {
+    if (saved.phase === 128 && result.status !== 'not-ported') {
       throw new Error(`Future phase was ported: ${entry.id}`)
     }
 
-    if (saved.phase === 126 && result.status === 'not-ported') {
-      throw new Error(`Phase 126 case is not ported: ${entry.id}`)
+    if (saved.phase !== 128 && result.status === 'not-ported') {
+      throw new Error(`Required phase case is not ported: ${entry.id}`)
     }
 
     if (
@@ -118,7 +146,7 @@ for (const entry of upstream) {
     }
   }
 
-  if (saved.phase === 126) {
+  if (saved.phase !== 128) {
     if (saved.flowTest === null) {
       throw new Error(`Missing port: ${entry.id}`)
     }

@@ -17,11 +17,16 @@ export const boundingBox = async (element: Locator) => {
 }
 
 export interface UpstreamHostAdapter {
+  readonly host: UpstreamHost
   readonly baseURL: string
-  readonly goto: (page: Page, path: string) => Promise<void>
+  readonly goto: (page: Page, path: string, classify?: boolean) => Promise<void>
   readonly selectors: { readonly edgePath: string }
   readonly nodeTransform: (element: Locator) => Promise<string>
-  readonly edgeClick: (element: Locator) => Promise<void>
+  readonly edgeTarget: (element: Locator) => Locator
+  readonly edgeClick: (
+    element: Locator,
+    options?: Parameters<Locator['click']>[0]
+  ) => Promise<void>
   readonly edgeBounds: (element: Locator) => ReturnType<typeof boundingBox>
   readonly edgeLayer: (page: Page, id: string) => Locator
   readonly locator: (
@@ -46,12 +51,31 @@ export const upstreamHostAdapter = (
     selection: `.${prefix}-selection-rect`,
     nodesselection: `.${prefix}-selection-box`,
     'nodesselection-rect': `.${prefix}-selection-box`,
+    renderer: `.${prefix}-canvas`,
+    nodes: `.${prefix}-viewport`,
+    controls: `.${prefix}-controls`,
+    'controls-zoomin': `.${prefix}-controls button[aria-label="Zoom In"]`,
+    'controls-zoomout': `.${prefix}-controls button[aria-label="Zoom Out"]`,
+    'controls-fitview': `.${prefix}-controls button[aria-label="Fit View"]`,
+    'controls-interactive': `.${prefix}-controls button[aria-label="Toggle Interactivity"]`,
+    background: `.${prefix}-background`,
+    minimap: host === 'vanilla' ? '.flow-minimap-panel' : `.${prefix}-minimap`,
+    'minimap-node': `.${prefix}-minimap-node`,
+    'minimap-mask': `.${prefix}-minimap-mask`,
     connectionline: `.${prefix}-connection-preview`,
     'node-toolbar': `.${prefix}-node-toolbar`,
   } satisfies Record<string, string>
 
   const map = (selector: string): string =>
     selector
+      .replaceAll(
+        '.react-flow__minimap svg',
+        host === 'vanilla' ? '.flow-minimap-svg' : `.${prefix}-minimap`
+      )
+      .replaceAll(
+        /\.react-flow__(?<control>ishidden|draggable|connectable|selectable|zoomonscroll|zoomondbl|captureelementclick)/gu,
+        '[data-upstream-control="$1"]'
+      )
       .replaceAll(
         /\.(?:react|svelte)-flow__(?<part>[\w-]+)/gu,
         (original, key: string) =>
@@ -82,6 +106,13 @@ export const upstreamHostAdapter = (
           : '[aria-label^="source handle"]'
       )
 
+  const edgeTarget = (element: Locator) =>
+    element
+      .locator(
+        host === 'vanilla' ? '.flow-edge-hit' : `.${prefix}-edge-hit-target`
+      )
+      .first()
+
   test.beforeEach(({ page }, info) => {
     void page
 
@@ -101,20 +132,28 @@ export const upstreamHostAdapter = (
   })
 
   return {
+    host,
     baseURL: `http://127.0.0.1:${{ vanilla: 4176, vue: 4177, foldkit: 4178 }[host]}`,
     selectors: { edgePath: selectors['edge-path'] ?? '' },
-    goto: async (page, path) => {
+    goto: async (page, path, classify = true) => {
       await page.goto(
         `http://127.0.0.1:${{ vanilla: 4176, vue: 4177, foldkit: 4178 }[host]}${path}`
       )
       await expect(page.locator(`.${prefix}-canvas`)).toBeVisible()
-      await expect(page.locator(`.${prefix}-node`).first()).toBeVisible()
 
-      if (host === 'foldkit') {
+      if (!path.startsWith('/upstream-examples/')) {
+        await expect(page.locator(`.${prefix}-node`).first()).toBeVisible()
+      }
+
+      if (host === 'foldkit' || path.startsWith('/upstream-examples/')) {
         await expect(page.locator('#app')).toHaveAttribute(
           'data-upstream-ready',
           'true'
         )
+      }
+
+      if (!classify) {
+        return
       }
 
       const entry = ledger.cases.find((candidate) =>
@@ -142,11 +181,9 @@ export const upstreamHostAdapter = (
         )
       }),
     locator: (page, selector, options) => page.locator(map(selector), options),
-    edgeClick: (element) =>
-      (host === 'foldkit'
-        ? element.locator('.flow-foldkit-edge-hit-target')
-        : element
-      ).click(),
+    edgeTarget,
+    edgeClick: (element, options) =>
+      (host === 'foldkit' ? edgeTarget(element) : element).click(options),
     edgeBounds: (element) =>
       boundingBox(
         host === 'foldkit' ? element.locator(selectors['edge-path']) : element

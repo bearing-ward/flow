@@ -988,16 +988,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:20"
     },
     {
       "id": "UP-127-002",
@@ -1007,16 +1007,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:35"
     },
     {
       "id": "UP-127-003",
@@ -1026,16 +1026,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "A native Meta down/click/up reaches measured Node 1, but threshold-zero selection with selectNodesOnDrag=false leaves its wrapper unselected; the second-node assertions are not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:40"
     },
     {
       "id": "UP-127-004",
@@ -1045,16 +1046,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Forced subject pointer and mouse events reach Node 1 without movement, but its wrapper stays unselected with nodeDragThreshold=0 and selectNodesOnDrag=false."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:51"
     },
     {
       "id": "UP-127-005",
@@ -1064,16 +1066,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native bottomLeft canvas click reaches the rectangular, borderless pane, but Node 1 remains selected."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native bottomLeft click targets the rendered viewport, but Node 1 retains selected after the retrying assertion."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:59"
     },
     {
       "id": "UP-127-006",
@@ -1083,16 +1087,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Clicking e1-2 selects it and moves it after e1-3 in the shared SVG; the subsequent :first assertion reads unselected e1-3. Documented shared-SVG ordering: research/traces/edge-visibility-stacking.md:34."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native click selects e1-2, but elevation reorders wrappers so :first becomes unselected e1-3; the first-wrapper assertion fails."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:67"
     },
     {
       "id": "UP-127-007",
@@ -1102,16 +1108,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native bottomLeft pane click arrives, but e1-2 retains selected rather than being deselected."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:78"
     },
     {
       "id": "UP-127-008",
@@ -1121,16 +1128,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Shift is present on the native (1,10) to (1000,200) sequence, but selectNodesOnDrag=false admits pane pan; Node 1 moves outside the marquee instead of acquiring selected."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:86"
     },
     {
       "id": "UP-127-009",
@@ -1140,16 +1148,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Shift is present from topRight to bottomLeft, but the pane pans with selectNodesOnDrag=false and no node acquires selected; persistent-selection assertion is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:107"
     },
     {
       "id": "UP-127-010",
@@ -1159,16 +1168,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After the native bottomLeft pane click, one .flow-selection-box remains attached with hidden presentation; upstream requires no selection rectangle DOM."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:121"
     },
     {
       "id": "UP-127-011",
@@ -1178,16 +1188,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Clicking the first e1-2 path selects it, then shared-SVG selected elevation moves it after unselected e1-3, which becomes :first. Documented ordering: research/traces/edge-visibility-stacking.md:34."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native click selects e1-2, but elevation reorders wrappers so :first becomes unselected e1-3."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:127"
     },
     {
       "id": "UP-127-012",
@@ -1197,16 +1209,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:138"
     },
     {
       "id": "UP-127-013",
@@ -1216,16 +1228,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native click reaches Node 1, but threshold-zero/selectNodesOnDrag=false leaves it unselected; Backspace and the node/edge count assertions are not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:150"
     },
     {
       "id": "UP-127-014",
@@ -1235,16 +1248,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The 3-to-4 handle sequence creates xy-edge__3-4, but UP-127-013 left the original two edges intact, so the count is 3 rather than 1; this is a deletion-prerequisite failure."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:160"
     },
     {
       "id": "UP-127-015",
@@ -1254,16 +1268,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The ordinary native click and Backspace delete e1-2, but UP-127-013 left the original graph intact. Two edges remain rather than zero; this is a deletion-prerequisite failure."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:187"
     },
     {
       "id": "UP-127-016",
@@ -1273,16 +1288,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:194"
     },
     {
       "id": "UP-127-017",
@@ -1292,16 +1307,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:204"
     },
     {
       "id": "UP-127-018",
@@ -1311,16 +1326,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:11"
     },
     {
       "id": "UP-127-019",
@@ -1330,16 +1345,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:16"
     },
     {
       "id": "UP-127-020",
@@ -1349,16 +1364,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:23"
     },
     {
       "id": "UP-127-021",
@@ -1368,16 +1383,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:30"
     },
     {
       "id": "UP-127-022",
@@ -1387,16 +1402,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:51"
     },
     {
       "id": "UP-127-023",
@@ -1406,16 +1421,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The initial click reaches Node 1 but leaves it unselected with threshold zero and selectNodesOnDrag=false; pane dismissal and the lock toggle are not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Node 1 is selected, but the native topLeft pane click leaves it selected; the lock toggle is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Node 1 selects correctly, but a native topLeft pane click leaves it selected; the control toggle is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:58"
     },
     {
       "id": "UP-127-024",
@@ -1425,16 +1443,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "UP-127-023 aborted before its lock toggle; this case therefore toggles the still-enabled control off, and the forced Node 1 click remains unselected."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:72"
     },
     {
       "id": "UP-127-025",
@@ -1444,16 +1463,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/draghandle.ts:16"
     },
     {
       "id": "UP-127-026",
@@ -1463,16 +1482,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/draghandle.ts:22"
     },
     {
       "id": "UP-127-027",
@@ -1482,16 +1501,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/draghandle.ts:30"
     },
     {
       "id": "UP-127-028",
@@ -1501,16 +1520,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:11"
     },
     {
       "id": "UP-127-029",
@@ -1520,16 +1539,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:18"
     },
     {
       "id": "UP-127-030",
@@ -1539,16 +1558,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:39"
     },
     {
       "id": "UP-127-031",
@@ -1558,16 +1577,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:45"
     },
     {
       "id": "UP-127-032",
@@ -1577,16 +1596,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:17"
     },
     {
       "id": "UP-127-033",
@@ -1596,16 +1615,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:31"
     },
     {
       "id": "UP-127-034",
@@ -1615,16 +1634,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The topLeft-to-bottomRight gesture reaches the Figma canvas, but selectNodesOnDrag=false suppresses marquee selection; no selected node is rendered."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:36"
     },
     {
       "id": "UP-127-035",
@@ -1634,16 +1654,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After Figma selection, a native topLeft pane click leaves Nodes 1 and 2 selected rather than clearing all selection."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After Figma selection, the native topLeft canvas click leaves Nodes 1 and 2 selected."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:50"
     },
     {
       "id": "UP-127-036",
@@ -1653,16 +1675,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Right-button center-to-bottom movement reaches the Figma canvas, but the default center mouseup returns the final viewport to its initial position; Node 4 remains partly inside instead of entirely outside."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Right-button panning occurs, but the two nodes retained from UP-127-035 remain selected; the outside-viewport assertion is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The right-button pan moves the graph, but the two nodes retained from UP-127-035 remain selected; the final outside-viewport assertion is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:56"
     },
     {
       "id": "UP-127-037",
@@ -1672,16 +1697,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:11"
     },
     {
       "id": "UP-127-038",
@@ -1691,16 +1716,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:18"
     },
     {
       "id": "UP-127-039",
@@ -1710,16 +1735,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:23"
     },
     {
       "id": "UP-127-040",
@@ -1729,16 +1754,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:31"
     },
     {
       "id": "UP-127-041",
@@ -1748,16 +1773,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:36"
     },
     {
       "id": "UP-127-042",
@@ -1767,16 +1792,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:21"
     },
     {
       "id": "UP-127-043",
@@ -1786,16 +1811,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "With all three interactivity switches false, the measured Node 1 wrapper computes pointer-events:auto, not none."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "With all three interactivity switches false, Node 1 computes pointer-events:auto, not none."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "With all interactivity switches false, Node 1 computes pointer-events:auto, not none."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:35"
     },
     {
       "id": "UP-127-044",
@@ -1805,16 +1833,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:44"
     },
     {
       "id": "UP-127-045",
@@ -1824,16 +1852,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:53"
     },
     {
       "id": "UP-127-046",
@@ -1843,16 +1871,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After the capture-element-click checkbox enables the mounted callbacks, Node 1 still computes pointer-events:auto, not all."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After enabling the capture callbacks through reactive props, Node 1 computes pointer-events:auto, not all."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Enabling the capture checkbox leaves Node 1 at pointer-events:auto rather than all; Foldkit has event output ports but no callback-presence rendering prop."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:58"
     },
     {
       "id": "UP-127-047",
@@ -1862,16 +1893,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After callback enablement, the first edge wrapper still computes pointer-events:none, not visibleStroke."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After enabling capture callbacks, the first edge wrapper computes pointer-events:none, not visibleStroke."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The first edge SVG computes pointer-events:none rather than visibleStroke after the capture checkbox; callback-presence rendering has no public Foldkit prop."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:67"
     },
     {
       "id": "UP-127-048",
@@ -1881,16 +1915,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:76"
     },
     {
       "id": "UP-127-049",
@@ -1900,16 +1934,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "With nodesConnectable=false, Node 3 source handle computes pointer-events:auto, not none."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "With nodesConnectable=false, Node 3 source handle computes pointer-events:auto, not none."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "With nodesConnectable=false, Node 3 source handle computes pointer-events:auto, not none."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:97"
     },
     {
       "id": "UP-127-050",
@@ -1919,16 +1956,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:107"
     },
     {
       "id": "UP-127-051",
@@ -1938,16 +1975,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:114"
     },
     {
       "id": "UP-127-052",
@@ -1957,16 +1994,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:121"
     },
     {
       "id": "UP-127-053",
@@ -1976,16 +2013,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The earlier disabled-selection Shift gesture in UP-127-048 panned nodes left; this drag begins on offscreen Node 1 and hits html, so its retained transform is unchanged. This depends on pane admission, not a new independent drag diagnosis."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The disabled-selection Shift gesture in UP-127-048 panned nodes offscreen; this drag starts on html at the retained Node 1 coordinates, leaving its transform unchanged."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:126"
     },
     {
       "id": "UP-127-054",
@@ -1995,16 +2034,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:138"
     },
     {
       "id": "UP-127-055",
@@ -2014,16 +2053,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After UP-127-048 moved Node 1 offscreen, the ordinary native node click cannot become actionable; the selected assertion is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "UP-127-048 moved Node 1 left of the viewport, so its ordinary click never becomes actionable; the selection assertion is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:143"
     },
     {
       "id": "UP-127-056",
@@ -2033,16 +2074,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Forced subject events select e1-2, but it moves after e1-3, so the :first assertion reads unselected e1-3. Interaction never enables edge elevation; ignoring the default-false elevation policy is not covered by the documented Basic shared-SVG exception."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Forced pointer down/up and click reach e1-2 with selection enabled, but its wrapper stays unselected. The earlier UP-127-048 pan put the release point offscreen, where elementsFromPoint returns no hit; forced activation and native hit testing remain separate boundaries."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:149"
     },
     {
       "id": "UP-127-057",
@@ -2052,16 +2095,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:160"
     },
     {
       "id": "UP-127-058",
@@ -2071,16 +2114,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After the disabled-selection pan in UP-127-048, the 3-to-4 gesture starts outside the viewport on html and leaves two edges rather than three; this is a pane-admission prerequisite failure."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After UP-127-048 panned Node 3 offscreen, the handle sequence starts on html and leaves two edges rather than three; this depends on the earlier pane admission."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:165"
     },
     {
       "id": "UP-127-059",
@@ -2090,16 +2135,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:191"
     },
     {
       "id": "UP-127-060",
@@ -2109,16 +2154,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:196"
     },
     {
       "id": "UP-127-061",
@@ -2128,16 +2173,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:204"
     },
     {
       "id": "UP-127-062",
@@ -2147,16 +2192,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Both zoom-out and native double-click arrive, but their factors cancel: the viewport transform equals the synchronously captured pre-queue transform after the original 50ms wait."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The control zoom-out and double-click factors cancel, leaving the final CSS transform equal to the synchronously captured pre-queue value after the upstream 50ms wait."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:209"
     },
     {
       "id": "UP-127-063",
@@ -2166,16 +2213,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:11"
     },
     {
       "id": "UP-127-064",
@@ -2185,16 +2232,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:17"
     },
     {
       "id": "UP-127-065",
@@ -2204,16 +2251,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The wheel is delivered and node screen bounds change, but minimap SVG viewBox stays 0 0 200 150; the later mask assertion is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After wheel input changes graph screen bounds, minimap SVG viewBox remains 0 0 180 120; the mask assertion is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The minimap SVG retains viewBox 0 0 180 120 after the wheel; the later mask assertion is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:25"
     },
     {
       "id": "UP-127-066",
@@ -2223,16 +2273,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The graph node moves, but the original retained minimap rect keeps its old x attribute after redraw; Vanilla replaces minimap nodes at apps/vanilla/src/minimap.ts:272."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The graph node moves after native drag, but the original retained minimap rectangle keeps its old x attribute because update redraws the SVG with replaceChildren at packages/foldkit/src/ui/minimap.ts:220."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:45"
     },
     {
       "id": "UP-127-067",
@@ -2242,16 +2294,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The native topLeft-to-bottomLeft pan changes graph screen bounds, but minimap SVG viewBox remains 0 0 200 150; the later mask assertion is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After the pane pan changes graph screen bounds, minimap SVG viewBox remains 0 0 180 120; the mask assertion is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The pane input changes graph screen bounds, but minimap SVG viewBox stays 0 0 180 120; the mask assertion is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:59"
     },
     {
       "id": "UP-128-001",
@@ -4287,5 +4342,55 @@
       "flowTest": null
     }
   ],
-  "unmappedProps": []
+  "unmappedProps": [
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/basic",
+      "upstream": "examples/react/src/examples/Basic/index.tsx:162",
+      "prop": "selectNodesOnDrag",
+      "reason": "The public Foldkit interaction options do not expose this switch. The false input is recorded in the neutral config but cannot be applied. See docs/react-flow-api-correspondence.md:72."
+    },
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/figma",
+      "upstream": "examples/react/src/examples/Figma/index.tsx:42",
+      "prop": "selectNodesOnDrag",
+      "reason": "The public Foldkit interaction options do not expose this switch. The false input is recorded in the neutral config but cannot be applied. See docs/react-flow-api-correspondence.md:72."
+    },
+    {
+      "host": "vue",
+      "config": "upstream-examples/figma",
+      "upstream": "examples/react/src/examples/Figma/index.tsx:39",
+      "prop": "multiSelectionKeyCode=[Meta,Shift]",
+      "reason": "FlowCanvas accepts one string, not alternatives. The fixture maps Meta; the Shift alternative is unrepresentable through this public prop and is not exercised by these cases."
+    },
+    {
+      "host": "vue",
+      "config": "upstream-examples/interaction",
+      "upstream": "examples/react/src/examples/Interaction/index.tsx:70",
+      "prop": "zoomOnPinch=false",
+      "reason": "This host has no public zoomOnPinch prop/option. The neutral config retains false; these cases exercise mouse input only. See docs/react-flow-api-correspondence.md:70."
+    },
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/interaction",
+      "upstream": "examples/react/src/examples/Interaction/index.tsx:70",
+      "prop": "zoomOnPinch=false",
+      "reason": "This host has no public zoomOnPinch prop/option. The neutral config retains false; these cases exercise mouse input only. See docs/react-flow-api-correspondence.md:70."
+    },
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/interaction",
+      "upstream": "examples/react/src/examples/Interaction/index.tsx:75",
+      "prop": "onNodeClick conditional presence",
+      "reason": "Foldkit publishes interaction events through ports but exposes no callback-presence prop that changes wrapper pointer-events. The checkbox state is ported; the CSS expectations remain failing."
+    },
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/interaction",
+      "upstream": "examples/react/src/examples/Interaction/index.tsx:76",
+      "prop": "onEdgeClick conditional presence",
+      "reason": "Foldkit publishes interaction events through ports but exposes no callback-presence prop that changes wrapper pointer-events. The checkbox state is ported; the CSS expectations remain failing."
+    }
+  ]
 }
