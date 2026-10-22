@@ -94,7 +94,7 @@ const mountToolbarHost = (
   activeToolbarContents.add(content)
 
   const { parentNode: parent, nextSibling } = content
-  const layer = toolbarLayer(controller)
+  let layer = toolbarLayer(controller)
   const host = layer.ownerDocument.createElement('div')
 
   host.className = [
@@ -112,7 +112,10 @@ const mountToolbarHost = (
   host.dataset.flowUi = `${kind}-toolbar`
   host.hidden = true
   host.append(content)
-  layer.append(host)
+
+  if (kind === 'edge') {
+    layer.append(host)
+  }
 
   let frame: number | undefined
   let observe: () => void = noop
@@ -168,10 +171,20 @@ const mountToolbarHost = (
       host.style.left = `${position.x}px`
       host.style.top = `${position.y}px`
       host.style.transform = `translate(${translate.x}%, ${translate.y}%)`
+
+      if (kind === 'node' && host.parentElement === null) {
+        layer = toolbarLayer(controller)
+        layer.append(host)
+      }
+
       host.hidden = false
     },
     hide: () => {
       host.hidden = true
+
+      if (kind === 'node') {
+        host.remove()
+      }
     },
     watch,
     dispose: () => {

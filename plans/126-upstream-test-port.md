@@ -77,7 +77,7 @@ The literal marker URL case UP-126-015 is `intentional-difference` in all three 
 
 Every remaining `fail` entry appears below, grouped into a follow-up plan. Reasons describe the observed assertion boundary; a failure before a later assertion does not establish that later behavior.
 
-#### [Background transforms](126-follow-up-background-transforms.md)
+#### [Background transforms](133-presentation-follow-ups.md#plan-126-follow-up-background-centering-and-offsets)
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -95,7 +95,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 | UP-126-013 | aria-lable is working | **vue**: The aria-label edge wrapper has no aria-label-test attribute value. |
 | UP-126-014 | interactionWidth is working | **vanilla**: The click 21 pixels to the right of the interaction-width edge center does not select it.<br>**vue**: The click 21 pixels to the right of the interaction-width edge center does not select it.<br>**foldkit**: The click 21 pixels to the right of the edge center leaves its wrapper without the selected class. |
 
-#### [Edge stacking](126-follow-up-edge-stacking.md)
+#### [Edge stacking](133-presentation-follow-ups.md#plan-126-follow-up-edge-svg-stacking)
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -133,7 +133,7 @@ Plan 132 resolves the 12 failing host entries in this historical baseline with t
 | UP-126-047 | primary mouse drag still creates a selection marquee | **vanilla**: Primary-button drag with selectionOnDrag true and panOnDrag [1,2] creates no visible marquee. |
 | UP-126-048 | Control and primary-button drag pans the pane | **vanilla**: Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis.<br>**vue**: Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis.<br>**foldkit**: Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis. |
 
-#### [Toolbar lifecycle](126-follow-up-toolbar-layout.md)
+#### [Toolbar lifecycle](133-presentation-follow-ups.md#plan-126-follow-up-toolbar-alignment-and-lifecycle)
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -167,13 +167,13 @@ Plan 132 resolves the 12 failing host entries in this historical baseline with t
 - `packages/conformance/src/upstream-generic/pane/activation-keys.ts`
 - `packages/conformance/src/upstream-generic/pane/general.ts`
 - `packages/conformance/src/upstream-generic/pane/non-defaults.ts`
-- `plans/126-follow-up-background-transforms.md`
+- `plans/133-presentation-follow-ups.md#plan-126-follow-up-background-centering-and-offsets`
 - `plans/128-connection-input.md`
 - `plans/131-edge-interaction.md`
-- `plans/126-follow-up-edge-stacking.md`
+- `plans/133-presentation-follow-ups.md#plan-126-follow-up-edge-svg-stacking`
 - `plans/127-node-input.md`
 - `plans/132-pane-input.md`
-- `plans/126-follow-up-toolbar-layout.md`
+- `plans/133-presentation-follow-ups.md#plan-126-follow-up-toolbar-alignment-and-lifecycle`
 - `research/catalogs/upstream-test-ledger.json`
 - `scripts/check-upstream-test-ledger.ts`
 - `scripts/upstream-test-cases.test.ts`

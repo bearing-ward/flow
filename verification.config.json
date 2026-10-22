@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-128 upstream port and node/connection follow-ups; preserving all existing scope; Plan 129 controlled selection/delete; Plan 130 fitted Foldkit fixture readiness; Plan 132 pane input and zoom limits",
+  "activeWork": "Plans 126-133 upstream port and follow-ups; preserving all existing scope",
   "checks": [
     "api-members",
     "catalog",
@@ -101,7 +101,9 @@
       "graph-editing-examples.e2e.ts",
       "public-state.e2e.ts",
       "viewport-operations.e2e.ts",
-      "viewport-portal.e2e.ts"
+      "viewport-portal.e2e.ts",
+      "node-toolbar.e2e.ts",
+      "edge-toolbar.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -158,7 +160,8 @@
       "ui-recipes.e2e.ts",
       "viewport-portal.e2e.ts",
       "selection-rect-race.e2e.ts",
-      "pane-input.e2e.ts"
+      "pane-input.e2e.ts",
+      "presentation-followups.e2e.ts"
     ]
   }
 }

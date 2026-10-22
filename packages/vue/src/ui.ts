@@ -315,13 +315,14 @@ export const FlowBackground = defineComponent({
       const viewport = flow.viewport.value
       const [gapX, gapY] = gap.value
       const [offsetX, offsetY] = offset.value
-      let path: string | undefined
-
-      if (props.variant === 'lines') {
-        path = `M ${gapX} 0 L 0 0 0 ${gapY}`
-      } else if (props.variant === 'cross') {
-        path = `M ${gapX / 2 - size.value / 2} ${gapY / 2} h ${size.value} M ${gapX / 2} ${gapY / 2 - size.value / 2} v ${size.value}`
-      }
+      const scaledGapX = gapX * viewport.zoom || 1
+      const scaledGapY = gapY * viewport.zoom || 1
+      const scaledSize = size.value * viewport.zoom
+      const patternWidth = props.variant === 'cross' ? scaledSize : scaledGapX
+      const patternHeight = props.variant === 'cross' ? scaledSize : scaledGapY
+      const scaledOffsetX = offsetX * viewport.zoom + patternWidth / 2
+      const scaledOffsetY = offsetY * viewport.zoom + patternHeight / 2
+      const path = `M ${patternWidth / 2} 0 V ${patternHeight} M 0 ${patternHeight / 2} H ${patternWidth}`
 
       const backgroundStyle = [
         {
@@ -354,17 +355,19 @@ export const FlowBackground = defineComponent({
               {
                 id: patternId.value,
                 class: props.patternClassName,
-                width: gapX,
-                height: gapY,
+                x: viewport.x % scaledGapX,
+                y: viewport.y % scaledGapY,
+                width: scaledGapX,
+                height: scaledGapY,
                 patternUnits: 'userSpaceOnUse',
-                patternTransform: `translate(${viewport.x + offsetX} ${viewport.y + offsetY}) scale(${viewport.zoom})`,
+                patternTransform: `translate(-${scaledOffsetX},-${scaledOffsetY})`,
               },
               props.variant === 'dots'
                 ? [
                     h('circle', {
-                      cx: gapX / 2,
-                      cy: gapY / 2,
-                      r: size.value,
+                      cx: scaledSize / 2,
+                      cy: scaledSize / 2,
+                      r: scaledSize / 2,
                       style: {
                         fill:
                           props.color ??
