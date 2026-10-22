@@ -207,6 +207,26 @@ test('button-edge deletes its edge by click and by keyboard', async ({
   await expect(button).toHaveCSS('pointer-events', 'all')
   expectNear(await centerOf(button), await pathMidpoint(path))
 
+  // Pinned GraphView/index.tsx:182 keeps the label renderer in the viewport.
+  const labelHit = await button.evaluate((element) => {
+    const bounds = element.getBoundingClientRect()
+
+    const hits = document.elementsFromPoint(
+      bounds.x + bounds.width / 2,
+      bounds.y + bounds.height / 2
+    )
+
+    return {
+      buttonIsFirst: hits[0] === element,
+      hits: hits.slice(0, 4).map((hit) => hit.outerHTML.slice(0, 220)),
+    }
+  })
+
+  await test.info().attach('button-edge-hit-order', {
+    body: JSON.stringify(labelHit),
+    contentType: 'application/json',
+  })
+  expect(labelHit.buttonIsFirst).toBe(true)
   await button.click()
   await expect(path).toHaveCount(0)
   await expect(button).toHaveCount(0)

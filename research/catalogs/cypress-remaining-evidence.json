@@ -1,0 +1,2404 @@
+{
+  "base": "d6ced9e50dd5c7fbbd28f4ad9c52545a335bc4a8",
+  "revision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "boundary": "Local Chromium, complete state-sharing Cypress runners; temporary capture adds no waits or state resets. Baseline classifications are retained expected failures, so Playwright continues the original page after those failures.",
+  "baseline": {
+    "vanilla": {
+      "stats": {
+        "startTime": "2026-10-22T19:18:57.583Z",
+        "duration": 33176.042,
+        "expected": 67,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "ordinaryPass": 64,
+        "expectedFailure": 3
+      },
+      "scopedCases": [
+        {
+          "title": "[UP-127-006] selects an edge by click",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 67,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(locator).toHaveClass(expected) failed\n\nLocator: locator('.flow-edge-group').first()\nExpected pattern: /selected/u\nReceived string:  \"flow-edge-group selectable nopan\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toHaveClass\" locator('.flow-edge-group').first() with timeout 5000ms\n  - waiting for locator('.flow-edge-group').first()\n    14 \u00d7 locator resolved to <g tabindex=\"0\" role=\"button\" data-z-index=\"0\" data-edge-id=\"e1-3\" aria-pressed=\"false\" aria-roledescription=\"edge\" data-testid=\"flow-edge-group\" aria-describedby=\"flow-edge-desc-1\" aria-label=\"Edge from Node 1 to Node 3\" class=\"flow-edge-group selectable nopan\">\u2026</g>\n       - unexpected value \"flow-edge-group selectable nopan\"\n\n\n  72 |         { force: true }\n  73 |       )\n> 74 |       await expect(get('.react-flow__edge').first()).toHaveClass(/selected/u)\n     |                                                      ^\n  75 |     })\n  76 |\n  77 |     // Upstream: examples/react/cypress/e2e/basic.cy.ts:45\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/basic.ts:74:54"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointermove",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-236.1716738197424\" data-y=\"87.38197424892707\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he",
+                      "<div id=\"app\" data-upstream-ready=\"true\"><div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"user"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-236.1716738197424\" data-y=\"87.38197424892707\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he",
+                      "<div id=\"app\" data-upstream-ready=\"true\"><div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"user"
+                    ]
+                  },
+                  {
+                    "type": "mousedown",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-236.1716738197424\" data-y=\"87.38197424892707\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he",
+                      "<div id=\"app\" data-upstream-ready=\"true\"><div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"user"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-236.1716738197424\" data-y=\"87.38197424892707\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he",
+                      "<div id=\"app\" data-upstream-ready=\"true\"><div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"user"
+                    ]
+                  },
+                  {
+                    "type": "mouseup",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-236.1716738197424\" data-y=\"87.38197424892707\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he",
+                      "<div id=\"app\" data-upstream-ready=\"true\"><div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"user"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,48.000000467105785 C325,71.5 175,71.5 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-236.1716738197424\" data-y=\"87.38197424892707\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he",
+                      "<div id=\"app\" data-upstream-ready=\"true\"><div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"user"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(250px, 5px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 394.7296142578125,
+                      "y": 100,
+                      "width": 378.54071044921875,
+                      "height": 95.89700317382812,
+                      "top": 100,
+                      "right": 773.2703247070312,
+                      "bottom": 195.89700317382812,
+                      "left": 394.7296142578125
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(100px, 100px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 16.188827514648438,
+                      "y": 339.74249267578125,
+                      "width": 378.540771484375,
+                      "height": 95.89697265625,
+                      "top": 339.74249267578125,
+                      "right": 394.72959899902344,
+                      "bottom": 435.63946533203125,
+                      "left": 16.188827514648438
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(400px, 100px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 773.2703247070312,
+                      "y": 339.74249267578125,
+                      "width": 378.54083251953125,
+                      "height": 95.89697265625,
+                      "top": 339.74249267578125,
+                      "right": 1151.8111572265625,
+                      "bottom": 435.63946533203125,
+                      "left": 773.2703247070312
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(400px, 200px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 773.2703247070312,
+                      "y": 592.1029663085938,
+                      "width": 378.54083251953125,
+                      "height": 95.89703369140625,
+                      "top": 592.1029663085938,
+                      "right": 1151.8111572265625,
+                      "bottom": 688,
+                      "left": 773.2703247070312
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-group selectable nopan",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-path",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-group animated selectable nopan selected",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-path",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-anchor-group",
+                    "pointerEvents": "none"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-anchor-group selected",
+                    "pointerEvents": "none"
+                  }
+                ],
+                "viewports": [
+                  "transform: translate(-236.172px, 87.382px) scale(2.52361); --flow-resize-control-scale: 1;"
+                ],
+                "controls": []
+              }
+            }
+          ]
+        },
+        {
+          "title": "[UP-127-011] selects an edge",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 127,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(locator).toHaveClass(expected) failed\n\nLocator: locator('.flow-edge-group').first()\nExpected pattern: /selected/u\nReceived string:  \"flow-edge-group selectable nopan\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toHaveClass\" locator('.flow-edge-group').first() with timeout 5000ms\n  - waiting for locator('.flow-edge-group').first()\n    14 \u00d7 locator resolved to <g tabindex=\"0\" role=\"button\" data-z-index=\"0\" data-edge-id=\"e1-3\" aria-pressed=\"false\" aria-roledescription=\"edge\" data-testid=\"flow-edge-group\" aria-describedby=\"flow-edge-desc-1\" aria-label=\"Edge from Node 1 to Node 3\" class=\"flow-edge-group selectable nopan\">\u2026</g>\n       - unexpected value \"flow-edge-group selectable nopan\"\n\n\n  132 |         { force: true }\n  133 |       )\n> 134 |       await expect(get('.react-flow__edge').first()).toHaveClass(/selected/u)\n      |                                                      ^\n  135 |     })\n  136 |\n  137 |     // Upstream: examples/react/cypress/e2e/basic.cy.ts:92\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/basic.ts:134:54"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointermove",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<path class=\"flow-edge-path\" data-edge-id=\"e1-2\" data-testid=\"flow-edge-path\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"2\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-176.1716738197424\" data-y=\"27.381974248927065\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<path class=\"flow-edge-path\" data-edge-id=\"e1-2\" data-testid=\"flow-edge-path\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"2\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-176.1716738197424\" data-y=\"27.381974248927065\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he"
+                    ]
+                  },
+                  {
+                    "type": "mousedown",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<path class=\"flow-edge-path\" data-edge-id=\"e1-2\" data-testid=\"flow-edge-path\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"2\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-176.1716738197424\" data-y=\"27.381974248927065\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<path class=\"flow-edge-path\" data-edge-id=\"e1-2\" data-testid=\"flow-edge-path\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"2\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-176.1716738197424\" data-y=\"27.381974248927065\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he"
+                    ]
+                  },
+                  {
+                    "type": "mouseup",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<path class=\"flow-edge-path\" data-edge-id=\"e1-2\" data-testid=\"flow-edge-path\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"2\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-176.1716738197424\" data-y=\"27.381974248927065\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"20\"></path>",
+                      "<path class=\"flow-edge-path\" data-edge-id=\"e1-2\" data-testid=\"flow-edge-path\" d=\"M325,47.99999895549956 C325,71.49999924419689 175,71.49999924419689 175,94.99999953289421\" stroke-width=\"2\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"-176.1716738197424\" data-y=\"27.381974248927065\" data-zoom=\"2.523605150214592\" style=\"transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize",
+                      "<section class=\"flow-canvas react-flow-basic-example\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"f",
+                      "<div class=\"upstream-example-canvas\"><svg class=\"flow-background\" aria-hidden=\"true\" focusable=\"false\" data-variant=\"dots\"><defs><pattern id=\"flow-background-1\" patternUnits=\"userSpaceOnUse\" width=\"50.472103004291846\" he"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(250px, 5px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 454.7296142578125,
+                      "y": 40,
+                      "width": 378.54071044921875,
+                      "height": 95.89700317382812,
+                      "top": 40,
+                      "right": 833.2703247070312,
+                      "bottom": 135.89700317382812,
+                      "left": 454.7296142578125
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(100px, 100px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 76.18882751464844,
+                      "y": 279.74249267578125,
+                      "width": 378.540771484375,
+                      "height": 95.89700317382812,
+                      "top": 279.74249267578125,
+                      "right": 454.72959899902344,
+                      "bottom": 375.6394958496094,
+                      "left": 76.18882751464844
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(400px, 100px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 833.2703247070312,
+                      "y": 279.74249267578125,
+                      "width": 378.54083251953125,
+                      "height": 95.89700317382812,
+                      "top": 279.74249267578125,
+                      "right": 1211.8111572265625,
+                      "bottom": 375.6394958496094,
+                      "left": 833.2703247070312
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-node light nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(400px, 200px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 833.2703247070312,
+                      "y": 532.1029663085938,
+                      "width": 378.54083251953125,
+                      "height": 95.89703369140625,
+                      "top": 532.1029663085938,
+                      "right": 1211.8111572265625,
+                      "bottom": 628,
+                      "left": 833.2703247070312
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-group selectable nopan",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-path",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-group animated selectable nopan selected",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-path",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-anchor-group",
+                    "pointerEvents": "none"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-anchor-group selected",
+                    "pointerEvents": "none"
+                  }
+                ],
+                "viewports": [
+                  "transform: translate(-176.172px, 27.382px) scale(2.52361); --flow-resize-control-scale: 1;"
+                ],
+                "controls": []
+              }
+            }
+          ]
+        },
+        {
+          "title": "[UP-127-014] connects nodes",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 160,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-015] removes an edge",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 187,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-036] drags using right click",
+          "file": "../../shared-e2e/upstream-cypress/figma.ts",
+          "line": 56,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-048] tries to do a selection",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 76,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-056] selects an edge by click",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 149,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(locator).toHaveClass(expected) failed\n\nLocator: locator('.flow-edge-group').first()\nExpected pattern: /selected/u\nReceived string:  \"flow-edge-group nopan selectable\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toHaveClass\" locator('.flow-edge-group').first() with timeout 5000ms\n  - waiting for locator('.flow-edge-group').first()\n    14 \u00d7 locator resolved to <g tabindex=\"0\" role=\"button\" data-z-index=\"0\" data-edge-id=\"e1-3\" aria-pressed=\"false\" aria-roledescription=\"edge\" data-testid=\"flow-edge-group\" aria-describedby=\"flow-edge-desc-2\" aria-label=\"Edge from Node 1 to Node 3\" class=\"flow-edge-group nopan selectable\">\u2026</g>\n       - unexpected value \"flow-edge-group nopan selectable\"\n\n\n  154 |         { force: true }\n  155 |       )\n> 156 |       await expect(get('.react-flow__edge').first()).toHaveClass(/selected/u)\n      |                                                      ^\n  157 |     })\n  158 |\n  159 |     // Upstream: examples/react/cypress/e2e/interaction.cy.ts:111\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/interaction.ts:156:54"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointerdown",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<article class=\"flow-node nopan draggable selectable\" data-node-id=\"3\" data-testid=\"flow-node\" data-sized=\"true\" tabindex=\"0\" aria-describedby=\"flow-node-desc-2\" role=\"button\" aria-roledescription=\"node\" aria-label=\"Node",
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"0\" data-y=\"0\" data-zoom=\"1\" style=\"transform: translate(0px, 0px) scale(1); --flow-resize-control-scale: 1;\"><svg class=\"flow-edges\" data-testid=\"flow-edges\"",
+                      "<section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"flow-viewport\" data-testid",
+                      "<div class=\"upstream-example-canvas\"><section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><"
+                    ]
+                  },
+                  {
+                    "type": "mousedown",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<article class=\"flow-node nopan draggable selectable\" data-node-id=\"3\" data-testid=\"flow-node\" data-sized=\"true\" tabindex=\"0\" aria-describedby=\"flow-node-desc-2\" role=\"button\" aria-roledescription=\"node\" aria-label=\"Node",
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"0\" data-y=\"0\" data-zoom=\"1\" style=\"transform: translate(0px, 0px) scale(1); --flow-resize-control-scale: 1;\"><svg class=\"flow-edges\" data-testid=\"flow-edges\"",
+                      "<section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"flow-viewport\" data-testid",
+                      "<div class=\"upstream-example-canvas\"><section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<article class=\"flow-node nopan draggable selectable\" data-node-id=\"3\" data-testid=\"flow-node\" data-sized=\"true\" tabindex=\"0\" aria-describedby=\"flow-node-desc-2\" role=\"button\" aria-roledescription=\"node\" aria-label=\"Node",
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"0\" data-y=\"0\" data-zoom=\"1\" style=\"transform: translate(0px, 0px) scale(1); --flow-resize-control-scale: 1;\"><svg class=\"flow-edges\" data-testid=\"flow-edges\"",
+                      "<section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"flow-viewport\" data-testid",
+                      "<div class=\"upstream-example-canvas\"><section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><"
+                    ]
+                  },
+                  {
+                    "type": "mouseup",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<article class=\"flow-node nopan draggable selectable\" data-node-id=\"3\" data-testid=\"flow-node\" data-sized=\"true\" tabindex=\"0\" aria-describedby=\"flow-node-desc-2\" role=\"button\" aria-roledescription=\"node\" aria-label=\"Node",
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"0\" data-y=\"0\" data-zoom=\"1\" style=\"transform: translate(0px, 0px) scale(1); --flow-resize-control-scale: 1;\"><svg class=\"flow-edges\" data-testid=\"flow-edges\"",
+                      "<section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"flow-viewport\" data-testid",
+                      "<div class=\"upstream-example-canvas\"><section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                    "hits": [
+                      "<article class=\"flow-node nopan draggable selectable\" data-node-id=\"3\" data-testid=\"flow-node\" data-sized=\"true\" tabindex=\"0\" aria-describedby=\"flow-node-desc-2\" role=\"button\" aria-roledescription=\"node\" aria-label=\"Node",
+                      "<path class=\"flow-edge-hit\" data-testid=\"flow-edge-hit\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" stroke-width=\"20\"></path>",
+                      "<div class=\"flow-viewport\" data-testid=\"flow-viewport\" data-x=\"0\" data-y=\"0\" data-zoom=\"1\" style=\"transform: translate(0px, 0px) scale(1); --flow-resize-control-scale: 1;\"><svg class=\"flow-edges\" data-testid=\"flow-edges\"",
+                      "<section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><div class=\"flow-viewport\" data-testid",
+                      "<div class=\"upstream-example-canvas\"><section class=\"flow-canvas\" tabindex=\"-1\" aria-label=\"Flow canvas\" data-testid=\"flow-canvas\" data-background=\"dots\" data-color-mode=\"light\" style=\"--flow-background-spacing: 20px;\"><"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-node nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(825px, 110px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 825,
+                      "y": 110,
+                      "width": 150,
+                      "height": 38,
+                      "top": 110,
+                      "right": 975,
+                      "bottom": 148,
+                      "left": 825
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-node nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(100px, 100px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 100,
+                      "y": 100,
+                      "width": 150,
+                      "height": 38,
+                      "top": 100,
+                      "right": 250,
+                      "bottom": 138,
+                      "left": 100
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-node nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(400px, 100px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 400,
+                      "y": 100,
+                      "width": 150,
+                      "height": 38,
+                      "top": 100,
+                      "right": 550,
+                      "bottom": 138,
+                      "left": 400
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-node nopan draggable selectable",
+                    "style": "width: 150px; height: 38px; box-sizing: border-box; transform: translate(400px, 200px); z-index: 1; pointer-events: all; visibility: visible;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 400,
+                      "y": 200,
+                      "width": 150,
+                      "height": 38,
+                      "top": 200,
+                      "right": 550,
+                      "bottom": 238,
+                      "left": 400
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-group nopan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-path",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-group animated nopan selectable selected",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-path",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-edge-anchor-group",
+                    "pointerEvents": "none"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-edge-anchor-group selected",
+                    "pointerEvents": "none"
+                  }
+                ],
+                "viewports": [
+                  "transform: translate(0px, 0px) scale(1); --flow-resize-control-scale: 1;"
+                ],
+                "controls": [
+                  {
+                    "id": "draggable",
+                    "checked": true
+                  },
+                  {
+                    "id": "connectable",
+                    "checked": false
+                  },
+                  {
+                    "id": "selectable",
+                    "checked": true
+                  },
+                  {
+                    "id": "zoomonscroll",
+                    "checked": false
+                  },
+                  {
+                    "id": "zoomondbl",
+                    "checked": false
+                  },
+                  {
+                    "id": "captureelementclick",
+                    "checked": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "[UP-127-058] connects two nodes",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 165,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-062] zooms by double click",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 209,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": [
+            {
+              "name": "plan138-zoom-sequence",
+              "evidence": {
+                "samples": [
+                  {
+                    "at": 7013.5,
+                    "event": "before-queue",
+                    "transform": "transform: translate(0px, 0px) scale(0.757858); --flow-resize-control-scale: 1.3195079107728944;"
+                  },
+                  {
+                    "at": 7054.800000011921,
+                    "event": "click",
+                    "transform": "transform: translate(0px, 0px) scale(0.757858); --flow-resize-control-scale: 1.3195079107728944;"
+                  },
+                  {
+                    "at": 7056.699999988079,
+                    "event": "style",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.631549); --flow-resize-control-scale: 1.5834094929274731;"
+                  },
+                  {
+                    "at": 7142.300000011921,
+                    "event": "click",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.631549); --flow-resize-control-scale: 1.5834094929274731;"
+                  },
+                  {
+                    "at": 7144.0999999940395,
+                    "event": "click",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.631549); --flow-resize-control-scale: 1.5834094929274731;"
+                  },
+                  {
+                    "at": 7144.0999999940395,
+                    "event": "dblclick",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.631549); --flow-resize-control-scale: 1.5834094929274731;"
+                  },
+                  {
+                    "at": 7145.800000011921,
+                    "event": "style",
+                    "transform": "transform: translate(0px, -5.68434e-14px) scale(0.757858); --flow-resize-control-scale: 1.3195079107728942;"
+                  }
+                ],
+                "final": "transform: translate(0px, -5.68434e-14px) scale(0.757858); --flow-resize-control-scale: 1.3195079107728942;"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "vue": {
+      "stats": {
+        "startTime": "2026-10-22T19:19:30.962Z",
+        "duration": 27926.835,
+        "expected": 67,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "ordinaryPass": 63,
+        "expectedFailure": 4
+      },
+      "scopedCases": [
+        {
+          "title": "[UP-127-006] selects an edge by click",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 67,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(locator).toHaveClass(expected) failed\n\nLocator: locator('.flow-vue-edge').first()\nExpected pattern: /selected/u\nReceived string:  \"flow-vue-edge flow-vue-no-pan selectable\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toHaveClass\" locator('.flow-vue-edge').first() with timeout 5000ms\n  - waiting for locator('.flow-vue-edge').first()\n    14 \u00d7 locator resolved to <g data-edge-id=\"e1-3\" data-testid=\"flow-edge\" aria-label=\"Edge from Node 1 to Node 3\" class=\"flow-vue-edge flow-vue-no-pan selectable\">\u2026</g>\n       - unexpected value \"flow-vue-edge flow-vue-no-pan selectable\"\n\n\n  72 |         { force: true }\n  73 |       )\n> 74 |       await expect(get('.react-flow__edge').first()).toHaveClass(/selected/u)\n     |                                                      ^\n  75 |     })\n  76 |\n  77 |     // Upstream: examples/react/cypress/e2e/basic.cy.ts:45\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/basic.ts:74:54"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointermove",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49995891921691 174.99985566002175,71.49995891921691 174.99985566002175,95.0000031731577\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-de",
+                    "hits": [
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49995891921691 174.99985566002175,71.49995891921691 174.",
+                      "<div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-r",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0p",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49995891921691 174.99985566002175,71.49995891921691 174.99985566002175,95.0000031731577\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-de",
+                    "hits": [
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49995891921691 174.99985566002175,71.49995891921691 174.",
+                      "<div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-r",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0p",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 394,
+                    "y": 267,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49995891921691 174.99985566002175,71.49995891921691 174.99985566002175,95.0000031731577\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-de",
+                    "hits": [
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49995891921691 174.99985566002175,71.49995891921691 174.",
+                      "<div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-r",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0p",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 250px; top: 5px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 394.7296142578125,
+                      "y": 100,
+                      "width": 378.54071044921875,
+                      "height": 95.89700317382812,
+                      "top": 100,
+                      "right": 773.2703247070312,
+                      "bottom": 195.89700317382812,
+                      "left": 394.7296142578125
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 100px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 16.188827514648438,
+                      "y": 339.74249267578125,
+                      "width": 378.540771484375,
+                      "height": 95.89697265625,
+                      "top": 339.74249267578125,
+                      "right": 394.72959899902344,
+                      "bottom": 435.63946533203125,
+                      "left": 16.188827514648438
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 773.2703247070312,
+                      "y": 339.74249267578125,
+                      "width": 378.54083251953125,
+                      "height": 95.89697265625,
+                      "top": 339.74249267578125,
+                      "right": 1151.8111572265625,
+                      "bottom": 435.63946533203125,
+                      "left": 773.2703247070312
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 200px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 773.2703247070312,
+                      "y": 592.1029663085938,
+                      "width": 378.54083251953125,
+                      "height": 95.89703369140625,
+                      "top": 592.1029663085938,
+                      "right": 1151.8111572265625,
+                      "bottom": 688,
+                      "left": 773.2703247070312
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-3",
+                    "class": "flow-vue-edge flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge selected animated flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge-reconnect-anchor",
+                    "pointerEvents": "all"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge-reconnect-anchor",
+                    "pointerEvents": "all"
+                  }
+                ],
+                "viewports": [
+                  "transform: translate(-236.172px, 87.382px) scale(2.52361);",
+                  null
+                ],
+                "controls": []
+              }
+            }
+          ]
+        },
+        {
+          "title": "[UP-127-011] selects an edge",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 127,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(locator).toHaveClass(expected) failed\n\nLocator: locator('.flow-vue-edge').first()\nExpected pattern: /selected/u\nReceived string:  \"flow-vue-edge flow-vue-no-pan selectable\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toHaveClass\" locator('.flow-vue-edge').first() with timeout 5000ms\n  - waiting for locator('.flow-vue-edge').first()\n    14 \u00d7 locator resolved to <g data-edge-id=\"e1-3\" data-testid=\"flow-edge\" aria-label=\"Edge from Node 1 to Node 3\" class=\"flow-vue-edge flow-vue-no-pan selectable\">\u2026</g>\n       - unexpected value \"flow-vue-edge flow-vue-no-pan selectable\"\n\n\n  132 |         { force: true }\n  133 |       )\n> 134 |       await expect(get('.react-flow__edge').first()).toHaveClass(/selected/u)\n      |                                                      ^\n  135 |     })\n  136 |\n  137 |     // Upstream: examples/react/cypress/e2e/basic.cy.ts:92\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/basic.ts:134:54"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointermove",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9998586832284,95.00001526598429\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-des",
+                    "hits": [
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9998586832284,95.00001526598429\" fill=\"",
+                      "<div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-r",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0p"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9998586832284,95.00001526598429\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-des",
+                    "hits": [
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9998586832284,95.00001526598429\" fill=\"",
+                      "<div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-r",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0p"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 454,
+                    "y": 207,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9998586832284,95.00001526598429\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-des",
+                    "hits": [
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M324.99984356719517,47.99991466527613 C324.99984356719517,71.49996496563021 174.9998586832284,71.49996496563021 174.9998586832284,95.00001526598429\" fill=\"",
+                      "<div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-r",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\"><div class=\"flow-vue-canvas light react-flow-basic-example\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0p"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 250px; top: 5px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 454.7296142578125,
+                      "y": 40,
+                      "width": 378.54071044921875,
+                      "height": 95.89700317382812,
+                      "top": 40,
+                      "right": 833.2703247070312,
+                      "bottom": 135.89700317382812,
+                      "left": 454.7296142578125
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 100px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 76.18882751464844,
+                      "y": 279.74249267578125,
+                      "width": 378.540771484375,
+                      "height": 95.89700317382812,
+                      "top": 279.74249267578125,
+                      "right": 454.72959899902344,
+                      "bottom": 375.6394958496094,
+                      "left": 76.18882751464844
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 833.2703247070312,
+                      "y": 279.74249267578125,
+                      "width": 378.54083251953125,
+                      "height": 95.89700317382812,
+                      "top": 279.74249267578125,
+                      "right": 1211.8111572265625,
+                      "bottom": 375.6394958496094,
+                      "left": 833.2703247070312
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan light",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 200px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 833.2703247070312,
+                      "y": 532.1029663085938,
+                      "width": 378.54083251953125,
+                      "height": 95.89703369140625,
+                      "top": 532.1029663085938,
+                      "right": 1211.8111572265625,
+                      "bottom": 628,
+                      "left": 833.2703247070312
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-3",
+                    "class": "flow-vue-edge flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge selected animated flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge-reconnect-anchor",
+                    "pointerEvents": "all"
+                  },
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge-reconnect-anchor",
+                    "pointerEvents": "all"
+                  }
+                ],
+                "viewports": [
+                  "transform: translate(-176.172px, 27.382px) scale(2.52361);",
+                  null
+                ],
+                "controls": []
+              }
+            }
+          ]
+        },
+        {
+          "title": "[UP-127-014] connects nodes",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 160,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-015] removes an edge",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 187,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-036] drags using right click",
+          "file": "../../shared-e2e/upstream-cypress/figma.ts",
+          "line": 56,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-048] tries to do a selection",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 76,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-056] selects an edge by click",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 149,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(locator).toHaveClass(expected) failed\n\nLocator: locator('.flow-vue-edge').first()\nExpected pattern: /selected/u\nReceived string:  \"flow-vue-edge animated flow-vue-no-pan selectable\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toHaveClass\" locator('.flow-vue-edge').first() with timeout 5000ms\n  - waiting for locator('.flow-vue-edge').first()\n    14 \u00d7 locator resolved to <g data-edge-id=\"e1-2\" data-testid=\"flow-edge\" aria-label=\"Edge from Node 1 to Node 2\" class=\"flow-vue-edge animated flow-vue-no-pan selectable\">\u2026</g>\n       - unexpected value \"flow-vue-edge animated flow-vue-no-pan selectable\"\n\n\n  154 |         { force: true }\n  155 |       )\n> 156 |       await expect(get('.react-flow__edge').first()).toHaveClass(/selected/u)\n      |                                                      ^\n  157 |     })\n  158 |\n  159 |     // Upstream: examples/react/cypress/e2e/interaction.cy.ts:111\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/interaction.ts:156:54"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointerdown",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-describedby=\"flow-vue-v-0-edge-description\" aria-label=\"Edge from Node 1 to Node 2\"></pat",
+                    "hits": [
+                      "<span class=\"flow-vue-node-label\">Node 3</span>",
+                      "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"3\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-ind",
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke-width=\"1.5\"></path>",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr"
+                    ]
+                  },
+                  {
+                    "type": "mousedown",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-describedby=\"flow-vue-v-0-edge-description\" aria-label=\"Edge from Node 1 to Node 2\"></pat",
+                    "hits": [
+                      "<span class=\"flow-vue-node-label\">Node 3</span>",
+                      "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"3\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-ind",
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke-width=\"1.5\"></path>",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-describedby=\"flow-vue-v-0-edge-description\" aria-label=\"Edge from Node 1 to Node 2\"></pat",
+                    "hits": [
+                      "<span class=\"flow-vue-node-label\">Node 3</span>",
+                      "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"3\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-ind",
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke-width=\"1.5\"></path>",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr"
+                    ]
+                  },
+                  {
+                    "type": "mouseup",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-describedby=\"flow-vue-v-0-edge-description\" aria-label=\"Edge from Node 1 to Node 2\"></pat",
+                    "hits": [
+                      "<span class=\"flow-vue-node-label\">Node 3</span>",
+                      "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"3\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-ind",
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke-width=\"1.5\"></path>",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 537,
+                    "y": 124,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inherit\" tabindex=\"0\" role=\"button\" aria-roledescription=\"edge\" aria-describedby=\"flow-vue-v-0-edge-description\" aria-label=\"Edge from Node 1 to Node 2\"></pat",
+                    "hits": [
+                      "<span class=\"flow-vue-node-label\">Node 3</span>",
+                      "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"3\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-ind",
+                      "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e1-2\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width",
+                      "<path class=\"flow-vue-edge-path\" data-testid=\"flow-edge-path\" d=\"M900,153 C900,200.59858191164943 175,47.40141808835057 175,95\" fill=\"none\" stroke-width=\"1.5\"></path>",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-vue-node selected draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 1000; pointer-events: all; left: 825px; top: 110px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 825,
+                      "y": 110,
+                      "width": 150,
+                      "height": 38,
+                      "top": 110,
+                      "right": 975,
+                      "bottom": 148,
+                      "left": 825
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 100px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 100,
+                      "y": 100,
+                      "width": 150,
+                      "height": 38,
+                      "top": 100,
+                      "right": 250,
+                      "bottom": 138,
+                      "left": 100
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 400,
+                      "y": 100,
+                      "width": 150,
+                      "height": 38,
+                      "top": 100,
+                      "right": 550,
+                      "bottom": 138,
+                      "left": 400
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 200px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 400,
+                      "y": 200,
+                      "width": 150,
+                      "height": 38,
+                      "top": 200,
+                      "right": 550,
+                      "bottom": 238,
+                      "left": 400
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge animated flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-vue-edge flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  }
+                ],
+                "viewports": ["transform: translate(0px, 0px) scale(1);", null],
+                "controls": [
+                  {
+                    "id": "draggable",
+                    "checked": true
+                  },
+                  {
+                    "id": "connectable",
+                    "checked": false
+                  },
+                  {
+                    "id": "selectable",
+                    "checked": true
+                  },
+                  {
+                    "id": "zoomonscroll",
+                    "checked": false
+                  },
+                  {
+                    "id": "zoomondbl",
+                    "checked": false
+                  },
+                  {
+                    "id": "captureelementclick",
+                    "checked": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "[UP-127-058] connects two nodes",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 165,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-062] zooms by double click",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 209,
+          "repeat": 0,
+          "expectedStatus": "failed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(received).not.toBe(expected) // Object.is equality\n\nExpected: not \"translate(0px, 0px) scale(0.818731)\"\n\n  213 |       await doubleClick(page(), get('.react-flow__pane'))\n  214 |       await page().waitForTimeout(50)\n> 215 |       expect(await transform(get('.react-flow__viewport'))).not.toBe(before)\n      |                                                                 ^\n  216 |     })\n  217 |   })\n  218 | }\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/shared-e2e/upstream-cypress/interaction.ts:215:65"
+          ],
+          "attachments": [
+            {
+              "name": "upstream-input-evidence",
+              "evidence": {
+                "events": [
+                  {
+                    "type": "pointermove",
+                    "x": 38,
+                    "y": 622,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                    "hits": [
+                      "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                      "<div class=\"flow-vue-controls flow-vue-no-pan flow-vue-no-drag flow-vue-controls-bottom-left flow-vue-controls-vertical\" role=\"group\" aria-label=\"Control Panel\" data-flow-ui=\"controls\" data-interactive=\"true\"><button ari",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 38,
+                    "y": 622,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                    "hits": [
+                      "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                      "<div class=\"flow-vue-controls flow-vue-no-pan flow-vue-no-drag flow-vue-controls-bottom-left flow-vue-controls-vertical\" role=\"group\" aria-label=\"Control Panel\" data-flow-ui=\"controls\" data-interactive=\"true\"><button ari",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border"
+                    ]
+                  },
+                  {
+                    "type": "mousedown",
+                    "x": 38,
+                    "y": 622,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                    "hits": [
+                      "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                      "<div class=\"flow-vue-controls flow-vue-no-pan flow-vue-no-drag flow-vue-controls-bottom-left flow-vue-controls-vertical\" role=\"group\" aria-label=\"Control Panel\" data-flow-ui=\"controls\" data-interactive=\"true\"><button ari",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 38,
+                    "y": 622,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                    "hits": [
+                      "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                      "<div class=\"flow-vue-controls flow-vue-no-pan flow-vue-no-drag flow-vue-controls-bottom-left flow-vue-controls-vertical\" role=\"group\" aria-label=\"Control Panel\" data-flow-ui=\"controls\" data-interactive=\"true\"><button ari",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border"
+                    ]
+                  },
+                  {
+                    "type": "mouseup",
+                    "x": 38,
+                    "y": 622,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                    "hits": [
+                      "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                      "<div class=\"flow-vue-controls flow-vue-no-pan flow-vue-no-drag flow-vue-controls-bottom-left flow-vue-controls-vertical\" role=\"group\" aria-label=\"Control Panel\" data-flow-ui=\"controls\" data-interactive=\"true\"><button ari",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 38,
+                    "y": 622,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                    "hits": [
+                      "<button aria-label=\"Zoom Out\" title=\"Zoom Out\" type=\"button\" class=\"flow-vue-control-button\">\u2212</button>",
+                      "<div class=\"flow-vue-controls flow-vue-no-pan flow-vue-no-drag flow-vue-controls-bottom-left flow-vue-controls-vertical\" role=\"group\" aria-label=\"Control Panel\" data-flow-ui=\"controls\" data-interactive=\"true\"><button ari",
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border"
+                    ]
+                  },
+                  {
+                    "type": "pointermove",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "pointerdown",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 1,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "pointerup",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  },
+                  {
+                    "type": "click",
+                    "x": 640,
+                    "y": 360,
+                    "buttons": 0,
+                    "shift": false,
+                    "meta": false,
+                    "target": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(106.667px, 60px) scale(0.682276); transform-origin: 0px 0px;\"><defs></defs><g class=\"flow-vue-edge animated flow-vue-no-pan selectable\" aria-label=\"Edge from Nod",
+                    "hits": [
+                      "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"tr",
+                      "<div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0p",
+                      "<body>\n    <div id=\"app\" data-v-app=\"\" data-upstream-ready=\"true\" data-clicks=\"2\"><div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border",
+                      "<html lang=\"en\" data-upstream-modifiers=\"0\"><head><style data-flow-vue-theme=\"\">.flow-vue-canvas {\n  --flow-background-color-default: transparent;\n  --flow-background-pattern-dots-color-default: #91919a;\n  --flow-backgro"
+                    ]
+                  }
+                ],
+                "ready": "true",
+                "nodes": [
+                  {
+                    "id": "1",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 825px; top: 110px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 675.452880859375,
+                      "y": 90.06038665771484,
+                      "width": 122.80963134765625,
+                      "height": 31.111770629882812,
+                      "top": 90.06038665771484,
+                      "right": 798.2625122070312,
+                      "bottom": 121.17215728759766,
+                      "left": 675.452880859375
+                    }
+                  },
+                  {
+                    "id": "2",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 100px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 81.87307739257812,
+                      "y": 81.87307739257812,
+                      "width": 122.80961608886719,
+                      "height": 31.111770629882812,
+                      "top": 81.87307739257812,
+                      "right": 204.6826934814453,
+                      "bottom": 112.98484802246094,
+                      "left": 81.87307739257812
+                    }
+                  },
+                  {
+                    "id": "3",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 100px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 327.4923095703125,
+                      "y": 81.87307739257812,
+                      "width": 122.80960083007812,
+                      "height": 31.111770629882812,
+                      "top": 81.87307739257812,
+                      "right": 450.3019104003906,
+                      "bottom": 112.98484802246094,
+                      "left": 327.4923095703125
+                    }
+                  },
+                  {
+                    "id": "4",
+                    "class": "flow-vue-node draggable selectable flow-vue-no-pan",
+                    "style": "z-index: 0; pointer-events: all; left: 400px; top: 200px; width: 150px; height: 38px;",
+                    "pointerEvents": "all",
+                    "bounds": {
+                      "x": 327.4923095703125,
+                      "y": 163.74615478515625,
+                      "width": 122.80960083007812,
+                      "height": 31.111770629882812,
+                      "top": 163.74615478515625,
+                      "right": 450.3019104003906,
+                      "bottom": 194.85792541503906,
+                      "left": 327.4923095703125
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1-2",
+                    "class": "flow-vue-edge animated flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "e1-3",
+                    "class": "flow-vue-edge flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  },
+                  {
+                    "id": "xy-edge__3-4",
+                    "class": "flow-vue-edge flow-vue-no-pan selectable",
+                    "pointerEvents": "visiblestroke"
+                  }
+                ],
+                "viewports": [
+                  "transform: translate(0px, 0px) scale(0.818731);",
+                  null
+                ],
+                "controls": [
+                  {
+                    "id": "draggable",
+                    "checked": true
+                  },
+                  {
+                    "id": "connectable",
+                    "checked": true
+                  },
+                  {
+                    "id": "selectable",
+                    "checked": true
+                  },
+                  {
+                    "id": "zoomonscroll",
+                    "checked": true
+                  },
+                  {
+                    "id": "zoomondbl",
+                    "checked": true
+                  },
+                  {
+                    "id": "captureelementclick",
+                    "checked": true
+                  }
+                ]
+              }
+            },
+            {
+              "name": "plan138-zoom-sequence",
+              "evidence": {
+                "samples": [
+                  {
+                    "at": 6996.5,
+                    "event": "before-queue",
+                    "transform": "transform: translate(0px, 0px) scale(0.818731);"
+                  },
+                  {
+                    "at": 7038.4000000059605,
+                    "event": "click",
+                    "transform": "transform: translate(0px, 0px) scale(0.818731);"
+                  },
+                  {
+                    "at": 7039.300000011921,
+                    "event": "style",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.682276);"
+                  },
+                  {
+                    "at": 7124.4000000059605,
+                    "event": "click",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.682276);"
+                  },
+                  {
+                    "at": 7127.9000000059605,
+                    "event": "click",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.682276);"
+                  },
+                  {
+                    "at": 7128,
+                    "event": "dblclick",
+                    "transform": "transform: translate(106.667px, 60px) scale(0.682276);"
+                  },
+                  {
+                    "at": 7128.5999999940395,
+                    "event": "style",
+                    "transform": "transform: translate(0px, 0px) scale(0.818731);"
+                  }
+                ],
+                "final": "transform: translate(0px, 0px) scale(0.818731);"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "foldkit": {
+      "stats": {
+        "startTime": "2026-10-22T19:19:59.091Z",
+        "duration": 15523.55,
+        "expected": 67,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "ordinaryPass": 67
+      },
+      "scopedCases": [
+        {
+          "title": "[UP-127-006] selects an edge by click",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 67,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-011] selects an edge",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 127,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-014] connects nodes",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 160,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-015] removes an edge",
+          "file": "../../shared-e2e/upstream-cypress/basic.ts",
+          "line": 187,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-036] drags using right click",
+          "file": "../../shared-e2e/upstream-cypress/figma.ts",
+          "line": 56,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-048] tries to do a selection",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 76,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-056] selects an edge by click",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 149,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-058] connects two nodes",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 165,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": []
+        },
+        {
+          "title": "[UP-127-062] zooms by double click",
+          "file": "../../shared-e2e/upstream-cypress/interaction.ts",
+          "line": 209,
+          "repeat": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": [
+            {
+              "name": "plan138-zoom-sequence",
+              "evidence": {
+                "samples": [
+                  {
+                    "at": 2079.5999999940395,
+                    "event": "before-queue",
+                    "transform": "transform: translate(0px, 10.0548px) scale(0.67032);"
+                  },
+                  {
+                    "at": 2123.5,
+                    "event": "click",
+                    "transform": "transform: translate(0px, 10.0548px) scale(0.67032);"
+                  },
+                  {
+                    "at": 2139.199999988079,
+                    "event": "style",
+                    "transform": "transform: translate(-155.64px, -75.0474px) scale(0.833333);"
+                  },
+                  {
+                    "at": 2208.300000011921,
+                    "event": "click",
+                    "transform": "transform: translate(-155.64px, -75.0474px) scale(0.833333);"
+                  },
+                  {
+                    "at": 2211.4000000059605,
+                    "event": "click",
+                    "transform": "transform: translate(-155.64px, -75.0474px) scale(0.833333);"
+                  },
+                  {
+                    "at": 2211.5999999940395,
+                    "event": "dblclick",
+                    "transform": "transform: translate(-155.64px, -75.0474px) scale(0.833333);"
+                  },
+                  {
+                    "at": 2222.5,
+                    "event": "style",
+                    "transform": "transform: translate(-314.768px, -162.057px) scale(1);"
+                  }
+                ],
+                "final": "transform: translate(-314.768px, -162.057px) scale(1);"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "ledgerBefore": {
+    "126": {
+      "vanilla": {
+        "pass": 44,
+        "fail": 3,
+        "intentional-difference": 3
+      },
+      "vue": {
+        "pass": 48,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 47,
+        "intentional-difference": 3
+      }
+    },
+    "127": {
+      "vanilla": {
+        "pass": 64,
+        "intentional-difference": 2,
+        "fail": 1
+      },
+      "vue": {
+        "pass": 63,
+        "fail": 4
+      },
+      "foldkit": {
+        "pass": 67
+      }
+    },
+    "128": {
+      "vanilla": {
+        "not-ported": 107
+      },
+      "vue": {
+        "not-ported": 107
+      },
+      "foldkit": {
+        "not-ported": 107
+      }
+    }
+  },
+  "d3Reference": {
+    "version": "d3-zoom@3.0.0",
+    "before": {
+      "at": 44.89999997615814,
+      "event": "control",
+      "x": 0,
+      "y": 0,
+      "zoom": 0.8187307530779818
+    },
+    "afterControl": {
+      "at": 85.89999997615814,
+      "event": "control",
+      "x": 106.66666666666674,
+      "y": 60,
+      "zoom": 0.6822756275649848
+    },
+    "at50": {
+      "at": 183.39999997615814,
+      "event": "dblclick",
+      "x": 101.68248729648423,
+      "y": 57.196399120983074,
+      "zoom": 0.6902457465198724
+    },
+    "at100": {
+      "at": 233.2999999821186,
+      "event": "dblclick",
+      "x": 47.114467359052526,
+      "y": 26.501888089131285,
+      "zoom": 0.7775045664242767
+    },
+    "final": {
+      "at": 400.09999999403954,
+      "event": "dblclick",
+      "x": -320.00000254313136,
+      "y": -180,
+      "zoom": 1.3645512551299697
+    },
+    "samples": [
+      {
+        "at": 44.89999997615814,
+        "event": "control",
+        "x": 0,
+        "y": 0,
+        "zoom": 0.8187307530779818
+      },
+      {
+        "at": 85.89999997615814,
+        "event": "control",
+        "x": 106.66666666666674,
+        "y": 60,
+        "zoom": 0.6822756275649848
+      },
+      {
+        "at": 150.2999999821186,
+        "event": "dblclick",
+        "x": 106.63956830841835,
+        "y": 59.98475717357613,
+        "zoom": 0.6823189601023357
+      },
+      {
+        "at": 166.7999999821186,
+        "event": "dblclick",
+        "x": 105.65761775084809,
+        "y": 59.43240998823512,
+        "zoom": 0.6838891810294703
+      },
+      {
+        "at": 183.39999997615814,
+        "event": "dblclick",
+        "x": 101.68248729648423,
+        "y": 57.196399120983074,
+        "zoom": 0.6902457465198724
+      },
+      {
+        "at": 200.19999998807907,
+        "event": "dblclick",
+        "x": 92.3363540047975,
+        "y": 51.939199175744676,
+        "zoom": 0.7051909939860063
+      },
+      {
+        "at": 216.7999999821186,
+        "event": "dblclick",
+        "x": 75.12366297770325,
+        "y": 42.25706053071417,
+        "zoom": 0.732715524070212
+      },
+      {
+        "at": 233.2999999821186,
+        "event": "dblclick",
+        "x": 47.114467359052526,
+        "y": 26.501888089131285,
+        "zoom": 0.7775045664242767
+      },
+      {
+        "at": 249.2999999821186,
+        "event": "dblclick",
+        "x": 5.625788693727031,
+        "y": 3.1645064789873345,
+        "zoom": 0.8438484276067121
+      },
+      {
+        "at": 266.7999999821186,
+        "event": "dblclick",
+        "x": -63.64190187108238,
+        "y": -35.79856923147992,
+        "zoom": 0.9546132481576332
+      },
+      {
+        "at": 283.5,
+        "event": "dblclick",
+        "x": -142.22344429134182,
+        "y": -80.00068657941074,
+        "zoom": 1.0802716954628857
+      },
+      {
+        "at": 300.09999999403954,
+        "event": "dblclick",
+        "x": -206.83711947704433,
+        "y": -116.34587865473418,
+        "zoom": 1.1835943568468907
+      },
+      {
+        "at": 316,
+        "event": "dblclick",
+        "x": -253.597567401834,
+        "y": -142.6486304556517,
+        "zoom": 1.258368217228795
+      },
+      {
+        "at": 333.5,
+        "event": "dblclick",
+        "x": -288.5376690888014,
+        "y": -162.30243753742513,
+        "zoom": 1.3142403570652872
+      },
+      {
+        "at": 350.09999999403954,
+        "event": "dblclick",
+        "x": -308.12818150948885,
+        "y": -173.32210070837948,
+        "zoom": 1.3455672220882773
+      },
+      {
+        "at": 366,
+        "event": "dblclick",
+        "x": -316.99167334668664,
+        "y": -178.30781483708603,
+        "zoom": 1.359740685571706
+      },
+      {
+        "at": 382.7999999821186,
+        "event": "dblclick",
+        "x": -319.8345575185956,
+        "y": -179.90693717425336,
+        "zoom": 1.364286694722306
+      },
+      {
+        "at": 400.09999999403954,
+        "event": "dblclick",
+        "x": -320.00000254313136,
+        "y": -180,
+        "zoom": 1.3645512551299697
+      }
+    ],
+    "source": "https://github.com/d3/d3-zoom/blob/v3.0.0/src/zoom.js#L303-L313",
+    "sourceSha256": "15894ee80608d5194df74289c0101d188eab418c74f6a10837fb802d3922371a",
+    "reproduce": {
+      "setup": "mkdir -p /tmp/plan138/d3 && cd /tmp/plan138/d3 && bun add d3-zoom@3.0.0 d3-selection@3.0.0 d3-transition@3.0.1",
+      "bundleSource": "import { zoom, zoomIdentity } from 'd3-zoom';\nimport { select } from 'd3-selection';\nconst pane = document.querySelector('#pane');\nconst samples = [];\nconst behavior = zoom().extent([[0,0],[1280,720]]).scaleExtent([0.5,2]).on('zoom', e => {\n  pane.style.transform = `translate(${e.transform.x}px, ${e.transform.y}px) scale(${e.transform.k})`;\n  samples.push({ at: performance.now(), event: e.sourceEvent?.type ?? 'control', x: e.transform.x, y: e.transform.y, zoom: e.transform.k });\n});\nconst selection = select(pane).call(behavior);\nselection.call(behavior.transform, zoomIdentity.scale(0.8187307530779818));\ndocument.querySelector('button').onclick = () => selection.call(behavior.scaleBy, 1/1.2);\nwindow.samples = samples;\n",
+      "runnerSource": "const { chromium } = require(process.cwd() + '/node_modules/@playwright/test');\nconst fs = require('node:fs');\n(async () => {\nconst browser = await chromium.launch();\nconst page = await browser.newPage({viewport:{width:1280,height:720}});\nawait page.setContent('<style>body{margin:0}#pane{width:1280px;height:720px;position:absolute;transform-origin:0 0}button{position:fixed;bottom:0;z-index:2}</style><div id=\"pane\"></div><button>Zoom out</button>');\nawait page.addScriptTag({path:'/tmp/plan138/d3/reference.bundle.js'});\nconst before = await page.evaluate(() => window.samples.at(-1));\nawait page.getByRole('button').click();\nawait page.waitForTimeout(50);\nconst afterControl = await page.evaluate(() => window.samples.at(-1));\nawait page.mouse.dblclick(640,360);\nawait page.waitForTimeout(50);\nconst at50 = await page.evaluate(() => window.samples.at(-1));\nawait page.waitForTimeout(50);\nconst at100 = await page.evaluate(() => window.samples.at(-1));\nawait page.waitForTimeout(200);\nconst result = await page.evaluate(() => ({final:window.samples.at(-1),samples:window.samples}));\nfs.writeFileSync('/tmp/plan138/d3-reference.json',JSON.stringify({version:'d3-zoom@3.0.0',before,afterControl,at50,at100,...result},null,2));\nawait browser.close();\n})();\n",
+      "bundle": "bun build /tmp/plan138/d3/reference.js --target=browser --outfile /tmp/plan138/d3/reference.bundle.js",
+      "runFromRepository": "scripts/with-flow-browser-lock.sh node /tmp/plan138/d3-probe.cjs"
+    }
+  },
+  "zoomFinding": "Vue has two immediate writes, control divide by 1.2 then double-click multiply by 1.2. No in-flight animation exists to supersede. d3-zoom 3.0.0 doubles or halves with Shift, around the pointer, over its 250ms default duration. Pinned Controls passes no duration; getD3Transition defaults to zero. The Vue factor repair retains its existing immediate publication and does not claim transition-frame parity. Vanilla and Foldkit pass the unchanged inequality assertion, which does not prove their factor or animation matches d3.",
+  "labelStackingRegression": {
+    "before": {
+      "stats": {
+        "startTime": "2026-10-22T19:40:44.453Z",
+        "duration": 3429.109,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "failed": 1
+      },
+      "cases": [
+        {
+          "title": "button-edge deletes its edge by click and by keyboard",
+          "file": "edge-recipes.e2e.ts",
+          "line": 196,
+          "repeat": 0,
+          "workerIndex": 0,
+          "startTime": "2026-10-22T19:40:47.551Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false\n\n  227 |     contentType: 'application/json',\n  228 |   })\n> 229 |   expect(labelHit.buttonIsFirst).toBe(true)\n      |                                  ^\n  230 |   await button.click()\n  231 |   await expect(path).toHaveCount(0)\n  232 |   await expect(button).toHaveCount(0)\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/vue/e2e/edge-recipes.e2e.ts:229:34"
+          ],
+          "attachments": [
+            {
+              "name": "button-edge-hit-order",
+              "evidence": {
+                "buttonIsFirst": false,
+                "hits": [
+                  "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inheri",
+                  "<path d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke-opacity=\"0\" stroke-width=\"20\" class=\"flow-vue-edge-interaction\"></path>",
+                  "<path stroke-width=\"1.5\" data-testid=\"button-edge-path\" data-edge-path=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" class=\"flow-vue-edge-path\"></path>",
+                  "<button type=\"button\" class=\"recipe-edge-button flow-vue-no-pan\" data-testid=\"button-edge-delete\" data-edge-id=\"e-ab\" aria-label=\"Delete edge e-ab\" style=\"position: absolute; transform: translate(-50%, -50%) translate(31"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "after": {
+      "stats": {
+        "startTime": "2026-10-22T19:41:27.125Z",
+        "duration": 4386.956,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "ordinaryPass": 3
+      },
+      "cases": [
+        {
+          "title": "button-edge deletes its edge by click and by keyboard",
+          "file": "edge-recipes.e2e.ts",
+          "line": 196,
+          "repeat": 0,
+          "workerIndex": 0,
+          "startTime": "2026-10-22T19:41:30.184Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": [
+            {
+              "name": "button-edge-hit-order",
+              "evidence": {
+                "buttonIsFirst": true,
+                "hits": [
+                  "<button type=\"button\" class=\"recipe-edge-button flow-vue-no-pan\" data-testid=\"button-edge-delete\" data-edge-id=\"e-ab\" aria-label=\"Delete edge e-ab\" style=\"position: absolute; transform: translate(-50%, -50%) translate(31",
+                  "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inheri",
+                  "<path d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke-opacity=\"0\" stroke-width=\"20\" class=\"flow-vue-edge-interaction\"></path>",
+                  "<path stroke-width=\"1.5\" data-testid=\"button-edge-path\" data-edge-path=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" class=\"flow-vue-edge-path\"></path>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "button-edge deletes its edge by click and by keyboard",
+          "file": "edge-recipes.e2e.ts",
+          "line": 196,
+          "repeat": 1,
+          "workerIndex": 1,
+          "startTime": "2026-10-22T19:41:30.717Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": [
+            {
+              "name": "button-edge-hit-order",
+              "evidence": {
+                "buttonIsFirst": true,
+                "hits": [
+                  "<button type=\"button\" class=\"recipe-edge-button flow-vue-no-pan\" data-testid=\"button-edge-delete\" data-edge-id=\"e-ab\" aria-label=\"Delete edge e-ab\" style=\"position: absolute; transform: translate(-50%, -50%) translate(31",
+                  "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inheri",
+                  "<path d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke-opacity=\"0\" stroke-width=\"20\" class=\"flow-vue-edge-interaction\"></path>",
+                  "<path stroke-width=\"1.5\" data-testid=\"button-edge-path\" data-edge-path=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" class=\"flow-vue-edge-path\"></path>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "button-edge deletes its edge by click and by keyboard",
+          "file": "edge-recipes.e2e.ts",
+          "line": 196,
+          "repeat": 2,
+          "workerIndex": 2,
+          "startTime": "2026-10-22T19:41:31.189Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": [],
+          "attachments": [
+            {
+              "name": "button-edge-hit-order",
+              "evidence": {
+                "buttonIsFirst": true,
+                "hits": [
+                  "<button type=\"button\" class=\"recipe-edge-button flow-vue-no-pan\" data-testid=\"button-edge-delete\" data-edge-id=\"e-ab\" aria-label=\"Delete edge e-ab\" style=\"position: absolute; transform: translate(-50%, -50%) translate(31",
+                  "<path class=\"flow-vue-edge-hit-target\" data-testid=\"flow-edge-hit-target\" data-flow-edge-hit=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke=\"rgba(0, 0, 0, 0.001)\" stroke-width=\"20\" pointer-events=\"inheri",
+                  "<path d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" stroke-opacity=\"0\" stroke-width=\"20\" class=\"flow-vue-edge-interaction\"></path>",
+                  "<path stroke-width=\"1.5\" data-testid=\"button-edge-path\" data-edge-path=\"e-ab\" d=\"M245,115 C310,115 310,275 375,275\" fill=\"none\" class=\"flow-vue-edge-path\"></path>"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "cause": "Per-edge SVGs moved into the viewport z-index 2 context while the custom label renderer remained its sibling at z-index 1. The path intercepted the delete button. Move the custom label registry into the viewport after edges, at z-index 0 and before nodes, following pinned GraphView/index.tsx:182. Default non-interactive labels remain separate."
+  },
+  "nodeObserverOrderRegression": {
+    "before": {
+      "stats": {
+        "startTime": "2026-10-22T19:57:36.874Z",
+        "duration": 4260.316,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "counts": {
+        "failed": 3
+      },
+      "cases": [
+        {
+          "title": "Vue node connection composable observes accepted deltas in node context",
+          "file": "node-connections.e2e.ts",
+          "line": 21,
+          "repeat": 0,
+          "workerIndex": 0,
+          "startTime": "2026-10-22T19:57:39.950Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(received).toStrictEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 1\n\n  Array [\n-   \"disconnect:first:a:ac\",\n    \"disconnect:first:c:ac\",\n+   \"disconnect:first:a:ac\",\n  ]\n\n  145 |       .slice(events.reconnected.length)\n  146 |       .filter((event) => event.startsWith('disconnect:'))\n> 147 |   ).toStrictEqual(['disconnect:first:a:ac', 'disconnect:first:c:ac'])\n      |     ^\n  148 |   expect(\n  149 |     events.removed.filter((event) => event.includes(':second:'))\n  150 |   ).toStrictEqual([])\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/vue/e2e/node-connections.e2e.ts:147:5"
+          ]
+        },
+        {
+          "title": "Vue node connection composable observes accepted deltas in node context",
+          "file": "node-connections.e2e.ts",
+          "line": 21,
+          "repeat": 1,
+          "workerIndex": 1,
+          "startTime": "2026-10-22T19:57:40.402Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(received).toStrictEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 1\n\n  Array [\n-   \"disconnect:first:a:ac\",\n    \"disconnect:first:c:ac\",\n+   \"disconnect:first:a:ac\",\n  ]\n\n  145 |       .slice(events.reconnected.length)\n  146 |       .filter((event) => event.startsWith('disconnect:'))\n> 147 |   ).toStrictEqual(['disconnect:first:a:ac', 'disconnect:first:c:ac'])\n      |     ^\n  148 |   expect(\n  149 |     events.removed.filter((event) => event.includes(':second:'))\n  150 |   ).toStrictEqual([])\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/vue/e2e/node-connections.e2e.ts:147:5"
+          ]
+        },
+        {
+          "title": "Vue node connection composable observes accepted deltas in node context",
+          "file": "node-connections.e2e.ts",
+          "line": 21,
+          "repeat": 2,
+          "workerIndex": 2,
+          "startTime": "2026-10-22T19:57:40.836Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "failed",
+          "errors": [
+            "Error: expect(received).toStrictEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 1\n\n  Array [\n-   \"disconnect:first:a:ac\",\n    \"disconnect:first:c:ac\",\n+   \"disconnect:first:a:ac\",\n  ]\n\n  145 |       .slice(events.reconnected.length)\n  146 |       .filter((event) => event.startsWith('disconnect:'))\n> 147 |   ).toStrictEqual(['disconnect:first:a:ac', 'disconnect:first:c:ac'])\n      |     ^\n  148 |   expect(\n  149 |     events.removed.filter((event) => event.includes(':second:'))\n  150 |   ).toStrictEqual([])\n    at /Users/richardmcandrews/.t3/worktrees/flow/t3-fe17c388/apps/vue/e2e/node-connections.e2e.ts:147:5"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "stats": {
+        "startTime": "2026-10-22T20:02:37.732Z",
+        "duration": 30470.038,
+        "expected": 63,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "ordinaryPass": 63
+      },
+      "cases": [
+        {
+          "title": "Vue node connection composable observes accepted deltas in node context",
+          "file": "node-connections.e2e.ts",
+          "line": 21,
+          "repeat": 0,
+          "workerIndex": 0,
+          "startTime": "2026-10-22T20:02:49.646Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "title": "Vue node connection composable observes accepted deltas in node context",
+          "file": "node-connections.e2e.ts",
+          "line": 21,
+          "repeat": 1,
+          "workerIndex": 1,
+          "startTime": "2026-10-22T20:02:58.829Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "title": "Vue node connection composable observes accepted deltas in node context",
+          "file": "node-connections.e2e.ts",
+          "line": 21,
+          "repeat": 2,
+          "workerIndex": 2,
+          "startTime": "2026-10-22T20:03:07.998Z",
+          "retry": 0,
+          "expectedStatus": "passed",
+          "status": "passed",
+          "errors": []
+        }
+      ]
+    },
+    "cause": "Flattening the dynamic edge SVG and label list into the node sibling list changed Vue component patch order when an edge was removed. The existing disconnect callbacks ran C,A instead of A,C. A nested dynamic edge collection with keyed per-edge fragments restores stable node positions and callback order without changing the test or composable.",
+    "beforeSourceSha256": "72a144417fd04fd89ccefc957d13c5b879a6fbc586de2b61c7ba6bbcdc6bad0d",
+    "afterSourceSha256": "4095cdfb9f957986d251d1b072d910a8508bc5be087590ba152d84fb8cddc0a5",
+    "firstVerifier": {
+      "rawLog": "/tmp/plan138/verify-before-node-order-fix.log",
+      "sha256": "5b564da97220b5fa3dbf5e0d4002739a9d4c9f0f9d79a5fcc8083c0a0bf5f8b3",
+      "passedNonBrowserGates": 15,
+      "vanilla": {
+        "total": 764,
+        "ordinaryPass": 754,
+        "expectedFailure": 8,
+        "skipped": 2
+      },
+      "vue": {
+        "total": 895,
+        "ordinaryPass": 892,
+        "expectedFailure": 2,
+        "unexpectedFailure": 1
+      },
+      "foldkit": "not reached"
+    }
+  }
+}

@@ -378,3 +378,31 @@ test('Vue viewport animation respects reduced motion', async ({ page }) => {
     await page.evaluate(() => window.__flowVueViewportTest?.read().viewport)
   ).toEqual({ x: 70, y: 80, zoom: 1.4 })
 })
+
+test('Vue double-click doubles around the pointer and Shift double-click halves', async ({
+  page,
+}) => {
+  await mount(page, 'uncontrolled')
+  const canvas = page.locator('.flow-vue-canvas')
+  const bounds = await canvas.boundingBox()
+
+  if (bounds === null) {
+    throw new Error('Missing viewport canvas')
+  }
+
+  // Pinned d3-zoom@3.0.0 src/zoom.js:303-313 uses 2 or 0.5 around the pointer.
+  await page.mouse.dblclick(bounds.x + 500, bounds.y + 400)
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__flowVueViewportTest?.read().viewport)
+    )
+    .toStrictEqual({ x: -480, y: -360, zoom: 2 })
+  await page.keyboard.down('Shift')
+  await page.mouse.dblclick(bounds.x + 500, bounds.y + 400)
+  await page.keyboard.up('Shift')
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__flowVueViewportTest?.read().viewport)
+    )
+    .toStrictEqual({ x: 10, y: 20, zoom: 1 })
+})

@@ -99,6 +99,7 @@ export const mountViewportHarness = (
             })
           ),
           documentMode: 'uncontrolled',
+          zoomOnDoubleClick: true,
           viewport: viewport.value,
           viewportMode: mode,
           viewportLimits,

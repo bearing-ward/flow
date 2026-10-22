@@ -10,7 +10,7 @@ Port ledger phase 127, the 67 executable Cypress e2e cases in the immutable xyfl
 2. Extend the existing development fixture routes to `/upstream-examples/<name>` in all hosts. Use public APIs, controlled document ownership, upstream change application and unnamed-handle `addEdge` semantics. Retain Plan 130's fitted DOM readiness barrier. Empty and initially hidden graphs must also become ready.
 3. Translate all eight specs into `apps/shared-e2e/upstream-cypress/`, with one runner per host. Keep verbatim titles with ledger IDs, upstream line comments, gesture coordinates, and assertions. Preserve Cypress's per-file persistent page and ordered state transitions. Port support commands with source citations. Use web-first expectations for retrying Cypress assertions; preserve explicit upstream waits and do not introduce extra test-body sleeps.
 4. Extend the ledger checker to require phase 127 ports and keep phase 128 unported. Populate exact `flowTest` locations and per-host outcomes. Mark observed failures with `test.fail()` only after fixture readiness. Diagnose readiness, props, ownership, selectors, hit targets, and event delivery before attributing a failure to product behavior. Use `intentional-difference` only with an existing documented citation.
-5. Group remaining product failures into `plans/134-follow-up-<cluster>.md` with the problem, affected cases, execution steps, acceptance, and conformity boundary. Record exact outcomes and unmapped props below.
+5. Group remaining product failures into the numbered follow-up plans, including `plans/138-cypress-remaining.md` with the problem, affected cases, execution steps, acceptance, and conformity boundary. Record exact outcomes and unmapped props below.
 
 ## Verification and delivery
 
@@ -89,7 +89,7 @@ Every fail is listed below. A case that stops before a later assertion does not 
 | UP-127-036 | drags using right click | vue | Right-button panning occurs, but the two nodes retained from UP-127-035 remain selected; the outside-viewport assertion is not reached. |
 | UP-127-036 | drags using right click | foldkit | The right-button pan moves the graph, but the two nodes retained from UP-127-035 remain selected; the final outside-viewport assertion is not reached. |
 
-#### [Edge order, midpoint clicks, and hit ownership](134-follow-up-edge-input.md)
+#### [Edge order, midpoint clicks, and hit ownership](138-cypress-remaining.md)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -99,7 +99,7 @@ Every fail is listed below. A case that stops before a later assertion does not 
 | UP-127-056 | selects an edge by click | vanilla | Forced subject events select e1-2, but it moves after e1-3, so the :first assertion reads unselected e1-3. Interaction never enables edge elevation; ignoring the default-false elevation policy is not covered by the documented Basic shared-SVG exception. |
 | UP-127-056 | selects an edge by click | vue | Forced pointer down/up and click reach e1-2 with selection enabled, but its wrapper stays unselected. The earlier UP-127-048 pan put the release point offscreen, where elementsFromPoint returns no hit; forced activation and native hit testing remain separate boundaries. |
 
-#### [Connection completion and prerequisite failures](134-follow-up-connections.md)
+#### [Connection completion and prerequisite failures](138-cypress-remaining.md)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -128,7 +128,7 @@ Every fail is listed below. A case that stops before a later assertion does not 
 | UP-127-055 | selects a node by click | vanilla | After UP-127-048 moved Node 1 offscreen, the ordinary native node click cannot become actionable; the selected assertion is not reached. |
 | UP-127-055 | selects a node by click | vue | UP-127-048 moved Node 1 left of the viewport, so its ordinary click never becomes actionable; the selection assertion is not reached. |
 
-#### [Viewport release, zoom factors, and DOM publication](134-follow-up-viewport.md)
+#### [Viewport release, zoom factors, and DOM publication](138-cypress-remaining.md)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -203,12 +203,10 @@ Only the receipt prose changed after this run; the source, contracts, ledger out
 - `packages/conformance/src/upstream-examples/index.ts`
 - `packages/conformance/src/upstream-examples/interaction.ts`
 - `packages/conformance/src/upstream-examples/model.ts`
-- `plans/134-follow-up-connections.md`
-- `plans/134-follow-up-edge-input.md`
+- `plans/138-cypress-remaining.md`
 - `plans/136-cypress-interaction-policy.md`
 - `plans/137-cypress-minimap.md`
 - `plans/135-cypress-node-input.md`
-- `plans/134-follow-up-viewport.md`
 - `plans/134-upstream-cypress-e2e-port.md`
 - `research/catalogs/upstream-cypress-evidence.json`
 

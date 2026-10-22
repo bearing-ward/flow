@@ -5,13 +5,11 @@ import {
   inferHandleMeasurement,
   edgeLabelPosition,
   computeFlowStacking,
-  flowSelectedElementZ,
   flowEdgeRendererProps,
   flowNodeBounds,
   flowNodeHandles,
   flowThemeValue,
   resolveFlowEdgeMarker,
-  orderFlowEdges,
   sameFlowEdgeRendererProps,
   resolveEdgeHandles,
   smoothStepEdgePath,
@@ -577,21 +575,12 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         elevateEdgesOnSelect: canvasPresentation.elevateEdgesOnSelect ?? false,
       }).edges
 
-      // Vanilla still raises a selected edge within the edge layer.
-      const layerZ = (edge: FlowDocument['edges'][number]): number =>
-        (edgeZ.get(edge.id) ?? 0) +
-        (edge.selected === true &&
-        canvasPresentation.elevateEdgesOnSelect !== true &&
-        canvasPresentation.zIndexMode !== 'manual'
-          ? flowSelectedElementZ
-          : 0)
-
-      orderedEdges = orderFlowEdges(withDefaults)
+      orderedEdges = withDefaults
         .map((edge, index) => ({ edge, index }))
         .toSorted(
           (first, second) =>
-            layerZ(first.edge) - layerZ(second.edge) ||
-            first.index - second.index
+            (edgeZ.get(first.edge.id) ?? 0) -
+              (edgeZ.get(second.edge.id) ?? 0) || first.index - second.index
         )
         .map(({ edge }) => edge)
       edgeById = new Map(orderedEdges.map((edge) => [edge.id, edge]))

@@ -358,12 +358,14 @@ test('Vue renderer registries preserve renderer and geometry contracts', async (
   expect(pathData.every((path) => path !== null && path.length > 0)).toBe(true)
   expect(new Set(pathData).size).toBeGreaterThan(1)
 
+  // Pinned EdgeWrapper/index.tsx:183 uses per-edge SVGs; marker IDs
+  // still belong to each canvas rather than to the number of SVG wrappers.
   const markerState = await page
-    .locator('.flow-vue-edges')
-    .evaluateAll((svgs) =>
-      svgs.map((svg) => ({
-        markerId: svg.querySelector('marker')?.id,
-        markerReference: svg
+    .locator('.flow-vue-canvas')
+    .evaluateAll((canvases) =>
+      canvases.map((canvas) => ({
+        markerId: canvas.querySelector('marker')?.id,
+        markerReference: canvas
           .querySelector('[data-testid="flow-edge-path"]')
           ?.getAttribute('marker-end'),
       }))
