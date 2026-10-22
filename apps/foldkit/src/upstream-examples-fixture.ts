@@ -13,6 +13,7 @@ import {
   createFoldkitNodeMeasurementObserver,
   createFoldkitDeleteClient,
   createFoldkitInteractivity,
+  createFoldkitInteractionHandlers,
   createFlowControls,
   createFlowMiniMap,
   createFlowBackground,
@@ -82,12 +83,19 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
       ...defaultInteractionOptions,
       ...options,
       fitView: false,
+      panOnDrag: options.panOnDrag ?? true,
       isValidConnection: () => true,
       zoomOnScroll: options.zoomOnScroll ?? true,
       zoomOnDoubleClick: options.zoomOnDoubleClick ?? true,
     }
   )
 )
+
+const handlers = createFoldkitInteractionHandlers(runtime.ports)
+
+const recordClick = () => {
+  root.dataset.clicks = String(Number(root.dataset.clicks ?? 0) + 1)
+}
 
 const deleteClient = createFoldkitDeleteClient(runtime, () => true)
 
@@ -246,9 +254,10 @@ const stopPanel = mountExamplePanel(root, name, {
   setCanvasOptions: (patch) => {
     runtime.ports.actions.send(HostAction.SetCanvasOptions({ options: patch }))
   },
-  // Foldkit publishes interaction events; callback presence has no public rendering prop.
   setCaptureClicks: (capture) => {
-    root.dataset.captureClicks = String(capture)
+    handlers.set(
+      capture ? { onNodeClick: recordClick, onEdgeClick: recordClick } : {}
+    )
   },
 })
 
@@ -276,6 +285,7 @@ window.addEventListener(
     controls?.dispose()
     minimap?.dispose()
     interactivity.dispose()
+    handlers.dispose()
     deleteClient.dispose()
     viewportClient.dispose()
   },

@@ -377,9 +377,17 @@ playwrightTest(
     })
 
     await page.mouse.click(midpoint.x, midpoint.y + 18)
+    // Pinned packages/react/src/components/EdgeWrapper/index.tsx:194 and
+    // packages/system/src/styles/init.css:144: the inactive edge lets this
+    // click reach the pane, which may publish an unchanged viewport.
     await expectPage
-      .poll(() => page.evaluate(() => globalThis.flowChanges?.length))
-      .toBe(0)
+      .poll(() =>
+        page.evaluate(() =>
+          globalThis.flowChanges?.filter(({ kind }) => kind !== 'viewport')
+        )
+      )
+      .toEqual([])
+    await expectPage(group).not.toHaveClass(/selected/u)
     await updateConnectionDocument(page, {
       ariaLabel: 'Delivery route',
       interactionWidth: 42,

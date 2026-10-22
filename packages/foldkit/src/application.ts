@@ -2237,6 +2237,14 @@ const routeAction = (model: Model, action: HostActionData) =>
     },
     SetCanvasOptions: ({ options }) =>
       graphFold(model, Graph.Message.SetCanvasOptions({ options })),
+    SetInteractionHandlers: ({ nodePointerHandlers, edgeClickHandler }) =>
+      graphFold(
+        model,
+        Graph.Message.SetInteractionHandlers({
+          nodePointerHandlers,
+          edgeClickHandler,
+        })
+      ),
     RefreshRenderers: () => graphFold(model, Graph.Message.RefreshRenderers()),
     DispatchCommand: ({ command }) =>
       graphFold(model, Graph.Message.DispatchCommand({ command })),

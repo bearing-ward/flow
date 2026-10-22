@@ -126,7 +126,11 @@ test('Vue UI catalog controls drive the viewport, lock, search and devtools', as
   expect(
     await page.evaluate(() => window.__flowVueUiControls?.edgeCount())
   ).toBe(0)
-  await nodeA.click()
+  // Pinned packages/react/src/components/NodeWrapper/index.tsx:90,206:
+  // the disabled wrapper has pointer-events:none, so use a native click at
+  // the node's screen position.
+  const disabledNodePoint = centre(await boxOf(nodeA))
+  await page.mouse.click(disabledNodePoint.x, disabledNodePoint.y)
 
   // The keyboard selection paths are switched off too.
   await nodeA.focus()
@@ -147,6 +151,11 @@ test('Vue UI catalog controls drive the viewport, lock, search and devtools', as
   expect(
     await page.evaluate(() => window.__flowVueUiControls?.interactiveCalls())
   ).toEqual([false, true])
+  // The disabled-handle drag now reaches the pane and pans it. Centre the
+  // endpoints again before this independent restored-connection check.
+  await page.evaluate(() =>
+    window.__flowVueUiControls?.setViewport({ x: 0, y: 0, zoom: 1 })
+  )
   await drag(page, centre(await boxOf(source)), centre(await boxOf(target)))
   await expect
     .poll(() => page.evaluate(() => window.__flowVueUiControls?.edgeCount()))

@@ -293,3 +293,7 @@ export type {
 } from './node-resizer.ts'
 
 export { updateFoldkitRendererRegistry } from './renderer-registry.ts'
+
+export { createFoldkitInteractionHandlers } from './interaction-handlers.ts'
+
+export type { FoldkitInteractionHandlers } from './interaction-handlers.ts'

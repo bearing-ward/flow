@@ -376,6 +376,7 @@
 }
 
 .flow-vue-handle {
+  pointer-events: none;
   position: absolute;
   top: 50%;
   width: 11px;
@@ -893,5 +894,18 @@
     var(--flow-selection-background-color-default)
   );
   transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.flow-vue-handle.connectable.connectablestart,
+.flow-vue-canvas:has(.flow-vue-connection-preview)
+  .flow-vue-handle.connectable.connectableend {
+  pointer-events: all;
+}
+
+.flow-vue-edge {
+  pointer-events: visibleStroke;
+}
+.flow-vue-edge.inactive {
   pointer-events: none;
 }

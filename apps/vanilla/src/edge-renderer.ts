@@ -150,6 +150,9 @@ export interface FlowEdgePresentationOptions {
   readonly reconnectRadius: number | undefined
   readonly edgesFocusable: boolean | undefined
   readonly edgeDescriptionId: string | undefined
+  readonly elementsSelectable: boolean
+  readonly hasClickHandler: boolean
+  readonly noPanClassName: string | undefined
 }
 
 /** Markers on edges without a stroke follow the themed edge stroke. */
@@ -998,6 +1001,26 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         )
         applyFlowClassName(group, edge.className)
         group.classList.toggle('animated', edge.animated === true)
+
+        const selectable =
+          edge.selectable ?? canvasPresentation.elementsSelectable
+
+        const userClasses = new Set(edge.className?.split(/\s+/u))
+
+        group.classList.toggle(
+          'selectable',
+          selectable || userClasses.has('selectable')
+        )
+        group.classList.toggle(
+          'inactive',
+          (!selectable && !canvasPresentation.hasClickHandler) ||
+            userClasses.has('inactive')
+        )
+
+        if (canvasPresentation.noPanClassName !== '') {
+          group.classList.add(canvasPresentation.noPanClassName ?? 'nopan')
+        }
+
         group.dataset.zIndex = String(edgeZ.get(edge.id) ?? 0)
 
         if (canvasPresentation.edgeDescriptionId === undefined) {

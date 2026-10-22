@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-133 upstream port and follow-ups; preserving all existing scope; Plan 134 Cypress e2e port; Plan 137 MiniMap viewport tracking",
+  "activeWork": "Plans 126-133 upstream port and follow-ups; preserving all existing scope; Plan 134 Cypress e2e port; Plan 136 interaction policy styling; Plan 137 MiniMap viewport tracking",
   "checks": [
     "api-members",
     "catalog",
@@ -61,7 +61,10 @@
       "ui-recipes.e2e.ts",
       "viewport-portal.e2e.ts",
       "touch-ready-mobile.e2e.ts",
-      "upstream-cypress.e2e.ts"
+      "upstream-cypress.e2e.ts",
+      "interaction-policy.e2e.ts",
+      "labeled-handle-recipe.e2e.ts",
+      "base-handle-recipe.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -105,7 +108,13 @@
       "viewport-portal.e2e.ts",
       "node-toolbar.e2e.ts",
       "edge-toolbar.e2e.ts",
-      "upstream-cypress.e2e.ts"
+      "upstream-cypress.e2e.ts",
+      "interaction-policy.e2e.ts",
+      "button-handle-recipe.e2e.ts",
+      "labeled-handle-recipe.e2e.ts",
+      "base-handle-recipe.e2e.ts",
+      "drag-handle-recipe.e2e.ts",
+      "gesture-controls.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -164,7 +173,11 @@
       "selection-rect-race.e2e.ts",
       "pane-input.e2e.ts",
       "presentation-followups.e2e.ts",
-      "upstream-cypress.e2e.ts"
+      "upstream-cypress.e2e.ts",
+      "interaction-policy.e2e.ts",
+      "labeled-handle-recipe.e2e.ts",
+      "base-handle-recipe.e2e.ts",
+      "drag-handle-recipe.e2e.ts"
     ]
   }
 }

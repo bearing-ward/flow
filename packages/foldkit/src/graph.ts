@@ -525,6 +525,8 @@ export const ModelSchema = Schema.Struct({
   nodesDraggable: Schema.Boolean,
   nodesConnectable: Schema.Boolean,
   elementsSelectable: Schema.Boolean,
+  nodePointerHandlers: Schema.Boolean,
+  edgeClickHandler: Schema.Boolean,
   /** Selected nodes show resize controls only when this is on. */
   nodesResizable: Schema.Boolean,
   defaultEdgeOptions: FlowDefaultEdgeOptionsSchema,
@@ -739,6 +741,10 @@ export type OutMessageData = typeof OutMessage.Type
 export const Message = FoldMessage.defineMessageUnion({
   ClearClickSuppression: {},
   RefreshRenderers: {},
+  SetInteractionHandlers: {
+    nodePointerHandlers: Schema.Boolean,
+    edgeClickHandler: Schema.Boolean,
+  },
   DeleteSelected: {},
   SetCanvasKey: {
     kind: Schema.Literals(['selection', 'multiSelection', 'zoom', 'pan']),
@@ -3252,6 +3258,9 @@ const updateState = (
   >(message, {
     ClearClickSuppression: () => ({
       model: { ...model, nodeClickSuppressed: false },
+    }),
+    SetInteractionHandlers: ({ nodePointerHandlers, edgeClickHandler }) => ({
+      model: { ...model, nodePointerHandlers, edgeClickHandler },
     }),
     RefreshRenderers: () => ({
       model: { ...model, rendererRevision: model.rendererRevision + 1 },
@@ -5771,7 +5780,7 @@ const edgeVisuals = (
     h.Fill('none'),
     h.Stroke('transparent'),
     h.StrokeWidth(String(edge.interactionWidth ?? 20)),
-    h.PointerEvents('stroke'),
+    h.PointerEvents('inherit'),
     h.Attribute('role', edge.selectable === false ? 'img' : 'button'),
     h.Attribute('tabindex', edge.focusable === false ? '-1' : '0'),
     h.AriaLabel(ariaLabel),
@@ -5785,7 +5794,7 @@ const edgeVisuals = (
     ),
   ])
 
-  return { markerDefinitions, content: [hitTarget, renderedEdge] }
+  return { markerDefinitions, content: [renderedEdge, hitTarget] }
 }
 
 const edgeReconnectControls = (
@@ -6660,7 +6669,8 @@ export const createPointerResource = (initial: Model) => {
   ): GestureDownMessage | undefined => {
     if (
       !panePanEnabled(current, raw.button, raw.pointerType ?? 'mouse') ||
-      (raw.target instanceof Element &&
+      (raw.button !== 1 &&
+        raw.target instanceof Element &&
         current.noPanClassName !== '' &&
         raw.target.closest(`.${CSS.escape(current.noPanClassName)}`) !==
           null) ||
@@ -7260,6 +7270,12 @@ const graphView = (
         // React NodeWrapper: user style first, then position, stacking and
         // dimensions win.
         const style = {
+          'pointer-events':
+            isNodeDraggable(selectInteractivity(model), node) ||
+            isNodeSelectable(selectInteractivity(model), node) ||
+            model.nodePointerHandlers
+              ? 'all'
+              : 'none',
           ...foldkitStyle(node.style),
           left: `${renderPosition.x}px`,
           top: `${renderPosition.y}px`,
@@ -7415,6 +7431,9 @@ const graphView = (
               flowClassNames(
                 'flow-foldkit-node',
                 node.selected === true && 'selected',
+                isNodeDraggable(interactivity, node) && 'draggable',
+                isNodeDraggable(interactivity, node) && model.noPanClassName,
+                isNodeSelectable(interactivity, node) && 'selectable',
                 model.pointerSession?.kind === 'node-drag' &&
                   model.pointerSession.nodeIds.includes(node.id) &&
                   'dragging',
@@ -7561,6 +7580,12 @@ const graphView = (
             h.Class(
               flowClassNames(
                 'flow-foldkit-edge',
+                model.noPanClassName,
+                isEdgeSelectable(selectInteractivity(model), edge) &&
+                  'selectable',
+                !isEdgeSelectable(selectInteractivity(model), edge) &&
+                  !model.edgeClickHandler &&
+                  'inactive',
                 edge.selected === true && 'selected',
                 edge.animated === true && 'animated',
                 edge.className
@@ -7585,9 +7610,11 @@ const graphView = (
             h.DataAttribute('testid', 'flow-edge'),
             h.Attribute('role', edge.ariaRole ?? 'group'),
             h.AriaLabel(ariaLabel),
-            h.Attribute('width', '960'),
-            h.Attribute('height', '640'),
-            h.ViewBox('0 0 960 640'),
+            // Keep the SVG's own hit box off the graph; paths can paint and
+            // receive input outside this one-pixel viewport.
+            h.Attribute('width', '1'),
+            h.Attribute('height', '1'),
+            h.ViewBox('0 0 1 1'),
             h.Style({
               overflow: 'visible',
               'z-index': String(edgeZ),
@@ -8278,6 +8305,8 @@ export const initialModel = (
   pendingResizeAcceptance: null,
   selectionMode,
   nodeClickSuppressed: false,
+  nodePointerHandlers: false,
+  edgeClickHandler: false,
   selectionBoundsActive: false,
 })
 
