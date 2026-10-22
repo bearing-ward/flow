@@ -10,7 +10,7 @@ FlowRenderer suppresses pan while the selection key is held at `packages/react/s
 
 ## Browser and public entry points
 
-The real example browser route passes through `apps/shared/upstream/vite.ts:9`, rewrites to upstream.html, and loads the host fixture at `apps/vanilla/upstream.html:10`, `apps/vue/upstream.html:10`, and `apps/foldkit/upstream.html:10`. The fixture branches to the example host at `apps/vanilla/src/upstream-fixture.ts:22`, `apps/vue/src/upstream-fixture.ts:22`, and `apps/foldkit/src/upstream-fixture.ts:38`.
+The real example browser route passes through `apps/shared/upstream/vite.ts:9`, rewrites to upstream.html, and loads the host fixture at `apps/vanilla/upstream.html:10`, `apps/vue/upstream.html:10`, and `apps/foldkit/upstream.html:10`. The fixture branches to the example host at `apps/vanilla/src/upstream-fixture.ts:24`, `apps/vue/src/upstream-fixture.ts:24`, and `apps/foldkit/src/upstream-fixture.ts:40`.
 
 The decoded Interaction example at `packages/conformance/src/upstream-examples/interaction.ts:5` starts with all three interactivity switches false. The shared panel dispatches public option changes at `apps/shared/upstream/examples.ts:62`. FlowInteractivity resolves defaults at `packages/core/src/domain/flow-interactivity.ts:28`. Per-node draggable and selectable flags override global switches at `packages/core/src/domain/flow-interactivity.ts:52` and `packages/core/src/domain/flow-interactivity.ts:58`. Handle start/end admission derives from node and handle flags at `packages/core/src/domain/flow-interactivity.ts:80`.
 

@@ -6,7 +6,8 @@ export const upstreamFixtureRoute = (): Plugin => ({
     server.middlewares.use((request, _response, next) => {
       if (
         request.url?.startsWith('/upstream/') ||
-        request.url?.startsWith('/upstream-examples/')
+        request.url?.startsWith('/upstream-examples/') ||
+        request.url?.startsWith('/upstream-component/')
       ) {
         request.url = '/upstream.html'
       }
