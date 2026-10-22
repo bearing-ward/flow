@@ -765,8 +765,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "A 5000/5000 wheel event clamps zoom to 0.1 rather than the configured minimum 0.25."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:132"
@@ -785,8 +784,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "A -5000/-5000 wheel event clamps zoom to 2 rather than the configured maximum 4."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:148"
@@ -881,16 +879,13 @@
       ],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The touch drag leaves translateX at 1.23 instead of panning."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The touch drag leaves translateX at 1.23 instead of panning."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The touch drag leaves translateX at 1.23 instead of panning."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:273"
@@ -909,16 +904,13 @@
       ],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Holding Shift does not add the selection class to the pane; the touch-selection assertions are not reached."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Holding Shift does not add the selection class to the pane; the touch-selection assertions are not reached."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Holding Shift does not add the selection class to the pane; the touch-selection assertions are not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:304"
@@ -931,8 +923,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Primary-button drag with selectionOnDrag true and panOnDrag [1,2] creates no visible marquee."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -951,16 +942,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Control plus primary drag moves the pane by 0 pixels instead of the required 100 on each axis."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:372"
@@ -4310,27 +4298,5 @@
       "flowTest": null
     }
   ],
-  "unmappedProps": [
-    {
-      "host": "foldkit",
-      "config": "pane/activation-keys",
-      "upstream": "examples/react/src/generic-tests/pane/activation-keys.ts:4",
-      "prop": "panOnDrag: [1]",
-      "reason": "The public GraphInteractionOptions.panOnDrag accepts only a boolean. The fixture uses false for primary-button drag. It cannot express the upstream middle-button policy."
-    },
-    {
-      "host": "foldkit",
-      "config": "pane/activation-keys",
-      "upstream": "examples/react/src/generic-tests/pane/activation-keys.ts:5",
-      "prop": "panActivationKeyCode: 'Control'",
-      "reason": "The public GraphInteractionOptions has no pan activation key option. The fixture cannot install the Control override. UP-126-048 retains the upstream assertion."
-    },
-    {
-      "host": "foldkit",
-      "config": "pane/non-defaults",
-      "upstream": "examples/react/src/generic-tests/pane/non-defaults.ts:4",
-      "prop": "panOnDrag: [1, 2]",
-      "reason": "The public GraphInteractionOptions.panOnDrag accepts only a boolean. The fixture uses false with selectionOnDrag true for primary-button selection. Middle/right-button policy remains unrepresented."
-    }
-  ]
+  "unmappedProps": []
 }

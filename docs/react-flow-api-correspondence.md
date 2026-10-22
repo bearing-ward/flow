@@ -64,7 +64,7 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | autoPanOnNodeDrag | drag/viewport ops | host option | partial | partial | Host lifecycle; option semantics unverified. |
 | autoPanOnSelection | selection/viewport ops | host option | gap | gap | Host lifecycle; unassessed. |
 | autoPanSpeed | gap | host option | gap | gap | Host lifecycle tuning; unassessed. |
-| panOnDrag | viewport pan session | boolean or mouse-button array | boolean primary-button prop; no button array | boolean interaction option; no button array | Button-array configuration is absent in Vue and Foldkit. |
+| panOnDrag | viewport pan session | boolean or mouse-button array | boolean or mouse-button array | boolean or mouse-button array | Arrays restrict mouse buttons; enabled touch panning yields to the selection key. |
 | selectionOnDrag | selection rectangle | host option | canvas option | canvas option | Host lifecycle; modifier semantics open. |
 | selectionMode | selection geometry | mount option | prop | program configuration | Full/partial pointer selection and Vue/Foldkit keyboard rectangle selection are exercised through production host suites. |
 | panOnScroll | viewport pan command | host option | canvas option | canvas option | Host lifecycle; exact config unverified. |
@@ -87,7 +87,7 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | selectionKeyCode | selection commands | keyboard option | partial | partial | Host keyboard lifecycle; equivalence open. |
 | multiSelectionKeyCode | selection-set change | keyboard option | partial | partial | Host keyboard lifecycle; equivalence open. |
 | zoomActivationKeyCode | viewport commands | no key-code option | prop | no key-code option; `keyboardActivation` is Boolean | Foldkit's Boolean activation does not encode a key; exact key-code mapping remains open. |
-| panActivationKeyCode | viewport commands | modifier option, not key-code prop | prop | no key-code option; `keyboardActivation` is Boolean | The Foldkit Boolean does not encode a key; exact key-code mapping remains open. |
+| panActivationKeyCode | viewport commands | `panActivationModifier` | prop | `panActivationKeyCode`: string, key alternatives, or null | The held key enables pane panning in addition to `panOnDrag`; it is never required when the button policy already enables panning. |
 | disableKeyboardA11y | gap | gap | gap | gap | Host accessibility policy; unassessed. |
 | noPanClassName | gap | host class behavior | gap | gap | Host DOM interaction; unassessed. |
 | noDragClassName | gap | host class behavior | gap | gap | Host DOM interaction; unassessed. |
@@ -196,7 +196,7 @@ This is a bounded set of meaningful option combinations, not the Cartesian produ
 | Lifecycle output and terminal ordering | `gesture-options.e2e.ts` asserts drag, connect, selection, and pointer UI callback cases | `activation-callbacks.e2e.ts` asserts click-connect/reconnect, drag and pointer rectangle order, plus uncontrolled keyboard-selection change → adoption → terminal | Production lifecycle E2E asserts serialized event-port records for connection success/rejection and selected pointer events | Full operation × cancellation-reason callback order remains unverified; Foldkit emits no native DOM events. |
 | `nodeDragThreshold` | Validated mount option | Validated prop | Validated interaction option | Shared default 1 and strict raw client-space crossing. Pending drag preserves ordinary click. Dedicated feature checks and native Chromium ordinary gestures pass; broader parity remains unverified. |
 | `nodesConnectable` | Public mount option | No canvas-wide option; per-node policy only | No canvas-wide option; allowed-target policy only | Vue/Foldkit canvas-wide option mappings remain open. |
-| Pan activation: `panOnDrag` and mouse-button array | Boolean or button array | Boolean only; button array absent | Boolean only; button array absent | Foldkit also has no button-array form. Activation cases are host-local. |
+| Pan activation: `panOnDrag` and mouse-button array | Boolean or button array | Boolean or button array | Boolean or button array | Plan 132 covers mouse buttons, touch selection, and the additive activation key through the unchanged upstream pane contracts. |
 | Wheel/double-click activation: `panOnScroll`, `zoomOnScroll`, `zoomOnDoubleClick` | Options | Options | Options | Existing fixed behavior does not establish every default/disabled combination. |
 | Pinch activation: `zoomOnPinch` | Option is declared; active implementation/evidence not established | No prop | No option | Vue pinch zoom and Foldkit pinch option are absent; trusted native multi-pointer evidence remains Plan 060. |
 | `selectNodesOnDrag` | Option; enabled unless false | Prop; default false, explicit true tested | No option | Vue default intentionally preserves existing shared conformance semantics; option defaults differ by host and do not imply parity. Foldkit configuration gap. |

@@ -2572,7 +2572,7 @@ export const FlowCanvas = defineComponent({
       return true
     }
 
-    const pressedKeys = new Set<string>()
+    const pressedKeys = shallowReactive(new Set<string>())
     const keyboardPressedCodes = new Map<string, string>()
 
     /** Whether a key name is held, reading modifiers from the event. */
@@ -2605,7 +2605,22 @@ export const FlowCanvas = defineComponent({
 
     /** React `selectionKeyCode`. */
     const selectionKeyHeld = (event: MouseEvent): boolean =>
-      props.selectionKeyCode !== null && keyHeld(props.selectionKeyCode, event)
+      props.selectionKeyCode !== null &&
+      (pressedKeys.has(props.selectionKeyCode) ||
+        keyHeld(props.selectionKeyCode, event))
+
+    const paneIsSelecting = computed(
+      () =>
+        (props.selectionKeyCode !== null &&
+          pressedKeys.has(props.selectionKeyCode)) ||
+        session.value?.kind === 'selection' ||
+        (props.selectionOnDrag &&
+          props.panOnDrag !== true &&
+          !(
+            props.panActivationKeyCode !== undefined &&
+            pressedKeys.has(props.panActivationKeyCode)
+          ))
+    )
 
     /** React `multiSelectionKeyCode`; Meta or Control unless set. */
     const multiSelectionKeyHeld = (event: MouseEvent): boolean => {
@@ -8265,8 +8280,9 @@ export const FlowCanvas = defineComponent({
       const excludedFromPan = hasClassAncestor(target, props.noPanClassName)
       const excludedFromDrag = hasClassAncestor(target, props.noDragClassName)
 
-      const panKeyRequired = props.panActivationKeyCode
-      const panKeyActive = activationKeyIsPressed(panKeyRequired)
+      const panKeyActive =
+        props.panActivationKeyCode !== undefined &&
+        activationKeyIsPressed(props.panActivationKeyCode)
 
       // React Flow draws a selection box only while elements are selectable,
       // and only from the pane.
@@ -8274,16 +8290,22 @@ export const FlowCanvas = defineComponent({
         event.button === 0 &&
         !onNode &&
         interactivity.value.elementsSelectable &&
-        (selectionKeyHeld(event) || props.selectionOnDrag)
+        (selectionKeyHeld(event) ||
+          (props.selectionOnDrag &&
+            props.panOnDrag !== true &&
+            !panKeyActive &&
+            !(event.pointerType === 'touch' && props.panOnDrag !== false)))
 
-      const panButtonEnabled = Array.isArray(props.panOnDrag)
-        ? props.panOnDrag.includes(event.button)
-        : props.panOnDrag && event.button <= 1
+      const panButtonEnabled =
+        panKeyActive ||
+        (Array.isArray(props.panOnDrag)
+          ? event.pointerType === 'touch' ||
+            props.panOnDrag.includes(event.button)
+          : props.panOnDrag && event.button <= 1)
 
       if (
         excludedFromDrag ||
-        (!isSelection &&
-          (excludedFromPan || !panButtonEnabled || !panKeyActive))
+        (!isSelection && (excludedFromPan || !panButtonEnabled))
       ) {
         return
       }
@@ -10457,7 +10479,11 @@ export const FlowCanvas = defineComponent({
               globalThis.addEventListener('keyup', onWindowKeyUp, true)
             }
           },
-          class: ['flow-vue-canvas', colorModeClass.value],
+          class: [
+            'flow-vue-canvas',
+            colorModeClass.value,
+            { selection: paneIsSelecting.value },
+          ],
           'data-testid': 'flow-canvas',
           'data-color-mode': colorModeClass.value,
           // eslint-disable-next-line complexity -- Movement dispatches the closed session union with owner checks after observable effects.

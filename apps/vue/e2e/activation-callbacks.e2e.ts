@@ -89,7 +89,8 @@ test('Vue activation options and lifecycle callbacks run on FlowCanvas', async (
 
   await page.evaluate(() =>
     window.__flowVueTest?.setGestureOptions({
-      panOnDrag: true,
+      // Upstream FlowRenderer/index.tsx:81 enables panning with the key in addition to panOnDrag.
+      panOnDrag: false,
       selectionOnDrag: false,
       panOnScroll: true,
       zoomOnScroll: false,
@@ -120,6 +121,29 @@ test('Vue activation options and lifecycle callbacks run on FlowCanvas', async (
   expect(pannedViewport?.x).not.toBe(initial?.x)
   expect(pannedViewport?.y).not.toBe(initial?.y)
 
+  await page.evaluate(() =>
+    window.__flowVueTest?.setGestureOptions({
+      panOnDrag: true,
+      selectionOnDrag: false,
+      panOnScroll: true,
+      zoomOnScroll: false,
+      panActivationKeyCode: 'Control',
+      noPanClassName: 'test-no-pan',
+      noWheelClassName: 'test-no-wheel',
+    })
+  )
+  await page.mouse.move(canvasBounds.x + 20, canvasBounds.y + 20)
+  await page.mouse.down()
+  await page.mouse.move(canvasBounds.x + 80, canvasBounds.y + 55, { steps: 3 })
+  await page.mouse.up()
+
+  const plainPannedViewport = await page.evaluate(() =>
+    window.__flowVueTest?.viewport()
+  )
+
+  expect(plainPannedViewport?.x).not.toBe(pannedViewport?.x)
+  expect(plainPannedViewport?.y).not.toBe(pannedViewport?.y)
+
   await page.evaluate(() => {
     const canvasElement = document.querySelector('[data-testid="flow-canvas"]')
     const marker = document.createElement('div')
@@ -141,7 +165,7 @@ test('Vue activation options and lifecycle callbacks run on FlowCanvas', async (
   await page.mouse.up()
   await page.keyboard.up('Control')
   expect(await page.evaluate(() => window.__flowVueTest?.viewport())).toEqual(
-    pannedViewport
+    plainPannedViewport
   )
 
   await page.mouse.move(canvasBounds.x + 180, canvasBounds.y + 150)
@@ -153,8 +177,8 @@ test('Vue activation options and lifecycle callbacks run on FlowCanvas', async (
     window.__flowVueTest?.viewport()
   )
 
-  expect(wheelPannedViewport?.y).toBeLessThan(pannedViewport?.y ?? 0)
-  expect(wheelPannedViewport?.zoom).toBe(pannedViewport?.zoom)
+  expect(wheelPannedViewport?.y).toBeLessThan(plainPannedViewport?.y ?? 0)
+  expect(wheelPannedViewport?.zoom).toBe(plainPannedViewport?.zoom)
 
   await page.evaluate(() =>
     window.__flowVueTest?.setGestureOptions({

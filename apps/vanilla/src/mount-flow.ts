@@ -1102,16 +1102,46 @@ const isPanButtonEnabled = (
   option !== false &&
   (Array.isArray(option) ? option.includes(button) : button <= 1)
 
-const isSelectionActivationEnabled = (
+const panModifierPressed = (
+  options: FlowHostOptions,
+  event: Pick<PointerEvent, 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey'>
+): boolean =>
+  options.panActivationModifier !== undefined &&
+  options.panActivationModifier !== 'none' &&
+  isActivationModifierPressed(event, options.panActivationModifier)
+
+const isPanePanEnabled = (
   options: FlowHostOptions,
   event: PointerEvent
 ): boolean =>
-  options.selectionOnDrag !== false &&
-  options.selectNodesOnDrag !== false &&
-  isActivationModifierPressed(
-    event,
-    options.selectionActivationModifier ?? 'shift'
+  panModifierPressed(options, event) ||
+  (event.pointerType === 'touch'
+    ? options.panOnDrag !== false
+    : isPanButtonEnabled(options.panOnDrag, event.button))
+
+const isSelectionActivationEnabled = (
+  options: FlowHostOptions,
+  event: PointerEvent,
+  selectionHeld: boolean
+): boolean => {
+  const keyHeld =
+    options.selectionKeyCode === undefined
+      ? selectionHeld ||
+        isActivationModifierPressed(
+          event,
+          options.selectionActivationModifier ?? 'shift'
+        )
+      : selectionHeld
+
+  return (
+    options.selectNodesOnDrag !== false &&
+    (keyHeld ||
+      (options.selectionOnDrag === true &&
+        (options.panOnDrag ?? true) !== true &&
+        !panModifierPressed(options, event) &&
+        !(event.pointerType === 'touch' && options.panOnDrag !== false)))
   )
+}
 
 /** Runtime canvas settings share the mount boundary's schemas and defaults. */
 export const FlowCanvasOptionsSchema = S.Struct({
@@ -2978,7 +3008,39 @@ export const createFlowHost = (
     >()
 
     const keyPressDisposers = new Set<() => void>()
-    const canvasKeys = bindCanvasKeys(options, keyPressDisposers)
+
+    let selectionKeyPressed = false
+    let panKeyPressed = false
+
+    const renderPaneSelectionClass = (): void => {
+      canvas.classList.toggle(
+        'selection',
+        selectionKeyPressed ||
+          (options.selectionOnDrag === true &&
+            (options.panOnDrag ?? true) !== true &&
+            !panKeyPressed)
+      )
+    }
+
+    const canvasKeys = bindCanvasKeys(options, keyPressDisposers, (held) => {
+      if (options.selectionKeyCode !== undefined) {
+        selectionKeyPressed = held
+      }
+
+      renderPaneSelectionClass()
+    })
+
+    const observePaneModifiers = (event: KeyboardEvent): void => {
+      if (options.selectionKeyCode === undefined) {
+        selectionKeyPressed = isActivationModifierPressed(
+          event,
+          options.selectionActivationModifier ?? 'shift'
+        )
+      }
+
+      panKeyPressed = panModifierPressed(options, event)
+      renderPaneSelectionClass()
+    }
 
     const viewportListeners = new Set<(event: ViewportObservation) => void>()
 
@@ -9052,11 +9114,7 @@ export const createFlowHost = (
 
             panHandOffAllowed =
               !pressOutsideDragHandle &&
-              isPanButtonEnabled(options.panOnDrag, event.button) &&
-              isActivationModifierPressed(
-                event,
-                options.panActivationModifier ?? 'none'
-              ) &&
+              isPanePanEnabled(options, event) &&
               !(
                 event.target instanceof Element &&
                 event.target.closest(
@@ -9858,9 +9916,7 @@ export const createFlowHost = (
       if (
         event.button === 0 &&
         interactivity.elementsSelectable &&
-        (options.selectionKeyCode === undefined
-          ? isSelectionActivationEnabled(options, event)
-          : options.selectionOnDrag === true || canvasKeys.selectionHeld)
+        isSelectionActivationEnabled(options, event, selectionKeyPressed)
       ) {
         const pointerStart = pointerInCanvas(event)
 
@@ -9906,13 +9962,7 @@ export const createFlowHost = (
         return
       }
 
-      if (
-        !isPanButtonEnabled(options.panOnDrag, event.button) ||
-        !isActivationModifierPressed(
-          event,
-          options.panActivationModifier ?? 'none'
-        )
-      ) {
+      if (!isPanePanEnabled(options, event)) {
         return
       }
 
@@ -9975,14 +10025,7 @@ export const createFlowHost = (
         return
       }
 
-      if (
-        interactionMode !== 'pan' ||
-        !isPanButtonEnabled(options.panOnDrag, event.button) ||
-        !isActivationModifierPressed(
-          event,
-          options.panActivationModifier ?? 'none'
-        )
-      ) {
+      if (interactionMode !== 'pan' || !isPanePanEnabled(options, event)) {
         return
       }
 
@@ -10767,6 +10810,9 @@ export const createFlowHost = (
     }
 
     const onWindowBlur = (): void => {
+      selectionKeyPressed = false
+      panKeyPressed = false
+      renderPaneSelectionClass()
       cancelCaptured(snapshotEntry(), 'window-blur')
     }
 
@@ -12091,12 +12137,16 @@ export const createFlowHost = (
     }
 
     const onWindowKeyDown = (event: KeyboardEvent): void => {
+      observePaneModifiers(event)
+
       if (event.key === 'Escape' && cancelCapturedEscape(event)) {
         event.preventDefault()
       }
     }
 
     const onWindowKeyUp = (event: KeyboardEvent): void => {
+      observePaneModifiers(event)
+
       if (activeKeyboardResize?.key === event.key) {
         finishKeyboardResize()
       }

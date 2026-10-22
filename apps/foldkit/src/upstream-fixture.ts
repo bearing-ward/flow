@@ -51,7 +51,7 @@ const {
   minZoom,
   maxZoom,
   panOnDrag,
-  panActivationKeyCode: _panActivationKeyCode,
+  panActivationKeyCode,
   ...options
 } = config.options
 
@@ -92,7 +92,8 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
       panOnScroll: options.panOnScroll ?? false,
       autoPanOnNodeDrag: options.autoPanOnNodeDrag ?? true,
       autoPanOnConnect: options.autoPanOnConnect ?? true,
-      panOnDrag: panOnDrag === undefined,
+      panOnDrag: panOnDrag ?? true,
+      panActivationKeyCode: panActivationKeyCode ?? null,
       selectionOnDrag: options.selectionOnDrag ?? false,
       zoomOnScroll: options.zoomOnScroll ?? true,
     }

@@ -422,6 +422,21 @@ The `connectionStates` port publishes React's `ConnectionState` while a pointer 
 
 Foldkit interaction events are serializable records instead of DOM events. The canvas observer synchronously prevents the native menu for every context menu inside its canvas before sending messages, including when no subscriber is present. Applications need no extra cancellation option. Node, edge and pane mouse events (`onNodeClick`, `onNodeMouseEnter/Move/Leave`, `onEdgeClick`, `onEdgeMouse*`, `onPaneClick`, `onPaneMouse*`, and the new `onNodeContextMenu`, `onEdgeContextMenu` and `onPaneContextMenu`) carry `clientX`, `clientY`, `button`, `altKey`, `ctrlKey`, `metaKey` and `shiftKey`. Every canvas context menu also still reports `onSelectionContextMenu`. Node drag events carry `nodeIds`. `onConnectEnd` and `onReconnectEnd` carry the release `clientX`/`clientY` and a `connectionState` summary (`isValid`, `fromNodeId`, `fromHandleId`, `fromHandleType`, `toNodeId`, `toHandleId`, `toHandleType`); `isValid` is `null` when the gesture ended away from a handle. `onSelectionChange` reports the selected `nodeIds` and `edgeIds` whenever the accepted document's selection changes.
 
+## Pane input and zoom limits
+
+Vanilla's `panActivationModifier`, Vue's `panActivationKeyCode`, and Foldkit's `panActivationKeyCode` enable pane panning in addition to `panOnDrag`. With `panOnDrag: true`, plain dragging pans even when a key is configured. With `panOnDrag: false` or an array that excludes the primary button, holding the key enables primary-button panning. The selection key takes precedence.
+
+Mouse-button arrays restrict mouse input. Touch can pan with an array even when it excludes button `0`; holding the selection key keeps touch in selection mode. `selectionOnDrag: true` enables an unmodified primary-button marquee when the effective pan option is not `true`. Explicit selection activation modifiers in Vanilla remain available.
+
+Foldkit accepts these `GraphInteractionOptions` at `createProgram`:
+
+| Option | Schema and decoded type | Default |
+| --- | --- | --- |
+| `panOnDrag` | Boolean or an array of integers from `0` through `4`; `boolean \| readonly number[]` | `false` |
+| `panActivationKeyCode` | The existing key-code schema, a string, an array of alternative strings, or `null`; `string \| readonly string[] \| null` | `null` |
+
+`HostAction.SetCanvasOptions` also accepts the `panOnDrag` array form. The pan activation key uses the same startup key observation and disposal as Foldkit's other key-code options. The `viewportLimits` passed to `createProgram` apply to anchored wheel and double-click zoom as well as public viewport commands. Host defaults are unchanged.
+
 ## Foldkit runtime canvas options and renderer geometry
 
 `runtime.ports.actions.send(HostAction.SetCanvasOptions({ options }))` changes `snapToGrid`, `snapGrid`, `panOnDrag`, `selectionOnDrag`, `panOnScroll`, `panOnScrollSpeed`, `panOnScrollMode`, `zoomOnScroll`, `zoomOnDoubleClick`, and `onlyRenderVisibleElements`. The inbound port decodes the patch before dispatch. Omitted or undefined values retain the current setting. Snap grids accept `{ x, y }` or `[x, y]`; disabling snapping retains the grid. Patches preserve the active gesture, viewport, selection, and node elements. The next pointer or wheel event uses the new settings.

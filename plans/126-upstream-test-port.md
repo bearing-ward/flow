@@ -73,16 +73,6 @@ Discovery exposed and corrected fixture-only problems: the Node JSON import attr
 
 The literal marker URL case UP-126-015 is `intentional-difference` in all three hosts. Flow uses validated, instance-scoped marker IDs, documented at `research/traces/edge-markers-styling.md:27` and `research/traces/edge-markers-styling.md:34`. Its exact upstream marker-start/end string assertions remain unchanged. No case is `not-applicable`.
 
-### Unmapped generic props
-
-Only Foldkit has unmapped generic configuration props:
-
-- `pane/activation-keys`: `panOnDrag: [1]` at `examples/react/src/generic-tests/pane/activation-keys.ts:4`. The public GraphInteractionOptions.panOnDrag accepts only a boolean. The fixture uses false for primary-button drag. It cannot express the upstream middle-button policy.
-- `pane/activation-keys`: `panActivationKeyCode: 'Control'` at `examples/react/src/generic-tests/pane/activation-keys.ts:5`. The public GraphInteractionOptions has no pan activation key option. The fixture cannot install the Control override. UP-126-048 retains the upstream assertion.
-- `pane/non-defaults`: `panOnDrag: [1, 2]` at `examples/react/src/generic-tests/pane/non-defaults.ts:4`. The public GraphInteractionOptions.panOnDrag accepts only a boolean. The fixture uses false with selectionOnDrag true for primary-button selection. Middle/right-button policy remains unrepresented.
-
-Vanilla and Vue map every prop used by the six generic configurations. A passing case covers its own assertions even when another unexercised prop in the configuration remains unmapped.
-
 ### Failure follow-ups
 
 Every remaining `fail` entry appears below, grouped into a follow-up plan. Reasons describe the observed assertion boundary; a failure before a later assertion does not establish that later behavior.
@@ -130,7 +120,9 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 | UP-126-030 | connecting two nodes | **vanilla**: After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent.<br>**vue**: After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent.<br>**foldkit**: After the connection gesture, the expected xy-edge__Node-1-Node-4 edge is absent. |
 | UP-126-031 | connecting two output handles does not work | **vanilla**: Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview.<br>**vue**: Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview.<br>**foldkit**: Starting the invalid same-kind handle gesture from Node-2 produces no visible connection preview. |
 
-#### [Pane input and zoom](126-follow-up-pane-input.md)
+#### [Pane input and zoom](132-pane-input.md)
+
+Plan 132 resolves the 12 failing host entries in this historical baseline with the unchanged assertions. The current ledger and Plan 132 Results record the accepted scope and verification receipts.
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -180,7 +172,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 - `plans/126-follow-up-edge-interaction.md`
 - `plans/126-follow-up-edge-stacking.md`
 - `plans/127-node-input.md`
-- `plans/126-follow-up-pane-input.md`
+- `plans/132-pane-input.md`
 - `plans/126-follow-up-toolbar-layout.md`
 - `research/catalogs/upstream-test-ledger.json`
 - `scripts/check-upstream-test-ledger.ts`
