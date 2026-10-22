@@ -1,0 +1,652 @@
+{
+  "baselineCommit": "6c934d7ac5c31596875cbb600ee044aab59241b0",
+  "boundary": "Unchanged pinned Chromium ports. Expected outcomes include retained expected failures; ordinary passes are counted separately.",
+  "hosts": {
+    "vanilla": {
+      "repeat": {
+        "stats": {
+          "startTime": "2026-10-22T14:46:51.238Z",
+          "duration": 110133.236,
+          "expected": 201,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "ordinaryPasses": 159,
+        "retainedExpectedFailures": 42,
+        "skippedTitles": [],
+        "scopedCases": {
+          "UP-127-003": ["passed", "passed", "passed"],
+          "UP-127-004": ["passed", "passed", "passed"],
+          "UP-127-005": ["passed", "passed", "passed"],
+          "UP-127-007": ["passed", "passed", "passed"],
+          "UP-127-008": ["passed", "passed", "passed"],
+          "UP-127-009": ["passed", "passed", "passed"],
+          "UP-127-010": ["passed", "passed", "passed"],
+          "UP-127-013": ["passed", "passed", "passed"],
+          "UP-127-014": ["passed", "passed", "passed"],
+          "UP-127-015": ["passed", "passed", "passed"],
+          "UP-127-023": ["passed", "passed", "passed"],
+          "UP-127-024": ["passed", "passed", "passed"],
+          "UP-127-034": ["passed", "passed", "passed"],
+          "UP-127-035": ["passed", "passed", "passed"],
+          "UP-127-036": ["passed", "passed", "passed"]
+        }
+      },
+      "affected": {
+        "stats": {
+          "startTime": "2026-10-22T14:48:41.608Z",
+          "duration": 158086.546,
+          "expected": 368,
+          "skipped": 2,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "ordinaryPasses": 362,
+        "retainedExpectedFailures": 6,
+        "skippedTitles": [
+          "concurrent native connection and node drag cancellation requires real pointer capture",
+          "native two-contact pinch cancellation requires real touch pointer capture"
+        ],
+        "phase126OrdinaryPasses": 44,
+        "phase126RetainedExpectedFailures": 6
+      }
+    },
+    "vue": {
+      "repeat": {
+        "stats": {
+          "startTime": "2026-10-22T15:41:38.964Z",
+          "duration": 107487.026,
+          "expected": 201,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "ordinaryPasses": 162,
+        "retainedExpectedFailures": 39,
+        "skippedTitles": [],
+        "scopedCases": {
+          "UP-127-003": ["passed", "passed", "passed"],
+          "UP-127-004": ["passed", "passed", "passed"],
+          "UP-127-005": ["passed", "passed", "passed"],
+          "UP-127-007": ["passed", "passed", "passed"],
+          "UP-127-008": ["passed", "passed", "passed"],
+          "UP-127-009": ["passed", "passed", "passed"],
+          "UP-127-010": ["passed", "passed", "passed"],
+          "UP-127-013": ["passed", "passed", "passed"],
+          "UP-127-014": ["passed", "passed", "passed"],
+          "UP-127-015": ["passed", "passed", "passed"],
+          "UP-127-023": ["passed", "passed", "passed"],
+          "UP-127-024": ["passed", "passed", "passed"],
+          "UP-127-034": ["passed", "passed", "passed"],
+          "UP-127-035": ["passed", "passed", "passed"],
+          "UP-127-036": ["passed", "passed", "passed"]
+        }
+      },
+      "affected": {
+        "stats": {
+          "startTime": "2026-10-22T15:43:26.683Z",
+          "duration": 199204.78900000002,
+          "expected": 589,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "ordinaryPasses": 587,
+        "retainedExpectedFailures": 2,
+        "skippedTitles": [],
+        "phase126OrdinaryPasses": 48,
+        "phase126RetainedExpectedFailures": 2
+      }
+    },
+    "foldkit": {
+      "repeat": {
+        "stats": {
+          "startTime": "2026-10-22T16:59:01.444Z",
+          "duration": 36722.952999999994,
+          "expected": 201,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "ordinaryPasses": 180,
+        "retainedExpectedFailures": 21,
+        "skippedTitles": [],
+        "scopedCases": {
+          "UP-127-003": ["passed", "passed", "passed"],
+          "UP-127-004": ["passed", "passed", "passed"],
+          "UP-127-005": ["passed", "passed", "passed"],
+          "UP-127-007": ["passed", "passed", "passed"],
+          "UP-127-008": ["passed", "passed", "passed"],
+          "UP-127-009": ["passed", "passed", "passed"],
+          "UP-127-010": ["passed", "passed", "passed"],
+          "UP-127-013": ["passed", "passed", "passed"],
+          "UP-127-014": ["passed", "passed", "passed"],
+          "UP-127-015": ["passed", "passed", "passed"],
+          "UP-127-023": ["passed", "passed", "passed"],
+          "UP-127-024": ["passed", "passed", "passed"],
+          "UP-127-034": ["passed", "passed", "passed"],
+          "UP-127-035": ["passed", "passed", "passed"],
+          "UP-127-036": ["passed", "passed", "passed"]
+        }
+      },
+      "affected": {
+        "stats": {
+          "startTime": "2026-10-22T16:59:38.377Z",
+          "duration": 163718.52899999998,
+          "expected": 215,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "ordinaryPasses": 212,
+        "retainedExpectedFailures": 3,
+        "skippedTitles": [],
+        "phase126OrdinaryPasses": 47,
+        "phase126RetainedExpectedFailures": 3
+      }
+    }
+  },
+  "ledger": {
+    "126": {
+      "vanilla": {
+        "before": {
+          "pass": 44,
+          "fail": 3,
+          "intentional-difference": 3
+        },
+        "after": {
+          "pass": 44,
+          "fail": 3,
+          "intentional-difference": 3
+        }
+      },
+      "vue": {
+        "before": {
+          "pass": 48,
+          "intentional-difference": 2
+        },
+        "after": {
+          "pass": 48,
+          "intentional-difference": 2
+        }
+      },
+      "foldkit": {
+        "before": {
+          "pass": 47,
+          "intentional-difference": 3
+        },
+        "after": {
+          "pass": 47,
+          "intentional-difference": 3
+        }
+      }
+    },
+    "127": {
+      "vanilla": {
+        "before": {
+          "pass": 41,
+          "fail": 24,
+          "intentional-difference": 2
+        },
+        "after": {
+          "pass": 53,
+          "intentional-difference": 2,
+          "fail": 12
+        }
+      },
+      "vue": {
+        "before": {
+          "pass": 50,
+          "fail": 17
+        },
+        "after": {
+          "pass": 54,
+          "fail": 13
+        }
+      },
+      "foldkit": {
+        "before": {
+          "pass": 55,
+          "fail": 12
+        },
+        "after": {
+          "pass": 60,
+          "fail": 7
+        }
+      }
+    },
+    "128": {
+      "vanilla": {
+        "before": {
+          "not-ported": 107
+        },
+        "after": {
+          "not-ported": 107
+        }
+      },
+      "vue": {
+        "before": {
+          "not-ported": 107
+        },
+        "after": {
+          "not-ported": 107
+        }
+      },
+      "foldkit": {
+        "before": {
+          "not-ported": 107
+        },
+        "after": {
+          "not-ported": 107
+        }
+      }
+    }
+  },
+  "ledgerChanges": [
+    {
+      "id": "UP-127-003",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "A native Meta down/click/up reaches measured Node 1, but threshold-zero selection with selectNodesOnDrag=false leaves its wrapper unselected; the second-node assertions are not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-004",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Forced subject pointer and mouse events reach Node 1 without movement, but its wrapper stays unselected with nodeDragThreshold=0 and selectNodesOnDrag=false."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-005",
+      "host": "vue",
+      "before": {
+        "status": "fail",
+        "reason": "The native bottomLeft canvas click reaches the rectangular, borderless pane, but Node 1 remains selected."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-005",
+      "host": "foldkit",
+      "before": {
+        "status": "fail",
+        "reason": "The native bottomLeft click targets the rendered viewport, but Node 1 retains selected after the retrying assertion."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-007",
+      "host": "foldkit",
+      "before": {
+        "status": "fail",
+        "reason": "The native bottomLeft pane click arrives, but e1-2 retains selected rather than being deselected."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-008",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Shift is present on the native (1,10) to (1000,200) sequence, but selectNodesOnDrag=false admits pane pan; Node 1 moves outside the marquee instead of acquiring selected."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-009",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Shift is present from topRight to bottomLeft, but the pane pans with selectNodesOnDrag=false and no node acquires selected; persistent-selection assertion is not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-010",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "After the native bottomLeft pane click, one .flow-selection-box remains attached with hidden presentation; upstream requires no selection rectangle DOM."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-013",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "The native click reaches Node 1, but threshold-zero/selectNodesOnDrag=false leaves it unselected; Backspace and the node/edge count assertions are not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-014",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "The 3-to-4 handle sequence creates xy-edge__3-4, but UP-127-013 left the original two edges intact, so the count is 3 rather than 1; this is a deletion-prerequisite failure."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-015",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "The ordinary native click and Backspace delete e1-2, but UP-127-013 left the original graph intact. Two edges remain rather than zero; this is a deletion-prerequisite failure."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-023",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "The initial click reaches Node 1 but leaves it unselected with threshold zero and selectNodesOnDrag=false; pane dismissal and the lock toggle are not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-023",
+      "host": "vue",
+      "before": {
+        "status": "fail",
+        "reason": "Node 1 is selected, but the native topLeft pane click leaves it selected; the lock toggle is not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-023",
+      "host": "foldkit",
+      "before": {
+        "status": "fail",
+        "reason": "Node 1 selects correctly, but a native topLeft pane click leaves it selected; the control toggle is not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-024",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "UP-127-023 aborted before its lock toggle; this case therefore toggles the still-enabled control off, and the forced Node 1 click remains unselected."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-034",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "The topLeft-to-bottomRight gesture reaches the Figma canvas, but selectNodesOnDrag=false suppresses marquee selection; no selected node is rendered."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-035",
+      "host": "vue",
+      "before": {
+        "status": "fail",
+        "reason": "After Figma selection, a native topLeft pane click leaves Nodes 1 and 2 selected rather than clearing all selection."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-035",
+      "host": "foldkit",
+      "before": {
+        "status": "fail",
+        "reason": "After Figma selection, the native topLeft canvas click leaves Nodes 1 and 2 selected."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-036",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Right-button center-to-bottom movement reaches the Figma canvas, but the default center mouseup returns the final viewport to its initial position; Node 4 remains partly inside instead of entirely outside."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-036",
+      "host": "vue",
+      "before": {
+        "status": "fail",
+        "reason": "Right-button panning occurs, but the two nodes retained from UP-127-035 remain selected; the outside-viewport assertion is not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-036",
+      "host": "foldkit",
+      "before": {
+        "status": "fail",
+        "reason": "The right-button pan moves the graph, but the two nodes retained from UP-127-035 remain selected; the final outside-viewport assertion is not reached."
+      },
+      "after": {
+        "status": "pass"
+      }
+    }
+  ],
+  "removedUnmappedProps": [
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/basic",
+      "upstream": "examples/react/src/examples/Basic/index.tsx:162",
+      "prop": "selectNodesOnDrag",
+      "reason": "The public Foldkit interaction options do not expose this switch. The false input is recorded in the neutral config but cannot be applied. See docs/react-flow-api-correspondence.md:72."
+    },
+    {
+      "host": "foldkit",
+      "config": "upstream-examples/figma",
+      "upstream": "examples/react/src/examples/Figma/index.tsx:42",
+      "prop": "selectNodesOnDrag",
+      "reason": "The public Foldkit interaction options do not expose this switch. The false input is recorded in the neutral config but cannot be applied. See docs/react-flow-api-correspondence.md:72."
+    }
+  ],
+  "verificationScope": {
+    "profile": "focused",
+    "checks": [
+      "api-members",
+      "catalog",
+      "consumer",
+      "docs",
+      "examples",
+      "build",
+      "foldkit-build",
+      "traces",
+      "vue-build",
+      "upstream-ledger"
+    ],
+    "browserFiles": {
+      "vanilla": 47,
+      "vue": 42,
+      "foldkit": 57
+    }
+  },
+  "sourceHashes": {
+    "apps/foldkit/e2e/events-and-changes.e2e.ts": "7cdc1902fba6b41431d791733d04e9086816c0386ca60631f57e1bc89aadfd1a",
+    "apps/foldkit/src/upstream-examples-fixture.ts": "e5ddefe7b9cfd83f10ff6b78884e4a30eb4502821e9a41807c1344c20afd41bc",
+    "apps/shared-e2e/upstream-cypress/helpers.ts": "ab0dded1a0015e953f57b327ffc1dedfd950f3310b4a7a73ae6e8bdf6c51d690",
+    "apps/vanilla/e2e/node-reentry-harness.ts": "dc3432e4cab0ac7de2a58447a8851629d262fddb2b0d24c845cf59eb7bd9a12b",
+    "apps/vanilla/e2e/node-threshold.e2e.ts": "7160f0c3c549ac5dd35f09022540ebee2d99a0d45e551ba5ccee35bef7e7a3f7",
+    "apps/vanilla/src/mount-flow.ts": "b5f426ecad62c5196335c450a36666cab739233bfc16f640004de23f8a3473f8",
+    "apps/vanilla/src/upstream-examples-fixture.ts": "657633cd0ce70b4f635ce67daf36bd0a16e4a848d9b3866a4895dd35fdd7d3e3",
+    "apps/vue/e2e/closing-gaps.e2e.ts": "438f4b69e2f43792cf7bb552a58f8084a74a7d0677ee467526e24ae393f43ed0",
+    "apps/vue/e2e/node-reentry-harness.ts": "119253e7a8c02ad7a069d24115b6f9d5c72d77cf4a5114b3cfbdb35c4ada48bb",
+    "apps/vue/e2e/node-threshold.e2e.ts": "01172f2e439b6787ca7e91e70a27b2d9527a68822ad9b0ad121dc343d42a9ef4",
+    "packages/foldkit/src/graph.ts": "3b093fa8534147ed632e05526d210bb1d142ba4289c5be83f28097f373820b83",
+    "packages/foldkit/src/live-drag.test.ts": "618316af7bb553b606aa13451477176c4f2fbf35d9b251a86bfc809628102108",
+    "packages/foldkit/src/mouse-observation.ts": "da32c706bcb02204c433e012e3a61182d180da4b750359ffb24f621ebfb3da7d",
+    "packages/vue/src/flow-canvas.ts": "360ecc826bc2e1e0f298655b0802689d2beb1745d2a25adeedf2b9279648dbf5"
+  },
+  "verifier": {
+    "status": "passed",
+    "requiredCommand": "scripts/with-flow-browser-lock.sh bun run verify",
+    "earlierQualityFailure": "Formatting only; no browser tests executed; /tmp/plan135-verify-quality-failure.log",
+    "earlierBrowserFailure": {
+      "log": "/tmp/plan135-verify-pane-distance-failure.log",
+      "vanilla": {
+        "expected": 758,
+        "skipped": 2
+      },
+      "vue": {
+        "expected": 884,
+        "unexpected": 1
+      },
+      "cause": "Legacy closing-gaps paneClickDistance selection-preservation expectation conflicts with pinned Pane click reset. Native probe confirms click admission; only its expected selected value is corrected."
+    },
+    "earlierFoldkitBrowserFailure": {
+      "log": "/tmp/plan135-verify-foldkit-cancel-failure.log",
+      "vanilla": {
+        "expected": 758,
+        "skipped": 2
+      },
+      "vue": {
+        "expected": 885,
+        "unexpected": 0
+      },
+      "foldkit": {
+        "expected": 535,
+        "unexpected": 1
+      },
+      "cause": "Reconnect button was misclassified as pane content after Escape; observer now checks edge ownership before hit-path selection or pane fallback. Existing assertions unchanged."
+    },
+    "command": "scripts/with-flow-browser-lock.sh bun run verify",
+    "profile": "focused",
+    "fullSuite": false,
+    "exitCode": 0,
+    "checksPassed": 18,
+    "checks": [
+      "quality check",
+      "architecture boundaries",
+      "package builds",
+      "typecheck",
+      "unit tests",
+      "React Flow API member inventory",
+      "React Flow catalog coverage",
+      "packed consumer",
+      "documentation",
+      "example recipe registry",
+      "Vanilla app build",
+      "Foldkit app build",
+      "research trace citations",
+      "Vue app build",
+      "upstream test ledger",
+      "vanilla browser tests",
+      "vue browser tests",
+      "foldkit browser tests"
+    ],
+    "unitTests": {
+      "files": 97,
+      "passed": 2522
+    },
+    "researchCitations": {
+      "citations": 3038,
+      "traces": 82
+    },
+    "hosts": {
+      "vanilla": {
+        "total": 760,
+        "ordinaryPasses": 738,
+        "retainedExpectedFailures": 20,
+        "skipped": 2,
+        "expectedOutcomes": 758,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "vue": {
+        "total": 885,
+        "ordinaryPasses": 870,
+        "retainedExpectedFailures": 15,
+        "skipped": 0,
+        "expectedOutcomes": 885,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "foldkit": {
+        "total": 536,
+        "ordinaryPasses": 526,
+        "retainedExpectedFailures": 10,
+        "skipped": 0,
+        "expectedOutcomes": 536,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "log": "/tmp/plan135-verify.log",
+    "elapsedMs": 1149288
+  },
+  "additionalNativeRechecks": {
+    "vuePaneDistance": {
+      "report": "/tmp/plan135-vue-distance-recheck.json",
+      "stats": {
+        "startTime": "2026-10-22T16:16:01.958Z",
+        "duration": 4590.097000000001,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "foldkitReconnectCancellation": {
+      "report": "/tmp/plan135-foldkit-cancel-recheck.json",
+      "stats": {
+        "startTime": "2026-10-22T16:51:22.284Z",
+        "duration": 9133.430999999999,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  }
+}

@@ -1134,12 +1134,11 @@ const isSelectionActivationEnabled = (
       : selectionHeld
 
   return (
-    options.selectNodesOnDrag !== false &&
-    (keyHeld ||
-      (options.selectionOnDrag === true &&
-        (options.panOnDrag ?? true) !== true &&
-        !panModifierPressed(options, event) &&
-        !(event.pointerType === 'touch' && options.panOnDrag !== false)))
+    keyHeld ||
+    (options.selectionOnDrag === true &&
+      (options.panOnDrag ?? true) !== true &&
+      !panModifierPressed(options, event) &&
+      !(event.pointerType === 'touch' && options.panOnDrag !== false))
   )
 }
 
@@ -3969,6 +3968,12 @@ export const createFlowHost = (
 
       selectionBox.hidden =
         bounds === undefined || interactionSlots.activeSelectionRect !== null
+
+      if (selectionBox.hidden) {
+        selectionBox.remove()
+      } else if (selectionBox.parentElement !== viewport) {
+        viewport.append(selectionBox)
+      }
 
       if (bounds !== undefined) {
         Object.assign(selectionBox.style, {
@@ -9299,6 +9304,13 @@ export const createFlowHost = (
               dragSession?.kind === 'node-drag' &&
               dragSession.phase === 'active'
 
+            // Pinned packages/react/src/components/NodeWrapper/index.tsx:109 selects on click when selectNodesOnDrag=false.
+            const selectsOnClick =
+              wasActivated &&
+              nodeDragThreshold === 0 &&
+              options.selectNodesOnDrag === false &&
+              (clickStart?.maxDistance ?? 0) <= (options.nodeClickDistance ?? 0)
+
             dragPointer = pointerInCanvas(event)
             cancelNodeDragFrame()
 
@@ -9367,7 +9379,11 @@ export const createFlowHost = (
             element.classList.remove('dragging')
             draggingNodeIds.delete(node.id)
             refreshNodeRendererProps(nodeEntry, findNode(node.id), graphFor())
-            suppressClickThroughDispatch(wasActivated)
+
+            if (!selectsOnClick) {
+              suppressClickThroughDispatch(wasActivated)
+            }
+
             runEffect(browser.releasePointer(element, event.pointerId))
 
             const current = findNode(node.id)
@@ -10267,10 +10283,8 @@ export const createFlowHost = (
 
       const change: FlowChange = {
         kind: 'viewport',
-        viewport: moveViewportPan(
-          interactionSlots.activeViewportPan,
-          pointerInCanvas(event)
-        ),
+        // Pinned packages/system/src/xypanzoom/eventhandler.ts:238 retains the last transform.
+        viewport: renderedViewport,
       }
 
       const observation = userViewportObservation
@@ -12721,7 +12735,6 @@ export const createFlowHost = (
       ...a11yDescriptions.elements,
       canvasUIHandle.current.element
     )
-    viewport.append(selectionBox)
     updateCanvasMinimap()
 
     try {

@@ -81,6 +81,7 @@ const runtime = Runtime.embed<typeof ports, never, 'Element'>(
     {
       ...defaultInteractionOptions,
       ...options,
+      selectNodesOnDrag: options.selectNodesOnDrag ?? false,
       fitView: false,
       isValidConnection: () => true,
       zoomOnScroll: options.zoomOnScroll ?? true,

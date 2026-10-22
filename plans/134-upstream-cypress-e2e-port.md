@@ -66,7 +66,7 @@ Vanilla UP-127-006, "selects an edge by click", and UP-127-011, "selects an edge
 
 Every fail is listed below. A case that stops before a later assertion does not establish that later behavior.
 
-#### [Node selection, pane dismissal, and deletion](134-follow-up-node-input.md)
+#### [Node selection, pane dismissal, and deletion](135-cypress-node-input.md)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -207,7 +207,7 @@ Only the receipt prose changed after this run; the source, contracts, ledger out
 - `plans/134-follow-up-edge-input.md`
 - `plans/134-follow-up-interaction-policy.md`
 - `plans/134-follow-up-minimap.md`
-- `plans/134-follow-up-node-input.md`
+- `plans/135-cypress-node-input.md`
 - `plans/134-follow-up-viewport.md`
 - `plans/134-upstream-cypress-e2e-port.md`
 - `research/catalogs/upstream-cypress-evidence.json`

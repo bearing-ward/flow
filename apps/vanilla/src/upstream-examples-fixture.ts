@@ -51,6 +51,7 @@ const mount = (initial: { x: number; y: number; zoom: number }) => {
 
   const controller = mountFlow(container, accepted, {
     ...options,
+    deleteKeyCode: 'Backspace',
     fitView: false,
     documentMode: 'controlled',
     panOnDrag: panOnDrag ?? true,

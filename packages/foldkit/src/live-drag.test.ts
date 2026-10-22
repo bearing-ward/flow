@@ -104,6 +104,14 @@ const interactions = (result: ReturnType<typeof update>) =>
     item.kind === 'interaction' ? item.events : []
   ) ?? []
 
+const paneClick = () =>
+  Graph.Message.ObserveMouse({
+    ...click('c'),
+    name: 'onPaneClick',
+    nodeId: null,
+    select: false,
+  })
+
 const positions = (model: AppModel) =>
   Object.fromEntries(
     Graph.selectLiveDocument(model.graph).nodes.map(({ id, position }) => [
@@ -303,6 +311,106 @@ const selectionChanges = (result: ReturnType<typeof update>) =>
   semanticChanges(result)?.filter(({ kind }) => kind === 'selection-set')
 
 describe('Foldkit click selection edge cases', () => {
+  it.each([0, 1])(
+    'selectNodesOnDrag=true selects at threshold %i activation',
+    (threshold) => {
+      let result = step(
+        startWith({ nodeDragThreshold: threshold, selectNodesOnDrag: true }),
+        down('c')
+      )
+
+      expect(selectionChanges(result)).toStrictEqual(
+        threshold === 0
+          ? [{ kind: 'selection-set', nodeIds: ['c'], edgeIds: [] }]
+          : []
+      )
+
+      if (threshold > 0) {
+        result = step(result.model, move(12, 10))
+      }
+
+      expect(selected(result.model)).toStrictEqual(['c'])
+      expect(selectionChanges(result)).toStrictEqual([
+        { kind: 'selection-set', nodeIds: ['c'], edgeIds: [] },
+      ])
+      expect(interactions(result).map(({ name }) => name)).toContain(
+        'onNodeDragStart'
+      )
+      result = step(result.model, up(threshold === 0 ? 10 : 12, 10))
+      result = step(result.model, click('c', 'meta'))
+      expect(selected(result.model)).toStrictEqual(['c'])
+    }
+  )
+
+  it('selectNodesOnDrag=false keeps activation quiet and selects on click', () => {
+    const cleared = step(
+      startWith({ nodeDragThreshold: 0, selectNodesOnDrag: false }),
+      paneClick()
+    )
+
+    let result = step(cleared.model, down('c'))
+
+    expect(selected(result.model)).toStrictEqual([])
+    expect(selectionChanges(result)).toStrictEqual([])
+    result = step(result.model, up(10, 10))
+    result = step(result.model, click('c'))
+    expect(selected(result.model)).toStrictEqual(['c'])
+  })
+
+  it('runtime selectNodesOnDrag patches change the next node activation', () => {
+    const enabled = step(
+      startWith({ nodeDragThreshold: 0 }),
+      Graph.Message.SetCanvasOptions({
+        options: { selectNodesOnDrag: true },
+      })
+    )
+
+    expect(selected(step(enabled.model, down('c')).model)).toStrictEqual(['c'])
+
+    const cleared = step(enabled.model, paneClick())
+
+    const disabled = step(
+      cleared.model,
+      Graph.Message.SetCanvasOptions({
+        options: { selectNodesOnDrag: false },
+      })
+    )
+
+    expect(selected(step(disabled.model, down('c')).model)).toStrictEqual([])
+  })
+
+  it.each(['controlled', 'uncontrolled'] as const)(
+    'pane dismissal publishes an empty selection in %s mode',
+    (mode) => {
+      const model = startWith({}, mode)
+
+      const result = step(model, paneClick())
+
+      expect(selectionChanges(result)).toStrictEqual([
+        { kind: 'selection-set', nodeIds: [], edgeIds: [] },
+      ])
+      expect(selected(result.model)).toStrictEqual(
+        mode === 'controlled' ? ['a', 'b'] : []
+      )
+    }
+  )
+
+  it('pane dismissal preserves selection while elementsSelectable=false', () => {
+    const model = startWith({ elementsSelectable: false })
+    const result = step(model, paneClick())
+
+    expect(selected(result.model)).toStrictEqual(['a', 'b'])
+    expect(selectionChanges(result)).toStrictEqual([])
+  })
+
+  it('a pane click with empty selection emits no redundant proposal', () => {
+    const cleared = step(start(), paneClick())
+    const result = step(cleared.model, paneClick())
+
+    expect(selected(result.model)).toStrictEqual([])
+    expect(selectionChanges(result)).toStrictEqual([])
+  })
+
   it('selects on click at nodeDragThreshold 0 when the pointer did not move', () => {
     let result = step(startWith({ nodeDragThreshold: 0 }), down('c'))
 

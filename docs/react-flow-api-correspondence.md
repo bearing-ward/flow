@@ -73,7 +73,7 @@ Source: [current ReactFlow props](https://reactflow.dev/api-reference/react-flow
 | zoomOnScroll | viewport zoom operation | host option | canvas option | canvas option | Host lifecycle; exact config unverified. |
 | zoomOnPinch | pinch session/zoom | option is declared; execution not established | no prop | no option | Native pinch and trusted multi-pointer behavior remain unverified for 060; Vue/Foldkit have no pinch option. |
 | zoomOnDoubleClick | viewport zoom command | host option | canvas option | gap | Host lifecycle; Vue gap. |
-| selectNodesOnDrag | node selection change | option; enabled unless false | prop; default false | no option | Vue's default false preserves existing shared conformance semantics; explicit Vue true is tested. These defaults are intentionally host-specific, not parity. Foldkit exposes no option. |
+| selectNodesOnDrag | node selection change | option; enabled unless false | prop; default false | option; default false | Vue and Foldkit preserve click-selection defaults. Explicit true selects at drag activation. Host defaults differ from upstream. |
 | elevateNodesOnSelect | `computeFlowStacking` node z (default true) | render behavior | wiring pending (Plan 114 checklist) | app rendering | Plan 114 core port of `calculateZ`; hosts must apply the returned node z-index. |
 | connectOnClick | click-connection session | configurable mount option | Boolean prop | program option | Each adapter can toggle click connection; callback event names/payloads differ. |
 | connectionMode | handle kind/validation | mount option | prop, default `strict` | program option, default `strict` | Strict/loose production cases retain the historical fixture separately; current named target-target gestures use initiating-target direction. Physical-ID rendering is an intentional native Flow rendering difference from pinned renderer008. |
@@ -199,7 +199,7 @@ This is a bounded set of meaningful option combinations, not the Cartesian produ
 | Pan activation: `panOnDrag` and mouse-button array | Boolean or button array | Boolean or button array | Boolean or button array | Plan 132 covers mouse buttons, touch selection, and the additive activation key through the unchanged upstream pane contracts. |
 | Wheel/double-click activation: `panOnScroll`, `zoomOnScroll`, `zoomOnDoubleClick` | Options | Options | Options | Existing fixed behavior does not establish every default/disabled combination. |
 | Pinch activation: `zoomOnPinch` | Option is declared; active implementation/evidence not established | No prop | No option | Vue pinch zoom and Foldkit pinch option are absent; trusted native multi-pointer evidence remains Plan 060. |
-| `selectNodesOnDrag` | Option; enabled unless false | Prop; default false, explicit true tested | No option | Vue default intentionally preserves existing shared conformance semantics; option defaults differ by host and do not imply parity. Foldkit configuration gap. |
+| `selectNodesOnDrag` | Option; enabled unless false | Prop; default false, explicit true tested | Boolean option; default false | Vue and Foldkit preserve click-selection defaults; explicit true selects at drag activation. Host defaults differ from upstream. |
 
 ### Cancellation reason coverage by operation
 

@@ -527,6 +527,7 @@ test('paneClickDistance also gates selection movement, with the selection key by
     '0px'
   )
   await page.mouse.up()
+  // Pinned packages/react/src/container/Pane/index.tsx:107,299,340: below-threshold release remains a pane click and resets selection.
   expect(
     await page.evaluate(
       () =>
@@ -535,7 +536,7 @@ test('paneClickDistance also gates selection movement, with the selection key by
           .getNodes()
           .find(({ id }) => id === 'a')?.selected
     )
-  ).toBe(true)
+  ).toBe(false)
   await page.keyboard.down('Shift')
   await page.mouse.move(canvas.x + 250, canvas.y + 350)
   await page.mouse.down()
