@@ -70,6 +70,17 @@ const pair = (
   return [x, y] as const
 }
 
+interface BackgroundViewport {
+  readonly x: number
+  readonly y: number
+  readonly zoom: number
+}
+
+const backgroundRenderers = new WeakMap<
+  SVGSVGElement,
+  (viewport: BackgroundViewport) => void
+>()
+
 /** Build an original, canvas-sized SVG background with no input ownership. */
 export const createFlowBackground = (
   owner: Document,
@@ -109,47 +120,56 @@ export const createFlowBackground = (
   svg.setAttribute('width', '100%')
   svg.setAttribute('height', '100%')
   pattern.setAttribute('id', id)
-  pattern.setAttribute('width', String(gapX))
-  pattern.setAttribute('height', String(gapY))
-  pattern.setAttribute('x', String(offsetX))
-  pattern.setAttribute('y', String(offsetY))
   pattern.setAttribute('patternUnits', 'userSpaceOnUse')
   pattern.setAttribute('class', options.patternClassName ?? '')
 
-  const add = (tag: 'circle' | 'path', attrs: Record<string, string>) => {
-    const element = owner.createElementNS('http://www.w3.org/2000/svg', tag)
-
-    for (const [key, value] of Object.entries(attrs)) {
-      element.setAttribute(key, value)
-    }
-
-    pattern.append(element)
-  }
+  const patternElement = owner.createElementNS(
+    'http://www.w3.org/2000/svg',
+    variant === 'dots' ? 'circle' : 'path'
+  )
 
   if (variant === 'dots') {
-    add('circle', {
-      cx: String(gapX / 2),
-      cy: String(gapY / 2),
-      r: String(size),
-      fill: foreground,
-    })
-  } else if (variant === 'lines') {
-    add('path', {
-      d: `M ${gapX} 0 L 0 0 0 ${gapY}`,
-      fill: 'none',
-      stroke: foreground,
-      'stroke-width': String(width),
-    })
+    patternElement.setAttribute('fill', foreground)
   } else {
-    const cx = gapX / 2
-    const cy = gapY / 2
-    add('path', {
-      d: `M ${cx - size} ${cy} H ${cx + size} M ${cx} ${cy - size} V ${cy + size}`,
-      fill: 'none',
-      stroke: foreground,
-      'stroke-width': String(width),
-    })
+    patternElement.setAttribute('fill', 'none')
+    patternElement.setAttribute('stroke', foreground)
+    patternElement.setAttribute('stroke-width', String(width))
   }
+
+  pattern.append(patternElement)
+
+  const renderViewport = (viewport: BackgroundViewport): void => {
+    const scaledGapX = gapX * viewport.zoom || 1
+    const scaledGapY = gapY * viewport.zoom || 1
+    const scaledSize = size * viewport.zoom
+    const patternWidth = variant === 'cross' ? scaledSize : scaledGapX
+    const patternHeight = variant === 'cross' ? scaledSize : scaledGapY
+    const scaledOffsetX = offsetX * viewport.zoom + patternWidth / 2
+    const scaledOffsetY = offsetY * viewport.zoom + patternHeight / 2
+
+    pattern.setAttribute('width', String(scaledGapX))
+    pattern.setAttribute('height', String(scaledGapY))
+    pattern.setAttribute('x', String(viewport.x % scaledGapX))
+    pattern.setAttribute('y', String(viewport.y % scaledGapY))
+    pattern.setAttribute(
+      'patternTransform',
+      `translate(-${scaledOffsetX},-${scaledOffsetY})`
+    )
+
+    if (variant === 'dots') {
+      patternElement.setAttribute('cx', String(scaledSize / 2))
+      patternElement.setAttribute('cy', String(scaledSize / 2))
+      patternElement.setAttribute('r', String(scaledSize / 2))
+    } else {
+      patternElement.setAttribute(
+        'd',
+        `M ${patternWidth / 2} 0 V ${patternHeight} M 0 ${patternHeight / 2} H ${patternWidth}`
+      )
+    }
+  }
+
+  backgroundRenderers.set(svg, renderViewport)
+  renderViewport({ x: 0, y: 0, zoom: 1 })
 
   defs.append(pattern)
   svg.append(defs)
@@ -175,14 +195,20 @@ export const alignFlowBackgroundToViewport = (
   background: SVGSVGElement,
   viewport: { readonly x: number; readonly y: number; readonly zoom: number }
 ): void => {
-  const pattern = background.querySelector('pattern')
+  const render = backgroundRenderers.get(background)
 
-  if (pattern !== null) {
-    pattern.setAttribute(
+  if (render !== undefined) {
+    render(viewport)
+
+    return
+  }
+
+  background
+    .querySelector('pattern')
+    ?.setAttribute(
       'patternTransform',
       `translate(${viewport.x} ${viewport.y}) scale(${viewport.zoom})`
     )
-  }
 }
 
 export interface FlowControlsOptions {

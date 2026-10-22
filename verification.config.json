@@ -100,7 +100,9 @@
       "graph-editing-examples.e2e.ts",
       "public-state.e2e.ts",
       "viewport-operations.e2e.ts",
-      "viewport-portal.e2e.ts"
+      "viewport-portal.e2e.ts",
+      "node-toolbar.e2e.ts",
+      "edge-toolbar.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -156,7 +158,8 @@
       "toolbars.e2e.ts",
       "ui-recipes.e2e.ts",
       "viewport-portal.e2e.ts",
-      "selection-rect-race.e2e.ts"
+      "selection-rect-race.e2e.ts",
+      "presentation-followups.e2e.ts"
     ]
   }
 }

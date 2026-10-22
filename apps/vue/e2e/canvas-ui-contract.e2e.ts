@@ -32,14 +32,15 @@ test('Vue controls use public viewport actions and background tracks the viewpor
   await expect(dots.locator('pattern')).toHaveAttribute('width', '18')
   await expect(dots.locator('pattern')).toHaveAttribute('height', '24')
   await expect(dots.locator('pattern')).toHaveClass(/fixture-pattern/u)
-  await expect(dots.locator('pattern circle')).toHaveAttribute('r', '2')
+  // Pinned packages/react/src/additional-components/Background/Background.tsx:76 halves size; Patterns.tsx:16 centers paths.
+  await expect(dots.locator('pattern circle')).toHaveAttribute('r', '1')
   await expect(lines.locator('pattern path')).toHaveAttribute(
     'd',
-    'M 18 0 L 0 0 0 24'
+    'M 9 0 V 24 M 0 12 H 18'
   )
   await expect(cross.locator('pattern path')).toHaveAttribute(
     'd',
-    'M 8 12 h 2 M 9 11 v 2'
+    'M 1 0 V 2 M 0 1 H 2'
   )
   await expect(
     page.getByRole('button', { name: 'Custom disabled action' })

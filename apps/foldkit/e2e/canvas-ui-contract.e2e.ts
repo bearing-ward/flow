@@ -3,6 +3,37 @@ import { expect, test } from '@playwright/test'
 interface CanvasUiTransformSample {
   readonly viewport: string
   readonly pattern: string
+  readonly x: number
+  readonly y: number
+  readonly width: number
+  readonly height: number
+}
+
+// Pinned packages/react/src/additional-components/Background/Background.tsx:40-47,68-76 scales cells and centers offsets.
+const backgroundAlignmentError = (sample: CanvasUiTransformSample): number => {
+  const viewport =
+    /translate\((?<x>-?[\d.]+)px, (?<y>-?[\d.]+)px\) scale\((?<zoom>[\d.]+)\)/u.exec(
+      sample.viewport
+    )?.groups
+
+  const offset = /translate\((?<x>-?[\d.]+),(?<y>-?[\d.]+)\)/u.exec(
+    sample.pattern
+  )?.groups
+
+  if (viewport === undefined || offset === undefined) {
+    return Number.POSITIVE_INFINITY
+  }
+
+  const gap = 20 * Number(viewport.zoom)
+
+  return Math.max(
+    Math.abs(sample.width - gap),
+    Math.abs(sample.height - gap),
+    Math.abs(sample.x - (Number(viewport.x) % gap)),
+    Math.abs(sample.y - (Number(viewport.y) % gap)),
+    Math.abs(Number(offset.x) + gap / 2),
+    Math.abs(Number(offset.y) + gap / 2)
+  )
 }
 
 declare global {
@@ -36,6 +67,10 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
 
         const pattern = svg.querySelector('pattern')
 
+        if (pattern === null) {
+          throw new Error('Background pattern is missing')
+        }
+
         const foreground =
           svg.querySelector('circle')?.getAttribute('fill') ??
           svg.querySelector('path')?.getAttribute('stroke') ??
@@ -43,15 +78,16 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
 
         return {
           variant,
-          pattern: pattern?.outerHTML ?? '',
+          pattern: pattern.outerHTML,
+          patternTransform: pattern.getAttribute('patternTransform') ?? '',
           fill: svg.querySelector('rect')?.getAttribute('fill') ?? '',
           ariaHidden: svg.getAttribute('aria-hidden'),
           backgroundClass: svg.getAttribute('class') ?? '',
-          patternClass: pattern?.getAttribute('class') ?? '',
-          patternId: pattern?.getAttribute('id') ?? '',
+          patternClass: pattern.getAttribute('class') ?? '',
+          patternId: pattern.getAttribute('id') ?? '',
           patternOffset: [
-            pattern?.getAttribute('x') ?? '',
-            pattern?.getAttribute('y') ?? '',
+            pattern.getAttribute('x') ?? '',
+            pattern.getAttribute('y') ?? '',
           ],
           foreground,
           fillReference:
@@ -68,9 +104,16 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
     'lines',
     'cross',
   ])
+  expect(result.map(({ patternTransform }) => patternTransform)).toEqual([
+    'translate(-10,-15)',
+    'translate(-10,-15)',
+    'translate(-5,-6)',
+  ])
+  expect(result[0]?.pattern).toContain('r="0.5"')
   expect(result[0]?.pattern).toContain('<circle')
   expect(result[1]?.pattern).toContain('<path')
-  expect(result[2]?.pattern).toContain('H 14')
+  // Pinned packages/react/src/additional-components/Background/Patterns.tsx:16 uses the complete cross size.
+  expect(result[2]?.pattern).toContain('H 6')
   expect(
     result.every(
       ({ fill, ariaHidden }) => fill === '#ffffff' && ariaHidden === 'true'
@@ -90,8 +133,8 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
     result.every(
       ({ patternId, patternOffset, foreground, fillReference, variant }) =>
         patternId === `test-${variant}` &&
-        patternOffset[0] === '2' &&
-        patternOffset[1] === '3' &&
+        patternOffset[0] === '0' &&
+        patternOffset[1] === '0' &&
         foreground === '#123456' &&
         fillReference === `url(#test-${variant})`
     )
@@ -138,33 +181,24 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
   const expectBackgroundAligned = async (): Promise<void> => {
     await expect
       .poll(() =>
-        page.evaluate(() => {
-          const viewport = document.querySelector<HTMLElement>(
-            '.flow-foldkit-viewport'
-          )
-
-          const pattern = document.querySelector('pattern')
-
-          const viewportValues =
-            /translate\((?<x>-?[\d.]+)px, (?<y>-?[\d.]+)px\) scale\((?<zoom>[\d.]+)\)/u.exec(
-              viewport?.style.transform ?? ''
-            )?.groups
-
-          const patternValues =
-            /translate\((?<x>-?[\d.]+) (?<y>-?[\d.]+)\) scale\((?<zoom>[\d.]+)\)/u.exec(
-              pattern?.getAttribute('patternTransform') ?? ''
-            )?.groups
-
-          if (viewportValues === undefined || patternValues === undefined) {
-            return 1_000_000
-          }
-
-          return Math.max(
-            ...(['x', 'y', 'zoom'] as const).map((key) =>
-              Math.abs(Number(viewportValues[key]) - Number(patternValues[key]))
+        page
+          .evaluate(() => {
+            const viewport = document.querySelector<HTMLElement>(
+              '.flow-foldkit-viewport'
             )
-          )
-        })
+
+            const pattern = document.querySelector('pattern')
+
+            return {
+              viewport: viewport?.style.transform ?? '',
+              pattern: pattern?.getAttribute('patternTransform') ?? '',
+              x: Number(pattern?.getAttribute('x')),
+              y: Number(pattern?.getAttribute('y')),
+              width: Number(pattern?.getAttribute('width')),
+              height: Number(pattern?.getAttribute('height')),
+            }
+          })
+          .then(backgroundAlignmentError)
       )
       .toBeLessThan(0.01)
   }
@@ -205,6 +239,10 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
       samples.push({
         viewport: viewport.style.transform,
         pattern: pattern.getAttribute('patternTransform') ?? '',
+        x: Number(pattern.getAttribute('x')),
+        y: Number(pattern.getAttribute('y')),
+        width: Number(pattern.getAttribute('width')),
+        height: Number(pattern.getAttribute('height')),
       })
     }
 
@@ -250,28 +288,7 @@ test('Foldkit mounts canvas UI, tracks viewport transforms, clamps zoom and disp
   expect(intermediateAnimationSamples.length).toBeGreaterThan(0)
 
   const misalignedIntermediateSamples = intermediateAnimationSamples.filter(
-    (sample) => {
-      const viewportValues =
-        /translate\((?<x>-?[\d.]+)px, (?<y>-?[\d.]+)px\) scale\((?<zoom>[\d.]+)\)/u.exec(
-          sample.viewport
-        )?.groups
-
-      const patternValues =
-        /translate\((?<x>-?[\d.]+) (?<y>-?[\d.]+)\) scale\((?<zoom>[\d.]+)\)/u.exec(
-          sample.pattern
-        )?.groups
-
-      if (viewportValues === undefined || patternValues === undefined) {
-        return true
-      }
-
-      return (
-        Math.abs(Number(viewportValues.x) - Number(patternValues.x)) >= 0.01 ||
-        Math.abs(Number(viewportValues.y) - Number(patternValues.y)) >= 0.01 ||
-        Math.abs(Number(viewportValues.zoom) - Number(patternValues.zoom)) >=
-          0.01
-      )
-    }
+    (sample) => backgroundAlignmentError(sample) >= 0.01
   )
 
   expect(misalignedIntermediateSamples).toEqual([])

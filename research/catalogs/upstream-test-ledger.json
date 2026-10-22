@@ -12,12 +12,10 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The dot patternTransform is translate(0 0) scale(1), rather than translate(-10,-10)."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The dot pattern has no patternTransform attribute; upstream requires translate(-10,-10)."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/background.ts:12"
@@ -33,12 +31,10 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The line patternTransform is translate(2 2) scale(1), rather than translate(-52,-52)."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The line pattern has no patternTransform attribute; upstream requires translate(-52,-52)."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/background.ts:27"
@@ -223,7 +219,7 @@
       "hosts": {
         "vanilla": {
           "status": "fail",
-          "reason": "The containing edge SVG computes z-index auto rather than 3141592."
+          "reason": "Shared-SVG design remains as documented at research/traces/edge-visibility-stacking.md:34 and apps/vanilla/src/edge-renderer.ts:568. Received SVG z-index auto versus upstream 3141592. Visual probe also finds node 8 ahead of z-index at (537.142866,396.205714); pinned React paints z-index ahead of node 8 at (522.857134,403.502152). The measured visual gap cannot be classified as only a CSS serialization difference."
         },
         "vue": {
           "status": "pass"
@@ -305,12 +301,11 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The normal edge SVG computes z-index auto rather than 0."
+          "status": "intentional-difference",
+          "reason": "Shared-SVG ordering is documented at research/traces/edge-visibility-stacking.md:34 and sorted at apps/vanilla/src/edge-renderer.ts:568. Received SVG z-index auto versus upstream 0. Measured elementsFromPoint places edge-with-style ahead of edge-with-class at (619.367188,109.991313), matching pinned React (616.515386,69.688244). A controlled node-3 overlap at the path midpoint puts node 3 ahead of edge-with-class in both hosts. This preserves fixture visual order without per-edge CSS wrappers."
         },
         "vue": {
-          "status": "fail",
-          "reason": "The normal edge SVG computes z-index 1 rather than 0."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -327,7 +322,7 @@
       "hosts": {
         "vanilla": {
           "status": "fail",
-          "reason": "The normal-to-child edge SVG computes z-index auto rather than 1."
+          "reason": "Shared-SVG sort at apps/vanilla/src/edge-renderer.ts:568 is preserved per research/traces/edge-visibility-stacking.md:34. Received SVG z-index auto versus upstream 1. elementsFromPoint at (671.443231,565.335702) orders parent node 12 before subflow-edge; pinned React at (675.991332,593.642339) orders subflow-edge before parent 12. This is a measured visual stacking product gap, not an intentional CSS-only difference."
         },
         "vue": {
           "status": "pass"
@@ -347,7 +342,7 @@
       "hosts": {
         "vanilla": {
           "status": "fail",
-          "reason": "The child-to-child edge SVG computes z-index auto rather than 1."
+          "reason": "Shared-SVG sort at apps/vanilla/src/edge-renderer.ts:568 is preserved per research/traces/edge-visibility-stacking.md:34. Received SVG z-index auto versus upstream 1. elementsFromPoint at (668.847595,628.813375) orders parent node 12 before subflow-edge-2; pinned React at (672.856059,664.246821) orders subflow-edge-2 before parent 12. This is a measured visual stacking product gap, not an intentional CSS-only difference."
         },
         "vue": {
           "status": "pass"
@@ -385,15 +380,14 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The default toolbar remains attached while unselected; upstream requires it to be detached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The default toolbar remains attached while unselected; upstream requires it to be detached."
+          "status": "intentional-difference",
+          "reason": "plans/102-add-foldkit-node-and-edge-toolbars.md:23 deliberately keeps invisible caller content mounted with hidden; packages/foldkit/src/toolbar.ts:200 applies it. Received one attached toolbar versus upstream detached. Measured hidden attribute present, display none, visible false, empty accessibility snapshot, zero accessible button descendants, and attempted button focus leaves activeElement outside the toolbar. apps/foldkit/e2e/presentation-followups.e2e.ts:5 separately proves hiding, accessibility exclusion, focus exclusion, and visibility after selecting its node."
         }
       },
       "flowTest": "apps/shared-e2e/upstream/node-toolbar.ts:132"
