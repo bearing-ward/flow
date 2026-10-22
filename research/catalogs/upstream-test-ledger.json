@@ -57,8 +57,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Clicking the rendered edge hit path leaves its wrapper without the selected class."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:17"
@@ -77,8 +76,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The first edge lacks the selected class after click; the second-click multi-selection assertions are not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:26"
@@ -192,8 +190,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The edge lacks the selected class after click; the deletion assertion is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:107"
@@ -212,8 +209,7 @@
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The protected edge lacks the selected class after its midpoint click; the deletion check is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:121"
@@ -249,8 +245,7 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The aria-label edge wrapper has no aria-label-test attribute value."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -266,16 +261,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The click 21 pixels to the right of the interaction-width edge center does not select it."
+          "status": "intentional-difference",
+          "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5208 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.822857 (rendered half-width 17.2800 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-viewport > flow-canvas > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
         },
         "vue": {
-          "status": "fail",
-          "reason": "The click 21 pixels to the right of the interaction-width edge center does not select it."
+          "status": "intentional-difference",
+          "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5919 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.820571 (rendered half-width 17.2320 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-vue-canvas > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The click 21 pixels to the right of the edge center leaves its wrapper without the selected class."
+          "status": "intentional-difference",
+          "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5208 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.822857 (rendered half-width 17.2800 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-foldkit-viewport > flow-foldkit-canvas > flow-foldkit-root > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
         }
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:165"

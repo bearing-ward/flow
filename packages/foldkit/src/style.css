@@ -417,7 +417,6 @@
 }
 .flow-foldkit-edge .flow-foldkit-edge-hit-target {
   stroke: transparent;
-  stroke-width: 16px;
   pointer-events: stroke;
 }
 .flow-foldkit-edge-labels {
