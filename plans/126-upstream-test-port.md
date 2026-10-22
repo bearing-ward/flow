@@ -94,7 +94,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 | UP-126-001 | centers the dot pattern with default gap and no offset (zoom 1, pan 0,0) | **vue**: The dot patternTransform is translate(0 0) scale(1), rather than translate(-10,-10).<br>**foldkit**: The dot pattern has no patternTransform attribute; upstream requires translate(-10,-10). |
 | UP-126-002 | applies both the offset and the half-cell centering for a non-zero offset | **vue**: The line patternTransform is translate(2 2) scale(1), rather than translate(-52,-52).<br>**foldkit**: The line pattern has no patternTransform attribute; upstream requires translate(-52,-52). |
 
-#### [Edge interaction and accessibility](126-follow-up-edge-interaction.md)
+#### [Edge interaction and accessibility](131-edge-interaction.md)
 
 | Case | Upstream title | Host and observed difference |
 | --- | --- | --- |
@@ -177,7 +177,7 @@ Every remaining `fail` entry appears below, grouped into a follow-up plan. Reaso
 - `packages/conformance/src/upstream-generic/pane/non-defaults.ts`
 - `plans/126-follow-up-background-transforms.md`
 - `plans/128-connection-input.md`
-- `plans/126-follow-up-edge-interaction.md`
+- `plans/131-edge-interaction.md`
 - `plans/126-follow-up-edge-stacking.md`
 - `plans/127-node-input.md`
 - `plans/126-follow-up-pane-input.md`

@@ -9556,6 +9556,9 @@ export const FlowCanvas = defineComponent({
         {
           key: edge.id,
           class: flowVueEdgeClasses(edge),
+          'aria-label':
+            edge.ariaLabel ??
+            `Edge from ${source?.node.label ?? edge.source} to ${target?.node.label ?? edge.target}`,
           'data-testid': 'flow-edge',
           'data-edge-id': edge.id,
         },

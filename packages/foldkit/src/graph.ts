@@ -70,7 +70,6 @@ import {
   smoothStepEdgePath,
   applyEdgeSelectionChange,
   applyEdgeReconnectChange,
-  orderFlowEdges,
   applyNodePositionChange,
   applyNodePositionsChange,
   applyNodeBoundsChange,
@@ -4425,7 +4424,7 @@ const updateState = (
         measurements: pruneFlowMeasurements(model.document, model.measurements),
       },
     }),
-    SelectEdge: ({ edgeId }) => {
+    SelectEdge: ({ edgeId, pointer }) => {
       const edge = model.document.edges.find(
         (candidate) => candidate.id === edgeId
       )
@@ -4437,17 +4436,56 @@ const updateState = (
         return noChange(model)
       }
 
-      const change = {
-        kind: 'edge-selection' as const,
-        edgeId,
-        selected: true,
-      }
+      const multi =
+        model.multiSelectionKeyPressed ||
+        [model.multiSelectionKeyCode]
+          .flat()
+          .some(
+            (key) =>
+              (key === 'Meta' && pointer?.metaKey === true) ||
+              (key === 'Control' && pointer?.ctrlKey === true) ||
+              (key === 'Alt' && pointer?.altKey === true) ||
+              (key === 'Shift' && pointer?.shiftKey === true)
+          )
 
-      const document = applyEdgeSelectionChange(model.document, change)
+      const change: CoreFlowChange = multi
+        ? {
+            kind: 'selection-set',
+            nodeIds: model.document.nodes
+              .filter((node) => node.selected === true)
+              .map((node) => node.id),
+            edgeIds: model.document.edges
+              .filter((candidate) =>
+                candidate.id === edgeId
+                  ? candidate.selected !== true
+                  : candidate.selected === true
+              )
+              .map((candidate) => candidate.id),
+          }
+        : {
+            kind: 'edge-selection',
+            edgeId,
+            selected: true,
+          }
+
+      const document =
+        change.kind === 'selection-set'
+          ? applySelectionSetChange(model.document, change)
+          : applyEdgeSelectionChange(model.document, change)
 
       return document === undefined
         ? noChange(model)
-        : report(model, { ...model, document }, change)
+        : report(
+            model,
+            {
+              ...model,
+              document:
+                model.documentMode === 'uncontrolled'
+                  ? document
+                  : model.document,
+            },
+            change
+          )
     },
     ToggleNodeSelection: ({ nodeId }) => toggleNodeSelection(model, nodeId),
     // oxlint-disable-next-line complexity
@@ -5666,7 +5704,7 @@ const edgeVisuals = (
     h.D(interactionPath),
     h.Fill('none'),
     h.Stroke('transparent'),
-    h.StrokeWidth(String(edge.interactionWidth ?? 16)),
+    h.StrokeWidth(String(edge.interactionWidth ?? 20)),
     h.PointerEvents('stroke'),
     h.Attribute('role', edge.selectable === false ? 'img' : 'button'),
     h.Attribute('tabindex', edge.focusable === false ? '-1' : '0'),
@@ -7357,7 +7395,7 @@ const graphView = (
     const customEdgeLabels: NonNullable<FoldHtml.Html>[] = []
     const reconnectControls: NonNullable<FoldHtml.Html>[] = []
 
-    const visibleEdges = orderFlowEdges(renderEdges)
+    const visibleEdges = renderEdges
       .filter(
         (edge) =>
           (!model.onlyRenderVisibleElements ||
@@ -7465,6 +7503,7 @@ const graphView = (
             h.Class(
               flowClassNames(
                 'flow-foldkit-edge',
+                edge.selected === true && 'selected',
                 edge.animated === true && 'animated',
                 edge.className
               )

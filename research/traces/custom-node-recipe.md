@@ -14,7 +14,7 @@ This trace covers the dated React Flow `Custom Node` journey through Flow's exis
 
 ### Foldkit
 
-The renderer registry maps node types to `FoldkitNodeRenderer` callbacks receiving a `FlowNode` and Html builder (`packages/foldkit/src/graph.ts:2259`). Foldkit's graph message accepts a schema-validated `FlowEditTransaction` (`packages/foldkit/src/graph.ts:318`) and routes it through `requestEdit` (`packages/foldkit/src/graph.ts:1193`). Core applies `update-node-data` to the accepted node document (`packages/core/src/domain/flow-edit.ts:189`).
+The renderer registry maps node types to `FoldkitNodeRenderer` callbacks receiving a `FlowNode` and Html builder (`packages/foldkit/src/graph.ts:2258`). Foldkit's graph message accepts a schema-validated `FlowEditTransaction` (`packages/foldkit/src/graph.ts:317`) and routes it through `requestEdit` (`packages/foldkit/src/graph.ts:1192`). Core applies `update-node-data` to the accepted node document (`packages/core/src/domain/flow-edit.ts:189`).
 
 ## Mounted test paths
 
