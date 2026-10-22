@@ -345,6 +345,7 @@
   left: -5px;
 }
 .flow-foldkit-handle {
+  pointer-events: none;
   position: absolute;
   /* Above resize controls, so handles stay connectable on selected nodes. */
   z-index: 3;
@@ -380,7 +381,7 @@
 }
 .flow-foldkit-edge {
   position: absolute;
-  pointer-events: none;
+  pointer-events: visibleStroke;
   color: #526078;
 }
 .flow-foldkit-edge svg {
@@ -417,7 +418,7 @@
 }
 .flow-foldkit-edge .flow-foldkit-edge-hit-target {
   stroke: transparent;
-  pointer-events: stroke;
+  pointer-events: inherit;
 }
 .flow-foldkit-edge-labels {
   position: absolute;
@@ -763,5 +764,15 @@
     --flow-selection-background-color,
     var(--flow-selection-background-color-default)
   );
+  pointer-events: none;
+}
+
+.flow-foldkit-handle.connectable.connectablestart,
+.flow-foldkit-canvas:has(.flow-foldkit-connection-preview)
+  .flow-foldkit-handle.connectable.connectableend {
+  pointer-events: all;
+}
+
+.flow-foldkit-edge.inactive {
   pointer-events: none;
 }

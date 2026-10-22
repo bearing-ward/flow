@@ -12,11 +12,11 @@ The fixture keeps controlled graph changes in host state. Vanilla acknowledges c
 
 Upstream's edge wrapper obtains effective z-index at `packages/react/src/components/EdgeWrapper/index.tsx:91` and places each edge in its own SVG at `packages/react/src/components/EdgeWrapper/index.tsx:183`. The system includes parented endpoint elevation at `packages/system/src/utils/edges/general.ts:40`.
 
-Flow computes semantic levels in `packages/core/src/domain/flow-z-index.ts:50`. Vanilla uses those levels and selected elevation to sort groups within one SVG at `apps/vanilla/src/edge-renderer.ts:568`. Its `.flow-edges` shell has no z-index at `apps/vanilla/src/style.css:285`. The existing design decision is `research/traces/edge-visibility-stacking.md:34`; it does not prove overlap parity.
+Flow computes semantic levels in `packages/core/src/domain/flow-z-index.ts:50`. Vanilla uses those levels and selected elevation to sort groups within one SVG at `apps/vanilla/src/edge-renderer.ts:571`. Its `.flow-edges` shell has no z-index at `apps/vanilla/src/style.css:285`. The existing design decision is `research/traces/edge-visibility-stacking.md:34`; it does not prove overlap parity.
 
-Vue derives core stacking at `packages/vue/src/flow-canvas.ts:1512`, separates base and elevated edges at `packages/vue/src/flow-canvas.ts:10164`, renders the base SVG at `packages/vue/src/flow-canvas.ts:10809`, and applies explicit levels to elevated SVGs at `packages/vue/src/flow-canvas.ts:10855`. The base stylesheet incorrectly supplied 1 although base levels are zero or below. `packages/vue/src/style.css:454` now supplies 0. Vue already has separate elevated layers; this was a default CSS value bug, not Vanilla's shared-SVG decision.
+Vue derives core stacking at `packages/vue/src/flow-canvas.ts:1550`, separates base and elevated edges at `packages/vue/src/flow-canvas.ts:10232`, renders the base SVG at `packages/vue/src/flow-canvas.ts:10877`, and applies explicit levels to elevated SVGs at `packages/vue/src/flow-canvas.ts:10923`. The base stylesheet incorrectly supplied 1 although base levels are zero or below. `packages/vue/src/style.css:455` now supplies 0. Vue already has separate elevated layers; this was a default CSS value bug, not Vanilla's shared-SVG decision.
 
-Foldkit computes levels at `packages/foldkit/src/graph.ts:7178`, then renders edge SVGs with each edge's level at `packages/foldkit/src/graph.ts:7434`. Its four relevant upstream stacking assertions already pass.
+Foldkit computes levels at `packages/foldkit/src/graph.ts:7188`, then renders edge SVGs with each edge's level at `packages/foldkit/src/graph.ts:7453`. Its four relevant upstream stacking assertions already pass.
 
 ## Background production paths
 

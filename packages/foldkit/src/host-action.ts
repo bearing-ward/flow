@@ -12,6 +12,10 @@ import { CanvasOptionsSchema } from './graph.ts'
 
 export const HostAction = FoldMessage.defineMessageUnion({
   RefreshRenderers: {},
+  SetInteractionHandlers: {
+    nodePointerHandlers: Schema.Boolean,
+    edgeClickHandler: Schema.Boolean,
+  },
   RequestKeyboardDelete: {},
   SetCanvasOptions: { options: CanvasOptionsSchema },
   ReplaceDocument: { document: FlowDocumentSchema },

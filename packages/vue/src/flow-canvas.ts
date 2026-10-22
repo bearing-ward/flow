@@ -97,6 +97,7 @@ import {
   isNodeConnectable,
   isNodeDraggable,
   isNodeSelectable,
+  isEdgeSelectable,
 } from '@flow/core'
 import type {
   FlowInternalNode,
@@ -966,6 +967,38 @@ export const FlowCanvas = defineComponent({
      * node moves, the move announcements and node focus auto-pan.
      */
     disableKeyboardA11y: { type: Boolean, default: false },
+    // These callback props affect hit testing. Vue can skip updates for emit-only listeners.
+    onNodeClick: {
+      type: Function as PropType<
+        ((node: FlowNode, event?: MouseEvent) => void) | undefined
+      >,
+      default: undefined,
+    },
+    onNodeMouseEnter: {
+      type: Function as PropType<
+        ((node: FlowNode, event?: MouseEvent) => void) | undefined
+      >,
+      default: undefined,
+    },
+    onNodeMouseMove: {
+      type: Function as PropType<
+        ((node: FlowNode, event?: MouseEvent) => void) | undefined
+      >,
+      default: undefined,
+    },
+    onNodeMouseLeave: {
+      type: Function as PropType<
+        ((node: FlowNode, event?: MouseEvent) => void) | undefined
+      >,
+      default: undefined,
+    },
+    onEdgeClick: {
+      type: Function as PropType<
+        | ((edge: FlowEdge, event?: PointerEvent | KeyboardEvent) => void)
+        | undefined
+      >,
+      default: undefined,
+    },
     /** Let nodes be dragged; a node's own `draggable` wins. */
     nodesDraggable: { type: Boolean, default: true },
     /** Let handles start and finish connections; node and handle flags win. */
@@ -1082,9 +1115,6 @@ export const FlowCanvas = defineComponent({
     }) => true,
     nodeMouseDown: (_node: FlowNode, _event?: MouseEvent) => true,
     nodeMouseUp: (_node: FlowNode, _event?: MouseEvent) => true,
-    nodeMouseMove: (_node: FlowNode, _event?: MouseEvent) => true,
-    nodeMouseEnter: (_node: FlowNode, _event?: MouseEvent) => true,
-    nodeMouseLeave: (_node: FlowNode, _event?: MouseEvent) => true,
     nodeDoubleClick: (_node: FlowNode, _event?: MouseEvent) => true,
     nodeContextMenu: (_node: FlowNode, _event?: MouseEvent) => true,
     edgeMouseDown: (_edge: FlowEdge, _event?: MouseEvent) => true,
@@ -1135,11 +1165,19 @@ export const FlowCanvas = defineComponent({
     selectedNodesDragStop: (
       _payload: NodeEndPayload & { readonly nodes: readonly FlowNode[] }
     ) => true,
-    nodeClick: (_node: FlowNode, _event?: MouseEvent) => true,
-    edgeClick: (_edge: FlowEdge, _event?: PointerEvent | KeyboardEvent) => true,
   },
   // eslint-disable-next-line complexity -- the Vue boundary coordinates host lifecycles and core operations.
   setup(props, { emit, slots, expose }) {
+    const hasNodePointerHandlers = () =>
+      Boolean(
+        props.onNodeClick ||
+        props.onNodeMouseEnter ||
+        props.onNodeMouseMove ||
+        props.onNodeMouseLeave
+      )
+
+    const hasEdgeClickHandler = () => props.onEdgeClick !== undefined
+
     const canvasId = `flow-vue-${useId()}`
 
     const defaultEdgeOptions = computed(() =>
@@ -8277,7 +8315,11 @@ export const FlowCanvas = defineComponent({
       // Capturing on the node keeps its click and mouse events for callers.
       const panCaptureTarget = nodeElement ?? currentTarget
 
-      const excludedFromPan = hasClassAncestor(target, props.noPanClassName)
+      const excludedFromPan =
+        (event.button !== 1 ||
+          target.closest('[data-node-id], .flow-vue-edge') === null) &&
+        hasClassAncestor(target, props.noPanClassName)
+
       const excludedFromDrag = hasClassAncestor(target, props.noDragClassName)
 
       const panKeyActive =
@@ -8305,7 +8347,8 @@ export const FlowCanvas = defineComponent({
 
       if (
         excludedFromDrag ||
-        (!isSelection && (excludedFromPan || !panButtonEnabled))
+        (!isSelection &&
+          (selectionKeyHeld(event) || excludedFromPan || !panButtonEnabled))
       ) {
         return
       }
@@ -8993,7 +9036,15 @@ export const FlowCanvas = defineComponent({
           key: node.id,
           class: [
             'flow-vue-node',
-            { selected: node.selected === true },
+            {
+              selected: node.selected === true,
+              draggable: isNodeDraggable(interactivity.value, node),
+              selectable: isNodeSelectable(interactivity.value, node),
+              [props.noPanClassName]: isNodeDraggable(
+                interactivity.value,
+                node
+              ),
+            },
             flowClassNames(node.className),
           ],
           'data-testid': 'flow-node',
@@ -9012,7 +9063,15 @@ export const FlowCanvas = defineComponent({
           ref: nodeRef(node),
           // React order: z-index, then the node style, then position and size.
           style: [
-            { zIndex: stacking.value.nodes.get(node.id) ?? 0 },
+            {
+              zIndex: stacking.value.nodes.get(node.id) ?? 0,
+              pointerEvents:
+                isNodeDraggable(interactivity.value, node) ||
+                isNodeSelectable(interactivity.value, node) ||
+                hasNodePointerHandlers()
+                  ? 'all'
+                  : 'none',
+            },
             flowVueStyle(node.style),
             style,
           ],
@@ -9030,11 +9089,11 @@ export const FlowCanvas = defineComponent({
             emit('nodeMouseDown', node, event),
           onMouseup: (event: MouseEvent) => emit('nodeMouseUp', node, event),
           onMousemove: (event: MouseEvent) =>
-            emit('nodeMouseMove', node, event),
+            props.onNodeMouseMove?.(node, event),
           onMouseenter: (event: MouseEvent) =>
-            emit('nodeMouseEnter', node, event),
+            props.onNodeMouseEnter?.(node, event),
           onMouseleave: (event: MouseEvent) =>
-            emit('nodeMouseLeave', node, event),
+            props.onNodeMouseLeave?.(node, event),
           onClick: (event: MouseEvent) => {
             // React `nodeClickDistance`: a press that travelled further is a
             // drag, not a click.
@@ -9048,7 +9107,7 @@ export const FlowCanvas = defineComponent({
               return
             }
 
-            emit('nodeClick', node, event)
+            props.onNodeClick?.(node, event)
             selectNodeOnClick(node, event)
           },
           onFocus: focusable
@@ -9217,7 +9276,7 @@ export const FlowCanvas = defineComponent({
         fill: 'none',
         stroke: 'rgba(0, 0, 0, 0.001)',
         'stroke-width': edge.interactionWidth ?? 20,
-        'pointer-events': 'stroke',
+        'pointer-events': 'inherit',
         tabindex: (edge.focusable ?? props.edgesFocusable) ? 0 : -1,
         role: edge.ariaRole ?? (edge.selectable === false ? 'img' : 'button'),
         'aria-roledescription': 'edge',
@@ -9227,7 +9286,7 @@ export const FlowCanvas = defineComponent({
         onPointerdown: (event: PointerEvent) => {
           if (event.button === 0) {
             event.preventDefault()
-            emit('edgeClick', edge, event)
+            props.onEdgeClick?.(edge, event)
             awaitEdgeClick(edge, event)
           }
         },
@@ -9248,7 +9307,7 @@ export const FlowCanvas = defineComponent({
           ) {
             event.preventDefault()
             event.stopPropagation()
-            emit('edgeClick', edge, event)
+            props.onEdgeClick?.(edge, event)
           }
         },
       })
@@ -9577,7 +9636,16 @@ export const FlowCanvas = defineComponent({
         'g',
         {
           key: edge.id,
-          class: flowVueEdgeClasses(edge),
+          class: [
+            flowVueEdgeClasses(edge),
+            props.noPanClassName,
+            {
+              selectable: isEdgeSelectable(interactivity.value, edge),
+              inactive:
+                !isEdgeSelectable(interactivity.value, edge) &&
+                !hasEdgeClickHandler(),
+            },
+          ],
           'aria-label':
             edge.ariaLabel ??
             `Edge from ${source?.node.label ?? edge.source} to ${target?.node.label ?? edge.target}`,

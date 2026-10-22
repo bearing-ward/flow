@@ -148,11 +148,14 @@ test('Vue activation options and lifecycle callbacks run on FlowCanvas', async (
     const canvasElement = document.querySelector('[data-testid="flow-canvas"]')
     const marker = document.createElement('div')
     marker.className = 'test-no-pan'
+    marker.dataset.testid = 'no-pan-marker'
     marker.style.cssText =
       'position:absolute;left:160px;top:80px;width:60px;height:40px;z-index:10'
     canvasElement?.append(marker)
   })
-  const noPanBounds = await page.locator('.test-no-pan').boundingBox()
+  // Pinned packages/react/src/components/NodeWrapper/index.tsx:191 also
+  // puts the configured nopan class on draggable node wrappers.
+  const noPanBounds = await page.getByTestId('no-pan-marker').boundingBox()
 
   if (noPanBounds === null) {
     throw new Error('Missing no-pan marker')

@@ -259,7 +259,11 @@ test('Vanilla UI catalog controls drive the viewport, lock, toolbars, search and
   expect(
     await page.evaluate(() => globalThis.uiControls?.controller.getEdges())
   ).toHaveLength(0)
-  await nodeA.click()
+  // Pinned packages/react/src/components/NodeWrapper/index.tsx:90,206:
+  // with all interactivity switches off and no node callback, the wrapper
+  // has pointer-events:none, so use a native click at its screen position.
+  const disabledNodePoint = centre(await boxOf(nodeA))
+  await page.mouse.click(disabledNodePoint.x, disabledNodePoint.y)
   expect(
     await page.evaluate(
       () => globalThis.uiControls?.controller.getNode('a')?.selected
@@ -272,6 +276,12 @@ test('Vanilla UI catalog controls drive the viewport, lock, toolbars, search and
     await page.evaluate(() => globalThis.uiControls?.interactiveCalls)
   ).toEqual([false, true])
 
+  // The locked-node drag already proved pane panning. Return the endpoints
+  // to the canvas before this independent connection check; otherwise the
+  // target sits at the edge and connection auto-pan moves it during the drag.
+  await page.evaluate(() =>
+    globalThis.uiControls?.controller.setViewport({ x: 0, y: 0, zoom: 1 })
+  )
   await drag(page, centre(await boxOf(source)), centre(await boxOf(target)))
   await page.mouse.up()
   await expect

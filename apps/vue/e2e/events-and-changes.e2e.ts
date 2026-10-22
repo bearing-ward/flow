@@ -205,9 +205,27 @@ test('runtime switches and the Controls lock gate drag, connect and select', asy
   // One switch off keeps Controls interactive, as in React Flow.
   await fixture(page, (api) => api.setProp('nodesConnectable', false))
   await expect(handle(page, 'a', 'out')).not.toHaveClass(/\bconnectable\b/u)
+  await expect(handle(page, 'a', 'out')).toHaveCSS('pointer-events', 'none')
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
   await connect(page, ['a', 'out'], ['b', 'in'])
   expect(await fixture(page, (api) => api.edges().length)).toBe(0)
+
+  // Pinned packages/system/src/styles/init.css:233 and
+  // packages/react/src/components/NodeWrapper/index.tsx:90,206: the disabled
+  // handle passes the press to its still-draggable node.
+  const positionAfterDisabledConnect = await fixture(
+    page,
+    (api) => api.nodes().find(({ id }) => id === 'a')?.position
+  )
+
+  expect(positionAfterDisabledConnect).not.toEqual({ x: 60, y: 60 })
+
+  const dragStartsAfterDisabledConnect = await fixture(
+    page,
+    (api) => api.events().filter(({ name }) => name === 'nodeDragStart').length
+  )
+
+  expect(dragStartsAfterDisabledConnect).toBeGreaterThan(0)
 
   // All switches off: the lock starts from the options.
   await fixture(page, (api) => {
@@ -238,22 +256,27 @@ test('runtime switches and the Controls lock gate drag, connect and select', asy
       page,
       (api) => api.nodes().find(({ id }) => id === 'a')?.position
     )
-  ).toEqual({ x: 60, y: 60 })
+  ).toEqual(positionAfterDisabledConnect)
   await expect
     .poll(() => fixture(page, (api) => api.viewport()))
     .toEqual({ x: viewport.x + 100, y: viewport.y + 50, zoom: 1 })
   expect(
-    await fixture(page, (api) =>
-      api.events().some(({ name }) => name === 'nodeDragStart')
+    await fixture(
+      page,
+      (api) =>
+        api.events().filter(({ name }) => name === 'nodeDragStart').length
     )
-  ).toBe(false)
+  ).toBe(dragStartsAfterDisabledConnect)
 
   // Locked: no pointer, keyboard or click connection.
   await connect(page, ['a', 'out'], ['b', 'in'])
   await handle(page, 'a', 'out').focus()
   await page.keyboard.press('Enter')
   await expect(page.getByTestId('flow-connection-preview')).toHaveCount(0)
-  await handle(page, 'a', 'out').click()
+  // Pinned packages/system/src/styles/init.css:233 makes a disabled handle
+  // non-actionable, so send the native click at its screen point.
+  const disabledHandlePoint = await centreOf(handle(page, 'a', 'out'))
+  await page.mouse.click(disabledHandlePoint.x, disabledHandlePoint.y)
   await expect(page.getByTestId('flow-connection-preview')).toHaveCount(0)
   expect(await fixture(page, (api) => api.edges().length)).toBe(0)
 
@@ -298,7 +321,9 @@ test('runtime switches and the Controls lock gate drag, connect and select', asy
     false
   )
   await fixture(page, (api) => api.setInteractivity({ nodesConnectable: true }))
-  await connect(page, ['a', 'out'], ['b', 'in'])
+  // The prior disabled-handle drag moved a beside b; their handles overlap.
+  // Use the untouched source to check restored connectability.
+  await connect(page, ['s', 'out'], ['b', 'in'])
   await expect.poll(() => fixture(page, (api) => api.edges().length)).toBe(1)
   await expect(lock).toHaveAttribute('aria-pressed', 'false')
 })

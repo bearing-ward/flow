@@ -350,7 +350,7 @@ body,
 .flow-edge-hit {
   fill: none;
   stroke: transparent;
-  pointer-events: stroke;
+  pointer-events: inherit;
 }
 
 .flow-edge-group.selected .flow-edge-path,
@@ -417,6 +417,7 @@ body,
 }
 
 .flow-node {
+  pointer-events: all;
   position: absolute;
   z-index: 1;
   display: grid;
@@ -458,7 +459,21 @@ body,
 }
 
 .flow-node-handles > .flow-handle {
-  pointer-events: auto;
+  pointer-events: none;
+}
+
+.flow-node-handles > .flow-handle.connectable.connectablestart,
+.flow-canvas:has(.flow-connection-preview)
+  .flow-handle.connectable.connectableend,
+.flow-node-handles > .flow-handle.connecting {
+  pointer-events: all;
+}
+
+.flow-edge-group {
+  pointer-events: visibleStroke;
+}
+.flow-edge-group.inactive {
+  pointer-events: none;
 }
 
 .flow-edge-custom-visual {

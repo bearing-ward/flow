@@ -1811,16 +1811,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "With all three interactivity switches false, the measured Node 1 wrapper computes pointer-events:auto, not none."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "With all three interactivity switches false, Node 1 computes pointer-events:auto, not none."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "With all interactivity switches false, Node 1 computes pointer-events:auto, not none."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:35"
@@ -1871,16 +1868,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After the capture-element-click checkbox enables the mounted callbacks, Node 1 still computes pointer-events:auto, not all."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After enabling the capture callbacks through reactive props, Node 1 computes pointer-events:auto, not all."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Enabling the capture checkbox leaves Node 1 at pointer-events:auto rather than all; Foldkit has event output ports but no callback-presence rendering prop."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:58"
@@ -1893,16 +1887,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After callback enablement, the first edge wrapper still computes pointer-events:none, not visibleStroke."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After enabling capture callbacks, the first edge wrapper computes pointer-events:none, not visibleStroke."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The first edge SVG computes pointer-events:none rather than visibleStroke after the capture checkbox; callback-presence rendering has no public Foldkit prop."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:67"
@@ -1934,16 +1925,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "With nodesConnectable=false, Node 3 source handle computes pointer-events:auto, not none."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "With nodesConnectable=false, Node 3 source handle computes pointer-events:auto, not none."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "With nodesConnectable=false, Node 3 source handle computes pointer-events:auto, not none."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:97"
@@ -2013,12 +2001,10 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The earlier disabled-selection Shift gesture in UP-127-048 panned nodes left; this drag begins on offscreen Node 1 and hits html, so its retained transform is unchanged. This depends on pane admission, not a new independent drag diagnosis."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The disabled-selection Shift gesture in UP-127-048 panned nodes offscreen; this drag starts on html at the retained Node 1 coordinates, leaving its transform unchanged."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2053,12 +2039,10 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After UP-127-048 moved Node 1 offscreen, the ordinary native node click cannot become actionable; the selected assertion is not reached."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "UP-127-048 moved Node 1 left of the viewport, so its ordinary click never becomes actionable; the selection assertion is not reached."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2114,12 +2098,10 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "After the disabled-selection pan in UP-127-048, the 3-to-4 gesture starts outside the viewport on html and leaves two edges rather than three; this is a pane-admission prerequisite failure."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After UP-127-048 panned Node 3 offscreen, the handle sequence starts on html and leaves two edges rather than three; this depends on the earlier pane admission."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2192,8 +2174,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Both zoom-out and native double-click arrive, but their factors cancel: the viewport transform equals the synchronously captured pre-queue transform after the original 50ms wait."
+          "status": "pass"
         },
         "vue": {
           "status": "fail",
@@ -4369,20 +4350,6 @@
       "upstream": "examples/react/src/examples/Interaction/index.tsx:70",
       "prop": "zoomOnPinch=false",
       "reason": "This host has no public zoomOnPinch prop/option. The neutral config retains false; these cases exercise mouse input only. See docs/react-flow-api-correspondence.md:70."
-    },
-    {
-      "host": "foldkit",
-      "config": "upstream-examples/interaction",
-      "upstream": "examples/react/src/examples/Interaction/index.tsx:75",
-      "prop": "onNodeClick conditional presence",
-      "reason": "Foldkit publishes interaction events through ports but exposes no callback-presence prop that changes wrapper pointer-events. The checkbox state is ported; the CSS expectations remain failing."
-    },
-    {
-      "host": "foldkit",
-      "config": "upstream-examples/interaction",
-      "upstream": "examples/react/src/examples/Interaction/index.tsx:76",
-      "prop": "onEdgeClick conditional presence",
-      "reason": "Foldkit publishes interaction events through ports but exposes no callback-presence prop that changes wrapper pointer-events. The checkbox state is ported; the CSS expectations remain failing."
     }
   ]
 }

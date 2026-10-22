@@ -138,6 +138,7 @@ import {
   isHandleConnectable,
   isNodeDraggable,
   isNodeSelectable,
+  flowStyleDeclarations,
   resolveFlowInteractivity,
   flowNodeHandles,
   computeFlowStacking,
@@ -1778,9 +1779,33 @@ const applyNodeInteractionState = (
   canvas: {
     readonly nodesFocusable: boolean | undefined
     readonly descriptionId: string
+    readonly interactivity: FlowInteractivity
+    readonly hasPointerHandlers: boolean
+    readonly noPanClassName: string | undefined
   }
 ): void => {
-  element.classList.toggle('selected', node.selected === true)
+  const userClasses = new Set(node.className?.split(/\s+/u))
+  const draggable = isNodeDraggable(canvas.interactivity, node)
+  const selectable = isNodeSelectable(canvas.interactivity, node)
+
+  const classes = {
+    [canvas.noPanClassName ?? 'nopan']: draggable,
+    selected: node.selected === true,
+    draggable,
+    selectable,
+  }
+
+  for (const [className, enabled] of Object.entries(classes)) {
+    if (className !== '') {
+      element.classList.toggle(className, enabled || userClasses.has(className))
+    }
+  }
+
+  element.style.pointerEvents =
+    flowStyleDeclarations(node.style).find(
+      ({ property }) => property === 'pointer-events'
+    )?.value ??
+    (draggable || selectable || canvas.hasPointerHandlers ? 'all' : 'none')
   element.tabIndex =
     (node.focusable ?? canvas.nodesFocusable) === false ? -1 : 0
 
@@ -3407,6 +3432,9 @@ export const createFlowHost = (
         edgesReconnectable: options.edgesReconnectable,
         reconnectRadius: options.reconnectRadius,
         edgeDescriptionId: a11yDescriptions.edgeDescriptionId,
+        elementsSelectable: interactivity.elementsSelectable,
+        hasClickHandler: options.onEdgeClick !== undefined,
+        noPanClassName: options.noPanClassName,
       })
     )
 
@@ -5229,8 +5257,25 @@ export const createFlowHost = (
       const graph = graphFor()
 
       for (const [id, entry] of entries) {
-        refreshNodeRendererProps(entry, findNode(id), graph)
+        const node = findNode(id)
+        refreshNodeRendererProps(entry, node, graph)
+
+        if (node !== undefined) {
+          applyNodeInteractionState(entry.element, node, {
+            nodesFocusable: options.nodesFocusable,
+            descriptionId: a11yDescriptions.nodeDescriptionId,
+            interactivity,
+            hasPointerHandlers:
+              options.onNodeClick !== undefined ||
+              options.onNodeMouseEnter !== undefined ||
+              options.onNodeMouseMove !== undefined ||
+              options.onNodeMouseLeave !== undefined,
+            noPanClassName: options.noPanClassName,
+          })
+        }
       }
+
+      edgeRenderer.reconcile(captureProjection())
 
       const attributes = {
         [FlowAttribute.nodesDraggable]: interactivity.nodesDraggable,
@@ -7975,15 +8020,22 @@ export const createFlowHost = (
               graphNode.absolutePosition
           )
 
-          applyNodeInteractionState(entry.element, node, {
-            nodesFocusable: options.nodesFocusable,
-            descriptionId: a11yDescriptions.nodeDescriptionId,
-          })
           applyNodePresentation(
             entry.element,
             node,
             (nodeStacking.get(node.id) ?? 0) + 1
           )
+          applyNodeInteractionState(entry.element, node, {
+            nodesFocusable: options.nodesFocusable,
+            descriptionId: a11yDescriptions.nodeDescriptionId,
+            interactivity,
+            hasPointerHandlers:
+              options.onNodeClick !== undefined ||
+              options.onNodeMouseEnter !== undefined ||
+              options.onNodeMouseMove !== undefined ||
+              options.onNodeMouseLeave !== undefined,
+            noPanClassName: options.noPanClassName,
+          })
           renderResizeControls(entry.element, node)
 
           if (
@@ -9885,6 +9937,7 @@ export const createFlowHost = (
       if (
         isCanvasUiTarget(target) ||
         (target instanceof Element &&
+          (event.button !== 1 || !isCanvasGraphTarget(target)) &&
           target.closest(noGestureSelector('pan', options.noPanClassName)) !==
             null)
       ) {
@@ -9962,7 +10015,7 @@ export const createFlowHost = (
         return
       }
 
-      if (!isPanePanEnabled(options, event)) {
+      if (selectionKeyPressed || !isPanePanEnabled(options, event)) {
         return
       }
 
@@ -10016,11 +10069,17 @@ export const createFlowHost = (
 
       const { target } = event
 
+      const noPanTarget =
+        target instanceof Element
+          ? target.closest(noGestureSelector('pan', options.noPanClassName))
+          : null
+
       if (
-        target instanceof Element &&
-        target.closest(
-          `.flow-canvas-ui, ${noGestureSelector('pan', options.noPanClassName)}`
-        ) !== null
+        isCanvasUiTarget(target) ||
+        (noPanTarget !== null &&
+          // Pan mode owns node gestures even when a draggable node carries
+          // the upstream nopan class. Embedded nopan controls still opt out.
+          !noPanTarget.matches('.flow-node.draggable'))
       ) {
         return
       }
