@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-128 upstream port and node/connection follow-ups; preserving all existing scope; Plan 129 controlled selection/delete",
+  "activeWork": "Plans 126-128 upstream port and node/connection follow-ups; preserving all existing scope; Plan 129 controlled selection/delete; Plan 130 fitted Foldkit fixture readiness",
   "checks": [
     "api-members",
     "catalog",
@@ -152,7 +152,8 @@
       "placeholder-recipe.e2e.ts",
       "toolbars.e2e.ts",
       "ui-recipes.e2e.ts",
-      "viewport-portal.e2e.ts"
+      "viewport-portal.e2e.ts",
+      "selection-rect-race.e2e.ts"
     ]
   }
 }
