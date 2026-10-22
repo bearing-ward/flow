@@ -18,7 +18,9 @@ import '@flow/vue/style.css'
 
 const ToolbarNode = (slot: FlowNodeSlot) => h('div', slot.node.label)
 
-if (location.pathname.startsWith('/upstream-examples/')) {
+if (location.pathname.startsWith('/upstream-component/')) {
+  await import('./upstream-component-fixture.ts')
+} else if (location.pathname.startsWith('/upstream-examples/')) {
   await import('./upstream-examples-fixture.ts')
 } else {
   const root = prepareUpstreamRoot()

@@ -2268,16 +2268,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:19"
     },
     {
       "id": "UP-128-002",
@@ -2287,16 +2287,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The controller starts with the supplied edge; its getter/subscription history never contains the upstream empty edge array."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The defaultDocument edge composable starts with the supplied edge and never emits the upstream empty edge array."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:27"
     },
     {
       "id": "UP-128-003",
@@ -2306,16 +2308,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Both nodes declare style width 100 and height 50, but their public measured widths and DOM boxes are 150 rather than 100."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "useNodes() omits measured from its node snapshots even after dimensions events report 100x50 for both nodes, so the literal measured-node array is absent."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:36"
     },
     {
       "id": "UP-128-004",
@@ -2325,16 +2329,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The default document is populated synchronously; node history never contains []. The later measured-node equality is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The defaultDocument node composable never emits []; the later measured-node equality is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:42"
     },
     {
       "id": "UP-128-005",
@@ -2344,16 +2350,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "nodesInitialized() reports true for the empty graph; its history never contains the required false."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "nodesInitialized() reports true for the empty graph; its history never contains the required false."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:49"
     },
     {
       "id": "UP-128-006",
@@ -2363,16 +2371,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:55"
     },
     {
       "id": "UP-128-007",
@@ -2382,16 +2390,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:61"
     },
     {
       "id": "UP-128-008",
@@ -2401,16 +2409,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:68"
     },
     {
       "id": "UP-128-009",
@@ -2420,16 +2428,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:77"
     },
     {
       "id": "UP-128-010",
@@ -2439,16 +2447,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The viewport change callback receives the initial viewport and the wheel result, producing two calls rather than one; later checks are not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The wheel changes the viewport zoom above 1, but the public viewport event port emits no start/change/end callbacks; the required start count is 0 rather than 1."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:97"
     },
     {
       "id": "UP-128-011",
@@ -2458,16 +2468,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The viewport change callback receives the initial viewport and the wheel result, producing two calls rather than one; later checks are not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The wheel changes the viewport zoom below 1, but the public viewport event port emits no start/change/end callbacks; the required start count is 0 rather than 1."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:113"
     },
     {
       "id": "UP-128-012",
@@ -2477,16 +2489,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:129"
     },
     {
       "id": "UP-128-013",
@@ -2496,16 +2508,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:143"
     },
     {
       "id": "UP-128-014",
@@ -2515,16 +2527,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:164"
     },
     {
       "id": "UP-128-015",
@@ -2534,16 +2546,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:178"
     },
     {
       "id": "UP-128-016",
@@ -2553,16 +2565,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:192"
     },
     {
       "id": "UP-128-017",
@@ -2572,16 +2584,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:18"
     },
     {
       "id": "UP-128-018",
@@ -2591,16 +2603,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:25"
     },
     {
       "id": "UP-128-019",
@@ -2610,16 +2622,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:34"
     },
     {
       "id": "UP-128-020",
@@ -2629,16 +2641,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:41"
     },
     {
       "id": "UP-128-021",
@@ -2648,16 +2660,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:50"
     },
     {
       "id": "UP-128-022",
@@ -2667,16 +2679,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:57"
     },
     {
       "id": "UP-128-023",
@@ -2686,16 +2698,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:66"
     },
     {
       "id": "UP-128-024",
@@ -2705,16 +2717,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:84"
     },
     {
       "id": "UP-128-025",
@@ -2724,16 +2736,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:91"
     },
     {
       "id": "UP-128-026",
@@ -2743,16 +2755,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:99"
     },
     {
       "id": "UP-128-027",
@@ -2762,16 +2774,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:106"
     },
     {
       "id": "UP-128-028",
@@ -2781,16 +2793,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:124"
     },
     {
       "id": "UP-128-029",
@@ -2800,16 +2812,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:135"
     },
     {
       "id": "UP-128-030",
@@ -2819,16 +2831,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:156"
     },
     {
       "id": "UP-128-031",
@@ -2838,16 +2850,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:166"
     },
     {
       "id": "UP-128-032",
@@ -2857,16 +2869,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:186"
     },
     {
       "id": "UP-128-033",
@@ -2876,16 +2888,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:195"
     },
     {
       "id": "UP-128-034",
@@ -2895,16 +2907,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:18"
     },
     {
       "id": "UP-128-035",
@@ -2914,16 +2926,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "A native stationary click reaches Node 1 with nodeDragThreshold=0, selects it, and leaves the registered onNodeClick count at 0 rather than 1."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:25"
     },
     {
       "id": "UP-128-036",
@@ -2933,16 +2946,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:33"
     },
     {
       "id": "UP-128-037",
@@ -2952,16 +2965,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Native contextmenu and dblclick both reach Node 1; onNodeContextMenu fires once, but onNodeDoubleClick stays at 0. Later hover assertions are not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:49"
     },
     {
       "id": "UP-128-038",
@@ -2971,16 +2985,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:78"
     },
     {
       "id": "UP-128-039",
@@ -2990,16 +3004,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:86"
     },
     {
       "id": "UP-128-040",
@@ -3009,16 +3023,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "onMove has already fired once at mount, violating the initial zero-call assertion before the pane drag is attempted."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:114"
     },
     {
       "id": "UP-128-041",
@@ -3028,16 +3043,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:132"
     },
     {
       "id": "UP-128-042",
@@ -3047,16 +3062,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Both edge-label layers mount, but the first contains zero custom labels: the default edge renderer registry is not selected for an edge with no explicit type. Later label checks are not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Both edge-label layers mount, but the first contains zero custom labels: the default edge renderer registry is not selected for an edge with no explicit type. Later label checks are not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:201"
     },
     {
       "id": "UP-128-043",
@@ -3066,16 +3083,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The single initial dimensions batch reports 150x44 and 150x50, rather than the literal 100x40 and 80x50."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The single initial dimensions batch reports Node 1 as 100x44 rather than 100x40; Node 2 reports the required 80x50."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Initial measurements arrive as two separate one-node callback batches rather than the required single batch. The literal dimension equality is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:144"
     },
     {
       "id": "UP-128-044",
@@ -3085,16 +3105,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After the update button and all three callback batches, the retained replacement item still has measured 150x44 rather than 200x100; the subsequent dimensions batch is 200x100."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "After the update button and all three callback batches, the retained replacement item still has measured 100x44 rather than 200x100; the subsequent dimensions batch is 200x100."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Two initial measurement callbacks shift the source order: the second recorded call contains Node 2 dimensions rather than the expected replacement. Later payload checks are not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:157"
     },
     {
       "id": "UP-128-045",
@@ -3104,16 +3127,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Selecting Node 1 emits a batch with Node 1 selected=true and the unchanged Node 2 selected=false, rather than the literal one-entry batch. The unselect assertion is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Selecting Node 1 emits a batch with Node 1 selected=true and the unchanged Node 2 selected=false, rather than the literal one-entry batch. The unselect assertion is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "Selecting Node 1 emits a batch with Node 1 selected=true and the unchanged Node 2 selected=false, rather than the literal one-entry batch. The unselect assertion is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:187"
     },
     {
       "id": "UP-128-046",
@@ -3123,16 +3149,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The completed position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:201"
     },
     {
       "id": "UP-128-047",
@@ -3142,16 +3171,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/events.ts:219"
     },
     {
       "id": "UP-128-048",
@@ -3161,16 +3190,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:218"
     },
     {
       "id": "UP-128-049",
@@ -3180,16 +3209,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:239"
     },
     {
       "id": "UP-128-050",
@@ -3199,16 +3228,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:260"
     },
     {
       "id": "UP-128-051",
@@ -3218,16 +3247,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:281"
     },
     {
       "id": "UP-128-052",
@@ -3237,16 +3266,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:288"
     },
     {
       "id": "UP-128-053",
@@ -3256,16 +3285,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:298"
     },
     {
       "id": "UP-128-054",
@@ -3275,16 +3304,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/components.ts:307"
     },
     {
       "id": "UP-128-055",
@@ -3294,16 +3323,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:20"
     },
     {
       "id": "UP-128-056",
@@ -3313,16 +3342,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "fitView rejects padding=0.5 with the less-than-0.5 schema error; Node 1 remains outside the viewport with its right edge at -350."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "fitView rejects padding=0.5 with the less-than-0.5 schema error; Node 1 remains outside the viewport with its right edge at -350."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "fitView rejects padding=0.5 with the less-than-0.5 schema error; Node 1 remains outside the viewport with its right edge at -350."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:27"
     },
     {
       "id": "UP-128-057",
@@ -3332,16 +3364,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:34"
     },
     {
       "id": "UP-128-058",
@@ -3351,16 +3383,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:47"
     },
     {
       "id": "UP-128-059",
@@ -3370,16 +3402,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:60"
     },
     {
       "id": "UP-128-060",
@@ -3389,16 +3421,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:73"
     },
     {
       "id": "UP-128-061",
@@ -3408,16 +3440,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:86"
     },
     {
       "id": "UP-128-062",
@@ -3427,16 +3459,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:99"
     },
     {
       "id": "UP-128-063",
@@ -3446,16 +3478,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:112"
     },
     {
       "id": "UP-128-064",
@@ -3465,16 +3497,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:122"
     },
     {
       "id": "UP-128-065",
@@ -3484,16 +3516,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:132"
     },
     {
       "id": "UP-128-066",
@@ -3503,16 +3535,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The public mount rejects default zoom -1 with a positive-zoom schema error, so no viewport is rendered at the required clamped zoom 0.5."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The rendered viewport and useViewport() retain default zoom -1 rather than clamping it to 0.5."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The public Runtime mount with default zoom -1 terminates in Application Crash, leaving no rendered viewport at the required clamped zoom 0.5."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:142"
     },
     {
       "id": "UP-128-067",
@@ -3522,16 +3557,18 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "useViewport() retains default zoom 100 rather than clamping it to the default maximum 2."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The public store and rendered viewport retain default zoom 100 rather than clamping it to the default maximum 2."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:167"
     },
     {
       "id": "UP-128-068",
@@ -3541,16 +3578,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:181"
     },
     {
       "id": "UP-128-069",
@@ -3560,16 +3597,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Vanilla retains the node beginning at the right pane boundary in its documented fixed overscan, giving 1 node instead of 0. research/traces/viewport-culling.md:30"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:200"
     },
     {
       "id": "UP-128-070",
@@ -3579,16 +3617,17 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Vanilla retains the node beginning at the right pane boundary in its documented fixed overscan, giving 2 nodes instead of 1. research/traces/viewport-culling.md:30"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:206"
     },
     {
       "id": "UP-128-071",
@@ -3598,16 +3637,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:212"
     },
     {
       "id": "UP-128-072",
@@ -3617,16 +3656,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The initial node transform has x=-50 rather than x=50 after applying the extent to its 150-pixel width; the y assertion is not reached."
         },
         "vue": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The initial node remains at x=200 rather than being adopted at x=50 inside nodeExtent; the y assertion is not reached."
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "fail",
+          "reason": "The initial node remains at x=200 rather than being adopted at x=50 inside nodeExtent; the y assertion is not reached."
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:225"
     },
     {
       "id": "UP-128-073",
@@ -3636,16 +3678,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:246"
     },
     {
       "id": "UP-128-074",
@@ -3655,16 +3697,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:257"
     },
     {
       "id": "UP-128-075",
@@ -3674,16 +3716,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Flow intentionally has no attribution mechanism, so there is no branding element to position. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Flow intentionally has no attribution mechanism, so there is no branding element to position. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Flow intentionally has no attribution mechanism, so there is no branding element to position. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:268"
     },
     {
       "id": "UP-128-076",
@@ -3693,16 +3738,19 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Flow intentionally has no attribution mechanism, so there is no branding element to position. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Flow intentionally has no attribution mechanism, so there is no branding element to position. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "intentional-difference",
+          "reason": "Flow intentionally has no attribution mechanism, so there is no branding element to position. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
         }
       },
-      "flowTest": null
+      "flowTest": "apps/shared-e2e/upstream-component/view.ts:279"
     },
     {
       "id": "UP-128-077",
@@ -3712,16 +3760,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:10"
     },
     {
       "id": "UP-128-078",
@@ -3731,16 +3779,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:17"
     },
     {
       "id": "UP-128-079",
@@ -3750,16 +3798,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:26"
     },
     {
       "id": "UP-128-080",
@@ -3769,16 +3817,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:39"
     },
     {
       "id": "UP-128-081",
@@ -3788,16 +3836,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:53"
     },
     {
       "id": "UP-128-082",
@@ -3807,16 +3855,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:67"
     },
     {
       "id": "UP-128-083",
@@ -3826,16 +3874,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:16"
     },
     {
       "id": "UP-128-084",
@@ -3845,16 +3893,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:30"
     },
     {
       "id": "UP-128-085",
@@ -3864,16 +3912,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:53"
     },
     {
       "id": "UP-128-086",
@@ -3883,16 +3931,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:68"
     },
     {
       "id": "UP-128-087",
@@ -3902,16 +3950,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:93"
     },
     {
       "id": "UP-128-088",
@@ -3921,16 +3969,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:114"
     },
     {
       "id": "UP-128-089",
@@ -3940,16 +3988,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:149"
     },
     {
       "id": "UP-128-090",
@@ -3959,16 +4007,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:162"
     },
     {
       "id": "UP-128-091",
@@ -3978,16 +4026,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:194"
     },
     {
       "id": "UP-128-092",
@@ -3997,16 +4045,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:218"
     },
     {
       "id": "UP-128-093",
@@ -4016,16 +4064,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/calculate-node-position.test.ts:12"
     },
     {
       "id": "UP-128-094",
@@ -4035,16 +4083,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:8"
     },
     {
       "id": "UP-128-095",
@@ -4054,16 +4102,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:21"
     },
     {
       "id": "UP-128-096",
@@ -4073,16 +4121,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:34"
     },
     {
       "id": "UP-128-097",
@@ -4092,16 +4140,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:51"
     },
     {
       "id": "UP-128-098",
@@ -4111,16 +4159,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:69"
     },
     {
       "id": "UP-128-099",
@@ -4130,16 +4178,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:87"
     },
     {
       "id": "UP-128-100",
@@ -4149,16 +4197,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:9"
     },
     {
       "id": "UP-128-101",
@@ -4168,16 +4216,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:15"
     },
     {
       "id": "UP-128-102",
@@ -4187,16 +4235,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:21"
     },
     {
       "id": "UP-128-103",
@@ -4206,16 +4254,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:27"
     },
     {
       "id": "UP-128-104",
@@ -4225,16 +4273,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:33"
     },
     {
       "id": "UP-128-105",
@@ -4244,16 +4292,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:43"
     },
     {
       "id": "UP-128-106",
@@ -4263,16 +4311,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:50"
     },
     {
       "id": "UP-128-107",
@@ -4282,16 +4330,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "vue": {
-          "status": "not-ported"
+          "status": "pass"
         },
         "foldkit": {
-          "status": "not-ported"
+          "status": "pass"
         }
       },
-      "flowTest": null
+      "flowTest": "packages/conformance/src/upstream-component/update-node-internals.test.ts:12"
     }
   ],
   "unmappedProps": [
@@ -4315,6 +4363,27 @@
       "upstream": "examples/react/src/examples/Interaction/index.tsx:70",
       "prop": "zoomOnPinch=false",
       "reason": "This host has no public zoomOnPinch prop/option. The neutral config retains false; these cases exercise mouse input only. See docs/react-flow-api-correspondence.md:70."
+    },
+    {
+      "host": "vanilla",
+      "config": "component/reactflow/view-props",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:276",
+      "prop": "attributionPosition",
+      "reason": "The host has no attribution element to reposition under the intentional no-attribution policy. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
+    },
+    {
+      "host": "vue",
+      "config": "component/reactflow/view-props",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:276",
+      "prop": "attributionPosition",
+      "reason": "The host has no attribution element to reposition under the intentional no-attribution policy. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
+    },
+    {
+      "host": "foldkit",
+      "config": "component/reactflow/view-props",
+      "upstream": "examples/react/cypress/components/reactflow/view-props.cy.tsx:276",
+      "prop": "attributionPosition",
+      "reason": "The host has no attribution element to reposition under the intentional no-attribution policy. research/catalogs/react-flow-parity-audit-2026-10-13.json:1839"
     }
   ]
 }

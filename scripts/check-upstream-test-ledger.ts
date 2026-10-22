@@ -130,11 +130,7 @@ for (const entry of upstream) {
   for (const host of ['vanilla', 'vue', 'foldkit'] as const) {
     const result = saved.hosts[host]
 
-    if (saved.phase === 128 && result.status !== 'not-ported') {
-      throw new Error(`Future phase was ported: ${entry.id}`)
-    }
-
-    if (saved.phase !== 128 && result.status === 'not-ported') {
+    if (result.status === 'not-ported') {
       throw new Error(`Required phase case is not ported: ${entry.id}`)
     }
 
@@ -146,30 +142,26 @@ for (const entry of upstream) {
     }
   }
 
-  if (saved.phase !== 128) {
-    if (saved.flowTest === null) {
-      throw new Error(`Missing port: ${entry.id}`)
-    }
+  if (saved.flowTest === null) {
+    throw new Error(`Missing port: ${entry.id}`)
+  }
 
-    const match = /^(?<file>.+):(?<line>\d+)$/u.exec(saved.flowTest)
+  const match = /^(?<file>.+):(?<line>\d+)$/u.exec(saved.flowTest)
 
-    if (match?.[1] === undefined || match[2] === undefined) {
-      throw new Error(`Invalid port location: ${entry.id}`)
-    }
+  if (match?.[1] === undefined || match[2] === undefined) {
+    throw new Error(`Invalid port location: ${entry.id}`)
+  }
 
-    const text = portSources.get(match[1])
+  const text = portSources.get(match[1])
 
-    if (text === undefined) {
-      throw new Error(`Missing port file: ${match[1]}`)
-    }
+  if (text === undefined) {
+    throw new Error(`Missing port file: ${match[1]}`)
+  }
 
-    const line = text.split('\n')[Number(match[2]) - 1]
+  const line = text.split('\n')[Number(match[2]) - 1]
 
-    if (line === undefined || !line.includes(`[${entry.id}]`)) {
-      throw new Error(`Stale port line: ${saved.flowTest}`)
-    }
-  } else if (saved.flowTest !== null) {
-    throw new Error(`Unexpected future-phase port: ${entry.id}`)
+  if (line === undefined || !line.includes(`[${entry.id}]`)) {
+    throw new Error(`Stale port line: ${saved.flowTest}`)
   }
 }
 

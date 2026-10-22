@@ -18,7 +18,9 @@ import {
 
 import '@flow/vanilla/style.css'
 
-if (location.pathname.startsWith('/upstream-examples/')) {
+if (location.pathname.startsWith('/upstream-component/')) {
+  await import('./upstream-component-fixture.ts')
+} else if (location.pathname.startsWith('/upstream-examples/')) {
   await import('./upstream-examples-fixture.ts')
 } else {
   const root = prepareUpstreamRoot()
