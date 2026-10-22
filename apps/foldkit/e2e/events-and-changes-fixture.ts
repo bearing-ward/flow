@@ -24,6 +24,7 @@ import {
   createProgram,
   createViewportClient,
   defaultInteractionOptions,
+  createFoldkitInteractionHandlers,
 } from '@flow/foldkit'
 import { Effect, Exit, Schema as S } from 'effect'
 import { Runtime } from 'foldkit'
@@ -56,6 +57,8 @@ export interface FoldkitEventsFixture {
   readonly interactiveCalls: () => readonly boolean[]
   /** Mount Controls wired to the switches once the canvas has rendered. */
   readonly mountControls: () => void
+  /** Register an `onNodeClick` consumer, as an app handling node clicks would. */
+  readonly registerNodeClickHandler: () => void
 }
 
 const decodeChange = S.decodeUnknownSync(FlowStateChangeSchema)
@@ -496,6 +499,9 @@ export const mountFoldkitEventsFixture = (
   })
 
   return {
+    registerNodeClickHandler: () => {
+      createFoldkitInteractionHandlers(active.ports, { onNodeClick: () => {} })
+    },
     mountControls: () => {
       const controls = createFlowControls(
         pane().ownerDocument,

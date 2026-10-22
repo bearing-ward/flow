@@ -117,3 +117,7 @@ Conforming: UP-127-043, UP-127-046, UP-127-047, UP-127-049, UP-127-053, and UP-1
 Intentionally different internally: Flow keeps framework-owned lifecycle, Effect workflows, Foldkit's typed ports and callback client, controlled acknowledgements, non-interactive edge labels, Vanilla shared-SVG stacking, Foldkit hidden toolbars, and instance-scoped marker IDs. These do not change the six passing Cypress assertions.
 
 Unverified: the documented Foldkit raw-click conflict prevents focused-suite acceptance. Live React comparison, other engines, physical devices, full-profile integration/release acceptance, and collector-side OTLP delivery remain separate work. The focused profile cannot establish broad parity.
+
+## Review resolution
+
+The planner resolved the Foldkit raw-click conflict at review. `apps/foldkit/e2e/events-and-changes.e2e.ts:244` observes node clicks, so it is a click consumer. Its fixture now registers an `onNodeClick` callback through the public `createFoldkitInteractionHandlers`, as an app handling node clicks would. Upstream gives the same fully disabled wrapper pointer input only when `onNodeClick` is set (`packages/react/src/components/NodeWrapper/index.tsx:90`). The test's assertions are unchanged. `docs/public-api.md` now states that condition instead of claiming that clicks always report with selection off. The Foldkit events suite passes, 9 of 9.

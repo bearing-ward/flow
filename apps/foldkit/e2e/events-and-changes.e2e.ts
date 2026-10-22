@@ -271,7 +271,12 @@ test('Foldkit runtime switches gate drag, connect and select without blocking pa
   await connect(page, ['a', 'out'], ['b', 'in'])
   expect(await edgeCount(page)).toBe(0)
 
-  // Selection is off, but node clicks still report.
+  // Selection is off, but node clicks still report to a registered click
+  // consumer. Upstream NodeWrapper only admits pointer input on a fully
+  // disabled node when onNodeClick is set (NodeWrapper/index.tsx:90).
+  await page.evaluate(() =>
+    window.__flowFoldkitEvents?.registerNodeClickHandler()
+  )
   const clicks = (await eventCount(page, 'onNodeClick')) ?? 0
   await nodeA.click()
   await expect.poll(() => eventCount(page, 'onNodeClick')).toBe(clicks + 1)
