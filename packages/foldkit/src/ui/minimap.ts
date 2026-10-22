@@ -84,14 +84,6 @@ export const foldkitMiniMapLabel = (
   )
 }
 
-/** React's minimap mask: the whole minimap with the viewport cut out (evenodd). */
-export const foldkitMiniMapMaskPath = (
-  size: { readonly width: number; readonly height: number },
-  viewport: FlowMiniMapProjection['viewport']
-): string =>
-  `M0,0h${size.width}v${size.height}h${-size.width}z ` +
-  `M${viewport.x},${viewport.y}h${viewport.width}v${viewport.height}h${-viewport.width}z`
-
 const themeFallbacks = new Map(
   flowThemeTokens.map((token) => [token.name, token.light])
 )
@@ -183,12 +175,16 @@ export const createFlowMiniMap = (
   let current = project(graph)
   let disposed = false
 
+  const nodeElements = new Map<string, SVGElement>()
+
   const drawNode = (node: FlowMiniMapNodeProps): SVGElement => {
     if (options.nodeComponent !== undefined) {
       return options.nodeComponent(node, owner)
     }
 
-    const rect = owner.createElementNS(svgNamespace, 'rect')
+    const rect =
+      nodeElements.get(node.id) ?? owner.createElementNS(svgNamespace, 'rect')
+
     rect.setAttribute(
       'class',
       [
@@ -217,7 +213,21 @@ export const createFlowMiniMap = (
   }
 
   const render = (): void => {
-    svg.replaceChildren()
+    for (const element of svg.querySelectorAll(
+      ':scope > :not([data-minimap-node])'
+    )) {
+      element.remove()
+    }
+
+    const visibleIds = new Set(current?.nodes.map((node) => node.id))
+
+    for (const [nodeId, element] of nodeElements) {
+      if (!visibleIds.has(nodeId) || options.nodeComponent !== undefined) {
+        element.remove()
+        nodeElements.delete(nodeId)
+      }
+    }
+
     const label = foldkitMiniMapLabel(options)
 
     if (label === undefined) {
@@ -241,24 +251,26 @@ export const createFlowMiniMap = (
     svg.setAttribute('tabindex', '0')
     const bg = owner.createElementNS(svgNamespace, 'rect')
     bg.setAttribute('class', 'flow-foldkit-minimap-background')
-    bg.setAttribute('width', String(width))
-    bg.setAttribute('height', String(height))
+    const box = current.viewBox
+    svg.setAttribute('viewBox', `${box.x} ${box.y} ${box.width} ${box.height}`)
+    bg.setAttribute('x', String(box.x))
+    bg.setAttribute('y', String(box.y))
+    bg.setAttribute('width', String(box.width))
+    bg.setAttribute('height', String(box.height))
     bg.style.fill = background
-    svg.append(bg)
+    svg.prepend(bg)
 
     for (const node of current.nodes) {
       const element = drawNode(node)
       element.dataset.minimapNode = node.id
+      nodeElements.set(node.id, element)
       svg.append(element)
     }
 
     const mask = owner.createElementNS(svgNamespace, 'path')
     mask.setAttribute('class', 'flow-foldkit-minimap-mask')
     mask.dataset.minimapMask = 'true'
-    mask.setAttribute(
-      'd',
-      foldkitMiniMapMaskPath({ width, height }, current.viewport)
-    )
+    mask.setAttribute('d', current.maskPath)
     mask.setAttribute('fill-rule', 'evenodd')
     mask.style.pointerEvents = 'none'
     mask.style.fill =

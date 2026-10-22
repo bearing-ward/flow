@@ -236,8 +236,9 @@ test('Foldkit MiniMap updates node geometry from accepted DOM measurements', asy
   }
 
   const expected = {
-    width: validateMeasurement.width * projection.scale,
-    height: validateMeasurement.height * projection.scale,
+    // Upstream: packages/react/src/additional-components/MiniMap/MiniMapNodes.tsx:94-115.
+    width: validateMeasurement.width,
+    height: validateMeasurement.height,
   }
 
   expect(initial).not.toStrictEqual(actual)

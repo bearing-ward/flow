@@ -337,14 +337,16 @@ export const FlowMiniMap = defineComponent({
             : `${title}. Press Enter or Space to center the graph.`
       }
 
+      const viewBox = current?.viewBox ?? { x: 0, y: 0, width, height }
+
       const elements: VNode[] = [
         ...(title === null ? [] : [h('title', { id: titleId }, label)]),
         h('rect', {
           class: 'flow-vue-minimap-background',
-          x: 0,
-          y: 0,
-          width,
-          height,
+          x: viewBox.x,
+          y: viewBox.y,
+          width: viewBox.width,
+          height: viewBox.height,
           rx: 4,
           style:
             props.bgColor === undefined ? undefined : { fill: props.bgColor },
@@ -362,14 +364,13 @@ export const FlowMiniMap = defineComponent({
           }
         }
 
-        const offset = 5
         const box = current.viewport
 
         elements.push(
           h('path', {
             class: 'flow-vue-minimap-mask',
             'data-testid': 'flow-minimap-mask',
-            d: `M${-offset},${-offset}h${width + offset * 2}v${height + offset * 2}h${-width - offset * 2}z M${box.x},${box.y}h${box.width}v${box.height}h${-box.width}z`,
+            d: current.maskPath,
             style: [
               props.maskColor === undefined
                 ? undefined
@@ -422,7 +423,7 @@ export const FlowMiniMap = defineComponent({
           'data-position': props.position,
           width,
           height,
-          viewBox: `0 0 ${width} ${height}`,
+          viewBox: `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`,
           role: current === null ? 'img' : 'button',
           tabindex: current === null ? undefined : 0,
           'aria-label': label,

@@ -691,7 +691,12 @@ test.describe('Vanilla MiniMap component', () => {
     const mask = page.getByTestId('flow-minimap-mask')
     await expect(mask).toHaveCSS('fill', 'rgba(1, 2, 3, 0.5)')
     await expect(mask).toHaveCSS('stroke', 'rgb(255, 0, 255)')
-    await expect(mask).toHaveAttribute('d', /^M0,0h200v150h-200z M/u)
+    // Upstream: packages/react/src/additional-components/MiniMap/MiniMap.tsx:107-116,212-215.
+    await expect(minimap).toHaveAttribute('viewBox', '-20 -70 840 640')
+    await expect(mask).toHaveAttribute(
+      'd',
+      'M-40,-90h880v680h-880z M0,0h800v500h-800z'
+    )
     await expect(page.getByTestId('flow-minimap-panel')).toHaveCSS(
       'background-color',
       'rgb(9, 9, 9)'
@@ -710,7 +715,11 @@ test.describe('Vanilla MiniMap component', () => {
         zoom: 1,
       })
     )
-    await expect(mask).toHaveAttribute('d', /^M0,0h200v150h-200z M/u)
+    await expect(minimap).toHaveAttribute('viewBox', '-22.5 -110 945 720')
+    await expect(mask).toHaveAttribute(
+      'd',
+      'M-45,-132.5h990v765h-990z M100,0h800v500h-800z'
+    )
   })
 
   test('pannable drag pans, inversePan flips it, zoomable wheel zooms', async ({
@@ -769,8 +778,9 @@ test.describe('Vanilla MiniMap component', () => {
     ).toStrictEqual(['a'])
 
     // The minimap follows a drag preview before the drop commits.
-    // Moving `a` shrinks the graph bounds, so the overview rescales `b`.
-    const rect = minimap.locator('[data-node-id="b"]')
+    // Upstream: packages/react/src/additional-components/MiniMap/MiniMapNodes.tsx:94-115.
+    // Graph-space attributes track the dragged node; `b` stays at x=600.
+    const rect = minimap.locator('[data-node-id="a"]')
     const before = await rect.getAttribute('x')
     const start = await centre(node(page, 'a'))
     await page.mouse.move(start.x, start.y)
@@ -778,6 +788,10 @@ test.describe('Vanilla MiniMap component', () => {
     await page.mouse.move(start.x + 3, start.y + 3)
     await page.mouse.move(start.x + 150, start.y, { steps: 6 })
     await expect(rect).not.toHaveAttribute('x', before ?? '')
+    await expect(minimap.locator('[data-node-id="b"]')).toHaveAttribute(
+      'x',
+      '600'
+    )
     // Instance reads are live like React's nodeLookup (Plan 122); the
     // accepted document still waits for the drop.
     expect(

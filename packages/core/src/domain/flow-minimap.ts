@@ -55,7 +55,7 @@ export const flowMiniMapDefaults = {
 
 /**
  * React `MiniMapNodeProps` without the event handler: what a custom minimap
- * node renderer receives, in minimap pixel coordinates.
+ * node renderer receives, in graph coordinates.
  */
 export interface FlowMiniMapNodeProps {
   readonly id: string
@@ -113,6 +113,8 @@ export interface FlowMiniMapProjection {
     readonly width: number
     readonly height: number
   }
+  readonly viewBox: FlowMiniMapProjection['bounds']
+  readonly maskPath: string
   /** Visible nodes with React `MiniMapNodeProps` presentation. */
   readonly nodes: readonly FlowMiniMapNodeProps[]
   readonly viewport: {
@@ -137,6 +139,7 @@ export const selectFlowMiniMapProjection = (input: {
   readonly viewport: FlowMiniMapViewport
   readonly canvas: FlowMiniMapSize
   readonly size: FlowMiniMapSize
+  /** Padding in minimap pixels, matching upstream offsetScale. Defaults to 5. */
   readonly inset?: number
   /** Node presentation options; omitted values use React defaults. */
   readonly options?: Pick<
@@ -154,25 +157,61 @@ export const selectFlowMiniMapProjection = (input: {
     return undefined
   }
 
-  const inset = input.inset ?? 8
   const options = input.options ?? {}
-  const graphWidth = Math.max(bounds.width, 1)
-  const graphHeight = Math.max(bounds.height, 1)
 
-  const scale = Math.min(
-    (input.size.width - inset * 2) / graphWidth,
-    (input.size.height - inset * 2) / graphHeight
+  const viewport = {
+    x: -input.viewport.x / input.viewport.zoom,
+    y: -input.viewport.y / input.viewport.zoom,
+    width: input.canvas.width / input.viewport.zoom,
+    height: input.canvas.height / input.viewport.zoom,
+  }
+
+  // Upstream: packages/react/src/additional-components/MiniMap/MiniMap.tsx:43-45,107-116.
+  const x = Math.min(bounds.x, viewport.x)
+  const y = Math.min(bounds.y, viewport.y)
+
+  const boundingWidth =
+    Math.max(bounds.x + bounds.width, viewport.x + viewport.width) - x
+
+  const boundingHeight =
+    Math.max(bounds.y + bounds.height, viewport.y + viewport.height) - y
+
+  const viewScale = Math.max(
+    boundingWidth / input.size.width,
+    boundingHeight / input.size.height
   )
 
-  const renderedWidth = graphWidth * scale
-  const renderedHeight = graphHeight * scale
-  const offsetX = (input.size.width - renderedWidth) / 2
-  const offsetY = (input.size.height - renderedHeight) / 2
-  const pointX = (x: number): number => offsetX + (x - bounds.x) * scale
-  const pointY = (y: number): number => offsetY + (y - bounds.y) * scale
+  const viewWidth = viewScale * input.size.width
+  const viewHeight = viewScale * input.size.height
+  const offset = (input.inset ?? 5) * viewScale
+
+  const viewBox = {
+    x: x - (viewWidth - boundingWidth) / 2 - offset,
+    y: y - (viewHeight - boundingHeight) / 2 - offset,
+    width: viewWidth + offset * 2,
+    height: viewHeight + offset * 2,
+  }
+
+  const outer = `M${viewBox.x - offset},${viewBox.y - offset}h${viewBox.width + offset * 2}v${viewBox.height + offset * 2}h${-viewBox.width - offset * 2}z`
+  const hole = `M${viewport.x},${viewport.y}h${viewport.width}v${viewport.height}h${-viewport.width}z`
+
+  // SVG defaults to xMidYMid meet. Account for its letterboxing on clicks.
+  const pixelScale = Math.min(
+    input.size.width / viewBox.width,
+    input.size.height / viewBox.height
+  )
+
+  const offsetX =
+    (input.size.width - viewBox.width * pixelScale) / 2 - viewBox.x * pixelScale
+
+  const offsetY =
+    (input.size.height - viewBox.height * pixelScale) / 2 -
+    viewBox.y * pixelScale
 
   return {
     bounds,
+    viewBox,
+    maskPath: `${outer} ${hole}`,
     nodes: input.graph.orderedNodes
       .filter((node) => !node.hidden)
       .map((node) => {
@@ -181,10 +220,10 @@ export const selectFlowMiniMapProjection = (input: {
 
         return {
           id: node.id,
-          x: pointX(node.absolutePosition.x),
-          y: pointY(node.absolutePosition.y),
-          width: Math.max(node.dimensions.width * scale, 1),
-          height: Math.max(node.dimensions.height * scale, 1),
+          x: node.absolutePosition.x,
+          y: node.absolutePosition.y,
+          width: node.dimensions.width,
+          height: node.dimensions.height,
           borderRadius:
             options.nodeBorderRadius ?? flowMiniMapDefaults.nodeBorderRadius,
           className: nodeAttribute(options.nodeClassName, node.node) ?? '',
@@ -199,18 +238,13 @@ export const selectFlowMiniMapProjection = (input: {
           selected: node.node.selected === true,
         }
       }),
-    viewport: {
-      x: pointX(-input.viewport.x / input.viewport.zoom),
-      y: pointY(-input.viewport.y / input.viewport.zoom),
-      width: (input.canvas.width / input.viewport.zoom) * scale,
-      height: (input.canvas.height / input.viewport.zoom) * scale,
-    },
-    scale,
+    viewport,
+    scale: 1 / viewScale,
     offsetX,
     offsetY,
     pointToGraph: (point) => ({
-      x: bounds.x + (point.x - offsetX) / scale,
-      y: bounds.y + (point.y - offsetY) / scale,
+      x: (point.x - offsetX) / pixelScale,
+      y: (point.y - offsetY) / pixelScale,
     }),
     graphCenter: {
       x: bounds.x + bounds.width / 2,
