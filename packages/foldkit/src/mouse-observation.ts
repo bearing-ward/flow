@@ -24,6 +24,7 @@ export const ObservedMouseNameSchema = Schema.Literals([
   'onPaneMouseMove',
   'onPaneMouseLeave',
   'onNodeClick',
+  'onNodeDoubleClick',
   'onNodeContextMenu',
   'onNodeMouseEnter',
   'onNodeMouseMove',
@@ -190,6 +191,20 @@ export const observeCanvasMouse = (
     observe('onPaneClick', event)
   }
 
+  const doubleClick = (event: MouseEvent): void => {
+    const target = scoped(event.target)
+
+    if (target === undefined) {
+      return
+    }
+
+    const node = nodeElement(target.element)
+
+    if (node !== null) {
+      observe('onNodeDoubleClick', event, node.dataset.nodeId ?? null)
+    }
+  }
+
   const contextMenu = (event: MouseEvent): void => {
     const target = scoped(event.target)
 
@@ -302,6 +317,7 @@ export const observeCanvasMouse = (
   owner.addEventListener('pointermove', travel, true)
   owner.addEventListener('click', click)
   owner.addEventListener('contextmenu', contextMenu)
+  owner.addEventListener('dblclick', doubleClick)
   owner.addEventListener('mousemove', move)
   owner.addEventListener('mouseover', over)
   owner.addEventListener('mouseout', out)
@@ -311,6 +327,7 @@ export const observeCanvasMouse = (
     owner.removeEventListener('pointermove', travel, true)
     owner.removeEventListener('click', click)
     owner.removeEventListener('contextmenu', contextMenu)
+    owner.removeEventListener('dblclick', doubleClick)
     owner.removeEventListener('mousemove', move)
     owner.removeEventListener('mouseover', over)
     owner.removeEventListener('mouseout', out)

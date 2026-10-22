@@ -211,6 +211,7 @@ const mount = (owner: HTMLElement, edgeId?: string) => {
 
   const pointerNames = new Set([
     'onNodeClick',
+    'onNodeDoubleClick',
     'onNodeMouseEnter',
     'onNodeMouseMove',
     'onNodeMouseLeave',
@@ -358,7 +359,6 @@ const mount = (owner: HTMLElement, edgeId?: string) => {
     if (
       !pane ||
       (graph.nodes.size > 0 &&
-        config.id !== 66 &&
         !config.options.onlyRenderVisibleElements &&
         !store.getState().nodesInitialized)
     ) {
@@ -387,9 +387,7 @@ const mount = (owner: HTMLElement, edgeId?: string) => {
       pane.classList.add('custom')
     }
 
-    if (config.id !== 66) {
-      await sample()
-    }
+    await sample()
 
     root.dataset.upstreamReady = 'true'
   }

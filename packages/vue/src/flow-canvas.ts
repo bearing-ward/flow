@@ -21,6 +21,7 @@ import {
   createFlowSnapshot,
   createFlowGraph,
   decodeFlowDocument,
+  decodeInitialViewport,
   edgeAttachmentPosition,
   edgeLabelPosition,
   fitViewportToNodes,
@@ -1267,7 +1268,13 @@ export const FlowCanvas = defineComponent({
     }
 
     const ownedDocument = shallowRef(initialOwnedDocument)
-    const ownedViewport = shallowRef(props.viewport ?? props.defaultViewport)
+
+    const ownedViewport = shallowRef(
+      props.viewport ??
+        Effect.runSync(
+          decodeInitialViewport(props.defaultViewport, viewportLimits)
+        )
+    )
 
     const activeDocument = computed(() => {
       if (hasSplitModel) {

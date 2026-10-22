@@ -11,6 +11,7 @@ import type { InteractionEvent } from './graph.ts'
 export type FoldkitInteractionHandlers = Partial<
   Record<
     | 'onNodeClick'
+    | 'onNodeDoubleClick'
     | 'onNodeMouseEnter'
     | 'onNodeMouseMove'
     | 'onNodeMouseLeave'
@@ -35,6 +36,7 @@ export const createFoldkitInteractionHandlers = (
       HostAction.SetInteractionHandlers({
         nodePointerHandlers:
           handlers.onNodeClick !== undefined ||
+          handlers.onNodeDoubleClick !== undefined ||
           handlers.onNodeMouseEnter !== undefined ||
           handlers.onNodeMouseMove !== undefined ||
           handlers.onNodeMouseLeave !== undefined,
@@ -58,6 +60,7 @@ export const createFoldkitInteractionHandlers = (
     for (const event of events) {
       switch (event.name) {
         case 'onNodeClick':
+        case 'onNodeDoubleClick':
         case 'onNodeMouseEnter':
         case 'onNodeMouseMove':
         case 'onNodeMouseLeave':

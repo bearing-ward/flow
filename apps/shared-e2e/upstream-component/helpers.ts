@@ -29,29 +29,10 @@ export const componentMount = async (
   expect(page.viewportSize()).toEqual({ width: 500, height: 500 })
   await page.goto(`${adapter.baseURL}/upstream-component/${id}`)
 
-  // A Runtime crash is a completed public mount rejection for the invalid input.
-  const completedMount =
-    adapter.host === 'foldkit' && id === 66
-      ? expect
-          .poll(
-            async () =>
-              (await page
-                .locator('#app')
-                .getAttribute('data-upstream-ready')) === 'true' ||
-              (await page
-                .getByRole('heading', {
-                  name: 'Application Crash',
-                  exact: true,
-                })
-                .isVisible())
-          )
-          .toBe(true)
-      : expect(page.locator('#app')).toHaveAttribute(
-          'data-upstream-ready',
-          'true'
-        )
-
-  await completedMount
+  await expect(page.locator('#app')).toHaveAttribute(
+    'data-upstream-ready',
+    'true'
+  )
 
   const entry = ledger.cases.find(
     (c) => c.id === `UP-128-${String(id).padStart(3, '0')}`

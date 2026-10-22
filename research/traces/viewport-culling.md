@@ -22,7 +22,7 @@ The React Cypress view-props suite mounts a controlled public `ReactFlow` with `
 
 ## Flow production and test paths
 
-Public `mountFlow` decodes opt-in `renderOnlyVisible` at `apps/vanilla/src/mount-flow.ts:60`. `ResizeObserver` supplies node measurements; reconciliation turns the viewport into a flow rectangle, checks node and edge bounds, and promotes visible-edge endpoints at `apps/vanilla/src/mount-flow.ts:640`. It retains measurements when culling offscreen DOM, and viewport updates trigger quiet reconciliation at `apps/vanilla/src/mount-flow.ts:289`. Core geometry is at `packages/core/src/domain/flow-visibility.schema.ts:52` and `packages/core/src/domain/flow-visibility.schema.ts:64`. Browser tests cover distant-cluster re-entry at `apps/vanilla/e2e/canvas.e2e.ts:2052` and culling after zoom, drag completion, and viewport return at `apps/vanilla/e2e/next-slices.e2e.ts:170`.
+Public `mountFlow` decodes opt-in `renderOnlyVisible` at `apps/vanilla/src/mount-flow.ts:60`. `ResizeObserver` supplies node measurements; reconciliation turns the viewport into a flow rectangle, checks node and edge bounds, and promotes visible-edge endpoints at `apps/vanilla/src/mount-flow.ts:641`. It retains measurements when culling offscreen DOM, and viewport updates trigger quiet reconciliation at `apps/vanilla/src/mount-flow.ts:290`. Core geometry is at `packages/core/src/domain/flow-visibility.schema.ts:52` and `packages/core/src/domain/flow-visibility.schema.ts:64`. Browser tests cover distant-cluster re-entry at `apps/vanilla/e2e/canvas.e2e.ts:2052` and culling after zoom, drag completion, and viewport return at `apps/vanilla/e2e/next-slices.e2e.ts:170`.
 
 ## Conformity and deviations
 

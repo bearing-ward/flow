@@ -34,6 +34,7 @@ import {
   ViewportLimitsSchema,
   getViewportForBounds as calculateViewportForBounds,
   interpolateViewport,
+  decodeInitialViewport,
   createFlowGraph,
   createFlowSnapshot,
   graphBounds,
@@ -497,7 +498,7 @@ export const createViewportClient = (
   limits: typeof ViewportLimitsSchema.Type = defaultViewportLimits
 ): ViewportClient => {
   let requestNumber = 0
-  let viewport = initialViewport
+  let viewport = Effect.runSync(decodeInitialViewport(initialViewport, limits))
   let disposed = false
 
   const pending = new Map<

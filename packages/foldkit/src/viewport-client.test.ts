@@ -30,4 +30,25 @@ describe('Foldkit viewport client', () => {
       client.getViewportForBounds({ x: 0, y: 0, width: -1, height: 10 })
     ).toThrow('greater than or equal to 0')
   })
+
+  test('retains a valid initial viewport if disposed before the first runtime response', async () => {
+    const handle: Parameters<typeof createViewportClient>[0] = {
+      viewportResults: { subscribe: () => () => {} },
+      viewportRequests: { send: () => Exit.void },
+    }
+
+    const client = createViewportClient(
+      handle,
+      () => ({ width: 800, height: 600, originX: 0, originY: 0 }),
+      { x: 12, y: -30, zoom: -1 },
+      { minZoom: 0.5, maxZoom: 2 }
+    )
+
+    client.dispose()
+
+    await expect(client.getViewport()).resolves.toMatchObject({
+      status: 'disposed',
+      viewport: { x: 12, y: -30, zoom: 0.5 },
+    })
+  })
 })

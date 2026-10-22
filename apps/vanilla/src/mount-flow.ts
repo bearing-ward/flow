@@ -67,6 +67,7 @@ import {
   beginNodeDrag,
   beginViewportPan,
   clampViewport,
+  decodeInitialViewport,
   constrainViewportToExtent,
   constrainNodePosition,
   constrainNodeGroupDelta,
@@ -492,7 +493,7 @@ export const FlowMountOptionsSchema = S.Struct({
   ui: S.optional(CanvasUISchema),
   viewport: S.Struct({
     extent: S.optional(FlowExtentInputSchema),
-    initial: ViewportSchema,
+    initial: S.Struct({ ...ViewportSchema.fields, zoom: S.Finite }),
     limits: ViewportLimitsSchema,
     mode: FlowControlModeSchema,
   }),
@@ -9356,11 +9357,10 @@ export const createFlowHost = (
               dragSession?.kind === 'node-drag' &&
               dragSession.phase === 'active'
 
-            // Pinned packages/react/src/components/NodeWrapper/index.tsx:109 selects on click when selectNodesOnDrag=false.
-            const selectsOnClick =
+            // Pinned packages/react/src/components/NodeWrapper/index.tsx:123-124 calls onClick even when drag-start selection already ran.
+            const stationaryClick =
               wasActivated &&
               nodeDragThreshold === 0 &&
-              options.selectNodesOnDrag === false &&
               (clickStart?.maxDistance ?? 0) <= (options.nodeClickDistance ?? 0)
 
             dragPointer = pointerInCanvas(event)
@@ -9432,7 +9432,7 @@ export const createFlowHost = (
             draggingNodeIds.delete(node.id)
             refreshNodeRendererProps(nodeEntry, findNode(node.id), graphFor())
 
-            if (!selectsOnClick) {
+            if (!stationaryClick) {
               suppressClickThroughDispatch(wasActivated)
             }
 
@@ -13997,6 +13997,12 @@ export const mountFlow = (
     ...decodedOptions,
     viewport: {
       ...decodedOptions.viewport,
+      initial: Effect.runSync(
+        decodeInitialViewport(
+          decodedOptions.viewport.initial,
+          decodedOptions.viewport.limits
+        )
+      ),
       extent: decodedOptions.translateExtent ?? decodedOptions.viewport.extent,
     },
     ariaLabelConfig: decodeAriaLabelConfig(inputOptions.ariaLabelConfig),

@@ -14,9 +14,9 @@ Upstream's edge wrapper obtains effective z-index at `packages/react/src/compone
 
 Flow computes semantic levels in `packages/core/src/domain/flow-z-index.ts:50`. Vanilla uses those levels and selected elevation to sort groups within one SVG at `apps/vanilla/src/edge-renderer.ts:569`. Its `.flow-edges` shell has no z-index at `apps/vanilla/src/style.css:285`. The existing design decision is `research/traces/edge-visibility-stacking.md:34`; it does not prove overlap parity.
 
-Vue derives core stacking at `packages/vue/src/flow-canvas.ts:1551`. Plan 138 replaces base/elevated grouping with keyed per-edge SVGs in document order at `packages/vue/src/flow-canvas.ts:10918`. Each SVG and label receives its semantic z-index; selection changes CSS without remounting the edge. The marker-definitions SVG remains at base level. The stylesheet's base SVG value is 0 at `packages/vue/src/style.css:455`. This retains the earlier CSS repair and removes selection-driven document reordering. Vanilla retains its documented shared-SVG choice.
+Vue derives core stacking at `packages/vue/src/flow-canvas.ts:1558`. Plan 138 replaces base/elevated grouping with keyed per-edge SVGs in document order at `packages/vue/src/flow-canvas.ts:10925`. Each SVG and label receives its semantic z-index; selection changes CSS without remounting the edge. The marker-definitions SVG remains at base level. The stylesheet's base SVG value is 0 at `packages/vue/src/style.css:455`. This retains the earlier CSS repair and removes selection-driven document reordering. Vanilla retains its documented shared-SVG choice.
 
-Foldkit computes levels at `packages/foldkit/src/graph.ts:7259`, then renders edge SVGs with each edge's level at `packages/foldkit/src/graph.ts:7524`. Its four relevant upstream stacking assertions already pass.
+Foldkit computes levels at `packages/foldkit/src/graph.ts:7261`, then renders edge SVGs with each edge's level at `packages/foldkit/src/graph.ts:7526`. Its four relevant upstream stacking assertions already pass.
 
 ## Background production paths
 
