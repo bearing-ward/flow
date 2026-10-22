@@ -59,6 +59,7 @@ export interface FoldkitEventsFixture {
   readonly mountControls: () => void
   /** Register an `onNodeClick` consumer, as an app handling node clicks would. */
   readonly registerNodeClickHandler: () => void
+  readonly nodeClickCallbacks: () => number
 }
 
 const decodeChange = S.decodeUnknownSync(FlowStateChangeSchema)
@@ -498,9 +499,16 @@ export const mountFoldkitEventsFixture = (
     }
   })
 
+  let nodeClickCallbacks = 0
+
   return {
+    nodeClickCallbacks: () => nodeClickCallbacks,
     registerNodeClickHandler: () => {
-      createFoldkitInteractionHandlers(active.ports, { onNodeClick: () => {} })
+      createFoldkitInteractionHandlers(active.ports, {
+        onNodeClick: () => {
+          nodeClickCallbacks += 1
+        },
+      })
     },
     mountControls: () => {
       const controls = createFlowControls(

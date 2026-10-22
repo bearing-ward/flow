@@ -280,6 +280,9 @@ test('Foldkit runtime switches gate drag, connect and select without blocking pa
   const clicks = (await eventCount(page, 'onNodeClick')) ?? 0
   await nodeA.click()
   await expect.poll(() => eventCount(page, 'onNodeClick')).toBe(clicks + 1)
+  expect(
+    await page.evaluate(() => window.__flowFoldkitEvents?.nodeClickCallbacks())
+  ).toBe(1)
 
   const select = nodeA.locator('.flow-foldkit-select-node')
   await expect(select).toHaveAttribute('aria-disabled', 'true')
