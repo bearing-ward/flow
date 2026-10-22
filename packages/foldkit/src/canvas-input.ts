@@ -31,7 +31,7 @@ export const observeCanvasInput = (
 
   const observeModifier = (
     key: FlowKeyCode,
-    kind: 'selection' | 'multiSelection' | 'zoom'
+    kind: 'selection' | 'multiSelection' | 'zoom' | 'pan'
   ): (() => void) => {
     let initializing = true
 
@@ -52,6 +52,7 @@ export const observeCanvasInput = (
 
   const keyStops = [
     observeModifier(model().selectionKeyCode, 'selection'),
+    observeModifier(model().panActivationKeyCode, 'pan'),
     observeModifier(model().multiSelectionKeyCode, 'multiSelection'),
     observeModifier(model().zoomActivationKeyCode, 'zoom'),
     observeKeyPress(

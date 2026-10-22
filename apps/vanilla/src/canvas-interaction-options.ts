@@ -73,7 +73,8 @@ export const matchesKeyEvent = (
 
 export const bindCanvasKeys = (
   options: CanvasInteractionOptions,
-  disposers: Set<() => void>
+  disposers: Set<() => void>,
+  onSelectionChange: (held: boolean) => void
 ) => {
   let deleteHeld = false
   let selectionHeld = false
@@ -99,6 +100,7 @@ export const bindCanvasKeys = (
       options.selectionKeyCode ?? null,
       (held: boolean) => {
         selectionHeld = held
+        onSelectionChange(held)
       },
     ],
     [

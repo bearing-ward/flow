@@ -408,12 +408,14 @@ test.describe('Vanilla events, changes and connection rules', () => {
       ])
   })
 
-  test('a fixed node pans only with the pane activation modifier and outside no-pan content', async ({
+  test('the pane activation modifier enables fixed-node panning outside no-pan content', async ({
     page,
   }) => {
     await mount(page, {
       recipe: 'controlled',
       nodesDraggable: false,
+      // Upstream FlowRenderer/index.tsx:81 enables the key independently of panOnDrag.
+      panOnDrag: false,
       panActivationModifier: 'shift',
     })
 
@@ -438,5 +440,18 @@ test.describe('Vanilla events, changes and connection rules', () => {
     await page.keyboard.up('Shift')
     expect(await viewport()).toEqual({ x: 60, y: 30, zoom: 1 })
     expect(await nodePosition(page, 'a')).toEqual({ x: 60, y: 60 })
+
+    await mount(page, {
+      recipe: 'controlled',
+      nodesDraggable: false,
+      panOnDrag: true,
+      panActivationModifier: 'shift',
+    })
+    const enabledStart = await grip(node(page, 'a'))
+    await drag(page, enabledStart, {
+      x: enabledStart.x + 60,
+      y: enabledStart.y + 30,
+    })
+    await expect.poll(viewport).toEqual({ x: 60, y: 30, zoom: 1 })
   })
 })

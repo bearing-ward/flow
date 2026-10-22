@@ -22,6 +22,8 @@ export const ClosingOptionsSchema = Schema.Struct({
   autoPanSpeed: DistanceSchema,
   deleteKeyCode: KeyCodeSchema,
   selectionKeyCode: KeyCodeSchema,
+  /** Holding this key enables pane pan in addition to panOnDrag. */
+  panActivationKeyCode: KeyCodeSchema,
   multiSelectionKeyCode: KeyCodeSchema,
   zoomActivationKeyCode: KeyCodeSchema,
   noDragClassName: Schema.String,
@@ -48,6 +50,7 @@ export const defaultClosingOptions: ClosingOptions = {
   autoPanSpeed: 15,
   deleteKeyCode: 'Backspace',
   selectionKeyCode: 'Shift',
+  panActivationKeyCode: null,
   multiSelectionKeyCode: ['Meta', 'Control'],
   zoomActivationKeyCode: ['Meta', 'Control'],
   noDragClassName: 'nodrag',

@@ -38,6 +38,7 @@ export interface EventsFixtureOptions {
   readonly nodesDraggable?: boolean
   readonly nodesConnectable?: boolean
   readonly elementsSelectable?: boolean
+  readonly panOnDrag?: boolean
   readonly panActivationModifier?: 'shift' | 'none'
 }
 
@@ -143,6 +144,7 @@ export const mountEventsFixture = (
     nodesDraggable: options.nodesDraggable,
     nodesConnectable: options.nodesConnectable,
     elementsSelectable: options.elementsSelectable,
+    panOnDrag: options.panOnDrag,
     panActivationModifier: options.panActivationModifier,
     onNodesChange: (changes) => {
       nodeChanges.push([...changes])

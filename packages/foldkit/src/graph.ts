@@ -33,6 +33,7 @@ import {
   FlowSnapshotSchema,
   FlowStateChangeSchema,
   ViewportSchema,
+  ViewportLimitsSchema,
   FlowMeasurementStateSchema,
   ConnectionModeSchema,
   NodeDragThresholdSchema,
@@ -481,6 +482,8 @@ export const ModelSchema = Schema.Struct({
   paneSize: PaneSizeSchema,
   rendererRevision: Schema.Number,
   selectionKeyPressed: Schema.Boolean,
+  panKeyPressed: Schema.Boolean,
+  viewportLimits: ViewportLimitsSchema,
   multiSelectionKeyPressed: Schema.Boolean,
   zoomKeyPressed: Schema.Boolean,
   ariaLiveMessage: Schema.NullOr(
@@ -502,7 +505,15 @@ export const ModelSchema = Schema.Struct({
   pointerClickReceipt: Schema.NullOr(PointerClickReceiptSchema),
   connectionRadius: ConnectionRadiusSchema,
   autoPanOnConnect: Schema.Boolean,
-  panOnDrag: Schema.Boolean,
+  panOnDrag: Schema.Union([
+    Schema.Boolean,
+    Schema.Array(
+      Schema.Int.check(
+        Schema.isGreaterThanOrEqualTo(0),
+        Schema.isLessThanOrEqualTo(4)
+      )
+    ),
+  ]),
   selectionOnDrag: Schema.Boolean,
   panOnScroll: Schema.Boolean,
   panOnScrollSpeed: Schema.Finite,
@@ -730,7 +741,7 @@ export const Message = FoldMessage.defineMessageUnion({
   RefreshRenderers: {},
   DeleteSelected: {},
   SetCanvasKey: {
-    kind: Schema.Literals(['selection', 'multiSelection', 'zoom']),
+    kind: Schema.Literals(['selection', 'multiSelection', 'zoom', 'pan']),
     pressed: Schema.Boolean,
   },
   MoveNodeByKeyboard: {
@@ -822,6 +833,8 @@ export const Message = FoldMessage.defineMessageUnion({
     nodeId: Schema.NullOr(Schema.String),
     direction: Schema.NullOr(NodeResizeDirectionSchema),
     allowPan: Schema.Boolean,
+    button: Schema.optional(Schema.Number),
+    pointerType: Schema.optional(Schema.String),
     screenX: Schema.Finite,
     screenY: Schema.Finite,
     /** Set when the press is on a node view's resizer control. */
@@ -886,7 +899,8 @@ export interface GraphInteractionOptions extends Partial<ClosingOptions> {
   readonly connectionMode: ConnectionMode
   readonly connectionRadius: ConnectionRadius
   readonly autoPanOnConnect: boolean
-  readonly panOnDrag?: boolean
+  /** Boolean pane panning or the allowed mouse buttons; arrays do not restrict touch. */
+  readonly panOnDrag?: typeof ModelSchema.fields.panOnDrag.Type
   readonly selectionOnDrag?: boolean
   readonly panOnScroll?: boolean
   readonly panOnScrollSpeed?: number
@@ -2334,7 +2348,12 @@ const zoomViewportAt = (
   const bounds = canvas?.getBoundingClientRect()
   const screenX = clientX - (bounds?.left ?? 0)
   const screenY = clientY - (bounds?.top ?? 0)
-  const zoom = Math.min(2, Math.max(0.1, model.viewport.zoom * factor))
+
+  const zoom = Math.min(
+    model.viewportLimits.maxZoom,
+    Math.max(model.viewportLimits.minZoom, model.viewport.zoom * factor)
+  )
+
   const ratio = zoom / model.viewport.zoom
 
   return {
@@ -3195,6 +3214,35 @@ const selectClickedNode = (
       )
 }
 
+const panePanEnabled = (
+  model: Model,
+  button: number,
+  pointerType: string
+): boolean =>
+  model.panKeyPressed ||
+  (Array.isArray(model.panOnDrag)
+    ? pointerType === 'touch' || model.panOnDrag.includes(button)
+    : model.panOnDrag === true)
+
+const paneDragSelectionEnabled = (model: Model): boolean =>
+  model.selectionOnDrag && model.panOnDrag !== true && !model.panKeyPressed
+
+const paneSelectionEnabled = (
+  model: Model,
+  button: number,
+  pointerType: string
+): boolean =>
+  button === 0 &&
+  model.elementsSelectable &&
+  (model.selectionKeyPressed ||
+    (paneDragSelectionEnabled(model) &&
+      !(pointerType === 'touch' && model.panOnDrag !== false)))
+
+const paneIsSelecting = (model: Model): boolean =>
+  model.selectionKeyPressed ||
+  model.gestureSession?.kind === 'selection' ||
+  paneDragSelectionEnabled(model)
+
 const updateState = (
   model: Model,
   message: GraphMessageData
@@ -4024,6 +4072,8 @@ const updateState = (
       nodeId,
       direction,
       allowPan,
+      button = 0,
+      pointerType = 'mouse',
       screenX,
       screenY,
       resizer,
@@ -4033,7 +4083,20 @@ const updateState = (
       }
 
       if (nodeId === null) {
-        if (allowPan && model.panOnDrag && !model.selectionKeyPressed) {
+        const panEnabled = panePanEnabled(model, button, pointerType)
+
+        const selectionEnabled = paneSelectionEnabled(
+          model,
+          button,
+          pointerType
+        )
+
+        if (
+          allowPan &&
+          panEnabled &&
+          !selectionEnabled &&
+          !model.selectionKeyPressed
+        ) {
           return {
             model: {
               ...model,
@@ -4051,10 +4114,7 @@ const updateState = (
           }
         }
 
-        if (
-          (!model.selectionOnDrag && !model.selectionKeyPressed) ||
-          !model.elementsSelectable
-        ) {
+        if (!selectionEnabled) {
           return noChange(model)
         }
 
@@ -4878,13 +4938,17 @@ const shouldIgnoreNodePointer = (target: Element): boolean => {
   )
 }
 
+type PanePointer = Pick<
+  PointerEvent,
+  'button' | 'pointerId' | 'clientX' | 'clientY' | 'target'
+> & { readonly pointerType?: string }
+
 const beginPointer = (
-  pointerId: number,
-  clientX: number,
-  clientY: number,
-  target: EventTarget | null,
+  raw: PanePointer,
   viewport: CoreViewport
 ): Option.Option<GraphMessageData> => {
+  const { pointerId, clientX, clientY, target, button, pointerType } = raw
+
   let targetElement: Element | null = null
 
   if (target instanceof Element) {
@@ -4937,6 +5001,8 @@ const beginPointer = (
     return Option.some(
       Message.GestureDown({
         pointerId,
+        button,
+        pointerType,
         clientX: flowX,
         clientY: flowY,
         nodeId,
@@ -6589,11 +6655,11 @@ export const createPointerResource = (initial: Model) => {
   }
 
   const nodePanGesture = (
-    raw: Pick<PointerEvent, 'pointerId' | 'clientX' | 'clientY' | 'target'>,
+    raw: PanePointer,
     canvas: HTMLElement
   ): GestureDownMessage | undefined => {
     if (
-      !current.panOnDrag ||
+      !panePanEnabled(current, raw.button, raw.pointerType ?? 'mouse') ||
       (raw.target instanceof Element &&
         current.noPanClassName !== '' &&
         raw.target.closest(`.${CSS.escape(current.noPanClassName)}`) !==
@@ -6610,6 +6676,8 @@ export const createPointerResource = (initial: Model) => {
 
     return Message.GestureDown({
       pointerId: raw.pointerId,
+      button: raw.button,
+      pointerType: raw.pointerType ?? 'mouse',
       clientX: point.x,
       clientY: point.y,
       nodeId: null,
@@ -6648,29 +6716,19 @@ export const createPointerResource = (initial: Model) => {
     ready && !closed && nativeCurrent?.native !== 'pressed'
 
   const classifyPress = (
-    raw: Pick<
-      PointerEvent,
-      'button' | 'pointerId' | 'clientX' | 'clientY' | 'target'
-    >,
+    raw: PanePointer,
     canvas: HTMLElement
   ): Option.Option<GraphMessageData> =>
-    raw.button === 1
-      ? Option.fromUndefinedOr(nodePanGesture(raw, canvas))
-      : beginPointer(
-          raw.pointerId,
-          raw.clientX,
-          raw.clientY,
-          raw.target,
-          current.viewport
-        )
+    raw.button === 0
+      ? beginPointer(raw, current.viewport)
+      : Option.fromUndefinedOr(nodePanGesture(raw, canvas))
 
-  const begin = (
-    raw: Pick<
-      PointerEvent,
-      'button' | 'pointerId' | 'clientX' | 'clientY' | 'target'
-    >
-  ): Option.Option<never> => {
-    if (!admissionOpen() || raw.button > 1) {
+  const nativeButtonAllowed = (button: number): boolean =>
+    button <= 1 ||
+    (Array.isArray(current.panOnDrag) && current.panOnDrag.includes(button))
+
+  const begin = (raw: PanePointer): Option.Option<never> => {
+    if (!admissionOpen() || !nativeButtonAllowed(raw.button)) {
       return Option.none()
     }
 
@@ -7609,7 +7667,8 @@ const graphView = (
         h.Class(
           flowClassNames(
             'flow-foldkit-canvas',
-            resolveFlowColorMode(model.colorMode, model.prefersDark)
+            resolveFlowColorMode(model.colorMode, model.prefersDark),
+            paneIsSelecting(model) ? 'selection' : ''
           )
         ),
         h.DataAttribute('color-mode', model.colorMode),
@@ -7621,7 +7680,7 @@ const graphView = (
         h.Tabindex(0),
         h.OnPointerDown(
           (
-            _,
+            pointerType,
             button,
             _screenX,
             _screenY,
@@ -7632,6 +7691,7 @@ const graphView = (
             target
           ) =>
             pointerResource.begin({
+              pointerType,
               button,
               pointerId,
               clientX,
@@ -8121,6 +8181,11 @@ const ariaLabelTextConfig = (input: FlowAriaLabelConfigInput | undefined) =>
 const platformModifier = (): string =>
   globalThis.navigator?.userAgent.includes('Mac') === true ? 'Meta' : 'Control'
 
+const defaultViewportLimits: typeof ViewportLimitsSchema.Type = {
+  minZoom: 0.1,
+  maxZoom: 2,
+}
+
 // oxlint-disable-next-line complexity -- one default per canvas option.
 export const initialModel = (
   document: FlowDocument,
@@ -8130,7 +8195,8 @@ export const initialModel = (
   viewportMode: 'controlled' | 'uncontrolled' = 'uncontrolled',
   selectionMode: typeof SelectionModeSchema.Type = 'full',
   interactionOptions: GraphInteractionOptions = defaultInteractionOptions,
-  instanceId = 'flow-foldkit-default'
+  instanceId = 'flow-foldkit-default',
+  viewportLimits: typeof ViewportLimitsSchema.Type = defaultViewportLimits
 ): Model => ({
   ...Schema.decodeUnknownSync(ClosingOptionsSchema)({
     ...defaultClosingOptions,
@@ -8144,6 +8210,8 @@ export const initialModel = (
   paneSize: { width: 0, height: 0, bounds: { width: 0, height: 0 } },
   rendererRevision: 0,
   selectionKeyPressed: false,
+  panKeyPressed: false,
+  viewportLimits,
   multiSelectionKeyPressed: false,
   zoomKeyPressed: false,
   ariaLiveMessage: null,
@@ -8167,7 +8235,9 @@ export const initialModel = (
     interactionOptions.nodeDragThreshold
   ),
   pointerClickReceipt: null,
-  panOnDrag: interactionOptions.panOnDrag ?? false,
+  panOnDrag: Schema.decodeUnknownSync(ModelSchema.fields.panOnDrag)(
+    interactionOptions.panOnDrag ?? false
+  ),
   selectionOnDrag: interactionOptions.selectionOnDrag ?? true,
   panOnScroll: interactionOptions.panOnScroll ?? false,
   panOnScrollSpeed: interactionOptions.panOnScrollSpeed ?? 1,

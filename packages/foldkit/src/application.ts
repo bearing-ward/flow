@@ -3398,7 +3398,9 @@ export const initialModel = (
     'uncontrolled',
     'uncontrolled',
     selectionMode,
-    interactionOptions
+    interactionOptions,
+    undefined,
+    viewportLimits
   ),
   changeKinds: [],
   viewportAnimation: null,
@@ -3653,7 +3655,8 @@ export const createProgram = (
     viewportMode,
     selectionMode,
     interactionOptions,
-    instanceId
+    instanceId,
+    viewportLimits
   )
 
   const pointerResource = Graph.createPointerResource(initialGraph)

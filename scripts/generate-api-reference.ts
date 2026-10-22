@@ -101,6 +101,7 @@ const renderReference = (): string =>
     '',
     'This file is generated from the exported Effect Schemas. Run `bun run docs:generate-api` after changing a public schema. It describes decoded values; see [the JavaScript API](public-api.md) for host acquisition and lifecycle.',
     'The TypeScript shapes show decoded field types. Branded identifiers appear as strings here; runtime schemas also enforce non-empty ids, valid stroke colors, finite positive sizes and zoom, and document integrity rules such as unique ids and valid edge endpoints.',
+    'Host pane options are documented in [pane input and zoom limits](public-api.md#pane-input-and-zoom-limits).',
     '',
     '`JsonValue` below is the recursive JSON type admitted by `FlowNode.data`.',
     '',
