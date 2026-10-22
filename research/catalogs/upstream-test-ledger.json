@@ -2251,16 +2251,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The wheel is delivered and node screen bounds change, but minimap SVG viewBox stays 0 0 200 150; the later mask assertion is not reached."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After wheel input changes graph screen bounds, minimap SVG viewBox remains 0 0 180 120; the mask assertion is not reached."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The minimap SVG retains viewBox 0 0 180 120 after the wheel; the later mask assertion is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:25"
@@ -2273,15 +2270,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The graph node moves, but the original retained minimap rect keeps its old x attribute after redraw; Vanilla replaces minimap nodes at apps/vanilla/src/minimap.ts:272."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The graph node moves after native drag, but the original retained minimap rectangle keeps its old x attribute because update redraws the SVG with replaceChildren at packages/foldkit/src/ui/minimap.ts:220."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:45"
@@ -2294,16 +2289,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The native topLeft-to-bottomLeft pan changes graph screen bounds, but minimap SVG viewBox remains 0 0 200 150; the later mask assertion is not reached."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "After the pane pan changes graph screen bounds, minimap SVG viewBox remains 0 0 180 120; the mask assertion is not reached."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The pane input changes graph screen bounds, but minimap SVG viewBox stays 0 0 180 120; the mask assertion is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:59"

@@ -136,7 +136,7 @@ Every fail is listed below. A case that stops before a later assertion does not 
 | UP-127-062 | zooms by double click | vanilla | Both zoom-out and native double-click arrive, but their factors cancel: the viewport transform equals the synchronously captured pre-queue transform after the original 50ms wait. |
 | UP-127-062 | zooms by double click | vue | The control zoom-out and double-click factors cancel, leaving the final CSS transform equal to the synchronously captured pre-queue value after the upstream 50ms wait. |
 
-#### [Minimap viewBox and retained node identity](134-follow-up-minimap.md)
+#### [Minimap viewBox and retained node identity](137-cypress-minimap.md)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -206,7 +206,7 @@ Only the receipt prose changed after this run; the source, contracts, ledger out
 - `plans/134-follow-up-connections.md`
 - `plans/134-follow-up-edge-input.md`
 - `plans/134-follow-up-interaction-policy.md`
-- `plans/134-follow-up-minimap.md`
+- `plans/137-cypress-minimap.md`
 - `plans/134-follow-up-node-input.md`
 - `plans/134-follow-up-viewport.md`
 - `plans/134-upstream-cypress-e2e-port.md`

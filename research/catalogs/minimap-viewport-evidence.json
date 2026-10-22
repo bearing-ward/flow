@@ -1,0 +1,150 @@
+{
+  "baseCommit": "6c934d7ac5c31596875cbb600ee044aab59241b0",
+  "scope": "Temporary instrumentation of the unchanged five-case MiniMap sequence before product edits; failing scoped statuses temporarily set to pass.",
+  "records": [
+    {
+      "host": "vanilla",
+      "boundary": "MINIMAP",
+      "case": "[UP-127-065] changes zoom level",
+      "observed": {
+        "box": "0 0 200 150",
+        "mask": "M0,0h200v150h-200z M5.3769916855631,11.161874527588807h157.17442331533496v88.41061311487591h-157.17442331533496z",
+        "nodes": [
+          "<rect class=\"flow-minimap-node\" x=\"69.33333333333334\" y=\"27.364444444444445\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"1\"></rect>",
+          "<rect class=\"flow-minimap-node\" x=\"8\" y=\"66.2088888888889\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"2\"></rect>",
+          "<rect class=\"flow-minimap-node\" x=\"130.66666666666669\" y=\"66.2088888888889\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"3\"></rect>",
+          "<rect class=\"flow-minimap-node\" x=\"130.66666666666669\" y=\"107.09777777777778\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"4\"></rect>"
+        ],
+        "viewport": "transform: translate(-311.63px, 115.301px) scale(3.32992); --flow-resize-control-scale: 1;"
+      }
+    },
+    {
+      "host": "vanilla",
+      "boundary": "IDENTITY",
+      "case": "UP-127-066",
+      "observed": {
+        "xBefore": 69.33333333333334,
+        "yBefore": 27.364444444444445,
+        "xAfter": 69.33333333333334,
+        "yAfter": 27.364444444444445,
+        "connected": false,
+        "currentX": "149.89113157464564",
+        "currentY": "49.30356433948018"
+      }
+    },
+    {
+      "host": "vanilla",
+      "boundary": "MINIMAP",
+      "case": "[UP-127-067] changes node positions via pane drag",
+      "observed": {
+        "box": "0 0 200 150",
+        "mask": "M0,0h200v150h-200z M-98.31945578231293,-47.16737717309147h207.39289493575208v116.65850340136055h-207.39289493575208z",
+        "nodes": [
+          "<rect class=\"flow-minimap-node\" x=\"69.33333333333334\" y=\"27.364444444444445\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"1\"></rect>",
+          "<rect class=\"flow-minimap-node\" x=\"8\" y=\"66.2088888888889\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"2\"></rect>",
+          "<rect class=\"flow-minimap-node\" x=\"130.66666666666669\" y=\"66.2088888888889\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"3\"></rect>",
+          "<rect class=\"flow-minimap-node\" x=\"130.66666666666669\" y=\"107.09777777777778\" width=\"61.333333333333336\" height=\"15.537777777777778\" rx=\"5\" ry=\"5\" shape-rendering=\"crispEdges\" data-node-id=\"4\"></rect>"
+        ],
+        "viewport": "transform: translate(403.828px, 447.382px) scale(2.52361); --flow-resize-control-scale: 1;"
+      }
+    },
+    {
+      "host": "vue",
+      "boundary": "MINIMAP",
+      "case": "[UP-127-065] changes zoom level",
+      "observed": {
+        "box": "0 0 180 120",
+        "mask": "M-5,-5h190v130h-190z M5.662101284958421,3.100801209372632h151.3425344174916v85.13017560983903h-151.3425344174916z",
+        "nodes": [
+          "<rect class=\"flow-vue-minimap-background\" x=\"0\" y=\"0\" width=\"180\" height=\"120\" rx=\"4\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"1\" x=\"62.66666666666667\" y=\"17.54222222222222\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"2\" x=\"8\" y=\"52.16444444444445\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"3\" x=\"117.33333333333334\" y=\"52.16444444444445\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"4\" x=\"117.33333333333334\" y=\"88.60888888888888\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-viewport\" data-testid=\"flow-minimap-viewport\" x=\"5.662101284958421\" y=\"3.100801209372632\" width=\"151.3425344174916\" height=\"85.13017560983903\"></rect>"
+        ],
+        "viewport": "transform: translate(-288.461px, 106.729px) scale(3.08234);"
+      }
+    },
+    {
+      "host": "vue",
+      "boundary": "IDENTITY",
+      "case": "UP-127-066",
+      "observed": {
+        "xBefore": 62.66666666666667,
+        "yBefore": 17.54222222222222,
+        "xAfter": 136.07542597291234,
+        "yAfter": 38.07742112527589,
+        "connected": true,
+        "currentX": "136.07542597291234",
+        "currentY": "38.07742112527589"
+      }
+    },
+    {
+      "host": "vue",
+      "boundary": "MINIMAP",
+      "case": "[UP-127-067] changes node positions via pane drag",
+      "observed": {
+        "box": "0 0 180 120",
+        "mask": "M-5,-5h190v130h-190z M-47.15654652504228,-17.535718653601364h121.47580019959537v68.3301376122724h-121.47580019959537z",
+        "nodes": [
+          "<rect class=\"flow-vue-minimap-background\" x=\"0\" y=\"0\" width=\"180\" height=\"120\" rx=\"4\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"1\" x=\"136.07542597291234\" y=\"38.07742112527589\" width=\"35.924574027087665\" height=\"9.10089282056702\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"2\" x=\"8\" y=\"48.87192104778688\" width=\"35.92457692329087\" height=\"9.100889924363818\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"3\" x=\"79.84928633050102\" y=\"48.87192104778688\" width=\"35.924574027087665\" height=\"9.100889924363818\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-node\" data-minimap-node=\"4\" x=\"79.84928633050102\" y=\"72.82168315795388\" width=\"35.924574027087665\" height=\"9.100895716770221\" rx=\"5\" ry=\"5\"></rect>",
+          "<rect class=\"flow-vue-minimap-viewport\" data-testid=\"flow-minimap-viewport\" x=\"-47.15654652504228\" y=\"-17.535718653601364\" width=\"121.47580019959537\" height=\"68.3301376122724\"></rect>"
+        ],
+        "viewport": "transform: translate(328.828px, 447.382px) scale(2.52361);"
+      }
+    },
+    {
+      "host": "foldkit",
+      "boundary": "MINIMAP",
+      "case": "[UP-127-065] changes zoom level",
+      "observed": {
+        "box": "0 0 180 120",
+        "mask": "M0,0h180v120h-180z M5.662101284958421,3.100801209372632h123.9087871763633v69.69869278670436h-123.9087871763633z",
+        "nodes": [
+          "<rect class=\"flow-foldkit-minimap-background\" width=\"180\" height=\"120\" style=\"fill: var(--flow-minimap-background-color, var(--flow-minimap-background-color-default, #fff));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"62.66666666666667\" y=\"17.54222222222222\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"1\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"8\" y=\"52.16444444444445\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"2\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"117.33333333333334\" y=\"52.16444444444445\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"3\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"117.33333333333334\" y=\"88.60888888888888\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"4\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>"
+        ],
+        "viewport": "transform: translate(-352.327px, 130.359px) scale(3.76478);"
+      }
+    },
+    {
+      "host": "foldkit",
+      "boundary": "IDENTITY",
+      "case": "UP-127-066",
+      "observed": {
+        "xBefore": 62.66666666666667,
+        "yBefore": 17.54222222222222,
+        "xAfter": 62.66666666666667,
+        "yAfter": 17.54222222222222,
+        "connected": false,
+        "currentX": "135.76081052642127",
+        "currentY": "37.88546604267089"
+      }
+    },
+    {
+      "host": "foldkit",
+      "boundary": "MINIMAP",
+      "case": "[UP-127-067] changes node positions via pane drag",
+      "observed": {
+        "box": "0 0 180 120",
+        "mask": "M0,0h180v120h-180z M-5.16896447467877,13.931866969009821h184.85018896447468v103.97823129251701h-184.85018896447468z",
+        "nodes": [
+          "<rect class=\"flow-foldkit-minimap-background\" width=\"180\" height=\"120\" style=\"fill: var(--flow-minimap-background-color, var(--flow-minimap-background-color-default, #fff));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"62.66666666666667\" y=\"17.54222222222222\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"1\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"8\" y=\"52.16444444444445\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"2\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"117.33333333333334\" y=\"52.16444444444445\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"3\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>",
+          "<rect class=\"flow-foldkit-minimap-node\" x=\"117.33333333333334\" y=\"88.60888888888888\" width=\"54.66666666666667\" height=\"13.84888888888889\" rx=\"5\" ry=\"5\" data-minimap-node=\"4\" style=\"fill: var(--flow-minimap-node-background-color, var(--flow-minimap-node-background-color-default, #e2e2e2)); stroke: var(--flow-minimap-node-stroke-color, var(--flow-minimap-node-stroke-color-default, transparent)); stroke-width: var(--flow-minimap-node-stroke-width, var(--flow-minimap-node-stroke-width-default, 2));\"></rect>"
+        ],
+        "viewport": "transform: translate(-161.172px, 12.382px) scale(2.52361);"
+      }
+    }
+  ]
+}

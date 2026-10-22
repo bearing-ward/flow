@@ -51,7 +51,13 @@ describe('FlowMiniMap projection', () => {
     expect(
       projection?.pointToGraph({ x: projection.offsetX, y: projection.offsetY })
     ).toStrictEqual({ x: 0, y: 0 })
-    expect(projection?.viewport.width).toBeCloseTo((600 / 2) * (164 / 350))
+    // Upstream: packages/react/src/additional-components/MiniMap/MiniMap.tsx:19-24.
+    expect(projection?.viewport).toStrictEqual({
+      x: 10,
+      y: 5,
+      width: 300,
+      height: 200,
+    })
   })
 
   it('returns no projection for an empty or all-hidden graph', () => {
@@ -227,5 +233,86 @@ describe('FlowMiniMap options and node presentation', () => {
         macPinch: true,
       })
     ).toBeCloseTo(2)
+  })
+})
+
+// Upstream: packages/react/src/additional-components/MiniMap/MiniMap.tsx:19-24,43-45,107-116,212-215.
+// The reference uses graph units and
+// unions visible node bounds with the viewport before applying offsetScale=5.
+describe('MiniMap viewport tracking', () => {
+  const graph = createFlowGraph(
+    Effect.runSync(
+      decodeFlowDocument({
+        nodes: [
+          {
+            id: 'a',
+            label: 'A',
+            position: { x: 0, y: 0 },
+            size: { width: 100, height: 50 },
+          },
+          {
+            id: 'hidden',
+            label: 'Hidden',
+            position: { x: -1000, y: -1000 },
+            hidden: true,
+          },
+        ],
+        edges: [],
+      })
+    )
+  )
+
+  it.each([
+    {
+      viewport: { x: 0, y: 0, zoom: 1 },
+      box: { x: -5, y: -5, width: 210, height: 110 },
+    },
+    {
+      viewport: { x: 0, y: 0, zoom: 2 },
+      box: { x: -2.5, y: -2.5, width: 105, height: 55 },
+    },
+    {
+      viewport: { x: 300, y: 0, zoom: 1 },
+      box: { x: -310, y: -60, width: 420, height: 220 },
+    },
+  ])(
+    'tracks $viewport while retaining graph-space node geometry',
+    ({ viewport, box }) => {
+      const projection = selectFlowMiniMapProjection({
+        graph,
+        viewport,
+        canvas: { width: 200, height: 100 },
+        size: { width: 200, height: 100 },
+      })
+
+      expect(projection?.viewBox).toStrictEqual(box)
+      expect(projection?.nodes).toHaveLength(1)
+      expect(projection?.nodes[0]).toMatchObject({
+        id: 'a',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 50,
+      })
+    }
+  )
+
+  it('cuts the graph-space viewport out of the padded mask and inverts letterboxed clicks', () => {
+    const projection = selectFlowMiniMapProjection({
+      graph,
+      viewport: { x: 0, y: 0, zoom: 1 },
+      canvas: { width: 200, height: 100 },
+      size: { width: 200, height: 100 },
+    })
+
+    expect(projection?.maskPath).toBe(
+      'M-10,-10h220v120h-220z M0,0h200v100h-200z'
+    )
+    expect(projection?.pointToGraph({ x: 100, y: 50 })).toStrictEqual({
+      x: 100,
+      y: 50,
+    })
+    expect(projection?.pointToGraph({ x: 0, y: 0 }).x).toBeCloseTo(-10)
+    expect(projection?.pointToGraph({ x: 0, y: 0 }).y).toBeCloseTo(-5)
   })
 })

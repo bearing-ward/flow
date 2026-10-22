@@ -100,8 +100,12 @@ const settleFrames = 60
 
 const isMac = (): boolean => /mac/iu.test(globalThis.navigator.platform)
 
-const defaultMiniMapNode = (props: FlowMiniMapNodeProps): SVGElement => {
-  const rect = globalThis.document.createElementNS(svgNamespace, 'rect')
+const defaultMiniMapNode = (
+  props: FlowMiniMapNodeProps,
+  rect: SVGElement = globalThis.document.createElementNS(svgNamespace, 'rect')
+): SVGElement => {
+  rect.setAttribute('class', '')
+  rect.removeAttribute('style')
   rect.classList.add('flow-minimap-node')
   rect.classList.toggle('selected', props.selected)
   applyFlowClassName(rect, props.className)
@@ -242,6 +246,8 @@ export const createFlowMiniMap = (
     nodeOptions.nodeStrokeWidth = options.nodeStrokeWidth
   }
 
+  const nodeElements = new Map<string, SVGElement>()
+
   const render = (): void => {
     const { document } = controller.getSnapshot()
 
@@ -269,24 +275,37 @@ export const createFlowMiniMap = (
       options: nodeOptions,
     })
 
-    nodesLayer.replaceChildren()
-
     if (projection === undefined) {
+      nodesLayer.replaceChildren()
+      nodeElements.clear()
       mask.setAttribute('d', '')
 
       return
     }
 
+    const visibleIds = new Set(projection.nodes.map((node) => node.id))
+
+    for (const [id, element] of nodeElements) {
+      if (!visibleIds.has(id) || nodeComponent !== undefined) {
+        element.remove()
+        nodeElements.delete(id)
+      }
+    }
+
     for (const props of projection.nodes) {
-      const element = (nodeComponent ?? defaultMiniMapNode)(props)
+      const element =
+        nodeComponent === undefined
+          ? defaultMiniMapNode(props, nodeElements.get(props.id))
+          : nodeComponent(props)
+
       element.dataset.nodeId = props.id
+      nodeElements.set(props.id, element)
       nodesLayer.append(element)
     }
 
-    const visible = projection.viewport
-    const outer = `M0,0h${width}v${height}h${-width}z`
-    const hole = `M${visible.x},${visible.y}h${visible.width}v${visible.height}h${-visible.width}z`
-    mask.setAttribute('d', `${outer} ${hole}`)
+    const box = projection.viewBox
+    svg.setAttribute('viewBox', `${box.x} ${box.y} ${box.width} ${box.height}`)
+    mask.setAttribute('d', projection.maskPath)
     svg.dataset.scale = String(projection.scale)
   }
 
