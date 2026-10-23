@@ -62,6 +62,10 @@ export const componentMount = async (
   }
 
   const result = entry.hosts[adapter.host]
+  test.skip(
+    result.status === 'not-applicable',
+    'reason' in result ? result.reason : entry.id
+  )
   test.fail(
     result.status === 'fail' || result.status === 'intentional-difference',
     'reason' in result ? result.reason : entry.id

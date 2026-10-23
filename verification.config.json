@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-137 upstream ports and follow-ups; preserving all existing scope; Plan 138 remaining Cypress follow-ups",
+  "activeWork": "Plans 126-137 upstream ports and follow-ups; preserving all existing scope; Plan 138 remaining Cypress follow-ups; Plan 140 component observers and changes",
   "checks": [
     "api-members",
     "catalog",

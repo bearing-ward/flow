@@ -282,7 +282,9 @@ test('Vue drag and selection terminals follow proposal and adoption events', asy
 
     await page.mouse.move(canvasBounds.x + 20, canvasBounds.y + 20)
     await page.mouse.down()
-    await page.mouse.move(canvasBounds.x + 100, canvasBounds.y + 90, {
+    // Enclose the first node: an empty selection must not manufacture false
+    // flags or adoption (pinned packages/react/src/utils/changes.ts:245-257).
+    await page.mouse.move(canvasBounds.x + 240, canvasBounds.y + 170, {
       steps: 4,
     })
     await page.mouse.up()

@@ -86,7 +86,7 @@ describe('flow measurement state', () => {
     ).toBeFalsy()
   })
 
-  it('returns read-only internal node projections and initializes an empty graph', () => {
+  it('returns read-only internal node projections and leaves an empty graph uninitialized', () => {
     const state = applyNodeMeasurement(document, emptyFlowMeasurementState(), {
       generation: 1,
       height: 0,
@@ -112,7 +112,8 @@ describe('flow measurement state', () => {
       status: 'measured',
       frozen: true,
       nodeFrozen: true,
-      emptyReady: true,
+      // Pinned system/src/utils/store.ts:140 starts readiness at nodes.length > 0.
+      emptyReady: false,
       missing: undefined,
     })
   })

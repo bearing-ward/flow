@@ -24,6 +24,7 @@ import {
   selectNodeConnections,
   selectNodesData,
   getFlowInternalNodes,
+  getFlowMeasuredNodes,
   FlowStateChangeSchema,
   ViewportSchema,
   FlowInternalNodeSchema,
@@ -1828,7 +1829,7 @@ const withNodeDragPayload = (
 
 /** Attach the React Flow style deltas each semantic change proposes. */
 const withElementChanges = (
-  document: FlowDocument,
+  graph: Graph.Model,
   items: PublicationBatch
 ): PublicationBatch =>
   items.map((item) => {
@@ -1836,7 +1837,11 @@ const withElementChanges = (
       return item
     }
 
-    const elementChanges = flowChangeElementChanges(document, item.change)
+    const elementChanges = flowChangeElementChanges(
+      graph.document,
+      item.change,
+      getFlowMeasuredNodes(graph.document, graph.measurements)
+    )
 
     return elementChanges.nodes.length === 0 &&
       elementChanges.edges.length === 0
@@ -1973,7 +1978,7 @@ const graphFold = (
   const reduction: AppReduction = {
     ...result,
     outMessage: [
-      ...withElementChanges(model.graph.document, result.outMessage ?? []),
+      ...withElementChanges(model.graph, result.outMessage ?? []),
       ...(started && after !== undefined
         ? [
             {
@@ -2397,6 +2402,24 @@ const viewportPanValue = (graph: Graph.Model): Viewport | undefined => {
   }
 }
 
+const viewportWheelEvents = (
+  previous: Graph.Model,
+  current: Graph.Model
+): readonly (typeof ViewportEventSchema.Type)[] => {
+  const before = previous.viewport
+  const after = current.viewport
+
+  return before.x === after.x &&
+    before.y === after.y &&
+    before.zoom === after.zoom
+    ? []
+    : [
+        { kind: 'start', source: 'user', viewport: before },
+        { kind: 'change', source: 'user', viewport: after },
+        { kind: 'end', source: 'user', viewport: after },
+      ]
+}
+
 const viewportPanEvents = (
   previous: Graph.Model,
   current: Graph.Model,
@@ -2718,11 +2741,9 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
         readyModel.graph
       )
 
-      const viewportEvents = viewportPanEvents(
-        model.graph,
-        readyModel.graph,
-        graphMessage
-      )
+      const viewportEvents = Predicate.isTagged('ViewportWheel')(graphMessage)
+        ? viewportWheelEvents(model.graph, readyModel.graph)
+        : viewportPanEvents(model.graph, readyModel.graph, graphMessage)
 
       return {
         ...result,

@@ -1337,22 +1337,6 @@ export const FlowCanvas = defineComponent({
       emit('error', { name: error.name, message: error.message, boundary })
     }
 
-    /** React Flow `onNodesChange` and `onEdgesChange` next to each FlowChange. */
-    const emitElementChanges = (
-      before: FlowDocument,
-      change: FlowChange
-    ): void => {
-      const { nodes, edges } = flowChangeElementChanges(before, change)
-
-      if (nodes.length > 0 && !stateDisposed) {
-        emit('nodesChange', nodes)
-      }
-
-      if (edges.length > 0 && !stateDisposed) {
-        emit('edgesChange', edges)
-      }
-    }
-
     const drainStateQueue = (): void => {
       if (publishingState || stateDisposed) {
         return
@@ -1534,6 +1518,26 @@ export const FlowCanvas = defineComponent({
 
       return getFlowMeasuredNodes(activeDocument.value, measurementState)
     })
+
+    /** React Flow `onNodesChange` and `onEdgesChange` next to each FlowChange. */
+    const emitElementChanges = (
+      before: FlowDocument,
+      change: FlowChange
+    ): void => {
+      const { nodes, edges } = flowChangeElementChanges(
+        before,
+        change,
+        measuredNodes.value
+      )
+
+      if (nodes.length > 0 && !stateDisposed) {
+        emit('nodesChange', nodes)
+      }
+
+      if (edges.length > 0 && !stateDisposed) {
+        emit('edgesChange', edges)
+      }
+    }
 
     const graph = computed(() =>
       createFlowGraph(activeDocument.value, measuredNodes.value)

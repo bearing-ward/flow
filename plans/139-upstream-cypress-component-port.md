@@ -60,7 +60,7 @@ The 31 common utility passes are credited to each host. The browser results are 
 
 Every fail is retained below. The table names the first failing assertion, and does not claim that later assertions passed. The checked-in evidence catalog retains actual public callback arguments, node boxes, viewport values, input targets, and the Runtime crash output.
 
-#### [Public state and viewport observers](139-follow-up-observers.md)
+#### [Public state and viewport observers](140-component-observers-and-changes.md#public-state-and-viewport-observers)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -86,7 +86,7 @@ Every fail is retained below. The table names the first failing assertion, and d
 | UP-128-043 | receive initial dimension change | vue | The single initial dimensions batch reports Node 1 as 100x44 rather than 100x40; Node 2 reports the required 80x50. |
 | UP-128-043 | receive initial dimension change | foldkit | Initial measurements arrive as two separate one-node callback batches rather than the required single batch. The literal dimension equality is not reached. |
 
-#### [Node change payloads](139-follow-up-change-events.md)
+#### [Node change payloads](140-component-observers-and-changes.md#node-change-payloads)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -163,10 +163,9 @@ No case is not-applicable. The three React store-remount cases port the visible 
 - `packages/conformance/src/upstream-component/get-nodes-bounds.test.ts`
 - `packages/conformance/src/upstream-component/graph-utils.test.ts`
 - `packages/conformance/src/upstream-component/update-node-internals.test.ts`
-- `plans/139-follow-up-change-events.md`
+- `plans/140-component-observers-and-changes.md`
 - `plans/139-follow-up-input.md`
 - `plans/139-follow-up-measurements.md`
-- `plans/139-follow-up-observers.md`
 - `plans/139-follow-up-renderers.md`
 - `plans/139-follow-up-viewport.md`
 - `plans/139-upstream-cypress-component-port.md`

@@ -562,7 +562,7 @@ export const useFlow = (): FlowActions => {
 
   return {
     document,
-    nodes: computed(() => snapshot.value.document.nodes),
+    nodes: computed(() => snapshot.value.document.nodes.map(withMeasured)),
     edges: computed(() => snapshot.value.document.edges),
     getNodesData,
     getNodeConnections,

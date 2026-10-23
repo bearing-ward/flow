@@ -608,10 +608,8 @@ for (const route of [
         observation('observe', 'change', viewport),
       ]
 
-      const prefix = [
-        observation('move', 'change', initial),
-        observation('start', 'start', initial),
-      ]
+      // Pinned react/src/hooks/useOnViewportChange.ts:37 registers handlers without a mount event.
+      const prefix = [observation('start', 'start', initial)]
 
       let aEvents
 
@@ -1015,15 +1013,7 @@ for (const route of [
       contentType: 'application/json',
     })
 
-    const initialMove = {
-      name: 'move',
-      payload: {
-        kind: 'change',
-        source: 'user',
-        viewport: { x: 0, y: 0, zoom: 1 },
-      },
-    }
-
+    // Pinned react/src/hooks/useOnViewportChange.ts:37 emits no initial viewport lifecycle callback.
     // eslint-disable-next-line unicorn/consistent-function-scoping -- Keep the literal event oracle beside this scenario.
     const nodeEvent = (name: string, nodeId: string, x: number) => ({
       name,
@@ -1061,7 +1051,6 @@ for (const route of [
     const prefix = (() => {
       if (route.startsWith('combined')) {
         return [
-          initialMove,
           {
             name: 'connectStart',
             payload: {
@@ -1093,7 +1082,6 @@ for (const route of [
       }
 
       return [
-        initialMove,
         start,
         nodeEvent('nodeMove', 'a', 365),
         {
@@ -1280,12 +1268,13 @@ for (const route of [
       expect(result.after.state).toStrictEqual(initial)
       expect(result.after.publications).toStrictEqual([])
 
+      // Pinned react/src/utils/changes.ts:245-257 leaves unchanged unselected C unset.
       const clicked = {
         document: {
           nodes: [
             { ...terminalNodeA, selected: true },
             { ...terminalNodeB, selected: false },
-            { ...terminalNodeC, selected: false },
+            terminalNodeC,
           ],
           edges: [{ ...terminalOldEdge, label: 'edge-label', selected: false }],
         },
@@ -1371,15 +1360,8 @@ for (const mode of [
       },
     }
 
+    // Pinned react/src/hooks/useOnViewportChange.ts:37 registers without an initial delivery.
     expect(result.events).toStrictEqual([
-      {
-        name: 'move',
-        payload: {
-          kind: 'change',
-          source: 'user',
-          viewport: { x: 0, y: 0, zoom: 1 },
-        },
-      },
       node('nodeStart', 20),
       node('nodeMove', 365),
       ...(() => {
@@ -3240,15 +3222,8 @@ for (const mode of [
     process.stdout.write(
       `${JSON.stringify({ receipt: testInfo.title, result })}\n`
     )
+    // Pinned react/src/hooks/useOnViewportChange.ts:37 registers without an initial delivery.
     expect(result.events).toStrictEqual([
-      {
-        name: 'move',
-        payload: {
-          kind: 'change',
-          source: 'user',
-          viewport: { x: 0, y: 0, zoom: 1 },
-        },
-      },
       {
         name: 'nodeStart',
         payload: {
@@ -3469,12 +3444,13 @@ for (const route of [
       // Pinned packages/system/src/xydrag/XYDrag.ts:282 selects before drag-start and cancellation callbacks.
       const selectsOnPress = route === 'cancel-control' || restored
 
+      // Pinned react/src/utils/changes.ts:245-257 preserves the absent flag on untouched C.
       const pressedDocument = selectsOnPress
         ? {
             nodes: [
               { ...terminalNodeA, selected: true },
               { ...terminalNodeB, selected: false },
-              { ...terminalNodeC, selected: false },
+              terminalNodeC,
             ],
             edges: [{ ...edge, selected: false }],
           }

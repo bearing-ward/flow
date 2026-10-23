@@ -98,11 +98,22 @@ test('controlled split binding follows node and edge deltas', async ({
       fixture(page, (api) => api.nodes().find(({ id }) => id === 'a')?.position)
     )
     .toEqual({ x: 120, y: 100 })
+
+  // Pinned react/src/store/index.ts:211-230 supplies the terminal dragging flag;
+  // examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:86 requires absolute metadata.
   expect(
     await fixture(page, (api) =>
       api.nodeChanges().filter((change) => change.type === 'position')
     )
-  ).toEqual([{ id: 'a', type: 'position', position: { x: 120, y: 100 } }])
+  ).toEqual([
+    {
+      id: 'a',
+      type: 'position',
+      position: { x: 120, y: 100 },
+      dragging: false,
+      positionAbsolute: { x: 120, y: 100 },
+    },
+  ])
   await expect
     .poll(async () => {
       const moved = await boxOf(node(page, 'a'))

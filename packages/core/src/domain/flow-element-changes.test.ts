@@ -142,6 +142,133 @@ describe('Flow element changes', () => {
     ).toStrictEqual(['replace'])
   })
 
+  it('emits only nodes whose selection changes, preserving absent flags', () => {
+    // Pinned react/src/utils/changes.ts:245-257 excludes untouched unselected nodes.
+    const document = decode({
+      nodes: [
+        { id: '1', label: 'One', position: { x: 0, y: 0 } },
+        { id: '2', label: 'Two', position: { x: 200, y: 200 } },
+      ],
+      edges: [],
+    })
+
+    for (const change of [
+      { kind: 'node-selection', nodeId: '1', selected: true },
+      { kind: 'selection-set', nodeIds: ['1'], edgeIds: [] },
+    ]) {
+      const changes = flowChangeElementChanges(document, decodeChange(change))
+
+      expect(changes.nodes).toStrictEqual([
+        { id: '1', type: 'select', selected: true },
+      ])
+      const selected = applyFlowElementChanges(document, changes)
+
+      expect(
+        flowChangeElementChanges(
+          selected,
+          decodeChange({
+            kind: 'selection-set',
+            nodeIds: [],
+            edgeIds: [],
+          })
+        ).nodes
+      ).toStrictEqual([{ id: '1', type: 'select', selected: false }])
+    }
+  })
+
+  it('reports completed parent-relative moves with absolute coordinates', () => {
+    const document = decode({
+      nodes: [
+        { id: 'parent', label: 'Parent', position: { x: 40, y: 50 } },
+        {
+          id: 'child',
+          label: 'Child',
+          parentId: 'parent',
+          position: { x: 2, y: 3 },
+        },
+      ],
+      edges: [],
+    })
+
+    expect(
+      flowChangeElementChanges(
+        document,
+        decodeChange({
+          kind: 'node-position',
+          nodeId: 'child',
+          position: { x: 20, y: 25 },
+        })
+      ).nodes
+    ).toStrictEqual([
+      {
+        id: 'child',
+        type: 'position',
+        position: { x: 20, y: 25 },
+        dragging: false,
+        positionAbsolute: { x: 60, y: 75 },
+      },
+    ])
+  })
+
+  it('uses measured geometry for origins in completed multi-node moves', () => {
+    const document = decode({
+      nodes: [
+        {
+          id: 'parent',
+          label: 'Parent',
+          origin: [0.5, 0.5],
+          position: { x: 100, y: 100 },
+        },
+        {
+          id: 'child',
+          label: 'Child',
+          parentId: 'parent',
+          origin: [0.5, 0.5],
+          position: { x: 20, y: 30 },
+        },
+      ],
+      edges: [],
+    })
+
+    expect(
+      flowChangeElementChanges(
+        document,
+        decodeChange({
+          kind: 'node-positions',
+          positions: [
+            { nodeId: 'parent', position: { x: 200, y: 150 } },
+            { nodeId: 'child', position: { x: 30, y: 40 } },
+          ],
+        }),
+        new Map([
+          [
+            NodeIdSchema.make('parent'),
+            { nodeId: NodeIdSchema.make('parent'), width: 80, height: 60 },
+          ],
+          [
+            NodeIdSchema.make('child'),
+            { nodeId: NodeIdSchema.make('child'), width: 20, height: 10 },
+          ],
+        ])
+      ).nodes
+    ).toStrictEqual([
+      {
+        id: 'parent',
+        type: 'position',
+        position: { x: 200, y: 150 },
+        dragging: false,
+        positionAbsolute: { x: 160, y: 120 },
+      },
+      {
+        id: 'child',
+        type: 'position',
+        position: { x: 30, y: 40 },
+        dragging: false,
+        positionAbsolute: { x: 180, y: 155 },
+      },
+    ])
+  })
+
   it('applies deltas to a whole document', () => {
     const current = decode({
       ...base,
@@ -160,6 +287,8 @@ describe('Flow element changes', () => {
   })
 
   it('derives deltas from a semantic change before a controlled host accepts it', () => {
+    // Pinned react/src/store/index.ts:211-230 supplies dragging;
+    // examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:86 requires positionAbsolute.
     expect(
       flowChangeElementChanges(
         base,
@@ -169,7 +298,15 @@ describe('Flow element changes', () => {
           position: { x: 9, y: 9 },
         })
       ).nodes
-    ).toStrictEqual([{ id: 'b', type: 'position', position: { x: 9, y: 9 } }])
+    ).toStrictEqual([
+      {
+        id: 'b',
+        type: 'position',
+        position: { x: 9, y: 9 },
+        dragging: false,
+        positionAbsolute: { x: 9, y: 9 },
+      },
+    ])
 
     expect(
       flowChangeElementChanges(base, {
