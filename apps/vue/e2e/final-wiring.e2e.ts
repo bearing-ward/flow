@@ -582,6 +582,7 @@ test.describe('Vue snapGrid, extents and expandParent', () => {
     page,
   }) => {
     await mount(page, { scene: 'extents' })
+    await expect(node(page, 'grower')).toHaveCSS('height', '40px')
 
     await drag(page, await centreOf(node(page, 'root')), { x: -300, y: -40 })
     await expect
@@ -597,8 +598,10 @@ test.describe('Vue snapGrid, extents and expandParent', () => {
     await drag(page, await centreOf(node(page, 'grower')), { x: 150, y: 100 })
     await expect
       .poll(() => position(page, 'group'))
-      // The grower is 80x44: the canvas node style keeps a 44px minimum height.
-      .toMatchObject({ x: 300, y: 80, width: 360, height: 254 })
+      // Pinned xyflow packages/react/src/components/NodeWrapper/index.tsx:208-209
+      // and packages/system/src/utils/store.ts:330,348-349 use the declared
+      // 80x40 child, so the parent height is child.y + child.height = 250.
+      .toMatchObject({ x: 300, y: 80, width: 360, height: 250 })
     await expect
       .poll(() => position(page, 'grower'))
       .toMatchObject({ x: 280, y: 210 })

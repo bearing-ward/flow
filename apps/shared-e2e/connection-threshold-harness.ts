@@ -500,10 +500,8 @@ export const mount = async (
     const observer = createFoldkitNodeMeasurementObserver({
       owner: root,
       zoom: () => viewport.zoom,
-      onMeasure: ({ requestId, measurement }) => {
-        active.ports.actions.send(
-          HostAction.MeasureNode({ requestId, measurement })
-        )
+      onMeasure: (requests) => {
+        active.ports.actions.send(HostAction.MeasureNodes({ requests }))
       },
     })
 

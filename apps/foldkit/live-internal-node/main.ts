@@ -76,10 +76,8 @@ runtime.ports.acceptedStates.subscribe((change) => {
 
 const observer = createFoldkitNodeMeasurementObserver({
   owner: root,
-  onMeasure: ({ requestId, measurement }) => {
-    runtime.ports.actions.send(
-      HostAction.MeasureNode({ requestId, measurement })
-    )
+  onMeasure: (requests) => {
+    runtime.ports.actions.send(HostAction.MeasureNodes({ requests }))
   },
 })
 

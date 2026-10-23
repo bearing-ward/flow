@@ -711,10 +711,9 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         )
       }
 
-      const registeredRenderer =
-        edge.type === undefined
-          ? undefined
-          : pass.inputs.edgeRenderers.get(edge.type)
+      const registeredRenderer = pass.inputs.edgeRenderers.get(
+        edge.type ?? 'default'
+      )
 
       const endpoints = {
         source,

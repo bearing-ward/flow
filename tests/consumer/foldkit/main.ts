@@ -288,9 +288,9 @@ const measure = async (): Promise<string> => {
   measurementObserver = createFoldkitNodeMeasurementObserver({
     owner: canvas,
     selector: '[data-node-id="foldkit-a"]',
-    onMeasure: ({ requestId, measurement }) => {
+    onMeasure: (requests) => {
       const sent = runtimeA.ports.actions.send(
-        HostAction.MeasureNode({ requestId, measurement })
+        HostAction.MeasureNodes({ requests })
       )
 
       if (Exit.isFailure(sent)) {

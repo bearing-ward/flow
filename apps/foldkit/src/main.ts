@@ -496,9 +496,9 @@ runtime.ports.measurementResults.subscribe((result) => {
 const measurementObserver = createFoldkitNodeMeasurementObserver({
   owner: root,
   zoom: () => miniMapViewport.zoom,
-  onMeasure: ({ requestId, measurement }) => {
+  onMeasure: (requests) => {
     const sent = runtime.ports.actions.send(
-      HostAction.MeasureNode({ requestId, measurement })
+      HostAction.MeasureNodes({ requests })
     )
 
     if (Exit.isFailure(sent)) {

@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-137 upstream ports and follow-ups; preserving all existing scope; Plan 138 remaining Cypress follow-ups",
+  "activeWork": "Plans 126-137 upstream ports and follow-ups; preserving all existing scope; Plan 138 remaining Cypress follow-ups; Plan 141 component measurements and renderers",
   "checks": [
     "api-members",
     "catalog",
@@ -65,7 +65,8 @@
       "interaction-policy.e2e.ts",
       "labeled-handle-recipe.e2e.ts",
       "base-handle-recipe.e2e.ts",
-      "upstream-component.e2e.ts"
+      "upstream-component.e2e.ts",
+      "measured-geometry.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -116,7 +117,8 @@
       "base-handle-recipe.e2e.ts",
       "drag-handle-recipe.e2e.ts",
       "gesture-controls.e2e.ts",
-      "upstream-component.e2e.ts"
+      "upstream-component.e2e.ts",
+      "measured-geometry.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",

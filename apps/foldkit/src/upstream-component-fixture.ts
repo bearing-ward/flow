@@ -334,10 +334,8 @@ const mount = (owner: HTMLElement, edgeId?: string) => {
   const observer = createFoldkitNodeMeasurementObserver({
     owner,
     zoom: () => store.getState().viewport.zoom,
-    onMeasure: ({ requestId, measurement }) => {
-      runtime.ports.actions.send(
-        HostAction.MeasureNode({ requestId, measurement })
-      )
+    onMeasure: (requests) => {
+      runtime.ports.actions.send(HostAction.MeasureNodes({ requests }))
     },
   })
 

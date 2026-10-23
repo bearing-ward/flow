@@ -285,6 +285,9 @@
   cursor: grab;
   touch-action: none;
 }
+.flow-foldkit-node[data-height-declared='true'] {
+  min-height: 0;
+}
 .flow-foldkit-resize {
   position: absolute;
   z-index: 2;

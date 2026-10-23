@@ -84,6 +84,13 @@ export const applyNodePresentation = (
   },
   zIndex: number | undefined
 ): void => {
+  element.dataset.widthDeclared = String(
+    node.size !== undefined || node.style?.width !== undefined
+  )
+  element.dataset.heightDeclared = String(
+    node.size !== undefined || node.style?.height !== undefined
+  )
+
   applyFlowStyle(
     element,
     node.style,

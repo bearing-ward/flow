@@ -238,10 +238,8 @@ const observer = createFoldkitNodeMeasurementObserver({
 
     return rendered ? new DOMMatrix(getComputedStyle(rendered).transform).a : 1
   },
-  onMeasure: ({ requestId, measurement }) => {
-    runtime.ports.actions.send(
-      HostAction.MeasureNode({ requestId, measurement })
-    )
+  onMeasure: (requests) => {
+    runtime.ports.actions.send(HostAction.MeasureNodes({ requests }))
   },
 })
 

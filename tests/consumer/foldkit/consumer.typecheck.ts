@@ -130,8 +130,8 @@ const portSet: typeof ports = ports
 const measurement: FoldkitNodeMeasurementObserver =
   createFoldkitNodeMeasurementObserver({
     owner: globalThis.document.body,
-    onMeasure: (request) => {
-      void request
+    onMeasure: (requests) => {
+      void requests
     },
   })
 

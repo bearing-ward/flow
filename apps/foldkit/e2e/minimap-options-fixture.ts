@@ -84,13 +84,12 @@ export const mountFoldkitMiniMapOptionsFixture = (
   createFoldkitNodeMeasurementObserver({
     owner: host,
     zoom: () => viewport.zoom,
-    onMeasure: ({ requestId, measurement }) => {
-      measurements.set(measurement.nodeId, measurement)
-      send(
-        active.ports.actions.send(
-          HostAction.MeasureNode({ requestId, measurement })
-        )
-      )
+    onMeasure: (requests) => {
+      for (const { measurement } of requests) {
+        measurements.set(measurement.nodeId, measurement)
+      }
+
+      send(active.ports.actions.send(HostAction.MeasureNodes({ requests })))
     },
   })
 

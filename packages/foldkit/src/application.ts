@@ -913,6 +913,22 @@ const emitPublication = (
     }
 
     if (elementChanges !== undefined) {
+      const measurementCount = elementChanges.nodes.filter(
+        (node) => node.type === 'dimensions'
+      ).length
+
+      if (measurementCount > 0) {
+        const attributes = {
+          [FlowAttribute.changeKind]: 'dimensions',
+          [FlowAttribute.measurementCount]: measurementCount,
+        }
+
+        yield* Effect.logDebug('Published Foldkit node dimensions').pipe(
+          Effect.annotateLogs(attributes),
+          Effect.withSpan(FlowSpan.geometryMeasure, { attributes })
+        )
+      }
+
       yield* Port.emit(ports.outbound.elementChanges, elementChanges)
     }
 
@@ -2200,7 +2216,11 @@ const fitInitialView = (model: Model, initial: AppReduction): AppReduction => {
   return measured
 }
 
-const routeAction = (model: Model, action: HostActionData) =>
+const routeAction = (
+  model: Model,
+  action: HostActionData,
+  publishDimensions = true
+): AppReduction =>
   HostAction.match<AppReduction>(action, {
     RequestKeyboardDelete: () => ({
       model,
@@ -2275,6 +2295,47 @@ const routeAction = (model: Model, action: HostActionData) =>
         ],
       }
     },
+    MeasureNodes: ({ requests }) => {
+      let result: AppReduction = { model }
+
+      for (const request of requests) {
+        const next = routeAction(
+          result.model,
+          HostAction.MeasureNode(request),
+          false
+        )
+
+        result = {
+          ...next,
+          commands: [...(result.commands ?? []), ...(next.commands ?? [])],
+          outMessage: [
+            ...(result.outMessage ?? []),
+            ...(next.outMessage ?? []),
+          ],
+        }
+      }
+
+      const nodes = [
+        ...new Set(requests.map(({ measurement }) => measurement.nodeId)),
+      ].flatMap((nodeId) => {
+        const change = dimensionsChange(model.graph, result.model.graph, nodeId)
+
+        return change === undefined ? [] : [change]
+      })
+
+      return nodes.length === 0
+        ? result
+        : {
+            ...result,
+            outMessage: [
+              ...(result.outMessage ?? []),
+              {
+                kind: 'change',
+                elementChanges: { nodes, edges: [] },
+              },
+            ],
+          }
+    },
     MeasureNode: ({ requestId, measurement }) => {
       let measured = graphFold(
         model,
@@ -2290,7 +2351,7 @@ const routeAction = (model: Model, action: HostActionData) =>
       )
 
       const result: AppReduction =
-        dimensions === undefined
+        dimensions === undefined || !publishDimensions
           ? measured
           : {
               ...measured,

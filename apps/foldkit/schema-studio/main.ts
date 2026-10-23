@@ -614,10 +614,8 @@ flowRuntime.ports.changes.subscribe((change) => {
 const measurements = createFoldkitNodeMeasurementObserver({
   owner: canvas,
   zoom: () => model.viewport.zoom,
-  onMeasure: ({ requestId, measurement }) => {
-    flowRuntime.ports.actions.send(
-      HostAction.MeasureNode({ requestId, measurement })
-    )
+  onMeasure: (requests) => {
+    flowRuntime.ports.actions.send(HostAction.MeasureNodes({ requests }))
   },
 })
 

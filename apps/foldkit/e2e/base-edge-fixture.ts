@@ -145,12 +145,8 @@ export const mountFoldkitBaseEdgeFixture = (
   createFoldkitNodeMeasurementObserver({
     owner: container,
     zoom: () => zoom,
-    onMeasure: ({ requestId, measurement }) =>
-      send(
-        active.ports.actions.send(
-          HostAction.MeasureNode({ requestId, measurement })
-        )
-      ),
+    onMeasure: (requests) =>
+      send(active.ports.actions.send(HostAction.MeasureNodes({ requests }))),
   })
 
   return {
