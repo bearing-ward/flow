@@ -19,16 +19,64 @@ export const selectionBoundsContract = (
 
     const first = page.locator(`.${prefix}-node[data-node-id="Node-1"]`)
     await expect(first).toBeVisible()
-    const nodeBox = await first.boundingBox()
 
-    if (nodeBox === null) {
-      throw new Error('Missing node bounds')
+    // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+    // The denser fit puts the first row inside the 40px selection auto-pan band.
+    // Make working room with a native pan before measuring the marquee subjects.
+    const paneBox = await page.locator(`.${prefix}-canvas`).boundingBox()
+    const firstBox = await first.boundingBox()
+
+    if (paneBox === null || firstBox === null) {
+      throw new Error('Missing selection setup bounds')
+    }
+
+    const panStart = {
+      x: paneBox.x + paneBox.width - 80,
+      y: paneBox.y + paneBox.height / 2,
+    }
+
+    await page.mouse.move(panStart.x, panStart.y)
+    await page.mouse.down({ button: 'middle' })
+    await page.mouse.move(panStart.x, panStart.y + 80)
+    await page.mouse.up({ button: 'middle' })
+    await expect
+      .poll(async () => {
+        const box = await first.boundingBox()
+
+        return box?.y
+      })
+      .toBeCloseTo(firstBox.y + 80, 1)
+
+    // Fit zoom now follows upstream. Enclose the same four subjects from their
+    // rendered bounds rather than the old padding-dependent 425x225 rectangle.
+    const subjects = page.locator(
+      `.${prefix}-node:is([data-node-id="Node-1"],[data-node-id="Node-2"],[data-node-id="Node-3"],[data-node-id="drag-handle"])`
+    )
+
+    await expect(subjects).toHaveCount(4)
+
+    const subjectBoxes = await subjects.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const { left, top, right, bottom } = node.getBoundingClientRect()
+
+        return { left, top, right, bottom }
+      })
+    )
+
+    const start = {
+      x: Math.min(...subjectBoxes.map((box) => box.left)) - 12,
+      y: Math.min(...subjectBoxes.map((box) => box.top)) - 12,
+    }
+
+    const end = {
+      x: Math.max(...subjectBoxes.map((box) => box.right)) + 12,
+      y: Math.max(...subjectBoxes.map((box) => box.bottom)) + 12,
     }
 
     await page.keyboard.down('Shift')
-    await page.mouse.move(nodeBox.x - 150, nodeBox.y - 25)
+    await page.mouse.move(start.x, start.y)
     await page.mouse.down()
-    await page.mouse.move(nodeBox.x + 275, nodeBox.y + 200)
+    await page.mouse.move(end.x, end.y)
     await page.mouse.up()
     await page.keyboard.up('Shift')
 
@@ -36,6 +84,13 @@ export const selectionBoundsContract = (
     await expect(bounds).toBeVisible()
     // Pinned tests/playwright/e2e/nodes.spec.ts:20 checks three nodes without limiting the selected count.
     await expect(page.locator(`.${prefix}-node.selected`)).toHaveCount(4)
+    expect(
+      await page
+        .locator(`.${prefix}-node.selected`)
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.dataset.nodeId).toSorted()
+        )
+    ).toEqual(['Node-1', 'Node-2', 'Node-3', 'drag-handle'])
     const before = await bounds.boundingBox()
 
     if (before === null) {

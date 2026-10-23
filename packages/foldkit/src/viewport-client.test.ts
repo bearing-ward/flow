@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest'
 import { createViewportClient } from './application.ts'
 
 describe('Foldkit viewport client', () => {
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
   test('calculates validated bounds with configured limits', () => {
     const handle: Parameters<typeof createViewportClient>[0] = {
       viewportResults: { subscribe: () => () => {} },
@@ -20,7 +21,7 @@ describe('Foldkit viewport client', () => {
     expect(
       client.getViewportForBounds(
         { x: 100, y: 50, width: 200, height: 100 },
-        { top: 20, right: 40, bottom: 60, left: 80 }
+        { top: '20px', right: '40px', bottom: '60px', left: '80px' }
       )
     ).toStrictEqual({ x: -260, y: -40, zoom: 3.4 })
     expect(

@@ -27,6 +27,7 @@ describe('shared viewport contract fixture', () => {
     }
   })
 
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
   it('calculates shared fit viewport targets from both padding forms', () => {
     for (const testCase of contract.fitCases) {
       const viewport = getViewportForBounds({
@@ -41,6 +42,7 @@ describe('shared viewport contract fixture', () => {
     }
   })
 
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
   it('matches the pinned upstream result for asymmetric side padding', () => {
     const testCase = contract.fitCases.find(
       ({ id }) => id === 'fit-bounds-asymmetric-pixel-padding'

@@ -23,7 +23,7 @@ export interface FitViewInput {
   readonly paneWidth: number
   readonly paneHeight: number
   readonly limits: ViewportLimits
-  /** Uniform pane fraction or per-side pixel padding. */
+  /** Upstream numeric padding, px/% strings, or per-side values. */
   readonly padding?: ViewportPadding | undefined
   /** Dimensions used until a visible node has a positive DOM measurement. */
   readonly fallbackDimensions?: FitViewNodeDimensions | undefined

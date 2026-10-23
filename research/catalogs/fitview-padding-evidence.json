@@ -1,0 +1,787 @@
+{
+  "plan": 144,
+  "startingPoint": "0c82a414313ecfe250a382fb3ae28c4fb8a3b2e5",
+  "upstreamRevision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "generatedAt": "2026-10-23T04:01:59.896668+00:00",
+  "profile": "focused",
+  "browser": "Chromium",
+  "environment": "local",
+  "savedBrowserFiles": {
+    "vanilla": 53,
+    "vue": 51,
+    "foldkit": 62
+  },
+  "verifiedGates": [
+    "quality check",
+    "architecture boundaries",
+    "package builds",
+    "typecheck",
+    "unit tests",
+    "React Flow API member inventory",
+    "React Flow catalog coverage",
+    "packed consumer",
+    "documentation",
+    "example recipe registry",
+    "Vanilla app build",
+    "Foldkit app build",
+    "research trace citations",
+    "Vue app build",
+    "upstream test ledger",
+    "vanilla browser tests",
+    "vue browser tests",
+    "foldkit browser tests"
+  ],
+  "finalBrowserOutcomes": {
+    "vanilla": {
+      "pass": 835,
+      "expected-failure": 14,
+      "skip": 4
+    },
+    "vue": {
+      "pass": 975,
+      "expected-failure": 6,
+      "skip": 2
+    },
+    "foldkit": {
+      "pass": 612,
+      "expected-failure": 7,
+      "skip": 0
+    }
+  },
+  "ledgerBefore": {
+    "126": {
+      "vanilla": {
+        "pass": 44,
+        "fail": 3,
+        "intentional-difference": 3
+      },
+      "vue": {
+        "pass": 48,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 47,
+        "intentional-difference": 3
+      }
+    },
+    "127": {
+      "vanilla": {
+        "pass": 65,
+        "intentional-difference": 2
+      },
+      "vue": {
+        "pass": 67
+      },
+      "foldkit": {
+        "pass": 67
+      }
+    },
+    "128": {
+      "vanilla": {
+        "pass": 98,
+        "not-applicable": 2,
+        "fail": 1,
+        "intentional-difference": 6
+      },
+      "vue": {
+        "pass": 100,
+        "not-applicable": 2,
+        "fail": 2,
+        "intentional-difference": 3
+      },
+      "foldkit": {
+        "pass": 102,
+        "fail": 2,
+        "intentional-difference": 3
+      }
+    }
+  },
+  "ledgerAfter": {
+    "126": {
+      "vanilla": {
+        "pass": 44,
+        "fail": 3,
+        "intentional-difference": 3
+      },
+      "vue": {
+        "pass": 48,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 47,
+        "intentional-difference": 3
+      }
+    },
+    "127": {
+      "vanilla": {
+        "pass": 65,
+        "intentional-difference": 2
+      },
+      "vue": {
+        "pass": 67
+      },
+      "foldkit": {
+        "pass": 67
+      }
+    },
+    "128": {
+      "vanilla": {
+        "pass": 99,
+        "not-applicable": 2,
+        "fail": 1,
+        "intentional-difference": 5
+      },
+      "vue": {
+        "pass": 101,
+        "not-applicable": 2,
+        "fail": 2,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 103,
+        "fail": 2,
+        "intentional-difference": 2
+      }
+    }
+  },
+  "ledgerChanges": [
+    {
+      "id": "UP-128-056",
+      "host": "vanilla",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-128-056",
+      "host": "vue",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-128-056",
+      "host": "foldkit",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
+      },
+      "after": {
+        "status": "pass"
+      }
+    }
+  ],
+  "testedSourceAndInputHashes": {
+    "apps/foldkit/e2e/feature-overview-recipes.e2e.ts": "71e98b44465b9e4ee9f32ce5d4d0c894522ef089b8f0fdc1f89fcb522e9a43fb",
+    "apps/foldkit/e2e/layout-recipes.e2e.ts": "2c8546af47f89e35d1dbe857d8d32614ddda5926c80bfc210e85674965789c8a",
+    "apps/foldkit/e2e/public-state.e2e.ts": "1b3da82ab75b4493b16df76a6a14c62a329579922729a0d08a425e9059b0605a",
+    "apps/foldkit/e2e/schema-studio.e2e.ts": "fa2a5e1355bc9bbfcd49b9dd1eec7899c424fc911d2fdb166b68f6af54367d46",
+    "apps/foldkit/e2e/viewport-controls.e2e.ts": "1d1788ccfefbd1c9aee07aa5088b1db4021ceb6b58940e7fc3001bc044de7287",
+    "apps/foldkit/src/upstream-examples-fixture.ts": "87b5d0cfdc0269cd32c3c9857bfe1bc8c5e5233811e3ceece9d0362645ae1494",
+    "apps/shared-e2e/node-input-contract.ts": "243b29a4dee7a75419201fda754069afb92af3434e3937c1c1e16f7ce8a461ea",
+    "apps/shared/upstream/examples.ts": "aef453548181bb3ab15f8a44ef3a894562fdefc54ed13a3f1fec7e48d0163497",
+    "apps/vanilla/e2e/feature-overview-recipes.e2e.ts": "8e4eb999286590d21767f5b16df4a34239f8d881967e265852ecdeb3e6b2f368",
+    "apps/vanilla/e2e/flow-followups.e2e.ts": "e658c0d23c23ffac12c3520b8e8dd890f7ea3214c56a88d696325d4fdcbfd971",
+    "apps/vanilla/e2e/schema-studio.e2e.ts": "9dfbba576dba39d15c2af7a66d7b0365986ff56a60ac200a095028e88ab1edce",
+    "apps/vanilla/src/ui/feature-overview-recipes.ts": "2713d85c581b437722fa5343bf4572c1f67bb1a3f2269cf5bef677673b6af778",
+    "apps/vanilla/src/upstream-examples-fixture.ts": "8122f4af9c8c0a13c6942977b8d8446d3a5068ce7e91e25c91e28a4ce9807497",
+    "apps/vanilla/src/upstream-examples-padding.test.ts": "9fe9cd068a2366339563ace9f467773c2085ce493a089a1dfcfd41e0615dd0e6",
+    "apps/vue/e2e/viewport-harness.ts": "d2948f4fce17e724b2d43d1d722836a1e581ec372153bf1debb3ef496d9265ea",
+    "apps/vue/e2e/viewport-operations.e2e.ts": "c5e0fb84154feebec849651ffec37cdee6e9f19ae8903e7251b7459b52761bae",
+    "apps/vue/src/upstream-examples-fixture.ts": "59cdf7ebe2a4670cca090c03f3df374bbe546dca3eaf12799f8ee83d5493f14b",
+    "packages/conformance/src/upstream-generic/pane/general.ts": "1f27347b261e75f4bb6396b13e02d92645e80b385ca8a5b63633394bb4cf7e54",
+    "packages/core/src/domain/flow-fit-view.test.ts": "aa1d0c13521174c608ecfd05a7cb74e00fea8ec3a42a3e7f90fae9804751e3f7",
+    "packages/core/src/domain/flow-fit-view.ts": "1aeedb9e306f1445a43dcc82760558a646ca993338c85e0e9ccb34ea56757d92",
+    "packages/core/src/domain/flow-viewport-contract.test.ts": "d75d3df33e955bf04319ba286a05764ee7c05734c4699b4fe0cf45daf36955cc",
+    "packages/core/src/domain/flow-viewport-operation.schema.test.ts": "c4cf7e00c972197cd0454aaf7ca5ae0a42886be929ca87c47b8fc10312fe533f",
+    "packages/core/src/domain/flow-viewport-operation.schema.ts": "6947d9d0dabcadc84192893983475ee5bde0a9deb219fb2efa13084cbeefdf38",
+    "packages/foldkit/src/graph.ts": "8a12e2e481b54f8fa7e5fdef522900b1d8ae06f5576713d0293b806014b5c16d",
+    "packages/foldkit/src/ui.ts": "1efee16026bc3030059cdaf56e6af9c714ef420aab51119288951e547f5e2ea7",
+    "packages/foldkit/src/viewport-client.test.ts": "011cc428ebe46a050c1de96bb181f23527670609fbbb20842b6b5dd1458b1170",
+    "research/catalogs/upstream-test-ledger.json": "ae7efd80491ffaa73ddcb971488e2b6f9b3068a2e42d99fdc3b1c6d872425ce5",
+    "research/fixtures/viewport-contract.json": "45853c75a1e0c3702f3259d525ac9380933e884e15f6dae0c5885ccf3b509bf5",
+    "verification.config.json": "d6be6897a128434711013ec3df2682f243f138ffd5b9ed7679c71a197823abd3"
+  },
+  "finalAffectedReceiptByHost": {
+    "vanilla": "affected-final-vanilla.json",
+    "vue": "affected-final-vue.json",
+    "foldkit": "affected-current-foldkit.json"
+  },
+  "directPinnedComparison": {
+    "comparisons": 1344,
+    "unequal": 0,
+    "source": "pinned xyflow general.ts:196-343"
+  },
+  "receipts": {
+    "probe-vanilla.json": {
+      "path": "/tmp/plan144/probe-vanilla.json",
+      "sha256": "29d7ae37ff643c6814abcda14d14df0139a370f4a4d34fdb9b9fc777219a7875",
+      "stats": {
+        "startTime": "2026-10-23T01:35:29.987Z",
+        "duration": 8940.28,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "unexpected": 1
+      }
+    },
+    "probe-vue.json": {
+      "path": "/tmp/plan144/probe-vue.json",
+      "sha256": "902a5440185f611a41facb90207d9f7f22f18ed33d34e9547917d7f8fdb28c70",
+      "stats": {
+        "startTime": "2026-10-23T01:35:39.180Z",
+        "duration": 3849.567,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "unexpected": 1
+      }
+    },
+    "probe-foldkit.json": {
+      "path": "/tmp/plan144/probe-foldkit.json",
+      "sha256": "ba72900bd71df707631d83fa8b653007ad7c35855338069a58cb7e5118020330",
+      "stats": {
+        "startTime": "2026-10-23T01:35:43.279Z",
+        "duration": 6110.885,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "unexpected": 1
+      }
+    },
+    "affected-vanilla.json": {
+      "path": "/tmp/plan144/affected-vanilla.json",
+      "sha256": "324fbed1fb643c12fe4a8bbf1f91b58a5cc9aa4ccc303901794cd4499a8923cd",
+      "stats": {
+        "startTime": "2026-10-23T01:38:46.991Z",
+        "duration": 256965.74599999998,
+        "expected": 412,
+        "skipped": 4,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 398,
+        "skip": 4,
+        "unexpected": 2,
+        "expected-failure": 14
+      }
+    },
+    "affected-vue.json": {
+      "path": "/tmp/plan144/affected-vue.json",
+      "sha256": "c0c515218ee9ceeb5e52f4de0a808a7f7fb1c9fe129974bdb56347883dd0fa8c",
+      "stats": {
+        "startTime": "2026-10-23T01:43:04.230Z",
+        "duration": 114952.394,
+        "expected": 279,
+        "skipped": 2,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 273,
+        "skip": 2,
+        "expected-failure": 6
+      }
+    },
+    "affected-foldkit.json": {
+      "path": "/tmp/plan144/affected-foldkit.json",
+      "sha256": "c1db67d6076401583e50a717619af178a258ebcb5c97e1e1b9d15eff1e7dc262",
+      "stats": {
+        "startTime": "2026-10-23T01:44:59.413Z",
+        "duration": 224873.52599999998,
+        "expected": 300,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 293,
+        "unexpected": 4,
+        "expected-failure": 7
+      }
+    },
+    "rerun-vanilla.json": {
+      "path": "/tmp/plan144/rerun-vanilla.json",
+      "sha256": "1b971fd505a21f726c37eb020b926fb6cbc0e2436e0b291bb9b341be25d3bcca",
+      "stats": {
+        "startTime": "2026-10-23T02:04:01.504Z",
+        "duration": 30332.586,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 6,
+        "flaky": 0
+      },
+      "counts": {
+        "unexpected": 6
+      }
+    },
+    "rerun-foldkit.json": {
+      "path": "/tmp/plan144/rerun-foldkit.json",
+      "sha256": "2317e30a8eb3eeefe2723658512315890c3a9babd6f4df921f26e83be475d10c",
+      "stats": {
+        "startTime": "2026-10-23T02:04:32.062Z",
+        "duration": 65670.37800000001,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 12,
+        "flaky": 0
+      },
+      "counts": {
+        "unexpected": 12
+      }
+    },
+    "vanilla-repair-final.json": {
+      "path": "/tmp/plan144/vanilla-repair-final.json",
+      "sha256": "08a8067564a8088cdf8a4e4875d1eb1025a271741932073a40ae86c8306a7a01",
+      "stats": {
+        "startTime": "2026-10-23T02:20:13.760Z",
+        "duration": 10325.442,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 6
+      }
+    },
+    "foldkit-pan-repair.json": {
+      "path": "/tmp/plan144/foldkit-pan-repair.json",
+      "sha256": "6e8e668c9bb94a4e404fa043aa164881599df130bc925cabb009a3865e9f4b1c",
+      "stats": {
+        "startTime": "2026-10-23T02:18:31.315Z",
+        "duration": 7032.385,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      }
+    },
+    "foldkit-repair.json": {
+      "path": "/tmp/plan144/foldkit-repair.json",
+      "sha256": "c6234eaea31e3e2e3c535ed7703c41f4ace107f41edb9f9e941839dc00cd5ebe",
+      "stats": {
+        "startTime": "2026-10-23T02:16:21.921Z",
+        "duration": 39447.246999999996,
+        "expected": 33,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 33
+      }
+    },
+    "affected-final-vanilla.json": {
+      "path": "/tmp/plan144/affected-final-vanilla.json",
+      "sha256": "4e3e1d5bfd0dff5cf19e9d9b468a1b9c3f78ac473b4833e0046056ad73f7fbd2",
+      "stats": {
+        "startTime": "2026-10-23T02:30:02.756Z",
+        "duration": 246749.076,
+        "expected": 414,
+        "skipped": 4,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 400,
+        "skip": 4,
+        "expected-failure": 14
+      },
+      "upstreamPhases": {
+        "128": {
+          "pass": 68,
+          "skip": 2,
+          "expected-failure": 6
+        },
+        "127": {
+          "pass": 65,
+          "expected-failure": 2
+        },
+        "126": {
+          "pass": 44,
+          "expected-failure": 6
+        }
+      },
+      "runnerFiles": [
+        "advanced-gestures.e2e.ts",
+        "closing-recipes.e2e.ts",
+        "computing-flows-recipes.e2e.ts",
+        "edge-geometry-recipes.e2e.ts",
+        "edge-recipes.e2e.ts",
+        "feature-overview-recipes.e2e.ts",
+        "final-wiring.e2e.ts",
+        "flow-followups.e2e.ts",
+        "host-hardening.e2e.ts",
+        "intersection-recipes.e2e.ts",
+        "layout-recipes.e2e.ts",
+        "public-state.e2e.ts",
+        "schema-studio.e2e.ts",
+        "styling-recipes.e2e.ts",
+        "subflows-recipes.e2e.ts",
+        "ui-controls.e2e.ts",
+        "ui-recipes.e2e.ts",
+        "upstream-component.e2e.ts",
+        "upstream-cypress.e2e.ts",
+        "upstream-playwright.e2e.ts",
+        "viewport-portal.e2e.ts",
+        "whiteboard-recipes.e2e.ts"
+      ]
+    },
+    "affected-final-vue.json": {
+      "path": "/tmp/plan144/affected-final-vue.json",
+      "sha256": "bd45566ebb44a24989f731f06348fd6b1c244007df5f60603788b35cbe7ed919",
+      "stats": {
+        "startTime": "2026-10-23T02:34:09.726Z",
+        "duration": 113162.689,
+        "expected": 279,
+        "skipped": 2,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 273,
+        "skip": 2,
+        "expected-failure": 6
+      },
+      "upstreamPhases": {
+        "128": {
+          "pass": 70,
+          "skip": 2,
+          "expected-failure": 4
+        },
+        "127": {
+          "pass": 67
+        },
+        "126": {
+          "pass": 48,
+          "expected-failure": 2
+        }
+      },
+      "runnerFiles": [
+        "closing-recipes.e2e.ts",
+        "computing-flows-recipes.e2e.ts",
+        "edge-geometry-recipes.e2e.ts",
+        "edge-recipes.e2e.ts",
+        "feature-overview-recipes.e2e.ts",
+        "final-wiring.e2e.ts",
+        "host-hardening.e2e.ts",
+        "intersection-recipes.e2e.ts",
+        "layout-recipes.e2e.ts",
+        "minimap.e2e.ts",
+        "public-state.e2e.ts",
+        "subflows-recipes.e2e.ts",
+        "ui-controls.e2e.ts",
+        "ui-recipes.e2e.ts",
+        "upstream-component.e2e.ts",
+        "upstream-cypress.e2e.ts",
+        "upstream-playwright.e2e.ts",
+        "viewport-operations.e2e.ts",
+        "viewport-portal.e2e.ts",
+        "whiteboard-recipes.e2e.ts"
+      ]
+    },
+    "affected-final-foldkit.json": {
+      "path": "/tmp/plan144/affected-final-foldkit.json",
+      "sha256": "d124c38c33989f1a3ba58344778d1467743ffa96fed633ea27b5248d8001ea47",
+      "stats": {
+        "startTime": "2026-10-23T02:36:03.112Z",
+        "duration": 207123.739,
+        "expected": 303,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 296,
+        "expected-failure": 7,
+        "unexpected": 1
+      }
+    },
+    "affected-current-foldkit.json": {
+      "path": "/tmp/plan144/affected-current-foldkit.json",
+      "sha256": "83773c5a138390bdfefbffdee3faedbc697dfbdb74ab4ffd1ebfe48495ea6f4b",
+      "stats": {
+        "startTime": "2026-10-23T02:56:20.158Z",
+        "duration": 229505.723,
+        "expected": 343,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 336,
+        "expected-failure": 7
+      },
+      "upstreamPhases": {
+        "128": {
+          "pass": 72,
+          "expected-failure": 4
+        },
+        "127": {
+          "pass": 67
+        },
+        "126": {
+          "pass": 47,
+          "expected-failure": 3
+        }
+      },
+      "runnerFiles": [
+        "closing-recipes.e2e.ts",
+        "computing-flows-recipes.e2e.ts",
+        "edge-geometry-recipes.e2e.ts",
+        "edge-recipes.e2e.ts",
+        "feature-overview-recipes.e2e.ts",
+        "interaction-lifecycle.e2e.ts",
+        "intersection-recipes.e2e.ts",
+        "layout-recipes.e2e.ts",
+        "minimap-options.e2e.ts",
+        "minimap.e2e.ts",
+        "model-styling.e2e.ts",
+        "public-state.e2e.ts",
+        "schema-studio.e2e.ts",
+        "subflows-recipes.e2e.ts",
+        "ui-controls.e2e.ts",
+        "ui-recipes.e2e.ts",
+        "upstream-component.e2e.ts",
+        "upstream-cypress.e2e.ts",
+        "upstream-playwright.e2e.ts",
+        "viewport-controls.e2e.ts",
+        "viewport-observer.e2e.ts",
+        "viewport-portal.e2e.ts",
+        "whiteboard-recipes.e2e.ts"
+      ]
+    },
+    "double-click-rerun.json": {
+      "path": "/tmp/plan144/double-click-rerun.json",
+      "sha256": "73aea4d8e9f8d7b6e29cd3a2884f37d31ddb406d8897234056446cf204da44bc",
+      "stats": {
+        "startTime": "2026-10-23T02:41:32.056Z",
+        "duration": 9032.628,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      },
+      "note": "Filtered run omits prior shared-page toggles and is not acceptance evidence."
+    },
+    "double-click-sequence-before.json": {
+      "path": "/tmp/plan144/double-click-sequence-before.json",
+      "sha256": "703d4a1559f3e13311542286bff83a5e3a9f510b964b36eb0a9dc434c8bd0519",
+      "stats": {
+        "startTime": "2026-10-23T02:45:05.327Z",
+        "duration": 37307.178,
+        "expected": 198,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 198,
+        "unexpected": 3
+      }
+    },
+    "double-click-sequence-after.json": {
+      "path": "/tmp/plan144/double-click-sequence-after.json",
+      "sha256": "11be39ffeb11dbdf482dca69c0e688007a42fce18bd020412f4ee7f201de1cd8",
+      "stats": {
+        "startTime": "2026-10-23T02:55:38.509Z",
+        "duration": 41436.087,
+        "expected": 207,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 207
+      }
+    },
+    "selection-after-vanilla.json": {
+      "path": "/tmp/plan144/selection-after-vanilla.json",
+      "sha256": "d4fbf38c37c4fe4f869bdddaac89d705205210accd543241c3fda2b1275888e5",
+      "stats": {
+        "startTime": "2026-10-23T03:27:41.700Z",
+        "duration": 8744.845,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      }
+    },
+    "selection-after-vue.json": {
+      "path": "/tmp/plan144/selection-after-vue.json",
+      "sha256": "25af39eca76c8773352d7b353b3739766bf45629eb231b98600eb51097a22d70",
+      "stats": {
+        "startTime": "2026-10-23T03:27:50.648Z",
+        "duration": 4739.781,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      }
+    },
+    "selection-after-foldkit.json": {
+      "path": "/tmp/plan144/selection-after-foldkit.json",
+      "sha256": "4afb08e7495dde7b5666b2cfe5b36bca73b8d88fae753c37375bf3852cdfbc68",
+      "stats": {
+        "startTime": "2026-10-23T03:27:55.598Z",
+        "duration": 12312.161999999998,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "counts": {
+        "unexpected": 1,
+        "pass": 2
+      }
+    },
+    "selection-final-vanilla.json": {
+      "path": "/tmp/plan144/selection-final-vanilla.json",
+      "sha256": "93a0ff0b8b7790463d269f509e0bff17acd2b5842fe96677fe1577d28ba4ebd0",
+      "stats": {
+        "startTime": "2026-10-23T03:34:34.612Z",
+        "duration": 8807.423999999999,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      }
+    },
+    "selection-final-vue.json": {
+      "path": "/tmp/plan144/selection-final-vue.json",
+      "sha256": "73784bd3a795e5612fffbed0154295acd114f703c86215005af75218ea7f90d1",
+      "stats": {
+        "startTime": "2026-10-23T03:34:43.617Z",
+        "duration": 4781.367,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      }
+    },
+    "selection-final-foldkit.json": {
+      "path": "/tmp/plan144/selection-final-foldkit.json",
+      "sha256": "7f8a7e12197277a7b90216f284b864eebf1c929a6ed42c13e8c64bfab5bf4cd4",
+      "stats": {
+        "startTime": "2026-10-23T03:34:48.598Z",
+        "duration": 7468.771,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "counts": {
+        "pass": 3
+      }
+    },
+    "verify.log": {
+      "path": "/tmp/plan144/verify.log",
+      "sha256": "cbacd9c855754fef132a56a8f67060029ccc4497a50001e301d2da3e3b145740"
+    },
+    "verify-first-attempt.log": {
+      "path": "/tmp/plan144/verify-first-attempt.log",
+      "sha256": "8916cd10a741c2bcdce784edd2509fd262c08807e0bd6f4c7e0eaf695b0fe78e"
+    },
+    "selection-autopan.json": {
+      "path": "/tmp/plan144/selection-autopan.json",
+      "sha256": "6266445713dbde8df83845a4358e4de41c420aad9b9812f85840060b9fd3c8be"
+    },
+    "compare.ts": {
+      "path": "/tmp/plan144/compare.ts",
+      "sha256": "5950c84b9acddd4c5732d6538c843fa9cb27b2d7c06fb28af1489d86ac3cefbf"
+    },
+    "direct-comparison.json": {
+      "path": "/tmp/plan144/direct-comparison.json",
+      "sha256": "97b703b5c57446d6ee61dbbcea7c67bbadd2560caf0e7025d12e1df3bc818350"
+    },
+    "diagnostics-vanilla.json": {
+      "path": "/tmp/plan144/diagnostics-vanilla.json",
+      "sha256": "5963435a5a4d111f822dbd409a5dc4b4434dcba7091585086ef19514e8f944c1"
+    },
+    "diagnostics-foldkit.json": {
+      "path": "/tmp/plan144/diagnostics-foldkit.json",
+      "sha256": "538e38c4929b18570034a7aeb409d94739e7fd74f2ef08def818dec19012b17c"
+    },
+    "faithful-pan-vanilla-0.json": {
+      "path": "/tmp/plan144/faithful-pan-vanilla-0.json",
+      "sha256": "1c35d6130f101efc0e0094556806fa07906446b4d35fec492d08975d0819ff74"
+    },
+    "faithful-pan-vanilla-1.json": {
+      "path": "/tmp/plan144/faithful-pan-vanilla-1.json",
+      "sha256": "1c35d6130f101efc0e0094556806fa07906446b4d35fec492d08975d0819ff74"
+    },
+    "faithful-pan-vanilla-2.json": {
+      "path": "/tmp/plan144/faithful-pan-vanilla-2.json",
+      "sha256": "1c35d6130f101efc0e0094556806fa07906446b4d35fec492d08975d0819ff74"
+    },
+    "faithful-pan-foldkit-0.json": {
+      "path": "/tmp/plan144/faithful-pan-foldkit-0.json",
+      "sha256": "eae13cddf98b1e4aca3f677fda96335b765b0efaca26bf20a24be5f37794b753"
+    },
+    "faithful-pan-foldkit-1.json": {
+      "path": "/tmp/plan144/faithful-pan-foldkit-1.json",
+      "sha256": "eae13cddf98b1e4aca3f677fda96335b765b0efaca26bf20a24be5f37794b753"
+    },
+    "faithful-pan-foldkit-2.json": {
+      "path": "/tmp/plan144/faithful-pan-foldkit-2.json",
+      "sha256": "eae13cddf98b1e4aca3f677fda96335b765b0efaca26bf20a24be5f37794b753"
+    }
+  },
+  "limits": [
+    "Full profile not run.",
+    "Other engines, physical devices, CI, and collector delivery remain unverified."
+  ],
+  "unitTests": {
+    "passed": 2592,
+    "files": 105
+  },
+  "researchCitations": {
+    "verified": 3318,
+    "traces": 88,
+    "scope": "Successful verifier snapshot before historical receipt clarification"
+  },
+  "verifyElapsedMs": 1224616,
+  "protectedUpstreamAssertionsAndArtifactsUnchanged": true,
+  "postVerifyChanges": "Result metadata and receipt prose only; tested source/input hashes still match.",
+  "postReceiptResearchCitations": {
+    "verified": 3316,
+    "traces": 88
+  }
+}

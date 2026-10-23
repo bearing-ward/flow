@@ -31,6 +31,7 @@ const ViewportContractSchema = S.Struct({
   ),
 })
 
+// Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
 const viewportContract = S.decodeUnknownSync(ViewportContractSchema)(
   JSON.parse(readFileSync('research/fixtures/viewport-contract.json', 'utf-8'))
 )
@@ -150,18 +151,24 @@ test('Vue viewport operations use pane offsets, update the rendered transform, a
     await page.evaluate(() => window.__flowVueViewportTest?.read().viewport)
   ).toEqual({ x: 24, y: 36, zoom: 1.5 })
 
-  const fitCase = first(viewportContract.fitCases, 'fit cases')
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  for (const fitCase of viewportContract.fitCases) {
+    // eslint-disable-next-line no-await-in-loop -- Each fit changes the same viewport and must settle before the next.
+    const fitted = await page.evaluate(async ({ bounds, padding }) => {
+      await window.__flowVueViewportTest?.setViewport({
+        x: 24,
+        y: 36,
+        zoom: 1.5,
+      })
 
-  const fitted = await page.evaluate(
-    ({ bounds, padding }) =>
-      window.__flowVueViewportTest?.fitBounds(bounds, padding),
-    fitCase
-  )
+      return window.__flowVueViewportTest?.fitBounds(bounds, padding)
+    }, fitCase)
 
-  expect(fitted).toMatchObject({
-    status: 'accepted',
-    viewport: fitCase.viewport,
-  })
+    expect(fitted).toMatchObject({
+      status: 'accepted',
+      viewport: fitCase.viewport,
+    })
+  }
 
   const allNodesFit = await page.evaluate(() =>
     window.__flowVueViewportTest?.fitView('all')

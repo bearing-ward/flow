@@ -12,14 +12,30 @@ export const ViewportBoundsSchema = S.Struct({
 
 export type ViewportBounds = typeof ViewportBoundsSchema.Type
 
-/** Padding is a pane fraction or per-side pixel amounts. */
+// Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259.
+const paddingWithUnitSchema = S.Union([
+  S.Finite,
+  S.String.check(
+    S.makeFilter((value) =>
+      (value.endsWith('px') || value.endsWith('%')) &&
+      // eslint-disable-next-line unicorn/prefer-number-coercion -- Pinned parseFloat reads a numeric prefix before the unit.
+      Number.isFinite(Number.parseFloat(value))
+        ? undefined
+        : 'padding requires a finite number with px or % units'
+    )
+  ),
+])
+
+/** Upstream numeric padding, px/% strings, or sides with x/y fallbacks. */
 export const ViewportPaddingSchema = S.Union([
-  S.Finite.check(S.isGreaterThanOrEqualTo(0), S.isLessThan(0.5)),
+  paddingWithUnitSchema,
   S.Struct({
-    bottom: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
-    left: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
-    right: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
-    top: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
+    bottom: S.optional(paddingWithUnitSchema),
+    left: S.optional(paddingWithUnitSchema),
+    right: S.optional(paddingWithUnitSchema),
+    top: S.optional(paddingWithUnitSchema),
+    x: S.optional(paddingWithUnitSchema),
+    y: S.optional(paddingWithUnitSchema),
   }),
 ])
 
@@ -96,40 +112,47 @@ interface NormalizedViewportPadding {
   readonly top: number
 }
 
+// Preserve the pinned arithmetic and flooring, including numeric side values.
+const paddingPixels = (
+  padding: typeof paddingWithUnitSchema.Type,
+  size: number
+): number => {
+  if (S.is(S.Finite)(padding)) {
+    return Math.floor((size - size / (1 + padding)) * 0.5)
+  }
+
+  // eslint-disable-next-line unicorn/prefer-number-coercion -- Preserve pinned numeric-prefix parsing for px/% strings.
+  const value = Number.parseFloat(padding)
+
+  return padding.endsWith('px')
+    ? Math.floor(value)
+    : Math.floor(size * value * 0.01)
+}
+
 const normalizePadding = (
-  padding: ViewportPadding | undefined,
+  padding: ViewportPadding,
   width: number,
   height: number
 ): NormalizedViewportPadding => {
-  if (padding === undefined) {
+  if (S.is(S.Finite)(padding) || S.is(S.String)(padding)) {
     return {
-      bottom: height * 0.1,
-      left: width * 0.1,
-      right: width * 0.1,
-      top: height * 0.1,
-    }
-  }
-
-  if (S.is(S.Finite)(padding)) {
-    return {
-      bottom: height * padding,
-      left: width * padding,
-      right: width * padding,
-      top: height * padding,
+      bottom: paddingPixels(padding, height),
+      left: paddingPixels(padding, width),
+      right: paddingPixels(padding, width),
+      top: paddingPixels(padding, height),
     }
   }
 
   return {
-    bottom: padding.bottom ?? 0,
-    left: padding.left ?? 0,
-    right: padding.right ?? 0,
-    top: padding.top ?? 0,
+    bottom: paddingPixels(padding.bottom ?? padding.y ?? 0, height),
+    left: paddingPixels(padding.left ?? padding.x ?? 0, width),
+    right: paddingPixels(padding.right ?? padding.x ?? 0, width),
+    top: paddingPixels(padding.top ?? padding.y ?? 0, height),
   }
 }
 
 /**
- * Calculate a centered viewport for a flow-space rectangle. Padding numbers
- * are pane fractions; object values are pane pixels, matching xyflow's shapes.
+ * Calculate the pinned xyflow viewport, including asymmetric padding correction.
  * Invalid/empty panes and zero-area bounds have no viewport result.
  */
 export const getViewportForBounds = ({
@@ -137,7 +160,7 @@ export const getViewportForBounds = ({
   width,
   height,
   limits,
-  padding,
+  padding = 0.1,
 }: GetViewportForBoundsInput): RuntimeSchema.Viewport | undefined => {
   if (
     !Number.isFinite(width) ||
@@ -155,12 +178,8 @@ export const getViewportForBounds = ({
   }
 
   const p = normalizePadding(padding, width, height)
-  const usableWidth = width - p.left - p.right
-  const usableHeight = height - p.top - p.bottom
-
-  if (usableWidth <= 0 || usableHeight <= 0) {
-    return undefined
-  }
+  const usableWidth = width - (p.left + p.right)
+  const usableHeight = height - (p.top + p.bottom)
 
   const zoom = Math.min(
     limits.maxZoom,
@@ -174,9 +193,9 @@ export const getViewportForBounds = ({
   const y = height / 2 - (bounds.y + bounds.height / 2) * zoom
 
   const actual = {
-    bottom: Math.floor(height - (bounds.y + bounds.height) * zoom - y),
+    bottom: Math.floor(height - ((bounds.y + bounds.height) * zoom + y)),
     left: Math.floor(bounds.x * zoom + x),
-    right: Math.floor(width - (bounds.x + bounds.width) * zoom - x),
+    right: Math.floor(width - ((bounds.x + bounds.width) * zoom + x)),
     top: Math.floor(bounds.y * zoom + y),
   }
 

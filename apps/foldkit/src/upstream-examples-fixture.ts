@@ -43,8 +43,7 @@ const config = upstreamExampleConfig(name)
 
 const { minZoom, maxZoom, selectionMode, ...options } = exampleOptions(
   name,
-  config,
-  root
+  config
 )
 
 const container = document.createElement('div')

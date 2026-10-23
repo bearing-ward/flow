@@ -827,6 +827,7 @@ export const Message = FoldMessage.defineMessageUnion({
   ViewportDoubleClick: {
     clientX: Schema.Finite,
     clientY: Schema.Finite,
+    shiftKey: Schema.optional(Schema.Boolean),
   },
   NodeDragMoved: {
     pointerId: Schema.Number,
@@ -3581,7 +3582,7 @@ const updateState = (
         'viewport-update'
       )
     },
-    ViewportDoubleClick: ({ clientX, clientY }) => {
+    ViewportDoubleClick: ({ clientX, clientY, shiftKey }) => {
       if (!model.zoomOnDoubleClick || model.viewportMode === 'controlled') {
         return noChange(model)
       }
@@ -3592,7 +3593,8 @@ const updateState = (
           ...model,
           viewport: translateConstrained(
             model,
-            zoomViewportAt(model, clientX, clientY, 1.2)
+            // Pinned xyflow XYPanZoom.ts:103 retains d3-zoom 3.0.0's 2/0.5 targets.
+            zoomViewportAt(model, clientX, clientY, shiftKey === true ? 0.5 : 2)
           ),
         },
         'viewport-update'
@@ -8052,6 +8054,7 @@ const PointerEvents = Subscription.make<Model, GraphMessageData>()((entry) => ({
                       Message.ViewportDoubleClick({
                         clientX: event.clientX,
                         clientY: event.clientY,
+                        shiftKey: event.shiftKey,
                       })
                     )
               },

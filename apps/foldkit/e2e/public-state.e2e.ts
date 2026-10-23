@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 
+import type { ViewportPadding } from '@flow/core'
 import { expect, test } from '@playwright/test'
 
 import { runKeyPressObserverContract } from '../../shared-e2e/key-press-observer-contract.ts'
@@ -41,6 +42,7 @@ test('Foldkit public snapshot client preserves literal-v1 reads and settles owne
   expect(disposed.next).toMatchObject({ status: 'disposed' })
 })
 
+// Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
 const viewportContract: {
   coordinateCases: readonly {
     hostRect: { left: number; top: number }
@@ -53,9 +55,7 @@ const viewportContract: {
     bounds: { x: number; y: number; width: number; height: number }
     pane: { width: number; height: number }
     limits: { minZoom: number; maxZoom: number }
-    padding:
-      | number
-      | { top: number; right: number; bottom: number; left: number }
+    padding: ViewportPadding
     viewport: { x: number; y: number; zoom: number }
   }[]
   operationContract: {
@@ -973,27 +973,26 @@ test('Foldkit viewport requests return controlled proposals and drive the render
       coordinate.flow.y * coordinate.viewport.zoom,
   })
   expect(scrolled.reverse?.point).toEqual(coordinate.flow)
-  const [fitFixture] = viewportContract.fitCases
 
-  if (fitFixture === undefined) {
-    throw new Error('Missing viewport fit fixture')
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  for (const fitFixture of viewportContract.fitCases) {
+    // eslint-disable-next-line no-await-in-loop -- Viewport mutations must finish in order before testing the next target.
+    const fit = await page.evaluate(
+      (fixture) =>
+        window.__flowFoldkitTest?.requestPublicViewport('uncontrolled', {
+          kind: 'fitBounds',
+          bounds: fixture.bounds,
+          width: fixture.pane.width,
+          height: fixture.pane.height,
+          originX: 0,
+          originY: 0,
+          padding: fixture.padding,
+        }),
+      fitFixture
+    )
+
+    expect(fit?.viewport).toEqual(fitFixture.viewport)
   }
-
-  const fit = await page.evaluate(
-    (fixture) =>
-      window.__flowFoldkitTest?.requestPublicViewport('uncontrolled', {
-        kind: 'fitBounds',
-        bounds: fixture.bounds,
-        width: fixture.pane.width,
-        height: fixture.pane.height,
-        originX: 0,
-        originY: 0,
-        padding: fixture.padding,
-      }),
-    fitFixture
-  )
-
-  expect(fit?.viewport).toEqual(fitFixture.viewport)
 
   const controlled = await page.evaluate(
     (base) =>
@@ -1030,7 +1029,9 @@ test('Foldkit viewport requests return controlled proposals and drive the render
     request
   )
 
-  expect(unchanged?.viewport).toEqual(fitFixture.viewport)
+  expect(unchanged?.viewport).toEqual(
+    viewportContract.fitCases.at(-1)?.viewport
+  )
 })
 
 test('Foldkit viewport animation supersedes requests and fitView renders selected nodes', async ({

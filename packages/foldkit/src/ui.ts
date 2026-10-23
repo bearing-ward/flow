@@ -508,12 +508,11 @@ export const createFlowControls = (
   group.addEventListener('click', stopCanvasClick)
   listeners.push(() => group.removeEventListener('click', stopCanvasClick))
 
-  let currentZoom = 1
   let zoomIn: HTMLButtonElement | undefined
   let zoomOut: HTMLButtonElement | undefined
 
   const refresh = async () => {
-    currentZoom = await viewport.getZoom()
+    const currentZoom = await viewport.getZoom()
 
     if (zoomIn !== undefined) {
       zoomIn.disabled = currentZoom >= maxZoom
@@ -547,6 +546,8 @@ export const createFlowControls = (
       'Zoom in',
       labels['controls.zoomIn.ariaLabel'],
       async () => {
+        const currentZoom = await viewport.getZoom()
+
         await viewport.zoomTo(Math.min(maxZoom, currentZoom * step))
         options.onZoomIn?.()
       }
@@ -555,6 +556,8 @@ export const createFlowControls = (
       'Zoom out',
       labels['controls.zoomOut.ariaLabel'],
       async () => {
+        const currentZoom = await viewport.getZoom()
+
         await viewport.zoomTo(Math.max(minZoom, currentZoom / step))
         options.onZoomOut?.()
       }

@@ -147,7 +147,7 @@ export const mountViewportHarness = (
     fitBounds: (bounds, padding) => getActions().fitBounds(bounds, { padding }),
     fitView: async (nodes) => {
       const options: FitViewHarnessOptions = {
-        padding: { top: 20, right: 20, bottom: 20, left: 20 },
+        padding: { top: '20px', right: '20px', bottom: '20px', left: '20px' },
       }
 
       if (nodes !== undefined) {

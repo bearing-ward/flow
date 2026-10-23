@@ -22,11 +22,7 @@ const name = location.pathname.slice('/upstream-examples/'.length)
 
 const config = upstreamExampleConfig(name)
 
-const { minZoom, maxZoom, panOnDrag, ...options } = exampleOptions(
-  name,
-  config,
-  root
-)
+const { minZoom, maxZoom, panOnDrag, ...options } = exampleOptions(name, config)
 
 const container = document.createElement('div')
 

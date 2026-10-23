@@ -27,8 +27,7 @@ const config = upstreamExampleConfig(name)
 
 const { minZoom, maxZoom, multiSelectionKeyCode, ...options } = exampleOptions(
   name,
-  config,
-  root
+  config
 )
 
 const multiSelectionProps: Pick<
