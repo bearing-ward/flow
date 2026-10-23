@@ -181,6 +181,10 @@
   visibility: hidden;
 }
 
+.flow-foldkit-edge-textwrapper {
+  pointer-events: all;
+}
+
 .flow-foldkit-edge-textbg {
   fill: #ffffff;
 }
@@ -426,7 +430,7 @@
 .flow-foldkit-edge-labels {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: auto;
   pointer-events: none;
 }
 .flow-foldkit-edge-label-renderer {
@@ -446,7 +450,7 @@
   );
   color: var(--flow-edge-label-color, var(--flow-edge-label-color-default));
   font-size: 12px;
-  pointer-events: none;
+  pointer-events: all;
 }
 .flow-foldkit-reconnect-handle {
   pointer-events: auto;

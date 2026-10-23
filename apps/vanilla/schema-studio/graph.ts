@@ -106,8 +106,7 @@ export const projectGraph = (
       handles,
       zIndex:
         { area: -10, note: 50, table: 0, view: 0 }[item.kind] +
-        (settings.selected.has(item.id) ? 1000 : 0) -
-        1,
+        (settings.selected.has(item.id) ? 1000 : 0),
       className: `studio-node studio-${item.kind}${overlap ? ' studio-overlap' : ''}`,
       dragHandle: '.studio-drag',
       data: {

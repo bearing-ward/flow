@@ -334,6 +334,10 @@ body,
   }
 }
 
+.flow-edge-textwrapper {
+  pointer-events: all;
+}
+
 .flow-edge-textbg {
   fill: var(
     --flow-edge-label-background-color,
@@ -374,7 +378,7 @@ body,
 
 .flow-edge-label {
   position: absolute;
-  z-index: 1;
+  z-index: auto;
   padding: 4px 2px;
   border-radius: 2px;
   transform: translate(-50%, -50%);
@@ -393,7 +397,7 @@ body,
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
-  pointer-events: none;
+  pointer-events: all;
 }
 
 .flow-edge-label.flow-edge-label-no-bg {
@@ -402,7 +406,7 @@ body,
 
 .flow-edge-labels {
   position: absolute;
-  z-index: 1;
+  z-index: auto;
   inset: 0;
   overflow: visible;
   pointer-events: none;
@@ -410,7 +414,7 @@ body,
 
 .flow-edge-label-renderer {
   position: absolute;
-  z-index: 1;
+  z-index: 0;
   inset: 0;
   overflow: visible;
   pointer-events: none;
@@ -419,7 +423,7 @@ body,
 .flow-node {
   pointer-events: all;
   position: absolute;
-  z-index: 1;
+  z-index: 0;
   display: grid;
   min-width: 150px;
   min-height: 44px;

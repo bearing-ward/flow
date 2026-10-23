@@ -222,6 +222,11 @@ footer {
 .studio-overlap {
   outline: 4px solid #d4532b;
 }
+/* Cardinality buttons opt into input above this app's edge levels 0 and 1. */
+.studio-canvas .flow-edge-label-renderer {
+  z-index: 2;
+}
+
 .studio-edge-label {
   position: absolute;
   transform: translate(-50%, -50%);

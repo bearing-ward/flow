@@ -70,7 +70,9 @@ const nodeElement = (element: Element | null) =>
   element?.closest<HTMLElement>('.flow-foldkit-node[data-node-id]') ?? null
 
 const edgeHitElement = (element: Element | null) =>
-  element?.closest('.flow-foldkit-edge-hit-target') ?? null
+  element?.closest(
+    '.flow-foldkit-edge-hit-target, .flow-foldkit-edge-label, .flow-foldkit-edge-textwrapper'
+  ) ?? null
 
 /** Foldkit's own node controls, whose clicks do not select the node. */
 const nodeControlSelector =

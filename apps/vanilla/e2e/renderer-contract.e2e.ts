@@ -161,7 +161,8 @@ test('renderer contracts preserve identity, isolate canvases, and refresh dynami
       await expect(label).toHaveText(`Label ${path}`)
       await expect(label).toHaveAttribute('x', /^\d/u)
       await expect(label).toHaveAttribute('y', /^\d/u)
-      await expect(label).toHaveCSS('pointer-events', 'none')
+      // Pinned xyflow packages/system/src/styles/init.css:160 makes built-in EdgeText interactive.
+      await expect(label).toHaveCSS('pointer-events', 'all')
       await expect(label).toHaveJSProperty('tagName', 'DIV')
       await expect(label.locator('xpath=..')).toHaveClass(/flow-edge-labels/u)
       await expect(label.locator('xpath=../..')).toHaveClass(/flow-viewport/u)
@@ -220,8 +221,10 @@ test('renderer contracts preserve identity, isolate canvases, and refresh dynami
 
   expect(labelStackOrder).toEqual({
     nodesPaintAfterLabels: true,
-    overlayZIndex: '1',
-    nodeZIndex: '1',
+    // Pinned GraphView/index.tsx:158-184 keeps built-in labels at their edge level.
+    overlayZIndex: 'auto',
+    // Pinned NodeWrapper/index.tsx:204 uses the core level without a shared-SVG offset.
+    nodeZIndex: '0',
   })
 
   const source = page.locator('.flow-node[data-node-id="source"]').first()

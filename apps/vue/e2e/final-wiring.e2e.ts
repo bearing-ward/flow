@@ -246,10 +246,8 @@ test.describe('Vue edge layers', () => {
     ).toHaveCount(1)
     const labelCentre = await centreOf(childLabel)
 
-    // Labels ignore the pointer; make this one hit-testable to read stacking.
-    await childLabel.evaluate((element) => {
-      element.style.pointerEvents = 'auto'
-    })
+    // Pinned packages/system/src/styles/init.css:160 makes built-in labels interactive.
+    await expect(childLabel).toHaveCSS('pointer-events', 'all')
 
     const hit = await page.evaluate(
       ({ x, y }) =>
