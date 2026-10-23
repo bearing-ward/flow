@@ -55,6 +55,22 @@ test('feature-overview: controls zoom, node toolbar and resizing', async ({
   page,
 }) => {
   await open(page)
+
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  // Migrating the recipe's old 0.2 pane fraction to '20%' retains its viewport.
+  const initial = await page
+    .getByTestId('flow-viewport')
+    .evaluate((element) => ({
+      x: Number(element.dataset.x),
+      y: Number(element.dataset.y),
+      zoom: Number(element.dataset.zoom),
+    }))
+
+  expect(initial).toStrictEqual({
+    x: 180,
+    y: 155.9154929577465,
+    zoom: 0.7605633802816901,
+  })
   const before = await zoomOf(page)
   await page.getByRole('button', { name: 'Zoom In' }).click()
   await expect.poll(() => zoomOf(page)).toBeGreaterThan(before)

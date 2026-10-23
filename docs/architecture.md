@@ -138,7 +138,7 @@ The core owns pure pan, clamp, and cursor-anchored zoom transitions. The vanilla
 | Deviates | Pane pan emits only its final viewport change; wheel emits once per wheel event. | The first contract does not expose reference start, continuous move, and end callbacks. |
 | Unverified | Mouse-button configuration, double-click zoom, and general animation. | Flow browser tests cover measured and unmeasured-node fit, translation extents, touch pan, fixed-midpoint pinch, and selection auto-pan. |
 
-`fitView` derives bounds from document nodes, including nodes culled from the DOM, then publishes one viewport change. Measured dimensions take precedence; an optional caller fallback or the host's 150 by 44 initial size covers unmeasured nodes. Hidden nodes remain excluded. The result centers those bounds with fractional pane padding, zoom limits, and the optional pan extent. Browser tests cover all-node and selected-node fit before distant nodes mount; the development page exposes a Fit graph button.
+`fitView` derives bounds from document nodes, including nodes culled from the DOM, then publishes one viewport change. Measured dimensions take precedence; an optional caller fallback or the host's 150 by 44 initial size covers unmeasured nodes. Hidden nodes remain excluded. The result centers those bounds with upstream numeric, px/% string, or per-side padding, zoom limits, and the optional pan extent. Browser tests cover all-node and selected-node fit before distant nodes mount; the development page exposes a Fit graph button.
 
 ## Handles and connections
 

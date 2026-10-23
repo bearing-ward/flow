@@ -425,6 +425,7 @@ test('viewport operations match the shared coordinate fixture through host offse
   expect(result.screen.x).toBeCloseTo(result.clientPoint.x, 8)
   expect(result.screen.y).toBeCloseTo(result.clientPoint.y, 8)
 
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
   const fitResults = await page.evaluate((fitCases) => {
     const controller = globalThis.flowController
 

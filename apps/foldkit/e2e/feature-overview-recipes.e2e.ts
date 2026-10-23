@@ -84,8 +84,9 @@ test('Feature Overview shows the toolbar of the selected node, resizes it and zo
     })
     .toBeCloseTo(width + 40, -0.5)
 
-  // Controls zoom in around the pane center.
+  // Pinned xyflow 0a1f9575, packages/react/src/hooks/useViewportHelper.ts:24-39.
+  // Zoom must scale the live viewport after fitting, rather than a cached value.
   const before = await zoomOf(page)
   await page.getByRole('button', { name: 'Zoom In' }).click()
-  await expect.poll(() => zoomOf(page)).toBeGreaterThan(before)
+  await expect.poll(() => zoomOf(page)).toBeCloseTo(before * 1.2, 4)
 })

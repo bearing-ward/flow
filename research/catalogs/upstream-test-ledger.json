@@ -3315,16 +3315,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "intentional-difference",
-          "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
+          "status": "pass"
         },
         "vue": {
-          "status": "intentional-difference",
-          "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "intentional-difference",
-          "reason": "Flow documents uniform per-side pane-fraction padding below 0.5 at docs/guides/viewport-operations.md:17; upstream padding 0.5 has a different meaning. The unchanged containment assertion remains an expected failure; no port option is rewritten."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:27"

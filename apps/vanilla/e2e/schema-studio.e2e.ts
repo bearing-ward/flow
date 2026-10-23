@@ -750,18 +750,35 @@ test('S1/S13 fits use captured 0.1 padding, 0.8 cap, zoom-one focus and 500ms an
   expect(
     (await page.evaluate(() => performance.now())) - fitStarted
   ).toBeGreaterThanOrEqual(500)
-  // Fixed original fixture bounds: (40,40)-(2060,1310). Padding is 10% of each canvas dimension.
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  // Fixed original bounds: (40,40)-(2060,1310); numeric padding uses floored gutters.
   const fit = await viewport(page)
+
+  const paddingX = Math.floor((canvas.width - canvas.width / 1.1) * 0.5)
+  const paddingY = Math.floor((canvas.height - canvas.height / 1.1) * 0.5)
 
   const zoom = Math.min(
     0.8,
-    (canvas.width * 0.8) / 2020,
-    (canvas.height * 0.8) / 1270
+    (canvas.width - 2 * paddingX) / 2020,
+    (canvas.height - 2 * paddingY) / 1270
   )
 
+  const x = canvas.width / 2 - 1050 * zoom
+  const y = canvas.height / 2 - 675 * zoom
+
+  const expectedX =
+    x -
+    Math.min(Math.floor(40 * zoom + x) - paddingX, 0) +
+    Math.min(Math.floor(canvas.width - (2060 * zoom + x)) - paddingX, 0)
+
+  const expectedY =
+    y -
+    Math.min(Math.floor(40 * zoom + y) - paddingY, 0) +
+    Math.min(Math.floor(canvas.height - (1310 * zoom + y)) - paddingY, 0)
+
   expect(fit.zoom).toBeCloseTo(zoom, 6)
-  expect(fit.x).toBeCloseTo(canvas.width / 2 - 1050 * zoom, 6)
-  expect(fit.y).toBeCloseTo(canvas.height / 2 - 675 * zoom, 6)
+  expect(fit.x).toBeCloseTo(expectedX, 6)
+  expect(fit.y).toBeCloseTo(expectedY, 6)
 })
 
 test('S1/S12 keeps a note-only viewport found and caps Show all at 0.8', async ({

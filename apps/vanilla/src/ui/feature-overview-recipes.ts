@@ -216,7 +216,7 @@ for (const node of controller.getNodes()) {
 }
 
 const fitOnce = async (): Promise<void> => {
-  await controller.fitView({ padding: 0.2 })
+  await controller.fitView({ padding: '20%' })
   status.dataset.fitted = 'true'
 }
 

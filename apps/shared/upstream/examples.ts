@@ -15,22 +15,16 @@ export const prepareExampleRoot = () => {
 }
 
 // Basic/index.tsx:58-60; system/src/utils/general.ts:196-211.
-// Flow accepts numeric pixel sides. Convert upstream units at the DOM boundary.
-export const exampleOptions = (
-  name: string,
-  config: ExampleConfig,
-  root: HTMLElement
-) => {
+// Preserve the upstream units; shared core resolves them for every host.
+export const exampleOptions = (name: string, config: ExampleConfig) => {
   const fitViewOptions =
     name === 'basic'
       ? {
           padding: {
-            top: 100,
-            left: 0,
-            right: Math.floor(root.clientWidth * 0.1),
-            bottom: Math.floor(
-              (root.clientHeight - root.clientHeight / 1.1) * 0.5
-            ),
+            top: '100px',
+            left: '0%',
+            right: '10%',
+            bottom: 0.1,
           },
         }
       : { padding: 0.1 }

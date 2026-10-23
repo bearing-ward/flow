@@ -1,4 +1,5 @@
-// Upstream: examples/react/src/generic-tests/pane/general.ts
+// Pinned xyflow 0a1f9575: examples/react/src/generic-tests/pane/general.ts:1-37.
+// Preserve the source input: it declares no node dimensions. Hosts measure their native nodes.
 import { decodeGenericConfig } from '../model.ts'
 
 export default decodeGenericConfig({
@@ -14,10 +15,6 @@ export default decodeGenericConfig({
         label: '1',
         data: {
           label: '1',
-        },
-        size: {
-          width: 150,
-          height: 40,
         },
         handles: [
           {
@@ -36,10 +33,6 @@ export default decodeGenericConfig({
         label: '2',
         data: {
           label: '2',
-        },
-        size: {
-          width: 150,
-          height: 40,
         },
         handles: [
           {
@@ -63,10 +56,6 @@ export default decodeGenericConfig({
         label: '3',
         data: {
           label: '3',
-        },
-        size: {
-          width: 150,
-          height: 40,
         },
         handles: [
           {

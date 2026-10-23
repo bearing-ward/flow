@@ -42,7 +42,70 @@ const measurements = new Map([
 ])
 
 describe('fit viewport to nodes', () => {
-  it('fits measured bounds with fractional padding and centers the result', () => {
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  // Expected values use the pinned numeric formula, independent of Flow geometry.
+  it.each([0, 0.1, 0.5, 1, 2])(
+    'fits mixed node bounds with padding %s',
+    (padding) => {
+      const hiddenId = S.decodeSync(NodeIdSchema)('hidden')
+
+      const mixedDocument = {
+        nodes: [
+          { ...firstNode, position: { x: -100, y: -50 } },
+          secondNode,
+          {
+            ...firstNode,
+            id: hiddenId,
+            position: { x: -9000, y: 9000 },
+            hidden: true,
+          },
+        ],
+        edges: [],
+      }
+
+      // First node measured 100x100; second uses 200x50 fallback. Union is (-100,-50,600,300).
+      const horizontal = Math.floor((1001 - 1001 / (1 + padding)) * 0.5)
+      const vertical = Math.floor((601 - 601 / (1 + padding)) * 0.5)
+
+      const zoom = Math.min(
+        (1001 - 2 * horizontal) / 600,
+        (601 - 2 * vertical) / 300
+      )
+
+      const x = 1001 / 2 - 200 * zoom
+      const y = 601 / 2 - 100 * zoom
+
+      const expected = {
+        x:
+          x -
+          Math.min(Math.floor(-100 * zoom + x) - horizontal, 0) +
+          Math.min(Math.floor(1001 - (500 * zoom + x)) - horizontal, 0),
+        y:
+          y -
+          Math.min(Math.floor(-50 * zoom + y) - vertical, 0) +
+          Math.min(Math.floor(601 - (250 * zoom + y)) - vertical, 0),
+        zoom,
+      }
+
+      expect(
+        fitViewportToNodes({
+          document: mixedDocument,
+          measurements: new Map([
+            [firstId, { nodeId: firstId, width: 100, height: 100 }],
+          ]),
+          fallbackDimensions: { width: 200, height: 50 },
+          currentViewport,
+          paneWidth: 1001,
+          paneHeight: 601,
+          limits,
+          padding,
+        })
+      ).toStrictEqual(expected)
+    }
+  )
+
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  it('fits measured bounds with upstream numeric padding and centers the result', () => {
     expect(
       fitViewportToNodes({
         document,
@@ -52,7 +115,7 @@ describe('fit viewport to nodes', () => {
         paneHeight: 600,
         limits,
       })
-    ).toStrictEqual({ x: 180, y: 60, zoom: 1.6 })
+    ).toStrictEqual({ x: 136, y: 27, zoom: 1.82 })
   })
 
   it('clamps zoom while keeping the measured bounds centered', () => {
@@ -100,6 +163,7 @@ describe('fit viewport to nodes', () => {
     ).toStrictEqual({ x: 400, y: 200, zoom: 2 })
   })
 
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
   it('uses fallback dimensions for unmeasured nodes while retaining measured sizes', () => {
     const visibleMeasurements = new Map<typeof firstId, MeasuredNode>([
       [firstId, { nodeId: firstId, width: 100, height: 100 }],
@@ -115,7 +179,7 @@ describe('fit viewport to nodes', () => {
         paneHeight: 600,
         limits,
       })
-    ).toStrictEqual({ x: 100, y: 100, zoom: 1.6 })
+    ).toStrictEqual({ x: 45, y: 72.5, zoom: 1.82 })
   })
 
   it('uses fallback dimensions for zero-sized measurements and excludes hidden nodes', () => {
@@ -156,10 +220,15 @@ describe('fit viewport to nodes', () => {
     }
   })
 
-  it('accepts only finite padding smaller than half the pane', () => {
-    for (const invalid of [-0.1, 0.5, Infinity, Number.NaN]) {
+  // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+  it('accepts finite numeric padding without the old half-pane restriction', () => {
+    for (const valid of [0, 0.1, 0.5, 1, 2, -0.1]) {
+      expect(S.decodeUnknownSync(FitViewPaddingSchema)(valid)).toBe(valid)
+    }
+
+    for (const invalid of [Infinity, Number.NaN, 'bad', '5em']) {
       expect(() => S.decodeSync(FitViewPaddingSchema)(invalid)).toThrow(
-        'Expected'
+        /Expected|padding/u
       )
     }
   })

@@ -117,15 +117,25 @@ for (const scene of ['dagre-tree', 'elk-tree']) {
     await expect(status(page)).toHaveAttribute('data-layouts', '2')
     await expectLaidOut(page, 'LR')
 
-    // Source handles moved to the trailing side.
+    // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
+    // New fit zoom exposes the existing native handle offset: a 1px node border,
+    // 11px handle and right:-6px center it 0.5 graph units inside the outer edge.
+    // Flow CSS: packages/foldkit/src/style.css:275,350-373. Keep the same pixel tolerance.
     const root = await nodeBox(page, '1')
+
+    const zoom = await page
+      .locator('.flow-foldkit-viewport')
+      .evaluate(
+        (element) => new DOMMatrix(getComputedStyle(element).transform).a
+      )
+
     await expect
       .poll(async () => {
         const center = await handleCenter(page, '1', 'out')
 
         return center.x
       })
-      .toBeCloseTo(root.x + root.width, 0)
+      .toBeCloseTo(root.x + root.width - 0.5 * zoom, 0)
   })
 }
 
