@@ -143,6 +143,7 @@ const customInteraction = (
 export interface FlowEdgePresentationOptions {
   readonly zIndexMode: FlowZIndexMode | undefined
   readonly elevateEdgesOnSelect: boolean | undefined
+  readonly elevateNodesOnSelect: boolean | undefined
   readonly defaultMarkerColor: string | undefined
   readonly edgesReconnectable: boolean | undefined
   readonly reconnectRadius: number | undefined
@@ -159,6 +160,7 @@ const themedEdgeStroke = flowThemeValue('edge-stroke')
 let nextMarkerScope = 0
 
 interface EdgeElements {
+  readonly svg: SVGSVGElement
   readonly anchorGroup: SVGGElement
   readonly group: SVGGElement
   readonly hit: SVGPathElement
@@ -286,12 +288,13 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   layer.classList.add('flow-edges')
   layer.dataset.testid = 'flow-edges'
   const definitions = globalThis.document.createElementNS(svgNamespace, 'defs')
-  const pathLayer = globalThis.document.createElementNS(svgNamespace, 'g')
+  const pathLayer = globalThis.document.createElement('div')
+  pathLayer.style.display = 'contents'
   const labelLayer = globalThis.document.createElement('div')
   labelLayer.classList.add('flow-edge-labels')
   labelLayer.setAttribute('aria-hidden', 'true')
-  layer.append(definitions, pathLayer)
-  viewport.append(layer)
+  layer.append(definitions)
+  viewport.append(layer, pathLayer)
 
   // The props each custom edge renderer last received, to skip unchanged frames.
   const sentProps = new WeakMap<EdgeEntry, FlowEdgeRendererProps>()
@@ -315,8 +318,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   const anchorLayer = globalThis.document.createElementNS(svgNamespace, 'svg')
   anchorLayer.classList.add('flow-edge-anchor-layer')
   anchorLayer.dataset.testid = 'flow-edge-anchor-layer'
-  viewport.append(anchorLayer)
-  viewport.append(labelLayer)
+  viewport.append(anchorLayer, labelLayer)
 
   const slots = new Map<EdgeId, EdgeSlot>()
   let closed = false
@@ -402,6 +404,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
       entry.elements.group.remove()
       entry.elements.anchorGroup.remove()
       entry.label?.remove()
+      entry.elements.svg.remove()
     }
   }
 
@@ -463,6 +466,8 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   }
 
   const allocateEntry = (edge: FlowDocument['edges'][number]): EdgeEntry => {
+    const svg = globalThis.document.createElementNS(svgNamespace, 'svg')
+    svg.classList.add('flow-edges')
     const group = globalThis.document.createElementNS(svgNamespace, 'g')
     group.classList.add('flow-edge-group')
     group.dataset.edgeId = edge.id
@@ -508,9 +513,11 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     targetAnchor.setAttribute('r', String(presentation().reconnectRadius ?? 8))
 
     group.append(path, hit, visual)
+    svg.append(group)
     anchorGroup.append(sourceAnchor, targetAnchor)
 
     const elements: EdgeElements = {
+      svg,
       anchorGroup,
       group,
       hit,
@@ -554,7 +561,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     let updated = 0
     let removed = 0
     let deferred = 0
-    let previousGroup: SVGGElement | null = null
+    let previousGroup: SVGSVGElement | null = null
 
     if (onlyEdges === undefined && !projectionOnly) {
       previousPositions = new Map(
@@ -567,22 +574,19 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
       const canvasPresentation = presentation()
 
-      // One SVG layer: edges paint in `computeFlowStacking` order within it.
+      // Pinned EdgeWrapper/index.tsx:184 applies CSS levels without reordering edges.
       edgeZ = computeFlowStacking({
         nodes: document.nodes,
         edges: withDefaults,
         zIndexMode: canvasPresentation.zIndexMode ?? 'basic',
         elevateEdgesOnSelect: canvasPresentation.elevateEdgesOnSelect ?? false,
+        elevateNodesOnSelect: canvasPresentation.elevateNodesOnSelect ?? true,
       }).edges
 
+      // Reconnect controls retain their attachment-centered overlay contract.
+      anchorLayer.style.zIndex = String(Math.max(0, ...edgeZ.values()) + 2)
+
       orderedEdges = withDefaults
-        .map((edge, index) => ({ edge, index }))
-        .toSorted(
-          (first, second) =>
-            (edgeZ.get(first.edge.id) ?? 0) -
-              (edgeZ.get(second.edge.id) ?? 0) || first.index - second.index
-        )
-        .map(({ edge }) => edge)
       edgeById = new Map(orderedEdges.map((edge) => [edge.id, edge]))
       incidentEdges = new Map()
 
@@ -1010,6 +1014,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         }
 
         group.dataset.zIndex = String(edgeZ.get(edge.id) ?? 0)
+        entry.elements.svg.style.zIndex = group.dataset.zIndex
 
         if (canvasPresentation.edgeDescriptionId === undefined) {
           group.removeAttribute('aria-describedby')
@@ -1063,15 +1068,15 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
               ? pathLayer.firstElementChild
               : previousGroup.nextElementSibling
 
-          if (nextGroup !== group) {
+          if (nextGroup !== entry.elements.svg) {
             if (nextGroup === null) {
-              pathLayer.append(group)
+              pathLayer.append(entry.elements.svg)
             } else {
-              nextGroup.before(group)
+              nextGroup.before(entry.elements.svg)
             }
           }
 
-          previousGroup = group
+          previousGroup = entry.elements.svg
           anchorLayer.append(anchorGroup)
         }
 
@@ -1084,13 +1089,15 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
           if (label === undefined) {
             label = globalThis.document.createElement('div')
-            label.classList.add('flow-edge-label')
+            label.classList.add('flow-edge-label', 'nopan')
+            label.dataset.flowNoPan = ''
             label.dataset.edgeId = edge.id
             label.dataset.testid = 'flow-edge-label'
             entry.label = label
           }
 
           applyEdgeLabelPresentation(label, edge)
+          label.style.zIndex = String(edgeZ.get(edge.id) ?? 0)
           label.setAttribute('x', String(position.x))
           label.setAttribute('y', String(position.y))
           label.style.left = `${position.x}px`
@@ -1256,6 +1263,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
       markers.clear()
       layer.remove()
+      pathLayer.remove()
       anchorLayer.remove()
       labelLayer.remove()
       edgeLabelRenderer.remove()

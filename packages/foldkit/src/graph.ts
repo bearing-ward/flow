@@ -6803,10 +6803,20 @@ export const createPointerResource = (initial: Model) => {
   const classifyPress = (
     raw: PanePointer,
     canvas: HTMLElement
-  ): Option.Option<GraphMessageData> =>
-    raw.button === 0
+  ): Option.Option<GraphMessageData> => {
+    if (
+      raw.target instanceof Element &&
+      raw.target.closest(
+        '.flow-foldkit-edge-label, .flow-foldkit-edge-textwrapper'
+      ) !== null
+    ) {
+      return Option.none()
+    }
+
+    return raw.button === 0
       ? beginPointer(raw, current.viewport)
       : Option.fromUndefinedOr(nodePanGesture(raw, canvas))
+  }
 
   const nativeButtonAllowed = (button: number): boolean =>
     button <= 1 ||
@@ -7612,7 +7622,10 @@ const graphView = (
           const label = h.keyed('div')(
             edge.id,
             [
-              h.Class('flow-foldkit-edge-label'),
+              h.Class(
+                flowClassNames('flow-foldkit-edge-label', model.noPanClassName)
+              ),
+              h.DataAttribute('flow-no-pan', ''),
               h.DataAttribute('edge-id', edge.id),
               h.DataAttribute('label-owner', 'host-overlay'),
               h.Style({

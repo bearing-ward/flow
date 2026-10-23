@@ -1,0 +1,2308 @@
+{
+  "baselineCommit": "0c82a41",
+  "upstreamRevision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "ledgerBefore": {
+    "126": {
+      "vanilla": {
+        "pass": 44,
+        "fail": 3,
+        "intentional-difference": 3
+      },
+      "vue": {
+        "pass": 48,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 47,
+        "intentional-difference": 3
+      }
+    },
+    "127": {
+      "vanilla": {
+        "pass": 65,
+        "intentional-difference": 2
+      },
+      "vue": {
+        "pass": 67
+      },
+      "foldkit": {
+        "pass": 67
+      }
+    },
+    "128": {
+      "vanilla": {
+        "pass": 98,
+        "not-applicable": 2,
+        "fail": 1,
+        "intentional-difference": 6
+      },
+      "vue": {
+        "pass": 100,
+        "not-applicable": 2,
+        "fail": 2,
+        "intentional-difference": 3
+      },
+      "foldkit": {
+        "pass": 102,
+        "fail": 2,
+        "intentional-difference": 3
+      }
+    }
+  },
+  "ledgerAfter": {
+    "126": {
+      "vanilla": {
+        "pass": 49,
+        "intentional-difference": 1
+      },
+      "vue": {
+        "pass": 49,
+        "intentional-difference": 1
+      },
+      "foldkit": {
+        "pass": 48,
+        "intentional-difference": 2
+      }
+    },
+    "127": {
+      "vanilla": {
+        "pass": 67
+      },
+      "vue": {
+        "pass": 67
+      },
+      "foldkit": {
+        "pass": 67
+      }
+    },
+    "128": {
+      "vanilla": {
+        "pass": 98,
+        "not-applicable": 2,
+        "fail": 1,
+        "intentional-difference": 6
+      },
+      "vue": {
+        "pass": 100,
+        "not-applicable": 2,
+        "fail": 2,
+        "intentional-difference": 3
+      },
+      "foldkit": {
+        "pass": 102,
+        "fail": 2,
+        "intentional-difference": 3
+      }
+    }
+  },
+  "changedOutcomes": [
+    {
+      "id": "UP-126-012",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Shared-SVG design remains as documented at research/traces/edge-visibility-stacking.md:34 and apps/vanilla/src/edge-renderer.ts:568. Received SVG z-index auto versus upstream 3141592. Visual probe also finds node 8 ahead of z-index at (537.142866,396.205714); pinned React paints z-index ahead of node 8 at (522.857134,403.502152). The measured visual gap cannot be classified as only a CSS serialization difference."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-126-014",
+      "host": "vanilla",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5208 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.822857 (rendered half-width 17.2800 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-viewport > flow-canvas > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-126-014",
+      "host": "vue",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5919 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.820571 (rendered half-width 17.2320 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-vue-canvas > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-126-014",
+      "host": "foldkit",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5208 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.822857 (rendered half-width 17.2800 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-foldkit-viewport > flow-foldkit-canvas > flow-foldkit-root > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-126-016",
+      "host": "vanilla",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Shared-SVG ordering is documented at research/traces/edge-visibility-stacking.md:34 and sorted at apps/vanilla/src/edge-renderer.ts:568. Received SVG z-index auto versus upstream 0. Measured elementsFromPoint places edge-with-style ahead of edge-with-class at (619.367188,109.991313), matching pinned React (616.515386,69.688244). A controlled node-3 overlap at the path midpoint puts node 3 ahead of edge-with-class in both hosts. This preserves fixture visual order without per-edge CSS wrappers."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-126-017",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Shared-SVG sort at apps/vanilla/src/edge-renderer.ts:568 is preserved per research/traces/edge-visibility-stacking.md:34. Received SVG z-index auto versus upstream 1. elementsFromPoint at (671.443231,565.335702) orders parent node 12 before subflow-edge; pinned React at (675.991332,593.642339) orders subflow-edge before parent 12. This is a measured visual stacking product gap, not an intentional CSS-only difference."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-126-018",
+      "host": "vanilla",
+      "before": {
+        "status": "fail",
+        "reason": "Shared-SVG sort at apps/vanilla/src/edge-renderer.ts:568 is preserved per research/traces/edge-visibility-stacking.md:34. Received SVG z-index auto versus upstream 1. elementsFromPoint at (668.847595,628.813375) orders parent node 12 before subflow-edge-2; pinned React at (672.856059,664.246821) orders subflow-edge-2 before parent 12. This is a measured visual stacking product gap, not an intentional CSS-only difference."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-006",
+      "host": "vanilla",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Clicking e1-2 selects it and moves it after e1-3 in the shared SVG; the subsequent :first assertion reads unselected e1-3. Documented shared-SVG ordering: research/traces/edge-visibility-stacking.md:34."
+      },
+      "after": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "UP-127-011",
+      "host": "vanilla",
+      "before": {
+        "status": "intentional-difference",
+        "reason": "Clicking the first e1-2 path selects it, then shared-SVG selected elevation moves it after unselected e1-3, which becomes :first. Documented ordering: research/traces/edge-visibility-stacking.md:34."
+      },
+      "after": {
+        "status": "pass"
+      }
+    }
+  ],
+  "reports": {
+    "playwright-vanilla": {
+      "stats": {
+        "startTime": "2026-10-23T02:24:24.278Z",
+        "duration": 28858.679,
+        "expected": 50,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 49,
+      "expectedFailures": 1,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "playwright-vue": {
+      "stats": {
+        "startTime": "2026-10-23T01:55:53.448Z",
+        "duration": 24997.807,
+        "expected": 50,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 49,
+      "expectedFailures": 1,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "playwright-foldkit": {
+      "stats": {
+        "startTime": "2026-10-23T01:59:03.115Z",
+        "duration": 35507.142,
+        "expected": 50,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 48,
+      "expectedFailures": 2,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "cypress-vanilla": {
+      "stats": {
+        "startTime": "2026-10-23T02:24:53.346Z",
+        "duration": 36648.583,
+        "expected": 201,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 201,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "cypress-vue": {
+      "stats": {
+        "startTime": "2026-10-23T02:06:34.318Z",
+        "duration": 32749.323999999997,
+        "expected": 201,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 201,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "cypress-foldkit": {
+      "stats": {
+        "startTime": "2026-10-23T01:59:38.837Z",
+        "duration": 37084.342,
+        "expected": 201,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 201,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "component-vanilla": {
+      "stats": {
+        "startTime": "2026-10-23T02:25:30.205Z",
+        "duration": 133182.793,
+        "expected": 222,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 201,
+      "expectedFailures": 21,
+      "skipped": 6,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "component-vue": {
+      "stats": {
+        "startTime": "2026-10-23T01:56:57.366Z",
+        "duration": 102068.80900000001,
+        "expected": 222,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 207,
+      "expectedFailures": 15,
+      "skipped": 6,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "component-foldkit": {
+      "stats": {
+        "startTime": "2026-10-23T02:00:16.156Z",
+        "duration": 124454.498,
+        "expected": 228,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 213,
+      "expectedFailures": 15,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "affected-vanilla": {
+      "stats": {
+        "startTime": "2026-10-23T02:42:43.643Z",
+        "duration": 93652.48300000001,
+        "expected": 105,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 105,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [
+        {
+          "host": "vanilla",
+          "panOnDrag": false,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": true,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        }
+      ],
+      "pinnedOverlap": [
+        {
+          "edgeId": "z-index",
+          "nodeId": "3",
+          "zIndex": "3141592",
+          "point": {
+            "x": 537.1428833007812,
+            "y": 360.25
+          },
+          "strokeOffset": 0.70257568359375,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:z-index", "node:3"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 671.4720458984375,
+            "y": 565.9642944335938
+          },
+          "strokeOffset": 0.69122314453125,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge-2",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 668.8007202148438,
+            "y": 627.567138671875
+          },
+          "strokeOffset": 0,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge-2", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        }
+      ],
+      "labelAnchorOverlap": []
+    },
+    "affected-vue": {
+      "stats": {
+        "startTime": "2026-10-23T04:01:28.630Z",
+        "duration": 26656.786999999997,
+        "expected": 55,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 55,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [
+        {
+          "host": "vue",
+          "panOnDrag": false,
+          "point": {
+            "x": 366,
+            "y": 199
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 306,
+            "y": 199
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vue",
+          "panOnDrag": true,
+          "point": {
+            "x": 366,
+            "y": 199
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 306,
+            "y": 199
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        }
+      ],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": [
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 193.5,
+            "y": 127
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 218.5,
+            "y": 127
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 531,
+            "y": 265
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 631,
+            "y": 265
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        }
+      ]
+    },
+    "affected-foldkit": {
+      "stats": {
+        "startTime": "2026-10-23T02:14:17.574Z",
+        "duration": 98043.111,
+        "expected": 74,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 74,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [
+        {
+          "host": "foldkit",
+          "panOnDrag": false,
+          "point": {
+            "x": 351,
+            "y": 186
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 291,
+            "y": 186
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "foldkit",
+          "panOnDrag": true,
+          "point": {
+            "x": 351,
+            "y": 186
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 291,
+            "y": 186
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        }
+      ],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    }
+  },
+  "performance": {
+    "before": {
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "os": "darwin",
+      "results": [
+        {
+          "fixtureSize": 250,
+          "edgeCount": 6,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 250.30000001192093,
+          "p95Ms": 251,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 250,
+          "edgeCount": 6,
+          "minimap": true,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 251.7000000178814,
+          "p95Ms": 256.5,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 3945.0999999940395,
+          "p95Ms": 3961.600000023842,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": true,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 3801.0999999940395,
+          "p95Ms": 3885.899999976158,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "singleNodeDragPointerMoveFrame",
+          "warmupCount": 0,
+          "sampleCount": 7,
+          "medianMs": 0,
+          "p95Ms": 0.10000002384185791,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": true,
+          "renderOnlyVisible": false,
+          "operation": "singleNodeDragPointerMoveFrame",
+          "warmupCount": 0,
+          "sampleCount": 7,
+          "medianMs": 0,
+          "p95Ms": 0.09999999403953552,
+          "addedNodes": 61061,
+          "removedNodes": 61061
+        },
+        {
+          "fixtureSize": 4000,
+          "edgeCount": 100,
+          "minimap": false,
+          "renderOnlyVisible": true,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 0,
+          "sampleCount": 1,
+          "medianMs": 525.4000000059605,
+          "p95Ms": 525.4000000059605,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 4000,
+          "edgeCount": 100,
+          "minimap": true,
+          "renderOnlyVisible": true,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 0,
+          "sampleCount": 1,
+          "medianMs": 529.2999999821186,
+          "p95Ms": 529.2999999821186,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 125,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 3937.199999988079,
+          "p95Ms": 4064.300000011921,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 500,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 4434.300000011921,
+          "p95Ms": 4448.0999999940395,
+          "addedNodes": 0,
+          "removedNodes": 0
+        }
+      ]
+    },
+    "after": {
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "os": "darwin",
+      "results": [
+        {
+          "fixtureSize": 250,
+          "edgeCount": 6,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 243.90000000596046,
+          "p95Ms": 246.69999998807907,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 250,
+          "edgeCount": 6,
+          "minimap": true,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 243.60000002384186,
+          "p95Ms": 246.59999999403954,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 3791,
+          "p95Ms": 3799.699999988079,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": true,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 3796.300000011921,
+          "p95Ms": 3804.399999976158,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "singleNodeDragPointerMoveFrame",
+          "warmupCount": 0,
+          "sampleCount": 7,
+          "medianMs": 0.09999999403953552,
+          "p95Ms": 0.10000002384185791,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 25,
+          "minimap": true,
+          "renderOnlyVisible": false,
+          "operation": "singleNodeDragPointerMoveFrame",
+          "warmupCount": 0,
+          "sampleCount": 7,
+          "medianMs": 0,
+          "p95Ms": 0.10000002384185791,
+          "addedNodes": 61061,
+          "removedNodes": 61061
+        },
+        {
+          "fixtureSize": 4000,
+          "edgeCount": 100,
+          "minimap": false,
+          "renderOnlyVisible": true,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 0,
+          "sampleCount": 1,
+          "medianMs": 511.80000001192093,
+          "p95Ms": 511.80000001192093,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 4000,
+          "edgeCount": 100,
+          "minimap": true,
+          "renderOnlyVisible": true,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 0,
+          "sampleCount": 1,
+          "medianMs": 506.60000002384186,
+          "p95Ms": 506.60000002384186,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 125,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 3902.4000000059605,
+          "p95Ms": 3913.699999988079,
+          "addedNodes": 0,
+          "removedNodes": 0
+        },
+        {
+          "fixtureSize": 1000,
+          "edgeCount": 500,
+          "minimap": false,
+          "renderOnlyVisible": false,
+          "operation": "fullDocumentReconciliation",
+          "warmupCount": 1,
+          "sampleCount": 4,
+          "medianMs": 4377.300000011921,
+          "p95Ms": 4382.5,
+          "addedNodes": 0,
+          "removedNodes": 0
+        }
+      ]
+    },
+    "limits": "One local run per side. The unchanged suite times synchronous document reconciliation and capture-to-microtask pointer observations, excluding initial mount and complete paint. Four reconciliation samples after one warmup, except one culled 4000-node sample with no warmup; seven drag samples. P95 with four samples is the maximum. Drag gestures reuse initial node bounds and can include later pane movement. No speedup or frame-budget claim."
+  },
+  "commands": {
+    "baseline": "scripts/with-flow-browser-lock.sh bunx playwright test apps/vanilla/e2e/performance.e2e.ts --workers=1 --reporter=line in the detached 0c82a41 baseline checkout",
+    "acceptanceScript": "#!/bin/sh\nset +e\nfailures=0\nrun() {\n  name=$1\n  shift\n  \"$@\" > \"/tmp/plan143/$name.json\" 2> \"/tmp/plan143/$name.stderr\"\n  result=$?\n  printf '%s=%s\\n' \"$name\" \"$result\" >> /tmp/plan143/accept-status\n  if [ \"$result\" -ne 0 ]; then failures=$((failures+1)); fi\n}\nrun performance-after bunx playwright test performance.e2e.ts --workers=1 --reporter=json\nfor host in vanilla vue foldkit; do\n  case \"$host\" in\n    vanilla) config=playwright.config.ts ;;\n    vue) config=apps/vue/playwright.config.ts ;;\n    foldkit) config=apps/foldkit/playwright.config.ts ;;\n  esac\n  run \"playwright-$host\" bunx playwright test -c \"$config\" upstream-playwright.e2e.ts --workers=1 --reporter=json\n  run \"cypress-$host\" bunx playwright test -c \"$config\" upstream-cypress.e2e.ts --repeat-each=3 --workers=1 --reporter=json\n  run \"component-$host\" bunx playwright test -c \"$config\" upstream-component.e2e.ts --repeat-each=3 --workers=1 --reporter=json\n  files=\"base-edge.e2e.ts edge-stacking.e2e.ts edge-recipes.e2e.ts renderer-contract.e2e.ts renderer-props.e2e.ts edge-geometry-recipes.e2e.ts subflows-recipes.e2e.ts\"\n  case \"$host\" in\n    vanilla) files=\"$files graph-renderers.e2e.ts schema-studio.e2e.ts next-slices.e2e.ts\" ;;\n    vue) files=\"$files minimap.e2e.ts final-wiring.e2e.ts\" ;;\n    foldkit) files=\"$files edge-interaction.e2e.ts schema-studio.e2e.ts minimap.e2e.ts minimap-options.e2e.ts\" ;;\n  esac\n  run \"affected-$host\" bunx playwright test -c \"$config\" $files --workers=1 --reporter=json\n done\nexit \"$failures\"\n",
+    "acceptanceExitCodes": "performance-after=0\nplaywright-vanilla=0\ncypress-vanilla=0\ncomponent-vanilla=0\naffected-vanilla=1\nplaywright-vue=0\ncypress-vue=1\ncomponent-vue=0\naffected-vue=0\nplaywright-foldkit=0\ncypress-foldkit=0\ncomponent-foldkit=0\naffected-foldkit=1\n",
+    "correctionScript": "#!/bin/sh\nset +e\nfailures=0\nrun() {\n  name=$1\n  shift\n  \"$@\" > \"/tmp/plan143/$name.json\" 2> \"/tmp/plan143/$name.stderr\"\n  result=$?\n  printf '%s=%s\\n' \"$name\" \"$result\" >> /tmp/plan143/recheck-status\n  if [ \"$result\" -ne 0 ]; then failures=$((failures+1)); fi\n}\nrun foldkit-contract-probe bunx playwright test -c apps/foldkit/playwright.config.ts renderer-contract.e2e.ts --grep 'typed renderer registries preserve' --repeat-each=3 --workers=1 --reporter=json\nrun anchor-recheck bunx playwright test edge-stacking.e2e.ts renderer-contract.e2e.ts --repeat-each=3 --workers=1 --reporter=json\nrun cypress-vue bunx playwright test -c apps/vue/playwright.config.ts upstream-cypress.e2e.ts --repeat-each=3 --workers=1 --reporter=json\nrun performance-after bunx playwright test performance.e2e.ts --workers=1 --reporter=json\nrun playwright-vanilla bunx playwright test upstream-playwright.e2e.ts --workers=1 --reporter=json\nrun cypress-vanilla bunx playwright test upstream-cypress.e2e.ts --repeat-each=3 --workers=1 --reporter=json\nrun component-vanilla bunx playwright test upstream-component.e2e.ts --repeat-each=3 --workers=1 --reporter=json\nrun affected-vanilla bunx playwright test base-edge.e2e.ts edge-stacking.e2e.ts edge-recipes.e2e.ts renderer-contract.e2e.ts renderer-props.e2e.ts edge-geometry-recipes.e2e.ts subflows-recipes.e2e.ts graph-renderers.e2e.ts schema-studio.e2e.ts next-slices.e2e.ts --workers=1 --reporter=json\nexit \"$failures\"\n",
+    "correctionExitCodes": "foldkit-contract-probe=1\nanchor-recheck=1\ncypress-vue=0\nperformance-after=0\nplaywright-vanilla=0\ncypress-vanilla=0\ncomponent-vanilla=0\naffected-vanilla=1\n",
+    "finalVanillaScript": "#!/bin/sh\nset +e\nfailures=0\nrun() {\n  name=$1\n  shift\n  \"$@\" > \"/tmp/plan143/$name.json\" 2> \"/tmp/plan143/$name.stderr\"\n  result=$?\n  printf '%s=%s\\n' \"$name\" \"$result\" >> /tmp/plan143/final-vanilla-status\n  if [ \"$result\" -ne 0 ]; then failures=$((failures+1)); fi\n}\nrun performance-after bunx playwright test performance.e2e.ts --workers=1 --reporter=json\nrun playwright-vanilla bunx playwright test upstream-playwright.e2e.ts --workers=1 --reporter=json\nrun cypress-vanilla bunx playwright test upstream-cypress.e2e.ts --repeat-each=3 --workers=1 --reporter=json\nrun component-vanilla bunx playwright test upstream-component.e2e.ts --repeat-each=3 --workers=1 --reporter=json\nrun affected-vanilla bunx playwright test base-edge.e2e.ts edge-stacking.e2e.ts edge-recipes.e2e.ts renderer-contract.e2e.ts renderer-props.e2e.ts edge-geometry-recipes.e2e.ts subflows-recipes.e2e.ts graph-renderers.e2e.ts schema-studio.e2e.ts next-slices.e2e.ts final-wiring.e2e.ts --workers=1 --reporter=json\nexit \"$failures\"\n",
+    "finalVanillaExitCodes": "performance-after=0\nplaywright-vanilla=0\ncypress-vanilla=0\ncomponent-vanilla=0\naffected-vanilla=1\n",
+    "vueAfterControlRepair": "scripts/with-flow-browser-lock.sh bunx playwright test -c apps/vue/playwright.config.ts upstream-playwright.e2e.ts upstream-cypress.e2e.ts upstream-component.e2e.ts --repeat-each=3 --workers=1 --reporter=json",
+    "vueAffectedAfterControlRepair": "scripts/with-flow-browser-lock.sh bunx playwright test -c apps/vue/playwright.config.ts base-edge.e2e.ts edge-stacking.e2e.ts edge-label-anchors.e2e.ts edge-recipes.e2e.ts renderer-contract.e2e.ts renderer-props.e2e.ts edge-geometry-recipes.e2e.ts subflows-recipes.e2e.ts minimap.e2e.ts final-wiring.e2e.ts node-connections.e2e.ts --workers=1 --reporter=json",
+    "verify": "scripts/with-flow-browser-lock.sh bun run verify"
+  },
+  "samplingCorrections": {
+    "premise": "Premise: each pinned generic edge has a painted stroke overlap with the named node in the mounted viewport, and edge/node owners can be identified from elementsFromPoint using their DOM classes.\nCensus: the three parameterized pinned-overlap tests count stroke-adjacent samples, retain their hit owners, and report minimum path-to-node distance, node bounds, screen CTM, and canvas bounds before another sampling change.\n",
+    "finding": "Natural subflow hit stacks still put the parent first because Vanilla added 1 to every node level. Removing that offset fixes painted overlaps. The high-z path has no natural body overlap with node 8, so the final probe drags unrelated node 3 onto it through native input.",
+    "beforeNodeOffsetFix": [
+      {
+        "edgeKey": "z-index",
+        "nodeKey": "8",
+        "totalCandidates": 0,
+        "minOffset": 4.405426025390625,
+        "halfStroke": 0.822857141494751,
+        "candidates": [],
+        "bounds": {
+          "x": 475.4285888671875,
+          "y": 401.1428527832031,
+          "width": 123.4285888671875,
+          "height": 32.914276123046875
+        },
+        "path": "M-25,345 C-25,370 -25,370 -25,395",
+        "matrix": {
+          "a": 0.822857141494751,
+          "b": 0,
+          "c": 0,
+          "d": 0.822857141494751,
+          "e": 557.7142944335938,
+          "f": 72
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 720,
+          "top": 0,
+          "right": 1280,
+          "bottom": 720,
+          "left": 0
+        }
+      },
+      {
+        "edgeKey": "subflow-edge",
+        "nodeKey": "12",
+        "totalCandidates": 191,
+        "minOffset": 0,
+        "halfStroke": 0.822857141494751,
+        "candidates": [
+          {
+            "x": 671.4720458984375,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.4432373046875,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.4143676757812,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.3855590820312,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.3572387695312,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.3290405273438,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.30078125,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          },
+          {
+            "x": 671.2725830078125,
+            "y": 565.9642944335938,
+            "owners": ["node:12", "edge:subflow-edge"]
+          }
+        ],
+        "bounds": {
+          "x": 640,
+          "y": 565.7142944335938,
+          "width": 164.5714111328125,
+          "height": 82.28570556640625
+        },
+        "path": "M175,545 C175,580 135,580 135,615",
+        "matrix": {
+          "a": 0.822857141494751,
+          "b": 0,
+          "c": 0,
+          "d": 0.822857141494751,
+          "e": 557.7142944335938,
+          "f": 72
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 720,
+          "top": 0,
+          "right": 1280,
+          "bottom": 720,
+          "left": 0
+        }
+      },
+      {
+        "edgeKey": "subflow-edge-2",
+        "nodeKey": "12",
+        "totalCandidates": 999,
+        "minOffset": 0,
+        "halfStroke": 0.822857141494751,
+        "candidates": [
+          {
+            "x": 668.8007202148438,
+            "y": 627.567138671875,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.8019409179688,
+            "y": 627.7057495117188,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.80419921875,
+            "y": 627.8442993164062,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.8074951171875,
+            "y": 627.98291015625,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.8114013671875,
+            "y": 628.1213989257812,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.8167114257812,
+            "y": 628.2598876953125,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.8228759765625,
+            "y": 628.3983764648438,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          },
+          {
+            "x": 668.8298950195312,
+            "y": 628.5368041992188,
+            "owners": ["node:12", "edge:subflow-edge-2"]
+          }
+        ],
+        "bounds": {
+          "x": 640,
+          "y": 565.7142944335938,
+          "width": 164.5714111328125,
+          "height": 82.28570556640625
+        },
+        "path": "M135,675 C135,723.4122918275928 265,566.5877081724072 265,615",
+        "matrix": {
+          "a": 0.822857141494751,
+          "b": 0,
+          "c": 0,
+          "d": 0.822857141494751,
+          "e": 557.7142944335938,
+          "f": 72
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 720,
+          "top": 0,
+          "right": 1280,
+          "bottom": 720,
+          "left": 0
+        }
+      }
+    ]
+  },
+  "controlOverlayBoundary": {
+    "reason": "The full verifier found 29 reconnection regressions when attachment-centered controls moved into edge SVGs. Retain the documented host overlay and lift it above edge paint. Pinned EdgeAnchor instead shifts circles by one radius. Existing native and lifecycle assertions are unchanged.",
+    "fullVerifierBeforeFix": "29 failed, 4 skipped, 824 passed in the Vanilla scope",
+    "targetedAfterFix": "150 passed, zero unexpected"
+  },
+  "componentScope": "Phase 128 has 76 browser cases and 31 shared unit cases. Browser runners use three repeats; final verify runs all shared unit cases.",
+  "upstreamAssertionsUnchanged": true,
+  "additionalChecks": {
+    "stacking-final-green": {
+      "stats": {
+        "startTime": "2026-10-23T02:21:26.382Z",
+        "duration": 15313.567,
+        "expected": 21,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 21,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [
+        {
+          "host": "vanilla",
+          "panOnDrag": false,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": true,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": false,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": true,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": false,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": true,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        }
+      ],
+      "pinnedOverlap": [
+        {
+          "edgeId": "z-index",
+          "nodeId": "3",
+          "zIndex": "3141592",
+          "point": {
+            "x": 537.1428833007812,
+            "y": 360.25
+          },
+          "strokeOffset": 0.70257568359375,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:z-index", "node:3"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 671.4720458984375,
+            "y": 565.9642944335938
+          },
+          "strokeOffset": 0.69122314453125,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge-2",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 668.8007202148438,
+            "y": 627.567138671875
+          },
+          "strokeOffset": 0,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge-2", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "z-index",
+          "nodeId": "3",
+          "zIndex": "3141592",
+          "point": {
+            "x": 537.1428833007812,
+            "y": 360.25
+          },
+          "strokeOffset": 0.70257568359375,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:z-index", "node:3"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 671.4720458984375,
+            "y": 565.9642944335938
+          },
+          "strokeOffset": 0.69122314453125,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge-2",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 668.8007202148438,
+            "y": 627.567138671875
+          },
+          "strokeOffset": 0,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge-2", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "z-index",
+          "nodeId": "3",
+          "zIndex": "3141592",
+          "point": {
+            "x": 537.1428833007812,
+            "y": 360.25
+          },
+          "strokeOffset": 0.70257568359375,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:z-index", "node:3"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 671.4720458984375,
+            "y": 565.9642944335938
+          },
+          "strokeOffset": 0.69122314453125,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge-2",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 668.8007202148438,
+            "y": 627.567138671875
+          },
+          "strokeOffset": 0,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge-2", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        }
+      ],
+      "labelAnchorOverlap": []
+    },
+    "foldkit-contract-green": {
+      "stats": {
+        "startTime": "2026-10-23T02:14:09.568Z",
+        "duration": 7796.484,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 3,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "schema-compensation-green": {
+      "stats": {
+        "startTime": "2026-10-23T02:39:32.098Z",
+        "duration": 24416.883,
+        "expected": 12,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 12,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "known-flake-recheck": {
+      "stats": {
+        "startTime": "2026-10-23T02:42:34.679Z",
+        "duration": 8763.159000000001,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 3,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "reconnect-overlay-green": {
+      "stats": {
+        "startTime": "2026-10-23T03:00:09.900Z",
+        "duration": 90014.543,
+        "expected": 150,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 150,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [
+        {
+          "host": "vanilla",
+          "panOnDrag": false,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vanilla",
+          "panOnDrag": true,
+          "point": {
+            "x": 350,
+            "y": 185
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 290,
+            "y": 185
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        }
+      ],
+      "pinnedOverlap": [
+        {
+          "edgeId": "z-index",
+          "nodeId": "3",
+          "zIndex": "3141592",
+          "point": {
+            "x": 537.1428833007812,
+            "y": 360.25
+          },
+          "strokeOffset": 0.70257568359375,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:z-index", "node:3"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 671.4720458984375,
+            "y": 565.9642944335938
+          },
+          "strokeOffset": 0.69122314453125,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        },
+        {
+          "edgeId": "subflow-edge-2",
+          "nodeId": "12",
+          "zIndex": "1",
+          "point": {
+            "x": 668.8007202148438,
+            "y": 627.567138671875
+          },
+          "strokeOffset": 0,
+          "halfStroke": 0.822857141494751,
+          "owners": ["edge:subflow-edge-2", "node:12"],
+          "edgeIndex": 0,
+          "nodeIndex": 1,
+          "stroke": "rgb(177, 177, 183)"
+        }
+      ],
+      "labelAnchorOverlap": []
+    },
+    "upstream-final-vanilla": {
+      "stats": {
+        "startTime": "2026-10-23T03:03:50.919Z",
+        "duration": 161111.233,
+        "expected": 423,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 402,
+      "expectedFailures": 21,
+      "skipped": 6,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "vue-label-anchor-green": {
+      "stats": {
+        "startTime": "2026-10-23T03:36:29.081Z",
+        "duration": 14537.509,
+        "expected": 12,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 12,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": [
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 193.5,
+            "y": 127
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 218.5,
+            "y": 127
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 531,
+            "y": 265
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 631,
+            "y": 265
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 193.5,
+            "y": 127
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 218.5,
+            "y": 127
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 531,
+            "y": 265
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 631,
+            "y": 265
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 193.5,
+            "y": 127
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 218.5,
+            "y": 127
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 531,
+            "y": 265
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 631,
+            "y": 265
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        }
+      ]
+    },
+    "vue-reconnect-green": {
+      "stats": {
+        "startTime": "2026-10-23T03:36:43.819Z",
+        "duration": 64202.885,
+        "expected": 63,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 63,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [
+        {
+          "host": "vue",
+          "panOnDrag": false,
+          "point": {
+            "x": 366,
+            "y": 199
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 306,
+            "y": 199
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        },
+        {
+          "host": "vue",
+          "panOnDrag": true,
+          "point": {
+            "x": 366,
+            "y": 199
+          },
+          "before": ["node:cover", "label:edge", "edge:edge", "edge:other"],
+          "after": ["label:edge", "edge:edge", "node:cover", "edge:other"],
+          "pathPoint": {
+            "x": 306,
+            "y": 199
+          },
+          "pathOwner": ["edge", "edge", "cover", "other"]
+        }
+      ],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": [
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 193.5,
+            "y": 127
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 0.5,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 218.5,
+            "y": 127
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "source",
+          "point": {
+            "x": 531,
+            "y": 265
+          },
+          "endpoint": "source",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "zoom": 2,
+          "expectedEndpoint": "target",
+          "point": {
+            "x": 631,
+            "y": 265
+          },
+          "endpoint": "target",
+          "stack": [
+            "flow-vue-edge-reconnect-anchor",
+            "flow-vue-edge-label-text",
+            "flow-vue-edge-label flow-vue-no-pan",
+            "flow-vue-edge-label-bg",
+            "flow-vue-edge-hit-target",
+            "flow-vue-edge-path",
+            "flow-vue-canvas light",
+            null,
+            null,
+            null
+          ]
+        }
+      ]
+    },
+    "upstream-final-vue": {
+      "stats": {
+        "startTime": "2026-10-23T03:37:48.221Z",
+        "duration": 195000.066,
+        "expected": 573,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 555,
+      "expectedFailures": 18,
+      "skipped": 6,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "foldkit-label-contract-green": {
+      "stats": {
+        "startTime": "2026-10-23T04:22:50.795Z",
+        "duration": 9279.122,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "ordinaryPasses": 3,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    }
+  },
+  "foldkitLabelContractBoundary": {
+    "beforeFix": "Final focused gate: Vanilla 853 passed / 4 skipped; Vue 986 passed / 2 skipped; Foldkit 620 passed / 1 failed, solely the old fixed label-parent z-index=1 assertion.",
+    "afterFix": "3/3 unchanged native control/capture/threshold and covering-node clicks pass after replacing the fixed overlay assertion with parent auto, label level 3, and native pointer-events all. No production source change."
+  },
+  "componentUnits": {
+    "files": 6,
+    "cases": 31,
+    "result": "passed",
+    "log": "\n RUN  v5.0.5 /Users/richardmcandrews/.t3/worktrees/flow/t3-e771c881\n\n\n Test Files  6 passed (6)\n      Tests  31 passed (31)\n   Start at  22:36:25\n   Duration  297ms (import 64%, transform 34%, tests 1%, worker 1%)\n\n"
+  },
+  "verification": {
+    "profile": "focused",
+    "status": "failed",
+    "exitCode": 1,
+    "scopeAdditions": {
+      "vanilla": ["edge-stacking.e2e.ts", "base-edge.e2e.ts"],
+      "vue": ["edge-stacking.e2e.ts", "edge-label-anchors.e2e.ts"],
+      "foldkit": ["edge-stacking.e2e.ts", "base-edge.e2e.ts"]
+    },
+    "passedChecks": [
+      "quality check",
+      "architecture boundaries",
+      "package builds",
+      "typecheck",
+      "unit tests",
+      "React Flow API member inventory",
+      "React Flow catalog coverage",
+      "packed consumer",
+      "documentation",
+      "example recipe registry",
+      "Vanilla app build",
+      "Foldkit app build",
+      "research trace citations",
+      "Vue app build",
+      "upstream test ledger",
+      "vanilla browser tests",
+      "vue browser tests"
+    ],
+    "unitTests": 2570,
+    "unitFiles": 104,
+    "hosts": {
+      "vanilla": {
+        "total": 857,
+        "passed": 853,
+        "failed": 0,
+        "skipped": 4,
+        "flaky": 0
+      },
+      "vue": {
+        "total": 988,
+        "passed": 986,
+        "failed": 0,
+        "skipped": 2,
+        "flaky": 0
+      },
+      "foldkit": {
+        "total": 621,
+        "passed": 620,
+        "failed": 1,
+        "skipped": 0,
+        "flaky": 0
+      }
+    },
+    "scope": {
+      "vanilla": [
+        "advanced-gestures.e2e.ts",
+        "button-handle-recipe.e2e.ts",
+        "canvas-ui-contract.e2e.ts",
+        "canvas-ui.e2e.ts",
+        "canvas.e2e.ts",
+        "edge-geometry-recipes.e2e.ts",
+        "edge-recipes.e2e.ts",
+        "events-and-changes.e2e.ts",
+        "final-wiring.e2e.ts",
+        "graph-renderers.e2e.ts",
+        "host-hardening.e2e.ts",
+        "intersection-recipes.e2e.ts",
+        "layout-recipes.e2e.ts",
+        "movement-slices.e2e.ts",
+        "nested-resize-containment.e2e.ts",
+        "next-slices.e2e.ts",
+        "node-threshold.e2e.ts",
+        "playground.e2e.ts",
+        "renderer-contract.e2e.ts",
+        "renderer-props.e2e.ts",
+        "shared-conformance.e2e.ts",
+        "styling-recipes.e2e.ts",
+        "ui-controls.e2e.ts",
+        "versioned-persistence.e2e.ts",
+        "whiteboard-recipes.e2e.ts",
+        "closing-options.e2e.ts",
+        "closing-recipes.e2e.ts",
+        "schema-studio.e2e.ts",
+        "live-internal-node.e2e.ts",
+        "context-menu-event.e2e.ts",
+        "gesture-options.e2e.ts",
+        "interaction-playground.e2e.ts",
+        "upstream-playwright.e2e.ts",
+        "connection-threshold.e2e.ts",
+        "interaction-lifecycle.e2e.ts",
+        "node-input.e2e.ts",
+        "catalog-state-examples.e2e.ts",
+        "control-button.e2e.ts",
+        "feature-overview-recipes.e2e.ts",
+        "flow-followups.e2e.ts",
+        "graph-editing-examples.e2e.ts",
+        "public-state.e2e.ts",
+        "subflows-recipes.e2e.ts",
+        "ui-recipes.e2e.ts",
+        "viewport-portal.e2e.ts",
+        "touch-ready-mobile.e2e.ts",
+        "upstream-cypress.e2e.ts",
+        "interaction-policy.e2e.ts",
+        "labeled-handle-recipe.e2e.ts",
+        "base-handle-recipe.e2e.ts",
+        "upstream-component.e2e.ts",
+        "measured-geometry.e2e.ts",
+        "edge-stacking.e2e.ts",
+        "base-edge.e2e.ts"
+      ],
+      "vue": [
+        "connection.e2e.ts",
+        "edge-geometry-recipes.e2e.ts",
+        "edge-recipes.e2e.ts",
+        "events-and-changes.e2e.ts",
+        "feature-overview-recipes.e2e.ts",
+        "host-hardening.e2e.ts",
+        "interaction-lifecycle.e2e.ts",
+        "intersection-recipes.e2e.ts",
+        "layout-recipes.e2e.ts",
+        "node-threshold.e2e.ts",
+        "renderer-props.e2e.ts",
+        "renderer-contract.e2e.ts",
+        "shared-conformance.e2e.ts",
+        "subflows-recipes.e2e.ts",
+        "ui-controls.e2e.ts",
+        "whiteboard-recipes.e2e.ts",
+        "connection-threshold.e2e.ts",
+        "activation-callbacks.e2e.ts",
+        "final-wiring.e2e.ts",
+        "minimap.e2e.ts",
+        "base-edge.e2e.ts",
+        "canvas-ui-contract.e2e.ts",
+        "panel.e2e.ts",
+        "closing-gaps.e2e.ts",
+        "closing-recipes.e2e.ts",
+        "live-internal-node.e2e.ts",
+        "context-menu-event.e2e.ts",
+        "nested-resize-containment.e2e.ts",
+        "upstream-playwright.e2e.ts",
+        "handle-connections.e2e.ts",
+        "node-connections.e2e.ts",
+        "node-input.e2e.ts",
+        "appendix-recipe.e2e.ts",
+        "catalog-state-examples.e2e.ts",
+        "demo.e2e.ts",
+        "graph-editing-examples.e2e.ts",
+        "public-state.e2e.ts",
+        "viewport-operations.e2e.ts",
+        "viewport-portal.e2e.ts",
+        "node-toolbar.e2e.ts",
+        "edge-toolbar.e2e.ts",
+        "upstream-cypress.e2e.ts",
+        "interaction-policy.e2e.ts",
+        "button-handle-recipe.e2e.ts",
+        "labeled-handle-recipe.e2e.ts",
+        "base-handle-recipe.e2e.ts",
+        "drag-handle-recipe.e2e.ts",
+        "gesture-controls.e2e.ts",
+        "upstream-component.e2e.ts",
+        "measured-geometry.e2e.ts",
+        "edge-stacking.e2e.ts",
+        "edge-label-anchors.e2e.ts"
+      ],
+      "foldkit": [
+        "computing-flows-recipes.e2e.ts",
+        "connection-threshold.e2e.ts",
+        "edge-geometry-recipes.e2e.ts",
+        "edge-recipes.e2e.ts",
+        "edge-interaction.e2e.ts",
+        "events-and-changes.e2e.ts",
+        "feature-overview-recipes.e2e.ts",
+        "handle-connections.e2e.ts",
+        "interaction-lifecycle.e2e.ts",
+        "intersection-recipes.e2e.ts",
+        "layout-recipes.e2e.ts",
+        "live-drag.e2e.ts",
+        "node-threshold.e2e.ts",
+        "public-state.e2e.ts",
+        "renderer-props.e2e.ts",
+        "renderer-contract.e2e.ts",
+        "shared-conformance.e2e.ts",
+        "subflows-recipes.e2e.ts",
+        "ui-controls.e2e.ts",
+        "whiteboard-recipes.e2e.ts",
+        "model-styling.e2e.ts",
+        "node-resizer.e2e.ts",
+        "minimap-options.e2e.ts",
+        "minimap.e2e.ts",
+        "instance-api.e2e.ts",
+        "labeled-group-recipe.e2e.ts",
+        "canvas-ui-contract.e2e.ts",
+        "closing-gaps.e2e.ts",
+        "closing-recipes.e2e.ts",
+        "native-schema.e2e.ts",
+        "viewport-controls.e2e.ts",
+        "viewport-observer.e2e.ts",
+        "delete-approval.e2e.ts",
+        "public-edits.e2e.ts",
+        "delete-edge-on-drop-recipe.e2e.ts",
+        "drag-and-drop-recipe.e2e.ts",
+        "schema-studio.e2e.ts",
+        "live-internal-node.e2e.ts",
+        "measured-geometry.e2e.ts",
+        "nested-resize-containment.e2e.ts",
+        "resize-measurement-lifecycle.e2e.ts",
+        "upstream-playwright.e2e.ts",
+        "node-input.e2e.ts",
+        "button-handle-recipe.e2e.ts",
+        "catalog-state-examples.e2e.ts",
+        "control-button.e2e.ts",
+        "graph-editing-examples.e2e.ts",
+        "input-ownership.e2e.ts",
+        "panel.e2e.ts",
+        "placeholder-recipe.e2e.ts",
+        "toolbars.e2e.ts",
+        "ui-recipes.e2e.ts",
+        "viewport-portal.e2e.ts",
+        "selection-rect-race.e2e.ts",
+        "pane-input.e2e.ts",
+        "presentation-followups.e2e.ts",
+        "upstream-cypress.e2e.ts",
+        "interaction-policy.e2e.ts",
+        "labeled-handle-recipe.e2e.ts",
+        "base-handle-recipe.e2e.ts",
+        "drag-handle-recipe.e2e.ts",
+        "upstream-component.e2e.ts",
+        "edge-stacking.e2e.ts",
+        "base-edge.e2e.ts"
+      ]
+    },
+    "failedCheck": "foldkit browser tests",
+    "baselineBoundary": "Foldkit auto-layout case fails identically on untouched 0c82a41 in 2/3 repeats; current branch 3/3. Layout assertions remain unchanged."
+  },
+  "taskScopedAcceptanceHasUnexpectedResults": false,
+  "vueControlOrderBoundary": {
+    "reason": "The next complete verifier found 17 Vue reconnect regressions where short-edge labels covered the shifted controls. Keep controls after the HTML labels at the same edge level, preserving geometry and callback semantics.",
+    "beforeFix": "4 native label-anchor cases failed with the label first in elementsFromPoint",
+    "afterFix": "12/12 across three repeats; 63/63 reconnect and overlap cases; all upstream runners across three repeats have zero unexpected results"
+  },
+  "outOfScopeChecks": {
+    "foldkit-layout-recheck": {
+      "stats": {
+        "startTime": "2026-10-23T04:43:51.229Z",
+        "duration": 28139.591999999997,
+        "expected": 18,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "ordinaryPasses": 18,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [
+        {
+          "title": "auto-layout re-runs when nodes are added or removed",
+          "expected": "passed",
+          "received": "failed",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m289.3262939453125\u001b[39m\nReceived:    \u001b[31m256.6427001953125\u001b[39m"
+        },
+        {
+          "title": "auto-layout re-runs when nodes are added or removed",
+          "expected": "passed",
+          "received": "failed",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m289.3262939453125\u001b[39m\nReceived:    \u001b[31m256.6427001953125\u001b[39m"
+        },
+        {
+          "title": "auto-layout re-runs when nodes are added or removed",
+          "expected": "passed",
+          "received": "failed",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m289.3262939453125\u001b[39m\nReceived:    \u001b[31m256.6427001953125\u001b[39m"
+        }
+      ],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    },
+    "foldkit-layout-baseline": {
+      "stats": {
+        "startTime": "2026-10-23T04:44:49.340Z",
+        "duration": 27713.993000000002,
+        "expected": 19,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "ordinaryPasses": 19,
+      "expectedFailures": 0,
+      "skipped": 0,
+      "unexpected": [
+        {
+          "title": "auto-layout re-runs when nodes are added or removed",
+          "expected": "passed",
+          "received": "failed",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m289.3262939453125\u001b[39m\nReceived:    \u001b[31m256.6427001953125\u001b[39m"
+        },
+        {
+          "title": "auto-layout re-runs when nodes are added or removed",
+          "expected": "passed",
+          "received": "failed",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m289.3262939453125\u001b[39m\nReceived:    \u001b[31m256.6427001953125\u001b[39m"
+        }
+      ],
+      "errors": [],
+      "overlap": [],
+      "pinnedOverlap": [],
+      "labelAnchorOverlap": []
+    }
+  },
+  "baselineLayoutBoundary": {
+    "baselineCommit": "0c82a41",
+    "case": "apps/foldkit/e2e/layout-recipes.e2e.ts:178",
+    "assertion": "apps/foldkit/e2e/layout-recipes.e2e.ts:209",
+    "command": "scripts/with-flow-browser-lock.sh bunx playwright test -c apps/foldkit/playwright.config.ts layout-recipes.e2e.ts --repeat-each=3 --workers=1 --reporter=json",
+    "baselineCwd": "/tmp/plan143-baseline",
+    "currentResult": "18 passed, 3 failed: same auto-layout case in every repeat",
+    "baselineResult": "19 passed, 2 failed: same auto-layout case in two repeats",
+    "identicalFailure": "Expected thirdChild.y >= 289.3262939453125; received 256.6427001953125.",
+    "classification": "Pre-existing baseline boundary, recorded without changing layout assertions or code. Auto-layout tree edges have no labels; this case is outside the two reversed policies."
+  }
+}

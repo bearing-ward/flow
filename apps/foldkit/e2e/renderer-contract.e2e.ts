@@ -309,21 +309,26 @@ test('Foldkit typed renderer registries preserve geometry, identity, handles and
     const screen = new DOMPoint(midpoint.x, midpoint.y).matrixTransform(matrix)
     const target = document.elementFromPoint(screen.x, screen.y)
 
+    const label =
+      target?.closest<HTMLElement>('.flow-foldkit-edge-label') ?? null
+
     return {
       x: screen.x,
       y: screen.y,
-      hitTarget:
-        target?.classList.contains('flow-foldkit-edge-hit-target') === true,
+      labelHit: label !== null,
       edgeId:
+        label?.dataset.edgeId ??
         target?.closest<SVGElement>('.flow-foldkit-edge')?.dataset.edgeId ??
         null,
     }
   })
 
-  expect(hit?.hitTarget).toBe(true)
+  // Pinned packages/system/src/styles/init.css:160 makes this built-in label interactive.
+  expect(hit?.labelHit).toBe(true)
+  expect(hit?.edgeId).toBe('renderer-custom-edge')
 
   if (hit === null || hit.edgeId === null) {
-    throw new Error('SVG hit target is not clickable')
+    throw new Error('Edge label has no owner')
   }
 
   await page.mouse.click(hit.x, hit.y)

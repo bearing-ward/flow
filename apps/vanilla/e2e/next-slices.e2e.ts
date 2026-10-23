@@ -96,7 +96,7 @@ test('controlled node selection waits for acknowledgement and keeps focus', asyn
   )
 })
 
-test('selected edge rises in keyed order and retains focus', async ({
+test('selected edge rises by CSS level and retains document order and focus', async ({
   page,
 }) => {
   await resetDemo(page)
@@ -157,7 +157,9 @@ test('selected edge rises in keyed order and retains focus', async ({
   await low.focus()
   await page.keyboard.press('Enter')
   await expect(low).toHaveClass(/selected/u)
-  await expect.poll(order).toStrictEqual(['high', 'low'])
+  // Pinned EdgeRenderer/index.tsx:66 and EdgeWrapper/index.tsx:184 preserve document order.
+  await expect.poll(order).toStrictEqual(['low', 'high'])
+  await expect(low.locator('xpath=..')).toHaveCSS('z-index', '1000')
   await expect(low).toBeFocused()
 
   const high = page.locator('.flow-edge-group[data-edge-id="high"]')

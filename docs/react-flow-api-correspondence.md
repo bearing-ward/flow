@@ -420,7 +420,7 @@ Plan070 adds one complete v2 persistence body and additive host methods/ports. T
 
 Node wrappers compute `pointer-events: all` when the node is draggable, selectable, or has a click or mouse-enter, move, or leave callback. Otherwise they compute `none`. Per-node flags override the global switches. A node's explicit style can override this pointer policy, as in React Flow.
 
-Edge wrappers compute `visibleStroke` when the edge is selectable or has an `onEdgeClick` callback. Otherwise they compute `none`. Interaction paths inherit the wrapper policy. Edge labels remain intentionally non-interactive.
+Edge wrappers compute `visibleStroke` when the edge is selectable or has an `onEdgeClick` callback. Otherwise they compute `none`. Interaction paths inherit the wrapper policy. Built-in edge labels activate their edge and share its stacking level. Portal labels retain the default `pointer-events: none`, matching pinned `EdgeLabelRenderer/index.tsx:48`.
 
 Vanilla reads its mount callbacks. Vue reads component callback presence. Foldkit exposes `createFoldkitInteractionHandlers(ports, handlers)` with `onNodeClick`, `onNodeMouseEnter`, `onNodeMouseMove`, `onNodeMouseLeave`, and `onEdgeClick`. Its `set` method replaces the callback set, and `dispose` removes the callbacks and clears their pointer-event admission. One client owns these callbacks for a Runtime. Callbacks receive decoded serialized `InteractionEvent` records. Functions and native DOM events stay outside the Foldkit Model and messages. Raw `interactionEvents` subscriptions continue to observe admitted input but do not enable hit testing on disabled wrappers.
 

@@ -2959,15 +2959,22 @@ export const FlowCanvas = defineComponent({
 
         const hit =
           (target instanceof Element
-            ? target.closest<SVGElement>('[data-flow-edge-hit]')
+            ? target.closest<SVGElement | HTMLElement>(
+                '[data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              )
             : null) ??
           view.document
             .elementFromPoint(event.clientX, event.clientY)
-            ?.closest<SVGElement>('[data-flow-edge-hit]')
+            ?.closest<SVGElement | HTMLElement>(
+              '[data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+            )
 
         if (
           !stateDisposed &&
-          hit?.dataset.flowEdgeHit === edge.id &&
+          (hit?.dataset.flowEdgeHit ??
+            hit?.dataset.flowEdgeLabel ??
+            hit?.closest<SVGElement>('.flow-vue-edge')?.dataset.edgeId) ===
+            edge.id &&
           Math.hypot(
             event.clientX - press.clientX,
             event.clientY - press.clientY
@@ -9381,8 +9388,217 @@ export const FlowCanvas = defineComponent({
       return { x: anchor.x + offset.x, y: anchor.y + offset.y }
     }
 
+    const renderEdgeReconnectControls = (
+      edge: FlowEdge,
+      geometry: ReturnType<typeof resolveRenderedEdge>
+    ): VNode[] => {
+      if (
+        geometry === undefined ||
+        edge.hidden === true ||
+        geometry.sourceNode.hidden === true ||
+        geometry.targetNode.hidden === true
+      ) {
+        return []
+      }
+
+      const controls: VNode[] = []
+
+      if (edge.selected === true) {
+        for (const endpoint of ['source', 'target'] as const) {
+          if (
+            (edge.reconnectable === undefined && !props.edgesReconnectable) ||
+            !canReconnectEdge(edge, endpoint)
+          ) {
+            continue
+          }
+
+          const anchor =
+            endpoint === 'source'
+              ? geometry?.sourceAnchor
+              : geometry?.targetAnchor
+
+          if (anchor === undefined) {
+            continue
+          }
+
+          controls.push(
+            h('circle', {
+              key: `reconnect-${endpoint}`,
+              class: 'flow-vue-edge-reconnect-anchor',
+              'data-testid': 'flow-edge-reconnect-anchor',
+              'data-endpoint': endpoint,
+              'data-edge-id': edge.id,
+              tabindex: 0,
+              role: 'button',
+              'aria-label': `Reconnect ${endpoint} of edge ${edge.id}`,
+              cx: reconnectAnchorPosition(edge, endpoint, anchor).x,
+              cy: reconnectAnchorPosition(edge, endpoint, anchor).y,
+              r: props.reconnectRadius,
+              onPointerdown: (event: PointerEvent) =>
+                startReconnection(edge, endpoint, event),
+              // eslint-disable-next-line complexity, no-loop-func -- one callback coordinates this block-scoped edge's keyboard lifecycle.
+              onKeydown: (event: KeyboardEvent) => {
+                if (
+                  stateDisposed ||
+                  (event.key !== 'Enter' && event.key !== ' ') ||
+                  event.metaKey ||
+                  event.ctrlKey ||
+                  event.altKey ||
+                  session.value !== undefined
+                ) {
+                  return
+                }
+
+                event.preventDefault()
+                event.stopPropagation()
+
+                const captureTarget = event.currentTarget
+
+                const resolved = resolveEdgeHandles(activeDocument.value, edge)
+
+                const graphSourceNode = graph.value.nodes.get(edge.source)
+                const graphTargetNode = graph.value.nodes.get(edge.target)
+
+                if (
+                  !(captureTarget instanceof SVGElement) ||
+                  resolved === undefined ||
+                  graphSourceNode === undefined ||
+                  graphTargetNode === undefined
+                ) {
+                  return
+                }
+
+                let sourceMeasured = measuredHandles.value
+                  .get(edge.source)
+                  ?.get(resolved.sourceHandle.id)
+
+                let targetMeasured = measuredHandles.value
+                  .get(edge.target)
+                  ?.get(resolved.targetHandle.id)
+
+                if (
+                  sourceMeasured === undefined ||
+                  targetMeasured === undefined
+                ) {
+                  const sourceDocumentNode = activeDocument.value.nodes.find(
+                    ({ id }) => id === edge.source
+                  )
+
+                  const targetDocumentNode = activeDocument.value.nodes.find(
+                    ({ id }) => id === edge.target
+                  )
+
+                  const sourceElement = nodeElements.get(edge.source)
+                  const targetElement = nodeElements.get(edge.target)
+
+                  if (
+                    sourceDocumentNode !== undefined &&
+                    sourceElement !== undefined
+                  ) {
+                    measureNodeHandles(sourceDocumentNode, sourceElement)
+                  }
+
+                  if (
+                    targetDocumentNode !== undefined &&
+                    targetElement !== undefined
+                  ) {
+                    measureNodeHandles(targetDocumentNode, targetElement)
+                  }
+
+                  sourceMeasured = measuredHandles.value
+                    .get(edge.source)
+                    ?.get(resolved.sourceHandle.id)
+                  targetMeasured = measuredHandles.value
+                    .get(edge.target)
+                    ?.get(resolved.targetHandle.id)
+                }
+
+                if (
+                  sourceMeasured === undefined ||
+                  targetMeasured === undefined
+                ) {
+                  return
+                }
+
+                const sourceAnchor = edgeAttachmentPosition(
+                  graphSourceNode.absolutePosition,
+                  resolved.sourceHandle,
+                  sourceMeasured
+                )
+
+                const targetAnchor = edgeAttachmentPosition(
+                  graphTargetNode.absolutePosition,
+                  resolved.targetHandle,
+                  targetMeasured
+                )
+
+                const start =
+                  endpoint === 'source' ? targetAnchor : sourceAnchor
+
+                const handleSignature = activeDocument.value.nodes
+                  .map(
+                    (candidate) =>
+                      `${candidate.id}:${flowNodeHandles(candidate)
+                        .map(({ kind, id }) => `${kind}:${id}`)
+                        .toSorted()
+                        .join(',')}`
+                  )
+                  .join('|')
+
+                session.value = {
+                  kind: 'connection',
+                  route: 'keyboard',
+                  owner: newConnectionOwner(
+                    {
+                      kind: 'reconnect',
+                      activation: 'keyboard',
+                      edge,
+                      endpoint,
+                    },
+                    { kind: 'keyboard' }
+                  ),
+                  pointerId: -1,
+                  captureTarget,
+                  sourceNode: resolved.sourceNode,
+                  sourceHandle: resolved.sourceHandle.id,
+                  start,
+                  pointer: start,
+                  reconnect: {
+                    edgeId: edge.id,
+                    endpoint,
+                    handleSignature,
+                  },
+                }
+                emit('reconnectStart', {
+                  edge,
+                  endpoint,
+                  activation: 'keyboard',
+                })
+
+                recordFlowTelemetry(
+                  'Started Vue keyboard edge reconnection',
+                  FlowSpan.edgeReconnectStart,
+                  {
+                    [FlowAttribute.edgeId]: edge.id,
+                    [FlowAttribute.edgeEndpoint]: endpoint,
+                    [FlowAttribute.inputKind]: 'keyboard',
+                    [FlowAttribute.controlMode]: documentControlMode(),
+                  }
+                )
+              },
+            })
+          )
+        }
+      }
+
+      return controls
+    }
+
     // eslint-disable-next-line complexity
-    const renderEdge = (edge: FlowEdge): VNode | null => {
+    const renderEdge = (
+      edge: FlowEdge,
+      geometry: ReturnType<typeof resolveRenderedEdge>
+    ): VNode | null => {
       const source = renderGraphNode(edge.source)
       const target = renderGraphNode(edge.target)
 
@@ -9402,7 +9618,6 @@ export const FlowCanvas = defineComponent({
           ? undefined
           : { default: () => slots.edge?.({ edge }) }
 
-      const geometry = resolveRenderedEdge(edge)
       const path = geometry?.path
       const sourceNode = geometry?.sourceNode
       const targetNode = geometry?.targetNode
@@ -9473,203 +9688,28 @@ export const FlowCanvas = defineComponent({
             targetNode.node.label
           )
         )
-
-        if (edge.selected === true) {
-          for (const endpoint of ['source', 'target'] as const) {
-            if (
-              (edge.reconnectable === undefined && !props.edgesReconnectable) ||
-              !canReconnectEdge(edge, endpoint)
-            ) {
-              continue
-            }
-
-            const anchor =
-              endpoint === 'source'
-                ? geometry?.sourceAnchor
-                : geometry?.targetAnchor
-
-            if (anchor === undefined) {
-              continue
-            }
-
-            edgeChildren.push(
-              h('circle', {
-                key: `reconnect-${endpoint}`,
-                class: 'flow-vue-edge-reconnect-anchor',
-                'data-testid': 'flow-edge-reconnect-anchor',
-                'data-endpoint': endpoint,
-                'data-edge-id': edge.id,
-                tabindex: 0,
-                role: 'button',
-                'aria-label': `Reconnect ${endpoint} of edge ${edge.id}`,
-                cx: reconnectAnchorPosition(edge, endpoint, anchor).x,
-                cy: reconnectAnchorPosition(edge, endpoint, anchor).y,
-                r: props.reconnectRadius,
-                onPointerdown: (event: PointerEvent) =>
-                  startReconnection(edge, endpoint, event),
-                // eslint-disable-next-line complexity, no-loop-func -- one callback coordinates this block-scoped edge's keyboard lifecycle.
-                onKeydown: (event: KeyboardEvent) => {
-                  if (
-                    stateDisposed ||
-                    (event.key !== 'Enter' && event.key !== ' ') ||
-                    event.metaKey ||
-                    event.ctrlKey ||
-                    event.altKey ||
-                    session.value !== undefined
-                  ) {
-                    return
-                  }
-
-                  event.preventDefault()
-                  event.stopPropagation()
-
-                  const captureTarget = event.currentTarget
-
-                  const resolved = resolveEdgeHandles(
-                    activeDocument.value,
-                    edge
-                  )
-
-                  const graphSourceNode = graph.value.nodes.get(edge.source)
-                  const graphTargetNode = graph.value.nodes.get(edge.target)
-
-                  if (
-                    !(captureTarget instanceof SVGElement) ||
-                    resolved === undefined ||
-                    graphSourceNode === undefined ||
-                    graphTargetNode === undefined
-                  ) {
-                    return
-                  }
-
-                  let sourceMeasured = measuredHandles.value
-                    .get(edge.source)
-                    ?.get(resolved.sourceHandle.id)
-
-                  let targetMeasured = measuredHandles.value
-                    .get(edge.target)
-                    ?.get(resolved.targetHandle.id)
-
-                  if (
-                    sourceMeasured === undefined ||
-                    targetMeasured === undefined
-                  ) {
-                    const sourceDocumentNode = activeDocument.value.nodes.find(
-                      ({ id }) => id === edge.source
-                    )
-
-                    const targetDocumentNode = activeDocument.value.nodes.find(
-                      ({ id }) => id === edge.target
-                    )
-
-                    const sourceElement = nodeElements.get(edge.source)
-                    const targetElement = nodeElements.get(edge.target)
-
-                    if (
-                      sourceDocumentNode !== undefined &&
-                      sourceElement !== undefined
-                    ) {
-                      measureNodeHandles(sourceDocumentNode, sourceElement)
-                    }
-
-                    if (
-                      targetDocumentNode !== undefined &&
-                      targetElement !== undefined
-                    ) {
-                      measureNodeHandles(targetDocumentNode, targetElement)
-                    }
-
-                    sourceMeasured = measuredHandles.value
-                      .get(edge.source)
-                      ?.get(resolved.sourceHandle.id)
-                    targetMeasured = measuredHandles.value
-                      .get(edge.target)
-                      ?.get(resolved.targetHandle.id)
-                  }
-
-                  if (
-                    sourceMeasured === undefined ||
-                    targetMeasured === undefined
-                  ) {
-                    return
-                  }
-
-                  const sourceAnchor = edgeAttachmentPosition(
-                    graphSourceNode.absolutePosition,
-                    resolved.sourceHandle,
-                    sourceMeasured
-                  )
-
-                  const targetAnchor = edgeAttachmentPosition(
-                    graphTargetNode.absolutePosition,
-                    resolved.targetHandle,
-                    targetMeasured
-                  )
-
-                  const start =
-                    endpoint === 'source' ? targetAnchor : sourceAnchor
-
-                  const handleSignature = activeDocument.value.nodes
-                    .map(
-                      (candidate) =>
-                        `${candidate.id}:${flowNodeHandles(candidate)
-                          .map(({ kind, id }) => `${kind}:${id}`)
-                          .toSorted()
-                          .join(',')}`
-                    )
-                    .join('|')
-
-                  session.value = {
-                    kind: 'connection',
-                    route: 'keyboard',
-                    owner: newConnectionOwner(
-                      {
-                        kind: 'reconnect',
-                        activation: 'keyboard',
-                        edge,
-                        endpoint,
-                      },
-                      { kind: 'keyboard' }
-                    ),
-                    pointerId: -1,
-                    captureTarget,
-                    sourceNode: resolved.sourceNode,
-                    sourceHandle: resolved.sourceHandle.id,
-                    start,
-                    pointer: start,
-                    reconnect: {
-                      edgeId: edge.id,
-                      endpoint,
-                      handleSignature,
-                    },
-                  }
-                  emit('reconnectStart', {
-                    edge,
-                    endpoint,
-                    activation: 'keyboard',
-                  })
-
-                  recordFlowTelemetry(
-                    'Started Vue keyboard edge reconnection',
-                    FlowSpan.edgeReconnectStart,
-                    {
-                      [FlowAttribute.edgeId]: edge.id,
-                      [FlowAttribute.edgeEndpoint]: endpoint,
-                      [FlowAttribute.inputKind]: 'keyboard',
-                      [FlowAttribute.controlMode]: documentControlMode(),
-                    }
-                  )
-                },
-              })
-            )
-          }
-        }
       }
 
       return h(
         'g',
         {
           key: edge.id,
+          onPointerdown: (event: PointerEvent) => {
+            if (
+              !(event.target instanceof Element) ||
+              event.target.closest('.flow-vue-edge-textwrapper') === null
+            ) {
+              return
+            }
+
+            event.stopPropagation()
+
+            if (event.button === 0) {
+              event.preventDefault()
+              props.onEdgeClick?.(edge, event)
+              awaitEdgeClick(edge, event)
+            }
+          },
           class: [
             flowVueEdgeClasses(edge),
             props.noPanClassName,
@@ -9762,7 +9802,30 @@ export const FlowCanvas = defineComponent({
         'div',
         {
           key: edge.id,
-          class: 'flow-vue-edge-label',
+          class: ['flow-vue-edge-label', props.noPanClassName],
+          onPointerdown: (event: PointerEvent) => {
+            // Pinned EdgeText + EdgeWrapper: labels activate their owning edge.
+            event.stopPropagation()
+
+            if (event.button === 0) {
+              event.preventDefault()
+              props.onEdgeClick?.(edge, event)
+              awaitEdgeClick(edge, event)
+            }
+          },
+          onMousedown: (event: MouseEvent) =>
+            emit('edgeMouseDown', edge, event),
+          onMouseup: (event: MouseEvent) => emit('edgeMouseUp', edge, event),
+          onMousemove: (event: MouseEvent) =>
+            emit('edgeMouseMove', edge, event),
+          onMouseenter: (event: MouseEvent) =>
+            emit('edgeMouseEnter', edge, event),
+          onMouseleave: (event: MouseEvent) =>
+            emit('edgeMouseLeave', edge, event),
+          onDblclick: (event: MouseEvent) =>
+            emit('edgeDoubleClick', edge, event),
+          onContextmenu: (event: MouseEvent) =>
+            emit('edgeContextMenu', edge, event),
           'data-testid': 'flow-edge-label',
           'data-flow-edge-label': edge.id,
           style: {
@@ -10757,7 +10820,9 @@ export const FlowCanvas = defineComponent({
 
             if (
               target instanceof Element &&
-              target.closest('[data-node-id], [data-flow-edge-hit]') === null
+              target.closest(
+                '[data-node-id], [data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              ) === null
             ) {
               emit('paneMouseDown', clientToFlow(event.clientX, event.clientY))
             }
@@ -10767,7 +10832,9 @@ export const FlowCanvas = defineComponent({
 
             if (
               target instanceof Element &&
-              target.closest('[data-node-id], [data-flow-edge-hit]') === null
+              target.closest(
+                '[data-node-id], [data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              ) === null
             ) {
               emit('paneMouseUp', clientToFlow(event.clientX, event.clientY))
             }
@@ -10779,7 +10846,9 @@ export const FlowCanvas = defineComponent({
 
             if (
               target instanceof Element &&
-              target.closest('[data-node-id], [data-flow-edge-hit]') === null &&
+              target.closest(
+                '[data-node-id], [data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              ) === null &&
               (press === undefined || press.distance <= props.paneClickDistance)
             ) {
               selectionBoundsActive.value = false
@@ -10807,7 +10876,9 @@ export const FlowCanvas = defineComponent({
 
             if (
               target instanceof Element &&
-              target.closest('[data-node-id], [data-flow-edge-hit]') === null
+              target.closest(
+                '[data-node-id], [data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              ) === null
             ) {
               emit('paneMouseMove', clientToFlow(event.clientX, event.clientY))
             }
@@ -10823,7 +10894,9 @@ export const FlowCanvas = defineComponent({
 
             if (
               target instanceof Element &&
-              target.closest('[data-node-id], [data-flow-edge-hit]') === null
+              target.closest(
+                '[data-node-id], [data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              ) === null
             ) {
               if (
                 Array.isArray(props.panOnDrag) &&
@@ -10848,7 +10921,9 @@ export const FlowCanvas = defineComponent({
               !props.zoomOnDoubleClick ||
               !activationKeyIsPressed(props.zoomActivationKeyCode) ||
               !(target instanceof Element) ||
-              target.closest('[data-node-id], [data-flow-edge-hit]') !== null
+              target.closest(
+                '[data-node-id], [data-flow-edge-hit], [data-flow-edge-label], .flow-vue-edge-textwrapper'
+              ) !== null
             ) {
               return
             }
@@ -10929,6 +11004,7 @@ export const FlowCanvas = defineComponent({
               // Pinned EdgeRenderer/index.tsx:66 and EdgeWrapper/index.tsx:183
               // retain document order and change only each SVG's z-index.
               edges.map((edge) => {
+                const geometry = resolveRenderedEdge(edge)
                 const zIndex = stacking.value.edges.get(edge.id) ?? 0
 
                 return h(Fragment, { key: edge.id }, [
@@ -10942,7 +11018,7 @@ export const FlowCanvas = defineComponent({
                       'data-z-index': zIndex,
                       style: { zIndex, overflow: 'visible' },
                     },
-                    [renderEdge(edge)]
+                    [renderEdge(edge, geometry)]
                   ),
                   h(
                     'div',
@@ -10956,6 +11032,17 @@ export const FlowCanvas = defineComponent({
                       style: { zIndex },
                     },
                     [renderEdgeLabel(edge)]
+                  ),
+                  // Keep controls after HTML labels, matching EdgeWrapper's
+                  // EdgeText -> EdgeUpdateAnchors paint order at the same level.
+                  h(
+                    'svg',
+                    {
+                      class: 'flow-vue-edge-controls',
+                      'data-flow-edge-controls': edge.id,
+                      style: { zIndex },
+                    },
+                    renderEdgeReconnectControls(edge, geometry)
                   ),
                 ])
               }),

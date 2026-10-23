@@ -1,5 +1,7 @@
 # Presentation follow-ups
 
+Historical policy note: the maintainer's 2026-10-22 decision and Plan 143 supersede this trace's noninteractive built-in label and Vanilla shared-SVG policy references. Current behavior and acceptance boundaries are recorded in [edge labels](edge-label-render.md) and [edge stacking](edge-visibility-stacking.md).
+
 Status: Plan 133 Round 2, measured in Chromium against pinned xyflow commit `0a1f9575b25679f2880175de8d3eae21aedde921`. Upstream paths below are relative to `research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/`.
 
 ## Browser and public entry points
@@ -12,11 +14,11 @@ The fixture keeps controlled graph changes in host state. Vanilla acknowledges c
 
 Upstream's edge wrapper obtains effective z-index at `packages/react/src/components/EdgeWrapper/index.tsx:91` and places each edge in its own SVG at `packages/react/src/components/EdgeWrapper/index.tsx:183`. The system includes parented endpoint elevation at `packages/system/src/utils/edges/general.ts:40`.
 
-Flow computes semantic levels in `packages/core/src/domain/flow-z-index.ts:50`. Vanilla uses those levels and selected elevation to sort groups within one SVG at `apps/vanilla/src/edge-renderer.ts:569`. Its `.flow-edges` shell has no z-index at `apps/vanilla/src/style.css:285`. The existing design decision is `research/traces/edge-visibility-stacking.md:34`; it does not prove overlap parity.
+Flow computes semantic levels in `packages/core/src/domain/flow-z-index.ts:50`. Vanilla uses those levels and selected elevation to sort groups within one SVG at `apps/vanilla/src/edge-renderer.ts:576`. Its `.flow-edges` shell has no z-index at `apps/vanilla/src/style.css:285`. The existing design decision is `research/traces/edge-visibility-stacking.md:34`; it does not prove overlap parity.
 
-Vue derives core stacking at `packages/vue/src/flow-canvas.ts:1562`. Plan 138 replaces base/elevated grouping with keyed per-edge SVGs in document order at `packages/vue/src/flow-canvas.ts:10931`. Each SVG and label receives its semantic z-index; selection changes CSS without remounting the edge. The marker-definitions SVG remains at base level. The stylesheet's base SVG value is 0 at `packages/vue/src/style.css:459`. This retains the earlier CSS repair and removes selection-driven document reordering. Vanilla retains its documented shared-SVG choice.
+Vue derives core stacking at `packages/vue/src/flow-canvas.ts:1562`. Plan 138 replaces base/elevated grouping with keyed per-edge SVGs in document order at `packages/vue/src/flow-canvas.ts:11006`. Each SVG and label receives its semantic z-index; selection changes CSS without remounting the edge. The marker-definitions SVG remains at base level. The stylesheet's base SVG value is 0 at `packages/vue/src/style.css:459`. This retains the earlier CSS repair and removes selection-driven document reordering. Vanilla retains its documented shared-SVG choice.
 
-Foldkit computes levels at `packages/foldkit/src/graph.ts:7263`, then renders edge SVGs with each edge's level at `packages/foldkit/src/graph.ts:7537`. Its four relevant upstream stacking assertions already pass.
+Foldkit computes levels at `packages/foldkit/src/graph.ts:7273`, then renders edge SVGs with each edge's level at `packages/foldkit/src/graph.ts:7547`. Its four relevant upstream stacking assertions already pass.
 
 ## Background production paths
 

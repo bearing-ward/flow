@@ -722,7 +722,9 @@ const getFlowCanvasEventTarget = (
     return { kind: 'node', id: node.dataset.nodeId }
   }
 
-  const edge = element?.closest<SVGGElement>('.flow-edge-group')
+  const edge = element?.closest<SVGElement | HTMLElement>(
+    '.flow-edge-group, .flow-edge-label'
+  )
 
   if (edge?.dataset.edgeId !== undefined) {
     return { kind: 'edge', id: edge.dataset.edgeId }
@@ -1976,7 +1978,7 @@ const isCanvasUiTarget = (target: EventTarget | null): boolean =>
 const isCanvasGraphTarget = (target: EventTarget | null): boolean =>
   target instanceof Element &&
   (target.closest('.flow-node') !== null ||
-    target.closest('.flow-edge-group') !== null)
+    target.closest('.flow-edge-group, .flow-edge-label') !== null)
 
 const isNodePointerTargetAllowed = (
   content: HTMLElement,
@@ -3427,6 +3429,7 @@ export const createFlowHost = (
       () => ({
         zIndexMode: options.zIndexMode,
         elevateEdgesOnSelect: options.elevateEdgesOnSelect,
+        elevateNodesOnSelect: options.elevateNodesOnSelect,
         defaultMarkerColor: options.defaultMarkerColor,
         edgesFocusable: options.edgesFocusable,
         edgesReconnectable: options.edgesReconnectable,
@@ -8039,7 +8042,7 @@ export const createFlowHost = (
           applyNodePresentation(
             entry.element,
             node,
-            (nodeStacking.get(node.id) ?? 0) + 1
+            nodeStacking.get(node.id) ?? 0
           )
           applyNodeInteractionState(entry.element, node, {
             nodesFocusable: options.nodesFocusable,
@@ -11542,9 +11545,13 @@ export const createFlowHost = (
 
       cancelClickConnection('canvas-click')
 
+      const edgeTarget = getFlowCanvasEventTarget(target)
+
       const edgeGroup =
-        target instanceof Element
-          ? target.closest<SVGGElement>('.flow-edge-group')
+        edgeTarget.kind === 'edge'
+          ? viewport.querySelector<SVGGElement>(
+              `.flow-edge-group[data-edge-id="${CSS.escape(edgeTarget.id)}"]`
+            )
           : null
 
       if (edgeGroup !== null) {

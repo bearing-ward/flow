@@ -459,9 +459,22 @@
   z-index: 0;
 }
 
+.flow-vue-edge-controls {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
 .flow-vue-edges-elevated {
   overflow: visible;
   z-index: auto;
+}
+
+.flow-vue-edge-textwrapper {
+  pointer-events: all;
 }
 
 .flow-vue-edge-textbg {
@@ -537,6 +550,7 @@
 }
 
 .flow-vue-edge-label {
+  pointer-events: all;
   position: absolute;
   color: var(--flow-edge-label-color, var(--flow-edge-label-color-default));
   font-size: 12px;

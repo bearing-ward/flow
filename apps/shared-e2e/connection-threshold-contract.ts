@@ -659,7 +659,7 @@ export const connectionThresholdTests = (
         const result = await call(page, 'read')
         expect(result.viewportEvents).toEqual(['start', 'change', 'end'])
       })
-      test('connectionDragThreshold repair Foldkit owner edge zIndex controls are reachable and labels retain their layer', async ({
+      test('connectionDragThreshold repair Foldkit owner edge zIndex controls are reachable and labels share edge levels', async ({
         page,
       }) => {
         await mount(page, { threshold: 8, edge: true, edgeZIndex: 3 })
@@ -670,31 +670,31 @@ export const connectionThresholdTests = (
         const active = await call(page, 'read')
         expect(active.events).toContain('reconnectStart')
         await page.mouse.up()
+        // Pinned EdgeWrapper/index.tsx:184 keeps EdgeText in its edge's z-index context.
         expect(
           await page
             .locator('.flow-foldkit-edge-labels')
             .evaluate((element) => getComputedStyle(element).zIndex)
-        ).toBe('1')
+        ).toBe('auto')
+        await expect(page.locator('.flow-foldkit-edge-label')).toHaveCSS(
+          'z-index',
+          '3'
+        )
+        // Pinned packages/system/src/styles/init.css:160 makes built-in labels interactive.
+        await expect(page.locator('.flow-foldkit-edge-label')).toHaveCSS(
+          'pointer-events',
+          'all'
+        )
         await call(page, 'overlapLabel')
         const overlap = await center(page, '.flow-foldkit-edge-label')
 
-        const stack = await page
-          .locator('.flow-foldkit-edge-label')
-          .evaluate((label, overlapPoint) => {
-            if (!(label instanceof HTMLElement)) {
-              throw new TypeError('Missing label')
-            }
-
-            label.style.pointerEvents = 'auto'
-
-            const top = document
+        const stack = await page.evaluate(
+          (overlapPoint) =>
+            document
               .elementFromPoint(overlapPoint.x, overlapPoint.y)
-              ?.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId
-
-            label.style.removeProperty('pointer-events')
-
-            return top
-          }, overlap)
+              ?.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId,
+          overlap
+        )
 
         expect(stack).toBe('source-next')
         await page.mouse.click(overlap.x, overlap.y)

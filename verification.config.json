@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-142 upstream ports and follow-ups; preserving all existing scope; Plan 144 upstream fitView padding",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope",
   "checks": [
     "api-members",
     "catalog",
@@ -67,7 +67,9 @@
       "base-handle-recipe.e2e.ts",
       "upstream-component.e2e.ts",
       "measured-geometry.e2e.ts",
-      "computing-flows-recipes.e2e.ts"
+      "computing-flows-recipes.e2e.ts",
+      "edge-stacking.e2e.ts",
+      "base-edge.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -120,7 +122,9 @@
       "gesture-controls.e2e.ts",
       "upstream-component.e2e.ts",
       "measured-geometry.e2e.ts",
-      "computing-flows-recipes.e2e.ts"
+      "computing-flows-recipes.e2e.ts",
+      "edge-stacking.e2e.ts",
+      "edge-label-anchors.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -184,7 +188,9 @@
       "labeled-handle-recipe.e2e.ts",
       "base-handle-recipe.e2e.ts",
       "drag-handle-recipe.e2e.ts",
-      "upstream-component.e2e.ts"
+      "upstream-component.e2e.ts",
+      "edge-stacking.e2e.ts",
+      "base-edge.e2e.ts"
     ]
   }
 }

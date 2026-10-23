@@ -218,8 +218,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Shared-SVG design remains as documented at research/traces/edge-visibility-stacking.md:34 and apps/vanilla/src/edge-renderer.ts:568. Received SVG z-index auto versus upstream 3141592. Visual probe also finds node 8 ahead of z-index at (537.142866,396.205714); pinned React paints z-index ahead of node 8 at (522.857134,403.502152). The measured visual gap cannot be classified as only a CSS serialization difference."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -257,16 +256,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "intentional-difference",
-          "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5208 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.822857 (rendered half-width 17.2800 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-viewport > flow-canvas > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
+          "status": "pass"
         },
         "vue": {
-          "status": "intentional-difference",
-          "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5919 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.820571 (rendered half-width 17.2320 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-vue-canvas > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "intentional-difference",
-          "reason": "Flow intentionally keeps built-in HTML labels noninteractive (research/traces/edge-label-render.md:26; apps/vanilla/e2e/renderer-contract.e2e.ts:164). At the unchanged bbox-center +21 screen-pixel click, sampled path distance is 21.0000 screen px = 25.5208 path units, outside the 21-unit half-width of interactionWidth=42 at scale 0.822857 (rendered half-width 17.2800 px). Computed stroke-width is 42px after fixes. elementsFromPoint: flow-foldkit-viewport > flow-foldkit-canvas > flow-foldkit-root > root DIV > BODY > HTML; no edge hit path. The pinned React renderer instead hits react-flow__edge-textbg within the pointer-events:all text wrapper (packages/system/src/styles/init.css:160); its original test passes, and removing that label makes the same click miss. This is a label-policy difference, not an in-stroke hit failure."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:165"
@@ -301,8 +297,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "intentional-difference",
-          "reason": "Shared-SVG ordering is documented at research/traces/edge-visibility-stacking.md:34 and sorted at apps/vanilla/src/edge-renderer.ts:568. Received SVG z-index auto versus upstream 0. Measured elementsFromPoint places edge-with-style ahead of edge-with-class at (619.367188,109.991313), matching pinned React (616.515386,69.688244). A controlled node-3 overlap at the path midpoint puts node 3 ahead of edge-with-class in both hosts. This preserves fixture visual order without per-edge CSS wrappers."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -321,8 +316,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Shared-SVG sort at apps/vanilla/src/edge-renderer.ts:568 is preserved per research/traces/edge-visibility-stacking.md:34. Received SVG z-index auto versus upstream 1. elementsFromPoint at (671.443231,565.335702) orders parent node 12 before subflow-edge; pinned React at (675.991332,593.642339) orders subflow-edge before parent 12. This is a measured visual stacking product gap, not an intentional CSS-only difference."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -341,8 +335,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Shared-SVG sort at apps/vanilla/src/edge-renderer.ts:568 is preserved per research/traces/edge-visibility-stacking.md:34. Received SVG z-index auto versus upstream 1. elementsFromPoint at (668.847595,628.813375) orders parent node 12 before subflow-edge-2; pinned React at (672.856059,664.246821) orders subflow-edge-2 before parent 12. This is a measured visual stacking product gap, not an intentional CSS-only difference."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1083,8 +1076,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "intentional-difference",
-          "reason": "Clicking e1-2 selects it and moves it after e1-3 in the shared SVG; the subsequent :first assertion reads unselected e1-3. Documented shared-SVG ordering: research/traces/edge-visibility-stacking.md:34."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -1179,8 +1171,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "intentional-difference",
-          "reason": "Clicking the first e1-2 path selects it, then shared-SVG selected elevation moves it after unselected e1-3, which becomes :first. Documented ordering: research/traces/edge-visibility-stacking.md:34."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
