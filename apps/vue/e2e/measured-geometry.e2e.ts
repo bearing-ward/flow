@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { Schema as S } from 'effect'
 
+import { assertComponentMeasurements } from '../../shared-e2e/component-measurements-contract.ts'
 import {
   assertDynamicHandleRefresh,
   assertHandleMemberAcceptance,
@@ -127,3 +128,10 @@ for (const zoom of [0.5, 2]) {
     await assertHandleMemberAcceptance(page, 'vue', zoom)
   })
 }
+
+// examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:25,36.
+test('component declared dimensions publish one initial batch and the updated DOM size', async ({
+  page,
+}) => {
+  await assertComponentMeasurements(page)
+})

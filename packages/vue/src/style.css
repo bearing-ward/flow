@@ -288,6 +288,10 @@
   pointer-events: auto;
 }
 
+.flow-vue-node[data-height-declared='true'] {
+  min-height: 0;
+}
+
 .flow-vue-node:hover {
   box-shadow: var(
     --flow-node-boxshadow-hover,

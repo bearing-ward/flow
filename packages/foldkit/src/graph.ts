@@ -7356,10 +7356,13 @@ const graphView = (
         }
 
         if (renderSize !== undefined) {
-          Object.assign(style, {
-            width: `${renderSize.width}px`,
-            height: `${renderSize.height}px`,
-          })
+          if (node.size !== undefined || node.style?.width === undefined) {
+            Object.assign(style, { width: `${renderSize.width}px` })
+          }
+
+          if (node.size !== undefined || node.style?.height === undefined) {
+            Object.assign(style, { height: `${renderSize.height}px` })
+          }
         }
 
         const interactivity = selectInteractivity(model)
@@ -7515,6 +7518,12 @@ const graphView = (
             ),
             h.DataAttribute('testid', 'flow-node'),
             h.DataAttribute('node-id', node.id),
+            h.DataAttribute(
+              'height-declared',
+              String(
+                node.size !== undefined || node.style?.height !== undefined
+              )
+            ),
             ...(node.dragHandle === undefined
               ? []
               : [h.DataAttribute('drag-handle', node.dragHandle)]),
@@ -7576,8 +7585,7 @@ const graphView = (
 
         const { geometry, markerStartId, markerEndId } = edgeGeometry
 
-        const renderer =
-          edge.type === undefined ? undefined : renderers.edgeTypes?.[edge.type]
+        const renderer = renderers.edgeTypes?.[edge.type ?? 'default']
 
         const ariaLabel = edge.ariaLabel ?? edge.label ?? `Edge ${edge.id}`
 

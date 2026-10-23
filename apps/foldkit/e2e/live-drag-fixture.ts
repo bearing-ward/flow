@@ -150,12 +150,8 @@ export const mountFoldkitLiveDragFixture = (
   createFoldkitNodeMeasurementObserver({
     owner,
     zoom: () => 1,
-    onMeasure: ({ requestId, measurement }) =>
-      send(
-        active.ports.actions.send(
-          HostAction.MeasureNode({ requestId, measurement })
-        )
-      ),
+    onMeasure: (requests) =>
+      send(active.ports.actions.send(HostAction.MeasureNodes({ requests }))),
   })
 
   const snapshots = createFoldkitSnapshotClient(active.ports)

@@ -77,7 +77,7 @@ Every fail is retained below. The table names the first failing assertion, and d
 | UP-128-011 | handles zoom out | foldkit | The wheel changes the viewport zoom below 1, but the public viewport event port emits no start/change/end callbacks; the required start count is 0 rather than 1. |
 | UP-128-040 | handles onMove handlers | vanilla | onMove has already fired once at mount, violating the initial zero-call assertion before the pane drag is attempted. |
 
-#### [Declared dimensions and measurement batches](139-follow-up-measurements.md)
+#### [Declared dimensions and measurement batches](141-component-measurements-and-renderers.md#declared-node-dimensions-and-initial-measurement-batches)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -107,7 +107,7 @@ Every fail is retained below. The table names the first failing assertion, and d
 | UP-128-035 | handles onNodeClick | vanilla | A native stationary click reaches Node 1 with nodeDragThreshold=0, selects it, and leaves the registered onNodeClick count at 0 rather than 1. |
 | UP-128-037 | handles onNodeMouse handlers | foldkit | Native contextmenu and dblclick both reach Node 1; onNodeContextMenu fires once, but onNodeDoubleClick stays at 0. Later hover assertions are not reached. |
 
-#### [Default edge renderer registration](139-follow-up-renderers.md)
+#### [Default edge renderer registration](141-component-measurements-and-renderers.md#default-edge-renderer-registration)
 
 | Case | Upstream title | Host | One-line evidence |
 | --- | --- | --- | --- |
@@ -165,9 +165,8 @@ No case is not-applicable. The three React store-remount cases port the visible 
 - `packages/conformance/src/upstream-component/update-node-internals.test.ts`
 - `plans/139-follow-up-change-events.md`
 - `plans/142-component-viewport-and-input.md`
-- `plans/139-follow-up-measurements.md`
+- `plans/141-component-measurements-and-renderers.md`, measurements and default renderers.
 - `plans/139-follow-up-observers.md`
-- `plans/139-follow-up-renderers.md`
 - `plans/139-upstream-cypress-component-port.md`
 - `research/catalogs/upstream-component-evidence.json`
 

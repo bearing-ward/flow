@@ -21,7 +21,9 @@ export interface FoldkitNodeMeasurementObserver {
 export interface FoldkitNodeMeasurementObserverOptions {
   readonly owner: HTMLElement
   readonly zoom?: () => number
-  readonly onMeasure: (request: FoldkitNodeMeasurementRequest) => void
+  readonly onMeasure: (
+    requests: readonly FoldkitNodeMeasurementRequest[]
+  ) => void
   readonly onMutations?: () => void
   readonly selector?: string
   readonly onError?: (cause: Error) => void
@@ -64,19 +66,22 @@ export const createFoldkitNodeMeasurementObserver = (
     )
   }
 
-  const measure = (element: Element, requestId?: string): boolean => {
+  const read = (
+    element: Element,
+    requestId?: string
+  ): FoldkitNodeMeasurementRequest | undefined => {
     if (
       disposed ||
       !owner.contains(element) ||
       !(element instanceof view.HTMLElement)
     ) {
-      return false
+      return undefined
     }
 
     const { nodeId } = element.dataset
 
     if (nodeId === undefined) {
-      return false
+      return undefined
     }
 
     requestNumber += 1
@@ -118,7 +123,7 @@ export const createFoldkitNodeMeasurementObserver = (
         ...new Map(handles.map((handle) => [handle.handleId, handle])).values(),
       ]
 
-      options.onMeasure({
+      const request = {
         requestId: requestId ?? `observer-${requestNumber}`,
         measurement: {
           nodeId: NodeIdSchema.make(nodeId),
@@ -127,21 +132,51 @@ export const createFoldkitNodeMeasurementObserver = (
           handles: uniqueHandles,
           generation: elementGenerations.get(element) ?? generation,
         },
-      })
-      observed += 1
+      }
 
-      return true
+      return request
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)))
 
-      return false
+      return undefined
     }
   }
 
-  const resizeObserver = new view.ResizeObserver((entries) => {
-    for (const entry of entries) {
-      measure(entry.target)
+  const publish = (
+    requests: readonly FoldkitNodeMeasurementRequest[]
+  ): boolean => {
+    if (requests.length > 0) {
+      try {
+        options.onMeasure(requests)
+        observed += requests.length
+
+        return true
+      } catch (error) {
+        reportError(error instanceof Error ? error : new Error(String(error)))
+      }
     }
+
+    return false
+  }
+
+  const measure = (element: Element, requestId?: string): boolean => {
+    const request = read(element, requestId)
+
+    if (request === undefined) {
+      return false
+    }
+
+    return publish([request])
+  }
+
+  const resizeObserver = new view.ResizeObserver((entries) => {
+    publish(
+      entries.flatMap((entry) => {
+        const request = read(entry.target)
+
+        return request === undefined ? [] : [request]
+      })
+    )
   })
 
   const reconcile = (): void => {
@@ -152,6 +187,8 @@ export const createFoldkitNodeMeasurementObserver = (
     try {
       options.onMutations?.()
 
+      const requests: FoldkitNodeMeasurementRequest[] = []
+
       for (const element of owner.querySelectorAll<HTMLElement>(selector)) {
         if (observedElements.has(element)) {
           continue
@@ -161,8 +198,14 @@ export const createFoldkitNodeMeasurementObserver = (
         generation += 1
         elementGenerations.set(element, generation)
         resizeObserver.observe(element)
-        measure(element)
+        const request = read(element)
+
+        if (request !== undefined) {
+          requests.push(request)
+        }
       }
+
+      publish(requests)
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)))
     }

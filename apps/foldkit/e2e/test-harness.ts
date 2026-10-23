@@ -375,9 +375,9 @@ const startMountedMeasurementObserver = (): void => {
   const observer = createFoldkitNodeMeasurementObserver({
     owner,
     zoom: () => 1,
-    onMeasure: ({ requestId, measurement }) => {
+    onMeasure: (requests) => {
       const sent = active.ports.actions.send(
-        HostAction.MeasureNode({ requestId, measurement })
+        HostAction.MeasureNodes({ requests })
       )
 
       if (Exit.isFailure(sent)) {
@@ -971,15 +971,16 @@ const attachResizeMeasurementObserver = (): void => {
   resizeMeasurementRequests.length = 0
   resizeMeasurementObserver = createFoldkitNodeMeasurementObserver({
     owner,
-    onMeasure: ({ requestId, measurement }) => {
-      resizeMeasurementRequests.push({
-        nodeId: measurement.nodeId,
-        width: measurement.width,
-        height: measurement.height,
-      })
-      active.ports.actions.send(
-        HostAction.MeasureNode({ requestId, measurement })
-      )
+    onMeasure: (requests) => {
+      for (const { measurement } of requests) {
+        resizeMeasurementRequests.push({
+          nodeId: measurement.nodeId,
+          width: measurement.width,
+          height: measurement.height,
+        })
+      }
+
+      active.ports.actions.send(HostAction.MeasureNodes({ requests }))
     },
   })
 }

@@ -26,6 +26,14 @@ export const HostAction = FoldMessage.defineMessageUnion({
     requestId: Schema.String,
     measurement: NodeMeasurementInputSchema,
   },
+  MeasureNodes: {
+    requests: Schema.Array(
+      Schema.Struct({
+        requestId: Schema.String,
+        measurement: NodeMeasurementInputSchema,
+      })
+    ),
+  },
   /** React Flow `colorMode` (`light`, `dark` or `system`) at runtime. */
   SetColorMode: { mode: FlowColorModeSchema },
   /** Change `nodesDraggable`, `nodesConnectable` and `elementsSelectable` at runtime. */

@@ -235,12 +235,8 @@ export const mountRecipeHost = (options: RecipeHostOptions): RecipeHost => {
   const measurement = createFoldkitNodeMeasurementObserver({
     owner: frame,
     zoom: () => viewport.zoom,
-    onMeasure: ({ requestId, measurement: input }) =>
-      send(
-        runtime.ports.actions.send(
-          HostAction.MeasureNode({ requestId, measurement: input })
-        )
-      ),
+    onMeasure: (requests) =>
+      send(runtime.ports.actions.send(HostAction.MeasureNodes({ requests }))),
   })
 
   const remeasure = (): void => {

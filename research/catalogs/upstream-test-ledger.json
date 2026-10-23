@@ -2303,8 +2303,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Both nodes declare style width 100 and height 50, but their public measured widths and DOM boxes are 150 rather than 100."
+          "status": "pass"
         },
         "vue": {
           "status": "fail",
@@ -3055,15 +3054,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Both edge-label layers mount, but the first contains zero custom labels: the default edge renderer registry is not selected for an edge with no explicit type. Later label checks are not reached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Both edge-label layers mount, but the first contains zero custom labels: the default edge renderer registry is not selected for an edge with no explicit type. Later label checks are not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:201"
@@ -3076,16 +3073,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The single initial dimensions batch reports 150x44 and 150x50, rather than the literal 100x40 and 80x50."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The single initial dimensions batch reports Node 1 as 100x44 rather than 100x40; Node 2 reports the required 80x50."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Initial measurements arrive as two separate one-node callback batches rather than the required single batch. The literal dimension equality is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:144"
@@ -3099,15 +3093,15 @@
       "hosts": {
         "vanilla": {
           "status": "fail",
-          "reason": "After the update button and all three callback batches, the retained replacement item still has measured 150x44 rather than 200x100; the subsequent dimensions batch is 200x100."
+          "reason": "Plan 141 repairs dimensions: one initial batch is 100x40 and 80x50, and the update emits 200x100. The unchanged complete case still fails because its retained replacement item has measured 100x40 rather than 200x100. Replacement payload ownership remains in the node-change follow-up."
         },
         "vue": {
           "status": "fail",
-          "reason": "After the update button and all three callback batches, the retained replacement item still has measured 100x44 rather than 200x100; the subsequent dimensions batch is 200x100."
+          "reason": "Plan 141 repairs dimensions: one initial batch is 100x40 and 80x50, and the update emits 200x100. The unchanged complete case still fails because its retained replacement item has measured 100x40 rather than 200x100. Replacement payload ownership remains in the node-change follow-up."
         },
         "foldkit": {
           "status": "fail",
-          "reason": "Two initial measurement callbacks shift the source order: the second recorded call contains Node 2 dimensions rather than the expected replacement. Later payload checks are not reached."
+          "reason": "Plan 141 repairs dimensions: one initial batch is 100x40 and 80x50, and the update emits 200x100. The unchanged complete case still fails because its retained replacement item has measured 100x40 rather than 200x100. Replacement payload ownership remains in the node-change follow-up."
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:157"

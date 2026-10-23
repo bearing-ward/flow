@@ -9077,6 +9077,8 @@ export const FlowCanvas = defineComponent({
           ],
           'data-testid': 'flow-node',
           'data-node-id': node.id,
+          'data-height-declared':
+            size !== undefined || node.style?.height !== undefined,
           tabindex: focusable ? 0 : undefined,
           // React `NodeWrapper` roles and labels; a node's own
           // `ariaDescription` replaces the shared description.

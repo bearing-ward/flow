@@ -181,12 +181,8 @@ const stops = [
 const measurement = createFoldkitNodeMeasurementObserver({
   owner: frame,
   zoom: () => 1,
-  onMeasure: ({ requestId, measurement: measured }) =>
-    send(
-      runtime.ports.actions.send(
-        HostAction.MeasureNode({ requestId, measurement: measured })
-      )
-    ),
+  onMeasure: (requests) =>
+    send(runtime.ports.actions.send(HostAction.MeasureNodes({ requests }))),
 })
 
 stops.push(

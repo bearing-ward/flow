@@ -72,9 +72,9 @@ export const startHandleRefresh = async (
   const observer = createFoldkitNodeMeasurementObserver({
     owner,
     zoom: () => zoom,
-    onMeasure: ({ requestId, measurement }) => {
+    onMeasure: (requests) => {
       const sent = runtime.ports.actions.send(
-        HostAction.MeasureNode({ requestId, measurement })
+        HostAction.MeasureNodes({ requests })
       )
 
       if (Exit.isFailure(sent)) {

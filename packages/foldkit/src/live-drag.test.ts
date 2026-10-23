@@ -469,6 +469,80 @@ describe('Foldkit measurement and data changes', () => {
     ])
   })
 
+  // packages/react/src/container/NodeRenderer/useResizeObserver.ts:16 and
+  // examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:25.
+  it('publishes one dimensions event for a batch and rejects stale samples', () => {
+    const requests = [
+      {
+        requestId: 'a',
+        measurement: {
+          nodeId: NodeIdSchema.make('a'),
+          width: 100,
+          height: 40,
+          generation: 2,
+        },
+      },
+      {
+        requestId: 'b',
+        measurement: {
+          nodeId: NodeIdSchema.make('b'),
+          width: 80,
+          height: 50,
+          generation: 2,
+        },
+      },
+    ]
+
+    const batch = (model: AppModel, inputs: typeof requests) =>
+      update(
+        model,
+        AppMessage.HostAction({
+          action: HostAction.MeasureNodes({ requests: inputs }),
+        })
+      )
+
+    const first = batch(start(), requests)
+    const events = first.outMessage?.filter((item) => item.kind === 'change')
+
+    expect(events).toStrictEqual([
+      {
+        kind: 'change',
+        elementChanges: {
+          nodes: [
+            {
+              id: 'a',
+              type: 'dimensions',
+              dimensions: { width: 100, height: 40 },
+            },
+            {
+              id: 'b',
+              type: 'dimensions',
+              dimensions: { width: 80, height: 50 },
+            },
+          ],
+          edges: [],
+        },
+      },
+    ])
+    expect(first.commands).toHaveLength(2)
+    expect(dimensions(batch(first.model, requests))).toStrictEqual([])
+
+    const stale = batch(
+      first.model,
+      requests.map((request) => ({
+        ...request,
+        measurement: { ...request.measurement, generation: 1, width: 999 },
+      }))
+    )
+
+    expect(dimensions(stale)).toStrictEqual([])
+    expect(
+      ['a', 'b'].map(
+        (id) => Graph.selectInternalNode(stale.model.graph, id)?.width
+      )
+    ).toStrictEqual([100, 80])
+  })
+
   it('lets a node view merge or replace its data', () => {
     const merged = step(start(), updateNodeData('c', { text: 'new' }))
 

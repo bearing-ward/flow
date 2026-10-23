@@ -211,12 +211,8 @@ export const mountFoldkitEventsFixture = (
   createFoldkitNodeMeasurementObserver({
     owner: container.parentElement ?? container,
     zoom: () => viewport.zoom,
-    onMeasure: ({ requestId, measurement }) =>
-      send(
-        active.ports.actions.send(
-          HostAction.MeasureNode({ requestId, measurement })
-        )
-      ),
+    onMeasure: (requests) =>
+      send(active.ports.actions.send(HostAction.MeasureNodes({ requests }))),
   })
 
   const host = container.parentElement ?? container.ownerDocument.body
