@@ -579,8 +579,18 @@ describe('publication instance and pre-consumption disposal', () => {
   })
 })
 
+// Pinned react/src/store/index.ts:211-230 supplies the terminal dragging flag;
+// examples/react/cypress/components/reactflow/on-nodes-change.cy.tsx:86 requires absolute metadata.
 const positionDelta = (x: number) => ({
-  nodes: [{ id: 'source', type: 'position', position: { x, y: 0 } }],
+  nodes: [
+    {
+      id: 'source',
+      type: 'position',
+      position: { x, y: 0 },
+      dragging: false,
+      positionAbsolute: { x, y: 0 },
+    },
+  ],
   edges: [],
 })
 

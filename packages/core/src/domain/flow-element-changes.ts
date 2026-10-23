@@ -3,6 +3,7 @@ import {
   applyNodeChanges,
 } from './flow-change-compatibility.ts'
 import type { EdgeChange, NodeChange } from './flow-change-compatibility.ts'
+import { createFlowGraph } from './flow-graph.ts'
 import {
   applyEdgeReconnectChange,
   applyEdgeRemoveChange,
@@ -14,7 +15,8 @@ import {
   applyNodeSizeChange,
   applySelectionSetChange,
 } from './flow-runtime.schema.ts'
-import type { FlowChange } from './flow-runtime.schema.ts'
+import type { FlowChange, MeasuredNode } from './flow-runtime.schema.ts'
+import type { NodeId } from './flow-values.ts'
 import type { FlowDocument, FlowEdge, FlowNode } from './flow.schema.ts'
 
 /** React Flow style element deltas derived from one accepted document change. */
@@ -277,13 +279,35 @@ export const applyFlowChangeToDocument = (
  */
 export const flowChangeElementChanges = (
   document: FlowDocument,
-  change: FlowChange
+  change: FlowChange,
+  measurements: ReadonlyMap<NodeId, MeasuredNode> = new Map()
 ): FlowElementChanges => {
   const proposed = applyFlowChangeToDocument(document, change)
 
-  return proposed === undefined
-    ? { nodes: [], edges: [] }
-    : flowElementChanges(document, proposed)
+  if (proposed === undefined) {
+    return { nodes: [], edges: [] }
+  }
+
+  const changes = flowElementChanges(document, proposed)
+
+  if (change.kind !== 'node-position' && change.kind !== 'node-positions') {
+    return changes
+  }
+
+  const graph = createFlowGraph(proposed, measurements)
+
+  return {
+    ...changes,
+    nodes: changes.nodes.map((node) =>
+      node.type === 'position'
+        ? {
+            ...node,
+            dragging: false,
+            positionAbsolute: graph.nodes.get(node.id)?.absolutePosition,
+          }
+        : node
+    ),
+  }
 }
 
 /**

@@ -996,7 +996,9 @@ export const applyEdgeSelectionChange = (
         selected = false
       }
 
-      return edge.selected === selected ? edge : { ...edge, selected }
+      return (edge.selected === true) === selected
+        ? edge
+        : { ...edge, selected }
     }),
   }
 }
@@ -1026,7 +1028,9 @@ export const applyNodeSelectionChange = (
         selected = false
       }
 
-      return node.selected === selected ? node : { ...node, selected }
+      return (node.selected === true) === selected
+        ? node
+        : { ...node, selected }
     }),
     edges: change.selected
       ? document.edges.map((edge) =>
@@ -1075,12 +1079,16 @@ export const applySelectionSetChange = (
     nodes: document.nodes.map((node) => {
       const selected = nodeIds.has(node.id)
 
-      return node.selected === selected ? node : { ...node, selected }
+      return (node.selected === true) === selected
+        ? node
+        : { ...node, selected }
     }),
     edges: document.edges.map((edge) => {
       const selected = edgeIds.has(edge.id)
 
-      return edge.selected === selected ? edge : { ...edge, selected }
+      return (edge.selected === true) === selected
+        ? edge
+        : { ...edge, selected }
     }),
   }
 }

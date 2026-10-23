@@ -221,6 +221,8 @@ for (const enabled of [true, false]) {
     }
 
     await page.mouse.up()
+    // Untouched unselected nodes retain absent flags, including when auto-pan
+    // is disabled (pinned packages/react/src/utils/changes.ts:245-257).
     expect(
       await page.evaluate(
         () =>
@@ -229,7 +231,7 @@ for (const enabled of [true, false]) {
             .getNodes()
             .find(({ id }) => id === 'offscreen')?.selected
       )
-    ).toBe(enabled)
+    ).toBe(enabled ? true : undefined)
     const final = await viewport(page)
     await frames(page)
     expect(await viewport(page)).toEqual(final)

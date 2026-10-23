@@ -3608,7 +3608,11 @@ export const createFlowHost = (
         return
       }
 
-      const { nodes, edges } = flowChangeElementChanges(base, change)
+      const { nodes, edges } = flowChangeElementChanges(
+        base,
+        change,
+        measurements
+      )
 
       if (onNodesChange !== undefined && nodes.length > 0) {
         reportBoundaryCallback(
@@ -4903,7 +4907,10 @@ export const createFlowHost = (
       return { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
     }
 
-    const renderViewport = (next: Viewport): void => {
+    const renderViewport = (
+      next: Viewport,
+      observation: 'initial' | 'update' = 'update'
+    ): void => {
       const drag = interactionSlots.activeDrag
       const sample = nodeSample
       const frame = nodeFrame
@@ -4950,7 +4957,10 @@ export const createFlowHost = (
       })
 
       const current = () => projectionMatches(paintPass, { kind: 'viewport' })
-      emitViewportObservation('change', renderedViewport)
+
+      if (observation === 'update') {
+        emitViewportObservation('change', renderedViewport)
+      }
 
       if (!ownerCurrent() || !current()) {
         return
@@ -12801,7 +12811,7 @@ export const createFlowHost = (
       rootAttached = true
       canvasUIHandle.current?.restoreFocus()
       authoritativeViewport = constrainViewport(authoritativeViewport)
-      renderViewport(authoritativeViewport)
+      renderViewport(authoritativeViewport, 'initial')
       operations.reconcile(document)
     } catch (error) {
       try {

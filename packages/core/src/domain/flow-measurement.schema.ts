@@ -330,15 +330,18 @@ export const areFlowNodesInitialized = (
 
   const graph = createFlowGraph(validDocument, measurements)
 
-  return graph.orderedNodes
-    .filter(
-      ({ hidden, id }) =>
-        (options.includeHidden === true || !hidden) &&
-        (options.mountedNodeIds === undefined ||
-          options.mountedNodeIds.has(id) ||
-          (options.includeHidden === true && hidden))
-    )
-    .every(({ id }) => measurements.has(id))
+  return (
+    graph.orderedNodes.length > 0 &&
+    graph.orderedNodes
+      .filter(
+        ({ hidden, id }) =>
+          (options.includeHidden === true || !hidden) &&
+          (options.mountedNodeIds === undefined ||
+            options.mountedNodeIds.has(id) ||
+            (options.includeHidden === true && hidden))
+      )
+      .every(({ id }) => measurements.has(id))
+  )
 }
 
 /** Project a node from an existing paint graph without rebuilding the graph. */

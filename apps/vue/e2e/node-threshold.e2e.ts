@@ -3956,7 +3956,8 @@ for (const scenario of [
           claimEvent('selectionStop', selectionEnd),
         ],
         document: {
-          nodes: nodes.map((node) => ({ ...node, selected: false })),
+          // Pinned react/src/utils/changes.ts:245-257 leaves untouched A/C unset.
+          nodes: [claimNodeA, { ...claimNodeB, selected: false }, claimNodeC],
           edges: [{ ...claimOldEdge, selected: false }],
         },
         captures: capturePair('canvas', 7),
@@ -4553,8 +4554,9 @@ for (const input of ['pointer', 'keyboard'] as const) {
           held: trigger === 'none' ? 0 : 1,
           accepted: {
             document: {
+              // Pinned react/src/utils/changes.ts:245-257 changes only previously selected B.
               nodes: changed
-                ? nodes.map((node) => ({ ...node, selected: false }))
+                ? [claimNodeA, { ...claimNodeB, selected: false }, claimNodeC]
                 : nodes,
               edges: [
                 changed ? { ...claimOldEdge, selected: false } : claimOldEdge,

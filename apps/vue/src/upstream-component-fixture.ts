@@ -97,8 +97,7 @@ const Probe = defineComponent({
     const edges = useEdges()
     const viewport = useViewport()
     watchEffect(() => {
-      // Read the composables themselves, then the instance measurement projections.
-      // useNodes/getNodes share accepted nodes but have different transient metadata.
+      // Read the composables themselves, including their reactive measurements.
       const current = nodes.value
       recordNodes(receipt, current)
       recordDistinct(receipt.edges, edges.value)

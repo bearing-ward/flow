@@ -1,0 +1,2139 @@
+{
+  "base": "0507d7f547cb262916162404b24cf754508f17f9",
+  "upstream": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "baseline": {
+    "vue": {
+      "cases": [
+        {
+          "case": "UP-128-002",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                }
+              ]
+            ],
+            "edges": [
+              [
+                {
+                  "id": "e1",
+                  "source": "1",
+                  "target": "2"
+                }
+              ]
+            ],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 150,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 150,
+                    "height": 44
+                  }
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": []
+          },
+          "nodes": [
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; left: 0px; top: 0px;\"><span class=\"flow-vue-node-label\">Node 1</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 150,
+                "height": 44,
+                "top": 0,
+                "right": 150,
+                "bottom": 44,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; left: 200px; top: 200px;\"><span class=\"flow-vue-node-label\">Node 2</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 150,
+                "height": 44,
+                "top": 200,
+                "right": 350,
+                "bottom": 244,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-003",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 50
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": []
+          },
+          "nodes": [
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 100px; height: 50px; left: 0px; top: 0px;\"><span class=\"flow-vue-node-label\">Node 1</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50,
+                "top": 0,
+                "right": 100,
+                "bottom": 50,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 100px; height: 50px; left: 200px; top: 200px;\"><span class=\"flow-vue-node-label\">Node 2</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 100,
+                "height": 50,
+                "top": 200,
+                "right": 300,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-004",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 50
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": []
+          },
+          "nodes": [
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 100px; height: 50px; left: 0px; top: 0px;\"><span class=\"flow-vue-node-label\">Node 1</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50,
+                "top": 0,
+                "right": 100,
+                "bottom": 50,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 100px; height: 50px; left: 200px; top: 200px;\"><span class=\"flow-vue-node-label\">Node 2</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 100,
+                "height": 50,
+                "top": 200,
+                "right": 300,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-005",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [[]],
+            "edges": [[]],
+            "initialized": [true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": []
+          },
+          "nodes": []
+        },
+        {
+          "case": "UP-128-010",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-011",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-040",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-044",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 200,
+                    "height": 100
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 200,
+                    "height": 100
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 200,
+                    "height": 100
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "item": {
+                    "id": "1",
+                    "label": "Node 1",
+                    "position": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "data": {
+                      "label": "Node 1"
+                    },
+                    "style": {
+                      "width": 200,
+                      "height": 100
+                    },
+                    "sourcePosition": "bottom",
+                    "targetPosition": "top",
+                    "measured": {
+                      "width": 100,
+                      "height": 44
+                    }
+                  },
+                  "type": "replace"
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 200,
+                    "height": 100
+                  }
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "pointermove",
+                "x": 471.6000061035156,
+                "y": 10.5,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "mousemove",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "pointerdown",
+                "x": 471.6000061035156,
+                "y": 10.5,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "mousedown",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "pointerup",
+                "x": 471.6000061035156,
+                "y": 10.5,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "mouseup",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "click",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              }
+            ]
+          },
+          "nodes": [
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 200px; height: 100px; left: 0px; top: 0px;\"><span class=\"flow-vue-node-label\">Node 1</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 200,
+                "height": 100,
+                "top": 0,
+                "right": 200,
+                "bottom": 100,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 80px; height: 50px; left: 200px; top: 200px;\"><span class=\"flow-vue-node-label\">Node 2</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 80,
+                "height": 50,
+                "top": 200,
+                "right": 280,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-045",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  },
+                  "selected": true
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "selected": false
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "type": "select",
+                  "selected": true
+                },
+                {
+                  "id": "2",
+                  "type": "select",
+                  "selected": false
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "pointermove",
+                "x": 50,
+                "y": 22,
+                "target": "<span class=\"flow-vue-node-label\">Node 1</span>",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "mousemove",
+                "x": 50,
+                "y": 22,
+                "target": "<span class=\"flow-vue-node-label\">Node 1</span>",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "pointerdown",
+                "x": 50,
+                "y": 22,
+                "target": "<span class=\"flow-vue-node-label\">Node 1</span>",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "mousedown",
+                "x": 50,
+                "y": 22,
+                "target": "<span class=\"flow-vue-node-label\">Node 1</span>",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "pointerup",
+                "x": 50,
+                "y": 22,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "mouseup",
+                "x": 50,
+                "y": 22,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "click",
+                "x": 50,
+                "y": 22,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              }
+            ]
+          },
+          "nodes": [
+            {
+              "html": "<div class=\"flow-vue-node selected draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 1000; pointer-events: all; width: 100px; height: 40px; left: 0px; top: 0px;\"><span class=\"flow-vue-node-label\">Node 1</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 44,
+                "top": 0,
+                "right": 100,
+                "bottom": 44,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 80px; height: 50px; left: 200px; top: 200px;\"><span class=\"flow-vue-node-label\">Node 2</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 80,
+                "height": 50,
+                "top": 200,
+                "right": 280,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-046",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top"
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 200,
+                    "y": 25
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "type": "position",
+                  "position": {
+                    "x": 200,
+                    "y": 25
+                  }
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "pointerdown",
+                "x": 50,
+                "y": 22,
+                "target": "<span class=\"flow-vue-node-label\">Node 1</span>",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "mousedown",
+                "x": 50,
+                "y": 22,
+                "target": "<span class=\"flow-vue-node-label\">Node 1</span>",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "pointermove",
+                "x": 250,
+                "y": 47,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<div class=\"flow-vue-canvas light\" data-testid=\"flow-canvas\" data-color-mode=\"light\" style=\"width: 100%; height: 100%; border: 0px; border-radius: 0px; min-height: 0px; margin: 0px;\"><svg class=\"flow-vue-edges\" style=\"transform: translate(0px, 0px) s"
+              },
+              {
+                "type": "mousemove",
+                "x": 250,
+                "y": 47,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "pointerup",
+                "x": 250,
+                "y": 47,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "mouseup",
+                "x": 250,
+                "y": 47,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              },
+              {
+                "type": "click",
+                "x": 250,
+                "y": 47,
+                "target": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; wi",
+                "hit": "<span class=\"flow-vue-node-label\">Node 1</span>"
+              }
+            ]
+          },
+          "nodes": [
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 100px; height: 40px; left: 200px; top: 25px;\"><span class=\"flow-vue-node-label\">Node 1</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 25,
+                "width": 100,
+                "height": 44,
+                "top": 25,
+                "right": 300,
+                "bottom": 69,
+                "left": 200
+              }
+            },
+            {
+              "html": "<div class=\"flow-vue-node draggable selectable flow-vue-no-pan\" data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" role=\"group\" aria-roledescription=\"node\" aria-describedby=\"flow-vue-v-0-node-description\" style=\"z-index: 0; pointer-events: all; width: 80px; height: 50px; left: 200px; top: 200px;\"><span class=\"flow-vue-node-label\">Node 2</span><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-top connectable connectablestart connectableend\" data-handle-id=\"target\" data-handle-kind=\"target\" aria-label=\"target handle target\"></button><button type=\"button\" class=\"flow-vue-handle flow-vue-handle-bottom connectable connectablestart connectableend\" data-handle-id=\"source\" data-handle-kind=\"source\" aria-label=\"source handle source\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 80,
+                "height": 50,
+                "top": 200,
+                "right": 280,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        }
+      ],
+      "report": "/tmp/plan140-baseline-vue.json",
+      "sha256": "c01d5b8c696d5cab8653587d0495bbd38bdcc68dd9239e2a88913d4d425b3252"
+    },
+    "foldkit": {
+      "cases": [
+        {
+          "case": "UP-128-002",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-003",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-004",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-005",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-010",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [[]],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              },
+              {
+                "x": -122.9561744103176,
+                "y": -122.9561744103176,
+                "zoom": 1.4918246976412703
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "wheel",
+                "x": 250,
+                "y": 250,
+                "target": "<div data-color-mode=\"light\" data-flow-instance=\"flow-foldkit-runtime-1\" data-no-drag-class=\"nodrag\" data-no-pan-class=\"nopan\" data-no-wheel-class=\"nowheel\" data-testid=\"flow-canvas\" class=\"flow-foldkit-canvas light\" tabindex=\"0\"><div class=\"flow-fol",
+                "hit": "<div class=\"flow-foldkit-viewport\" style=\"transform: translate(0px, 0px) scale(1);\"><div data-label-owner=\"host-overlay\" class=\"flow-foldkit-edge-labels\"></div><div data-testid=\"flow-edge-label-renderer\" class=\"flow-foldkit-edge-label-renderer\"></div"
+              }
+            ]
+          },
+          "nodes": []
+        },
+        {
+          "case": "UP-128-011",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [[]],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              },
+              {
+                "x": 82.41998849109018,
+                "y": 82.41998849109018,
+                "zoom": 0.6703200460356393
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "wheel",
+                "x": 250,
+                "y": 250,
+                "target": "<div data-color-mode=\"light\" data-flow-instance=\"flow-foldkit-runtime-1\" data-no-drag-class=\"nodrag\" data-no-pan-class=\"nopan\" data-no-wheel-class=\"nowheel\" data-testid=\"flow-canvas\" class=\"flow-foldkit-canvas light\" tabindex=\"0\"><div class=\"flow-fol",
+                "hit": "<div class=\"flow-foldkit-viewport\" style=\"transform: translate(0px, 0px) scale(1);\"><div data-label-owner=\"host-overlay\" class=\"flow-foldkit-edge-labels\"></div><div data-testid=\"flow-edge-label-renderer\" class=\"flow-foldkit-edge-label-renderer\"></div"
+              }
+            ]
+          },
+          "nodes": []
+        },
+        {
+          "case": "UP-128-040",
+          "actual": "passed",
+          "expected": "passed"
+        },
+        {
+          "case": "UP-128-044",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 200,
+                    "height": 100
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 44
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "item": {
+                    "id": "1",
+                    "label": "Node 1",
+                    "position": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "data": {
+                      "label": "Node 1"
+                    },
+                    "style": {
+                      "width": 200,
+                      "height": 100
+                    },
+                    "sourcePosition": "bottom",
+                    "targetPosition": "top",
+                    "measured": {
+                      "width": 100,
+                      "height": 44
+                    }
+                  },
+                  "type": "replace"
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "pointermove",
+                "x": 471.6000061035156,
+                "y": 10.5,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "mousemove",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "pointerdown",
+                "x": 471.6000061035156,
+                "y": 10.5,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "mousedown",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "pointerup",
+                "x": 471.6000061035156,
+                "y": 10.5,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "mouseup",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              },
+              {
+                "type": "click",
+                "x": 471,
+                "y": 10,
+                "target": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>",
+                "hit": "<button data-id=\"update-btn\" style=\"position: absolute; right: 0px; top: 0px; z-index: 1000000;\">update</button>"
+              }
+            ]
+          },
+          "nodes": [
+            {
+              "html": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 44px; left: 0px; top: 0px; z-index: 0;\">Node 1<button data-handle-id=\"target\" data-handle-side=\"top\" aria-label=\"target handle target\" class=\"flow-foldkit-handle flow-foldkit-handle-top connectable connectablestart connectableend\"></button><button data-handle-id=\"source\" data-handle-side=\"bottom\" aria-label=\"source handle source\" class=\"flow-foldkit-handle flow-foldkit-handle-bottom connectable connectablestart connectableend\"></button><button type=\"button\" aria-disabled=\"false\" aria-label=\"Toggle selection for Node 1\" class=\"flow-foldkit-select-node\" tabindex=\"0\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 44,
+                "top": 0,
+                "right": 100,
+                "bottom": 44,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 80px; height: 50px; left: 200px; top: 200px; z-index: 0;\">Node 2<button data-handle-id=\"target\" data-handle-side=\"top\" aria-label=\"target handle target\" class=\"flow-foldkit-handle flow-foldkit-handle-top connectable connectablestart connectableend\"></button><button data-handle-id=\"source\" data-handle-side=\"bottom\" aria-label=\"source handle source\" class=\"flow-foldkit-handle flow-foldkit-handle-bottom connectable connectablestart connectableend\"></button><button type=\"button\" aria-disabled=\"false\" aria-label=\"Toggle selection for Node 2\" class=\"flow-foldkit-select-node\" tabindex=\"0\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 80,
+                "height": 50,
+                "top": 200,
+                "right": 280,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-045",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "selected": true,
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "selected": false,
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 44
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "type": "select",
+                  "selected": true
+                },
+                {
+                  "id": "2",
+                  "type": "select",
+                  "selected": false
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1,
+              "onPaneMouseEnter": 1,
+              "onNodeMouseEnter": 1,
+              "onNodeMouseMove": 1,
+              "onPaneMouseMove": 1,
+              "onNodeDragStart": 1,
+              "onNodeDragStop": 1,
+              "onNodeClick": 1,
+              "onSelectionChange": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "pointermove",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "mousemove",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "pointerdown",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "mousedown",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "pointerup",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "mouseup",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "click",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              }
+            ]
+          },
+          "nodes": [
+            {
+              "html": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable selected\" style=\"pointer-events: all; width: 100px; height: 44px; left: 0px; top: 0px; z-index: 1000;\">Node 1<button data-handle-id=\"target\" data-handle-side=\"top\" aria-label=\"target handle target\" class=\"flow-foldkit-handle flow-foldkit-handle-top connectable connectablestart connectableend\"></button><button data-handle-id=\"source\" data-handle-side=\"bottom\" aria-label=\"source handle source\" class=\"flow-foldkit-handle flow-foldkit-handle-bottom connectable connectablestart connectableend\"></button><button type=\"button\" aria-disabled=\"false\" aria-label=\"Toggle selection for Node 1\" class=\"flow-foldkit-select-node\" tabindex=\"0\"></button></div>",
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 44,
+                "top": 0,
+                "right": 100,
+                "bottom": 44,
+                "left": 0
+              }
+            },
+            {
+              "html": "<div data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 80px; height: 50px; left: 200px; top: 200px; z-index: 0;\">Node 2<button data-handle-id=\"target\" data-handle-side=\"top\" aria-label=\"target handle target\" class=\"flow-foldkit-handle flow-foldkit-handle-top connectable connectablestart connectableend\"></button><button data-handle-id=\"source\" data-handle-side=\"bottom\" aria-label=\"source handle source\" class=\"flow-foldkit-handle flow-foldkit-handle-bottom connectable connectablestart connectableend\"></button><button type=\"button\" aria-disabled=\"false\" aria-label=\"Toggle selection for Node 2\" class=\"flow-foldkit-select-node\" tabindex=\"0\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 80,
+                "height": 50,
+                "top": 200,
+                "right": 280,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        },
+        {
+          "case": "UP-128-046",
+          "actual": "failed",
+          "expected": "failed",
+          "receipt": {
+            "nodes": [
+              [],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "label": "Node 1",
+                  "position": {
+                    "x": 200,
+                    "y": 25
+                  },
+                  "data": {
+                    "label": "Node 1"
+                  },
+                  "style": {
+                    "width": 100,
+                    "height": 40
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 100,
+                    "height": 44
+                  }
+                },
+                {
+                  "id": "2",
+                  "label": "Node 2",
+                  "position": {
+                    "x": 200,
+                    "y": 200
+                  },
+                  "data": {
+                    "label": "Node 2"
+                  },
+                  "style": {
+                    "width": 80,
+                    "height": 50
+                  },
+                  "sourcePosition": "bottom",
+                  "targetPosition": "top",
+                  "measured": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ]
+            ],
+            "edges": [[]],
+            "initialized": [false, true],
+            "viewports": [
+              {
+                "x": 0,
+                "y": 0,
+                "zoom": 1
+              }
+            ],
+            "starts": [],
+            "changes": [],
+            "ends": [],
+            "nodeChanges": [
+              [
+                {
+                  "id": "1",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 100,
+                    "height": 44
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "2",
+                  "type": "dimensions",
+                  "dimensions": {
+                    "width": 80,
+                    "height": 50
+                  }
+                }
+              ],
+              [
+                {
+                  "id": "1",
+                  "type": "position",
+                  "position": {
+                    "x": 200,
+                    "y": 25
+                  }
+                }
+              ]
+            ],
+            "events": {
+              "onInit": 1,
+              "onPaneMouseEnter": 1,
+              "onNodeMouseEnter": 1,
+              "onNodeDragStart": 1,
+              "onNodeDrag": 1,
+              "onNodeMouseMove": 1,
+              "onPaneMouseMove": 1,
+              "onNodeDragStop": 1,
+              "onNodeClick": 1
+            },
+            "checks": [],
+            "errors": [],
+            "inputs": [
+              {
+                "type": "pointerdown",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "mousedown",
+                "x": 50,
+                "y": 22,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4"
+              },
+              {
+                "type": "pointermove",
+                "x": 250,
+                "y": 47,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div class=\"flow-foldkit-viewport\" style=\"transform: translate(0px, 0px) scale(1);\"><div data-label-owner=\"host-overlay\" class=\"flow-foldkit-edge-labels\"></div><div data-testid=\"flow-edge-label-renderer\" class=\"flow-foldkit-edge-label-renderer\"></div"
+              },
+              {
+                "type": "mousemove",
+                "x": 250,
+                "y": 47,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 4",
+                "hit": "<div class=\"flow-foldkit-viewport\" style=\"transform: translate(0px, 0px) scale(1);\"><div data-label-owner=\"host-overlay\" class=\"flow-foldkit-edge-labels\"></div><div data-testid=\"flow-edge-label-renderer\" class=\"flow-foldkit-edge-label-renderer\"></div"
+              },
+              {
+                "type": "pointerup",
+                "x": 250,
+                "y": 47,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable dragging\" style=\"pointer-events: all; width: 100px; ",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable dragging\" style=\"pointer-events: all; width: 100px; "
+              },
+              {
+                "type": "mouseup",
+                "x": 250,
+                "y": 47,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable dragging\" style=\"pointer-events: all; width: 100px; ",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable dragging\" style=\"pointer-events: all; width: 100px; "
+              },
+              {
+                "type": "click",
+                "x": 250,
+                "y": 47,
+                "target": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable dragging\" style=\"pointer-events: all; width: 100px; ",
+                "hit": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable dragging\" style=\"pointer-events: all; width: 100px; "
+              }
+            ]
+          },
+          "nodes": [
+            {
+              "html": "<div data-testid=\"flow-node\" data-node-id=\"1\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 100px; height: 44px; left: 200px; top: 25px; z-index: 0;\">Node 1<button data-handle-id=\"target\" data-handle-side=\"top\" aria-label=\"target handle target\" class=\"flow-foldkit-handle flow-foldkit-handle-top connectable connectablestart connectableend\"></button><button data-handle-id=\"source\" data-handle-side=\"bottom\" aria-label=\"source handle source\" class=\"flow-foldkit-handle flow-foldkit-handle-bottom connectable connectablestart connectableend\"></button><button type=\"button\" aria-disabled=\"false\" aria-label=\"Toggle selection for Node 1\" class=\"flow-foldkit-select-node\" tabindex=\"0\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 25,
+                "width": 100,
+                "height": 44,
+                "top": 25,
+                "right": 300,
+                "bottom": 69,
+                "left": 200
+              }
+            },
+            {
+              "html": "<div data-testid=\"flow-node\" data-node-id=\"2\" tabindex=\"0\" data-draggable=\"true\" role=\"group\" aria-describedby=\"flow-foldkit-runtime-1-node-desc\" class=\"flow-foldkit-node draggable nopan selectable\" style=\"pointer-events: all; width: 80px; height: 50px; left: 200px; top: 200px; z-index: 0;\">Node 2<button data-handle-id=\"target\" data-handle-side=\"top\" aria-label=\"target handle target\" class=\"flow-foldkit-handle flow-foldkit-handle-top connectable connectablestart connectableend\"></button><button data-handle-id=\"source\" data-handle-side=\"bottom\" aria-label=\"source handle source\" class=\"flow-foldkit-handle flow-foldkit-handle-bottom connectable connectablestart connectableend\"></button><button type=\"button\" aria-disabled=\"false\" aria-label=\"Toggle selection for Node 2\" class=\"flow-foldkit-select-node\" tabindex=\"0\"></button></div>",
+              "bounds": {
+                "x": 200,
+                "y": 200,
+                "width": 80,
+                "height": 50,
+                "top": 200,
+                "right": 280,
+                "bottom": 250,
+                "left": 200
+              }
+            }
+          ]
+        }
+      ],
+      "report": "/tmp/plan140-baseline-foldkit.json",
+      "sha256": "0247c9e03cb30a86236594df9c1542002ddd78284893a262708fc73ecb0fc11e"
+    },
+    "vanilla": {
+      "report": "/tmp/plan140-baseline-vanilla.log",
+      "outcome": "All 10 selected cases reproduced their expected failure; 10 expected outcomes, no unexpected passes. Detailed preexisting receipts are in upstream-component-evidence.json.",
+      "log": "[WebServer] $ bun run --cwd packages/core build && bun run --cwd apps/vanilla build:package && bun run --cwd packages/vue build && bun run --cwd packages/foldkit build && bun -e 'for (const root of [\"packages/core/dist\", \"apps/vanilla/dist\", \"packages/vue/dist\", \"packages/foldkit/dist\"]) for await (const path of new Bun.Glob(\"**/*.d.ts\").scan({ cwd: root })) { const file = `${root}/${path}`; await Bun.write(file, (await Bun.file(file).text()).replace(/\\.ts(?=[\\x27\\x22])/g, \".js\")); }'\n[WebServer] $ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect && tsc --project tsconfig.build.json\n[WebServer] $ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json\n[WebServer] $ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external vue --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json\n[WebServer] $ bun build src/public.ts --outfile dist/public.js --target browser --format esm --external foldkit --external effect --external @flow/core && bun build src/style.css --outfile dist/style.css && tsc --project tsconfig.build.json\n[WebServer] $ vite --host 127.0.0.1 --port 4173 --port \"4176\" --strictPort\n[WebServer] (node:1546) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n\nRunning 10 tests using 1 worker\n\n(node:1572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  \u2718   1 apps/shared-e2e/upstream-component/hooks.ts:27:3 \u203a [UP-128-002] handles defaultEdges (4.3s)\n  \u2718   2 apps/shared-e2e/upstream-component/hooks.ts:36:3 \u203a [UP-128-003] handles nodes (4.1s)\n  \u2718   3 apps/shared-e2e/upstream-component/hooks.ts:42:3 \u203a [UP-128-004] handles defaultNodes (4.2s)\n  \u2718   4 apps/shared-e2e/upstream-component/hooks.ts:49:3 \u203a [UP-128-005] returns false for no nodes (4.1s)\n  \u2718   5 apps/shared-e2e/upstream-component/hooks.ts:97:3 \u203a [UP-128-010] handles zoom in (4.4s)\n  \u2718   6 apps/shared-e2e/upstream-component/hooks.ts:113:3 \u203a [UP-128-011] handles zoom out (4.4s)\n  \u2718   7 apps/shared-e2e/upstream-component/events.ts:114:3 \u203a [UP-128-040] handles onMove handlers (4.1s)\n  \u2718   8 apps/shared-e2e/upstream-component/events.ts:157:3 \u203a [UP-128-044] receive replace and dimension change (852ms)\n  \u2718   9 apps/shared-e2e/upstream-component/events.ts:187:3 \u203a [UP-128-045] receive select and unselect change (4.7s)\n  \u2718  10 apps/shared-e2e/upstream-component/events.ts:201:3 \u203a [UP-128-046] receive position change (4.8s)\n\n  10 passed (48.4s)\n"
+    }
+  },
+  "retainedReplacementProbe": {
+    "source": "const path = 'research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/packages/react/src/utils/changes.ts'\nconst source = await Bun.file(path).text()\nconst start = source.indexOf('function applyChanges(')\nconst end = source.indexOf('\\n/**', source.indexOf('function applyChange('))\nconst extracted = source.slice(start, end)\nconst compiled = new Bun.Transpiler({ loader: 'ts' }).transformSync(extracted)\nconst apply = new Function(`${compiled}; return applyChanges;`)()\nconst item = { id: '1', position: { x: 0, y: 0 }, measured: { width: 100, height: 40 }, style: { width: 200, height: 100 } }\nconst replacement = [{ id: '1', type: 'replace', item }]\nconst replaced = apply(replacement, [{ ...item, style: { width: 100, height: 40 } }])\nconst measured = apply([{ id: '1', type: 'dimensions', dimensions: { width: 200, height: 100 } }], replaced)\nconsole.log(JSON.stringify({ retained: replacement[0].item.measured, accepted: measured[0].measured, retainedItemUnchanged: replacement[0].item === item }, null, 2))\n",
+    "result": {
+      "retained": {
+        "width": 100,
+        "height": 40
+      },
+      "accepted": {
+        "width": 200,
+        "height": 100
+      },
+      "retainedItemUnchanged": true
+    },
+    "boundary": "Extracted exact pinned applyChanges/applyChange reducers, not live React."
+  },
+  "redUnitResults": {
+    "failed": 4,
+    "passed": 28,
+    "log": "/tmp/plan140-unit-red.log"
+  },
+  "ledgerBefore": {
+    "126": {
+      "vanilla": {
+        "pass": 44,
+        "fail": 3,
+        "intentional-difference": 3
+      },
+      "vue": {
+        "pass": 48,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 47,
+        "intentional-difference": 3
+      }
+    },
+    "127": {
+      "vanilla": {
+        "pass": 65,
+        "intentional-difference": 2
+      },
+      "vue": {
+        "pass": 67
+      },
+      "foldkit": {
+        "pass": 67
+      }
+    },
+    "128": {
+      "vanilla": {
+        "pass": 87,
+        "fail": 16,
+        "intentional-difference": 4
+      },
+      "vue": {
+        "pass": 93,
+        "fail": 12,
+        "intentional-difference": 2
+      },
+      "foldkit": {
+        "pass": 93,
+        "fail": 12,
+        "intentional-difference": 2
+      }
+    }
+  }
+}

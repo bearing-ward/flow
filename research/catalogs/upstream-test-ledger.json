@@ -2282,12 +2282,12 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The controller starts with the supplied edge; its getter/subscription history never contains the upstream empty edge array."
+          "status": "not-applicable",
+          "reason": "vanilla acquires the supplied default document at its mounted native API boundary and exposes no pre-population React hook render. useNodes/useEdges return the current store value, not a guaranteed initial empty array (pinned react/src/hooks/useNodes.ts:27, useEdges.ts:26 and store/initialState.ts:56). No synthetic [] is published; this whole source case is skipped, not passed. See plans/140-component-observers-and-changes.md and research/traces/component-observers-and-changes.md."
         },
         "vue": {
-          "status": "fail",
-          "reason": "The defaultDocument edge composable starts with the supplied edge and never emits the upstream empty edge array."
+          "status": "not-applicable",
+          "reason": "vue acquires the supplied default document at its mounted native API boundary and exposes no pre-population React hook render. useNodes/useEdges return the current store value, not a guaranteed initial empty array (pinned react/src/hooks/useNodes.ts:27, useEdges.ts:26 and store/initialState.ts:56). No synthetic [] is published; this whole source case is skipped, not passed. See plans/140-component-observers-and-changes.md and research/traces/component-observers-and-changes.md."
         },
         "foldkit": {
           "status": "pass"
@@ -2306,8 +2306,7 @@
           "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "useNodes() omits measured from its node snapshots even after dimensions events report 100x50 for both nodes, so the literal measured-node array is absent."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2323,12 +2322,12 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The default document is populated synchronously; node history never contains []. The later measured-node equality is not reached."
+          "status": "not-applicable",
+          "reason": "vanilla acquires the supplied default document at its mounted native API boundary and exposes no pre-population React hook render. useNodes/useEdges return the current store value, not a guaranteed initial empty array (pinned react/src/hooks/useNodes.ts:27, useEdges.ts:26 and store/initialState.ts:56). No synthetic [] is published; this whole source case is skipped, not passed. See plans/140-component-observers-and-changes.md and research/traces/component-observers-and-changes.md."
         },
         "vue": {
-          "status": "fail",
-          "reason": "The defaultDocument node composable never emits []; the later measured-node equality is not reached."
+          "status": "not-applicable",
+          "reason": "vue acquires the supplied default document at its mounted native API boundary and exposes no pre-population React hook render. useNodes/useEdges return the current store value, not a guaranteed initial empty array (pinned react/src/hooks/useNodes.ts:27, useEdges.ts:26 and store/initialState.ts:56). No synthetic [] is published; this whole source case is skipped, not passed. See plans/140-component-observers-and-changes.md and research/traces/component-observers-and-changes.md."
         },
         "foldkit": {
           "status": "pass"
@@ -2344,12 +2343,10 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "nodesInitialized() reports true for the empty graph; its history never contains the required false."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "nodesInitialized() reports true for the empty graph; its history never contains the required false."
+          "status": "pass"
         },
         "foldkit": {
           "status": "pass"
@@ -2441,15 +2438,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The viewport change callback receives the initial viewport and the wheel result, producing two calls rather than one; later checks are not reached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The wheel changes the viewport zoom above 1, but the public viewport event port emits no start/change/end callbacks; the required start count is 0 rather than 1."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:97"
@@ -2462,15 +2457,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The viewport change callback receives the initial viewport and the wheel result, producing two calls rather than one; later checks are not reached."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The wheel changes the viewport zoom below 1, but the public viewport event port emits no start/change/end callbacks; the required start count is 0 rather than 1."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:113"
@@ -3015,8 +3008,7 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "onMove has already fired once at mount, violating the initial zero-call assertion before the pane drag is attempted."
+          "status": "pass"
         },
         "vue": {
           "status": "pass"
@@ -3114,16 +3106,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Selecting Node 1 emits a batch with Node 1 selected=true and the unchanged Node 2 selected=false, rather than the literal one-entry batch. The unselect assertion is not reached."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "Selecting Node 1 emits a batch with Node 1 selected=true and the unchanged Node 2 selected=false, rather than the literal one-entry batch. The unselect assertion is not reached."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Selecting Node 1 emits a batch with Node 1 selected=true and the unchanged Node 2 selected=false, rather than the literal one-entry batch. The unselect assertion is not reached."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:187"
@@ -3136,16 +3125,13 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "The position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload."
+          "status": "pass"
         },
         "vue": {
-          "status": "fail",
-          "reason": "The position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload."
+          "status": "pass"
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "The completed position batch reaches {x:200,y:25} but omits dragging:false and positionAbsolute, so it never equals the upstream payload."
+          "status": "pass"
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:201"
