@@ -234,7 +234,13 @@ export const mountRecipeHost = (options: RecipeHostOptions): RecipeHost => {
   // Report measured node and handle geometry; Foldkit renders from it.
   const measurement = createFoldkitNodeMeasurementObserver({
     owner: frame,
-    zoom: () => viewport.zoom,
+    zoom: () => {
+      const rendered = frame.querySelector('.flow-foldkit-viewport')
+
+      return rendered === null
+        ? initialViewport.zoom
+        : new DOMMatrixReadOnly(getComputedStyle(rendered).transform).a
+    },
     onMeasure: (requests) =>
       send(runtime.ports.actions.send(HostAction.MeasureNodes({ requests }))),
   })

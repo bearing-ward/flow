@@ -12,7 +12,7 @@ import { flowBaseEdge } from '@flow/foldkit'
 import type { FoldkitRendererRegistry } from '@flow/foldkit'
 import { Option, Schema as S } from 'effect'
 
-import { mountRecipeHost, nextFrame } from '../recipe-host.ts'
+import { mountRecipeHost } from '../recipe-host.ts'
 import type { EditOperations, RecipeHost } from '../recipe-host.ts'
 import { dagreLayout, elkLayout } from './engines.ts'
 import type { Positions } from './engines.ts'
@@ -149,6 +149,35 @@ const createLayoutController = (
   let lastKey = ''
   let running = false
   let again = false
+  let disposed = false
+  let checkRender: (() => void) | undefined
+
+  const rendered = (matches: () => boolean): Promise<boolean> => {
+    const { promise, resolve } = Promise.withResolvers<boolean>()
+
+    checkRender = () => {
+      if (disposed || matches()) {
+        checkRender = undefined
+        resolve(!disposed)
+      }
+    }
+
+    checkRender()
+
+    return promise
+  }
+
+  const renderObserver = new MutationObserver(() => checkRender?.())
+  renderObserver.observe(target.frame, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+  })
+  target.onDispose(() => {
+    disposed = true
+    renderObserver.disconnect()
+    checkRender?.()
+  })
 
   target.status.dataset.layouts = '0'
   target.status.dataset.direction = direction
@@ -187,11 +216,56 @@ const createLayoutController = (
     lastKey = key
     layouts += 1
 
-    // Handles may have moved sides; refresh their measurements, then fit.
-    await nextFrame()
+    // Model acknowledgements can precede Foldkit's DOM patch.
+    const nodeStyles = nodes.map((node) => {
+      const { style } = target.root.ownerDocument.createElement('div')
+      style.left = `${node.position.x}px`
+      style.top = `${node.position.y}px`
+
+      return { node, style }
+    })
+
+    if (
+      !(await rendered(() =>
+        nodeStyles.every(({ node, style }) => {
+          const element = [
+            ...target.frame.querySelectorAll<HTMLElement>('[data-node-id]'),
+          ].find((candidate) => candidate.dataset.nodeId === node.id)
+
+          return (
+            element?.style.left === style.left &&
+            element.style.top === style.top &&
+            (node.handles ?? []).every((handle) =>
+              [
+                ...element.querySelectorAll<HTMLElement>('[data-handle-id]'),
+              ].some(
+                (candidate) =>
+                  candidate.dataset.handleId === handle.id &&
+                  candidate.dataset.handleSide === handle.side
+              )
+            )
+          )
+        })
+      ))
+    ) {
+      return
+    }
+
     target.remeasure()
-    await target.viewportClient.fitView('all', 0.1)
-    await nextFrame()
+    const { viewport } = await target.viewportClient.fitView('all', 0.1)
+    const fittedStyle = target.root.ownerDocument.createElement('div').style
+    fittedStyle.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+
+    if (
+      !(await rendered(
+        () =>
+          target.frame.querySelector<HTMLElement>('.flow-foldkit-viewport')
+            ?.style.transform === fittedStyle.transform
+      ))
+    ) {
+      return
+    }
+
     showPorts(input)
     target.status.dataset.direction = direction
     target.status.dataset.layouts = String(layouts)

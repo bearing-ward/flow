@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plan 146 Foldkit layout measurement and rendered readiness",
   "checks": [
     "api-members",
     "catalog",
@@ -190,7 +190,8 @@
       "drag-handle-recipe.e2e.ts",
       "upstream-component.e2e.ts",
       "edge-stacking.e2e.ts",
-      "base-edge.e2e.ts"
+      "base-edge.e2e.ts",
+      "layout-readiness.e2e.ts"
     ]
   }
 }
