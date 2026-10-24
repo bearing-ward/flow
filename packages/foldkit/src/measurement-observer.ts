@@ -127,8 +127,8 @@ export const createFoldkitNodeMeasurementObserver = (
         requestId: requestId ?? `observer-${requestNumber}`,
         measurement: {
           nodeId: NodeIdSchema.make(nodeId),
-          width: bounds.width / zoom,
-          height: bounds.height / zoom,
+          width: element.offsetWidth,
+          height: element.offsetHeight,
           handles: uniqueHandles,
           generation: elementGenerations.get(element) ?? generation,
         },
