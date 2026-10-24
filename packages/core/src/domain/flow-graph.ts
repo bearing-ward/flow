@@ -1,5 +1,7 @@
+import { constrainNodePosition } from './flow-node-extent.schema.ts'
 import type { NodeExtent } from './flow-node-extent.schema.ts'
 import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
+import type { NodeOrigin } from './flow-origin.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import type { HandleId } from './flow-values.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
@@ -42,6 +44,26 @@ const measuredDimensions = (
     : undefined
 }
 
+// Pinned store.ts:154-170,449-469. Layout fallback is not measurement.
+const adoptedNodeTopLeft = (
+  node: FlowNode,
+  measurement: MeasuredNode | undefined,
+  extent: NodeExtent,
+  origin: NodeOrigin
+): XYPosition => {
+  const dimensions = {
+    width: measurement?.width ?? node.measured?.width ?? node.size?.width ?? 0,
+    height:
+      measurement?.height ?? node.measured?.height ?? node.size?.height ?? 0,
+  }
+
+  return nodeAnchorToTopLeft(
+    constrainNodePosition(node.position, dimensions, extent, origin),
+    dimensions,
+    origin
+  )
+}
+
 /** Build physical geometry; document positions and overrides are parent-relative anchors. */
 export const createFlowGraph = (
   document: FlowDocument,
@@ -50,7 +72,8 @@ export const createFlowGraph = (
   fallback: {
     readonly width: number
     readonly height: number
-  } = fallbackDimensions
+  } = fallbackDimensions,
+  nodeExtent?: NodeExtent
 ): FlowGraphView => {
   const documentIndex = new Map<NodeId, number>()
   const nodeById = new Map<NodeId, FlowNode>()
@@ -101,11 +124,16 @@ export const createFlowGraph = (
         ? { width: measurement.width, height: measurement.height }
         : (measuredDimensions(node) ?? node.size ?? fallback)
 
-    const topLeft = nodeAnchorToTopLeft(
-      position,
-      dimensions,
-      resolveNodeOrigin(node, document)
-    )
+    const origin = resolveNodeOrigin(node, document)
+
+    const adoptsExtent =
+      nodeExtent !== undefined &&
+      parent === undefined &&
+      !positionOverrides.has(id)
+
+    const topLeft = adoptsExtent
+      ? adoptedNodeTopLeft(node, measurement, nodeExtent, origin)
+      : nodeAnchorToTopLeft(position, dimensions, origin)
 
     const resolved: FlowGraphNode = {
       id,

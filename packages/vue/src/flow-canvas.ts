@@ -276,6 +276,11 @@ const interactionCompletionSpan = (change: FlowChange): string => {
     : FlowSpan.editPrepare
 }
 
+const sameNodeSize = (
+  left: FlowNode['size'],
+  right: FlowNode['size']
+): boolean => left?.width === right?.width && left?.height === right?.height
+
 const NodeFrameSchema = S.Struct({
   origin: NodeOriginSchema,
   parentIds: S.Array(NodeIdSchema),
@@ -1546,29 +1551,11 @@ export const FlowCanvas = defineComponent({
       }
     }
 
-    const graph = computed(() =>
-      createFlowGraph(activeDocument.value, measuredNodes.value)
-    )
-
     /**
      * The graph at drag start. Preview renders are measured while the drag
      * runs, so later graphs would already contain a previewed parent growth.
      */
     let dragStartGraph: FlowGraphView | undefined
-
-    /** React z-index stacking for node wrappers and edge layers. */
-    const stacking = computed(() =>
-      computeFlowStacking({
-        nodes: activeDocument.value.nodes,
-        edges: activeDocument.value.edges.map(withEdgeDefaults),
-        zIndexMode: props.zIndexMode,
-        elevateNodesOnSelect: props.elevateNodesOnSelect,
-        elevateEdgesOnSelect: props.elevateEdgesOnSelect,
-      })
-    )
-
-    /** Nodes that render their own `FlowNodeResizer` or `FlowNodeResizeControl`. */
-    const nodeResizers = shallowReactive(new Map<FlowNode['id'], number>())
 
     /**
      * A pointer drag in progress: its members, every node they carry along
@@ -1583,6 +1570,52 @@ export const FlowCanvas = defineComponent({
       /** A whole preview graph while `expandParent` grows a parent. */
       readonly graph?: ReturnType<typeof createFlowGraph>
     }>()
+
+    const graph = computed(() => {
+      const measurements = new Map(measuredNodes.value)
+      const preview = dragPreview.value?.graph
+
+      // DOM samples of expandParent previews must not reclamp the accepted
+      // parent and invalidate its child's drag frame before the drop commits.
+      if (preview !== undefined && dragStartGraph !== undefined) {
+        for (const node of activeDocument.value.nodes) {
+          const start = dragStartGraph.nodes.get(node.id)
+          const next = preview.nodes.get(node.id)?.node
+          const measured = measurements.get(node.id)
+
+          if (
+            measured !== undefined &&
+            start !== undefined &&
+            sameNodeSize(node.size, start.node.size) &&
+            !sameNodeSize(next?.size, node.size)
+          ) {
+            measurements.set(node.id, { ...measured, ...start.dimensions })
+          }
+        }
+      }
+
+      return createFlowGraph(
+        activeDocument.value,
+        measurements,
+        undefined,
+        undefined,
+        nodeExtent
+      )
+    })
+
+    /** React z-index stacking for node wrappers and edge layers. */
+    const stacking = computed(() =>
+      computeFlowStacking({
+        nodes: activeDocument.value.nodes,
+        edges: activeDocument.value.edges.map(withEdgeDefaults),
+        zIndexMode: props.zIndexMode,
+        elevateNodesOnSelect: props.elevateNodesOnSelect,
+        elevateEdgesOnSelect: props.elevateEdgesOnSelect,
+      })
+    )
+
+    /** Nodes that render their own `FlowNodeResizer` or `FlowNodeResizeControl`. */
+    const nodeResizers = shallowReactive(new Map<FlowNode['id'], number>())
 
     /**
      * The graph node rendering uses. Only nodes a drag carries are offset, so
@@ -4468,7 +4501,9 @@ export const FlowCanvas = defineComponent({
       return createFlowGraph(
         activeDocument.value,
         getFlowMeasuredNodes(activeDocument.value, measurementState),
-        positions
+        positions,
+        undefined,
+        nodeExtent
       )
     }
 
@@ -5480,7 +5515,10 @@ export const FlowCanvas = defineComponent({
             measurement.nodeId,
             measurement,
           ])
-        )
+        ),
+        undefined,
+        undefined,
+        nodeExtent
       ),
     }))
 
@@ -6025,7 +6063,8 @@ export const FlowCanvas = defineComponent({
         members: dragGroupMembers(
           activeDocument.value,
           interactivity.value,
-          pending.node
+          pending.node,
+          graph.value
         ),
       }
 
@@ -6224,7 +6263,8 @@ export const FlowCanvas = defineComponent({
         members: dragGroupMembers(
           activeDocument.value,
           interactivity.value,
-          node
+          node,
+          graph.value
         ),
         anchorId: node.id,
         delta: {
@@ -6255,7 +6295,10 @@ export const FlowCanvas = defineComponent({
           delta: preview.delta,
           graph: createFlowGraph(
             documentForDragStep(step),
-            measuredNodes.value
+            measuredNodes.value,
+            undefined,
+            undefined,
+            nodeExtent
           ),
         }
       }
@@ -7730,7 +7773,10 @@ export const FlowCanvas = defineComponent({
         childExtent: graphResizeChildExtent(
           createFlowGraph(
             activeDocument.value,
-            getFlowMeasuredNodes(activeDocument.value, measurementState)
+            getFlowMeasuredNodes(activeDocument.value, measurementState),
+            undefined,
+            undefined,
+            nodeExtent
           ),
           node.id
         ),
@@ -7912,9 +7958,9 @@ export const FlowCanvas = defineComponent({
         return
       }
 
-      detachSessionView(active)
-
       if (active.kind === 'node-pending') {
+        detachSessionView(active)
+
         return
       }
 
@@ -7942,6 +7988,7 @@ export const FlowCanvas = defineComponent({
         return position === undefined ? [] : [{ nodeId, position }]
       })
 
+      detachSessionView(active)
       dragStartGraph = undefined
       publishDragCommit(committed, step)
 
@@ -9016,7 +9063,10 @@ export const FlowCanvas = defineComponent({
                         getFlowMeasuredNodes(
                           activeDocument.value,
                           measurementState
-                        )
+                        ),
+                        undefined,
+                        undefined,
+                        nodeExtent
                       ),
                       node.id
                     ),

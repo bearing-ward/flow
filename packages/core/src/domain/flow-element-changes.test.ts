@@ -119,6 +119,64 @@ describe('Flow element changes', () => {
     ])
   })
 
+  // Pinned react/src/hooks/useReactFlow.ts:97-110 and utils/changes.ts:126-130,300.
+  it('retains the old measurement in a style replacement until dimensions arrive', () => {
+    const before = decode({
+      nodes: [
+        {
+          id: '1',
+          label: '1',
+          position: { x: 0, y: 0 },
+          measured: { width: 100, height: 40 },
+          style: { width: 100, height: 40 },
+        },
+      ],
+      edges: [],
+    })
+
+    const after = decode({
+      ...before,
+      nodes: before.nodes.map((node) => ({
+        ...node,
+        style: { width: 200, height: 100 },
+      })),
+    })
+
+    const changes = flowElementChanges(before, after)
+    expect(changes.nodes).toStrictEqual([
+      {
+        type: 'replace',
+        id: '1',
+        item: {
+          id: '1',
+          label: '1',
+          position: { x: 0, y: 0 },
+          measured: { width: 100, height: 40 },
+          style: { width: 200, height: 100 },
+        },
+      },
+    ])
+
+    const measured = applyFlowElementChanges(after, {
+      nodes: [
+        {
+          type: 'dimensions',
+          id: NodeIdSchema.make('1'),
+          dimensions: { width: 200, height: 100 },
+        },
+      ],
+      edges: [],
+    })
+
+    expect(measured?.nodes[0]?.measured).toStrictEqual({
+      width: 200,
+      height: 100,
+    })
+    expect(changes.nodes[0]).toMatchObject({
+      item: { measured: { width: 100, height: 40 } },
+    })
+  })
+
   it('treats field order as no change and a cleared flag as replace', () => {
     const [first] = base.nodes
 

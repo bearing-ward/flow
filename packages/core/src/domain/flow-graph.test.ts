@@ -26,6 +26,65 @@ import { decodeFlowDocument } from './flow.schema.ts'
 const nodeId = S.decodeUnknownSync(NodeIdSchema)
 
 describe('flow graph view', () => {
+  // Pinned system/src/utils/store.ts:154-170,449-469 and general.ts:20-29.
+  it('adopts unknown dimensions provisionally and reclamps measured oversized nodes', () => {
+    const document = Effect.runSync(
+      decodeFlowDocument({
+        nodes: [{ id: '1', label: '1', position: { x: 200, y: 200 } }],
+        edges: [],
+      })
+    )
+
+    const id = nodeId('1')
+    const extent = { minX: 0, minY: 0, maxX: 50, maxY: 50 }
+
+    const provisional = createFlowGraph(
+      document,
+      undefined,
+      undefined,
+      undefined,
+      extent
+    )
+
+    expect(provisional.nodes.get(id)?.absolutePosition).toStrictEqual({
+      x: 50,
+      y: 50,
+    })
+    const measurements = new Map([[id, { nodeId: id, width: 150, height: 44 }]])
+
+    const settled = createFlowGraph(
+      document,
+      measurements,
+      undefined,
+      undefined,
+      extent
+    )
+
+    expect(settled.nodes.get(id)?.absolutePosition).toStrictEqual({
+      x: -100,
+      y: 6,
+    })
+    expect(document.nodes[0]?.position).toStrictEqual({ x: 200, y: 200 })
+
+    const updated = {
+      ...document,
+      nodes: document.nodes.map((node) => ({
+        ...node,
+        position: { x: -400, y: -400 },
+      })),
+    }
+
+    expect(
+      createFlowGraph(
+        updated,
+        measurements,
+        undefined,
+        undefined,
+        extent
+      ).nodes.get(id)?.absolutePosition
+    ).toStrictEqual({ x: -100, y: 0 })
+  })
+
   it('keeps child containment in physical parent coordinates when origins are nonzero', () => {
     const document = Effect.runSync(
       decodeFlowDocument({

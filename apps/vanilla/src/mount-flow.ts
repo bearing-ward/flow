@@ -2969,7 +2969,12 @@ export const createFlowHost = (
         return position
       }
 
-      return constrainNodePosition(position, dimensions, options.nodeExtent)
+      return constrainNodePosition(
+        position,
+        dimensions,
+        options.nodeExtent,
+        resolveNodeOrigin(node, document)
+      )
     }
 
     const boundedGroupChange = (
@@ -2997,11 +3002,19 @@ export const createFlowHost = (
 
         const measured = measurements.get(nodeId)
 
+        const dimensions = {
+          width: measured?.width ?? node?.size?.width ?? 0,
+          height: measured?.height ?? node?.size?.height ?? 0,
+        }
+
         return [
           {
-            position,
-            width: measured?.width ?? node?.size?.width ?? 0,
-            height: measured?.height ?? node?.size?.height ?? 0,
+            position: nodeAnchorToTopLeft(
+              position,
+              dimensions,
+              node === undefined ? [0, 0] : resolveNodeOrigin(node, document)
+            ),
+            ...dimensions,
           },
         ]
       })
@@ -3017,13 +3030,17 @@ export const createFlowHost = (
 
       return {
         kind: 'node-positions',
-        positions: drag.positions.map(({ nodeId, position }) => ({
-          nodeId,
-          position: boundedNodePosition(nodeId, {
-            x: position.x + delta.x,
-            y: position.y + delta.y,
-          }),
-        })),
+        positions: drag.positions.map(({ nodeId, position }) => {
+          const proposed = { x: position.x + delta.x, y: position.y + delta.y }
+
+          return {
+            nodeId,
+            position:
+              findNode(nodeId)?.parentId === undefined
+                ? proposed
+                : boundedNodePosition(nodeId, proposed),
+          }
+        }),
       }
     }
 
@@ -3981,8 +3998,25 @@ export const createFlowHost = (
       activeKeyboardResize !== null
     let activeKeyboardNodeDrag: FlowNodeDragPayload | null = null
 
-    const adoptedPosition = (node: FlowNode): XYPosition =>
-      boundedNodePosition(node.id, node.position)
+    const adoptedPosition = (node: FlowNode): XYPosition => {
+      if (node.parentId !== undefined || options.nodeExtent === undefined) {
+        return boundedNodePosition(node.id, node.position)
+      }
+
+      const measured = measurements.get(node.id)
+
+      return constrainNodePosition(
+        node.position,
+        {
+          width:
+            measured?.width ?? node.measured?.width ?? node.size?.width ?? 0,
+          height:
+            measured?.height ?? node.measured?.height ?? node.size?.height ?? 0,
+        },
+        options.nodeExtent,
+        resolveNodeOrigin(node, document)
+      )
+    }
 
     const graphFor = (
       target: FlowDocument = document,

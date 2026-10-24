@@ -1,4 +1,4 @@
-import { NodeIdSchema, snapPosition } from '@flow/core'
+import { NodeIdSchema, snapPosition, constrainNodePosition } from '@flow/core'
 import type { NodeId, PanExtent, SnapGrid, XYPosition } from '@flow/core'
 import { Schema } from 'effect'
 
@@ -38,9 +38,6 @@ export interface NodeDragPlacement {
   readonly position: XYPosition
   readonly positionAbsolute: XYPosition
 }
-
-const clamp = (value: number, minimum: number, maximum: number): number =>
-  Math.min(Math.max(value, minimum), maximum)
 
 /**
  * React `XYDrag` placement for one frame: each node's absolute top-left is
@@ -89,10 +86,7 @@ export const placeDraggedNodes = (
     const positionAbsolute =
       origin.extent === null
         ? next
-        : {
-            x: clamp(next.x, origin.extent.minX, origin.extent.maxX - width),
-            y: clamp(next.y, origin.extent.minY, origin.extent.maxY - height),
-          }
+        : constrainNodePosition(next, { width, height }, origin.extent)
 
     // Without size or parent data (older sessions) keep the plain offset.
     if (origin.width === undefined || origin.height === undefined) {

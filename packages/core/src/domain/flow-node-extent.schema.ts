@@ -32,17 +32,12 @@ const constrainAxis = (
   minimum: number,
   maximum: number,
   size: number
-): number => {
-  const lastPosition = maximum - size
+): number =>
+  // Pinned system/src/utils/general.ts:20-29 gives the maximum precedence,
+  // even when subtracting the measured size makes it smaller than the minimum.
+  Math.min(Math.max(minimum, proposed), maximum - size)
 
-  if (lastPosition < minimum) {
-    return (minimum + lastPosition) / 2
-  }
-
-  return Math.min(lastPosition, Math.max(minimum, proposed))
-}
-
-/** Constrain an anchor using physical bounds; center oversized nodes within the extent. */
+/** Constrain an anchor using physical bounds, including oversized nodes. */
 export const constrainNodePosition = (
   position: XYPosition,
   dimensions: NodeDimensions,
