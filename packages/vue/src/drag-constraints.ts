@@ -3,6 +3,7 @@ import {
   constrainNodeGroupDelta,
   constrainNodePosition,
   resolveNodeOrigin,
+  nodeTopLeftToAnchor,
   snapGroupDelta,
 } from '@flow/core'
 import type {
@@ -76,14 +77,26 @@ export const constrainFlowVueDrag = ({
   const items = members.map(({ nodeId, origin }) => {
     const node = graph.nodes.get(nodeId)
 
+    const parent =
+      node?.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
+
+    const adoptedOrigin =
+      node === undefined
+        ? origin
+        : nodeTopLeftToAnchor(
+            {
+              x: node.absolutePosition.x - (parent?.absolutePosition.x ?? 0),
+              y: node.absolutePosition.y - (parent?.absolutePosition.y ?? 0),
+            },
+            node.dimensions,
+            resolveNodeOrigin(node.node, graph.document)
+          )
+
     let memberDelta = individualNodes ? delta : snapped
 
     if (individualNodes && snapGrid !== undefined && node !== undefined) {
       memberDelta = snapGroupDelta(node.absolutePosition, delta, snapGrid)
     }
-
-    const parent =
-      node?.parentId === undefined ? undefined : graph.nodes.get(node.parentId)
 
     if (node === undefined || parent === undefined) {
       let boundedDelta = individualNodes ? memberDelta : rootDelta
@@ -99,15 +112,15 @@ export const constrainFlowVueDrag = ({
       return {
         id: nodeId,
         position: {
-          x: origin.x + boundedDelta.x,
-          y: origin.y + boundedDelta.y,
+          x: adoptedOrigin.x + boundedDelta.x,
+          y: adoptedOrigin.y + boundedDelta.y,
         },
       }
     }
 
     const proposed = {
-      x: origin.x + memberDelta.x,
-      y: origin.y + memberDelta.y,
+      x: adoptedOrigin.x + memberDelta.x,
+      y: adoptedOrigin.y + memberDelta.y,
     }
 
     if (node.node.extent !== 'parent' || node.node.expandParent === true) {

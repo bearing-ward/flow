@@ -44,14 +44,15 @@ describe('node extent', () => {
     ).toStrictEqual({ x: 80, y: 0 })
   })
 
-  it('centers an oversized node on the axes where it cannot fit', () => {
+  // Pinned packages/system/src/utils/general.ts:20-29.
+  it('aligns oversized nodes to the maximum minus measured size', () => {
     expect(
       constrainNodePosition(
         { x: 999, y: -999 },
         { width: 120, height: 100 },
         extent
       )
-    ).toStrictEqual({ x: -10, y: -10 })
+    ).toStrictEqual({ x: -20, y: -20 })
   })
 
   it('clamps one group delta and preserves spacing', () => {
@@ -74,7 +75,8 @@ describe('node extent', () => {
     ])
   })
 
-  it('centers an oversized group and leaves an empty group unchanged', () => {
+  // Pinned packages/system/src/xydrag/XYDrag.ts:176-192.
+  it('aligns oversized groups to the maximum and leaves an empty group unchanged', () => {
     expect(
       constrainNodeGroupDelta(
         [
@@ -84,7 +86,7 @@ describe('node extent', () => {
         { x: 200, y: 10 },
         extent
       )
-    ).toStrictEqual({ x: -15, y: 10 })
+    ).toStrictEqual({ x: -30, y: 10 })
     expect(constrainNodeGroupDelta([], { x: 3, y: -2 }, extent)).toStrictEqual({
       x: 3,
       y: -2,

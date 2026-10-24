@@ -1,6 +1,13 @@
-import { isEdgeSelectable, isNodeDraggable, isNodeSelectable } from '@flow/core'
+import {
+  isEdgeSelectable,
+  isNodeDraggable,
+  isNodeSelectable,
+  nodeTopLeftToAnchor,
+  resolveNodeOrigin,
+} from '@flow/core'
 import type {
   FlowDocument,
+  FlowGraphView,
   FlowEdge,
   FlowInteractivity,
   FlowNode,
@@ -21,10 +28,39 @@ export interface DragMember {
 export const dragGroupMembers = (
   document: FlowDocument,
   interactivity: FlowInteractivity,
-  anchor: FlowNode
+  anchor: FlowNode,
+  graph: FlowGraphView
 ): readonly DragMember[] => {
+  const member = (node: FlowNode): DragMember => {
+    const resolved = graph.nodes.get(node.id)
+
+    const parent =
+      resolved?.parentId === undefined
+        ? undefined
+        : graph.nodes.get(resolved.parentId)
+
+    return {
+      nodeId: node.id,
+      origin:
+        resolved === undefined
+          ? node.position
+          : nodeTopLeftToAnchor(
+              {
+                x:
+                  resolved.absolutePosition.x -
+                  (parent?.absolutePosition.x ?? 0),
+                y:
+                  resolved.absolutePosition.y -
+                  (parent?.absolutePosition.y ?? 0),
+              },
+              resolved.dimensions,
+              resolveNodeOrigin(node, document)
+            ),
+    }
+  }
+
   if (anchor.selected !== true) {
-    return [{ nodeId: anchor.id, origin: anchor.position }]
+    return [member(anchor)]
   }
 
   const byId = new Map(document.nodes.map((node) => [node.id, node]))
@@ -57,7 +93,7 @@ export const dragGroupMembers = (
 
   return document.nodes
     .filter((node) => moving.has(node.id) && !hasMovingAncestor(node))
-    .map((node) => ({ nodeId: node.id, origin: node.position }))
+    .map(member)
 }
 
 /** Member positions after a flow-space drag delta. */

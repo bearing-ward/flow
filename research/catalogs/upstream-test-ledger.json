@@ -3075,16 +3075,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "fail",
-          "reason": "Plan 141 repairs dimensions: one initial batch is 100x40 and 80x50, and the update emits 200x100. The unchanged complete case still fails because its retained replacement item has measured 100x40 rather than 200x100. Replacement payload ownership remains in the node-change follow-up."
+          "status": "intentional-difference",
+          "reason": "Plan 145: the pinned updateNode merges style without predicting measurement (packages/react/src/hooks/useReactFlow.ts:97-110); getElementsDiffChanges emits that item (packages/react/src/utils/changes.ts:300). applyNodeChanges replaces measured with a fresh object only on the later dimensions change (packages/react/src/utils/changes.ts:126-130). Flow preserves the emitted 100x40 snapshot; the unchanged upstream test expects 200x100 in the earlier replacement. See research/traces/node-replace-measurement.md."
         },
         "vue": {
-          "status": "fail",
-          "reason": "Plan 141 repairs dimensions: one initial batch is 100x40 and 80x50, and the update emits 200x100. The unchanged complete case still fails because its retained replacement item has measured 100x40 rather than 200x100. Replacement payload ownership remains in the node-change follow-up."
+          "status": "intentional-difference",
+          "reason": "Plan 145: the pinned updateNode merges style without predicting measurement (packages/react/src/hooks/useReactFlow.ts:97-110); getElementsDiffChanges emits that item (packages/react/src/utils/changes.ts:300). applyNodeChanges replaces measured with a fresh object only on the later dimensions change (packages/react/src/utils/changes.ts:126-130). Flow preserves the emitted 100x40 snapshot; the unchanged upstream test expects 200x100 in the earlier replacement. See research/traces/node-replace-measurement.md."
         },
         "foldkit": {
-          "status": "fail",
-          "reason": "Plan 141 repairs dimensions: one initial batch is 100x40 and 80x50, and the update emits 200x100. The unchanged complete case still fails because its retained replacement item has measured 100x40 rather than 200x100. Replacement payload ownership remains in the node-change follow-up."
+          "status": "intentional-difference",
+          "reason": "Plan 145: the pinned updateNode merges style without predicting measurement (packages/react/src/hooks/useReactFlow.ts:97-110); getElementsDiffChanges emits that item (packages/react/src/utils/changes.ts:300). applyNodeChanges replaces measured with a fresh object only on the later dimensions change (packages/react/src/utils/changes.ts:126-130). Flow preserves the emitted 100x40 snapshot; the unchanged upstream test expects 200x100 in the earlier replacement. See research/traces/node-replace-measurement.md."
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:157"
@@ -3612,16 +3612,16 @@
       "guards": [],
       "hosts": {
         "vanilla": {
-          "status": "intentional-difference",
-          "reason": "Flow documents measured adoption and centering oversized nodes at research/traces/node-extents.md:31 and research/traces/node-extents.md:44. The 150x44 node renders at (-50,6), while upstream initially clamps unknown dimensions to (50,50). Preserve the documented contract."
+          "status": "fail",
+          "reason": "Plan 145 follows pinned production: adoption calls clampPosition with unknown dimensions (packages/system/src/utils/store.ts:154-170; packages/system/src/utils/general.ts:20-29), then measurement reclamps with the DOM dimensions (packages/system/src/utils/store.ts:449-469). The provisional position is (50,50), but the measured 150x44 node settles at (-100,6); the unchanged upstream assertion expects (50,50). Flow-owned node-extent-adoption.e2e.ts covers the settled production rule. See research/traces/node-extents.md."
         },
         "vue": {
           "status": "fail",
-          "reason": "Initial nodeExtent adoption is missing: the 150x44 node remains at (200,200), expected (50,50). Repair is deferred because upstream unmeasured adoption conflicts with Flow documented measured/oversized-node policy at research/traces/node-extents.md:31; changing that policy needs a separate decision."
+          "reason": "Plan 145 follows pinned production: adoption calls clampPosition with unknown dimensions (packages/system/src/utils/store.ts:154-170; packages/system/src/utils/general.ts:20-29), then measurement reclamps with the DOM dimensions (packages/system/src/utils/store.ts:449-469). The provisional position is (50,50), but the measured 150x44 node settles at (-100,6); the unchanged upstream assertion expects (50,50). Flow-owned node-extent-adoption.e2e.ts covers the settled production rule. See research/traces/node-extents.md."
         },
         "foldkit": {
           "status": "fail",
-          "reason": "Initial nodeExtent adoption is missing: the 150x44 node remains at (200,200), expected (50,50). Repair is deferred because upstream unmeasured adoption conflicts with Flow documented measured/oversized-node policy at research/traces/node-extents.md:31; changing that policy needs a separate decision."
+          "reason": "Plan 145 follows pinned production: adoption calls clampPosition with unknown dimensions (packages/system/src/utils/store.ts:154-170; packages/system/src/utils/general.ts:20-29), then measurement reclamps with the DOM dimensions (packages/system/src/utils/store.ts:449-469). The provisional position is (50,50), but the measured 150x44 node settles at (-100,6); the unchanged upstream assertion expects (50,50). Flow-owned node-extent-adoption.e2e.ts covers the settled production rule. See research/traces/node-extents.md."
         }
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:225"

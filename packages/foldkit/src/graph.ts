@@ -57,7 +57,6 @@ import {
   emptyFlowMeasurementState,
   applyNodeMeasurement,
   pruneFlowMeasurements,
-  getFlowInternalNode,
   projectFlowInternalNode,
   getFlowMeasuredNodes,
   inferHandleMeasurement,
@@ -1085,9 +1084,25 @@ export const selectInternalNode = (
     Schema.decodeUnknownOption(NodeIdSchema)(id)
   )
 
-  return nodeId === undefined
+  if (nodeId === undefined) {
+    return undefined
+  }
+
+  const measurements = getFlowMeasuredNodes(model.document, model.measurements)
+
+  const graph = createFlowGraph(
+    model.document,
+    measurements,
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
+  )
+
+  const item = graph.nodes.get(nodeId)
+
+  return item === undefined
     ? undefined
-    : getFlowInternalNode(model.document, model.measurements, nodeId)
+    : projectFlowInternalNode(item, measurements.get(nodeId))
 }
 
 const edgeCrossesViewport = (
@@ -1140,7 +1155,13 @@ const edgeCrossesViewport = (
 const selectMountedNodeIds = (
   model: Model,
   measurements = getFlowMeasuredNodes(model.document, model.measurements),
-  graph = createFlowGraph(model.document, measurements)
+  graph = createFlowGraph(
+    model.document,
+    measurements,
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
+  )
 ): ReadonlySet<NodeId> => {
   const { zoom } = model.viewport
 
@@ -1578,7 +1599,10 @@ const nodeDragStart = (
 
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
+    getFlowMeasuredNodes(model.document, model.measurements),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
   )
 
   const pressed = graph.nodes.get(nodeId)?.node
@@ -1795,7 +1819,10 @@ const expandParentDragDocument = (
 ): FlowDocument => {
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, dragMeasurements(model))
+    getFlowMeasuredNodes(model.document, dragMeasurements(model)),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
   )
 
   const changes = calculateFlowExpandParentDrag(
@@ -2073,7 +2100,10 @@ const pendingEligible = (
 ): boolean => {
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
+    getFlowMeasuredNodes(model.document, model.measurements),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
   )
 
   const interactivity = selectInteractivity(model)
@@ -2457,7 +2487,10 @@ const resizeInput = (
 ): NodeResizeCalculationInput => {
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
+    getFlowMeasuredNodes(model.document, model.measurements),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
   )
 
   const parent =
@@ -2547,7 +2580,10 @@ const startResizer = (
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, model.measurements)
+    getFlowMeasuredNodes(model.document, model.measurements),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
   )
 
   const resolved = graph.nodes.get(NodeIdSchema.make(press.nodeId))
@@ -2805,7 +2841,13 @@ const expandParentResizeStep = (
 ): FlowDocument => {
   const base = applyResizerPatches(model.document, session.expandPatches ?? [])
 
-  const graph = createFlowGraph(base, previewMeasurements(model, base))
+  const graph = createFlowGraph(
+    base,
+    previewMeasurements(model, base),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
+  )
 
   const resolved = graph.nodes.get(session.nodeId)
 
@@ -3381,7 +3423,10 @@ const updateState = (
 
       const graph = createFlowGraph(
         model.document,
-        getFlowMeasuredNodes(model.document, model.measurements)
+        getFlowMeasuredNodes(model.document, model.measurements),
+        undefined,
+        undefined,
+        model.nodeExtent ?? undefined
       )
 
       const origins = new Map(
@@ -4339,7 +4384,10 @@ const updateState = (
         const change = selectionInRect(
           createFlowGraph(
             model.document,
-            getFlowMeasuredNodes(model.document, model.measurements)
+            getFlowMeasuredNodes(model.document, model.measurements),
+            undefined,
+            undefined,
+            model.nodeExtent ?? undefined
           ),
           {
             x: Math.min(gesture.startX, released.flowX),
@@ -4629,7 +4677,10 @@ const updateState = (
 
         const graphNode = createFlowGraph(
           model.document,
-          getFlowMeasuredNodes(model.document, model.measurements)
+          getFlowMeasuredNodes(model.document, model.measurements),
+          undefined,
+          undefined,
+          model.nodeExtent ?? undefined
         ).nodes.get(nodeId)
 
         const measured = getFlowMeasuredNodes(
@@ -4728,7 +4779,10 @@ const updateState = (
       const change = selectionInRect(
         createFlowGraph(
           model.document,
-          getFlowMeasuredNodes(model.document, model.measurements)
+          getFlowMeasuredNodes(model.document, model.measurements),
+          undefined,
+          undefined,
+          model.nodeExtent ?? undefined
         ),
         {
           x: Math.min(gesture.startX, gesture.currentX),
@@ -5459,7 +5513,14 @@ const connectionPreviewState = (
         )
 
   const measurements = getFlowMeasuredNodes(model.document, model.measurements)
-  const graph = createFlowGraph(model.document, measurements)
+
+  const graph = createFlowGraph(
+    model.document,
+    measurements,
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
+  )
 
   const reconnectEdge =
     session.kind === 'reconnection'
@@ -5935,6 +5996,7 @@ const connectionReleaseTarget = (
     | 'allowedConnectionTargets'
     | 'connectionMode'
     | 'connectionRadius'
+    | 'nodeExtent'
   >,
   event: PointerReleased,
   connectionCanvas: HTMLElement
@@ -5949,7 +6011,15 @@ const connectionReleaseTarget = (
   } = model
 
   const measurements = getFlowMeasuredNodes(flowDocument, model.measurements)
-  const graph = createFlowGraph(flowDocument, measurements)
+
+  const graph = createFlowGraph(
+    flowDocument,
+    measurements,
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
+  )
+
   let nodeId = event.targetNodeId
   let handleId = event.targetHandleId
 
@@ -6164,7 +6234,10 @@ const nodeFrame = (
 
   const graph = createFlowGraph(
     model.document,
-    getFlowMeasuredNodes(model.document, dragMeasurements(model))
+    getFlowMeasuredNodes(model.document, dragMeasurements(model)),
+    undefined,
+    undefined,
+    model.nodeExtent ?? undefined
   )
 
   const resolved = graph.nodes.get(node.id)
@@ -7321,7 +7394,14 @@ const graphView = (
 
     const edgeDescriptionId = `${model.instanceId}-edge-desc`
 
-    const graph = createFlowGraph(renderDocument, renderMeasurements)
+    const graph = createFlowGraph(
+      renderDocument,
+      renderMeasurements,
+      undefined,
+      undefined,
+      model.nodeExtent ?? undefined
+    )
+
     const mountedNodeIds = selectMountedNodeIds(model, measurements, graph)
 
     const renderEdges = model.document.edges.map((edge) =>

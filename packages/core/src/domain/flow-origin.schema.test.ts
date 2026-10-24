@@ -241,6 +241,7 @@ describe('node anchor origins', () => {
     ).toThrow(/./u)
   })
 
+  // Pinned packages/system/src/utils/general.ts:20-29 aligns oversized axes to maximum minus size.
   it('constrains anchors by complete physical extents including oversized nodes and physical groups', () => {
     const dimensions = { width: 80, height: 40 }
     const extent = { minX: 0, minY: 0, maxX: 100, maxY: 80 }
@@ -275,7 +276,7 @@ describe('node anchor origins', () => {
           oversized,
           decoded
         )
-      ).toStrictEqual({ x: -20, y: -20 })
+      ).toStrictEqual({ x: -40, y: -40 })
     }
 
     expect(

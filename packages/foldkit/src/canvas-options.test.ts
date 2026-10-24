@@ -194,6 +194,43 @@ describe('Foldkit canvas options', () => {
     expect(position(released.model, 'child')).toStrictEqual({ x: 150, y: 80 })
   })
 
+  // Pinned system/src/utils/store.ts:157,459 and general.ts:20-29.
+  it('projects provisional and measured extent positions through the public internal-node read', () => {
+    const model = start(
+      {
+        nodes: [{ id: 'a', label: 'A', position: { x: 200, y: 200 } }],
+        edges: [],
+      },
+      {
+        nodeExtent: [
+          [0, 0],
+          [50, 50],
+        ],
+      }
+    )
+
+    expect(
+      Graph.selectInternalNode(model.graph, 'a')?.absolutePosition
+    ).toStrictEqual({ x: 50, y: 50 })
+
+    const measured = step(
+      model,
+      Graph.Message.MeasureNode({
+        measurement: {
+          nodeId: NodeIdSchema.make('a'),
+          generation: 0,
+          width: 150,
+          height: 44,
+        },
+      })
+    ).model
+
+    expect(
+      Graph.selectInternalNode(measured.graph, 'a')?.absolutePosition
+    ).toStrictEqual({ x: -100, y: 6 })
+    expect(position(measured, 'a')).toStrictEqual({ x: 200, y: 200 })
+  })
+
   it('clamps root nodes to nodeExtent', () => {
     const model = start(
       {
