@@ -12,13 +12,34 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 185,
+    "inScopeCloseAllHosts": 180,
     "inScopeCloseByHost": {
-      "vanilla": 185,
-      "vue": 185,
-      "foldkit": 185
+      "vanilla": 180,
+      "vue": 180,
+      "foldkit": 180
     },
-    "reaudit": "2026-10-14 independent re-audit after Plans 105-117 (statuses above are the re-audit ratings)"
+    "reaudit": "2026-10-25 Plan 149 re-audit of all 16 Pro entries only; all other entry ratings retain their prior audit dates.",
+    "proReaudit": {
+      "on": "2026-10-25",
+      "entries": 16,
+      "byHost": {
+        "vanilla": {
+          "C": 1,
+          "P": 12,
+          "G": 3
+        },
+        "vue": {
+          "C": 1,
+          "P": 11,
+          "G": 4
+        },
+        "foldkit": {
+          "C": 1,
+          "P": 12,
+          "G": 3
+        }
+      }
+    }
   },
   "waves": {
     "1": "Renderer props contract",
@@ -2238,18 +2259,147 @@
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "No animated node position transitions",
+      "missing": "Layout destinations and attached edges exist; no node-position tween or interruption lifecycle.",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Animated node position transitions recipe",
-        "evidence": "no node position animation API"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/nodes/node-position-animation",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/node-position-animation/index.html"
+        ],
+        "missing": "Layout destinations and attached edges exist; no node-position tween or interruption lifecycle.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "layout-toggle",
+            "outcome": "Switch between horizontal and vertical layout destinations.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170",
+                "apps/vanilla/src/ui/layout-recipes.ts:233",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:98"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177",
+                "apps/vue/src/layout-recipes.ts:144",
+                "apps/vue/e2e/layout-recipes.e2e.ts:101"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188",
+                "apps/foldkit/ui-recipes/layout/main.ts:373",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:109"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "tween",
+            "outcome": "Interpolate node positions over time when layout is toggled.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "edges-follow",
+            "outcome": "Keep edges attached while positions change.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edge-path.ts:26",
+                "packages/core/src/domain/flow-edge-geometry.ts:618"
+              ],
+              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "reentry",
+            "outcome": "Retarget an animation while another transition is running.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+              ]
+            },
+            "basis": "delivery-edge-case"
+          }
+        ],
+        "unverified": [
+          "Public page does not specify duration, easing, interruption, reduced motion or persistence. Reentry is a delivery edge case, not an observed upstream guarantee."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples nodes",
@@ -2294,18 +2444,145 @@
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "No shape node recipe; custom SVG nodes possible",
+      "missing": "Custom node/data APIs exist; no composed shape library, sidebar, color toolbar or matching minimap recipe.",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "No shape node recipe",
-        "evidence": "custom SVG nodes possible via renderers"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/nodes/shapes",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/shapes/index.html"
+        ],
+        "missing": "Custom node/data APIs exist; no composed shape library, sidebar, color toolbar or matching minimap recipe.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "custom-svg",
+            "outcome": "Render data-driven custom SVG node content.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                "apps/vanilla/src/mount-flow.ts:8559"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:63",
+                "packages/vue/src/flow-canvas.ts:9110"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                "packages/foldkit/src/graph.ts:7582"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "shape-set",
+            "outcome": "Provide circle, diamond and hexagon shape choices through one node type.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                "apps/vanilla/src/mount-flow.ts:8559"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:63",
+                "packages/vue/src/flow-canvas.ts:9110"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                "packages/foldkit/src/graph.ts:7582"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "palette",
+            "outcome": "Create shape nodes through a shape sidebar.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                "apps/vanilla/src/mount-flow.ts:8559"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:63",
+                "packages/vue/src/flow-canvas.ts:9110"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                "packages/foldkit/src/graph.ts:7582"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "color-toolbar",
+            "outcome": "Change shape color using a node toolbar.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edit.ts:241",
+                "packages/core/src/domain/flow.schema.ts:338"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/mount-flow.ts:13829",
+                "apps/vanilla/src/mount-flow.ts:14308"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/instance.ts:409",
+                "packages/foldkit/src/graph.ts:1282"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "shape-minimap",
+            "outcome": "Render matching custom minimap shapes.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "vanilla": ["apps/vanilla/src/minimap.ts:50"],
+              "vue": ["packages/vue/src/minimap.ts:112"],
+              "foldkit": ["packages/foldkit/src/ui/minimap.ts:44"]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Shape resizing, handle placement, shape/color save-load and exact sidebar gesture are not specified by the page."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples edges",
@@ -2453,18 +2730,71 @@
       "foldkit": "G",
       "scope": "parity",
       "wave": 7,
-      "missing": "Obstacle-aware edge routing",
+      "missing": "Endpoint-based path helpers and path intersections do not perform obstacle-aware routing.",
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Obstacle-aware edge routing",
-        "evidence": "no routing implementation"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "G",
+          "vue": "G",
+          "foldkit": "G"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/edges/edge-routing",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/edge-routing/index.html"
+        ],
+        "missing": "Endpoint-based path helpers and path intersections do not perform obstacle-aware routing.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "obstacles",
+            "outcome": "Automatically route edges around node obstacles.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edge-path.ts:26",
+                "packages/core/src/domain/flow-edge-geometry.ts:618"
+              ],
+              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "reroute",
+            "outcome": "Recompute obstacle-avoiding paths as the diagram changes.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edge-path.ts:26",
+                "packages/core/src/domain/flow-edge-geometry.ts:618"
+              ],
+              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+            },
+            "basis": "linked-public-docs"
+          }
+        ],
+        "unverified": [
+          "No-route fallback, routing constraints, resize timing and saved route policy need reference or maintainer decisions."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples edges",
@@ -2581,18 +2911,108 @@
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "Draggable edge control points with edge-data writes",
+      "missing": "Custom edge/preview APIs exist; no draggable path-point model or Space freeform connection recipe.",
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Draggable edge control points writing edge data",
-        "evidence": "no editable edge recipe"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/edges/editable-edge",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/editable-edge/index.html"
+        ],
+        "missing": "Custom edge/preview APIs exist; no draggable path-point model or Space freeform connection recipe.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "preview",
+            "outcome": "Render a custom connection preview.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-edge-path.ts:26"],
+              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:124"],
+              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:96"],
+              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:121"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "control-drag",
+            "outcome": "Drag path control points and retain the edited route.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edge-path.ts:26",
+                "packages/core/src/domain/flow-edge-geometry.ts:618"
+              ],
+              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "space-draw",
+            "outcome": "Hold Space during connection to draw a freeform edge.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-edge-path.ts:26"],
+              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:124"],
+              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:96"],
+              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:121"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "route-state",
+            "outcome": "Keep edited points attached to ordinary selectable edges as endpoints move.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edit.ts:241",
+                "packages/core/src/domain/flow.schema.ts:338"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/mount-flow.ts:13829",
+                "apps/vanilla/src/mount-flow.ts:14308"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/instance.ts:409",
+                "packages/foldkit/src/graph.ts:1282"
+              ]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Point deletion, point order, route save-load and cancellation semantics are not disclosed."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples interaction",
@@ -2761,39 +3181,241 @@
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "No drag position override/snapping hook recipe",
+      "missing": "Fixed-grid snapping exists; no node-relative alignment solver, guide overlay or snapping lifecycle.",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Helper line snapping recipe",
-        "evidence": "no helper lines recipe"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/interaction/helper-lines",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/helper-lines/index.html"
+        ],
+        "missing": "Fixed-grid snapping exists; no node-relative alignment solver, guide overlay or snapping lifecycle.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "guides",
+            "outcome": "Show horizontal and vertical alignment guides while dragging nodes.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-snap-grid.schema.ts:34"
+              ],
+              "vanilla": ["apps/vanilla/src/mount-flow.ts:467"],
+              "vue": ["packages/vue/src/flow-canvas.ts:878"],
+              "foldkit": ["packages/foldkit/src/graph.ts:936"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "alignment-snap",
+            "outcome": "Snap the drag to other nodes rather than only a fixed grid.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-snap-grid.schema.ts:34"
+              ],
+              "vanilla": ["apps/vanilla/src/mount-flow.ts:467"],
+              "vue": ["packages/vue/src/flow-canvas.ts:878"],
+              "foldkit": ["packages/foldkit/src/graph.ts:936"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "transformed",
+            "outcome": "Keep guides and alignment accurate after pan and zoom.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-snap-grid.schema.ts:34"
+              ],
+              "vanilla": ["apps/vanilla/src/mount-flow.ts:467"],
+              "vue": ["packages/vue/src/flow-canvas.ts:878"],
+              "foldkit": ["packages/foldkit/src/graph.ts:936"]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Tolerance, center/edge preference, multiple selected nodes and cancellation need explicit tests."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples interaction",
       "name": "Collaborative · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "G",
+      "vue": "G",
+      "foldkit": "G",
       "scope": "parity",
       "wave": 7,
-      "missing": "No CRDT/Yjs sync integration",
+      "missing": "Local edits and persistence do not supply rooms, shared state, awareness, transport or conflict resolution.",
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "CRDT/Yjs sync integration",
-        "evidence": "no collaboration recipe"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/interaction/collaborative",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [],
+        "missing": "Local edits and persistence do not supply rooms, shared state, awareness, transport or conflict resolution.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "room",
+            "outcome": "Join an isolated room from a shareable URL or a second tab.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edit.ts:241",
+                "packages/core/src/domain/flow.schema.ts:338"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/mount-flow.ts:13829",
+                "apps/vanilla/src/mount-flow.ts:14308"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/instance.ts:409",
+                "packages/foldkit/src/graph.ts:1282"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "shared-edits",
+            "outcome": "Synchronize node/edge edits and live movement between users.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edit.ts:241",
+                "packages/core/src/domain/flow.schema.ts:338"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/mount-flow.ts:13829",
+                "apps/vanilla/src/mount-flow.ts:14308"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/instance.ts:409",
+                "packages/foldkit/src/graph.ts:1282"
+              ]
+            },
+            "basis": "linked-public-docs"
+          },
+          {
+            "id": "context-add",
+            "outcome": "Right-click the shared pane to add a node visible to peers.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-edit.ts:241",
+                "packages/core/src/domain/flow.schema.ts:338"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/mount-flow.ts:13829",
+                "apps/vanilla/src/mount-flow.ts:14308"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/instance.ts:409",
+                "packages/foldkit/src/graph.ts:1282"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "reconnect",
+            "outcome": "Converge after concurrent edits and connection loss.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-persistence.ts:424",
+                "packages/core/src/domain/flow-persistence.ts:478"
+              ],
+              "vanilla": ["apps/vanilla/src/mount-flow.ts:14308"],
+              "vue": ["packages/vue/src/use-flow.ts:661"],
+              "foldkit": ["packages/foldkit/src/instance.ts:409"]
+            },
+            "basis": "linked-public-docs"
+          },
+          {
+            "id": "presence",
+            "outcome": "Show peer presence while keeping selection and measurements local.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                "apps/vanilla/src/mount-flow.ts:8559"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:63",
+                "packages/vue/src/flow-canvas.ts:9110"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                "packages/foldkit/src/graph.ts:7582"
+              ]
+            },
+            "basis": "linked-public-docs"
+          }
+        ],
+        "unverified": [
+          "Reconnect and presence requirements come from linked multiplayer guidance, not an inspected Pro implementation. Backend durability/authentication are integration decisions."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples interaction",
@@ -2803,74 +3425,580 @@
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "No clipboard recipe; selection plus edits exist",
+      "missing": "Vanilla/Foldkit Schema Studio copies selected tables and their internal relationships with fresh IDs and a 40-unit offset; no generic fragment/parent remapping. Vue has selection and edits but no clipboard recipe.",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Clipboard recipe",
-        "evidence": "no clipboard recipe"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/interaction/copy-paste",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/copy-paste/index.html"
+        ],
+        "missing": "Vanilla/Foldkit Schema Studio copies selected tables and their internal relationships with fresh IDs and a 40-unit offset; no generic fragment/parent remapping. Vue has selection and edits but no clipboard recipe.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "select",
+            "outcome": "Select multiple nodes before copying.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:73",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:50",
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:60"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:81",
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:76"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:73",
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:77"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "copy-paste",
+            "outcome": "Copy and paste a selected graph fragment including its edges.",
+            "vanilla": "P",
+            "vue": "G",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["apps/shared/schema-studio/model.ts:242"],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:541",
+                "apps/vanilla/schema-studio/main.ts:1465",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1078"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:266",
+                "apps/foldkit/schema-studio/model.ts:563",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1100"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "remap",
+            "outcome": "Allocate fresh IDs and remap copied edge endpoints and parents.",
+            "vanilla": "P",
+            "vue": "G",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["apps/shared/schema-studio/model.ts:242"],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:541",
+                "apps/vanilla/schema-studio/main.ts:1465",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1078"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:266",
+                "apps/foldkit/schema-studio/model.ts:563",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1100"
+              ]
+            },
+            "basis": "delivery-edge-case"
+          },
+          {
+            "id": "placement",
+            "outcome": "Place repeated pastes predictably without changing the original fragment.",
+            "vanilla": "P",
+            "vue": "G",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["apps/shared/schema-studio/model.ts:242"],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:541",
+                "apps/vanilla/schema-studio/main.ts:1465",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1078"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:266",
+                "apps/foldkit/schema-studio/model.ts:563",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1100"
+              ]
+            },
+            "basis": "delivery-edge-case"
+          }
+        ],
+        "unverified": [
+          "Exact shortcuts, clipboard persistence, dangling-edge inclusion and paste placement are unspecified. Shift box selection is public guidance; existing group tests use Meta/Control clicks.",
+          "Schema Studio copy/paste is table-specific; no general hierarchy copy, extension reference remapping or independent edge selection clipboard is supplied. Repeated pastes use the same offset from the copied originals."
+        ],
+        "hostNotes": {
+          "vanilla": "Schema Studio table-only clipboard and relationship remapping, with fixed 40-unit displacement.",
+          "vue": "No clipboard integration found in Vue app/recipes.",
+          "foldkit": "Schema Studio table-only clipboard and relationship remapping, with fixed 40-unit displacement."
+        }
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples interaction",
       "name": "Undo and Redo · Pro",
       "vanilla": "P",
-      "vue": "P",
+      "vue": "G",
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "No history API over edit transactions",
+      "missing": "Vanilla/Foldkit Schema Studio has bounded app-domain history and shortcuts; no generic FlowDocument history integration. Vue has no history recipe.",
       "effort": "M",
       "theme": "undo-redo",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "History API over edit transactions",
-        "evidence": "no undo/redo recipe"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/interaction/undo-redo",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/undo-redo/index.html"
+        ],
+        "missing": "Vanilla/Foldkit Schema Studio has bounded app-domain history and shortcuts; no generic FlowDocument history integration. Vue has no history recipe.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "history",
+            "outcome": "Track past/future states for moving, adding and deleting nodes and edges.",
+            "vanilla": "P",
+            "vue": "G",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "apps/shared/schema-studio/model.ts:230",
+                "apps/shared/schema-studio/model.test.ts:206"
+              ],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:394",
+                "apps/vanilla/schema-studio/main.ts:1447",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:525",
+                "apps/foldkit/schema-studio/main.ts:812",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "buttons",
+            "outcome": "Undo and redo through controls with empty-stack states.",
+            "vanilla": "P",
+            "vue": "G",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "apps/shared/schema-studio/model.ts:230",
+                "apps/shared/schema-studio/model.test.ts:206"
+              ],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:394",
+                "apps/vanilla/schema-studio/main.ts:1447",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:525",
+                "apps/foldkit/schema-studio/main.ts:812",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "shortcuts",
+            "outcome": "Undo with Ctrl+Z and redo with Ctrl+Shift+Z.",
+            "vanilla": "C",
+            "vue": "G",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "apps/shared/schema-studio/model.ts:230",
+                "apps/shared/schema-studio/model.test.ts:206"
+              ],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:394",
+                "apps/vanilla/schema-studio/main.ts:1447",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:525",
+                "apps/foldkit/schema-studio/main.ts:812",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "branch",
+            "outcome": "Clear redo after a new edit; coalesce one drag into one history action.",
+            "vanilla": "P",
+            "vue": "G",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "apps/shared/schema-studio/model.ts:230",
+                "apps/shared/schema-studio/model.test.ts:206"
+              ],
+              "vanilla": [
+                "apps/vanilla/schema-studio/main.ts:394",
+                "apps/vanilla/schema-studio/main.ts:1447",
+                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+              ],
+              "vue": [
+                "packages/vue/src/use-flow.ts:660",
+                "packages/vue/src/flow-canvas.ts:4405"
+              ],
+              "foldkit": [
+                "apps/foldkit/schema-studio/model.ts:525",
+                "apps/foldkit/schema-studio/main.ts:812",
+                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+              ]
+            },
+            "basis": "delivery-edge-case"
+          }
+        ],
+        "unverified": [
+          "Branch clearing and drag coalescing are necessary delivery cases, not disclosed internals. Reload persistence and local versus remote undo need decisions.",
+          "Schema Studio tests exercise table drag undo/redo and the shared helper clears future on a new record. Generic node/edge coverage and complete gesture transaction grouping remain unverified. History stacks are not persisted, only the current Studio document."
+        ],
+        "hostNotes": {
+          "vanilla": "Schema Studio implements Studio snapshots, controls and shortcuts; arbitrary FlowDocument edits and empty-stack control state remain incomplete.",
+          "vue": "Atomic edits exist but no Vue history owner/recipe was found.",
+          "foldkit": "Schema Studio implements Studio snapshots, controls and shortcuts; no general FlowDocument history owner."
+        }
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples grouping",
       "name": "Selection Grouping · Pro",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": 6,
-      "missing": "No group-selection reparent helper",
+      "missing": "Initial grouping and group dragging are tested; contextual ungrouping and ongoing child-driven group sizing are absent.",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 113"],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113", "Plan 149"],
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": null,
-        "evidence": "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/grouping/selection-grouping",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/selection-grouping/index.html"
+        ],
+        "missing": "Initial grouping and group dragging are tested; contextual ungrouping and ongoing child-driven group sizing are absent.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "select-group",
+            "outcome": "Select multiple nodes and create a containing group without moving them.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:73",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:50",
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:60"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:81",
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:76"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:73",
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:77"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "drag-group",
+            "outcome": "Move the group and its members together.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:73",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:50",
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:60"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:81",
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:76"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:73",
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:77"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "selection-toolbar",
+            "outcome": "Offer grouping from a toolbar associated with the current selection.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-grouping.ts:107"],
+              "vanilla": ["apps/vanilla/src/ui/subflows-recipes.ts:197"],
+              "vue": ["apps/vue/src/subflows-recipes.ts:179"],
+              "foldkit": ["apps/foldkit/ui-recipes/subflows/main.ts:73"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "ungroup",
+            "outcome": "Select a group and ungroup all children through its toolbar.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-grouping.ts:107"],
+              "vanilla": ["apps/vanilla/src/ui/subflows-recipes.ts:197"],
+              "vue": ["apps/vue/src/subflows-recipes.ts:179"],
+              "foldkit": ["apps/foldkit/ui-recipes/subflows/main.ts:73"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "auto-size",
+            "outcome": "Automatically resize a group when its child bounds change.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-grouping.ts:107"],
+              "vanilla": ["apps/vanilla/src/ui/subflows-recipes.ts:197"],
+              "vue": ["apps/vue/src/subflows-recipes.ts:179"],
+              "foldkit": ["apps/foldkit/ui-recipes/subflows/main.ts:73"]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "The page describes Shift-click; recipes use Meta/Control multi-select. Exact modifier parity, nested-group auto-sizing and save-load are unverified."
+        ]
       }
     },
     {
       "section": "examples grouping",
       "name": "Parent Child Relation · Pro",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": 6,
-      "missing": "Drop-to-reparent needs intersection helper",
+      "missing": "Drop-to-attach and drop-outside-to-detach are tested; the described detach toolbar is absent.",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109"],
+      "updatedBy": ["Plan 109", "Plan 149"],
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": null,
-        "evidence": "apps/foldkit/e2e/subflows-recipes.e2e.ts:123"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/grouping/parent-child-relation",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/parent-child-relation/index.html"
+        ],
+        "missing": "Drop-to-attach and drop-outside-to-detach are tested; the described detach toolbar is absent.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "attach",
+            "outcome": "Drop a node into a group and attach it as a child.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:192",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "coordinates",
+            "outcome": "Convert absolute and parent-relative positions without a visible jump.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:192",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "move-parent",
+            "outcome": "Move children with their parent.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:192",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "detach",
+            "outcome": "Detach a child using a toolbar while keeping its absolute position.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-grouping.ts:192",
+                "packages/core/src/domain/flow-grouping.ts:220"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/subflows-recipes.ts:90",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+              ],
+              "vue": [
+                "apps/vue/src/subflows-recipes.ts:113",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/subflows/main.ts:102",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+              ]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Flow requires full containment and chooses the smallest containing group. Upstream overlap threshold, nested targets and persistence are not disclosed."
+        ]
       }
     },
     {
@@ -2969,71 +4097,567 @@
       "foldkit": "P",
       "scope": "parity",
       "wave": 7,
-      "missing": "Hidden subtree plus relayout recipe",
+      "missing": "Hidden/data fields and layout APIs exist; no tree visibility reducer or expand/collapse/add-child composition.",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Hidden subtree plus relayout recipe",
-        "evidence": "no expand/collapse recipe"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/layout/expand-collapse",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/expand-collapse/index.html"
+        ],
+        "missing": "Hidden/data fields and layout APIs exist; no tree visibility reducer or expand/collapse/add-child composition.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "visibility",
+            "outcome": "Represent hidden nodes while retaining the complete graph.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow.schema.ts:159",
+                "packages/core/src/domain/flow-graph.ts:151",
+                "packages/core/src/domain/flow-edge-geometry.ts:183"
+              ],
+              "vanilla": ["apps/vanilla/src/mount-flow.ts:14308"],
+              "vue": ["packages/vue/src/use-flow.ts:661"],
+              "foldkit": ["packages/foldkit/src/instance.ts:409"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "toggle-subtree",
+            "outcome": "Click a parent to hide or reveal its descendants and incident edges.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "expanded-state",
+            "outcome": "Keep expanded/collapsed state in node data.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                "apps/vanilla/src/mount-flow.ts:8559"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:63",
+                "packages/vue/src/flow-canvas.ts:9110"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                "packages/foldkit/src/graph.ts:7582"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "child-layout",
+            "outcome": "Add a child and recalculate the visible tree layout.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:388",
+                "apps/vanilla/src/ui/layout-recipes.ts:488",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:297",
+                "apps/vue/src/layout-recipes.ts:316",
+                "apps/vue/src/layout-recipes-components.ts:30",
+                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:421",
+                "apps/foldkit/ui-recipes/layout/main.ts:51",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+              ]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "DAG/shared descendants, cycles, child state under collapsed ancestors and save-load are unspecified."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "examples layout",
       "name": "Auto Layout · Pro",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": 6,
-      "missing": "Layout engine integration on measure/change",
+      "missing": "Dagre automatic relayout and separate Dagre/ELK scenes exist; no d3-hierarchy adapter or same-flow engine selector.",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111", "Plan 149"],
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": null,
-        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:178"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/layout/auto-layout",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/auto-layout/index.html"
+        ],
+        "missing": "Dagre automatic relayout and separate Dagre/ELK scenes exist; no d3-hierarchy adapter or same-flow engine selector.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "automatic",
+            "outcome": "Lay out measured nodes automatically and rerun after graph changes.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "engine-switch",
+            "outcome": "Switch between Dagre, d3-hierarchy and ELK at runtime in one flow.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "controls",
+            "outcome": "Configure the active layout algorithm interactively.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-layout.ts:50",
+                "packages/core/src/domain/flow-layout.ts:132"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:105",
+                "apps/vanilla/src/ui/layout-recipes.ts:312",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:85",
+                "apps/vue/src/layout-recipes.ts:208",
+                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:185",
+                "apps/foldkit/ui-recipes/layout/main.ts:389",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+              ]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Engine output equality, async stale-result cancellation, saved engine choice and unsupported graph inputs are unverified."
+        ]
       }
     },
     {
       "section": "examples layout",
       "name": "Force Layout · Pro",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": 6,
-      "missing": "d3-force continuous position updates",
+      "missing": "Each host has a live measured simulation with hard-coded force/distance values; no interactive parameter controls.",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109"],
+      "updatedBy": ["Plan 109", "Plan 149"],
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": null,
-        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:218"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/layout/force-layout",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/force-layout/index.html"
+        ],
+        "missing": "Each host has a live measured simulation with hard-coded force/distance values; no interactive parameter controls.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "simulation",
+            "outcome": "Run a d3-force layout and show successive positions.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
+                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes-force.ts:39",
+                "apps/vue/src/layout-recipes-force.ts:120",
+                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/force.ts:25",
+                "apps/foldkit/ui-recipes/layout/force.ts:111",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "strength",
+            "outcome": "Let the user change force strength.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
+                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes-force.ts:39",
+                "apps/vue/src/layout-recipes-force.ts:120",
+                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/force.ts:25",
+                "apps/foldkit/ui-recipes/layout/force.ts:111",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "distance",
+            "outcome": "Let the user change link distance.",
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
+                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes-force.ts:39",
+                "apps/vue/src/layout-recipes-force.ts:120",
+                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/force.ts:25",
+                "apps/foldkit/ui-recipes/layout/force.ts:111",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "drag-settle",
+            "outcome": "Allow node dragging, pin a dropped node and settle the simulation.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
+                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes-force.ts:39",
+                "apps/vue/src/layout-recipes-force.ts:120",
+                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/force.ts:25",
+                "apps/foldkit/ui-recipes/layout/force.ts:111",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+              ]
+            },
+            "basis": "delivery-edge-case"
+          }
+        ],
+        "unverified": [
+          "Drag/pin is Flow regression evidence, not a documented Pro guarantee. Parameter persistence, numeric range and exact force output are unspecified."
+        ]
       }
     },
     {
       "section": "examples layout",
       "name": "Dynamic Layouting · Pro",
-      "vanilla": "C",
-      "vue": "C",
-      "foldkit": "C",
+      "vanilla": "P",
+      "vue": "P",
+      "foldkit": "P",
       "scope": "parity",
       "wave": 6,
-      "missing": "Layout engine integration with add-node placeholders",
+      "missing": "Placeholder promotion/branching and Dagre relayout are tested; edge insertion, d3-hierarchy and animated transitions are missing.",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 111"],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111", "Plan 149"],
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": null,
-        "evidence": "apps/foldkit/e2e/layout-recipes.e2e.ts:281"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/layout/dynamic-layouting",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/dynamic-layouting/index.html"
+        ],
+        "missing": "Placeholder promotion/branching and Dagre relayout are tested; edge insertion, d3-hierarchy and animated transitions are missing.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "placeholder",
+            "outcome": "Click a placeholder to promote it to a node and create another placeholder.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:388",
+                "apps/vanilla/src/ui/layout-recipes.ts:488",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:297",
+                "apps/vue/src/layout-recipes.ts:316",
+                "apps/vue/src/layout-recipes-components.ts:30",
+                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:421",
+                "apps/foldkit/ui-recipes/layout/main.ts:51",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "branch",
+            "outcome": "Click a regular node to add a child placeholder.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:388",
+                "apps/vanilla/src/ui/layout-recipes.ts:488",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:297",
+                "apps/vue/src/layout-recipes.ts:316",
+                "apps/vue/src/layout-recipes-components.ts:30",
+                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:421",
+                "apps/foldkit/ui-recipes/layout/main.ts:51",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "edge-insert",
+            "outcome": "Click the plus button on an edge to insert a node between endpoints.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:388",
+                "apps/vanilla/src/ui/layout-recipes.ts:488",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:297",
+                "apps/vue/src/layout-recipes.ts:316",
+                "apps/vue/src/layout-recipes-components.ts:30",
+                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:421",
+                "apps/foldkit/ui-recipes/layout/main.ts:51",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "relayout",
+            "outcome": "Recalculate tree positions after graph changes.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:388",
+                "apps/vanilla/src/ui/layout-recipes.ts:488",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:297",
+                "apps/vue/src/layout-recipes.ts:316",
+                "apps/vue/src/layout-recipes-components.ts:30",
+                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:421",
+                "apps/foldkit/ui-recipes/layout/main.ts:51",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "transition",
+            "outcome": "Animate nodes smoothly to their new layout positions.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "vanilla": [
+                "apps/vanilla/src/ui/layout-recipes.ts:388",
+                "apps/vanilla/src/ui/layout-recipes.ts:488",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+              ],
+              "vue": [
+                "apps/vue/src/layout-recipes.ts:297",
+                "apps/vue/src/layout-recipes.ts:316",
+                "apps/vue/src/layout-recipes-components.ts:30",
+                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/layout/main.ts:421",
+                "apps/foldkit/ui-recipes/layout/main.ts:51",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+              ]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Current Dagre use is an implementation difference, not proof of d3-hierarchy output parity. Branch order, cancellation and persistence are unspecified."
+        ]
       }
     },
     {
@@ -3187,14 +4811,113 @@
       "foldkit": "C",
       "scope": "parity",
       "wave": 6,
-      "missing": "No freehand stroke capture tool",
+      "missing": null,
       "effort": "M",
       "theme": "whiteboard",
-      "updatedBy": ["Plan 109"],
+      "updatedBy": ["Plan 109", "Plan 149"],
       "reaudit": {
-        "on": "2026-10-14",
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/whiteboard/freehand-draw",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/freehand-draw/index.html"
+        ],
         "missing": null,
-        "evidence": "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:180"
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "stroke",
+            "outcome": "Draw a smoothed curve on the pane, including at a transformed viewport.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-freeform.ts:229",
+                "packages/core/src/domain/flow-freeform.test.ts:109"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:359",
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:424",
+                "apps/vanilla/e2e/whiteboard-recipes.e2e.ts:193"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:259",
+                "apps/vue/src/whiteboard-recipes.ts:326",
+                "apps/vue/e2e/whiteboard-recipes.e2e.ts:179"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:285",
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:393",
+                "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:180"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "node",
+            "outcome": "Convert the drawing to a custom node with local stroke coordinates.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-freeform.ts:229",
+                "packages/core/src/domain/flow-freeform.test.ts:109"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:359",
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:424",
+                "apps/vanilla/e2e/whiteboard-recipes.e2e.ts:193"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:259",
+                "apps/vue/src/whiteboard-recipes.ts:326",
+                "apps/vue/e2e/whiteboard-recipes.e2e.ts:179"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:285",
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:393",
+                "apps/foldkit/e2e/whiteboard-recipes.e2e.ts:180"
+              ]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "ordinary-node",
+            "outcome": "Expose the drawing through ordinary node data, styling, selection and movement APIs.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "vanilla": [
+                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                "apps/vanilla/src/mount-flow.ts:8559"
+              ],
+              "vue": [
+                "apps/vue/src/whiteboard-recipes.ts:63",
+                "packages/vue/src/flow-canvas.ts:9110"
+              ],
+              "foldkit": [
+                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                "packages/foldkit/src/graph.ts:7582"
+              ]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "Browser tests check stroke creation, quadratic path commands and bounds; post-draw dragging/styling, save-load and pixel comparison with perfect-freehand were not specifically tested. Pressure and exact stroke silhouette are unverified."
+        ]
       }
     },
     {
@@ -3223,18 +4946,93 @@
       "foldkit": "G",
       "scope": "parity",
       "wave": 7,
-      "missing": "No server-side rendering of flows",
+      "missing": "Client-side html-to-image downloads exist; no backend image renderer, side-by-side server preview or container.",
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Server-side flow rendering",
-        "evidence": "no SSR rendering"
+        "on": "2026-10-25",
+        "plan": "Plan 149",
+        "previousRatings": {
+          "vanilla": "G",
+          "vue": "G",
+          "foldkit": "G"
+        },
+        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "url": "https://reactflow.dev/examples/misc/server-side-image-creation",
+        "accessedOn": "2026-10-25",
+        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "demoUrls": [
+          "https://example-apps.xyflow.com/react/pro/server-side-image-creation/index.html"
+        ],
+        "missing": "Client-side html-to-image downloads exist; no backend image renderer, side-by-side server preview or container.",
+        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "outcomes": [
+          {
+            "id": "server-image",
+            "outcome": "Generate a static graph image on a backend.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-persistence.ts:424"],
+              "vanilla": ["apps/vanilla/src/ui/closing-recipes.ts:352"],
+              "vue": ["apps/vue/src/closing-recipes.ts:228"],
+              "foldkit": ["apps/foldkit/ui-recipes/download-image/main.ts:31"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "live-preview",
+            "outcome": "Edit the graph and display the corresponding server image beside it.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-persistence.ts:424"],
+              "vanilla": ["apps/vanilla/src/ui/closing-recipes.ts:352"],
+              "vue": ["apps/vue/src/closing-recipes.ts:228"],
+              "foldkit": ["apps/foldkit/ui-recipes/download-image/main.ts:31"]
+            },
+            "basis": "public-description"
+          },
+          {
+            "id": "static-render",
+            "outcome": "Render with declared node/handle geometry without relying on the interactive client DOM.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-persistence.ts:424"],
+              "vanilla": ["apps/vanilla/src/ui/closing-recipes.ts:352"],
+              "vue": ["apps/vue/src/closing-recipes.ts:228"],
+              "foldkit": ["apps/foldkit/ui-recipes/download-image/main.ts:31"]
+            },
+            "basis": "linked-public-docs"
+          },
+          {
+            "id": "deployment",
+            "outcome": "Provide a runnable backend and container deployment for image generation.",
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G",
+            "evidence": {
+              "shared": ["packages/core/src/domain/flow-persistence.ts:424"],
+              "vanilla": ["apps/vanilla/src/ui/closing-recipes.ts:352"],
+              "vue": ["apps/vue/src/closing-recipes.ts:228"],
+              "foldkit": ["apps/foldkit/ui-recipes/download-image/main.ts:31"]
+            },
+            "basis": "public-description"
+          }
+        ],
+        "unverified": [
+          "The public example names Puppeteer and static React rendering. Flow core persistence/geometry is not an SSR renderer; custom node support and production service policy need decisions."
+        ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
-      }
+      },
+      "updatedBy": ["Plan 149"]
     },
     {
       "section": "ui templates",
