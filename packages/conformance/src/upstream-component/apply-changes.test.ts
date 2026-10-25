@@ -7,13 +7,13 @@ import type {
   EdgeChange,
 } from '@flow/core'
 import { Schema as S } from 'effect'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { nodes, edges, node, edge, nodeId, edgeId } from './fixtures.ts'
 
 describe('Pinned Cypress component utilities', () => {
   // examples/react/cypress/components/utils/apply-changes.cy.ts:30
-  test('[UP-128-083] adds a node/edge', () => {
+  it('[UP-128-083] adds a node/edge', () => {
     const currentNodes: FlowNode[] = []
     const nodeChanges: NodeChange[] = [{ type: 'add', item: node(0) }]
     const nextNodes = applyNodeChanges(nodeChanges, currentNodes)
@@ -27,7 +27,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:43
-  test('[UP-128-084] adds multiple nodes/edges', () => {
+  it('[UP-128-084] adds multiple nodes/edges', () => {
     const currentNodes: FlowNode[] = []
 
     const nodeChanges: NodeChange[] = [
@@ -50,7 +50,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:61
-  test('[UP-128-085] removes a node/edge', () => {
+  it('[UP-128-085] removes a node/edge', () => {
     const nodesLength = nodes.length
     const nodeChanges: NodeChange[] = [{ type: 'remove', id: nodeId('1') }]
     const nextNodes = applyNodeChanges(nodeChanges, nodes)
@@ -65,7 +65,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:75
-  test('[UP-128-086] removes multiple node/edge', () => {
+  it('[UP-128-086] removes multiple node/edge', () => {
     const nodesLength = nodes.length
 
     const nodeChanges: NodeChange[] = [
@@ -90,7 +90,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:95
-  test('[UP-128-087] selects a node/edge', () => {
+  it('[UP-128-087] selects a node/edge', () => {
     const nodeChanges: NodeChange[] = [
       { type: 'select', id: nodeId('1'), selected: true },
     ]
@@ -111,7 +111,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:105
-  test('[UP-128-088] deselects a node/edge', () => {
+  it('[UP-128-088] deselects a node/edge', () => {
     const nodeChanges: NodeChange[] = [
       { type: 'select', id: nodeId('1'), selected: false },
     ]
@@ -146,7 +146,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:123
-  test('[UP-128-089] updates node position', () => {
+  it('[UP-128-089] updates node position', () => {
     const newPosition: XYPosition = { x: 100, y: 100 }
 
     const nodeChanges: NodeChange[] = [
@@ -159,7 +159,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:131
-  test('[UP-128-090] updates node dimensions', () => {
+  it('[UP-128-090] updates node dimensions', () => {
     const newWidth = 200
     const newHeight = 200
 
@@ -191,7 +191,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:145
-  test('[UP-128-091] updates node position and dimensions', () => {
+  it('[UP-128-091] updates node position and dimensions', () => {
     const newPosition: XYPosition = { x: 100, y: 100 }
     const newWidth = 200
     const newHeight = 200
@@ -215,7 +215,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/apply-changes.cy.ts:159
-  test('[UP-128-092] replaces nodes/edges', () => {
+  it('[UP-128-092] replaces nodes/edges', () => {
     const nodesLength = nodes.length
 
     const nodeChanges: NodeChange[] = [

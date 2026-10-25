@@ -1,5 +1,5 @@
 import { Exit } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type {
   MeasurementResultSchema,
@@ -121,7 +121,7 @@ const fakeRuntime = () => {
 }
 
 describe('Foldkit store', () => {
-  test('loads the first state from a snapshot and exposes the React transform', async () => {
+  it('loads the first state from a snapshot and exposes the React transform', async () => {
     const runtime = fakeRuntime()
     const store = createFoldkitStore(runtime.ports)
 
@@ -152,7 +152,7 @@ describe('Foldkit store', () => {
     expect(runtime.listenerCount()).toBe(0)
   })
 
-  test('a selector listener fires only when its selected value changes', async () => {
+  it('a selector listener fires only when its selected value changes', async () => {
     const runtime = fakeRuntime()
     const store = createFoldkitStore(runtime.ports)
     await store.ready
@@ -190,7 +190,7 @@ describe('Foldkit store', () => {
     expect({ zooms, counts }).toStrictEqual({ zooms: [2], counts: [0] })
   })
 
-  test('observes node data once known, then only on changes to the observed nodes', async () => {
+  it('observes node data once known, then only on changes to the observed nodes', async () => {
     const runtime = fakeRuntime()
     const store = createFoldkitStore(runtime.ports)
     const seen: string[] = []
@@ -210,7 +210,7 @@ describe('Foldkit store', () => {
     ])
   })
 
-  test('emits node data at once when the state is already known', async () => {
+  it('emits node data at once when the state is already known', async () => {
     const store = createFoldkitStore(fakeRuntime().ports)
     await store.ready
     const seen: unknown[] = []

@@ -6,7 +6,7 @@ import {
   finalizeFlowDeleteCandidate,
 } from '@flow/core'
 import { Effect, Predicate, Schema } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import {
   AppMessage,
@@ -29,7 +29,7 @@ describe('legacy snapshot update branch (controlled model unit inputs, not mount
 
   const model = initialModel(document, { x: 5, y: -7, zoom: 1.5 })
 
-  test.each([
+  it.each([
     [
       'global origin',
       { ...document, nodeOrigin: undefined },
@@ -117,7 +117,7 @@ describe('legacy snapshot update branch (controlled model unit inputs, not mount
     }
   )
 
-  test('ordinary baseline reads construct a success and the same literal-v1 session', () => {
+  it('ordinary baseline reads construct a success and the same literal-v1 session', () => {
     const result = update(
       model,
       AppMessage.SnapshotRequest({ request: { requestId: 'ordinary' } })
@@ -206,7 +206,7 @@ const ownershipResponseData = (
 ]
 
 describe('snapshot/query output ownership (constructed model boundary)', () => {
-  test.each([
+  it.each([
     { extended: false, protocol: 'legacy' },
     { extended: false, protocol: 'versioned' },
     { extended: true, protocol: 'versioned' },
@@ -264,7 +264,7 @@ describe('snapshot/query output ownership (constructed model boundary)', () => {
 })
 
 describe('edit and delete packet origin transport protocol units', () => {
-  test.each([
+  it.each([
     [0.5, 0.5],
     [-0.5, 1.5],
     [0, 0],

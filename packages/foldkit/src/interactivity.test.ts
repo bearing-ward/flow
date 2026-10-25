@@ -1,6 +1,6 @@
 import { decodeFlowDocument, HandleIdSchema, NodeIdSchema } from '@flow/core'
 import { Effect } from 'effect'
-import { afterEach, describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { AppMessage, HostAction, initialModel, update } from './application.ts'
 import type { Model } from './application.ts'
@@ -70,7 +70,7 @@ const keyboardConnect = (model: Model) => {
 describe('Foldkit interaction switches', () => {
   afterEach(() => registerConnectionRule('rule-instance'))
 
-  test('the host action sets the switches the gates read', () => {
+  it('the host action sets the switches the gates read', () => {
     const model = locked(initialModel(document, { x: 0, y: 0, zoom: 1 }, ['b']))
 
     expect(Graph.selectInteractivity(model.graph)).toStrictEqual({
@@ -101,7 +101,7 @@ describe('Foldkit interaction switches', () => {
     expect(keyboardConnect(model).model.graph.document.edges).toHaveLength(0)
   })
 
-  test('a keyboard connection publishes an add delta and honours isValidConnection', () => {
+  it('a keyboard connection publishes an add delta and honours isValidConnection', () => {
     const open = initialModel(document, { x: 0, y: 0, zoom: 1 }, ['b'])
     const connected = keyboardConnect(open)
 
@@ -128,7 +128,7 @@ describe('Foldkit interaction switches', () => {
     expect(keyboardConnect(ruled).model.graph.document.edges).toHaveLength(0)
   })
 
-  test('selection changes publish onSelectionChange with the selected ids', () => {
+  it('selection changes publish onSelectionChange with the selected ids', () => {
     const model = initialModel(document, { x: 0, y: 0, zoom: 1 })
 
     const result = graphStep(

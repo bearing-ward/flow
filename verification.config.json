@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility",
   "checks": [
     "api-members",
     "catalog",

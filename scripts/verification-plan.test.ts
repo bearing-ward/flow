@@ -115,6 +115,7 @@ describe('verification profiles', () => {
         (check) => check.name === `${host} browser tests`
       )
 
+      expect(browser?.arguments).toContain('--workers=1')
       expect(browser).toBeDefined()
       expect(
         browser?.arguments.some((argument) => argument.includes('.e2e'))

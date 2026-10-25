@@ -1,6 +1,6 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path } from 'effect'
-import ts from 'typescript'
+import ts from 'typescript-api'
 
 const rootUrl = new URL('../', import.meta.url)
 

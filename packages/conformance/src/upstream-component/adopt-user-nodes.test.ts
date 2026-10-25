@@ -1,5 +1,5 @@
 import { NodeIdSchema } from '@flow/core'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { lookup, fixtureNode } from './geometry.ts'
 
@@ -7,14 +7,14 @@ const id = NodeIdSchema.make
 
 describe('Pinned Cypress component utilities', () => {
   // examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:5
-  test('[UP-128-077] builds node lookup', () => {
+  it('[UP-128-077] builds node lookup', () => {
     const nodes = lookup([fixtureNode('1', 250, 5, 100, 50)])
     expect(nodes.size).toBe(1)
     expect(nodes.get(id('1'))).toHaveProperty('absolutePosition')
   })
 
   // examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:23
-  test('[UP-128-078] calculates positionAbsolute with nodeOrigin', () => {
+  it('[UP-128-078] calculates positionAbsolute with nodeOrigin', () => {
     const nodes = lookup([fixtureNode('1', 250, 5, 100, 50)], [0.5, 0.5])
     expect(nodes.get(id('1'))?.absolutePosition).toStrictEqual({
       x: 200,
@@ -23,7 +23,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:48
-  test('[UP-128-079] calculates positionAbsolute with nodeExtent', () => {
+  it('[UP-128-079] calculates positionAbsolute with nodeExtent', () => {
     // Flow exposes extent constraint separately from graph projection.
     const nodes = lookup([fixtureNode('1', 500, 500, 50, 25)], [0, 0], {
       minX: 0,
@@ -36,7 +36,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:73
-  test('[UP-128-080] calculates positionAbsolute for sub flow', () => {
+  it('[UP-128-080] calculates positionAbsolute for sub flow', () => {
     const nodes = lookup([
       fixtureNode('1', 100, 100, 100, 50),
       fixtureNode('2', 0, 0, 100, 50, '1'),
@@ -50,7 +50,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:106
-  test('[UP-128-081] calculates positionAbsolute for sub flow with nodeOrigin', () => {
+  it('[UP-128-081] calculates positionAbsolute for sub flow with nodeOrigin', () => {
     const nodes = lookup(
       [
         fixtureNode('1', 100, 100, 100, 50),
@@ -64,7 +64,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/adopt-user-nodes.cy.ts:146
-  test('[UP-128-082] calculates positionAbsolute for sub flow with nodeExtent', () => {
+  it('[UP-128-082] calculates positionAbsolute for sub flow with nodeExtent', () => {
     const nodes = lookup(
       [
         fixtureNode('a', 500, 500, 100, 50),

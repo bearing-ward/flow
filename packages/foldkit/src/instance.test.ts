@@ -1,5 +1,5 @@
 import { Exit } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type {
   EditRequestSchema,
@@ -171,7 +171,7 @@ const ids = async (
 }
 
 describe('Foldkit flow instance', () => {
-  test('getNodes carries measured sizes, as React getNodes', async () => {
+  it('getNodes carries measured sizes, as React getNodes', async () => {
     const instance = createFoldkitFlowInstance(fakeRuntime().ports)
     const read = await instance.getNodes()
 
@@ -181,7 +181,7 @@ describe('Foldkit flow instance', () => {
     })
   })
 
-  test('reads nodes, edges and nodes by id through the snapshot port', async () => {
+  it('reads nodes, edges and nodes by id through the snapshot port', async () => {
     const instance = createFoldkitFlowInstance(fakeRuntime().ports)
 
     await expect(ids(instance.getNodes())).resolves.toStrictEqual([
@@ -198,7 +198,7 @@ describe('Foldkit flow instance', () => {
     })
   })
 
-  test('reads internal nodes and the viewport, and stops listening on dispose', async () => {
+  it('reads internal nodes and the viewport, and stops listening on dispose', async () => {
     const runtime = fakeRuntime()
     const instance = createFoldkitFlowInstance(runtime.ports)
 
@@ -217,7 +217,7 @@ describe('Foldkit flow instance', () => {
     ]).toStrictEqual([0, 0, 1])
   })
 
-  test('finds intersecting nodes by id, node or rectangle over the internal nodes', async () => {
+  it('finds intersecting nodes by id, node or rectangle over the internal nodes', async () => {
     const instance = createFoldkitFlowInstance(fakeRuntime().ports)
 
     await expect(
@@ -241,7 +241,7 @@ describe('Foldkit flow instance', () => {
     ).resolves.toStrictEqual([])
   })
 
-  test('checks one intersection, bounds, toObject and edge geometry', async () => {
+  it('checks one intersection, bounds, toObject and edge geometry', async () => {
     const instance = createFoldkitFlowInstance(fakeRuntime().ports)
 
     const area = { x: 140, y: 0, width: 100, height: 100 }
@@ -265,7 +265,7 @@ describe('Foldkit flow instance', () => {
     ])
   })
 
-  test('maps the React edit methods to one typed edit transaction each', async () => {
+  it('maps the React edit methods to one typed edit transaction each', async () => {
     const runtime = fakeRuntime()
     const instance = createFoldkitFlowInstance(runtime.ports)
 
@@ -330,7 +330,7 @@ describe('Foldkit flow instance', () => {
     ])
   })
 
-  test('settles edits as disposed after dispose and rejects viewport calls without a client', async () => {
+  it('settles edits as disposed after dispose and rejects viewport calls without a client', async () => {
     const runtime = fakeRuntime()
     const instance = createFoldkitFlowInstance(runtime.ports)
 
