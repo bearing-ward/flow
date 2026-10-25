@@ -134,3 +134,16 @@ Covers Server Side Image Creation. Depends on shared geometry and all supported 
 D1-D13 above each give a recommendation at the point of implementation. The blocking integration choices are D10 routing, D12 synchronization and D13 rendering. D11 must be settled before committing a bundle schema. D1/D2 transaction-origin and reference-remapping contracts must support those later extensions without introducing framework dependencies. No maintainer answer is required to commit this research report.
 
 External option pages linked above were accessed on 2026-10-25. Recommendations are design judgments, not verified compatibility or dependency approval. No new dependencies were installed.
+
+## Maintainer decisions recorded 2026-10-25
+
+- **D1–D9 and D11:** adopt the recommendations above as written.
+- **D12, sync layer:** optional Yjs + y-websocket integration, kept out of core. Hosting, authenticated room access, durability and offline retention still need separate approval.
+- **D13, image renderer:** Playwright Chromium image service.
+- **D10, routing:** open until the maintainer has reviewed the license. Findings on libavoid-js, checked 2026-10-25 via the GitHub and npm APIs:
+  - **License:** LGPL-2.1-or-later. It is a weak copyleft, not a permissive license like MIT or Apache.
+  - **Maturity:** the latest npm release is `0.5.0-beta.5`, published 2026-02-23. The repository has 46 stars and was last pushed on 2026-09-06.
+  - **Size:** the WASM build of the C++ libavoid is about 0.8 MB unpacked.
+  - **Licensing for Flow:** Flow declares no license. Using the unmodified library as a separately installed optional dependency of an adapter generally lets an MIT or proprietary Flow remain unaffected. However, applications that bundle it must let users replace the library, and changes to libavoid itself must be released under the LGPL.
+  - **Alternatives:** ELK, which is EPL-2.0 and already a dependency, and a pure router written in Flow, which needs no new license.
+  - This is not legal advice.
