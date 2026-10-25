@@ -1,4 +1,5 @@
 import {
+  refitFlowGroups,
   createFlowHistory,
   reduceFlowHistory,
   restoreFlowHistoryDocument,
@@ -2613,7 +2614,15 @@ export const createFlowHost = (
       }
     }
 
+    interface GroupingLifecycle {
+      refit?: (derived: boolean) => void
+    }
+
+    const groupingLifecycle: GroupingLifecycle = {}
+
     const scheduleMeasuredDimensions = (): void => {
+      queueMicrotask(() => groupingLifecycle.refit?.(true))
+
       if (measuredDimensionsPending || options.onNodesChange === undefined) {
         return
       }
@@ -3894,6 +3903,8 @@ export const createFlowHost = (
       if (destroyed) {
         return
       }
+
+      groupingLifecycle.refit?.(false)
 
       const current = createFlowSnapshot(document, authoritativeViewport)
       publishHistory({ kind: 'accepted', document: current.document, context })
@@ -8242,6 +8253,30 @@ export const createFlowHost = (
 
           if (entry.element.dataset.measuredWidth !== undefined) {
             recordNodeMeasurement(node, entry.element)
+
+            // This pass owns this measurement. Keep its document and entry
+            // claims, while allowing later children to read the resized parent.
+            if (!measurementMatches(pass, node.id)) {
+              const measured = new Map(pass.inputs.measurements)
+              const current = measurements.get(node.id)
+
+              if (current === undefined) {
+                measured.delete(node.id)
+              } else {
+                measured.set(node.id, current)
+              }
+
+              pass = {
+                ...pass,
+                inputs: { ...pass.inputs, measurements: measured },
+                graph: createFlowGraph(
+                  pass.inputs.document,
+                  measured,
+                  pass.inputs.positions
+                ),
+              }
+              ;({ graph } = pass)
+            }
           }
         }
 
@@ -13315,6 +13350,31 @@ export const createFlowHost = (
 
         active.frame = globalThis.requestAnimationFrame(tick)
       })
+    }
+
+    groupingLifecycle.refit = (derived) => {
+      if (destroyed) {
+        return
+      }
+
+      const fitted = refitFlowGroups(document, measurements)
+
+      if (fitted === document) {
+        return
+      }
+
+      const previous = document
+      document = fitted
+
+      if (derived) {
+        publishHistory({ kind: 'accepted', document, derived: true })
+      }
+
+      operations.reconcile(document, previous)
+
+      if (derived) {
+        publishAcceptedState('document-update')
+      }
     }
 
     const controller: FlowController = {

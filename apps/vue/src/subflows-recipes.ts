@@ -1,16 +1,19 @@
 import {
+  encodeVersionedFlowDocument,
+  decodeVersionedFlowDocument,
   NodeIdSchema,
   decodeFlowDocument,
   getDropParentId,
   getInternalNodeBounds,
-  groupNodes,
   reparentNode,
 } from '@flow/core'
 import type { FlowNode, FlowRect } from '@flow/core'
-import { FlowCanvas, useFlow } from '@flow/vue'
+import { FlowCanvas, useFlow, useFlowGrouping } from '@flow/vue'
 import type { FlowActions } from '@flow/vue'
 import { Effect } from 'effect'
 import { computed, createApp, defineComponent, h } from 'vue'
+
+import type { GroupingFixture } from '../../../packages/conformance/src/grouping-fixture.ts'
 
 import '@flow/vue/style.css'
 
@@ -77,37 +80,7 @@ const isGroup = (node: Pick<FlowNode, 'type'>): boolean => node.type === 'group'
 
 let groupCount = 0
 
-/** Example "Selection Grouping": wrap the selected nodes in a new parent. */
-const groupSelection = async (flow: FlowActions): Promise<void> => {
-  const nodeIds = flow.nodes.value
-    .filter((node) => node.selected === true)
-    .map(({ id }) => id)
-
-  if (nodeIds.length === 0) {
-    return
-  }
-
-  const bounds = measuredBounds(flow)
-  const groupId = NodeIdSchema.make(`group-${groupCount + 1}`)
-
-  await flow.setNodes((nodes) => {
-    const result = groupNodes(nodes, bounds, {
-      nodeIds,
-      groupId,
-      type: 'group',
-      label: groupId,
-      padding: 20,
-    })
-
-    if (result.kind !== 'grouped') {
-      return nodes
-    }
-
-    groupCount += 1
-
-    return result.nodes
-  })
-}
+let dropBounds: ReadonlyMap<string, FlowRect> | undefined
 
 /** Example "Parent Child Relation": a dropped node joins the smallest group containing it. */
 const reparentDropped = async (
@@ -123,7 +96,7 @@ const reparentDropped = async (
   }
 
   const candidates = flow.nodes.value.filter(isGroup).flatMap(({ id }) => {
-    const rect = bounds.get(id)
+    const rect = (dropBounds ?? bounds).get(id)
 
     return rect === undefined ? [] : [{ id, bounds: rect }]
   })
@@ -151,7 +124,43 @@ const RecipeStatus = defineComponent({
   name: 'SubflowsStatus',
   setup() {
     const flow = useFlow()
+    const grouping = useFlowGrouping()
     flowActions = flow
+    globalThis.flowGroupingFixture = {
+      read: () =>
+        Promise.resolve({
+          document: flow.getSnapshot().document,
+          history: flow.history.value,
+        }),
+      edit: async (input) => {
+        await flow.applyEdit(input)
+      },
+      undo: async () => {
+        await flow.undo()
+      },
+      redo: async () => {
+        await flow.redo()
+      },
+      saveLoad: async () => {
+        const saved = JSON.stringify(
+          encodeVersionedFlowDocument(flow.getSnapshot().document)
+        )
+
+        const restored = await Effect.runPromise(
+          decodeVersionedFlowDocument(JSON.parse(saved))
+        )
+
+        await flow.applyEdit({
+          operations: [
+            { kind: 'set-nodes', nodes: restored.nodes },
+            { kind: 'set-edges', edges: restored.edges },
+          ],
+        })
+      },
+      zoom: async () => {
+        await flow.setViewport({ x: 15, y: 25, zoom: 0.75 })
+      },
+    } satisfies GroupingFixture
 
     const parents = computed(() =>
       flow.nodes.value
@@ -183,9 +192,58 @@ const RecipeStatus = defineComponent({
           {
             type: 'button',
             'data-testid': 'group-selection',
-            onClick: () => groupSelection(flow),
+            hidden: !flow.nodes.value.some((node) => node.selected === true),
+            onClick: () => {
+              groupCount += 1
+
+              return grouping.execute({
+                kind: 'group',
+                groupId: NodeIdSchema.make(`group-${groupCount}`),
+                nodeIds: flow.nodes.value
+                  .filter((node) => node.selected === true)
+                  .map(({ id }) => id),
+              })
+            },
           },
           'Group selection'
+        ),
+        h(
+          'button',
+          {
+            type: 'button',
+            'data-testid': 'ungroup-selection',
+            hidden: !flow.nodes.value.some(
+              (node) => node.selected === true && isGroup(node)
+            ),
+            onClick: () => {
+              const group = flow.nodes.value.find(
+                (node) => node.selected === true && isGroup(node)
+              )
+
+              return group === undefined
+                ? undefined
+                : grouping.execute({ kind: 'ungroup', groupId: group.id })
+            },
+          },
+          'Ungroup'
+        ),
+        h(
+          'button',
+          {
+            type: 'button',
+            'data-testid': 'detach-selection',
+            hidden: !flow.nodes.value.some(
+              (node) => node.selected === true && node.parentId !== undefined
+            ),
+            onClick: () =>
+              grouping.execute({
+                kind: 'detach',
+                nodeIds: flow.nodes.value
+                  .filter((node) => node.selected === true)
+                  .map(({ id }) => id),
+              }),
+          },
+          'Detach'
         ),
         h(
           'output',
@@ -214,7 +272,9 @@ const onNodeDragStop = (payload: {
 
   // Vue commits the drop position on release; read it on the next frame.
   requestAnimationFrame(() => {
-    void reparentDropped(flow, payload.node.id)
+    void reparentDropped(flow, payload.node.id).finally(() => {
+      dropBounds = undefined
+    })
   })
 }
 
@@ -232,7 +292,18 @@ const app = createApp(
         h('div', { class: 'recipe-root' }, [
           h(
             FlowCanvas,
-            { defaultDocument: document, nodeTypes, onNodeDragStop },
+            {
+              defaultDocument: document,
+              nodeTypes,
+              onNodeDragStop,
+              onNodeDragStart: () => {
+                if (flowActions !== undefined) {
+                  dropBounds = measuredBounds(flowActions)
+                }
+              },
+              selectionKeyCode: 'Shift',
+              multiSelectionKeyCode: 'Meta',
+            },
             { default: () => h(RecipeStatus) }
           ),
         ])

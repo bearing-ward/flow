@@ -1053,3 +1053,16 @@ export type {
 } from './domain/flow-expand-parent.ts'
 
 export { decodeInitialViewport } from './domain/flow-initial-viewport.ts'
+
+export {
+  FlowGroupingActionSchema,
+  FlowGroupSizingSchema,
+  prepareFlowGrouping,
+  refitGroupNodes,
+  refitFlowGroups,
+} from './domain/flow-grouping-actions.ts'
+
+export type {
+  FlowGroupingAction,
+  FlowGroupingActionInput,
+} from './domain/flow-grouping-actions.ts'

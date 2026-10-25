@@ -258,3 +258,5 @@ export type {
   FlowNodeToolbarMount,
   FlowNodeToolbarOptions,
 } from './ui/toolbar.ts'
+
+export { createFlowGrouping } from './grouping.ts'

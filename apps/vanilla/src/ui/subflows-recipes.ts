@@ -1,7 +1,8 @@
 import {
+  encodeVersionedFlowDocument,
+  decodeVersionedFlowDocument,
   getDropParentId,
   getInternalNodeBounds,
-  groupNodes,
   NodeIdSchema,
   reparentNode,
 } from '@flow/core'
@@ -9,9 +10,11 @@ import type {
   FlowIntersectionCandidate,
   FlowNodeBoundsLookup,
 } from '@flow/core'
-import { mountFlow } from '@flow/vanilla'
+import { createFlowGrouping, mountFlow } from '@flow/vanilla'
 import type { FlowNodeRenderer, JavaScriptFlowController } from '@flow/vanilla'
+import { Effect } from 'effect'
 
+import type { GroupingFixture } from '../../../../packages/conformance/src/grouping-fixture.ts'
 import { createRecipePage, measuredNode, pageButton } from './recipe-page.ts'
 import type { RecipeCanvasOwner } from './recipe-page.ts'
 
@@ -49,6 +52,8 @@ const measuredBounds = (
 
 let groupCount = 0
 
+let dropBounds: FlowNodeBoundsLookup | undefined
+
 const groupSelection = async (): Promise<void> => {
   const controller = flow.current
 
@@ -56,27 +61,15 @@ const groupSelection = async (): Promise<void> => {
     return
   }
 
-  const nodes = controller.getNodes()
-
-  const nodeIds = nodes
-    .filter(({ selected }) => selected === true)
-    .map(({ id }) => id)
-
   groupCount += 1
-
-  const result = groupNodes(nodes, measuredBounds(controller), {
-    nodeIds,
+  await createFlowGrouping(controller).execute({
+    kind: 'group',
+    nodeIds: controller
+      .getNodes()
+      .filter((node) => node.selected === true)
+      .map(({ id }) => id),
     groupId: NodeIdSchema.make(`group-${groupCount}`),
-    type: groupType,
-    padding: 20,
   })
-
-  status.dataset.lastGroup =
-    result.kind === 'grouped' ? `group-${groupCount}` : result.reason
-
-  if (result.kind === 'grouped') {
-    await controller.setNodes(result.nodes)
-  }
 }
 
 /** Reparent each dropped node into the smallest group that contains it, or none. */
@@ -89,6 +82,7 @@ const reparentDropped = (nodeIds: readonly string[]): void => {
 
   const bounds = measuredBounds(controller)
   const initial = controller.getNodes()
+  const candidateBounds = dropBounds ?? bounds
 
   // Reparenting keeps absolute bounds, so one bounds lookup serves every node.
   let next = initial
@@ -102,7 +96,7 @@ const reparentDropped = (nodeIds: readonly string[]): void => {
     }
 
     const groups = next.flatMap(({ id, type }): FlowIntersectionCandidate[] => {
-      const rect = bounds.get(id)
+      const rect = candidateBounds.get(id)
 
       return type === groupType && rect !== undefined
         ? [{ id, bounds: rect }]
@@ -163,20 +157,29 @@ const controller = mountFlow(
       },
       { ...box('E', 40, 40), parentId: 'G0' },
     ],
-    edges: [],
+    edges: [{ id: 'a-b', source: 'A', target: 'B' }],
   },
   {
     documentMode: 'uncontrolled',
+    selectionKeyCode: 'Shift',
+    multiSelectionKeyCode: 'Meta',
     viewport: {
       mode: 'uncontrolled',
       initial: { x: 0, y: 0, zoom: 1 },
       limits: { minZoom: 0.5, maxZoom: 2 },
     },
     nodeRenderers: { [groupType]: groupNode },
+    onNodeDragStart: () => {
+      if (flow.current !== undefined) {
+        dropBounds = measuredBounds(flow.current)
+      }
+    },
     onNodeDragStop: ({ nodeIds, outcome }) => {
       if (outcome === 'proposed') {
         reparentDropped(nodeIds)
       }
+
+      dropBounds = undefined
     },
   }
 )
@@ -189,9 +192,46 @@ toolbar.append(
   })
 )
 
+const ungroup = pageButton('ungroup-selection', 'Ungroup', () => {
+  const group = controller
+    .getNodes()
+    .find((node) => node.selected === true && node.type === groupType)
+
+  if (group !== undefined) {
+    void createFlowGrouping(controller).execute({
+      kind: 'ungroup',
+      groupId: group.id,
+    })
+  }
+})
+
+const detach = pageButton('detach-selection', 'Detach', () => {
+  void createFlowGrouping(controller).execute({
+    kind: 'detach',
+    nodeIds: controller
+      .getNodes()
+      .filter((node) => node.selected === true)
+      .map(({ id }) => id),
+  })
+})
+
+toolbar.append(ungroup, detach)
+
 const report = (): void => {
   const nodes = controller.getNodes()
 
+  const selectedNodes = nodes.filter((node) => node.selected === true)
+
+  const groupButton = toolbar.querySelector<HTMLElement>(
+    '[data-testid="group-selection"]'
+  )
+
+  if (groupButton !== null) {
+    groupButton.hidden = selectedNodes.length === 0
+  }
+
+  ungroup.hidden = !selectedNodes.some((node) => node.type === groupType)
+  detach.hidden = !selectedNodes.some((node) => node.parentId !== undefined)
   status.value = `nodes:${nodes.length}`
   status.dataset.nodes = nodes.map(({ id }) => id).join(',')
   status.dataset.parents = nodes
@@ -212,3 +252,36 @@ controller.subscribeState(report)
 globalThis.addEventListener('pagehide', () => controller.destroy(), {
   once: true,
 })
+
+// Public API fixture; no graph reducer or browser-event substitution.
+globalThis.flowGroupingFixture = {
+  read: () =>
+    Promise.resolve({
+      document: controller.getSnapshot().document,
+      history: controller.getHistoryStatus(),
+    }),
+  edit: async (input) => {
+    await controller.applyEdit(input)
+  },
+  undo: () => controller.undo(),
+  redo: () => controller.redo(),
+  saveLoad: async () => {
+    const saved = JSON.stringify(
+      encodeVersionedFlowDocument(controller.getSnapshot().document)
+    )
+
+    const restored = await Effect.runPromise(
+      decodeVersionedFlowDocument(JSON.parse(saved))
+    )
+
+    await controller.applyEdit({
+      operations: [
+        { kind: 'set-nodes', nodes: restored.nodes },
+        { kind: 'set-edges', edges: restored.edges },
+      ],
+    })
+  },
+  zoom: async () => {
+    await controller.setViewport({ x: 15, y: 25, zoom: 0.75 })
+  },
+} satisfies GroupingFixture

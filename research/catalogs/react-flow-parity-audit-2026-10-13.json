@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 181,
+    "inScopeCloseAllHosts": 183,
     "inScopeCloseByHost": {
-      "vanilla": 181,
-      "vue": 181,
-      "foldkit": 181
+      "vanilla": 183,
+      "vue": 183,
+      "foldkit": 183
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history acceptance follow-up; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history and Plan 154 grouping acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-25",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 2,
-          "P": 11,
+          "C": 4,
+          "P": 9,
           "G": 3
         },
         "vue": {
-          "C": 2,
-          "P": 11,
+          "C": 4,
+          "P": 9,
           "G": 3
         },
         "foldkit": {
-          "C": 2,
-          "P": 11,
+          "C": 4,
+          "P": 9,
           "G": 3
         }
       }
@@ -3727,32 +3727,32 @@
     {
       "section": "examples grouping",
       "name": "Selection Grouping · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
-      "missing": "Initial grouping and group dragging are tested; contextual ungrouping and ongoing child-driven group sizing are absent.",
+      "missing": "",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 113", "Plan 149"],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 113", "Plan 149", "Plan 154"],
       "reaudit": {
         "on": "2026-10-25",
-        "plan": "Plan 149",
+        "plan": "Plan 154",
         "previousRatings": {
-          "vanilla": "C",
-          "vue": "C",
-          "foldkit": "C"
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Shared core unit tests and the same public grouping-action contract in all three hosts, plus unchanged subflow group-drag and drop-in/drop-out tests. Compared against accessible public descriptions. C means achievable functional closeness within unit 3, not private-source or exact-overlap conformance.",
         "url": "https://reactflow.dev/examples/grouping/selection-grouping",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public descriptions read on 2026-10-25. Subscription source and exact upstream overlap behavior were not accessed or inferred.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/selection-grouping/index.html"
         ],
-        "missing": "Initial grouping and group dragging are tested; contextual ungrouping and ongoing child-driven group sizing are absent.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/154-grouping-actions.md",
         "outcomes": [
           {
             "id": "select-group",
@@ -3762,23 +3762,24 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:73",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:50",
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:60"
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:81",
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:76"
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:73",
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:77"
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
               ]
             },
             "basis": "public-description"
@@ -3791,23 +3792,24 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:73",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:50",
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:60"
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:81",
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:76"
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:73",
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:77"
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
               ]
             },
             "basis": "public-description"
@@ -3815,80 +3817,130 @@
           {
             "id": "selection-toolbar",
             "outcome": "Offer grouping from a toolbar associated with the current selection.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-grouping.ts:107"],
-              "vanilla": ["apps/vanilla/src/ui/subflows-recipes.ts:197"],
-              "vue": ["apps/vue/src/subflows-recipes.ts:179"],
-              "foldkit": ["apps/foldkit/ui-recipes/subflows/main.ts:73"]
+              "shared": [
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
+              ],
+              "vue": [
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
+              ]
             },
             "basis": "public-description"
           },
           {
             "id": "ungroup",
             "outcome": "Select a group and ungroup all children through its toolbar.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-grouping.ts:107"],
-              "vanilla": ["apps/vanilla/src/ui/subflows-recipes.ts:197"],
-              "vue": ["apps/vue/src/subflows-recipes.ts:179"],
-              "foldkit": ["apps/foldkit/ui-recipes/subflows/main.ts:73"]
+              "shared": [
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
+              ],
+              "vue": [
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
+              ]
             },
             "basis": "public-description"
           },
           {
             "id": "auto-size",
             "outcome": "Automatically resize a group when its child bounds change.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-grouping.ts:107"],
-              "vanilla": ["apps/vanilla/src/ui/subflows-recipes.ts:197"],
-              "vue": ["apps/vue/src/subflows-recipes.ts:179"],
-              "foldkit": ["apps/foldkit/ui-recipes/subflows/main.ts:73"]
+              "shared": [
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
+              ],
+              "vue": [
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
+              ]
             },
             "basis": "public-description"
           }
         ],
         "unverified": [
-          "The page describes Shift-click; recipes use Meta/Control multi-select. Exact modifier parity, nested-group auto-sizing and save-load are unverified."
+          "Private Pro source, exact overlap thresholds and upstream DOM output remain unverified.",
+          "The adopted D3 policy uses 20-unit padding, direct-child auto-fit and full-containment/smallest-target attachment.",
+          "Collector-side OpenTelemetry delivery and collaborative undo are outside this acceptance boundary."
         ]
       }
     },
     {
       "section": "examples grouping",
       "name": "Parent Child Relation · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
-      "missing": "Drop-to-attach and drop-outside-to-detach are tested; the described detach toolbar is absent.",
+      "missing": "",
       "effort": "M",
       "theme": "subflows",
-      "updatedBy": ["Plan 109", "Plan 149"],
+      "updatedBy": ["Plan 109", "Plan 149", "Plan 154"],
       "reaudit": {
         "on": "2026-10-25",
-        "plan": "Plan 149",
+        "plan": "Plan 154",
         "previousRatings": {
-          "vanilla": "C",
-          "vue": "C",
-          "foldkit": "C"
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Shared core unit tests and the same public grouping-action contract in all three hosts, plus unchanged subflow group-drag and drop-in/drop-out tests. Compared against accessible public descriptions. C means achievable functional closeness within unit 3, not private-source or exact-overlap conformance.",
         "url": "https://reactflow.dev/examples/grouping/parent-child-relation",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public descriptions read on 2026-10-25. Subscription source and exact upstream overlap behavior were not accessed or inferred.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/parent-child-relation/index.html"
         ],
-        "missing": "Drop-to-attach and drop-outside-to-detach are tested; the described detach toolbar is absent.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/154-grouping-actions.md",
         "outcomes": [
           {
             "id": "attach",
@@ -3898,20 +3950,24 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:192",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
               ]
             },
             "basis": "public-description"
@@ -3924,20 +3980,24 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:192",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
               ]
             },
             "basis": "public-description"
@@ -3950,20 +4010,24 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:192",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
               ]
             },
             "basis": "public-description"
@@ -3971,32 +4035,38 @@
           {
             "id": "detach",
             "outcome": "Detach a child using a toolbar while keeping its absolute position.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:192",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-grouping-actions.ts:182",
+                "packages/core/src/domain/flow-grouping-actions.ts:38",
+                "packages/conformance/src/grouping-actions.ts:85"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:114"
+                "apps/vanilla/src/grouping.ts:8",
+                "apps/vanilla/e2e/grouping-actions.e2e.ts:1",
+                "apps/vanilla/e2e/subflows-recipes.e2e.ts:55"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:128"
+                "packages/vue/src/grouping.ts:8",
+                "apps/vue/e2e/grouping-actions.e2e.ts:1",
+                "apps/vue/e2e/subflows-recipes.e2e.ts:69"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:127"
+                "packages/foldkit/src/grouping-client.ts:24",
+                "apps/foldkit/e2e/grouping-actions.e2e.ts:1",
+                "apps/foldkit/e2e/subflows-recipes.e2e.ts:73"
               ]
             },
             "basis": "public-description"
           }
         ],
         "unverified": [
-          "Flow requires full containment and chooses the smallest containing group. Upstream overlap threshold, nested targets and persistence are not disclosed."
+          "Private Pro source, exact overlap thresholds and upstream DOM output remain unverified.",
+          "The adopted D3 policy uses 20-unit padding, direct-child auto-fit and full-containment/smallest-target attachment.",
+          "Collector-side OpenTelemetry delivery and collaborative undo are outside this acceptance boundary."
         ]
       }
     },

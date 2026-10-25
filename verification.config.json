@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle; Plan 150 transaction history",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle; Plan 150 transaction history; Plan 154 grouping actions and sizing",
   "checks": [
     "api-members",
     "catalog",
@@ -75,7 +75,8 @@
       "edge-stacking.e2e.ts",
       "base-edge.e2e.ts",
       "node-extent-adoption.e2e.ts",
-      "transaction-history.e2e.ts"
+      "transaction-history.e2e.ts",
+      "grouping-actions.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -132,7 +133,8 @@
       "edge-stacking.e2e.ts",
       "edge-label-anchors.e2e.ts",
       "node-extent-adoption.e2e.ts",
-      "transaction-history.e2e.ts"
+      "transaction-history.e2e.ts",
+      "grouping-actions.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -201,7 +203,8 @@
       "base-edge.e2e.ts",
       "layout-readiness.e2e.ts",
       "node-extent-adoption.e2e.ts",
-      "transaction-history.e2e.ts"
+      "transaction-history.e2e.ts",
+      "grouping-actions.e2e.ts"
     ]
   }
 }

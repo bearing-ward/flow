@@ -39,3 +39,5 @@ The active canvas handles Ctrl or Meta with Z for undo and Shift+Z for redo. Ctr
 History belongs to a canvas or Runtime instance. Destroying an instance disables its history actions and removes its listeners. A new mount starts with empty stacks.
 
 The `/history/` page in each host demonstrates controls, semantic edits, and history status. The [Plan 150 trace](../research/traces/150-transaction-history.md) records production paths, acceptance tests, and reference boundaries.
+
+Grouping commands use one edit transaction. Later intrinsic-size corrections amend the current snapshot without adding an undo step or clearing redo. See [grouping actions](grouping-actions.md).
