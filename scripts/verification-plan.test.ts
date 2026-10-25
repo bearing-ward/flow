@@ -136,6 +136,24 @@ describe('verification profiles', () => {
     ).toHaveLength(5)
   })
 
+  it('runs the React reference only when explicitly selected', () => {
+    const request = parseVerificationArguments(['--check', 'reference-host'])
+    expect(
+      selectVerificationChecks(config, request).map((check) => check.name)
+    ).toContain('React reference host')
+    expect(
+      selectVerificationChecks(
+        config,
+        parseVerificationArguments(['--full'])
+      ).map((check) => check.name)
+    ).not.toContain('React reference host')
+    expect(
+      selectVerificationChecks(config, parseVerificationArguments([])).map(
+        (check) => check.name
+      )
+    ).not.toContain('React reference host')
+  })
+
   it.each([
     ['--vue'],
     ['--vue', '--full'],

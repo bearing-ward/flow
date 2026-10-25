@@ -6,6 +6,7 @@ import {
   expect,
   componentMount,
   history,
+  nodeChangeSnapshot,
   eventCount,
   drag,
   dragPane,
@@ -161,18 +162,15 @@ export const eventsContract = (adapter: UpstreamHostAdapter) => {
     await page.waitForTimeout(500)
     await page.locator('[data-id=update-btn]').click()
     await expect.poll(() => history(page, 'nodeChanges')).toHaveLength(3)
-    const changes = await history(page, 'nodeChanges')
+    const changes = await nodeChangeSnapshot(page, adapter)
     expect(changes[1]).toEqual([
       {
         type: 'replace',
         id: '1',
         item: {
           id: '1',
-          label: 'Node 1',
           data: { label: 'Node 1' },
           position: { x: 0, y: 0 },
-          sourcePosition: 'bottom',
-          targetPosition: 'top',
           measured: { width: 200, height: 100 },
           style: { width: 200, height: 100 },
         },

@@ -11,6 +11,7 @@ export const expect = playwrightExpect.configure({ timeout: 4000 })
 
 // examples/react/cypress/support/commands.ts:1-58, ported once in Plan 134.
 export {
+  handleSelector,
   dragPane,
   zoomPane,
   trigger,
@@ -42,7 +43,9 @@ export const componentMount = async (
     throw new Error(`Missing component ledger ${id}`)
   }
 
-  const result = entry.hosts[adapter.host]
+  const result =
+    adapter.host === 'react' ? entry.reference : entry.hosts[adapter.host]
+
   test.skip(
     result.status === 'not-applicable',
     'reason' in result ? result.reason : entry.id
@@ -64,8 +67,12 @@ export const eventCount = (page: Page, name: string) =>
 export const latestViewport = (page: Page) =>
   page.evaluate(() => window.__component.viewports.at(-1))
 
-export const nodeSnapshot = (page: Page) =>
-  page.evaluate(() =>
+export const nodeSnapshot = (page: Page, adapter: UpstreamHostAdapter) => {
+  if (adapter.host === 'react') {
+    return history(page, 'nodes')
+  }
+
+  return page.evaluate(() =>
     window.__component.nodes.map((value) => {
       if (!Array.isArray(value)) {
         return value
@@ -81,6 +88,39 @@ export const nodeSnapshot = (page: Page) =>
       })
     })
   )
+}
+
+// Translate only Flow's node metadata extensions. Keep every upstream payload
+// field and object equality, including the observer's retained measured object.
+export const nodeChangeSnapshot = (
+  page: Page,
+  adapter: UpstreamHostAdapter
+) => {
+  if (adapter.host === 'react') {
+    return history(page, 'nodeChanges')
+  }
+
+  return page.evaluate(() =>
+    window.__component.nodeChanges.map((batch) => {
+      if (!Array.isArray(batch)) {
+        return batch
+      }
+
+      return batch.map((change) => {
+        if (change.type !== 'replace') {
+          return change
+        }
+
+        const { label, sourcePosition, targetPosition, ...item } = change.item
+        void label
+        void sourcePosition
+        void targetPosition
+
+        return { ...change, item }
+      })
+    })
+  )
+}
 
 export const expectedNodes = [
   {
@@ -113,7 +153,7 @@ export const componentEvidence = () =>
             browser: { width: window.innerWidth, height: window.innerHeight },
             canvases: [
               ...document.querySelectorAll<HTMLElement>(
-                '.flow-canvas,.flow-vue-canvas,.flow-foldkit-canvas'
+                '.flow-canvas,.flow-vue-canvas,.flow-foldkit-canvas,.react-flow'
               ),
             ].map((el) => ({
               bounds: el.getBoundingClientRect().toJSON(),
@@ -121,14 +161,16 @@ export const componentEvidence = () =>
             })),
             nodes: [
               ...document.querySelectorAll<HTMLElement>(
-                '.flow-node,.flow-vue-node,.flow-foldkit-node'
+                '.flow-node,.flow-vue-node,.flow-foldkit-node,.react-flow__node'
               ),
             ].map((n) => ({
               html: n.outerHTML,
               bounds: n.getBoundingClientRect().toJSON(),
             })),
             viewports: [
-              ...document.querySelectorAll('[class$="-viewport"]'),
+              ...document.querySelectorAll(
+                '[class$="-viewport"],.react-flow__viewport'
+              ),
             ].map((n) => n.getAttribute('style')),
           })),
           null,

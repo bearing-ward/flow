@@ -2,7 +2,7 @@
 
 ## Browser entry and observed order
 
-UP-126-022 runs the unchanged shared contract at `apps/shared-e2e/upstream/nodes.ts:23`, registered by `apps/foldkit/e2e/upstream-playwright.e2e.ts:21`. The adapter opens `/upstream/nodes/general` and waits for the Foldkit fixture's ready marker at `apps/shared-e2e/upstream/adapter.ts:148`. The test measures Node-1, presses Shift, and starts its drag 150 pixels left and 25 pixels above that measurement.
+UP-126-022 runs the unchanged shared contract at `apps/shared-e2e/upstream/nodes.ts:23`, registered by `apps/foldkit/e2e/upstream-playwright.e2e.ts:21`. The adapter opens `/upstream/nodes/general` and waits for the Foldkit fixture's ready marker at `apps/shared-e2e/upstream/adapter.ts:187`. The test measures Node-1, presses Shift, and starts its drag 150 pixels left and 25 pixels above that measurement.
 
 The untouched `66a94e2` baseline passes 19/20 repetitions. Two temporary diagnostic runs each pass 48/50. The second run records both failing presses at client `(-150, -25)` targeting `<html>`. Thus the previously measured Node-1 origin was `(0, 0)`. At native Shift keydown, its rendered bounds are already `(550.5590209960938, 72)`. Native Shift, queued `SetCanvasKey`, and the accepted `selectionKeyPressed: true` transition precede the off-canvas press. No `GestureDown` enters the runtime, and no controlled `ReplaceDocument` cancels selection. This refutes the planner's key/acknowledgement hypothesis for the captured failures. Temporary probes are removed; local logs are `/tmp/flow-130-baseline.log`, `/tmp/flow-130-instrumented.log`, and `/tmp/flow-130-instrumented2.log`, with reduced failing traces in `/tmp/flow-130-failure-evidence.json`.
 

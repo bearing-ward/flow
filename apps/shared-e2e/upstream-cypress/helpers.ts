@@ -132,7 +132,9 @@ export const persistentExample = (
       throw new Error(`Missing Cypress port: ${info.title}`)
     }
 
-    const result = entry.hosts[adapter.host]
+    const result =
+      adapter.host === 'react' ? entry.reference : entry.hosts[adapter.host]
+
     test.fail(
       result.status === 'fail' || result.status === 'intentional-difference',
       'reason' in result ? result.reason : entry.id
@@ -145,29 +147,37 @@ export const persistentExample = (
         ready:
           document.querySelector<HTMLElement>('#app')?.dataset.upstreamReady,
         nodes: document
-          .querySelectorAll<HTMLElement>('[data-node-id]')
+          .querySelectorAll<HTMLElement>(
+            '.flow-node,.flow-vue-node,.flow-foldkit-node,.react-flow__node'
+          )
           .values()
           .filter((element) =>
-            element.matches('.flow-node,.flow-vue-node,.flow-foldkit-node')
+            element.matches(
+              '.flow-node,.flow-vue-node,.flow-foldkit-node,.react-flow__node'
+            )
           )
           .map((element) => ({
-            id: element.dataset.nodeId,
+            id: element.dataset.nodeId ?? element.dataset.id,
             class: element.className,
             style: element.getAttribute('style'),
             pointerEvents: getComputedStyle(element).pointerEvents,
             bounds: element.getBoundingClientRect().toJSON(),
           }))
           .toArray(),
-        edges: [...document.querySelectorAll<SVGElement>('[data-edge-id]')].map(
-          (element) => ({
-            id: element.dataset.edgeId,
-            class: element.getAttribute('class'),
-            pointerEvents: getComputedStyle(element).pointerEvents,
-          })
-        ),
-        viewports: [...document.querySelectorAll('[class$="-viewport"]')].map(
-          (element) => element.getAttribute('style')
-        ),
+        edges: [
+          ...document.querySelectorAll<SVGElement>(
+            '[data-edge-id],.react-flow__edge'
+          ),
+        ].map((element) => ({
+          id: element.dataset.edgeId ?? element.dataset.id,
+          class: element.getAttribute('class'),
+          pointerEvents: getComputedStyle(element).pointerEvents,
+        })),
+        viewports: [
+          ...document.querySelectorAll(
+            '[class$="-viewport"],.react-flow__viewport'
+          ),
+        ].map((element) => element.getAttribute('style')),
         controls: [
           ...document.querySelectorAll<HTMLInputElement>(
             '[data-upstream-control]'
@@ -551,7 +561,12 @@ export const isOutsideViewport = async (page: Page, element: Locator) => {
 export const handleSelector = (
   adapter: UpstreamHostAdapter,
   kind: 'source' | 'target'
-) =>
-  adapter.host === 'vanilla'
+) => {
+  if (adapter.host === 'react') {
+    return `.react-flow__handle.${kind}`
+  }
+
+  return adapter.host === 'vanilla'
     ? `.flow-handle[data-kind="${kind}"]`
     : `.flow-${adapter.host}-handle[aria-label^="${kind} handle"]`
+}

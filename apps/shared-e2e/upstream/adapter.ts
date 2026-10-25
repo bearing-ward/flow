@@ -4,7 +4,7 @@ import { Schema as S } from 'effect'
 
 import ledger from '../../../research/catalogs/upstream-test-ledger.json' with { type: 'json' }
 
-export type UpstreamHost = 'vanilla' | 'vue' | 'foldkit'
+export type UpstreamHost = 'vanilla' | 'vue' | 'foldkit' | 'react'
 
 export const boundingBox = async (element: Locator) => {
   const bounds = await element.boundingBox()
@@ -20,7 +20,7 @@ export interface UpstreamHostAdapter {
   readonly host: UpstreamHost
   readonly baseURL: string
   readonly goto: (page: Page, path: string, classify?: boolean) => Promise<void>
-  readonly selectors: { readonly edgePath: string }
+  readonly selectors: { readonly edgePath: string; readonly handle: string }
   readonly nodeTransform: (element: Locator) => Promise<string>
   readonly edgeTarget: (element: Locator) => Locator
   readonly edgeClick: (
@@ -39,12 +39,24 @@ export interface UpstreamHostAdapter {
 export const upstreamHostAdapter = (
   host: UpstreamHost
 ): UpstreamHostAdapter => {
+  const resultFor = (entry: (typeof ledger.cases)[number]) =>
+    host === 'react' ? entry.reference : entry.hosts[host]
+
+  const baseURL = `http://127.0.0.1:${{ vanilla: 4176, vue: 4177, foldkit: 4178, react: 4180 }[host]}`
   const prefix = host === 'vanilla' ? 'flow' : `flow-${host}`
+
+  const edgeSelector =
+    host === 'vanilla' ? '.flow-edge-group' : `.${prefix}-edge`
 
   const selectors = {
     'edge-path': `.${prefix}-edge-path`,
     node: `.${prefix}-node`,
-    edge: host === 'vanilla' ? '.flow-edge-group' : `.${prefix}-edge`,
+    edge: edgeSelector,
+    'edge-custom': `${edgeSelector}:has([data-component-custom-edge])`,
+    'edge-invalid': `${edgeSelector}:has([data-component-invalid-edge])`,
+    'edge-default': `${edgeSelector}:not(:has([data-component-custom-edge],[data-component-invalid-edge]))`,
+    'edgelabel-renderer':
+      '[data-testid="flow-edge-label-renderer"],.flow-vue-edge-label-renderer',
     handle: `.${prefix}-handle`,
     viewport: `.${prefix}-viewport`,
     pane: `.${prefix}-canvas`,
@@ -66,8 +78,12 @@ export const upstreamHostAdapter = (
     'node-toolbar': `.${prefix}-node-toolbar`,
   } satisfies Record<string, string>
 
-  const map = (selector: string): string =>
-    selector
+  const map = (selector: string): string => {
+    if (host === 'react') {
+      return selector
+    }
+
+    return selector
       .replaceAll(
         '.react-flow__minimap svg',
         host === 'vanilla' ? '.flow-minimap-svg' : `.${prefix}-minimap`
@@ -105,11 +121,17 @@ export const upstreamHostAdapter = (
           ? '[data-kind="source"]'
           : '[aria-label^="source handle"]'
       )
+  }
 
   const edgeTarget = (element: Locator) =>
     element
       .locator(
-        host === 'vanilla' ? '.flow-edge-hit' : `.${prefix}-edge-hit-target`
+        {
+          react: '.react-flow__edge-interaction',
+          vanilla: '.flow-edge-hit',
+          vue: '.flow-vue-edge-hit-target',
+          foldkit: '.flow-foldkit-edge-hit-target',
+        }[host]
       )
       .first()
 
@@ -124,7 +146,12 @@ export const upstreamHostAdapter = (
       throw new Error(`Missing upstream ledger case: ${info.title}`)
     }
 
-    const result = entry.hosts[host]
+    const result = resultFor(entry)
+
+    if (host === 'react') {
+      test.fail(result.status === 'fail', entry.reference.reason)
+    }
+
     test.skip(
       result.status === 'not-applicable',
       'reason' in result ? String(result.reason) : entry.id
@@ -133,16 +160,28 @@ export const upstreamHostAdapter = (
 
   return {
     host,
-    baseURL: `http://127.0.0.1:${{ vanilla: 4176, vue: 4177, foldkit: 4178 }[host]}`,
-    selectors: { edgePath: selectors['edge-path'] ?? '' },
+    baseURL,
+    selectors: {
+      handle: host === 'react' ? '.react-flow__handle' : selectors.handle,
+      edgePath:
+        host === 'react'
+          ? '.react-flow__edge-path'
+          : (selectors['edge-path'] ?? ''),
+    },
     goto: async (page, path, classify = true) => {
-      await page.goto(
-        `http://127.0.0.1:${{ vanilla: 4176, vue: 4177, foldkit: 4178 }[host]}${path}`
-      )
-      await expect(page.locator(`.${prefix}-canvas`)).toBeVisible()
+      await page.goto(`${baseURL}${path}`)
+      await expect(
+        page
+          .locator(host === 'react' ? '.react-flow' : `.${prefix}-canvas`)
+          .first()
+      ).toBeVisible()
 
       if (!path.startsWith('/upstream-examples/')) {
-        await expect(page.locator(`.${prefix}-node`).first()).toBeVisible()
+        await expect(
+          page
+            .locator(host === 'react' ? '.react-flow__node' : `.${prefix}-node`)
+            .first()
+        ).toBeVisible()
       }
 
       if (host === 'foldkit' || path.startsWith('/upstream-examples/')) {
@@ -164,7 +203,7 @@ export const upstreamHostAdapter = (
         throw new Error('Missing upstream ledger entry')
       }
 
-      const result = entry.hosts[host]
+      const result = resultFor(entry)
       test.fail(
         result.status === 'fail' || result.status === 'intentional-difference',
         `${entry.id}: ${'reason' in result ? String(result.reason) : result.status}`
@@ -190,7 +229,11 @@ export const upstreamHostAdapter = (
       ),
     edgeLayer: (page, id) =>
       page
-        .locator(`${selectors.edge}[data-edge-id="${id}"]`)
+        .locator(
+          host === 'react'
+            ? `.react-flow__edge[data-id="${id}"]`
+            : `${selectors.edge}[data-edge-id="${id}"]`
+        )
         .locator('xpath=ancestor-or-self::*[local-name()="svg"][1]'),
   }
 }

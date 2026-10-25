@@ -107,3 +107,18 @@ scripts/with-flow-browser-lock.sh bun run verify
 ```
 
 The wrapper waits for `/tmp/flow-browser.lock`, writes its owner token, sets `OTEL_SDK_DISABLED=true`, and releases only its own lock on exit. The focused verifier supplies `--workers=1` to each selected host suite.
+
+### React reference host
+
+Plan 148 adds a private reference app on `4180`. It mounts the pinned generic fixtures and example pages, and extracts the setup and `cy.mount` expressions from the pinned component tests. The shared Playwright bodies drive all browser gestures and assertions. The 31 utility ports use Flow-specific APIs in Vitest; their reference runner executes the original pinned utility bodies in Chromium against the matching published xyflow packages. Imported evidence stays unchanged.
+
+Each ledger case has a `reference` result with `status` equal to `pass`, `fail`, or `not-run`, and a nonempty `reason`. React never inherits a Flow host's skips or expected failures. A recorded React failure remains an expected failure with its assertion intact and fails verification if it unexpectedly passes.
+
+The reference host is an opt-in verification check. Both default profiles keep their existing scope. Run it under the browser lock:
+
+```sh
+scripts/with-flow-browser-lock.sh bun run verify --check reference-host
+scripts/with-flow-browser-lock.sh bun run playwright test --config apps/react-reference/playwright.config.ts --workers=1
+```
+
+The opt-in check typechecks and builds the private app, then runs all reference cases with one worker. `plans/148-react-reference-results.md` records failures, classifications, Flow status changes, and the measured boundary. A passing focused Flow verification does not establish React reference acceptance.

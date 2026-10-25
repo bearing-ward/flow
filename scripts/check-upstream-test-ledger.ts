@@ -41,6 +41,10 @@ const ledgerSchema = S.Struct({
         vue: resultSchema,
         foldkit: resultSchema,
       }),
+      reference: S.Struct({
+        status: S.Literals(['pass', 'fail', 'not-run']),
+        reason: S.NonEmptyString,
+      }),
       flowTest: S.NullOr(S.NonEmptyString),
     })
   ),
@@ -190,4 +194,13 @@ for (const phase of [126, 127, 128]) {
 
     console.info(`${phase} | ${host} | ${counts.join(' | ')}`)
   }
+}
+
+console.info('phase | react reference | pass | fail | not-run')
+
+for (const phase of [126, 127, 128]) {
+  const entries = ledger.cases.filter((entry) => entry.phase === phase)
+  console.info(
+    `${phase} | react reference | ${['pass', 'fail', 'not-run'].map((status) => entries.filter((entry) => entry.reference.status === status).length).join(' | ')}`
+  )
 }
