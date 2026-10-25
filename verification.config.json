@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 149 Pro parity audit",
   "checks": [
     "api-members",
     "catalog",
