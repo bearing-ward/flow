@@ -1,4 +1,4 @@
-import ts from 'typescript'
+import ts from 'typescript-api'
 
 const callName = (node: ts.Node) =>
   ts.isCallExpression(node) && ts.isIdentifier(node.expression)
