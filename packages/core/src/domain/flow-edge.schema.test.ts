@@ -8,7 +8,7 @@ import {
   SchemaParser,
   Predicate,
 } from 'effect'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 
 import { createFlowEdgeVariantSchema } from './flow-data-contract.ts'
 import { FlowDefaultEdgeOptionsSchema } from './flow-default-edge-options.ts'
@@ -345,7 +345,7 @@ describe('original 065 handle identity boundary, unit path', () => {
 let markerAssertions = 0
 
 const markerCase = (name: string, run: () => void) =>
-  it(`marker foundation: ${name}`, () => {
+  test(`marker foundation: ${name}`, () => {
     const before = markerAssertions
     run()
     expect(markerAssertions).toBeGreaterThan(before)

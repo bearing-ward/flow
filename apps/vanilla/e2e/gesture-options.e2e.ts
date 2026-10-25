@@ -801,54 +801,51 @@ test('rectangle selection lifecycle reports start progress and selected result o
 }) => {
   await page.goto('/')
   await page.evaluate(() => globalThis.dispatchEvent(new Event('beforeunload')))
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const modulePath = '/src/public.ts'
+    const { mountFlow } = await import(modulePath)
+    const root = document.querySelector<HTMLElement>('#app')
 
-    return import(modulePath).then(({ mountFlow }) => {
-      const root = document.querySelector<HTMLElement>('#app')
+    if (root === null) {
+      throw new Error('Missing flow host')
+    }
 
-      if (root === null) {
-        throw new Error('Missing flow host')
-      }
+    const events: string[] = []
 
-      const events: string[] = []
+    const record = (event: string): void => {
+      events.push(event)
+      document.documentElement.dataset.selectionEvents = JSON.stringify(events)
+    }
 
-      const record = (event: string): void => {
-        events.push(event)
-        document.documentElement.dataset.selectionEvents =
-          JSON.stringify(events)
-      }
-
-      mountFlow(
-        root,
-        {
-          nodes: [
-            { id: 'a', label: 'A', position: { x: 100, y: 120 } },
-            { id: 'b', label: 'B', position: { x: 330, y: 120 } },
-          ],
-          edges: [],
+    mountFlow(
+      root,
+      {
+        nodes: [
+          { id: 'a', label: 'A', position: { x: 100, y: 120 } },
+          { id: 'b', label: 'B', position: { x: 330, y: 120 } },
+        ],
+        edges: [],
+      },
+      {
+        documentMode: 'uncontrolled',
+        selectionActivationModifier: 'alt',
+        selectNodesOnDrag: true,
+        onSelectionStart: () => record('start'),
+        onSelectionDrag: () => record('progress'),
+        onSelectionEnd: ({
+          outcome,
+          nodeIds,
+        }: {
+          readonly outcome: 'finished' | 'cancelled'
+          readonly nodeIds: readonly string[]
+        }) => record(`end:${outcome}:${nodeIds.join(',')}`),
+        viewport: {
+          mode: 'uncontrolled',
+          initial: { x: 0, y: 0, zoom: 1 },
+          limits: { minZoom: 0.5, maxZoom: 2 },
         },
-        {
-          documentMode: 'uncontrolled',
-          selectionActivationModifier: 'alt',
-          selectNodesOnDrag: true,
-          onSelectionStart: () => record('start'),
-          onSelectionDrag: () => record('progress'),
-          onSelectionEnd: ({
-            outcome,
-            nodeIds,
-          }: {
-            readonly outcome: 'finished' | 'cancelled'
-            readonly nodeIds: readonly string[]
-          }) => record(`end:${outcome}:${nodeIds.join(',')}`),
-          viewport: {
-            mode: 'uncontrolled',
-            initial: { x: 0, y: 0, zoom: 1 },
-            limits: { minZoom: 0.5, maxZoom: 2 },
-          },
-        }
-      )
-    })
+      }
+    )
   })
 
   const canvas = page.getByTestId('flow-canvas')

@@ -5,11 +5,11 @@ import {
   NodeIdSchema,
 } from '@flow/core'
 import { Schema as S } from 'effect'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 describe('Pinned Cypress component utilities', () => {
   // examples/react/cypress/components/utils/calculate-node-position.cy.ts:5
-  test("[UP-128-093] clamps a child with extent 'parent' to a parent that has an intrinsic size but is not measured yet", () => {
+  it("[UP-128-093] clamps a child with extent 'parent' to a parent that has an intrinsic size but is not measured yet", () => {
     const document = S.decodeUnknownSync(FlowDocumentSchema)({
       nodes: [
         {

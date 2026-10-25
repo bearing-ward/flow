@@ -1,11 +1,11 @@
 import { getNodesBounds } from '@flow/core'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { lookup, fixtureNode, lookupNodes } from './geometry.ts'
 
 describe('Pinned Cypress component utilities', () => {
   // examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:5
-  test('[UP-128-094] calculates bounds for a node', () => {
+  it('[UP-128-094] calculates bounds for a node', () => {
     const nodeLookup = lookup([fixtureNode('1', 10, 10, 100, 50)])
     expect(
       getNodesBounds(lookupNodes(nodeLookup, ['1']), { nodeLookup })
@@ -18,7 +18,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:28
-  test('[UP-128-095] calculates bounds for a node (-x, -y)', () => {
+  it('[UP-128-095] calculates bounds for a node (-x, -y)', () => {
     const nodeLookup = lookup([fixtureNode('1', -10, -10, 100, 50)])
     expect(
       getNodesBounds(lookupNodes(nodeLookup, ['1']), { nodeLookup })
@@ -31,7 +31,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:51
-  test('[UP-128-096] calculates bounds for multitple nodes', () => {
+  it('[UP-128-096] calculates bounds for multitple nodes', () => {
     const nodeLookup = lookup([
       fixtureNode('1', -10, 10, 100, 50),
       fixtureNode('2', 100, 100, 100, 50),
@@ -48,7 +48,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:80
-  test('[UP-128-097] calculates bounds for a node with a child node', () => {
+  it('[UP-128-097] calculates bounds for a node with a child node', () => {
     const nodeLookup = lookup([
       fixtureNode('1', 10, 10, 100, 50),
       fixtureNode('2', 200, 100, 100, 50, '1'),
@@ -66,7 +66,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:117
-  test('[UP-128-098] calculates bounds for child nodes', () => {
+  it('[UP-128-098] calculates bounds for child nodes', () => {
     const nodeLookup = lookup([
       fixtureNode('1', 10, 10, 100, 50),
       fixtureNode('2', 20, 20, 100, 50, '1'),
@@ -84,7 +84,7 @@ describe('Pinned Cypress component utilities', () => {
   })
 
   // examples/react/cypress/components/utils/get-nodes-bounds.cy.ts:154
-  test('[UP-128-099] ignores unresolvable ids instead of stretching the bounds to the origin', () => {
+  it('[UP-128-099] ignores unresolvable ids instead of stretching the bounds to the origin', () => {
     const nodeLookup = lookup([fixtureNode('1', 100, 100, 100, 50)])
     expect(getNodesBounds(['1', '2'], { nodeLookup })).toStrictEqual({
       x: 100,

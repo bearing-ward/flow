@@ -147,7 +147,7 @@ const browserCheck = (
     'playwright',
     'test',
     ...config,
-    ...(full ? [] : ['--workers=1']),
+    '--workers=1',
     ...filters,
   ])
 }

@@ -32,7 +32,10 @@ const effect = Schema.decodeUnknownSync(packageVersion)(
 
 const typescript = Schema.decodeUnknownSync(packageVersion)(
   JSON.parse(
-    await readFile(join(root, 'node_modules/typescript/package.json'), 'utf-8')
+    await readFile(
+      join(root, 'node_modules/typescript-api/package.json'),
+      'utf-8'
+    )
   )
 ).version
 
@@ -135,7 +138,7 @@ run(
 run(
   [
     'bun',
-    join(root, 'node_modules/typescript/bin/tsc'),
+    join(root, 'node_modules/typescript-api/bin/tsc'),
     '--project',
     'packages/core/tsconfig.build.json',
   ],

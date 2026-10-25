@@ -1,7 +1,7 @@
 import { FlowDeleteCancelled, FlowDocumentSchema } from '@flow/core'
 import type { FlowDeleteDecision, FlowDocument } from '@flow/core'
 import { Exit, Schema } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import * as Application from './application.ts'
 import { createFoldkitDeleteClient } from './delete-approval.ts'
@@ -88,7 +88,7 @@ const approve = (
   )
 
 describe('Foldkit delete approval reducer', () => {
-  test.each([true, false])(
+  it.each([true, false])(
     'keyboard selection is read after the controlled owner accepts=%s',
     (accepted) => {
       const initial = makeModel(document, 'controlled')
@@ -152,7 +152,7 @@ describe('Foldkit delete approval reducer', () => {
     }
   )
 
-  test('prepares a candidate, accepts a narrowed decision, and publishes only an owner proposal when controlled', () => {
+  it('prepares a candidate, accepts a narrowed decision, and publishes only an owner proposal when controlled', () => {
     const initial = makeModel(document, 'controlled')
 
     const pending = begin(
@@ -205,7 +205,7 @@ describe('Foldkit delete approval reducer', () => {
     })
   })
 
-  test('rejects stale approvals after a concurrent accepted document edit', () => {
+  it('rejects stale approvals after a concurrent accepted document edit', () => {
     const pending = begin(makeModel(), request('stale'))
 
     const replacement = Schema.decodeUnknownSync(FlowDocumentSchema)({
@@ -235,7 +235,7 @@ describe('Foldkit delete approval reducer', () => {
     expect(late.commands).toHaveLength(1)
   })
 
-  test('keeps concurrent and reentrant requests isolated and consumes late duplicates once', () => {
+  it('keeps concurrent and reentrant requests isolated and consumes late duplicates once', () => {
     const first = begin(makeModel(), request('first'))
     const reentrant = begin(first.model, request('reentrant'))
 
@@ -264,7 +264,7 @@ describe('Foldkit delete approval reducer', () => {
     })
   })
 
-  test('rejects protected descendants before emitting an approval request', () => {
+  it('rejects protected descendants before emitting an approval request', () => {
     const result = begin(makeModel(), request('protected-delete', ['parent']))
 
     expect(result.model.pendingDeleteApprovals).toHaveLength(0)
@@ -299,7 +299,7 @@ const source = <Value>(): PortSource<Value> => {
 }
 
 describe('Foldkit delete client disposal', () => {
-  test('auto-approves an empty candidate without calling the host hook', async () => {
+  it('auto-approves an empty candidate without calling the host hook', async () => {
     const approvalRequests = source<DeleteApprovalRequested>()
     const results = source<DeleteResult>()
     const cancellationAcks = source<DeleteCancellationAck>()
@@ -376,7 +376,7 @@ describe('Foldkit delete client disposal', () => {
     expect('error' in result && result.error._tag).toBe('FlowEditDisposed')
   })
 
-  test('cancels through the typed port, settles once, and ignores a late result', async () => {
+  it('cancels through the typed port, settles once, and ignores a late result', async () => {
     const approvalRequests = source<DeleteApprovalRequested>()
     const results = source<DeleteResult>()
     const cancellationAcks = source<DeleteCancellationAck>()
@@ -493,7 +493,7 @@ describe('Foldkit delete client disposal', () => {
     client.dispose()
   })
 
-  test('times out unanswered approvals and bounds pending requests', async () => {
+  it('times out unanswered approvals and bounds pending requests', async () => {
     const approvalRequests = source<DeleteApprovalRequested>()
     const results = source<DeleteResult>()
     const cancellationAcks = source<DeleteCancellationAck>()
@@ -564,7 +564,7 @@ describe('Foldkit delete client disposal', () => {
     client.dispose()
   })
 
-  test('settles exactly once and ignores a callback that resolves after disposal', async () => {
+  it('settles exactly once and ignores a callback that resolves after disposal', async () => {
     const approvalRequests = source<DeleteApprovalRequested>()
     const results = source<DeleteResult>()
     const cancellationAcks = source<DeleteCancellationAck>()
@@ -664,7 +664,7 @@ describe('Foldkit delete client disposal', () => {
     })
   })
 
-  test('advances the client revision only when accepted document content changes', async () => {
+  it('advances the client revision only when accepted document content changes', async () => {
     const approvalRequests = source<DeleteApprovalRequested>()
     const results = source<DeleteResult>()
     const cancellationAcks = source<DeleteCancellationAck>()

@@ -1,11 +1,11 @@
 import { Exit } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { createViewportClient } from './application.ts'
 
 describe('Foldkit viewport client', () => {
   // Pinned xyflow 0a1f9575, packages/system/src/utils/general.ts:196-259,304-343.
-  test('calculates validated bounds with configured limits', () => {
+  it('calculates validated bounds with configured limits', () => {
     const handle: Parameters<typeof createViewportClient>[0] = {
       viewportResults: { subscribe: () => () => {} },
       viewportRequests: { send: () => Exit.void },
@@ -32,7 +32,7 @@ describe('Foldkit viewport client', () => {
     ).toThrow('greater than or equal to 0')
   })
 
-  test('retains a valid initial viewport if disposed before the first runtime response', async () => {
+  it('retains a valid initial viewport if disposed before the first runtime response', async () => {
     const handle: Parameters<typeof createViewportClient>[0] = {
       viewportResults: { subscribe: () => () => {} },
       viewportRequests: { send: () => Exit.void },

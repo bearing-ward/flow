@@ -1,5 +1,5 @@
 import { Exit } from 'effect'
-import { describe, expect, expectTypeOf, test } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import type {
   LegacySnapshotFailure,
@@ -92,7 +92,7 @@ const host = () => {
 }
 
 describe('Foldkit correlated public snapshot client', () => {
-  test('correlates only the owning request and survives unmatched and duplicate replies', async () => {
+  it('correlates only the owning request and survives unmatched and duplicate replies', async () => {
     const source = host()
     const first = createFoldkitSnapshotClient(source.ports)
     const second = createFoldkitSnapshotClient(source.ports)
@@ -122,7 +122,7 @@ describe('Foldkit correlated public snapshot client', () => {
     expect([source.listeners.size, source.failures.size]).toStrictEqual([0, 0])
   })
 
-  test('disposes pending requests once, rejects new reads, and ignores a retained late callback', async () => {
+  it('disposes pending requests once, rejects new reads, and ignores a retained late callback', async () => {
     const source = host()
     const client = createFoldkitSnapshotClient(source.ports)
     const [late] = source.listeners
@@ -153,7 +153,7 @@ describe('Foldkit correlated public snapshot client', () => {
     expect([source.listeners.size, source.failures.size]).toStrictEqual([0, 0])
   })
 
-  test('settles invalid, rejected and throwing sends without leaking pending requests', async () => {
+  it('settles invalid, rejected and throwing sends without leaking pending requests', async () => {
     const source = host()
 
     const rejected = createFoldkitSnapshotClient({
@@ -189,7 +189,7 @@ describe('Foldkit correlated public snapshot client', () => {
     expect(source.listeners.size).toBe(0)
   })
 
-  test('handles a synchronous response or disposal during send without double settlement', async () => {
+  it('handles a synchronous response or disposal during send without double settlement', async () => {
     const source = host()
 
     const sync = createFoldkitSnapshotClient({
@@ -223,7 +223,7 @@ describe('Foldkit correlated public snapshot client', () => {
     expect(source.listeners.size).toBe(0)
   })
 
-  test.each([
+  it.each([
     'origin-requires-versioned-session',
     'native-fields-require-versioned-session',
     'noncanonical-handles-require-versioned-session',
@@ -263,7 +263,7 @@ describe('Foldkit correlated public snapshot client', () => {
     expect([source.listeners.size, source.failures.size]).toStrictEqual([0, 0])
   })
 
-  test('handles synchronous format failure during send and a failure delivered by unsubscribe', async () => {
+  it('handles synchronous format failure during send and a failure delivered by unsubscribe', async () => {
     const source = host()
 
     const client = createFoldkitSnapshotClient({
@@ -402,7 +402,7 @@ const versionedHost = () => {
 }
 
 describe('one-owner legacy and versioned snapshot protocols', () => {
-  test('preserves overloads and one sequence across legacy failure then versioned success', async () => {
+  it('preserves overloads and one sequence across legacy failure then versioned success', async () => {
     const source = versionedHost()
     const client = createFoldkitSnapshotClient(source.ports)
     expectTypeOf(client).toEqualTypeOf<FoldkitVersionedSnapshotClient>()
@@ -452,7 +452,7 @@ describe('one-owner legacy and versioned snapshot protocols', () => {
     client.dispose()
   })
 
-  test('ignores wrong protocol channels before decoding and settles only the matching channel', async () => {
+  it('ignores wrong protocol channels before decoding and settles only the matching channel', async () => {
     const source = versionedHost()
     const client = createFoldkitSnapshotClient(source.ports)
     let settled = 0
@@ -512,7 +512,7 @@ describe('one-owner legacy and versioned snapshot protocols', () => {
     client.dispose()
   })
 
-  test('disposes both protocol requests once, unsubscribes every channel once and ignores late callbacks', async () => {
+  it('disposes both protocol requests once, unsubscribes every channel once and ignores late callbacks', async () => {
     const source = versionedHost()
     const client = createFoldkitSnapshotClient(source.ports)
     const legacy = client.request()
@@ -548,7 +548,7 @@ describe('one-owner legacy and versioned snapshot protocols', () => {
     })
   })
 
-  test('settles versioned send failures and malformed queries without adding a failure reason', async () => {
+  it('settles versioned send failures and malformed queries without adding a failure reason', async () => {
     const source = versionedHost()
 
     const rejected = createFoldkitSnapshotClient({

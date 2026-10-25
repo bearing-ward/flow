@@ -32,7 +32,7 @@ bun run verify --list
 bun run verify:full
 ```
 
-Browser options take exact filenames from the selected host's `e2e` directory. Repeat an option to select several files. The verifier rejects nonexistent files before starting checks, merges CLI selections with saved scope, and runs only hosts with selected files. Focused browser tests use one worker. Test servers remain isolated from development servers.
+Browser options take exact filenames from the selected host's `e2e` directory. Repeat an option to select several files. The verifier rejects nonexistent files before starting checks, merges CLI selections with saved scope, and runs only hosts with selected files. Both focused and full browser tests use one worker. Test servers remain isolated from development servers.
 
 Keep the scope for ongoing work in the root `verification.config.json`:
 
@@ -106,4 +106,4 @@ scripts/with-flow-browser-lock.sh bun run playwright test --config apps/foldkit/
 scripts/with-flow-browser-lock.sh bun run verify
 ```
 
-The wrapper waits for `/tmp/flow-browser.lock`, writes its owner token, sets `OTEL_SDK_DISABLED=true`, and releases only its own lock on exit. The focused verifier supplies `--workers=1` to each selected host suite.
+The wrapper waits for `/tmp/flow-browser.lock`, writes its owner token, sets `OTEL_SDK_DISABLED=true`, and releases only its own lock on exit. Both verification profiles supply `--workers=1` to each selected host suite.

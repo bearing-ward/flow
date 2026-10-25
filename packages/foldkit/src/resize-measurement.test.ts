@@ -5,7 +5,7 @@ import {
   setNodeMeasurementGenerations,
 } from '@flow/core'
 import { Effect } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import * as Graph from './graph.ts'
 
@@ -92,7 +92,7 @@ const acceptedDocument = Effect.runSync(
 )
 
 describe('Foldkit resize measurement acceptance', () => {
-  test('immediate controlled acknowledgement adopts a matching preview sample without observer redelivery', () => {
+  it('immediate controlled acknowledgement adopts a matching preview sample without observer redelivery', () => {
     const resizing = preview(measured())
     expect(Graph.selectInternalNode(resizing, parentId)).toMatchObject({
       width: 300,
@@ -120,7 +120,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }).toStrictEqual({ nodesInitialized: true })
   })
 
-  test.each(['absent', 'stale'])(
+  it.each(['absent', 'stale'])(
     'acknowledgement preserves a current measurement delivered after release with the %s receipt sample',
     (receipt) => {
       const resizing = Graph.update(
@@ -193,7 +193,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }
   )
 
-  test('a fresh accepted measurement keeps its handles instead of replaying an older same-generation receipt', () => {
+  it('a fresh accepted measurement keeps its handles instead of replaying an older same-generation receipt', () => {
     const withHandle = (input: typeof document) =>
       Effect.runSync(
         decodeFlowDocument({
@@ -261,7 +261,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }).toStrictEqual({ nodesInitialized: true })
   })
 
-  test('matching dimensions on stale accepted and buffered generations cannot establish measured readiness', () => {
+  it('matching dimensions on stale accepted and buffered generations cannot establish measured readiness', () => {
     const released = Graph.update(
       preview(measured()),
       Graph.Message.FinishKeyboardResize({ key: 'ArrowUp' })
@@ -310,7 +310,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }).toStrictEqual({ nodesInitialized: false })
   })
 
-  test('a matching stale receipt cannot replace mismatched accepted geometry', () => {
+  it('a matching stale receipt cannot replace mismatched accepted geometry', () => {
     const resizing = Graph.update(
       measured(),
       Graph.Message.ResizeByKeyboard({
@@ -357,7 +357,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }).toStrictEqual({ nodesInitialized: false })
   })
 
-  test('fixed-CSS child measurements survive declared-size edits and constrain a fresh parent resize', () => {
+  it('fixed-CSS child measurements survive declared-size edits and constrain a fresh parent resize', () => {
     const replacement = Effect.runSync(
       decodeFlowDocument({
         ...document,
@@ -401,7 +401,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }).toStrictEqual({ nodesInitialized: true })
   })
 
-  test.each(['cancel', 'reject'])(
+  it.each(['cancel', 'reject'])(
     '%s preserves accepted geometry and cannot adopt the discarded preview on a later replacement',
     (completion) => {
       const resizing = preview(measured())
@@ -440,7 +440,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }
   )
 
-  test('a parent-only acknowledgement does not accept an uncompensated child proposal', () => {
+  it('a parent-only acknowledgement does not accept an uncompensated child proposal', () => {
     const resizing = Graph.update(
       measured(),
       Graph.Message.ResizeByKeyboard({
@@ -511,7 +511,7 @@ describe('Foldkit resize measurement acceptance', () => {
     }).toStrictEqual({ nodesInitialized: true })
   })
 
-  test('uncontrolled release retains matching buffered measurements', () => {
+  it('uncontrolled release retains matching buffered measurements', () => {
     const finished = Graph.update(
       preview(measured('uncontrolled')),
       Graph.Message.FinishKeyboardResize({ key: 'ArrowUp' })

@@ -3356,6 +3356,8 @@ export const continuationRoundFourViewport = async (
 
     return editor.setViewport({ x, y, zoom: 1 }, { duration }).then((value) => {
       results[name] = value
+
+      return value
     })
   }
 

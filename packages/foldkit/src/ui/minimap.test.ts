@@ -1,13 +1,13 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { foldkitMiniMapLabel } from './minimap.ts'
 
 describe('Foldkit MiniMap label', () => {
-  test("uses React's default title without options", () => {
+  it("uses React's default title without options", () => {
     expect(foldkitMiniMapLabel({})).toBe('Mini Map')
   })
 
-  test('reads minimap.ariaLabel from ariaLabelConfig', () => {
+  it('reads minimap.ariaLabel from ariaLabelConfig', () => {
     expect(
       foldkitMiniMapLabel({
         ariaLabelConfig: { 'minimap.ariaLabel': 'Übersicht' },
@@ -15,7 +15,7 @@ describe('Foldkit MiniMap label', () => {
     ).toBe('Übersicht')
   })
 
-  test('an explicit ariaLabel wins and null removes the title', () => {
+  it('an explicit ariaLabel wins and null removes the title', () => {
     const ariaLabelConfig = { 'minimap.ariaLabel': 'Übersicht' }
 
     expect(

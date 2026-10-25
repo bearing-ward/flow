@@ -895,6 +895,8 @@ test('Vanilla reentrant destroyAsync awaits the shared host close', async ({
           void nestedDestroy.then(() => {
             harness.nestedCompletedBeforeCleanup =
               root.querySelector('.flow-canvas') !== null
+
+            return harness.nestedCompletedBeforeCleanup
           })
         },
       }
@@ -940,10 +942,14 @@ test('Vanilla reentrant destroyAsync awaits the shared host close', async ({
 
     const outerCompletion = outerDestroy.then(() => {
       outerSettlements += 1
+
+      return outerSettlements
     })
 
     const nestedCompletion = nestedDestroy.then(() => {
       nestedSettlements += 1
+
+      return nestedSettlements
     })
 
     await Promise.all([outerCompletion, nestedCompletion])

@@ -1,6 +1,6 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path, Schema as S } from 'effect'
-import ts from 'typescript'
+import ts from 'typescript-api'
 
 const SourceSchema = S.Struct({
   commit: S.NonEmptyString,
