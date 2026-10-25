@@ -20,7 +20,7 @@ With only the scoped failing ledger entries temporarily marked pass, the five-ca
 
 ## Production paths
 
-Browser wheel input enters Vanilla at `apps/vanilla/src/mount-flow.ts:12313`, computes anchored zoom, and publishes a viewport change at `apps/vanilla/src/mount-flow.ts:12404`. Viewport application updates the rendered transform and emits its change observation at `apps/vanilla/src/mount-flow.ts:4952`. MiniMap subscribes through the public viewport observer at `apps/vanilla/src/mount-flow.ts:13726`.
+Browser wheel input enters Vanilla at `apps/vanilla/src/mount-flow.ts:12309`, computes anchored zoom, and publishes a viewport change at `apps/vanilla/src/mount-flow.ts:12400`. Viewport application updates the rendered transform and emits its change observation at `apps/vanilla/src/mount-flow.ts:4952`. MiniMap subscribes through the public viewport observer at `apps/vanilla/src/mount-flow.ts:13722`.
 
 Vue's native wheel handler is `packages/vue/src/flow-canvas.ts:8477`. It computes anchored zoom and calls updateViewport at `packages/vue/src/flow-canvas.ts:8566`. Uncontrolled writes update owned viewport state at `packages/vue/src/flow-canvas.ts:3636`. The accepted measured graph and canvas dimensions enter MiniMap's injection context at `packages/vue/src/flow-canvas.ts:5463`.
 

@@ -2931,8 +2931,8 @@ const expandParentResizeStep = (
 }
 
 /**
- * One React `XYResizer` drag step. The session always advances; the preview
- * and `onResize` follow only steps `shouldResize` allows.
+ * One React `XYResizer` drag step. The session and preview advance only
+ * when `shouldResize` accepts the proposal.
  */
 const stepResizer = (
   model: Model,
@@ -2955,7 +2955,7 @@ const stepResizer = (
   }
 
   if (!resizerAllows(session.resizerId, session.nodeId, step.params)) {
-    return { ...model, gestureSession: { ...session, resize } }
+    return model
   }
 
   const { previous } = resize

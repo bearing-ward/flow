@@ -1,20 +1,21 @@
 import { createRoot } from 'react-dom/client'
 
 import '@xyflow/react/dist/style.css'
-import Backgrounds from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/Backgrounds/index.tsx?reference-page'
+import Backgrounds from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/Backgrounds/index.tsx?reference-page'
 
 import './style.css'
-import Basic from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/Basic/index.tsx?reference-page'
-import ColorMode from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/ColorMode/index.tsx?reference-page'
-import DragHandle from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/DragHandle/index.tsx?reference-page'
-import Empty from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/Empty/index.tsx?reference-page'
-import Figma from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/Figma/index.tsx?reference-page'
-import Hidden from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/Hidden/index.tsx?reference-page'
-import Interaction from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/examples/Interaction/index.tsx?reference-page'
-import GenericFlow from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/generic-tests/Flow.tsx?reference-page'
+import Basic from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/Basic/index.tsx?reference-page'
+import ColorMode from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/ColorMode/index.tsx?reference-page'
+import DragHandle from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/DragHandle/index.tsx?reference-page'
+import Empty from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/Empty/index.tsx?reference-page'
+import Figma from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/Figma/index.tsx?reference-page'
+import Hidden from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/Hidden/index.tsx?reference-page'
+import Interaction from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/examples/Interaction/index.tsx?reference-page'
+import GenericFlow from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/generic-tests/Flow.tsx?reference-page'
 import { mountComponent } from './component-mount.tsx'
+import { ResizeRegression } from './resize-regression.tsx'
 
-import exampleStyles from '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/index.css?inline'
+import exampleStyles from '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/index.css?inline'
 
 const examples = {
   basic: Basic,
@@ -30,7 +31,7 @@ const examples = {
 }
 
 const configs = import.meta.glob(
-  '../../research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/examples/react/src/generic-tests/**/*.ts',
+  '../../research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/examples/react/src/generic-tests/**/*.ts',
   { eager: true, import: 'default' }
 )
 
@@ -172,6 +173,8 @@ if (path.startsWith('/upstream-utility/')) {
     window.__referenceUtility =
       error instanceof Error ? error.message : String(error)
   }
+} else if (path === '/resize-regression') {
+  createRoot(root).render(<ResizeRegression />)
 } else if (path.startsWith('/upstream-component/')) {
   const id = Number(path.split('/').at(-1))
 

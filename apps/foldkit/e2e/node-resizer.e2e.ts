@@ -165,7 +165,10 @@ test('Node Resizer: shouldResize vetoes, isVisible follows selection, handles au
   await dragBy(page, control(page, 'r', 'bottom-right'), 60, 40)
   expect(await size(page, 'r')).toEqual({ width: 150, height: 80 })
   const vetoed = await resizeLog(page)
-  expect(vetoed.map(({ name }) => name)).toEqual(['onResizeStart'])
+  expect(vetoed.map(({ name }) => name)).toEqual([
+    'onResizeStart',
+    'onResizeEnd',
+  ])
 
   const hidden = nodeLocator(page, 'hidden')
   await expect(hidden.locator('.flow-foldkit-resize-control')).toHaveCount(0)
@@ -267,3 +270,58 @@ test('Node Resizer: snapGrid snaps the resize pointer', async ({ page }) => {
   await dragBy(page, control(page, 's', 'bottom-right'), 37, 30)
   await expect.poll(() => size(page, 's')).toEqual({ width: 125, height: 75 })
 })
+
+for (const scenario of ['no movement', 'veto only', 'accepted then vetoed']) {
+  test(`12.12.0 resize keeps accepted state: ${scenario}`, async ({ page }) => {
+    await mountModelStyling(page, {
+      document: { nodes: [resizable('r', 'resizable')], edges: [] },
+    })
+    const handle = control(page, 'r', 'left', 'line')
+    const handleBox = await handle.boundingBox()
+
+    if (handleBox === null) {
+      throw new Error('Missing resize handle')
+    }
+
+    const x = handleBox.x + handleBox.width / 2
+    const y = handleBox.y + handleBox.height / 2
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+
+    if (scenario === 'accepted then vetoed') {
+      await page.mouse.move(x - 20, y)
+      await expect.poll(() => resizeLog(page)).toHaveLength(2)
+    }
+
+    await page.evaluate(() =>
+      window.__flowFoldkitModelStyling?.vetoResize(true)
+    )
+
+    if (scenario !== 'no movement') {
+      await page.mouse.move(x - 60, y)
+    }
+
+    await page.mouse.up()
+    const accepted = scenario === 'accepted then vetoed'
+    const events = await resizeLog(page)
+    expect(events.map(({ name }) => name)).toEqual(
+      accepted
+        ? ['onResizeStart', 'onResize', 'onResizeEnd']
+        : ['onResizeStart', 'onResizeEnd']
+    )
+    expect(events.at(-1)).toEqual({
+      name: 'onResizeEnd',
+      nodeId: 'r',
+      params: {
+        x: accepted ? 80 : 100,
+        y: 100,
+        width: accepted ? 170 : 150,
+        height: 80,
+      },
+    })
+    expect(await size(page, 'r')).toEqual({
+      width: accepted ? 170 : 150,
+      height: 80,
+    })
+  })
+}

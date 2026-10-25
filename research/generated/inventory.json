@@ -15711,7 +15711,7 @@
       "declarations": [],
       "imports": [],
       "isTest": false,
-      "lines": 11,
+      "lines": 10,
       "objectId": "9d31e2aed93c876bc048cf2f863cb2a847c901e8",
       "path": "examples/react/tsconfig.node.json"
     },
@@ -18705,8 +18705,8 @@
       "declarations": [],
       "imports": [],
       "isTest": false,
-      "lines": 1232,
-      "objectId": "ab7a416b9c2077d5fee1f140ca778511935408d0",
+      "lines": 1249,
+      "objectId": "b79a7f5aa9a8f900556fc94ebcbe3133a89a946b",
       "path": "packages/react/CHANGELOG.md"
     },
     {
@@ -18724,7 +18724,7 @@
       "imports": [],
       "isTest": false,
       "lines": 109,
-      "objectId": "95e47c442046b7ccc670200b686fe0ea4806cda3",
+      "objectId": "567bf310a8ed080d8386422ee1ebb3d6b6a56500",
       "path": "packages/react/package.json"
     },
     {
@@ -27475,7 +27475,7 @@
       "declarations": [],
       "imports": [],
       "isTest": false,
-      "lines": 11,
+      "lines": 10,
       "objectId": "0abd4924be943dd41282ebf76a2534ef71930b7e",
       "path": "packages/react/tsconfig.json"
     },
@@ -27529,8 +27529,8 @@
       "declarations": [],
       "imports": [],
       "isTest": false,
-      "lines": 1103,
-      "objectId": "0a629576edd216fb85a3cc5b5ec29322624228e1",
+      "lines": 1120,
+      "objectId": "3a2c0147fbcbed805c72b693a5f2d41ac2d38da4",
       "path": "packages/svelte/CHANGELOG.md"
     },
     {
@@ -27607,7 +27607,7 @@
       "imports": [],
       "isTest": false,
       "lines": 103,
-      "objectId": "f3961c7e03d338e63888cc151c3736c0fc779add",
+      "objectId": "8bf9349a2463b985ee55736ea2c4cbcd248cbee0",
       "path": "packages/svelte/package.json"
     },
     {
@@ -33787,8 +33787,8 @@
       "declarations": [],
       "imports": [],
       "isTest": false,
-      "lines": 482,
-      "objectId": "c7c0b94ab67f4f06dd9e34197c9dde8e529e94fd",
+      "lines": 493,
+      "objectId": "b005b89d8a11a3a4635a87546e40781981822d77",
       "path": "packages/system/CHANGELOG.md"
     },
     {
@@ -33806,7 +33806,7 @@
       "imports": [],
       "isTest": false,
       "lines": 80,
-      "objectId": "f93f83f9d776cb5b2281248e0990bf1e05edbe1a",
+      "objectId": "263185d3dda366c53eec415d75466c67a6a3afe8",
       "path": "packages/system/package.json"
     },
     {
@@ -38464,120 +38464,128 @@
           "line": 129
         },
         {
-          "callee": "drag<HTMLDivElement, unknown>()\n      .on('start', (event: ResizeDragEvent) => {\n        const { nodeLookup, transform, snapGrid, snapToGrid, nodeOrigin, paneDomNode } = getStoreItems();\n        node = nodeLookup.get(nodeId);\n\n        if (!node) {\n          return;\n        }\n\n        containerBounds = paneDomNode?.getBoundingClientRect() ?? null;\n        const { xSnapped, ySnapped } = getPointerPosition(event.sourceEvent, {\n          transform,\n          snapGrid,\n          snapToGrid,\n          containerBounds,\n        });\n\n        prevValues = {\n          width: node.measured.width ?? 0,\n          height: node.measured.height ?? 0,\n          x: node.position.x ?? 0,\n          y: node.position.y ?? 0,\n        };\n\n        startValues = {\n          ...prevValues,\n          pointerX: xSnapped,\n          pointerY: ySnapped,\n          aspectRatio: prevValues.width / prevValues.height,\n        };\n\n        parentNode = undefined;\n\n        nodeExtent = isCoordinateExtent(node.extent) ? node.extent : undefined;\n\n        if (node.parentId && (node.extent === 'parent' || node.expandParent)) {\n          parentNode = nodeLookup.get(node.parentId);\n        }\n\n        if (parentNode && node.extent === 'parent') {\n          nodeExtent = [\n            [0, 0],\n            [parentNode.measured.width!, parentNode.measured.height!],\n          ];\n        }\n\n        /*\n         * Collect all child nodes to correct their relative positions when top/left changes\n         * Determine largest minimal extent the parent node is allowed to resize to\n         */\n        childNodes = [];\n        childExtent = undefined;\n\n        for (const [childId, child] of nodeLookup) {\n          if (child.parentId === nodeId) {\n            childNodes.push({\n              id: childId,\n              position: { ...child.position },\n              extent: child.extent,\n            });\n\n            if (child.extent === 'parent' || child.expandParent) {\n              const extent = nodeToChildExtent(child, node, child.origin ?? nodeOrigin);\n\n              if (childExtent) {\n                childExtent = [\n                  [Math.min(extent[0][0], childExtent[0][0]), Math.min(extent[0][1], childExtent[0][1])],\n                  [Math.max(extent[1][0], childExtent[1][0]), Math.max(extent[1][1], childExtent[1][1])],\n                ];\n              } else {\n                childExtent = extent;\n              }\n            }\n          }\n        }\n\n        onResizeStart?.(event, { ...prevValues });\n      })\n      .on('drag', (event: ResizeDragEvent) => {\n        const { transform, snapGrid, snapToGrid, nodeOrigin: storeNodeOrigin } = getStoreItems();\n        const pointerPosition = getPointerPosition(event.sourceEvent, {\n          transform,\n          snapGrid,\n          snapToGrid,\n          containerBounds,\n        });\n\n        const childChanges: XYResizerChildChange[] = [];\n\n        if (!node) {\n          return;\n        }\n\n        const { x: prevX, y: prevY, width: prevWidth, height: prevHeight } = prevValues;\n        const change: XYResizerChange = {};\n        const nodeOrigin = node.origin ?? storeNodeOrigin;\n\n        const { width, height, x, y } = getDimensionsAfterResize(\n          startValues,\n          params.controlDirection,\n          pointerPosition,\n          params.boundaries,\n          params.keepAspectRatio,\n          nodeOrigin,\n          nodeExtent,\n          childExtent\n        );\n\n        const isWidthChange = width !== prevWidth;\n        const isHeightChange = height !== prevHeight;\n\n        const isXPosChange = x !== prevX && isWidthChange;\n        const isYPosChange = y !== prevY && isHeightChange;\n\n        if (!isXPosChange && !isYPosChange && !isWidthChange && !isHeightChange) {\n          return;\n        }\n\n        if (isXPosChange || isYPosChange || nodeOrigin[0] === 1 || nodeOrigin[1] === 1) {\n          change.x = isXPosChange ? x : prevValues.x;\n          change.y = isYPosChange ? y : prevValues.y;\n\n          prevValues.x = change.x;\n          prevValues.y = change.y;\n\n          /*\n           * when top/left changes, correct the relative positions of child nodes\n           * so that they stay in the same position\n           */\n          if (childNodes.length > 0) {\n            const xChange = x - prevX;\n            const yChange = y - prevY;\n\n            for (const childNode of childNodes) {\n              childNode.position = {\n                x: childNode.position.x - xChange + nodeOrigin[0] * (width - prevWidth),\n                y: childNode.position.y - yChange + nodeOrigin[1] * (height - prevHeight),\n              };\n              childChanges.push(childNode);\n            }\n          }\n        }\n\n        if (isWidthChange || isHeightChange) {\n          change.width =\n            isWidthChange && (!params.resizeDirection || params.resizeDirection === 'horizontal')\n              ? width\n              : prevValues.width;\n          change.height =\n            isHeightChange && (!params.resizeDirection || params.resizeDirection === 'vertical')\n              ? height\n              : prevValues.height;\n          prevValues.width = change.width;\n          prevValues.height = change.height;\n        }\n\n        // Fix expandParent when resizing from top/left\n        if (parentNode && node.expandParent) {\n          const xLimit = nodeOrigin[0] * (change.width ?? 0);\n          if (change.x && change.x < xLimit) {\n            prevValues.x = xLimit;\n            startValues.x = startValues.x - (change.x - xLimit);\n          }\n\n          const yLimit = nodeOrigin[1] * (change.height ?? 0);\n          if (change.y && change.y < yLimit) {\n            prevValues.y = yLimit;\n            startValues.y = startValues.y - (change.y - yLimit);\n          }\n        }\n\n        const direction = getResizeDirection({\n          width: prevValues.width,\n          prevWidth,\n          height: prevValues.height,\n          prevHeight,\n          affectsX: params.controlDirection.affectsX,\n          affectsY: params.controlDirection.affectsY,\n        });\n\n        const nextValues = { ...prevValues, direction };\n\n        const callResize = shouldResize?.(event, nextValues);\n\n        if (callResize === false) {\n          return;\n        }\n        resizeDetected = true;\n\n        onResize?.(event, nextValues);\n        onChange(change, childChanges);\n      })\n      .on",
-          "line": 141
+          "callee": "drag<HTMLDivElement, unknown>()\n      .on('start', (event: ResizeDragEvent) => {\n        const { nodeLookup, transform, snapGrid, snapToGrid, nodeOrigin, paneDomNode } = getStoreItems();\n        node = nodeLookup.get(nodeId);\n\n        if (!node) {\n          return;\n        }\n\n        containerBounds = paneDomNode?.getBoundingClientRect() ?? null;\n        const { xSnapped, ySnapped } = getPointerPosition(event.sourceEvent, {\n          transform,\n          snapGrid,\n          snapToGrid,\n          containerBounds,\n        });\n\n        prevValues = {\n          width: node.measured.width ?? 0,\n          height: node.measured.height ?? 0,\n          x: node.position.x ?? 0,\n          y: node.position.y ?? 0,\n        };\n\n        startValues = {\n          ...prevValues,\n          pointerX: xSnapped,\n          pointerY: ySnapped,\n          aspectRatio: prevValues.width / prevValues.height,\n        };\n\n        parentNode = undefined;\n\n        nodeExtent = isCoordinateExtent(node.extent) ? node.extent : undefined;\n\n        if (node.parentId && (node.extent === 'parent' || node.expandParent)) {\n          parentNode = nodeLookup.get(node.parentId);\n        }\n\n        if (parentNode && node.extent === 'parent') {\n          nodeExtent = [\n            [0, 0],\n            [parentNode.measured.width!, parentNode.measured.height!],\n          ];\n        }\n\n        /*\n         * Collect all child nodes to correct their relative positions when top/left changes\n         * Determine largest minimal extent the parent node is allowed to resize to\n         */\n        childNodes = [];\n        childExtent = undefined;\n\n        for (const [childId, child] of nodeLookup) {\n          if (child.parentId === nodeId) {\n            childNodes.push({\n              id: childId,\n              position: { ...child.position },\n              extent: child.extent,\n            });\n\n            if (child.extent === 'parent' || child.expandParent) {\n              const extent = nodeToChildExtent(child, node, child.origin ?? nodeOrigin);\n\n              if (childExtent) {\n                childExtent = [\n                  [Math.min(extent[0][0], childExtent[0][0]), Math.min(extent[0][1], childExtent[0][1])],\n                  [Math.max(extent[1][0], childExtent[1][0]), Math.max(extent[1][1], childExtent[1][1])],\n                ];\n              } else {\n                childExtent = extent;\n              }\n            }\n          }\n        }\n\n        onResizeStart?.(event, { ...prevValues });\n      })\n      .on('drag', (event: ResizeDragEvent) => {\n        const { transform, snapGrid, snapToGrid, nodeOrigin: storeNodeOrigin } = getStoreItems();\n        const pointerPosition = getPointerPosition(event.sourceEvent, {\n          transform,\n          snapGrid,\n          snapToGrid,\n          containerBounds,\n        });\n\n        const childChanges: XYResizerChildChange[] = [];\n\n        if (!node) {\n          return;\n        }\n\n        const { x: prevX, y: prevY, width: prevWidth, height: prevHeight } = prevValues;\n        const change: XYResizerChange = {};\n        const nodeOrigin = node.origin ?? storeNodeOrigin;\n\n        const { width, height, x, y } = getDimensionsAfterResize(\n          startValues,\n          params.controlDirection,\n          pointerPosition,\n          params.boundaries,\n          params.keepAspectRatio,\n          nodeOrigin,\n          nodeExtent,\n          childExtent\n        );\n\n        const isWidthChange = width !== prevWidth;\n        const isHeightChange = height !== prevHeight;\n\n        const isXPosChange = x !== prevX && isWidthChange;\n        const isYPosChange = y !== prevY && isHeightChange;\n\n        if (!isXPosChange && !isYPosChange && !isWidthChange && !isHeightChange) {\n          return;\n        }\n\n        const lastValid = {\n          prevValues: { ...prevValues },\n          startX: startValues.x,\n          startY: startValues.y,\n          childNodes: childNodes.map((child) => ({\n            ...child,\n            position: { ...child.position },\n          })),\n        };\n\n        if (isXPosChange || isYPosChange || nodeOrigin[0] === 1 || nodeOrigin[1] === 1) {\n          change.x = isXPosChange ? x : prevValues.x;\n          change.y = isYPosChange ? y : prevValues.y;\n\n          prevValues.x = change.x;\n          prevValues.y = change.y;\n\n          /*\n           * when top/left changes, correct the relative positions of child nodes\n           * so that they stay in the same position\n           */\n          if (childNodes.length > 0) {\n            const xChange = x - prevX;\n            const yChange = y - prevY;\n\n            for (const childNode of childNodes) {\n              childNode.position = {\n                x: childNode.position.x - xChange + nodeOrigin[0] * (width - prevWidth),\n                y: childNode.position.y - yChange + nodeOrigin[1] * (height - prevHeight),\n              };\n              childChanges.push(childNode);\n            }\n          }\n        }\n\n        if (isWidthChange || isHeightChange) {\n          change.width =\n            isWidthChange && (!params.resizeDirection || params.resizeDirection === 'horizontal')\n              ? width\n              : prevValues.width;\n          change.height =\n            isHeightChange && (!params.resizeDirection || params.resizeDirection === 'vertical')\n              ? height\n              : prevValues.height;\n          prevValues.width = change.width;\n          prevValues.height = change.height;\n        }\n\n        // Fix expandParent when resizing from top/left\n        if (parentNode && node.expandParent) {\n          const xLimit = nodeOrigin[0] * (change.width ?? 0);\n          if (change.x && change.x < xLimit) {\n            prevValues.x = xLimit;\n            startValues.x = startValues.x - (change.x - xLimit);\n          }\n\n          const yLimit = nodeOrigin[1] * (change.height ?? 0);\n          if (change.y && change.y < yLimit) {\n            prevValues.y = yLimit;\n            startValues.y = startValues.y - (change.y - yLimit);\n          }\n        }\n\n        const direction = getResizeDirection({\n          width: prevValues.width,\n          prevWidth,\n          height: prevValues.height,\n          prevHeight,\n          affectsX: params.controlDirection.affectsX,\n          affectsY: params.controlDirection.affectsY,\n        });\n\n        const nextValues = { ...prevValues, direction };\n\n        const callResize = shouldResize?.(event, nextValues);\n\n        if (callResize === false) {\n          prevValues = lastValid.prevValues;\n          startValues.x = lastValid.startX;\n          startValues.y = lastValid.startY;\n          childNodes.forEach((child, i) => {\n            child.position = lastValid.childNodes[i].position;\n          });\n          return;\n        }\n\n        onResize?.(event, nextValues);\n        onChange(change, childChanges);\n      })\n      .on",
+          "line": 139
         },
         {
           "callee": "drag<HTMLDivElement, unknown>()\n      .on('start', (event: ResizeDragEvent) => {\n        const { nodeLookup, transform, snapGrid, snapToGrid, nodeOrigin, paneDomNode } = getStoreItems();\n        node = nodeLookup.get(nodeId);\n\n        if (!node) {\n          return;\n        }\n\n        containerBounds = paneDomNode?.getBoundingClientRect() ?? null;\n        const { xSnapped, ySnapped } = getPointerPosition(event.sourceEvent, {\n          transform,\n          snapGrid,\n          snapToGrid,\n          containerBounds,\n        });\n\n        prevValues = {\n          width: node.measured.width ?? 0,\n          height: node.measured.height ?? 0,\n          x: node.position.x ?? 0,\n          y: node.position.y ?? 0,\n        };\n\n        startValues = {\n          ...prevValues,\n          pointerX: xSnapped,\n          pointerY: ySnapped,\n          aspectRatio: prevValues.width / prevValues.height,\n        };\n\n        parentNode = undefined;\n\n        nodeExtent = isCoordinateExtent(node.extent) ? node.extent : undefined;\n\n        if (node.parentId && (node.extent === 'parent' || node.expandParent)) {\n          parentNode = nodeLookup.get(node.parentId);\n        }\n\n        if (parentNode && node.extent === 'parent') {\n          nodeExtent = [\n            [0, 0],\n            [parentNode.measured.width!, parentNode.measured.height!],\n          ];\n        }\n\n        /*\n         * Collect all child nodes to correct their relative positions when top/left changes\n         * Determine largest minimal extent the parent node is allowed to resize to\n         */\n        childNodes = [];\n        childExtent = undefined;\n\n        for (const [childId, child] of nodeLookup) {\n          if (child.parentId === nodeId) {\n            childNodes.push({\n              id: childId,\n              position: { ...child.position },\n              extent: child.extent,\n            });\n\n            if (child.extent === 'parent' || child.expandParent) {\n              const extent = nodeToChildExtent(child, node, child.origin ?? nodeOrigin);\n\n              if (childExtent) {\n                childExtent = [\n                  [Math.min(extent[0][0], childExtent[0][0]), Math.min(extent[0][1], childExtent[0][1])],\n                  [Math.max(extent[1][0], childExtent[1][0]), Math.max(extent[1][1], childExtent[1][1])],\n                ];\n              } else {\n                childExtent = extent;\n              }\n            }\n          }\n        }\n\n        onResizeStart?.(event, { ...prevValues });\n      })\n      .on",
-          "line": 141
+          "line": 139
         },
         {
           "callee": "drag<HTMLDivElement, unknown>()\n      .on",
-          "line": 141
+          "line": 139
         },
         {
           "callee": "drag",
+          "line": 139
+        },
+        {
+          "callee": "getStoreItems",
           "line": 141
         },
         {
-          "callee": "getStoreItems",
-          "line": 143
-        },
-        {
           "callee": "nodeLookup.get",
-          "line": 144
+          "line": 142
         },
         {
           "callee": "paneDomNode?.getBoundingClientRect",
-          "line": 150
+          "line": 148
         },
         {
           "callee": "getPointerPosition",
-          "line": 151
+          "line": 149
         },
         {
           "callee": "isCoordinateExtent",
-          "line": 174
+          "line": 172
         },
         {
           "callee": "nodeLookup.get",
-          "line": 177
+          "line": 175
         },
         {
           "callee": "childNodes.push",
-          "line": 196
+          "line": 194
         },
         {
           "callee": "nodeToChildExtent",
-          "line": 203
+          "line": 201
         },
         {
           "callee": "Math.min",
-          "line": 207
+          "line": 205
         },
         {
           "callee": "Math.min",
-          "line": 207
+          "line": 205
         },
         {
           "callee": "Math.max",
-          "line": 208
+          "line": 206
         },
         {
           "callee": "Math.max",
-          "line": 208
+          "line": 206
         },
         {
           "callee": "onResizeStart",
-          "line": 217
+          "line": 215
         },
         {
           "callee": "getStoreItems",
-          "line": 220
+          "line": 218
         },
         {
           "callee": "getPointerPosition",
-          "line": 221
+          "line": 219
         },
         {
           "callee": "getDimensionsAfterResize",
-          "line": 238
+          "line": 236
+        },
+        {
+          "callee": "childNodes.map",
+          "line": 261
         },
         {
           "callee": "childChanges.push",
-          "line": 279
+          "line": 287
         },
         {
           "callee": "getResizeDirection",
-          "line": 312
+          "line": 320
         },
         {
           "callee": "shouldResize",
-          "line": 323
-        },
-        {
-          "callee": "onResize",
-          "line": 330
-        },
-        {
-          "callee": "onChange",
           "line": 331
         },
         {
-          "callee": "onResizeEnd",
-          "line": 338
+          "callee": "childNodes.forEach",
+          "line": 337
         },
         {
-          "callee": "onEnd",
-          "line": 339
-        },
-        {
-          "callee": "selection.call",
+          "callee": "onResize",
           "line": 343
         },
         {
+          "callee": "onChange",
+          "line": 344
+        },
+        {
+          "callee": "onResizeEnd",
+          "line": 347
+        },
+        {
+          "callee": "onEnd",
+          "line": 348
+        },
+        {
+          "callee": "selection.call",
+          "line": 350
+        },
+        {
           "callee": "selection.on",
-          "line": 346
+          "line": 353
         }
       ],
       "declarations": [
@@ -38629,8 +38637,8 @@
         }
       ],
       "isTest": false,
-      "lines": 354,
-      "objectId": "cc564ad4c0a60486e9cb150855d3f55d082ce4c4",
+      "lines": 361,
+      "objectId": "aedd5cb3a677765fe56af70263c8f94b29611486",
       "path": "packages/system/src/xyresizer/XYResizer.ts"
     },
     {
@@ -38938,7 +38946,7 @@
       "declarations": [],
       "imports": [],
       "isTest": false,
-      "lines": 14,
+      "lines": 13,
       "objectId": "7f7c249783eaca8063d6036859fadf1e0a973114",
       "path": "packages/system/tsconfig.json"
     },
@@ -42178,8 +42186,8 @@
     }
   ],
   "source": {
-    "commit": "0a1f9575b25679f2880175de8d3eae21aedde921",
-    "committedAt": "2026-09-01T14:02:55+02:00",
+    "commit": "3d35b57317576b0916c0bfeaaedd573aaacc2839",
+    "committedAt": "2026-09-24T14:38:12+02:00",
     "paths": [
       "packages/system",
       "packages/react",

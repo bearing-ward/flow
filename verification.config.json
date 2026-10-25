@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle",
   "checks": [
     "api-members",
     "catalog",
@@ -11,7 +11,10 @@
     "foldkit-build",
     "traces",
     "vue-build",
-    "upstream-ledger"
+    "upstream-ledger",
+    "inventory",
+    "proof",
+    "reference-host"
   ],
   "browserTests": {
     "vanilla": [

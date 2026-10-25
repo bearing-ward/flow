@@ -390,8 +390,6 @@ export const FlowNodeResizeControl = defineComponent({
         y: point.y - current.pointerStart.y,
       })
 
-      current.session = result.session
-
       if (result.step === undefined) {
         return
       }
@@ -399,6 +397,8 @@ export const FlowNodeResizeControl = defineComponent({
       if (props.shouldResize?.(result.step.params, event) === false) {
         return
       }
+
+      current.session = result.session
 
       commit(
         current.nodeId,

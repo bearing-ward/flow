@@ -46,8 +46,10 @@ Verification uses the focused profile selected in `verification.config.json`. It
 
 ## Conformity and deviations
 
-**Conforming design intent:** pinned `packages/system/src/xyresizer/XYResizer.ts:202` captures direct constrained-child extents and `packages/system/src/xyresizer/XYResizer.ts:246` passes them to the resize calculation. Directional child clamps appear at `packages/system/src/xyresizer/utils.ts:165`. Flow's bounded browser and core tests establish its own containment and compensation behavior.
+**Conforming design intent:** pinned `packages/system/src/xyresizer/XYResizer.ts:200` captures direct constrained-child extents and `packages/system/src/xyresizer/XYResizer.ts:244` passes them to the resize calculation. Directional child clamps appear at `packages/system/src/xyresizer/utils.ts:165`. Flow's bounded browser and core tests establish its own containment and compensation behavior.
 
 **Intentionally different:** Flow retains its public rectangle API, 40 by 24 host minima, final atomic proposals, and explicit rejection of infeasible bounds. Only `extent: 'parent'` contributes child constraints. This fix adds no `expandParent`, origin, or aspect-ratio behavior. Vue excludes transient resized-parent samples and Foldkit buffers them outside accepted measurement state to preserve accepted-state ownership.
 
 **Unverified:** reference runtime parity, additional browsers, arbitrary external CSS changes during an active gesture, and OpenTelemetry delivery to a collector. Stale-generation receipt selection and newer same-generation handle retention are verified at the reducer boundary. The browser after-release case deliberately controls actual CSS box timing. The browser test boundary is local Chromium with the repository's native pointer/keyboard tooling and explicit production-observer attachment. The pinned reference is source evidence, not a side-by-side parity run.
+
+Plan 151 refresh: the new pin changes resize end callbacks and rejected-session state. The release-specific production paths, test paths, and conformity boundary are recorded in [Resize lifecycle at the 12.12.0 pin](upstream-12-12-resize.md). Earlier capture results above retain their original revision; the new release regressions do not establish broader resize parity.

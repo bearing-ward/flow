@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/xyflow/xyflow.git",
-  "commit": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "commit": "3d35b57317576b0916c0bfeaaedd573aaacc2839",
   "paths": [
     "packages/system",
     "packages/react",

@@ -277,17 +277,17 @@ Review upstream additions at milestone boundaries. Detailed mapping should accou
 
 ## Research source inventory
 
-Commit: `0a1f9575b25679f2880175de8d3eae21aedde921`
+Commit: `3d35b57317576b0916c0bfeaaedd573aaacc2839`
 
 | Root | Files | Lines |
 | --- | ---: | ---: |
-| `examples/react` | 193 | 14749 |
+| `examples/react` | 193 | 14748 |
 | `examples/svelte` | 101 | 5017 |
 | `LICENSE` | 1 | 22 |
 | `package.json` | 1 | 40 |
-| `packages/react` | 136 | 13424 |
-| `packages/svelte` | 144 | 9379 |
-| `packages/system` | 54 | 8072 |
+| `packages/react` | 136 | 13440 |
+| `packages/svelte` | 144 | 9396 |
+| `packages/system` | 54 | 8089 |
 | `pnpm-lock.yaml` | 1 | 11794 |
 | `pnpm-workspace.yaml` | 1 | 6 |
 | `README.md` | 1 | 169 |
@@ -296,7 +296,7 @@ Commit: `0a1f9575b25679f2880175de8d3eae21aedde921`
 
 Indexed declarations: 665
 
-Indexed call expressions: 6418
+Indexed call expressions: 6420
 
 Test and E2E files: 50
 

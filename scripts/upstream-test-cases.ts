@@ -3,7 +3,7 @@ import { readdir, readFile } from 'node:fs/promises'
 import ts from 'typescript-api'
 
 export const upstreamRoot =
-  'research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921'
+  'research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839'
 
 export interface UpstreamCase {
   readonly id: string

@@ -216,7 +216,7 @@ const program = Effect.gen(function* releaseDryRun() {
 
     const xyflowLicense = path.join(
       root,
-      'research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/LICENSE'
+      'research/artifacts/xyflow/3d35b57317576b0916c0bfeaaedd573aaacc2839/LICENSE'
     )
 
     if (!(yield* fileSystem.exists(xyflowLicense))) {

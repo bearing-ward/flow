@@ -1,0 +1,1282 @@
+{
+  "old": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "new": "3d35b57317576b0916c0bfeaaedd573aaacc2839",
+  "flowBaseline": "15191b9",
+  "verifiedEndpoints": 1077,
+  "unchangedEndpoints": 918,
+  "endpoints": [
+    {
+      "scope": "flow",
+      "trace": "research/traces/button-handle-recipe.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7702,
+      "newLine": 7698,
+      "text": "              }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/button-handle-recipe.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7710,
+      "newLine": 7706,
+      "text": "            }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/complete-versioned-persistence.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9400,
+      "newLine": 9396,
+      "text": "            const drag = interactionSlots.activeDrag"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-measurements-and-renderers.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14021,
+      "newLine": 14017,
+      "text": "  }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-measurements-and-renderers.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14087,
+      "newLine": 14083,
+      "text": "      if (selectionListener === undefined || drag.nodeIds.length < 2) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14031,
+      "newLine": 14027,
+      "text": "export const mountFlow = ("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13310,
+      "newLine": 13306,
+      "text": "      getNodes: () =>"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12851,
+      "newLine": 12847,
+      "text": "      root.replaceChildren(canvas)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9561,
+      "newLine": 9557,
+      "text": "              browser.listen(element, 'pointerdown', onPointerDown),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8781,
+      "newLine": 8777,
+      "text": "                } else if (current.selected !== true) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9573,
+      "newLine": 9569,
+      "text": "              browser.listen(element, 'pointerup', finishDrag),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9379,
+      "newLine": 9375,
+      "text": "          // eslint-disable-next-line complexity -- Release settles capture, selection and the detached drag in one transition."
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9507,
+      "newLine": 9503,
+      "text": "                operations.publishChange({"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9525,
+      "newLine": 9521,
+      "text": "              operations.publishChange(withExpandParentCommit(drag, change))"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8186,
+      "newLine": 8182,
+      "text": "      // eslint-disable-next-line complexity -- The change union has one branch per public operation."
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-observers-and-changes.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8494,
+      "newLine": 8490,
+      "text": "          try {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-viewport-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14020,
+      "newLine": 14016,
+      "text": "    globalThis.requestAnimationFrame(() => attempt(frame + 1))"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-viewport-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9385,
+      "newLine": 9381,
+      "text": "            if (finishNodeResize(event)) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/component-viewport-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9469,
+      "newLine": 9465,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/connection-pointer-sequences.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9225,
+      "newLine": 9221,
+      "text": "                event.target.closest("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/connection-pointer-sequences.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7765,
+      "newLine": 7761,
+      "text": "        let removed = 0"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/connection-pointer-sequences.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 11108,
+      "newLine": 11104,
+      "text": "      }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/connection-radius.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8969,
+      "newLine": 8965,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/connection-radius.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9637,
+      "newLine": 9633,
+      "text": "              { cause: primaryError }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/controlled-select-delete.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8497,
+      "newLine": 8493,
+      "text": "            for (const listener of listeners) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/controlled-select-delete.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13810,
+      "newLine": 13806,
+      "text": "          document = replacement"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/controlled-select-delete.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 11958,
+      "newLine": 11954,
+      "text": "          const nodeIds = document.nodes"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/custom-node-recipe.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9202,
+      "newLine": 9198,
+      "text": "            )"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12461,
+      "newLine": 12457,
+      "text": "        renderedViewport,"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9328,
+      "newLine": 9324,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9356,
+      "newLine": 9352,
+      "text": "            const session = sessionFor('node-drag')"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12576,
+      "newLine": 12572,
+      "text": "      browser.listenWindow(globalThis.window, 'blur', onWindowBlur),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 11481,
+      "newLine": 11477,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8717,
+      "newLine": 8713,
+      "text": "            if (pressOutsideDragHandle) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9982,
+      "newLine": 9978,
+      "text": "      pendingConnection !== null ||"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9785,
+      "newLine": 9781,
+      "text": "          destroyed ||"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/cypress-node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10333,
+      "newLine": 10329,
+      "text": "        if (first !== undefined && second !== undefined) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/edge-interaction.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 11536,
+      "newLine": 11532,
+      "text": "      return true"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/edge-label-render.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14031,
+      "newLine": 14027,
+      "text": "export const mountFlow = ("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/edge-label-render.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 11581,
+      "newLine": 11577,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/edge-visibility-stacking.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8076,
+      "newLine": 8072,
+      "text": "          applyNodePresentation("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/fit-view.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14709,
+      "newLine": 14705,
+      "text": "                : new FlowDeleteApprovalFailed({"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/fit-view.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14715,
+      "newLine": 14711,
+      "text": "          }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/fit-view.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13684,
+      "newLine": 13680,
+      "text": "          operationOptions"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/fit-view.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13722,
+      "newLine": 13718,
+      "text": "            status: 'disposed',"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/fit-view.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12901,
+      "newLine": 12897,
+      "text": "      activeViewportOperation = undefined"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/fit-view.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12999,
+      "newLine": 12995,
+      "text": "          status: 'accepted',"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/foldkit-selection-rect-race.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10052,
+      "newLine": 10048,
+      "text": "        selectionOverlay = globalThis.document.createElement('div')"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/gesture-resize-lifecycle.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 141,
+      "newLine": 139,
+      "text": "    const dragHandler = drag<HTMLDivElement, unknown>()"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/gesture-resize-lifecycle.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 214,
+      "newLine": 212,
+      "text": "          }"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/gesture-resize-lifecycle.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 219,
+      "newLine": 217,
+      "text": "      .on('drag', (event: ResizeDragEvent) => {"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/gesture-resize-lifecycle.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 310,
+      "newLine": 318,
+      "text": "        }"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/interaction-parity-next.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 141,
+      "newLine": 139,
+      "text": "    const dragHandler = drag<HTMLDivElement, unknown>()"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/interaction-parity-next.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 172,
+      "newLine": 170,
+      "text": "        parentNode = undefined;"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/interaction-parity-next.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 219,
+      "newLine": 217,
+      "text": "      .on('drag', (event: ResizeDragEvent) => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/interaction-policy-styling.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9977,
+      "newLine": 9973,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/interaction-policy-styling.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10112,
+      "newLine": 10108,
+      "text": "          Effect.annotateLogs({"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/interaction-policy-styling.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10082,
+      "newLine": 10078,
+      "text": "        return"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/interaction-policy-styling.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10084,
+      "newLine": 10080,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/minimap-viewport-tracking.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12313,
+      "newLine": 12309,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/minimap-viewport-tracking.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12404,
+      "newLine": 12400,
+      "text": "        event.preventDefault()"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/minimap-viewport-tracking.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13726,
+      "newLine": 13722,
+      "text": ""
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/nested-resize-containment.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 202,
+      "newLine": 200,
+      "text": "            if (child.extent === 'parent' || child.expandParent) {"
+    },
+    {
+      "scope": "upstream",
+      "trace": "research/traces/nested-resize-containment.md",
+      "path": "packages/system/src/xyresizer/XYResizer.ts",
+      "oldLine": 246,
+      "newLine": 244,
+      "text": "          childExtent"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-connections.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8470,
+      "newLine": 8466,
+      "text": "          case 'edit-proposal': {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-connections.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8520,
+      "newLine": 8516,
+      "text": "        })"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-connections.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8439,
+      "newLine": 8435,
+      "text": "            break"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-connections.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8458,
+      "newLine": 8454,
+      "text": "            }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-connections.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9050,
+      "newLine": 9046,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-connections.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9054,
+      "newLine": 9050,
+      "text": "                : nodeResizers"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-extents.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13801,
+      "newLine": 13797,
+      "text": "      update: (nextDocument): void => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-extents.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9209,
+      "newLine": 9205,
+      "text": "                    position: adoptedPosition(candidate),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-extents.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 12035,
+      "newLine": 12031,
+      "text": "              position: adoptedPosition(candidate),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14035,
+      "newLine": 14031,
+      "text": "): JavaScriptFlowController => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9162,
+      "newLine": 9158,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9244,
+      "newLine": 9240,
+      "text": "          const onPointerDown = (event: PointerEvent): void => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8768,
+      "newLine": 8764,
+      "text": "              selectionBoundsActive = false"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8373,
+      "newLine": 8369,
+      "text": "              return"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8076,
+      "newLine": 8072,
+      "text": "          applyNodePresentation("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9841,
+      "newLine": 9837,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-input.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9905,
+      "newLine": 9901,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/node-replace-measurement.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14342,
+      "newLine": 14338,
+      "text": "    updateNode: (id, patch, updateOptions) =>"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10032,
+      "newLine": 10028,
+      "text": "      if ("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10081,
+      "newLine": 10077,
+      "text": "      if (selectionKeyPressed || !isPanePanEnabled(options, event)) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10037,
+      "newLine": 10033,
+      "text": "        const pointerStart = pointerInCanvas(event)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10053,
+      "newLine": 10049,
+      "text": "        selectionOverlay.className = 'flow-selection-rect'"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10370,
+      "newLine": 10366,
+      "text": "        moveViewportPan("
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 10052,
+      "newLine": 10048,
+      "text": "        selectionOverlay = globalThis.document.createElement('div')"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pane-input-zoom-limits.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9743,
+      "newLine": 9739,
+      "text": "    const updateSelectionRect = (position: XYPosition): void => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14308,
+      "newLine": 14304,
+      "text": "    setNodes: (nodes) =>"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13831,
+      "newLine": 13827,
+      "text": "      applyEditResolved: (resolveInput): Promise<FlowEditResult> => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8470,
+      "newLine": 8466,
+      "text": "          case 'edit-proposal': {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8567,
+      "newLine": 8563,
+      "text": "          pass.graph.nodes.get(node.id)?.absolutePosition ?? node.position"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 13829,
+      "newLine": 13825,
+      "text": "      applyEdit: (transaction): Promise<FlowEditResult> =>"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14308,
+      "newLine": 14304,
+      "text": "    setNodes: (nodes) =>"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8559,
+      "newLine": 8555,
+      "text": "        const renderer = options.nodeRenderers?.[node.type ?? 'default']"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/pro-parity-audit-2026-10-25.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 14308,
+      "newLine": 14304,
+      "text": "    setNodes: (nodes) =>"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8611,
+      "newLine": 8607,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8026,
+      "newLine": 8022,
+      "text": "            ) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8068,
+      "newLine": 8064,
+      "text": "          }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8567,
+      "newLine": 8563,
+      "text": "          pass.graph.nodes.get(node.id)?.absolutePosition ?? node.position"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8581,
+      "newLine": 8577,
+      "text": "          rendererType,"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8048,
+      "newLine": 8044,
+      "text": "                }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8058,
+      "newLine": 8054,
+      "text": "                  expected: { kind: 'present', slot: reservation },"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8647,
+      "newLine": 8643,
+      "text": "          }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8651,
+      "newLine": 8647,
+      "text": "            candidatePass.graph"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8213,
+      "newLine": 8209,
+      "text": "              if (authoritative !== undefined) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8216,
+      "newLine": 8212,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8145,
+      "newLine": 8141,
+      "text": "            canvas.focus()"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8193,
+      "newLine": 8189,
+      "text": "        }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9280,
+      "newLine": 9276,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9284,
+      "newLine": 9280,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9183,
+      "newLine": 9179,
+      "text": "              interactionSlots.activeDrag !== null ||"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9209,
+      "newLine": 9205,
+      "text": "                    position: adoptedPosition(candidate),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9167,
+      "newLine": 9163,
+      "text": "                options.noDragClassName"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9199,
+      "newLine": 9195,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9276,
+      "newLine": 9272,
+      "text": "                : null"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9337,
+      "newLine": 9333,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9301,
+      "newLine": 9297,
+      "text": "            const start = dragPointer"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9326,
+      "newLine": 9322,
+      "text": "            return beginPanFromPointer(event, start)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8320,
+      "newLine": 8316,
+      "text": "              authoritativeViewport = candidate"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8324,
+      "newLine": 8320,
+      "text": "            publishedChange = { kind: 'viewport', viewport: candidate }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8320,
+      "newLine": 8316,
+      "text": "              authoritativeViewport = candidate"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8324,
+      "newLine": 8320,
+      "text": "            publishedChange = { kind: 'viewport', viewport: candidate }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8853,
+      "newLine": 8849,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8632,
+      "newLine": 8628,
+      "text": "              : captureProjection(document, pass.origin)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8666,
+      "newLine": 8662,
+      "text": "                  try {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9183,
+      "newLine": 9179,
+      "text": "              interactionSlots.activeDrag !== null ||"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9209,
+      "newLine": 9205,
+      "text": "                    position: adoptedPosition(candidate),"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9218,
+      "newLine": 9214,
+      "text": "            dragPointerStart = { x: event.clientX, y: event.clientY }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9279,
+      "newLine": 9275,
+      "text": "              const current = findNode(node.id)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9301,
+      "newLine": 9297,
+      "text": "            const start = dragPointer"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9326,
+      "newLine": 9322,
+      "text": "            return beginPanFromPointer(event, start)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8488,
+      "newLine": 8484,
+      "text": "            const exhaustive: never = change"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8551,
+      "newLine": 8547,
+      "text": "        const content = globalThis.document.createElement('div')"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8836,
+      "newLine": 8832,
+      "text": "          ): NodeBoundsChange | undefined => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8843,
+      "newLine": 8839,
+      "text": "            const current = findNode(resize.nodeId)"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/public-api-completion.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8848,
+      "newLine": 8844,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7824,
+      "newLine": 7820,
+      "text": "          }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7899,
+      "newLine": 7895,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8201,
+      "newLine": 8197,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8204,
+      "newLine": 8200,
+      "text": "            }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8913,
+      "newLine": 8909,
+      "text": "            ) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8916,
+      "newLine": 8912,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7928,
+      "newLine": 7924,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7934,
+      "newLine": 7930,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7919,
+      "newLine": 7915,
+      "text": "          elevateNodesOnSelect: options.elevateNodesOnSelect ?? true,"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7925,
+      "newLine": 7921,
+      "text": "          if (!visibleNodes.has(node.id)) {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8190,
+      "newLine": 8186,
+      "text": "          deferredMutations.push(() => operations.publishChange(queuedChange))"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8193,
+      "newLine": 8189,
+      "text": "        }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8902,
+      "newLine": 8898,
+      "text": "          const previewResize = (event: PointerEvent): boolean => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/reusable-canvas-ui.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8905,
+      "newLine": 8901,
+      "text": "            }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9399,
+      "newLine": 9395,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8848,
+      "newLine": 8844,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8938,
+      "newLine": 8934,
+      "text": "            }"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8943,
+      "newLine": 8939,
+      "text": "          const finishNodeResize = (event: PointerEvent): boolean => {"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 7963,
+      "newLine": 7959,
+      "text": "                  expected: { kind: 'present', slot: expected },"
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 8848,
+      "newLine": 8844,
+      "text": ""
+    },
+    {
+      "scope": "flow",
+      "trace": "research/traces/shared-measured-geometry.md",
+      "path": "apps/vanilla/src/mount-flow.ts",
+      "oldLine": 9511,
+      "newLine": 9507,
+      "text": "                })"
+    }
+  ],
+  "unresolved": []
+}
