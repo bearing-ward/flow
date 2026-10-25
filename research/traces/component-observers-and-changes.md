@@ -44,7 +44,7 @@ Foldkit's native release owner offers PointerReleased at `packages/foldkit/src/g
 
 ## Test paths
 
-`apps/shared-e2e/upstream-component/hooks.ts:27` and `apps/shared-e2e/upstream-component/events.ts:157` retain the upstream assertions. Host fixtures use public getters, composables, and Runtime ports. `apps/shared-e2e/upstream-component/helpers.ts:22` applies ledger classifications after a real mount. Not-applicable initial-render cases skip with their precise acquisition reason; they are never counted as passes.
+`apps/shared-e2e/upstream-component/hooks.ts:27` and `apps/shared-e2e/upstream-component/events.ts:158` retain the upstream assertions. Host fixtures use public getters, composables, and Runtime ports. `apps/shared-e2e/upstream-component/helpers.ts:23` applies ledger classifications after a real mount. Not-applicable initial-render cases skip with their precise acquisition reason; they are never counted as passes.
 
 The core tests at `packages/core/src/domain/flow-element-changes.test.ts:80` exercise real public reducers and semantic delta derivation, including parent-relative absolute positions. The readiness test at `packages/core/src/domain/flow-measurement.schema.test.ts:90` changes an undocumented default expectation with a pinned-source citation. Baseline browser receipts, the extracted reducer probe, repeated component results, phase counts, and focused verifier results are retained in the Plan 140 catalogs.
 

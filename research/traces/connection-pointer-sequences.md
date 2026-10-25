@@ -9,7 +9,7 @@ The pinned upstream commit is `0a1f9575b25679f2880175de8d3eae21aedde921`. The pu
 | UP-126-030 | b, fixture omitted upstream addEdge handling | b, fixture omitted upstream addEdge handling | b, fixture omitted addEdge handling and supplied an empty target allow-list |
 | UP-126-031 | a, strict pointer start and pending checks rejected target handles | a, strict pointer start and pending promotion rejected fresh target handles | a, pending eligibility rejected target handles in strict mode |
 
-Neither case has an existing documented intentional-difference exception. Node-2 and Node-4 are output **nodes** with target handles, despite the upstream test title calling them output handles. Their source configuration is `examples/react/src/generic-tests/nodes/general.ts:22` and `examples/react/src/generic-tests/nodes/general.ts:34`; Flow preserves those kinds at `packages/conformance/src/upstream-generic/nodes/general.ts:52` and `packages/conformance/src/upstream-generic/nodes/general.ts:102`. The selector mapping is correct at `apps/shared-e2e/upstream/adapter.ts:96`.
+Neither case has an existing documented intentional-difference exception. Node-2 and Node-4 are output **nodes** with target handles, despite the upstream test title calling them output handles. Their source configuration is `examples/react/src/generic-tests/nodes/general.ts:22` and `examples/react/src/generic-tests/nodes/general.ts:34`; Flow preserves those kinds at `packages/conformance/src/upstream-generic/nodes/general.ts:52` and `packages/conformance/src/upstream-generic/nodes/general.ts:102`. The selector mapping is correct at `apps/shared-e2e/upstream/adapter.ts:112`.
 
 ## Upstream production path
 

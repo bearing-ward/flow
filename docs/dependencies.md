@@ -69,3 +69,11 @@ The [Ultracite 8.0.0 release notes](https://www.ultracite.ai/changelog/ultracite
 ### Conformity and deviations
 
 The toolchain follows the requested native TypeScript and Ultracite major versions. The pinned 5.9.3 API alias is an intentional exception for the named analysis consumers and frozen capture. Effect 4.0.0 is intentionally retained to satisfy Foldkit's exact peers. Vue SFC tooling and Effect editor diagnostics remain unverified because Flow does not run those paths. Full local verification covers the configured build, analysis, unit, packed-consumer, and browser paths; it does not establish editor compatibility or new upstream behavior parity.
+
+## Pinned React reference host
+
+`apps/react-reference` owns `@xyflow/react` 12.11.6 and `@xyflow/system` 0.0.82, matching the package versions in the immutable upstream revision. Published packages avoid rebuilding the upstream monorepo. Remove them with the reference host. They are private app dependencies and never enter Flow's published packages.
+
+The host uses `react` and `react-dom` 18.2.0 to match the upstream Cypress `react18` mounts. `@types/react` 18.2.79 and `@types/react-dom` 18.2.25 typecheck the host. Other React major versions would change the lifecycle being measured. Remove these dependencies with the host.
+
+`chai` 6.2.2 executes the 31 pinned utility test bodies in Chromium without translating their assertions. Reusing Vitest's Node runner would not provide the real DOM geometry required by `update-node-internals.cy.ts`. Remove Chai with that reference runner.

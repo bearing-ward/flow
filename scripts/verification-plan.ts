@@ -17,6 +17,7 @@ const extraCheckNames = [
   'vue-build',
   'foldkit-build',
   'upstream-ledger',
+  'reference-host',
 ] as const
 
 const ExtraCheckSchema = S.Literals(extraCheckNames)
@@ -71,6 +72,10 @@ const baselineChecks = [
 ]
 
 const extraChecks = {
+  'reference-host': bunCheck('React reference host', [
+    'run',
+    'scripts/check-react-reference.ts',
+  ]),
   'upstream-ledger': bunCheck('upstream test ledger', [
     'run',
     'scripts/check-upstream-test-ledger.ts',
@@ -245,7 +250,12 @@ export const selectVerificationChecks = (
   const checks = [...baselineChecks]
 
   const selectedExtras =
-    profile === 'full' ? extraCheckNames : [...config.checks, ...request.checks]
+    profile === 'full'
+      ? [
+          ...extraCheckNames.filter((name) => name !== 'reference-host'),
+          ...request.checks,
+        ]
+      : [...config.checks, ...request.checks]
 
   for (const name of new Set(selectedExtras)) {
     checks.push(extraChecks[name])

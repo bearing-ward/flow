@@ -8,6 +8,7 @@ import {
   history,
   drag,
   trigger,
+  handleSelector,
   transform,
   transformRetained,
 } from './helpers.ts'
@@ -68,11 +69,11 @@ export const componentsContract = (adapter: UpstreamHostAdapter) => {
 
     const source = get(page, '.react-flow__node')
       .first()
-      .locator('[aria-label^="source handle"],[data-kind="source"]')
+      .locator(handleSelector(adapter, 'source'))
 
     const target = get(page, '.react-flow__node')
       .last()
-      .locator('[aria-label^="target handle"],[data-kind="target"]')
+      .locator(handleSelector(adapter, 'target'))
 
     await trigger(page, source, 'mousedown')
     await trigger(page, target, 'mousemove')
@@ -108,11 +109,11 @@ export const componentsContract = (adapter: UpstreamHostAdapter) => {
 
     const source = get(page, '.react-flow__node')
       .first()
-      .locator('[aria-label^="source handle"],[data-kind="source"]')
+      .locator(handleSelector(adapter, 'source'))
 
     const target = get(page, '.react-flow__node')
       .last()
-      .locator('[aria-label^="target handle"],[data-kind="target"]')
+      .locator(handleSelector(adapter, 'target'))
 
     await trigger(page, source, 'mousedown')
     await trigger(page, target, 'mousemove')
@@ -155,11 +156,7 @@ export const componentsContract = (adapter: UpstreamHostAdapter) => {
   // examples/react/cypress/components/reactflow/basic-props.cy.tsx:154
   test('[UP-128-030] renders custom edge', async ({ page }) => {
     await componentMount(page, adapter, 30)
-    await expect(
-      get(page, '.react-flow__edge').filter({
-        has: page.locator('[data-component-custom-edge]'),
-      })
-    ).toHaveCount(1)
+    await expect(get(page, '.react-flow__edge-custom')).toHaveCount(1)
   })
 
   // examples/react/cypress/components/reactflow/basic-props.cy.tsx:171
@@ -167,16 +164,8 @@ export const componentsContract = (adapter: UpstreamHostAdapter) => {
     page,
   }) => {
     await componentMount(page, adapter, 31)
-    await expect(
-      get(page, '.react-flow__edge').filter({
-        has: page.locator('[data-component-invalid-edge]'),
-      })
-    ).toHaveCount(0)
-    await expect(
-      get(page, '.react-flow__edge').filter({
-        hasNot: page.locator('[data-component-custom-edge]'),
-      })
-    ).toHaveCount(1)
+    await expect(get(page, '.react-flow__edge-invalid')).toHaveCount(0)
+    await expect(get(page, '.react-flow__edge-default')).toHaveCount(1)
     await expect(
       get(page, '.react-flow__edge').locator(adapter.selectors.edgePath)
     ).toHaveCount(1)
@@ -203,9 +192,7 @@ export const componentsContract = (adapter: UpstreamHostAdapter) => {
   }) => {
     await componentMount(page, adapter, 42)
 
-    const layers = page.locator(
-      '[data-testid="flow-edge-label-renderer"],.flow-vue-edge-label-renderer'
-    )
+    const layers = get(page, '.react-flow__edgelabel-renderer')
 
     await expect(layers).toHaveCount(2)
     await expect(layers.nth(0).locator('.label')).toHaveCount(1)

@@ -35,14 +35,18 @@ export const hooksContract = (adapter: UpstreamHostAdapter) => {
   // examples/react/cypress/components/hooks/useNodes.cy.tsx:24
   test('[UP-128-003] handles nodes', async ({ page }) => {
     await componentMount(page, adapter, 3)
-    await expect.poll(() => nodeSnapshot(page)).toContainEqual(expectedNodes)
+    await expect
+      .poll(() => nodeSnapshot(page, adapter))
+      .toContainEqual(expectedNodes)
   })
 
   // examples/react/cypress/components/hooks/useNodes.cy.tsx:36
   test('[UP-128-004] handles defaultNodes', async ({ page }) => {
     await componentMount(page, adapter, 4)
-    await expect.poll(() => nodeSnapshot(page)).toContainEqual([])
-    await expect.poll(() => nodeSnapshot(page)).toContainEqual(expectedNodes)
+    await expect.poll(() => nodeSnapshot(page, adapter)).toContainEqual([])
+    await expect
+      .poll(() => nodeSnapshot(page, adapter))
+      .toContainEqual(expectedNodes)
   })
 
   // examples/react/cypress/components/hooks/useNodesInitialized.cy.tsx:7

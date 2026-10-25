@@ -1,0 +1,25 @@
+{
+  "name": "@flow/react-reference",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#reference-component-mount": "./component-mount.tsx"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@xyflow/react": "12.11.6",
+    "@xyflow/system": "0.0.82",
+    "effect": "4.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.79",
+    "@types/react-dom": "18.2.25",
+    "chai": "6.2.2"
+  }
+}

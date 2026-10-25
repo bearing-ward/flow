@@ -23,11 +23,7 @@ export const interactionContract = (adapter: UpstreamHostAdapter) => {
       await expect(get('.react-flow__node')).toHaveCount(4)
       await expect(get('.react-flow__edge')).toHaveCount(2)
       await expect(
-        get('.react-flow__node')
-          .locator(
-            `${adapter.host === 'vanilla' ? '.flow-handle' : `.flow-${adapter.host}-handle`}`
-          )
-          .first()
+        get('.react-flow__node').locator(adapter.selectors.handle).first()
       ).toBeAttached()
     })
 
