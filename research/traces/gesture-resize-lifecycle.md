@@ -2,7 +2,7 @@
 
 ## Reference paths
 
-The upstream React `NodeResizeControl` supplies `XYResizer` with node lookup, transform, snapping, and pane geometry (`packages/react/src/additional-components/NodeResizer/NodeResizeControl.tsx:62-115`). `XYResizer` captures measured dimensions, local position, pointer coordinates, parent bounds, and direct child positions before calculating updates (`packages/system/src/xyresizer/XYResizer.ts:141-214,219-310`). The imported browser suite has no resize-specific output assertion, so direct reference resize parity remains unverified (`tests/playwright/e2e/nodes.spec.ts:94-168`).
+The upstream React `NodeResizeControl` supplies `XYResizer` with node lookup, transform, snapping, and pane geometry (`packages/react/src/additional-components/NodeResizer/NodeResizeControl.tsx:62-115`). `XYResizer` captures measured dimensions, local position, pointer coordinates, parent bounds, and direct child positions before calculating updates (`packages/system/src/xyresizer/XYResizer.ts:139-212,217-318`). The imported browser suite has no resize-specific output assertion, so direct reference resize parity remains unverified (`tests/playwright/e2e/nodes.spec.ts:94-168`).
 
 ## Flow paths
 
@@ -26,3 +26,5 @@ Core tests cover exact session ownership outcomes for disjoint drag and connecti
 - **Intentionally different:** Flow emits one atomic `node-bounds` change rather than separate position and size events, preserving one semantic document update for a resize. Evidence boundary: core apply tests and the vanilla host subscription (`packages/core/src/domain/flow-runtime.schema.ts:311-322,547-555`; `apps/vanilla/src/mount-flow.ts:1937-1951`).
 - **Intentionally different:** Flow cancels when an extent cannot satisfy resize constraints instead of committing an out-of-bounds candidate. Evidence boundary: the bounded browser case and core `boundsIssues` tests (`apps/vanilla/e2e/advanced-gestures.e2e.ts:343-350`; `packages/core/src/domain/flow-runtime.schema.test.ts:286-316`).
 - **Unverified:** parity with xyflow's rendered resize output, native pointer-capture behavior in Playwright, and broader device/browser behavior. The imported upstream suite has no equivalent resize output assertion; Flow's browser suite verifies Flow's own contract, not cross-system parity (`tests/playwright/e2e/nodes.spec.ts:94-168`).
+
+Plan 151 refresh: the new pin changes resize end callbacks and rejected-session state. The release-specific production paths, test paths, and conformity boundary are recorded in [Resize lifecycle at the 12.12.0 pin](upstream-12-12-resize.md). Earlier capture results above retain their original revision; the new release regressions do not establish broader resize parity.

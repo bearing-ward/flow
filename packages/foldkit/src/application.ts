@@ -1893,7 +1893,7 @@ const resizerEvent = (
 /**
  * React `NodeResizer` callbacks as interaction events: `onResizeStart` on
  * press, `onResize` for each step `shouldResize` allowed, `onResizeEnd` on
- * release when a step was allowed.
+ * release, including gestures without an accepted step.
  */
 const resizerEvents = (
   previous: Graph.Model,
@@ -1917,7 +1917,7 @@ const resizerEvents = (
     return [resizerEvent('onResize', after, 'progress', after.params)]
   }
 
-  if (before !== undefined && after === undefined && before.steps > 0) {
+  if (before !== undefined && after === undefined) {
     return [resizerEvent('onResizeEnd', before, 'end', before.resize.previous)]
   }
 

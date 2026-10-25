@@ -20,7 +20,7 @@ Accessed 2026-10-25: [custom nodes](https://reactflow.dev/learn/customization/cu
 
 Real browser entries are the recipe HTML module scripts: `apps/vanilla/ui-recipes/subflows/index.html:10`, `apps/vue/ui-recipes/subflows/index.html:54`, and `apps/foldkit/ui-recipes/subflows/index.html:10`. Layout and whiteboard use sibling recipe HTML entries. These runnable recipes exercise public host APIs; their status elements are test instrumentation, not separate graph implementations.
 
-Vanilla recipes mount with `mountFlow`, for example `apps/vanilla/src/ui/subflows-recipes.ts:153`. `setNodes` creates an edit transaction at `apps/vanilla/src/mount-flow.ts:14308`; `applyEditResolved` reads the current authoritative document, prepares it and publishes an edit proposal at `apps/vanilla/src/mount-flow.ts:13831`. Uncontrolled proposals are accepted and reconciled at `apps/vanilla/src/mount-flow.ts:8470`. Core decodes the transaction, applies operations and validates the final document at `packages/core/src/domain/flow-edit.ts:241`. Node projection uses graph absolute positions at `apps/vanilla/src/mount-flow.ts:8567` and applies the DOM transform at `apps/vanilla/src/mount-flow.ts:1713`. Custom SVG content is owned by the recipe renderer, for example `apps/vanilla/src/ui/whiteboard-recipes.ts:62`.
+Vanilla recipes mount with `mountFlow`, for example `apps/vanilla/src/ui/subflows-recipes.ts:153`. `setNodes` creates an edit transaction at `apps/vanilla/src/mount-flow.ts:14304`; `applyEditResolved` reads the current authoritative document, prepares it and publishes an edit proposal at `apps/vanilla/src/mount-flow.ts:13827`. Uncontrolled proposals are accepted and reconciled at `apps/vanilla/src/mount-flow.ts:8466`. Core decodes the transaction, applies operations and validates the final document at `packages/core/src/domain/flow-edit.ts:241`. Node projection uses graph absolute positions at `apps/vanilla/src/mount-flow.ts:8563` and applies the DOM transform at `apps/vanilla/src/mount-flow.ts:1713`. Custom SVG content is owned by the recipe renderer, for example `apps/vanilla/src/ui/whiteboard-recipes.ts:62`.
 
 Vue recipes compose `FlowCanvas` and `useFlow`, for example `apps/vue/src/subflows-recipes.ts:227`. Public `setNodes` maps to editor transactions at `packages/vue/src/use-flow.ts:661`; `FlowCanvas` prepares them at `packages/vue/src/flow-canvas.ts:4390`. Controlled mode emits proposals instead of silently accepting them at `packages/vue/src/flow-canvas.ts:4422`; these recipes use an uncontrolled default document, accepted into `ownedDocument` at `packages/vue/src/flow-canvas.ts:4451`. Rendering assigns absolute positions to node DOM styles at `packages/vue/src/flow-canvas.ts:9110`. Vue waits a frame after a committed drop before reading reparent bounds at `apps/vue/src/subflows-recipes.ts:205`.
 
@@ -49,14 +49,14 @@ Every outcome table names an evidence group. The same groups, expanded to exact 
 ### edit
 
 - shared production: `packages/core/src/domain/flow-edit.ts:241`, `packages/core/src/domain/flow.schema.ts:338`.
-- vanilla production: `apps/vanilla/src/mount-flow.ts:13829`, `apps/vanilla/src/mount-flow.ts:14308`.
+- vanilla production: `apps/vanilla/src/mount-flow.ts:13825`, `apps/vanilla/src/mount-flow.ts:14304`.
 - vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4405`.
 - foldkit production: `packages/foldkit/src/instance.ts:409`, `packages/foldkit/src/graph.ts:1282`.
 
 ### render
 
 - shared production: `packages/core/src/domain/flow.schema.ts:145`.
-- vanilla production: `apps/vanilla/src/ui/whiteboard-recipes.ts:62`, `apps/vanilla/src/mount-flow.ts:8559`.
+- vanilla production: `apps/vanilla/src/ui/whiteboard-recipes.ts:62`, `apps/vanilla/src/mount-flow.ts:8555`.
 - vue production: `apps/vue/src/whiteboard-recipes.ts:63`, `packages/vue/src/flow-canvas.ts:9110`.
 - foldkit production: `apps/foldkit/ui-recipes/whiteboard/main.ts:62`, `packages/foldkit/src/graph.ts:7582`.
 
@@ -171,7 +171,7 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 ### persist
 
 - shared production: `packages/core/src/domain/flow-persistence.ts:424`, `packages/core/src/domain/flow-persistence.ts:478`.
-- vanilla production: `apps/vanilla/src/mount-flow.ts:14308`.
+- vanilla production: `apps/vanilla/src/mount-flow.ts:14304`.
 - vue production: `packages/vue/src/use-flow.ts:661`.
 - foldkit production: `packages/foldkit/src/instance.ts:409`.
 

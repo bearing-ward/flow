@@ -22,9 +22,9 @@ The example mounts real callbacks at `apps/vanilla/src/upstream-examples-fixture
 
 The host maps callback presence, effective selection, and dragging to wrapper styles and classes at `apps/vanilla/src/mount-flow.ts:1779`. Runtime interactivity patches refresh mounted nodes, handles, and edges at `apps/vanilla/src/mount-flow.ts:5270`. Node positions come from graph absolute geometry at `apps/vanilla/src/mount-flow.ts:1710`. Edge presentation reads the current selection switch and click callback at `apps/vanilla/src/mount-flow.ts:3457` and applies inactive/selectable classes at `apps/vanilla/src/edge-renderer.ts:1008`. Inline node policy retains explicit user declarations at `apps/vanilla/src/mount-flow.ts:1807`. Edge CSS and the inherited interaction path apply at `apps/vanilla/src/style.css:480` and `apps/vanilla/src/style.css:350`. Disabled handles no longer override their policy with auto at `apps/vanilla/src/style.css:469`.
 
-Native pointer input reaches the canvas admission boundary at `apps/vanilla/src/mount-flow.ts:9977`. The selection-key guard rejects the disabled Shift gesture before a viewport-pan session. Disabled node bodies instead hit the viewport and bubble to the pane, so ordinary pan remains admitted.
+Native pointer input reaches the canvas admission boundary at `apps/vanilla/src/mount-flow.ts:9973`. The selection-key guard rejects the disabled Shift gesture before a viewport-pan session. Disabled node bodies instead hit the viewport and bubble to the pane, so ordinary pan remains admitted.
 
-Vanilla's host-only Pan control captures input before node gestures at `apps/vanilla/src/mount-flow.ts:10112`. It bypasses the draggable wrapper's automatic nopan class but retains opt-outs on embedded controls at `apps/vanilla/src/mount-flow.ts:10082-10084`. This preserves panning over a draggable node without changing the upstream wrapper class in Select mode.
+Vanilla's host-only Pan control captures input before node gestures at `apps/vanilla/src/mount-flow.ts:10108`. It bypasses the draggable wrapper's automatic nopan class but retains opt-outs on embedded controls at `apps/vanilla/src/mount-flow.ts:10078-10080`. This preserves panning over a draggable node without changing the upstream wrapper class in Select mode.
 
 ## Vue production path
 

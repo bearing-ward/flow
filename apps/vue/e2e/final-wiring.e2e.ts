@@ -880,3 +880,42 @@ test('Labeled Group recipe renders a titled group whose children sit inside and 
     movedGroup.y + movedGroup.height + 1
   )
 })
+
+for (const scenario of ['no movement', 'veto only', 'accepted then vetoed']) {
+  test(`12.12.0 resize keeps accepted state: ${scenario}`, async ({ page }) => {
+    await mount(page, { scene: 'resizer' })
+    const point = await centreOf(control(page, 'vetoed', 'left'))
+    await page.mouse.move(point.x, point.y)
+    await page.mouse.down()
+
+    if (scenario === 'accepted then vetoed') {
+      await page.mouse.move(point.x - 20, point.y)
+    }
+
+    if (scenario !== 'no movement') {
+      await page.mouse.move(point.x - 60, point.y)
+    }
+
+    await page.mouse.up()
+    const accepted = scenario === 'accepted then vetoed'
+    const events = await fixture(page, (api) => api.resizes())
+    expect(events.map(({ name }) => name)).toEqual(
+      accepted
+        ? ['start:vetoed', 'resize:vetoed', 'end:vetoed']
+        : ['start:vetoed', 'end:vetoed']
+    )
+    expect(events.at(-1)).toEqual({
+      name: 'end:vetoed',
+      x: accepted ? 580 : 600,
+      y: 60,
+      width: accepted ? 140 : 120,
+      height: 60,
+    })
+    expect(await position(page, 'vetoed')).toEqual({
+      x: accepted ? 580 : 600,
+      y: 60,
+      width: accepted ? 140 : 120,
+      height: 60,
+    })
+  })
+}

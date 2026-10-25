@@ -6345,7 +6345,7 @@ packages/system/src/xypanzoom/utils.ts	37	isMacOs
 packages/system/src/xyresizer/XYResizer.ts	98	select
 packages/system/src/xyresizer/XYResizer.ts	101	getControlDirection
 packages/system/src/xyresizer/XYResizer.ts	129	getControlDirection
-packages/system/src/xyresizer/XYResizer.ts	141	drag<HTMLDivElement, unknown>()
+packages/system/src/xyresizer/XYResizer.ts	139	drag<HTMLDivElement, unknown>()
       .on('start', (event: ResizeDragEvent) => {
         const { nodeLookup, transform, snapGrid, snapToGrid, nodeOrigin, paneDomNode } = getStoreItems();
         node = nodeLookup.get(nodeId);
@@ -6463,6 +6463,16 @@ packages/system/src/xyresizer/XYResizer.ts	141	drag<HTMLDivElement, unknown>()
           return;
         }
 
+        const lastValid = {
+          prevValues: { ...prevValues },
+          startX: startValues.x,
+          startY: startValues.y,
+          childNodes: childNodes.map((child) => ({
+            ...child,
+            position: { ...child.position },
+          })),
+        };
+
         if (isXPosChange || isYPosChange || nodeOrigin[0] === 1 || nodeOrigin[1] === 1) {
           change.x = isXPosChange ? x : prevValues.x;
           change.y = isYPosChange ? y : prevValues.y;
@@ -6530,15 +6540,20 @@ packages/system/src/xyresizer/XYResizer.ts	141	drag<HTMLDivElement, unknown>()
         const callResize = shouldResize?.(event, nextValues);
 
         if (callResize === false) {
+          prevValues = lastValid.prevValues;
+          startValues.x = lastValid.startX;
+          startValues.y = lastValid.startY;
+          childNodes.forEach((child, i) => {
+            child.position = lastValid.childNodes[i].position;
+          });
           return;
         }
-        resizeDetected = true;
 
         onResize?.(event, nextValues);
         onChange(change, childChanges);
       })
       .on
-packages/system/src/xyresizer/XYResizer.ts	141	drag<HTMLDivElement, unknown>()
+packages/system/src/xyresizer/XYResizer.ts	139	drag<HTMLDivElement, unknown>()
       .on('start', (event: ResizeDragEvent) => {
         const { nodeLookup, transform, snapGrid, snapToGrid, nodeOrigin, paneDomNode } = getStoreItems();
         node = nodeLookup.get(nodeId);
@@ -6617,34 +6632,36 @@ packages/system/src/xyresizer/XYResizer.ts	141	drag<HTMLDivElement, unknown>()
         onResizeStart?.(event, { ...prevValues });
       })
       .on
-packages/system/src/xyresizer/XYResizer.ts	141	drag<HTMLDivElement, unknown>()
+packages/system/src/xyresizer/XYResizer.ts	139	drag<HTMLDivElement, unknown>()
       .on
-packages/system/src/xyresizer/XYResizer.ts	141	drag
-packages/system/src/xyresizer/XYResizer.ts	143	getStoreItems
-packages/system/src/xyresizer/XYResizer.ts	144	nodeLookup.get
-packages/system/src/xyresizer/XYResizer.ts	150	paneDomNode?.getBoundingClientRect
-packages/system/src/xyresizer/XYResizer.ts	151	getPointerPosition
-packages/system/src/xyresizer/XYResizer.ts	174	isCoordinateExtent
-packages/system/src/xyresizer/XYResizer.ts	177	nodeLookup.get
-packages/system/src/xyresizer/XYResizer.ts	196	childNodes.push
-packages/system/src/xyresizer/XYResizer.ts	203	nodeToChildExtent
-packages/system/src/xyresizer/XYResizer.ts	207	Math.min
-packages/system/src/xyresizer/XYResizer.ts	207	Math.min
-packages/system/src/xyresizer/XYResizer.ts	208	Math.max
-packages/system/src/xyresizer/XYResizer.ts	208	Math.max
-packages/system/src/xyresizer/XYResizer.ts	217	onResizeStart
-packages/system/src/xyresizer/XYResizer.ts	220	getStoreItems
-packages/system/src/xyresizer/XYResizer.ts	221	getPointerPosition
-packages/system/src/xyresizer/XYResizer.ts	238	getDimensionsAfterResize
-packages/system/src/xyresizer/XYResizer.ts	279	childChanges.push
-packages/system/src/xyresizer/XYResizer.ts	312	getResizeDirection
-packages/system/src/xyresizer/XYResizer.ts	323	shouldResize
-packages/system/src/xyresizer/XYResizer.ts	330	onResize
-packages/system/src/xyresizer/XYResizer.ts	331	onChange
-packages/system/src/xyresizer/XYResizer.ts	338	onResizeEnd
-packages/system/src/xyresizer/XYResizer.ts	339	onEnd
-packages/system/src/xyresizer/XYResizer.ts	343	selection.call
-packages/system/src/xyresizer/XYResizer.ts	346	selection.on
+packages/system/src/xyresizer/XYResizer.ts	139	drag
+packages/system/src/xyresizer/XYResizer.ts	141	getStoreItems
+packages/system/src/xyresizer/XYResizer.ts	142	nodeLookup.get
+packages/system/src/xyresizer/XYResizer.ts	148	paneDomNode?.getBoundingClientRect
+packages/system/src/xyresizer/XYResizer.ts	149	getPointerPosition
+packages/system/src/xyresizer/XYResizer.ts	172	isCoordinateExtent
+packages/system/src/xyresizer/XYResizer.ts	175	nodeLookup.get
+packages/system/src/xyresizer/XYResizer.ts	194	childNodes.push
+packages/system/src/xyresizer/XYResizer.ts	201	nodeToChildExtent
+packages/system/src/xyresizer/XYResizer.ts	205	Math.min
+packages/system/src/xyresizer/XYResizer.ts	205	Math.min
+packages/system/src/xyresizer/XYResizer.ts	206	Math.max
+packages/system/src/xyresizer/XYResizer.ts	206	Math.max
+packages/system/src/xyresizer/XYResizer.ts	215	onResizeStart
+packages/system/src/xyresizer/XYResizer.ts	218	getStoreItems
+packages/system/src/xyresizer/XYResizer.ts	219	getPointerPosition
+packages/system/src/xyresizer/XYResizer.ts	236	getDimensionsAfterResize
+packages/system/src/xyresizer/XYResizer.ts	261	childNodes.map
+packages/system/src/xyresizer/XYResizer.ts	287	childChanges.push
+packages/system/src/xyresizer/XYResizer.ts	320	getResizeDirection
+packages/system/src/xyresizer/XYResizer.ts	331	shouldResize
+packages/system/src/xyresizer/XYResizer.ts	337	childNodes.forEach
+packages/system/src/xyresizer/XYResizer.ts	343	onResize
+packages/system/src/xyresizer/XYResizer.ts	344	onChange
+packages/system/src/xyresizer/XYResizer.ts	347	onResizeEnd
+packages/system/src/xyresizer/XYResizer.ts	348	onEnd
+packages/system/src/xyresizer/XYResizer.ts	350	selection.call
+packages/system/src/xyresizer/XYResizer.ts	353	selection.on
 packages/system/src/xyresizer/utils.ts	53	controlPosition.includes
 packages/system/src/xyresizer/utils.ts	53	controlPosition.includes
 packages/system/src/xyresizer/utils.ts	54	controlPosition.includes

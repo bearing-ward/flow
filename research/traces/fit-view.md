@@ -10,7 +10,7 @@ The padding parser at `packages/system/src/utils/general.ts:196-259` floors nume
 
 ## Flow production path
 
-Vanilla's public facade decodes fit options at `apps/vanilla/src/mount-flow.ts:14709-14715`. The host resolves node selection and passes measurements, position overrides, pane dimensions, limits, and padding to core at `apps/vanilla/src/mount-flow.ts:13684-13722`. The operation dispatcher publishes accepted viewport changes or controlled proposals at `apps/vanilla/src/mount-flow.ts:12901-12999`. Rendering applies the accepted viewport at `apps/vanilla/src/mount-flow.ts:4950-4951` through the CSS transform helper at `apps/vanilla/src/mount-flow.ts:1717`.
+Vanilla's public facade decodes fit options at `apps/vanilla/src/mount-flow.ts:14705-14711`. The host resolves node selection and passes measurements, position overrides, pane dimensions, limits, and padding to core at `apps/vanilla/src/mount-flow.ts:13680-13718`. The operation dispatcher publishes accepted viewport changes or controlled proposals at `apps/vanilla/src/mount-flow.ts:12897-12995`. Rendering applies the accepted viewport at `apps/vanilla/src/mount-flow.ts:4950-4951` through the CSS transform helper at `apps/vanilla/src/mount-flow.ts:1717`.
 
 Vue exposes the method through useFlow at `packages/vue/src/use-flow.ts:658`. Its canvas decodes options, resolves node selection, builds measured geometry, and invokes core at `packages/vue/src/flow-canvas.ts:4256-4310`. `requestViewport` owns terminal promises, updates, and animation at `packages/vue/src/flow-canvas.ts:3951-4118`; the rendered CSS transform reads active viewport at `packages/vue/src/flow-canvas.ts:10477`.
 

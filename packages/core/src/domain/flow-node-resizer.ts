@@ -410,8 +410,8 @@ export interface FlowNodeResizeStepResult {
 
 /**
  * One React `XYResizer` drag step. Returns the next session and, unless the
- * pointer produced no change, the step to report and commit. Keep the next
- * session even when `shouldResize` vetoes the step, as React does.
+ * pointer produced no change, the step to report and commit. Adopt the next
+ * session only when `shouldResize` accepts the step, matching React 12.12.0.
  */
 // oxlint-disable-next-line complexity -- mirrors the reference drag handler branch by branch.
 export const stepFlowNodeResize = (

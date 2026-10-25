@@ -453,9 +453,15 @@ describe('Foldkit NodeResizer gesture', () => {
       width: 100,
       height: 50,
     })
-    expect(events(released).map(({ name }) => name)).not.toContain(
-      'onResizeEnd'
-    )
+    expect(events(released).map(({ name }) => name)).toStrictEqual([
+      'onResizeEnd',
+    ])
+    expect(events(released).at(-1)?.resize).toStrictEqual({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+    })
     resizer.dispose()
   })
 

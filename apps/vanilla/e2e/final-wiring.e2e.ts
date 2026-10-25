@@ -1306,3 +1306,46 @@ test.describe('Vanilla instance and store APIs', () => {
     expect(observed.state?.zoom).toBe(2)
   })
 })
+
+for (const scenario of ['no movement', 'veto only', 'accepted then vetoed']) {
+  test(`12.12.0 resize keeps accepted state: ${scenario}`, async ({ page }) => {
+    await mount(page, {
+      document: {
+        nodes: [square('r', 100, 100, { size: { width: 150, height: 80 } })],
+        edges: [],
+      },
+      resizers: [{ nodeId: 'r', kind: 'resizer', vetoWidthAbove: 180 }],
+    })
+    const point = await centre(control(page, 'r', 'left'))
+    await page.mouse.move(point.x, point.y)
+    await page.mouse.down()
+
+    if (scenario === 'accepted then vetoed') {
+      await page.mouse.move(point.x - 20, point.y)
+    }
+
+    if (scenario !== 'no movement') {
+      await page.mouse.move(point.x - 60, point.y)
+    }
+
+    await page.mouse.up()
+    const accepted = scenario === 'accepted then vetoed'
+    expect(
+      await page.evaluate(() => globalThis.wiringFixture?.resizeEvents)
+    ).toEqual(
+      accepted ? ['start:r', 'resize:r', 'end:r'] : ['start:r', 'end:r']
+    )
+    expect(
+      await page.evaluate(() => globalThis.wiringFixture?.resizeParams.at(-1))
+    ).toEqual({
+      x: accepted ? 80 : 100,
+      y: 100,
+      width: accepted ? 170 : 150,
+      height: 80,
+    })
+    expect(await sizeOf(page, 'r')).toEqual({
+      width: accepted ? 170 : 150,
+      height: 80,
+    })
+  })
+}

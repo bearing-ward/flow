@@ -1,0 +1,19 @@
+{
+  "commit": "3d35b57317576b0916c0bfeaaedd573aaacc2839",
+  "paths": [
+    "packages/system",
+    "packages/react",
+    "packages/svelte",
+    "tests/playwright",
+    "examples/react",
+    "examples/svelte",
+    "LICENSE",
+    "README.md",
+    "package.json",
+    "pnpm-workspace.yaml",
+    "pnpm-lock.yaml",
+    "turbo.json"
+  ],
+  "repository": "https://github.com/xyflow/xyflow.git",
+  "committedAt": "2026-09-24T14:38:12+02:00"
+}

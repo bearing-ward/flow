@@ -1,5 +1,5 @@
 {
-  "revision": "0a1f9575b25679f2880175de8d3eae21aedde921",
+  "revision": "3d35b57317576b0916c0bfeaaedd573aaacc2839",
   "cases": [
     {
       "id": "UP-126-001",
@@ -20,7 +20,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/background.ts:12"
     },
@@ -43,7 +43,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/background.ts:27"
     },
@@ -66,7 +66,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:17"
     },
@@ -89,7 +89,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:26"
     },
@@ -112,7 +112,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:50"
     },
@@ -135,7 +135,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:57"
     },
@@ -158,7 +158,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:66"
     },
@@ -181,7 +181,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:73"
     },
@@ -204,7 +204,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:82"
     },
@@ -227,7 +227,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:107"
     },
@@ -250,7 +250,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:121"
     },
@@ -273,7 +273,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:148"
     },
@@ -296,7 +296,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:158"
     },
@@ -319,7 +319,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:165"
     },
@@ -345,7 +345,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:183"
     },
@@ -368,7 +368,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:203"
     },
@@ -391,7 +391,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:211"
     },
@@ -414,7 +414,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/edges.ts:221"
     },
@@ -437,7 +437,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/node-toolbar.ts:44"
     },
@@ -461,7 +461,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/node-toolbar.ts:132"
     },
@@ -484,7 +484,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:15"
     },
@@ -507,7 +507,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:23"
     },
@@ -536,7 +536,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:57"
     },
@@ -559,7 +559,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:100"
     },
@@ -582,7 +582,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:118"
     },
@@ -605,7 +605,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:136"
     },
@@ -628,7 +628,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:158"
     },
@@ -651,7 +651,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:192"
     },
@@ -674,7 +674,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:209"
     },
@@ -697,7 +697,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:230"
     },
@@ -720,7 +720,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:268"
     },
@@ -743,7 +743,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:310"
     },
@@ -766,7 +766,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:353"
     },
@@ -789,7 +789,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:384"
     },
@@ -812,7 +812,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:393"
     },
@@ -835,7 +835,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/nodes.ts:404"
     },
@@ -858,7 +858,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:80"
     },
@@ -881,7 +881,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:111"
     },
@@ -904,7 +904,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:132"
     },
@@ -927,7 +927,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:148"
     },
@@ -950,7 +950,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:166"
     },
@@ -973,7 +973,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:192"
     },
@@ -996,7 +996,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:235"
     },
@@ -1019,7 +1019,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:255"
     },
@@ -1048,7 +1048,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:273"
     },
@@ -1077,7 +1077,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:304"
     },
@@ -1100,7 +1100,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:337"
     },
@@ -1123,7 +1123,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/pane.ts:372"
     },
@@ -1146,7 +1146,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/props.ts:9"
     },
@@ -1169,7 +1169,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream/props.ts:22"
     },
@@ -1192,7 +1192,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:20"
     },
@@ -1215,7 +1215,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:31"
     },
@@ -1238,7 +1238,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:36"
     },
@@ -1261,7 +1261,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:47"
     },
@@ -1284,7 +1284,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:55"
     },
@@ -1307,7 +1307,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:63"
     },
@@ -1330,7 +1330,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:74"
     },
@@ -1353,7 +1353,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:82"
     },
@@ -1376,7 +1376,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:103"
     },
@@ -1399,7 +1399,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:117"
     },
@@ -1422,7 +1422,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:123"
     },
@@ -1445,7 +1445,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:134"
     },
@@ -1468,7 +1468,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:146"
     },
@@ -1491,7 +1491,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:156"
     },
@@ -1514,7 +1514,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:183"
     },
@@ -1537,7 +1537,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:190"
     },
@@ -1560,7 +1560,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/basic.ts:200"
     },
@@ -1583,7 +1583,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:11"
     },
@@ -1606,7 +1606,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:16"
     },
@@ -1629,7 +1629,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:23"
     },
@@ -1652,7 +1652,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:30"
     },
@@ -1675,7 +1675,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:51"
     },
@@ -1698,7 +1698,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:58"
     },
@@ -1721,7 +1721,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/controls.ts:72"
     },
@@ -1744,7 +1744,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/draghandle.ts:16"
     },
@@ -1767,7 +1767,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/draghandle.ts:22"
     },
@@ -1790,7 +1790,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/draghandle.ts:30"
     },
@@ -1813,7 +1813,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:11"
     },
@@ -1836,7 +1836,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:18"
     },
@@ -1859,7 +1859,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:39"
     },
@@ -1882,7 +1882,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/empty.ts:45"
     },
@@ -1905,7 +1905,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:17"
     },
@@ -1928,7 +1928,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:27"
     },
@@ -1951,7 +1951,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:32"
     },
@@ -1974,7 +1974,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:46"
     },
@@ -1997,7 +1997,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/figma.ts:52"
     },
@@ -2020,7 +2020,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:11"
     },
@@ -2043,7 +2043,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:18"
     },
@@ -2066,7 +2066,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:23"
     },
@@ -2089,7 +2089,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:31"
     },
@@ -2112,7 +2112,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/hidden.ts:36"
     },
@@ -2135,7 +2135,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:21"
     },
@@ -2158,7 +2158,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:31"
     },
@@ -2181,7 +2181,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:40"
     },
@@ -2204,7 +2204,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:49"
     },
@@ -2227,7 +2227,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:54"
     },
@@ -2250,7 +2250,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:63"
     },
@@ -2273,7 +2273,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:72"
     },
@@ -2296,7 +2296,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:93"
     },
@@ -2319,7 +2319,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:103"
     },
@@ -2342,7 +2342,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:110"
     },
@@ -2365,7 +2365,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:117"
     },
@@ -2388,7 +2388,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:122"
     },
@@ -2411,7 +2411,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:134"
     },
@@ -2434,7 +2434,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:139"
     },
@@ -2457,7 +2457,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:145"
     },
@@ -2480,7 +2480,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:156"
     },
@@ -2503,7 +2503,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:161"
     },
@@ -2526,7 +2526,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:187"
     },
@@ -2549,7 +2549,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:192"
     },
@@ -2572,7 +2572,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:200"
     },
@@ -2595,7 +2595,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/interaction.ts:205"
     },
@@ -2618,7 +2618,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:11"
     },
@@ -2641,7 +2641,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:17"
     },
@@ -2664,7 +2664,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:25"
     },
@@ -2687,7 +2687,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:45"
     },
@@ -2710,7 +2710,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-cypress/minimap.ts:59"
     },
@@ -2733,7 +2733,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:19"
     },
@@ -2758,7 +2758,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:27"
     },
@@ -2781,7 +2781,7 @@
       },
       "reference": {
         "status": "fail",
-        "reason": "Broken upstream test: controlled nodes without onNodesChange stay unmeasured in useNodes, although the DOM is measured. The test requires measured fields. See plans/148-react-reference-results.md and pinned packages/react/src/store/index.ts:265."
+        "reason": "Broken upstream test: controlled nodes without onNodesChange stay unmeasured in useNodes, although the DOM is measured. The test requires measured fields. See plans/148-react-reference-results.md and pinned packages/react/src/store/index.ts:265. Reproduced against React 12.12.0 and system 0.0.83 in the locked Plan 151 reference run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:36"
     },
@@ -2806,7 +2806,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:44"
     },
@@ -2829,7 +2829,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:53"
     },
@@ -2852,7 +2852,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:59"
     },
@@ -2875,7 +2875,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:65"
     },
@@ -2898,7 +2898,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:72"
     },
@@ -2921,7 +2921,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:81"
     },
@@ -2944,7 +2944,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:101"
     },
@@ -2967,7 +2967,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:117"
     },
@@ -2990,7 +2990,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:133"
     },
@@ -3013,7 +3013,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:147"
     },
@@ -3036,7 +3036,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:168"
     },
@@ -3059,7 +3059,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:182"
     },
@@ -3082,7 +3082,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/hooks.ts:196"
     },
@@ -3105,7 +3105,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:19"
     },
@@ -3128,7 +3128,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:26"
     },
@@ -3151,7 +3151,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:35"
     },
@@ -3174,7 +3174,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:42"
     },
@@ -3197,7 +3197,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:51"
     },
@@ -3220,7 +3220,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:58"
     },
@@ -3243,7 +3243,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:67"
     },
@@ -3266,7 +3266,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:85"
     },
@@ -3289,7 +3289,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:92"
     },
@@ -3312,7 +3312,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:100"
     },
@@ -3335,7 +3335,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:107"
     },
@@ -3358,7 +3358,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:125"
     },
@@ -3381,7 +3381,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:136"
     },
@@ -3404,7 +3404,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:157"
     },
@@ -3427,7 +3427,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:163"
     },
@@ -3450,7 +3450,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:175"
     },
@@ -3473,7 +3473,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:184"
     },
@@ -3496,7 +3496,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:19"
     },
@@ -3519,7 +3519,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:26"
     },
@@ -3542,7 +3542,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:34"
     },
@@ -3565,7 +3565,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:50"
     },
@@ -3588,7 +3588,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:79"
     },
@@ -3611,7 +3611,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:87"
     },
@@ -3634,7 +3634,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:115"
     },
@@ -3657,7 +3657,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:133"
     },
@@ -3680,7 +3680,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:190"
     },
@@ -3703,7 +3703,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:145"
     },
@@ -3729,7 +3729,7 @@
       },
       "reference": {
         "status": "fail",
-        "reason": "Broken upstream test: React retains 100x40 in the replace item, then emits 200x100 dimensions; the assertion requires 200x100 in the earlier replace. Pinned packages/react/src/utils/changes.ts:126 replaces the measured object. See plans/148-react-reference-results.md."
+        "reason": "Broken upstream test: React retains 100x40 in the replace item, then emits 200x100 dimensions; the assertion requires 200x100 in the earlier replace. Pinned packages/react/src/utils/changes.ts:126 replaces the measured object. See plans/148-react-reference-results.md. Reproduced against React 12.12.0 and system 0.0.83 in the locked Plan 151 reference run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:158"
     },
@@ -3752,7 +3752,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:185"
     },
@@ -3775,7 +3775,7 @@
       },
       "reference": {
         "status": "fail",
-        "reason": "Broken upstream test: React's position change contains id, type, position and dragging, without the asserted positionAbsolute. See pinned packages/react/src/store/index.ts:221 and plans/148-react-reference-results.md."
+        "reason": "Broken upstream test: React's position change contains id, type, position and dragging, without the asserted positionAbsolute. See pinned packages/react/src/store/index.ts:221 and plans/148-react-reference-results.md. Reproduced against React 12.12.0 and system 0.0.83 in the locked Plan 151 reference run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:199"
     },
@@ -3798,7 +3798,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/events.ts:217"
     },
@@ -3821,7 +3821,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:205"
     },
@@ -3844,7 +3844,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:226"
     },
@@ -3867,7 +3867,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:247"
     },
@@ -3890,7 +3890,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:268"
     },
@@ -3913,7 +3913,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:275"
     },
@@ -3936,7 +3936,7 @@
       },
       "reference": {
         "status": "fail",
-        "reason": "Broken upstream test: the original helper emits one mousemove; the default positive threshold starts and rebases the drag on that event, leaving the transform unchanged. The synthetic replay confirms a second move is needed. See pinned packages/system/src/xydrag/XYDrag.ts:346 and plans/148-react-reference-results.md."
+        "reason": "Broken upstream test: the original helper emits one mousemove; the default positive threshold starts and rebases the drag on that event, leaving the transform unchanged. The synthetic replay confirms a second move is needed. See pinned packages/system/src/xydrag/XYDrag.ts:346 and plans/148-react-reference-results.md. Reproduced against React 12.12.0 and system 0.0.83 in the locked Plan 151 reference run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:285"
     },
@@ -3959,7 +3959,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/components.ts:294"
     },
@@ -3982,7 +3982,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:20"
     },
@@ -4005,7 +4005,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:27"
     },
@@ -4028,7 +4028,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:34"
     },
@@ -4051,7 +4051,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:47"
     },
@@ -4074,7 +4074,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:60"
     },
@@ -4097,7 +4097,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:73"
     },
@@ -4120,7 +4120,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:86"
     },
@@ -4143,7 +4143,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:99"
     },
@@ -4166,7 +4166,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:112"
     },
@@ -4189,7 +4189,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:122"
     },
@@ -4212,7 +4212,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:132"
     },
@@ -4235,7 +4235,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:142"
     },
@@ -4258,7 +4258,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:167"
     },
@@ -4281,7 +4281,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:181"
     },
@@ -4305,7 +4305,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:200"
     },
@@ -4329,7 +4329,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:206"
     },
@@ -4352,7 +4352,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:212"
     },
@@ -4378,7 +4378,7 @@
       },
       "reference": {
         "status": "fail",
-        "reason": "Broken upstream test: the original React fixture settles at (-100,14), measured 150x36, inside the 50x50 extent. The assertion requires the provisional unmeasured (50,50). See pinned packages/system/src/utils/store.ts:460 and plans/148-react-reference-results.md."
+        "reason": "Broken upstream test: the original React fixture settles at (-100,14), measured 150x36, inside the 50x50 extent. The assertion requires the provisional unmeasured (50,50). See pinned packages/system/src/utils/store.ts:460 and plans/148-react-reference-results.md. Reproduced against React 12.12.0 and system 0.0.83 in the locked Plan 151 reference run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:225"
     },
@@ -4401,7 +4401,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:246"
     },
@@ -4424,7 +4424,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:257"
     },
@@ -4450,7 +4450,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:268"
     },
@@ -4476,7 +4476,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Shared browser contract in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Shared browser contract in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "apps/shared-e2e/upstream-component/view.ts:279"
     },
@@ -4499,7 +4499,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:10"
     },
@@ -4522,7 +4522,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:17"
     },
@@ -4545,7 +4545,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:26"
     },
@@ -4568,7 +4568,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:39"
     },
@@ -4591,7 +4591,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:53"
     },
@@ -4614,7 +4614,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/adopt-user-nodes.test.ts:67"
     },
@@ -4637,7 +4637,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:16"
     },
@@ -4660,7 +4660,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:30"
     },
@@ -4683,7 +4683,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:53"
     },
@@ -4706,7 +4706,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:68"
     },
@@ -4729,7 +4729,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:93"
     },
@@ -4752,7 +4752,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:114"
     },
@@ -4775,7 +4775,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:149"
     },
@@ -4798,7 +4798,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:162"
     },
@@ -4821,7 +4821,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:194"
     },
@@ -4844,7 +4844,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/apply-changes.test.ts:218"
     },
@@ -4867,7 +4867,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/calculate-node-position.test.ts:12"
     },
@@ -4890,7 +4890,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:8"
     },
@@ -4913,7 +4913,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:21"
     },
@@ -4936,7 +4936,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:34"
     },
@@ -4959,7 +4959,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:51"
     },
@@ -4982,7 +4982,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:69"
     },
@@ -5005,7 +5005,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/get-nodes-bounds.test.ts:87"
     },
@@ -5028,7 +5028,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:9"
     },
@@ -5051,7 +5051,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:15"
     },
@@ -5074,7 +5074,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:21"
     },
@@ -5097,7 +5097,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:27"
     },
@@ -5120,7 +5120,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:33"
     },
@@ -5143,7 +5143,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:43"
     },
@@ -5166,7 +5166,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/graph-utils.test.ts:50"
     },
@@ -5189,7 +5189,7 @@
       },
       "reference": {
         "status": "pass",
-        "reason": "Original utility body in Chromium passed against pinned React 12.11.6 and system 0.0.82; locked Plan 148 run."
+        "reason": "Original utility body in Chromium passed against pinned React 12.12.0 and system 0.0.83; locked Plan 151 run."
       },
       "flowTest": "packages/conformance/src/upstream-component/update-node-internals.test.ts:12"
     }

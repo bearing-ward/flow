@@ -13,7 +13,7 @@ const resultSchema = S.Union([
 ])
 
 const ledgerSchema = S.Struct({
-  revision: S.Literal('0a1f9575b25679f2880175de8d3eae21aedde921'),
+  revision: S.Literal('3d35b57317576b0916c0bfeaaedd573aaacc2839'),
   unmappedProps: S.Array(
     S.Struct({
       host: S.Literals(['vanilla', 'vue', 'foldkit']),

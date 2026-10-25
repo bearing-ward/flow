@@ -7399,7 +7399,6 @@ export const createFlowHost = (
       session: FlowNodeResizeSession
       params: FlowResizeParams
       candidate: NodeBoundsChange
-      resized: boolean
     }
 
     const registeredResizes = new WeakMap<ActiveNodeResize, RegisteredResize>()
@@ -7484,7 +7483,6 @@ export const createFlowHost = (
           size: resize.sizeStart,
           childPositions: [],
         },
-        resized: false,
       })
 
       if (registration.onResizeStart !== undefined) {
@@ -7511,8 +7509,6 @@ export const createFlowHost = (
         y: point.y - gesture.pointerStart.y,
       })
 
-      gesture.session = session
-
       if (
         step === undefined ||
         gesture.registration.shouldResize?.(event, step.params) === false
@@ -7526,7 +7522,7 @@ export const createFlowHost = (
         width: step.params.width,
         height: step.params.height,
       }
-      gesture.resized = true
+      gesture.session = session
 
       const size = step.size ?? gesture.candidate.size
       let nextPosition = step.position ?? gesture.candidate.position
@@ -9001,7 +8997,7 @@ export const createFlowHost = (
             const registered = registeredResizes.get(resize)
 
             if (
-              registered?.resized === true &&
+              registered !== undefined &&
               registered.registration.onResizeEnd !== undefined
             ) {
               reportBoundaryCallback(
