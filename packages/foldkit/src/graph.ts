@@ -197,6 +197,7 @@ import {
   NodeDragOriginSchema,
   placeDraggedNodes,
 } from './drag-constraints.ts'
+import { fitGroupingModel } from './grouping-model.ts'
 import { firstEventElement, isInputDOMNode } from './key-press-observer.ts'
 import {
   MouseDetailSchema,
@@ -1229,24 +1230,31 @@ const report = (
   previous: Model,
   model: Model,
   change: CoreFlowChange
-): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => ({
-  model,
-  outMessage: OutMessage.SemanticChange({
-    change,
-    acceptedState: stateChange(previous, model, 'semantic-change') ?? undefined,
-  }),
-})
+): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
+  const current = fitGroupingModel(previous, model)
+
+  return {
+    model: current,
+    outMessage: OutMessage.SemanticChange({
+      change,
+      acceptedState:
+        stateChange(previous, current, 'semantic-change') ?? undefined,
+    }),
+  }
+}
 
 const acceptReplacement = (
   previous: Model,
   current: Model,
   cause: 'document-update' | 'viewport-update'
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
-  const change = stateChange(previous, current, cause)
+  const fitted = fitGroupingModel(previous, current)
+
+  const change = stateChange(previous, fitted, cause)
 
   return change === undefined
-    ? { model: current }
-    : { model: current, outMessage: OutMessage.AcceptedState({ change }) }
+    ? { model: fitted }
+    : { model: fitted, outMessage: OutMessage.AcceptedState({ change }) }
 }
 
 const setNodePosition = (
@@ -1376,13 +1384,13 @@ const requestEdit = (
         context: result.context,
       }
 
-      const next = {
+      const next = fitGroupingModel(model, {
         ...model,
         document:
           model.documentMode === 'uncontrolled'
             ? result.document
             : model.document,
-      }
+      })
 
       return {
         model: next,
@@ -4598,16 +4606,18 @@ const updateState = (
         }
       }
 
-      return {
-        model: {
-          ...model,
-          measurements: applyNodeMeasurement(
-            model.document,
-            model.measurements,
-            measurement
-          ),
-        },
-      }
+      const measurements = applyNodeMeasurement(
+        model.document,
+        model.measurements,
+        measurement
+      )
+
+      const current = fitGroupingModel(model, { ...model, measurements })
+      const change = stateChange(model, current, 'document-update')
+
+      return change === undefined
+        ? { model: current }
+        : { model: current, outMessage: OutMessage.AcceptedState({ change }) }
     },
     PruneMeasurements: () => ({
       model: {

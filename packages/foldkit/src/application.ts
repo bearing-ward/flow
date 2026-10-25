@@ -102,6 +102,7 @@ import {
   MAX_PENDING_DELETE_APPROVALS,
 } from './delete-approval.ts'
 import * as Graph from './graph.ts'
+import { registerObserverGenerations } from './grouping-model.ts'
 import { historyKeyboardStream } from './history-keyboard.ts'
 import { HostAction } from './host-action.ts'
 import type { HostActionData } from './host-action.ts'
@@ -2357,7 +2358,18 @@ const routeAction = (
       }
     },
     MeasureNodes: ({ requests }) => {
-      let result: AppReduction = { model }
+      let result: AppReduction = {
+        model: {
+          ...model,
+          graph: {
+            ...model.graph,
+            measurements: registerObserverGenerations(
+              model.graph,
+              requests.map(({ measurement }) => measurement)
+            ),
+          },
+        },
+      }
 
       for (const request of requests) {
         const next = routeAction(
@@ -2854,6 +2866,11 @@ const historyProposalContext = (
     : undefined
 }
 
+const isGroupingMeasurement = (message: AppMessageData): boolean =>
+  Predicate.isTagged('HostAction')(message) &&
+  (Predicate.isTagged('MeasureNode')(message.action) ||
+    Predicate.isTagged('MeasureNodes')(message.action))
+
 const withAcceptedHistory = (
   original: Model,
   model: Model,
@@ -2872,6 +2889,7 @@ const withAcceptedHistory = (
   if (acceptedDocumentChanged) {
     history = reduceFlowHistory(history, {
       kind: 'accepted',
+      derived: isGroupingMeasurement(message),
       document: updateResult.model.graph.document,
       context: acceptedContext ?? historyProposalContext(updateResult),
     }).state

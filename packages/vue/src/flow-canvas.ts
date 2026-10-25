@@ -1,4 +1,5 @@
 import {
+  refitFlowGroups,
   createFlowHistory,
   flowHistoryStatus,
   flowHistoryDocumentsEqual,
@@ -2389,6 +2390,18 @@ export const FlowCanvas = defineComponent({
 
       measurementRevision.value += 1
 
+      if (documentControlMode() === 'uncontrolled') {
+        const fitted = refitFlowGroups(
+          activeDocument.value,
+          getFlowMeasuredNodes(activeDocument.value, measurementState)
+        )
+
+        if (fitted !== activeDocument.value) {
+          historyEvent({ kind: 'accepted', document: fitted, derived: true })
+          ownedDocument.value = fitted
+        }
+      }
+
       if (!dimensionsFlushScheduled) {
         dimensionsFlushScheduled = true
         queueMicrotask(flushDimensionChanges)
@@ -2624,30 +2637,35 @@ export const FlowCanvas = defineComponent({
         return
       }
 
+      const fitted = refitFlowGroups(
+        next,
+        getFlowMeasuredNodes(next, measurementState)
+      )
+
       if (hasSplitModel) {
         if (
           change.kind === 'node-position' ||
           change.kind === 'node-positions' ||
           change.kind === 'node-bounds'
         ) {
-          emit('update:nodes', next.nodes)
+          emit('update:nodes', fitted.nodes)
         }
 
         if (change.kind === 'edge-add') {
-          emit('update:edges', next.edges)
+          emit('update:edges', fitted.edges)
         }
 
         return
       }
 
       if (props.documentMode === 'controlled') {
-        emit('update:document', next)
+        emit('update:document', fitted)
 
         return
       }
 
       withStateCause('semantic-change', () => {
-        ownedDocument.value = next
+        ownedDocument.value = fitted
       })
     }
 

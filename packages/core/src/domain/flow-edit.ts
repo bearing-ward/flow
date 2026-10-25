@@ -19,6 +19,7 @@ import type {
   FlowEditTransaction,
 } from './flow-edit.schema.ts'
 import { FlowEditTransactionSchema } from './flow-edit.schema.ts'
+import { refitFlowGroups } from './flow-grouping-actions.ts'
 import type {
   EdgeId,
   FlowDocument,
@@ -257,6 +258,8 @@ export const prepareFlowEdit = (
       candidate = yield* applyOperation(candidate, operation, deletion)
     }
 
+    yield* decodeFlowDocument(candidate)
+    candidate = refitFlowGroups(candidate)
     const validated = yield* decodeFlowDocument(candidate)
 
     const result: FlowEditResult = {

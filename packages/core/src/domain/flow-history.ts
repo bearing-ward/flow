@@ -53,6 +53,7 @@ export type FlowHistoryStatus = typeof FlowHistoryStatusSchema.Type
 export const FlowHistoryEventSchema = S.Union([
   S.Struct({
     kind: S.Literal('accepted'),
+    derived: S.optional(S.Boolean),
     document: FlowDocumentSchema,
     context: S.optional(FlowTransactionContextSchema),
   }),
@@ -182,6 +183,10 @@ const acceptDocument = (
   event: Extract<FlowHistoryEvent, { kind: 'accepted' }>
 ): FlowHistoryState => {
   const document = flowHistoryDocument(event.document)
+
+  if (event.derived === true) {
+    return { ...state, present: document }
+  }
 
   if (
     state.phase.kind === 'pending' &&
