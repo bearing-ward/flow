@@ -1,6 +1,6 @@
 import type { FlowHistoryStatus } from '@flow/core'
 import { Exit } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type {
   HistoryRequestSchema,
@@ -74,7 +74,7 @@ const transport = () => {
 }
 
 describe('Foldkit history client transport', () => {
-  test('Foldkit history clients correlate concurrent requests without owning history snapshots', async () => {
+  it('Foldkit history clients correlate concurrent requests without owning history snapshots', async () => {
     const io = transport()
     const first = createFoldkitHistoryClient(io.ports)
     const second = createFoldkitHistoryClient(io.ports)
@@ -96,7 +96,7 @@ describe('Foldkit history client transport', () => {
     })
   })
 
-  test('Foldkit history client disposal settles pending requests and prevents future sends', async () => {
+  it('Foldkit history client disposal settles pending requests and prevents future sends', async () => {
     const io = transport()
     const client = createFoldkitHistoryClient(io.ports)
     const undo = client.undo()

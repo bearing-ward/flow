@@ -5,7 +5,7 @@ import {
   NodeIdSchema,
 } from '@flow/core'
 import { Effect, Schema } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import {
   AppMessage,
@@ -61,7 +61,7 @@ const publishedStatus = (result: ReturnType<typeof update>) => {
 }
 
 describe('optional Foldkit history status publication', () => {
-  test('records accepted edits without adding commands for an unobserved history port', () => {
+  it('records accepted edits without adding commands for an unobserved history port', () => {
     const changed = move(initial(), 30)
     expect({
       position: changed.model.graph.document.nodes[0]?.position,
@@ -79,7 +79,7 @@ describe('optional Foldkit history status publication', () => {
     }).toStrictEqual({ count: 2, commands: [] })
   })
 
-  test('an explicit status read activates updates and exposes already recorded edits', () => {
+  it('an explicit status read activates updates and exposes already recorded edits', () => {
     const changed = move(initial(), 30)
     const read = request(changed.model, 'status')
     expect(publishedStatus(read)).toMatchObject({
@@ -94,7 +94,7 @@ describe('optional Foldkit history status publication', () => {
     ])
   })
 
-  test('native history requests can undo previously unobserved edits and enable status updates', () => {
+  it('native history requests can undo previously unobserved edits and enable status updates', () => {
     const changed = move(initial(), 30)
     const undone = request(changed.model, 'undo')
     expect({
@@ -114,7 +114,7 @@ describe('optional Foldkit history status publication', () => {
     })
   })
 
-  test('a new runtime session resets optional publication along with the cursor', () => {
+  it('a new runtime session resets optional publication along with the cursor', () => {
     const observed = request(move(initial(), 30).model, 'status').model
     const pointer = Graph.createPointerResource(observed.graph)
 

@@ -6,7 +6,7 @@ import {
 } from '@flow/core'
 import type { FlowDocument } from '@flow/core'
 import { Effect } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import {
   AppMessage,
@@ -104,7 +104,7 @@ const proposal = (result: ReturnType<typeof update>) => {
 }
 
 describe('Foldkit model-owned transaction history', () => {
-  test('records accepted semantic edits and restores selection without recording presentation state', () => {
+  it('records accepted semantic edits and restores selection without recording presentation state', () => {
     const edited = position(makeModel(), 30)
     expect({
       status: flowHistoryStatus(edited.model.history),
@@ -155,7 +155,7 @@ describe('Foldkit model-owned transaction history', () => {
     })
   })
 
-  test('controlled replay waits for receipt context, supports rejection, and retains owner authority', () => {
+  it('controlled replay waits for receipt context, supports rejection, and retains owner authority', () => {
     const uncontrolled = position(makeModel(), 30).model
 
     const controlled: Model = {
@@ -233,7 +233,7 @@ describe('Foldkit model-owned transaction history', () => {
     })
   })
 
-  test('groups repeated keyboard updates until keyup and separates unrelated API edits', () => {
+  it('groups repeated keyboard updates until keyup and separates unrelated API edits', () => {
     const repeated = move(move(move(makeModel())))
     expect({
       position: repeated.graph.document.nodes[0]?.position,
@@ -250,7 +250,7 @@ describe('Foldkit model-owned transaction history', () => {
     ).toStrictEqual({ x: 80, y: 20 })
   })
 
-  test('coalesces controlled keyboard repeats through owner-echoed proposal context', () => {
+  it('coalesces controlled keyboard repeats through owner-echoed proposal context', () => {
     const initial = makeModel()
 
     let controlled: Model = {
@@ -350,7 +350,7 @@ describe('Foldkit model-owned transaction history', () => {
     })
   })
 
-  test('allocates a new controlled keyboard hold ID and keeps late old acknowledgments out of the active group', () => {
+  it('allocates a new controlled keyboard hold ID and keeps late old acknowledgments out of the active group', () => {
     const initial = makeModel()
 
     const start: Model = {
@@ -399,7 +399,7 @@ describe('Foldkit model-owned transaction history', () => {
     }).toStrictEqual({ position: { x: 20, y: 20 }, count: 3 })
   })
 
-  test('rejects invalid edits and cancels active previews before replay', () => {
+  it('rejects invalid edits and cancels active previews before replay', () => {
     const committed = position(makeModel(), 30).model
 
     const failed = update(
@@ -465,7 +465,7 @@ describe('Foldkit model-owned transaction history', () => {
     })
   })
 
-  test('validates trailing capacity including zero and disables recording at zero', () => {
+  it('validates trailing capacity including zero and disables recording at zero', () => {
     const zero = position(makeModel(0), 30).model
     expect(flowHistoryStatus(zero.history)).toMatchObject({
       capacity: 0,
@@ -482,7 +482,7 @@ describe('Foldkit model-owned transaction history', () => {
     }
   })
 
-  test('starts a fresh cursor when a development runtime restores a previous session model', () => {
+  it('starts a fresh cursor when a development runtime restores a previous session model', () => {
     const committed = position(makeModel(), 30).model
     const pointer = Graph.createPointerResource(committed.graph)
 
@@ -511,7 +511,7 @@ describe('Foldkit model-owned transaction history', () => {
     pointer.close()
   })
 
-  test.each<{ kind: 'remote' | 'system' }>([
+  it.each<{ kind: 'remote' | 'system' }>([
     { kind: 'remote' },
     { kind: 'system' },
   ])(
@@ -554,7 +554,7 @@ describe('Foldkit model-owned transaction history', () => {
     }
   )
 
-  test('remote accepted updates reset the session baseline and status requests preserve the cursor', () => {
+  it('remote accepted updates reset the session baseline and status requests preserve the cursor', () => {
     const committed = position(makeModel(), 30).model
 
     const remote = update(

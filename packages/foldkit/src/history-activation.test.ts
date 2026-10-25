@@ -1,6 +1,6 @@
 import type { FlowHistoryStatus } from '@flow/core'
 import { Exit } from 'effect'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type {
   HistoryRequestSchema,
@@ -80,7 +80,7 @@ const transport = () => {
 }
 
 describe('Foldkit history publication activation', () => {
-  test('a subscribe-only client reads existing status after installing its port listeners', async () => {
+  it('a subscribe-only client reads existing status after installing its port listeners', async () => {
     const io = transport()
     const client = createFoldkitHistoryClient(io.ports)
     const received: FlowHistoryStatus[] = []
@@ -101,7 +101,7 @@ describe('Foldkit history publication activation', () => {
     })
   })
 
-  test('disposing before activation cancels the automatic initial read', async () => {
+  it('disposing before activation cancels the automatic initial read', async () => {
     const io = transport()
     const client = createFoldkitHistoryClient(io.ports)
     client.dispose()
@@ -114,7 +114,7 @@ describe('Foldkit history publication activation', () => {
     await expect(client.undo()).resolves.toMatchObject({ disposed: true })
   })
 
-  test('activation and disposal stay isolated between clients on different runtimes', async () => {
+  it('activation and disposal stay isolated between clients on different runtimes', async () => {
     const first = transport()
     const second = transport()
     const firstClient = createFoldkitHistoryClient(first.ports)
