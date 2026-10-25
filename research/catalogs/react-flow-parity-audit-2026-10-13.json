@@ -6,11 +6,11 @@
     "P": "partial: exists with notable gaps",
     "G": "gap: no public equivalent"
   },
-  "parityScope": "Functional parity: every in-scope entry is C in Vanilla, Vue and Foldkit. Stretch entries (Pro outcomes, templates, long tail; wave 7) and intentional gaps are excluded from the parity denominator.",
+  "parityScope": "Functional parity: every in-scope entry is C in Vanilla, Vue and Foldkit. From 2026-10-25 the publicly listed Pro examples are in scope. Remaining stretch entries (non-Pro templates and long tail; wave 7) and intentional gaps are excluded from the parity denominator.",
   "summary": {
     "entries": 200,
-    "inScope": 185,
-    "stretch": 13,
+    "inScope": 195,
+    "stretch": 3,
     "intentionalGaps": 2,
     "inScopeCloseAllHosts": 185,
     "inScopeCloseByHost": {
@@ -2236,7 +2236,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No animated node position transitions",
       "effort": "M",
@@ -2245,6 +2245,10 @@
         "on": "2026-10-14",
         "missing": "Animated node position transitions recipe",
         "evidence": "no node position animation API"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2288,7 +2292,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No shape node recipe; custom SVG nodes possible",
       "effort": "M",
@@ -2297,6 +2301,10 @@
         "on": "2026-10-14",
         "missing": "No shape node recipe",
         "evidence": "custom SVG nodes possible via renderers"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2443,7 +2451,7 @@
       "vanilla": "G",
       "vue": "G",
       "foldkit": "G",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "Obstacle-aware edge routing",
       "effort": "L",
@@ -2452,6 +2460,10 @@
         "on": "2026-10-14",
         "missing": "Obstacle-aware edge routing",
         "evidence": "no routing implementation"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2567,7 +2579,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "Draggable edge control points with edge-data writes",
       "effort": "L",
@@ -2576,6 +2588,10 @@
         "on": "2026-10-14",
         "missing": "Draggable edge control points writing edge data",
         "evidence": "no editable edge recipe"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2743,7 +2759,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No drag position override/snapping hook recipe",
       "effort": "M",
@@ -2752,6 +2768,10 @@
         "on": "2026-10-14",
         "missing": "Helper line snapping recipe",
         "evidence": "no helper lines recipe"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2760,7 +2780,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No CRDT/Yjs sync integration",
       "effort": "L",
@@ -2769,6 +2789,10 @@
         "on": "2026-10-14",
         "missing": "CRDT/Yjs sync integration",
         "evidence": "no collaboration recipe"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2777,7 +2801,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No clipboard recipe; selection plus edits exist",
       "effort": "M",
@@ -2786,6 +2810,10 @@
         "on": "2026-10-14",
         "missing": "Clipboard recipe",
         "evidence": "no clipboard recipe"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2794,7 +2822,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No history API over edit transactions",
       "effort": "M",
@@ -2803,6 +2831,10 @@
         "on": "2026-10-14",
         "missing": "History API over edit transactions",
         "evidence": "no undo/redo recipe"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -2935,7 +2967,7 @@
       "vanilla": "P",
       "vue": "P",
       "foldkit": "P",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "Hidden subtree plus relayout recipe",
       "effort": "M",
@@ -2944,6 +2976,10 @@
         "on": "2026-10-14",
         "missing": "Hidden subtree plus relayout recipe",
         "evidence": "no expand/collapse recipe"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {
@@ -3185,7 +3221,7 @@
       "vanilla": "G",
       "vue": "G",
       "foldkit": "G",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No server-side rendering of flows",
       "effort": "L",
@@ -3194,6 +3230,10 @@
         "on": "2026-10-14",
         "missing": "Server-side flow rendering",
         "evidence": "no SSR rendering"
+      },
+      "addedToScope": {
+        "on": "2026-10-25",
+        "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       }
     },
     {

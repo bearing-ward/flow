@@ -11,7 +11,7 @@ Checked items work in the repository today. Unchecked items are still part of th
   - three real regressions: Vanilla left removed edges rendered after `update`, because a render pass aborted on its own measurement prune; Vanilla swallowed the first keyboard Enter after an Escape cancellation; and Foldkit ignored Escape during a Shift+Space keyboard selection.
 - Open gap: Foldkit rectangle selection and node resize never take pointer capture, so a real capture loss (for example, an interrupted touch) does not cancel them. Vue and xyflow do take capture for these gestures. The former Foldkit capture-loss rows for these gestures only passed against synthetic events and were removed.
 - Delivery loop from 2026-10-13: one plan of a page or less per feature, then implementation, targeted tests plus `bun run verify`, and one review pass before commit. No multi-judge reviews, hash ledgers, or recovery packets.
-- Parity scope (decided 2026-10-13): parity means functional parity. An outcome counts once a developer or end user can achieve it with public Flow APIs in Vanilla, Vue and Foldkit. Stretch goals (Pro outcomes, the Workflow Editor templates and other long-tail entries) and intentional gaps (`useStoreApi()`, `ProOptions`) do not count toward parity.
+- Parity scope (decided 2026-10-13): parity means functional parity. An outcome counts once a developer or end user can achieve it with public Flow APIs in Vanilla, Vue and Foldkit. Stretch goals (Pro outcomes, the Workflow Editor templates and other long-tail entries) and intentional gaps (`useStoreApi()`, `ProOptions`) do not count toward parity. Scope widened 2026-10-25: the ten publicly listed Pro examples rated below close are now in scope, so 185 of 195 in-scope entries are close. The Workflow Editor templates and Rotatable Node remain stretch.
 - Functional parity reached (2026-10-14): Plans 105-120 closed all six waves. The [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) now rates all 185 in-scope entries as close equivalents in Vanilla, Vue and Foldkit. Plans 105-117 carry the 2026-10-14 independent re-audit ratings. Plans 118-120 were rated by their implementers and checked by one independent review each. `bun run verify:full` passed on main after the Plan 120 merge:
   - 2494 unit tests;
   - Vanilla 628 browser tests passed, with 2 skipped;
@@ -33,7 +33,9 @@ Review upstream additions at milestone boundaries. Detailed mapping should accou
 - [ ] Example coverage: demonstrate every catalog example through supported APIs, including required optional integrations.
 - [ ] UI coverage: provide equivalents for every catalog component and template.
 - [ ] Framework coverage: prove mapped capabilities separately in plain JavaScript, Vue, Foldkit, and future supported adapters.
-- [x] Functional parity: every in-scope entry in the [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) is achievable in all three hosts. Stretch entries and intentional gaps are excluded.
+- [x] Functional parity (2026-10-14 scope): all 185 original in-scope entries in the [parity audit](catalogs/react-flow-parity-audit-2026-10-13.json) are achievable in all three hosts.
+- [ ] Pro parity: the ten Pro example entries added on 2026-10-25 are achievable in all three hosts.
+- [ ] Desired features beyond React Flow: see [desired features](desired-features.md).
 - [ ] Parity evidence: connect each claim to reference comparisons, runnable examples, and applicable interaction, visual, accessibility, and lifecycle checks.
 - [ ] Upstream review: review catalog changes at milestone boundaries and keep omissions visible in the checklist.
 
