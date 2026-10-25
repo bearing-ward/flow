@@ -1,0 +1,43 @@
+body {
+  margin: 0;
+  font:
+    14px system-ui,
+    sans-serif;
+}
+main {
+  padding: 12px;
+}
+h1 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+#history-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+button {
+  padding: 6px 10px;
+}
+main > .flow-vue-canvas {
+  height: 460px;
+  border: 1px solid #ccc;
+  margin-top: 8px;
+}
+#history-status,
+#history-error {
+  display: block;
+}
+#history-document {
+  max-height: 100px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+#isolated {
+  padding: 12px;
+}
+#isolated .flow-vue-canvas {
+  height: 160px;
+  border: 1px solid #ccc;
+}

@@ -21,6 +21,9 @@ export default defineConfig(({ mode }) => {
       rolldownOptions: {
         input: {
           main: fileURLToPath(new URL('index.html', import.meta.url)),
+          history: fileURLToPath(
+            new URL('history/index.html', import.meta.url)
+          ),
           schemaStudio: fileURLToPath(
             new URL('schema-studio/index.html', import.meta.url)
           ),

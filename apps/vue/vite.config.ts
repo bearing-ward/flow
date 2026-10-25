@@ -22,5 +22,14 @@ export default defineConfig({
     __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
   },
   server: { host: '127.0.0.1', port: 4174, strictPort: true },
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: `${import.meta.dirname}/index.html`,
+        history: `${import.meta.dirname}/history/index.html`,
+      },
+    },
+  },
 })

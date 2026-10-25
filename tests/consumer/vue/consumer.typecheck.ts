@@ -628,3 +628,12 @@ export const compilePurePathHelperContracts = () => {
 
   return { paths, center: fourNumbers }
 }
+
+export const transactionHistoryConsumer = async (flow: FlowActions) => {
+  const before = flow.history.value
+  await flow.undo()
+  await flow.redo()
+  flow.rejectHistory('packed-consumer-rejection')
+
+  return before
+}

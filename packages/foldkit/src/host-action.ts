@@ -2,6 +2,7 @@ import {
   FlowColorModeSchema,
   FlowCommandSchema,
   FlowDocumentSchema,
+  FlowTransactionContextSchema,
   NodeMeasurementInputSchema,
   ViewportSchema,
 } from '@flow/core'
@@ -18,7 +19,10 @@ export const HostAction = FoldMessage.defineMessageUnion({
   },
   RequestKeyboardDelete: {},
   SetCanvasOptions: { options: CanvasOptionsSchema },
-  ReplaceDocument: { document: FlowDocumentSchema },
+  ReplaceDocument: {
+    document: FlowDocumentSchema,
+    context: Schema.optional(FlowTransactionContextSchema),
+  },
   ReplaceViewport: { viewport: ViewportSchema },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
   DispatchCommand: { command: FlowCommandSchema },

@@ -31,6 +31,7 @@ import {
   FlowEditErrorSchema,
   FlowEditResultSchema,
   FlowEditTransactionSchema,
+  FlowTransactionContextSchema,
   FlowSnapshotSchema,
   FlowStateChangeSchema,
   ViewportSchema,
@@ -754,6 +755,7 @@ export const Message = FoldMessage.defineMessageUnion({
     pressed: Schema.Boolean,
   },
   MoveNodeByKeyboard: {
+    context: Schema.optional(FlowTransactionContextSchema),
     nodeId: NodeIdSchema,
     key: Schema.String,
     shift: Schema.optional(Schema.Boolean),
@@ -1282,13 +1284,20 @@ const setNodePosition = (
 const dispatchCommand = (model: Model, command: CoreFlowCommand) => {
   if (command.kind === 'edit-transaction') {
     const prepared = Effect.runSync(
-      prepareFlowEdit(model.document, command.transaction)
+      prepareFlowEdit(model.document, {
+        ...command.transaction,
+        context: command.transaction.context ?? {
+          transactionId: crypto.randomUUID(),
+          origin: { kind: 'local', actorId: model.instanceId },
+        },
+      })
     )
 
     const change: CoreFlowChange = {
       kind: 'edit-proposal',
       document: prepared.document,
       deletion: prepared.deletion,
+      context: prepared.context,
     }
 
     return report(
@@ -1332,7 +1341,15 @@ const requestEdit = (
   requestId: string,
   transaction: typeof FlowEditTransactionSchema.Type
 ): Update.ReturnWithOutMessage<Model, GraphMessageData, OutMessageData> => {
-  const exit = Effect.runSyncExit(prepareFlowEdit(model.document, transaction))
+  const exit = Effect.runSyncExit(
+    prepareFlowEdit(model.document, {
+      ...transaction,
+      context: transaction.context ?? {
+        transactionId: crypto.randomUUID(),
+        origin: { kind: 'local', actorId: model.instanceId },
+      },
+    })
+  )
 
   return Exit.match(exit, {
     onFailure: (cause) => {
@@ -1356,6 +1373,7 @@ const requestEdit = (
         kind: 'edit-proposal',
         document: result.document,
         deletion: result.deletion,
+        context: result.context,
       }
 
       const next = {
@@ -3077,6 +3095,7 @@ const finishResizer = (
         kind: 'edit-proposal',
         document: prepared.document,
         deletion: prepared.deletion,
+        context: prepared.context,
       }
     )
   }
@@ -3374,7 +3393,7 @@ const updateState = (
     PaneResized: ({ width, height, bounds }) => ({
       model: { ...model, paneSize: { width, height, bounds } },
     }),
-    MoveNodeByKeyboard: ({ nodeId, key, shift }) => {
+    MoveNodeByKeyboard: ({ nodeId, key, shift, context }) => {
       if (model.disableKeyboardA11y || !model.keyboardActivation) {
         return noChange(model)
       }
@@ -3496,6 +3515,7 @@ const updateState = (
         Message.EditRequest({
           requestId: 'keyboard-move',
           transaction: {
+            context,
             operations: positions.map(({ nodeId: id, position }) => ({
               kind: 'update-node',
               nodeId: id,
@@ -3726,6 +3746,7 @@ const updateState = (
         kind: 'edit-proposal',
         document: result.document,
         deletion: result.deletion,
+        context: result.context,
       }
 
       const next = {

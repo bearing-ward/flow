@@ -1,4 +1,11 @@
 import {
+  createFlowHistory,
+  flowHistoryStatus,
+  flowHistoryDocumentsEqual,
+  flowHistoryDocument,
+  reduceFlowHistory,
+  restoreFlowHistoryDocument,
+  FlowTransactionContextSchema,
   collectFlowEdgeMarkers,
   resolveFlowEdgeMarker,
   computeFlowStacking,
@@ -101,6 +108,8 @@ import {
   isEdgeSelectable,
 } from '@flow/core'
 import type {
+  FlowHistoryEvent,
+  FlowTransactionContext,
   FlowInternalNode,
   CoordinateExtent,
   FlowStyle,
@@ -761,6 +770,11 @@ interface SelectionEndPayload {
 export const FlowCanvas = defineComponent({
   name: 'FlowCanvas',
   props: {
+    historyCapacity: { type: Number, default: 100 },
+    documentContext: {
+      type: Object as PropType<FlowTransactionContext>,
+      default: undefined,
+    },
     document: { type: Object as PropType<FlowDocument>, default: undefined },
     defaultDocument: {
       type: Object as PropType<FlowDocument>,
@@ -1318,12 +1332,93 @@ export const FlowCanvas = defineComponent({
     const edgeLabelRegistry = createEdgeLabelRegistry()
     const toolbarOverlayTarget = shallowRef<HTMLElement | null>(null)
     const selectionBoundsActive = shallowRef(false)
+
+    const historyState = shallowRef(
+      createFlowHistory(stateSnapshot.value.document, {
+        capacity: props.historyCapacity,
+        session: crypto.randomUUID(),
+      })
+    )
+
+    recordFlowTelemetry('Mounted Vue history', FlowSpan.hostMount, {
+      [FlowAttribute.inputKind]: 'history',
+      [FlowAttribute.controlMode]: documentControlMode(),
+      [FlowAttribute.nodeCount]: historyState.value.present.nodes.length,
+      [FlowAttribute.edgeCount]: historyState.value.present.edges.length,
+    })
+
+    const history = computed(() => flowHistoryStatus(historyState.value))
+    let acceptedContext: FlowTransactionContext | undefined
+
+    let pendingDocumentReceipt:
+      | {
+          readonly document: FlowDocument
+          readonly context: FlowTransactionContext
+        }
+      | undefined
+
+    let keyboardHistoryGesture:
+      | { readonly key: string; readonly id: string }
+      | undefined
+
+    const localContext = (gestureId?: string): FlowTransactionContext => {
+      const context: FlowTransactionContext = {
+        transactionId: crypto.randomUUID(),
+        origin: { kind: 'local', actorId: historyState.value.session },
+      }
+
+      return gestureId === undefined ? context : { ...context, gestureId }
+    }
+
+    const historyEvent = (event: FlowHistoryEvent) => {
+      const previous = historyState.value
+      const result = reduceFlowHistory(previous, event)
+      historyState.value = result.state
+
+      if (result.state !== previous && event.kind !== 'gesture') {
+        recordFlowTelemetry(
+          'Vue history transition',
+          event.kind === 'dispose'
+            ? FlowSpan.hostDestroy
+            : FlowSpan.controllerUpdate,
+          {
+            [FlowAttribute.changeKind]: `history-${event.kind}`,
+            [FlowAttribute.nodeCount]: result.state.present.nodes.length,
+            [FlowAttribute.edgeCount]: result.state.present.edges.length,
+          }
+        )
+      }
+
+      return result
+    }
+
+    const rejectHistory = (transactionId: string): void => {
+      if (pendingDocumentReceipt?.context.transactionId === transactionId) {
+        pendingDocumentReceipt = undefined
+      }
+
+      historyEvent({ kind: 'rejected', transactionId })
+    }
+
+    const finishKeyboardHistory = (): void => {
+      if (keyboardHistoryGesture !== undefined) {
+        historyEvent({
+          kind: 'gesture',
+          action: 'end',
+          gestureId: keyboardHistoryGesture.id,
+        })
+        keyboardHistoryGesture = undefined
+      }
+    }
+
     let acceptedSnapshot = stateSnapshot.value
     let documentRevision = 0
     let deleteApprovalPending = false
     let editMutationDepth = 0
     let drainingEditMutations = false
     const pendingEditMutations: (() => Promise<void>)[] = []
+    const pendingHistoryReplays = new Set<() => void>()
+    const pendingEditSettlers = new Set<() => void>()
     let publishingState = false
     let stateDisposed = false
     let requestedStateCause: FlowStateChange['cause'] | undefined
@@ -1421,10 +1516,69 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const acceptHistoryDocument = (
+      document: FlowDocument,
+      context?: FlowTransactionContext,
+      contextChanged = false
+    ): void => {
+      const ownerReceipt =
+        context === undefined
+          ? undefined
+          : S.decodeUnknownSync(FlowTransactionContextSchema)(context)
+
+      const proposalReceipt =
+        pendingDocumentReceipt !== undefined &&
+        flowHistoryDocumentsEqual(pendingDocumentReceipt.document, document)
+          ? pendingDocumentReceipt.context
+          : undefined
+
+      const receipt = ownerReceipt ?? acceptedContext ?? proposalReceipt
+
+      const explicitBaseline =
+        contextChanged &&
+        receipt !== undefined &&
+        receipt.origin.kind !== 'local'
+
+      if (
+        stateDisposed ||
+        (flowHistoryDocumentsEqual(historyState.value.present, document) &&
+          !history.value.pending &&
+          !explicitBaseline)
+      ) {
+        return
+      }
+
+      pendingDocumentReceipt = undefined
+
+      historyEvent({
+        kind: 'accepted',
+        document,
+        context: receipt ?? localContext(keyboardHistoryGesture?.id),
+      })
+    }
+
+    watch(
+      [stateSnapshot, () => props.documentContext],
+      ([current, context], [, previousContext]) => {
+        if (documentControlMode() === 'controlled') {
+          acceptHistoryDocument(
+            current.document,
+            context,
+            context !== previousContext
+          )
+        }
+      },
+      { flush: 'post' }
+    )
+
     watch(
       stateSnapshot,
       (current) => {
         const previous = acceptedSnapshot
+
+        if (documentControlMode() === 'uncontrolled') {
+          acceptHistoryDocument(current.document)
+        }
 
         if (snapshotEquivalence(previous, current)) {
           return
@@ -2610,7 +2764,27 @@ export const FlowCanvas = defineComponent({
       }
     }
 
-    const updateDocument = (next: FlowDocument): void => {
+    const updateDocument = (
+      next: FlowDocument,
+      context?: FlowTransactionContext
+    ): void => {
+      if (stateDisposed) {
+        return
+      }
+
+      const validContext =
+        context === undefined
+          ? undefined
+          : S.decodeUnknownSync(FlowTransactionContextSchema)(context)
+
+      pendingDocumentReceipt =
+        validContext === undefined
+          ? undefined
+          : {
+              document: flowHistoryDocument(next),
+              context: validContext,
+            }
+
       if (hasSplitModel) {
         emit('update:nodes', next.nodes)
         emit('update:edges', next.edges)
@@ -4398,7 +4572,8 @@ export const FlowCanvas = defineComponent({
         unwrapReactive(activeViewport.value)
       ).document
 
-      const transaction = resolveInput(currentDocument)
+      const input = resolveInput(currentDocument)
+      const transaction = { ...input, context: input.context ?? localContext() }
 
       let result: FlowEditResult
 
@@ -4424,6 +4599,7 @@ export const FlowCanvas = defineComponent({
           kind: 'edit-proposal',
           document: result.document,
           deletion: result.deletion,
+          context: result.context,
         }
 
         emit('change', proposal)
@@ -4443,14 +4619,21 @@ export const FlowCanvas = defineComponent({
         kind: 'edit-proposal',
         document: result.document,
         deletion: result.deletion,
+        context: result.context,
       }
 
       emit('change', proposal)
       emitElementChanges(currentDocument, proposal)
 
-      withStateCause('semantic-change', () => {
-        ownedDocument.value = result.document
-      })
+      acceptedContext = result.context
+
+      try {
+        withStateCause('semantic-change', () => {
+          ownedDocument.value = result.document
+        })
+      } finally {
+        acceptedContext = undefined
+      }
 
       return result
     }
@@ -4458,13 +4641,20 @@ export const FlowCanvas = defineComponent({
     const applyEditResolved = (
       resolveInput: (document: FlowDocument) => FlowEditTransactionInput
     ): Promise<FlowEditResult> => {
-      if (editMutationDepth === 0 && !drainingEditMutations) {
-        return applyEditResolvedNow(resolveInput)
+      if (stateDisposed) {
+        return Promise.reject(new Error('FlowCanvasDisposed'))
       }
 
       const pending = Promise.withResolvers<FlowEditResult>()
 
+      const dispose = (): void =>
+        pending.reject(new Error('FlowCanvasDisposed'))
+
+      pendingEditSettlers.add(dispose)
+
       pendingEditMutations.push(async () => {
+        pendingEditSettlers.delete(dispose)
+
         try {
           pending.resolve(await applyEditResolvedNow(resolveInput))
         } catch (error) {
@@ -4560,6 +4750,7 @@ export const FlowCanvas = defineComponent({
         }
 
     type DisposalResource =
+      | { readonly kind: 'history' }
       | {
           readonly kind: 'request-frame'
           readonly taken: TakenRequestSettlement
@@ -5262,10 +5453,131 @@ export const FlowCanvas = defineComponent({
       )
     }
 
+    const replayHistory = (direction: 'undo' | 'redo'): Promise<void> => {
+      if (stateDisposed) {
+        return Promise.resolve()
+      }
+
+      const pending: PromiseWithResolvers<void> = Promise.withResolvers()
+      const { resolve, reject } = pending
+
+      const settle = (): void => {
+        pendingHistoryReplays.delete(settle)
+        resolve()
+      }
+
+      pendingHistoryReplays.add(settle)
+      pendingEditMutations.push(async () => {
+        let transactionId: string | undefined
+
+        try {
+          cancelActiveSession('history-replay')
+          finishKeyboardHistory()
+
+          const replay = historyEvent({
+            kind: 'replay',
+            direction,
+            transactionId: crypto.randomUUID(),
+          })
+
+          if (replay.replacement !== undefined) {
+            const { context } = replay.replacement
+            const { transactionId: replayTransactionId } = context
+
+            transactionId = replayTransactionId
+
+            const document = await Effect.runPromise(
+              decodeFlowDocument(
+                restoreFlowHistoryDocument(
+                  replay.replacement.document,
+                  stateSnapshot.value.document
+                )
+              )
+            )
+
+            if (
+              stateDisposed ||
+              historyState.value.phase.kind !== 'pending' ||
+              historyState.value.phase.context.transactionId !==
+                replayTransactionId
+            ) {
+              settle()
+
+              return
+            }
+
+            const proposal: FlowChange = {
+              kind: 'edit-proposal',
+              document,
+              context,
+              deletion: {
+                deletedNodeIds: activeDocument.value.nodes
+                  .filter(
+                    (node) =>
+                      !document.nodes.some((next) => next.id === node.id)
+                  )
+                  .map((node) => node.id),
+                deletedEdgeIds: activeDocument.value.edges
+                  .filter(
+                    (edge) =>
+                      !document.edges.some((next) => next.id === edge.id)
+                  )
+                  .map((edge) => edge.id),
+              },
+            }
+
+            emit('change', proposal)
+            emitElementChanges(activeDocument.value, proposal)
+
+            if (!stateDisposed) {
+              if (hasSplitModel || props.documentMode === 'controlled') {
+                if (hasSplitModel) {
+                  emit('update:nodes', document.nodes)
+                  emit('update:edges', document.edges)
+                } else {
+                  emit('update:document', document)
+                }
+              } else {
+                acceptedContext = context
+
+                try {
+                  withStateCause('semantic-change', () => {
+                    ownedDocument.value = document
+                  })
+                } finally {
+                  acceptedContext = undefined
+                }
+              }
+            }
+          }
+
+          settle()
+        } catch (error) {
+          if (transactionId !== undefined) {
+            rejectHistory(transactionId)
+          }
+
+          reportError(
+            error instanceof Error ? error : new Error(String(error)),
+            'edit'
+          )
+          pendingHistoryReplays.delete(settle)
+          reject(error)
+        }
+      })
+      void drainSerialEditMutations()
+
+      return pending.promise
+    }
+
     const editor: FlowEditor = {
       document: computed(() => stateSnapshot.value.document),
       viewport: computed(() => stateSnapshot.value.viewport),
       snapshot: stateSnapshot,
+      history,
+      undo: () => replayHistory('undo'),
+      redo: () => replayHistory('redo'),
+      rejectHistory,
       getDocumentRevision: () => documentRevision,
       beginDeleteApproval: () => {
         if (stateDisposed || deleteApprovalPending) {
@@ -6275,6 +6587,19 @@ export const FlowCanvas = defineComponent({
         individualNodes: true,
         nodeExtent,
       })
+
+      if (
+        keyboardHistoryGesture?.key !== event.key ||
+        historyState.value.gesture?.gestureId !== keyboardHistoryGesture?.id
+      ) {
+        finishKeyboardHistory()
+        keyboardHistoryGesture = { key: event.key, id: crypto.randomUUID() }
+        historyEvent({
+          kind: 'gesture',
+          action: 'begin',
+          gestureId: keyboardHistoryGesture.id,
+        })
+      }
 
       publishDragCommit(
         [...step.positions].map(([nodeId, position]) => ({ nodeId, position })),
@@ -8044,6 +8369,18 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    const replayHistoryFromKeyboard = async (
+      direction: 'undo' | 'redo'
+    ): Promise<boolean> => {
+      try {
+        await replayHistory(direction)
+
+        return true
+      } catch {
+        return false
+      }
+    }
+
     // eslint-disable-next-line complexity -- handles keyboard selection as one session lifecycle.
     const onKeyDown = (event: KeyboardEvent): void => {
       if (stateDisposed) {
@@ -8085,6 +8422,33 @@ export const FlowCanvas = defineComponent({
             ? focusedOwner === canvas.value
             : canvas.value?.ownerDocument.querySelectorAll('.flow-vue-canvas')
                 .length === 1
+      }
+
+      if (
+        (eventCanvas === canvas.value ||
+          (eventCanvas === undefined &&
+            focusedOwner === canvas.value &&
+            canvas.value?.isConnected === true)) &&
+        !event.defaultPrevented &&
+        !event.isComposing &&
+        !event.repeat &&
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        target instanceof Element &&
+        target.closest('input, textarea, select, [contenteditable], .nokey') ===
+          null
+      ) {
+        const key = event.key.toLowerCase()
+
+        if (key === 'z' || key === 'y') {
+          event.preventDefault()
+          event.stopPropagation()
+          void replayHistoryFromKeyboard(
+            key === 'y' || event.shiftKey ? 'redo' : 'undo'
+          )
+
+          return
+        }
       }
 
       // The nearest canvas in the composed path owns a nested or shadow-DOM event.
@@ -8305,6 +8669,7 @@ export const FlowCanvas = defineComponent({
 
       pressedKeys.clear()
       keyboardPressedCodes.clear()
+      finishKeyboardHistory()
       cancelActiveSession('blur')
     }
 
@@ -8331,6 +8696,10 @@ export const FlowCanvas = defineComponent({
     const onWindowKeyUp = (event: KeyboardEvent): void => {
       if (stateDisposed) {
         return
+      }
+
+      if (keyboardHistoryGesture?.key === event.key) {
+        finishKeyboardHistory()
       }
 
       keyboardPressedCodes.delete(event.key)
@@ -9906,13 +10275,28 @@ export const FlowCanvas = defineComponent({
     // eslint-disable-next-line complexity -- The complete raw authority and resource packet must be captured without callback-capable intermediate helpers.
     const captureDisposal = (): CapturedDisposal => {
       stateDisposed = true
+      keyboardHistoryGesture = undefined
+      pendingDocumentReceipt = undefined
+
+      for (const settle of pendingHistoryReplays) {
+        settle()
+      }
+
+      pendingHistoryReplays.clear()
+
+      for (const settle of pendingEditSettlers) {
+        settle()
+      }
+
+      pendingEditSettlers.clear()
+      pendingEditMutations.length = 0
       const active = session.value
       const retained = clickConnection.value
       const originalClaims = [...pendingConnectionClaims]
       const viewport = activeViewport.value
       const request = activeViewportRequest
       const observation = viewportObservation
-      const resources: DisposalResource[] = []
+      const resources: DisposalResource[] = [{ kind: 'history' }]
       const notifications: DisposalStep[] = []
       const clears: DisposalResource[] = []
       const liveClaims: ConnectionClaim[] = []
@@ -10201,7 +10585,14 @@ export const FlowCanvas = defineComponent({
       }
     }
 
+    // eslint-disable-next-line complexity -- Each captured resource owns one disposal action; history is delivered only after raw capture completes.
     const applyDisposalResource = (resource: DisposalResource): void => {
+      if (resource.kind === 'history') {
+        historyEvent({ kind: 'dispose' })
+
+        return
+      }
+
       switch (resource.kind) {
         case 'request-frame': {
           resource.taken.progress = { kind: 'resolve' }

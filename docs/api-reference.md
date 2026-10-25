@@ -206,6 +206,37 @@ export type FlowDocument = {
 };
 ```
 
+## Transaction context
+
+Generated from `FlowTransactionContextSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowTransactionContext = {
+  readonly transactionId: string;
+  readonly origin: {
+    readonly kind: "local" | "remote" | "system";
+    readonly actorId: string;
+  };
+  readonly gestureId?: string;
+};
+```
+
+## History status
+
+Generated from `FlowHistoryStatusSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowHistoryStatus = {
+  readonly canUndo: boolean;
+  readonly canRedo: boolean;
+  readonly pending: boolean;
+  readonly pastCount: number;
+  readonly futureCount: number;
+  readonly capacity: number;
+  readonly disposed: boolean;
+};
+```
+
 ## Commands
 
 Generated from `FlowCommandSchema` in `packages/core/src/public.ts`.
@@ -429,6 +460,14 @@ export type FlowCommand = {
       readonly nodeIds?: ReadonlyArray<string>;
       readonly edgeIds?: ReadonlyArray<string>;
     }>;
+    readonly context?: {
+      readonly transactionId: string;
+      readonly origin: {
+        readonly kind: "local" | "remote" | "system";
+        readonly actorId: string;
+      };
+      readonly gestureId?: string;
+    };
   };
 };
 ```
@@ -669,6 +708,14 @@ export type FlowChange = {
   readonly deletion: {
     readonly deletedNodeIds: ReadonlyArray<string>;
     readonly deletedEdgeIds: ReadonlyArray<string>;
+  };
+  readonly context?: {
+    readonly transactionId: string;
+    readonly origin: {
+      readonly kind: "local" | "remote" | "system";
+      readonly actorId: string;
+    };
+    readonly gestureId?: string;
   };
 };
 ```

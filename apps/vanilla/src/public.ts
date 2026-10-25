@@ -94,6 +94,7 @@ export type {
 
 export type {
   FlowController,
+  FlowController as FlowCanvasController,
   FlowDeleteLifecycleOptions,
   FitBoundsOptions,
   FitViewOptions,

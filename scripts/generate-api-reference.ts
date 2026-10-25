@@ -7,6 +7,8 @@ import {
   FlowCommandSchema,
   FlowDocumentSchema,
   FlowEdgeSchema,
+  FlowHistoryStatusSchema,
+  FlowTransactionContextSchema,
   FlowNodeSchema,
   FlowSnapshotSchema,
   FlowStateChangeSchema,
@@ -113,6 +115,16 @@ const renderReference = (): string =>
     schemaSection('Node', 'FlowNodeSchema', FlowNodeSchema.ast),
     schemaSection('Edge', 'FlowEdgeSchema', FlowEdgeSchema.ast),
     schemaSection('Document', 'FlowDocumentSchema', FlowDocumentSchema.ast),
+    schemaSection(
+      'Transaction context',
+      'FlowTransactionContextSchema',
+      FlowTransactionContextSchema.ast
+    ),
+    schemaSection(
+      'History status',
+      'FlowHistoryStatusSchema',
+      FlowHistoryStatusSchema.ast
+    ),
     schemaSection('Commands', 'FlowCommandSchema', FlowCommandSchema.ast),
     schemaSection('Changes', 'FlowChangeSchema', FlowChangeSchema.ast),
     schemaSection('Snapshot', 'FlowSnapshotSchema', FlowSnapshotSchema.ast),

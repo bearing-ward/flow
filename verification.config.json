@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 149 Pro parity audit",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 149 Pro parity audit; Plan 150 transaction history",
   "checks": [
     "api-members",
     "catalog",
@@ -11,7 +11,8 @@
     "foldkit-build",
     "traces",
     "vue-build",
-    "upstream-ledger"
+    "upstream-ledger",
+    "contracts"
   ],
   "browserTests": {
     "vanilla": [
@@ -70,7 +71,8 @@
       "computing-flows-recipes.e2e.ts",
       "edge-stacking.e2e.ts",
       "base-edge.e2e.ts",
-      "node-extent-adoption.e2e.ts"
+      "node-extent-adoption.e2e.ts",
+      "transaction-history.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -126,7 +128,8 @@
       "computing-flows-recipes.e2e.ts",
       "edge-stacking.e2e.ts",
       "edge-label-anchors.e2e.ts",
-      "node-extent-adoption.e2e.ts"
+      "node-extent-adoption.e2e.ts",
+      "transaction-history.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -194,7 +197,8 @@
       "edge-stacking.e2e.ts",
       "base-edge.e2e.ts",
       "layout-readiness.e2e.ts",
-      "node-extent-adoption.e2e.ts"
+      "node-extent-adoption.e2e.ts",
+      "transaction-history.e2e.ts"
     ]
   }
 }

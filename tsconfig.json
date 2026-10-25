@@ -32,6 +32,7 @@
     "apps/shared/upstream/**/*.ts",
     "apps/vanilla/schema-studio/**/*.ts",
     "apps/foldkit/schema-studio/**/*.ts",
+    "apps/foldkit/history/**/*.ts",
     "apps/foldkit/live-internal-node/**/*.ts",
     "apps/*/e2e/**/*.ts",
     "scripts/**/*.ts",

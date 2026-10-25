@@ -1,5 +1,6 @@
 import { Schema as S } from 'effect'
 
+import { FlowTransactionContextSchema } from './flow-transaction-context.schema.ts'
 import {
   EdgeIdSchema,
   FlowDocumentSchema,
@@ -78,6 +79,7 @@ export type FlowEditOperation = typeof FlowEditOperationSchema.Type
 
 export const FlowEditTransactionSchema = S.Struct({
   operations: S.Array(FlowEditOperationSchema),
+  context: S.optional(FlowTransactionContextSchema),
 })
 
 export type FlowEditTransaction = typeof FlowEditTransactionSchema.Type
@@ -94,6 +96,7 @@ export type FlowDeleteResult = typeof FlowDeleteResultSchema.Type
 export const FlowEditResultSchema = S.Struct({
   document: FlowDocumentSchema,
   deletion: FlowDeleteResultSchema,
+  context: S.optional(FlowTransactionContextSchema),
 })
 
 export type FlowEditResult = typeof FlowEditResultSchema.Type

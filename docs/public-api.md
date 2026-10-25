@@ -22,6 +22,10 @@ Vue emits `paneContextMenu(position, event)`. The first argument remains the flo
 
 In Vanilla and Vue, an explicit `panOnDrag` button array containing `2` suppresses the native pane context menu and skips the pane context-menu callback. Boolean `true` enables primary-button panning and leaves context-menu cancellation to the application. Vue also accepts explicit button arrays for panning. Node and edge context-menu callbacks remain available when right-button pane panning is enabled.
 
+## Transaction history
+
+[Transaction history](transaction-history.md) describes the shared semantic history, host APIs, controlled acknowledgements, and session policy.
+
 ## Accepted-state reads
 
 Both controller facades expose `getSnapshot()`, `getNodes()`, `getEdges()`, `getNode(id)`, `getEdge(id)`, and `getViewport()`. They read the current accepted document and viewport. Snapshots contain all document nodes and edges, including hidden items and items omitted from rendering by viewport culling. Node positions remain parent-relative. Missing IDs return `undefined`.
