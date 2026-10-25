@@ -1,5 +1,11 @@
 import {
   FlowChangeSchema,
+  FlowHistoryStateSchema,
+  FlowHistoryStatusSchema,
+  createFlowHistory,
+  reduceFlowHistory,
+  flowHistoryStatus,
+  restoreFlowHistoryDocument,
   FlowEdgeSchema,
   FlowEditErrorSchema,
   FlowEditResultSchema,
@@ -53,6 +59,7 @@ import {
 } from '@flow/core'
 import type {
   FlowDocument,
+  FlowTransactionContext,
   NodeId,
   Viewport,
   SelectionModeSchema,
@@ -95,6 +102,7 @@ import {
   MAX_PENDING_DELETE_APPROVALS,
 } from './delete-approval.ts'
 import * as Graph from './graph.ts'
+import { historyKeyboardStream } from './history-keyboard.ts'
 import { HostAction } from './host-action.ts'
 import type { HostActionData } from './host-action.ts'
 import { notifyResizer } from './node-resizer.ts'
@@ -201,6 +209,17 @@ export const SnapshotRequestSchema = Schema.Struct({
   includeHiddenNodes: Schema.optional(Schema.Boolean),
   /** Also return every node's internal projection, React Flow's `nodeLookup`. */
   internalNodes: Schema.optional(Schema.Boolean),
+})
+
+export const HistoryRequestSchema = Schema.Struct({
+  requestId: Schema.String,
+  action: Schema.Literals(['undo', 'redo', 'status', 'reject']),
+  transactionId: Schema.optional(Schema.String),
+})
+
+export const HistoryResultSchema = Schema.Struct({
+  requestId: Schema.String,
+  status: FlowHistoryStatusSchema,
 })
 
 export const EditRequestSchema = Schema.Struct({
@@ -352,6 +371,9 @@ export const AppMessage = FoldMessage.defineMessageUnion({
   SnapshotRequest: { request: SnapshotRequestSchema },
   VersionedSnapshotRequest: { request: VersionedSnapshotRequestSchema },
   EditRequest: { request: EditRequestSchema },
+  HistoryRequest: { request: HistoryRequestSchema },
+  HistoryGestureEnd: {},
+  HistoryPublished: {},
   DeleteRequest: { request: DeleteRequestSchema },
   DeleteCancellation: { cancellation: DeleteCancellationSchema },
   DeleteCancellationAckPublished: {},
@@ -385,6 +407,7 @@ export const ports = {
     snapshotRequests: Port.inbound(SnapshotRequestSchema),
     versionedSnapshotRequests: Port.inbound(VersionedSnapshotRequestSchema),
     editRequests: Port.inbound(EditRequestSchema),
+    historyRequests: Port.inbound(HistoryRequestSchema),
     deleteRequests: Port.inbound(DeleteRequestSchema),
     deleteCancellations: Port.inbound(DeleteCancellationSchema),
     deleteApprovalResponses: Port.inbound(DeleteApprovalResponseSchema),
@@ -397,6 +420,8 @@ export const ports = {
     snapshotFailures: Port.outbound(LegacySnapshotFailureSchema),
     acceptedStates: Port.outbound(FlowStateChangeSchema),
     editResults: Port.outbound(EditResponseSchema),
+    historyResults: Port.outbound(HistoryResultSchema),
+    historyStates: Port.outbound(FlowHistoryStatusSchema),
     keyboardDeleteIntents: Port.outbound(Schema.Null),
     keyboardDeleteRequests: Port.outbound(KeyboardDeleteSelectionSchema),
     deleteApprovalRequests: Port.outbound(DeleteApprovalRequestedSchema),
@@ -700,6 +725,8 @@ export const createViewportClient = (
 
 export const ModelSchema = Schema.Struct({
   graph: Graph.ModelSchema,
+  history: FlowHistoryStateSchema,
+  historyPublicationActive: Schema.Boolean,
   changeKinds: Schema.Array(Schema.String),
   viewportAnimation: Schema.NullOr(ViewportAnimationStateSchema),
   viewportLimits: ViewportLimitsSchema,
@@ -1124,6 +1151,30 @@ const PublishViewportEvent = Command.define('PublishFlowViewportEvent', {
     Port.emit(ports.outbound.viewportEvents, event).pipe(
       Effect.as(AppMessage.ViewportEventPublished())
     ),
+})
+
+const PublishHistory = Command.define('PublishFoldkitHistory', {
+  args: {
+    status: FlowHistoryStatusSchema,
+    requestId: Schema.optional(Schema.String),
+    action: Schema.String,
+  },
+  messages: [AppMessage.HistoryPublished],
+  execute: ({ status, requestId, action }) =>
+    Effect.gen(function* publishHistory() {
+      const attributes = { [FlowAttribute.changeKind]: `history-${action}` }
+      yield* Effect.logDebug('Foldkit history changed').pipe(
+        Effect.annotateLogs(attributes),
+        Effect.withSpan(FlowSpan.controllerUpdate, { attributes })
+      )
+      yield* Port.emit(ports.outbound.historyStates, status)
+
+      if (requestId !== undefined) {
+        yield* Port.emit(ports.outbound.historyResults, { requestId, status })
+      }
+
+      return AppMessage.HistoryPublished()
+    }),
 })
 
 const foldGraph = Update.foldChild<
@@ -2028,6 +2079,10 @@ const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
     ports.inbound.snapshotRequests,
     (request) => AppMessage.SnapshotRequest({ request })
   ),
+  historyRequests: Port.subscriptionEntry(
+    ports.inbound.historyRequests,
+    (request) => AppMessage.HistoryRequest({ request })
+  ),
   editRequests: Port.subscriptionEntry(ports.inbound.editRequests, (request) =>
     AppMessage.EditRequest({ request })
   ),
@@ -2740,7 +2795,144 @@ const selectionChangePublication = (
       }
 }
 
-export const update = (model: Model, message: AppMessageData): AppReduction => {
+const prepareHistoryInput = (input: Model, message: AppMessageData) => {
+  let model = input
+  let acceptedContext: FlowTransactionContext | undefined
+
+  const keyboardMove =
+    Predicate.isTagged('GraphMessage')(message) &&
+    Predicate.isTagged('MoveNodeByKeyboard')(message.message)
+      ? message.message
+      : undefined
+
+  if (keyboardMove !== undefined) {
+    const prefix = `${JSON.stringify(['keyboard', keyboardMove.nodeId, keyboardMove.key])}:`
+    const activeId = model.history.gesture?.gestureId
+
+    const gestureId = activeId?.startsWith(prefix)
+      ? activeId
+      : `${prefix}${crypto.randomUUID()}`
+
+    model = {
+      ...model,
+      history: reduceFlowHistory(model.history, {
+        kind: 'gesture',
+        action: 'begin',
+        gestureId,
+      }).state,
+    }
+    acceptedContext = {
+      transactionId: crypto.randomUUID(),
+      origin: { kind: 'local', actorId: model.history.session },
+      gestureId,
+    }
+  } else if (Predicate.isTagged('EditRequest')(message)) {
+    acceptedContext = message.request.transaction.context ?? {
+      transactionId: crypto.randomUUID(),
+      origin: { kind: 'local', actorId: model.history.session },
+    }
+  } else if (
+    Predicate.isTagged('HostAction')(message) &&
+    Predicate.isTagged('ReplaceDocument')(message.action)
+  ) {
+    acceptedContext = message.action.context
+  }
+
+  return { model, acceptedContext }
+}
+
+const historyProposalContext = (
+  result: AppReduction
+): FlowTransactionContext | undefined => {
+  const publication = result.outMessage?.find(
+    (item) => item.kind === 'change' && item.change?.kind === 'edit-proposal'
+  )
+
+  return publication?.kind === 'change' &&
+    publication.change?.kind === 'edit-proposal'
+    ? publication.change.context
+    : undefined
+}
+
+const withAcceptedHistory = (
+  original: Model,
+  model: Model,
+  message: AppMessageData,
+  updateResult: AppReduction,
+  acceptedContext: FlowTransactionContext | undefined
+): AppReduction => {
+  const previousHistory = original.history
+
+  const acceptedDocumentChanged =
+    JSON.stringify(updateResult.model.graph.document) !==
+    JSON.stringify(model.graph.document)
+
+  let { history } = updateResult.model
+
+  if (acceptedDocumentChanged) {
+    history = reduceFlowHistory(history, {
+      kind: 'accepted',
+      document: updateResult.model.graph.document,
+      context: acceptedContext ?? historyProposalContext(updateResult),
+    }).state
+  }
+
+  const published = updateResult.outMessage ?? []
+
+  const selection = acceptedDocumentChanged
+    ? selectionChangePublication(
+        model.graph.document,
+        updateResult.model.graph.document
+      )
+    : undefined
+
+  const request = Predicate.isTagged('HistoryRequest')(message)
+    ? message.request
+    : undefined
+
+  if (
+    !acceptedDocumentChanged &&
+    history === previousHistory &&
+    request === undefined
+  ) {
+    return updateResult
+  }
+
+  const historyCommands =
+    request !== undefined ||
+    (updateResult.model.historyPublicationActive && history !== previousHistory)
+      ? [
+          PublishHistory({
+            status: flowHistoryStatus(history),
+            requestId: request?.requestId,
+            action:
+              request?.action ??
+              (acceptedDocumentChanged ? 'accepted' : 'gesture'),
+          }),
+        ]
+      : []
+
+  return {
+    ...updateResult,
+    model: {
+      ...updateResult.model,
+      history,
+      acceptedDocumentRevision:
+        model.acceptedDocumentRevision + (acceptedDocumentChanged ? 1 : 0),
+    },
+    commands: [...(updateResult.commands ?? []), ...historyCommands],
+    outMessage: [...published, ...(selection === undefined ? [] : [selection])],
+  }
+}
+
+export const update = (input: Model, message: AppMessageData): AppReduction => {
+  const { model, acceptedContext: initialContext } = prepareHistoryInput(
+    input,
+    message
+  )
+
+  let acceptedContext = initialContext
+
   const updateResult = AppMessage.match<AppReduction>(message, {
     GraphMessage: ({ message: graphMessage }) => {
       if (Predicate.isTagged('DeleteSelected')(graphMessage)) {
@@ -2754,7 +2946,16 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
         }
       }
 
-      const folded = graphFold(model, graphMessage, 'full')
+      const contextualMessage = Predicate.isTagged('MoveNodeByKeyboard')(
+        graphMessage
+      )
+        ? Graph.Message.MoveNodeByKeyboard({
+            ...graphMessage,
+            context: acceptedContext,
+          })
+        : graphMessage
+
+      const folded = graphFold(model, contextualMessage, 'full')
 
       const result = Predicate.isTagged('PaneResized')(graphMessage)
         ? fitInitialView(model, folded)
@@ -2896,12 +3097,94 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
         }),
       ],
     }),
+    HistoryRequest: ({ request }) => {
+      let next = { ...model, historyPublicationActive: true }
+      let outMessage: PublicationBatch = []
+      let cancelled: AppReduction = { model }
+
+      if (request.action === 'undo' || request.action === 'redo') {
+        cancelled = graphFold(next, Graph.Message.CancelGesture({}), 'full')
+        next = cancelled.model
+        outMessage = cancelled.outMessage ?? []
+
+        const reduction = reduceFlowHistory(next.history, {
+          kind: 'replay',
+          direction: request.action,
+          transactionId: crypto.randomUUID(),
+        })
+
+        next = { ...next, history: reduction.state }
+
+        if (reduction.replacement !== undefined) {
+          const { context } = reduction.replacement
+
+          const document = restoreFlowHistoryDocument(
+            reduction.replacement.document,
+            next.graph.document
+          )
+
+          if (next.graph.documentMode === 'controlled') {
+            outMessage = [
+              ...outMessage,
+              {
+                kind: 'change',
+                controlMode: 'controlled',
+                change: {
+                  kind: 'edit-proposal',
+                  document,
+                  context,
+                  deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+                },
+              },
+            ]
+          } else {
+            acceptedContext = context
+
+            const restored = graphFold(
+              next,
+              Graph.Message.ReplaceDocument({ document }),
+              'full'
+            )
+
+            next = restored.model
+            outMessage = [...outMessage, ...(restored.outMessage ?? [])]
+          }
+        }
+      } else if (
+        request.action === 'reject' &&
+        request.transactionId !== undefined
+      ) {
+        next = {
+          ...next,
+          history: reduceFlowHistory(next.history, {
+            kind: 'rejected',
+            transactionId: request.transactionId,
+          }).state,
+        }
+      }
+
+      return { ...cancelled, model: next, outMessage }
+    },
+    HistoryGestureEnd: () => ({
+      model: {
+        ...model,
+        history:
+          model.history.gesture === null
+            ? model.history
+            : reduceFlowHistory(model.history, {
+                kind: 'gesture',
+                action: 'end',
+                gestureId: model.history.gesture.gestureId,
+              }).state,
+      },
+    }),
+    HistoryPublished: () => ({ model }),
     EditRequest: ({ request }) =>
       graphFold(
         model,
         Graph.Message.EditRequest({
           requestId: request.requestId,
-          transaction: request.transaction,
+          transaction: { ...request.transaction, context: acceptedContext },
         })
       ),
     DeleteRequest: ({ request }) => {
@@ -3444,34 +3727,13 @@ export const update = (model: Model, message: AppMessageData): AppReduction => {
     },
   })
 
-  const acceptedDocumentChanged =
-    JSON.stringify(updateResult.model.graph.document) !==
-    JSON.stringify(model.graph.document)
-
-  if (!acceptedDocumentChanged) {
-    return updateResult
-  }
-
-  const selection = selectionChangePublication(
-    model.graph.document,
-    updateResult.model.graph.document
+  return withAcceptedHistory(
+    input,
+    model,
+    message,
+    updateResult,
+    acceptedContext
   )
-
-  const revised = {
-    ...updateResult,
-    model: {
-      ...updateResult.model,
-      acceptedDocumentRevision: model.acceptedDocumentRevision + 1,
-    },
-  }
-
-  if (selection === undefined) {
-    return revised
-  }
-
-  const published = 'outMessage' in updateResult ? updateResult.outMessage : []
-
-  return { ...revised, outMessage: [...(published ?? []), selection] }
 }
 
 export const initialModel = (
@@ -3480,7 +3742,8 @@ export const initialModel = (
   allowedTargets: readonly string[] = [],
   viewportLimits: typeof ViewportLimitsSchema.Type = defaultViewportLimits,
   selectionMode: typeof SelectionModeSchema.Type = 'full',
-  interactionOptions: Graph.GraphInteractionOptions = Graph.defaultInteractionOptions
+  interactionOptions: Graph.GraphInteractionOptions = Graph.defaultInteractionOptions,
+  historyOptions: { readonly historyCapacity?: number } = {}
 ): Model => ({
   graph: Graph.initialModel(
     document,
@@ -3493,6 +3756,11 @@ export const initialModel = (
     undefined,
     viewportLimits
   ),
+  history: createFlowHistory(document, {
+    capacity: historyOptions.historyCapacity ?? 100,
+    session: crypto.randomUUID(),
+  }),
+  historyPublicationActive: false,
   changeKinds: [],
   viewportAnimation: null,
   viewportLimits,
@@ -3686,7 +3954,8 @@ export const createProgramUpdate =
     publication: Pick<
       ReturnType<typeof createProgramPublication>,
       'enqueue' | 'close'
-    >
+    >,
+    session?: string
   ) =>
   (model: Model, message: AppMessageData) => {
     try {
@@ -3702,7 +3971,19 @@ export const createProgramUpdate =
         preparedMessage = wrapGraphMessage({ message: prepared.value })
       }
 
-      const result = update(model, preparedMessage)
+      const owned =
+        session === undefined || model.history.session === session
+          ? model
+          : {
+              ...model,
+              historyPublicationActive: false,
+              history: createFlowHistory(model.graph.document, {
+                capacity: model.history.capacity,
+                session,
+              }),
+            }
+
+      const result = update(owned, preparedMessage)
       pointerResource.reconcile({
         previous: model.graph,
         current: result.model.graph,
@@ -3732,8 +4013,14 @@ export const createProgram = (
   rendererRegistry: Graph.FoldkitRendererRegistry = {},
   viewportLimits: typeof ViewportLimitsSchema.Type = defaultViewportLimits,
   selectionMode: typeof SelectionModeSchema.Type = 'full',
-  interactionOptions: Graph.GraphInteractionOptions = Graph.defaultInteractionOptions
+  interactionOptions: Graph.GraphInteractionOptions = Graph.defaultInteractionOptions,
+  historyOptions: { readonly historyCapacity?: number } = {}
 ) => {
+  const history = createFlowHistory(document, {
+    capacity: historyOptions.historyCapacity ?? 100,
+    session: crypto.randomUUID(),
+  })
+
   rendererInstanceNumber += 1
   const instanceId = `flow-foldkit-runtime-${rendererInstanceNumber}`
   registerConnectionRule(instanceId, interactionOptions.isValidConnection)
@@ -3757,12 +4044,29 @@ export const createProgram = (
   // The rule lives as long as the Runtime's program stream; disposing the
   // Runtime interrupts it and removes the rule.
   const programStream = Stream.unwrap(
-    Effect.sync(() => {
+    Effect.gen(function* mountHistoryProgram() {
       registerConnectionRule(instanceId, interactionOptions.isValidConnection)
+      yield* Effect.logDebug('Mounted Foldkit history').pipe(
+        Effect.annotateLogs({ [FlowAttribute.changeKind]: 'history-mount' }),
+        Effect.withSpan(FlowSpan.hostMount)
+      )
 
       return publication.stream
     })
-  ).pipe(Stream.ensuring(Effect.sync(() => registerConnectionRule(instanceId))))
+  ).pipe(
+    Stream.ensuring(
+      Effect.gen(function* disposeHistory() {
+        registerConnectionRule(instanceId)
+
+        yield* Effect.logDebug('Disposed Foldkit history').pipe(
+          Effect.annotateLogs({
+            [FlowAttribute.changeKind]: 'history-dispose',
+          }),
+          Effect.withSpan(FlowSpan.hostDestroy)
+        )
+      })
+    )
+  )
 
   const graphView = Graph.makeView(
     rendererRegistry,
@@ -3778,6 +4082,8 @@ export const createProgram = (
     init: () => ({
       model: {
         graph: initialGraph,
+        history,
+        historyPublicationActive: false,
         changeKinds: [],
         viewportAnimation: null,
         viewportLimits,
@@ -3787,7 +4093,7 @@ export const createProgram = (
         cancelledDeleteOperations: [],
       },
     }),
-    update: createProgramUpdate(pointerResource, publication),
+    update: createProgramUpdate(pointerResource, publication, history.session),
     view: (model, h) => view(model, h, graphView),
     subscriptions: Subscription.aggregate(
       hostSubscriptions,
@@ -3798,7 +4104,18 @@ export const createProgram = (
             modelToDependencies: (model) => ({
               instanceId: model.graph.instanceId,
             }),
-            dependenciesToStream: () => programStream,
+            dependenciesToStream: () =>
+              Stream.merge(
+                programStream,
+                historyKeyboardStream<AppMessageData>(
+                  instanceId,
+                  (action) =>
+                    AppMessage.HistoryRequest({
+                      request: { requestId: crypto.randomUUID(), action },
+                    }),
+                  () => AppMessage.HistoryGestureEnd()
+                )
+              ),
           }
         ),
       })),

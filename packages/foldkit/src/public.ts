@@ -297,3 +297,9 @@ export { updateFoldkitRendererRegistry } from './renderer-registry.ts'
 export { createFoldkitInteractionHandlers } from './interaction-handlers.ts'
 
 export type { FoldkitInteractionHandlers } from './interaction-handlers.ts'
+
+export { createFoldkitHistoryClient } from './history-client.ts'
+
+export type { FoldkitHistoryClient } from './history-client.ts'
+
+export { HistoryRequestSchema, HistoryResultSchema } from './application.ts'

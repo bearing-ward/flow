@@ -1,4 +1,6 @@
 import type {
+  FlowHistoryStatus,
+  FlowTransactionContext,
   FlowChange,
   FlowCommand,
   FlowDeleteResult,
@@ -35,6 +37,8 @@ import type {
   ViewportPadding,
 } from '@flow/core'
 import {
+  createFlowHistory,
+  flowHistoryStatus,
   HandleIdSchema,
   NodeIdSchema,
   encodeSavedFlowSession,
@@ -177,6 +181,10 @@ export type FlowCanvasFitViewOptions = ViewportAnimationOptions & {
 }
 
 export interface FlowEditor {
+  readonly history?: ComputedRef<FlowHistoryStatus>
+  readonly undo?: () => Promise<void>
+  readonly redo?: () => Promise<void>
+  readonly rejectHistory?: (transactionId: string) => void
   readonly document: ComputedRef<DeepReadonly<FlowDocument>>
   readonly viewport: ComputedRef<DeepReadonly<Viewport>>
   readonly snapshot: ComputedRef<DeepReadonly<FlowSnapshot>>
@@ -206,7 +214,10 @@ export interface FlowEditor {
     listener: (pressed: boolean) => void
   ) => () => void
   readonly dispatch: (command: FlowCommand) => void
-  readonly updateDocument: (document: FlowDocument) => void
+  readonly updateDocument: (
+    document: FlowDocument,
+    context?: FlowTransactionContext
+  ) => void
   readonly applyEdit: (
     transaction: FlowEditTransactionInput
   ) => Promise<FlowEditResult>
@@ -289,6 +300,10 @@ export interface FlowNodeSlot {
 }
 
 export interface FlowActions {
+  readonly history: ComputedRef<FlowHistoryStatus>
+  readonly undo: () => Promise<void>
+  readonly redo: () => Promise<void>
+  readonly rejectHistory: (transactionId: string) => void
   readonly document: ComputedRef<DeepReadonly<FlowDocument>>
   readonly nodes: ComputedRef<readonly DeepReadonly<FlowNode>[]>
   readonly edges: ComputedRef<readonly DeepReadonly<FlowEdge>[]>
@@ -640,6 +655,16 @@ export const useFlow = (): FlowActions => {
     subscribeSelection: editor.subscribeSelection,
     observeKeyPress: editor.observeKeyPress,
     dispatch: editor.dispatch,
+    history:
+      editor.history ??
+      computed(() =>
+        flowHistoryStatus(
+          createFlowHistory({ nodes: [], edges: [] }, { capacity: 0 })
+        )
+      ),
+    undo: () => editor.undo?.() ?? Promise.resolve(),
+    redo: () => editor.redo?.() ?? Promise.resolve(),
+    rejectHistory: (transactionId) => editor.rejectHistory?.(transactionId),
     updateDocument: editor.updateDocument,
     updateViewport: editor.updateViewport,
     getViewport: editor.getViewport,
@@ -1188,4 +1213,13 @@ export const useHandleConnections = (
   }
 
   return useNodeConnections(nodeOptions)
+}
+
+export const useFlowHistory = (): Pick<
+  FlowActions,
+  'history' | 'undo' | 'redo' | 'rejectHistory'
+> => {
+  const { history, undo, redo, rejectHistory } = useFlow()
+
+  return { history, undo, redo, rejectHistory }
 }

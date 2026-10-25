@@ -50,6 +50,7 @@ export {
   useEdges,
   useConnection,
   useFlow,
+  useFlowHistory,
   useNodes,
   useViewport,
 } from './use-flow.ts'

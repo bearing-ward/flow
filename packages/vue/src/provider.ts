@@ -1,4 +1,7 @@
 import {
+  createFlowHistory,
+  flowHistoryStatus,
+  reduceFlowHistory,
   createFlowSnapshot,
   defaultFlowAriaLabelConfig,
   flowNoConnection,
@@ -100,6 +103,19 @@ const createProviderEditor = (
     document: computed(() => snapshot.value.document),
     viewport: computed(() => snapshot.value.viewport),
     snapshot,
+    history: computed(
+      () =>
+        current.value?.history?.value ??
+        flowHistoryStatus(
+          reduceFlowHistory(
+            createFlowHistory({ nodes: [], edges: [] }, { capacity: 0 }),
+            { kind: 'dispose' }
+          ).state
+        )
+    ),
+    undo: () => target('undo').undo?.() ?? Promise.resolve(),
+    redo: () => target('redo').redo?.() ?? Promise.resolve(),
+    rejectHistory: (id) => target('rejectHistory').rejectHistory?.(id),
     getDocumentRevision: () => current.value?.getDocumentRevision() ?? 0,
     beginDeleteApproval: () => target('deleteElements').beginDeleteApproval(),
     endDeleteApproval: () => current.value?.endDeleteApproval(),
@@ -146,8 +162,8 @@ const createProviderEditor = (
     observeKeyPress: (keyCode, options, listener) =>
       target('observeKeyPress').observeKeyPress(keyCode, options, listener),
     dispatch: (command) => target('dispatch').dispatch(command),
-    updateDocument: (document) =>
-      target('updateDocument').updateDocument(document),
+    updateDocument: (document, context) =>
+      target('updateDocument').updateDocument(document, context),
     applyEdit: (transaction) => target('applyEdit').applyEdit(transaction),
     applyEditResolved: (resolve) =>
       target('applyEdit').applyEditResolved(resolve),

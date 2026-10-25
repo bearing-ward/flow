@@ -871,3 +871,29 @@ export const compilePurePathHelperContracts = () => {
 
   return { paths, center: fourNumbers }
 }
+
+export const transactionHistoryConsumer = async (
+  controller: JavaScriptFlowController
+) => {
+  const before = controller.getHistoryStatus()
+
+  const stop = controller.subscribeHistory((status) => {
+    const enabled: boolean = status.canUndo && !status.pending
+
+    void enabled
+  })
+
+  const context = {
+    transactionId: 'packed-consumer-edit',
+    origin: { kind: 'local', actorId: 'packed-consumer' },
+  } satisfies NonNullable<Parameters<JavaScriptFlowController['update']>[1]>
+
+  await controller.applyEdit({ operations: [], context })
+  await controller.undo()
+  await controller.redo()
+  controller.update(controller.getSnapshot().document, context)
+  controller.rejectHistory(context.transactionId)
+  stop()
+
+  return before
+}

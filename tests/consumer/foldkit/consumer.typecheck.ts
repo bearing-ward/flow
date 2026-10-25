@@ -44,6 +44,7 @@ import {
   createFoldkitPlaceholder,
   createFoldkitNodeMeasurementObserver,
   createProgram,
+  createFoldkitHistoryClient,
   createFoldkitSnapshotClient,
   FoldkitSnapshotResultSchema,
   LegacySnapshotFailureSchema,
@@ -766,4 +767,25 @@ export const compilePurePathHelperContracts = () => {
   getSmoothStepPath({ ...coordinates, sourcePosition: 'center' })
 
   return { paths, center: fourNumbers }
+}
+
+export const transactionHistoryConsumer = async (
+  runtimePorts: Parameters<typeof createFoldkitHistoryClient>[0]
+) => {
+  const history = createFoldkitHistoryClient(runtimePorts)
+
+  const stop = history.subscribeHistory((status) => {
+    const enabled: boolean = status.canUndo && !status.pending
+
+    void enabled
+  })
+
+  const before = await history.getStatus()
+  await history.undo()
+  await history.redo()
+  await history.rejectHistory('packed-consumer-rejection')
+  stop()
+  history.dispose()
+
+  return before
 }

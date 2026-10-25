@@ -286,6 +286,9 @@ export const prepareFlowEdit = (
         }),
       },
       deletion,
+      ...(transaction.context === undefined
+        ? undefined
+        : { context: transaction.context }),
     }
 
     return result

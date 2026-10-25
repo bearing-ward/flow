@@ -1,0 +1,31 @@
+body {
+  margin: 16px;
+  font-family: system-ui, sans-serif;
+}
+.history-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+  max-width: 1000px;
+}
+.history-frame {
+  position: relative;
+  width: 900px;
+  height: 310px;
+  border: 1px solid #cbd5e1;
+}
+.history-frame .flow-foldkit-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.history-frame .flow-foldkit-node {
+  box-sizing: border-box;
+}
+.history-document {
+  display: block;
+  max-width: 1000px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}

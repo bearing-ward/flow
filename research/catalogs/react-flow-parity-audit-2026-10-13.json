@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 180,
+    "inScopeCloseAllHosts": 181,
     "inScopeCloseByHost": {
-      "vanilla": 180,
-      "vue": 180,
-      "foldkit": 180
+      "vanilla": 181,
+      "vue": 181,
+      "foldkit": 181
     },
-    "reaudit": "2026-10-25 Plan 149 re-audit of all 16 Pro entries only; all other entry ratings retain their prior audit dates.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history acceptance follow-up; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-25",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 1,
-          "P": 12,
+          "C": 2,
+          "P": 11,
           "G": 3
         },
         "vue": {
-          "C": 1,
+          "C": 2,
           "P": 11,
-          "G": 4
+          "G": 3
         },
         "foldkit": {
-          "C": 1,
-          "P": 12,
+          "C": 2,
+          "P": 11,
           "G": 3
         }
       }
@@ -3570,56 +3570,54 @@
     {
       "section": "examples interaction",
       "name": "Undo and Redo · Pro",
-      "vanilla": "P",
-      "vue": "G",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Vanilla/Foldkit Schema Studio has bounded app-domain history and shortcuts; no generic FlowDocument history integration. Vue has no history recipe.",
+      "missing": "",
       "effort": "M",
       "theme": "undo-redo",
       "reaudit": {
         "on": "2026-10-25",
-        "plan": "Plan 149",
+        "plan": "Plan 150",
         "previousRatings": {
           "vanilla": "P",
-          "vue": "P",
+          "vue": "G",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Shared reducer unit tests, public native-gesture and control acceptance in all three hosts, restored documents and rendered positions, and a live public-reference comparison. C means achievable functional closeness within this unit, not private-source or catalog-wide reference conformance.",
         "url": "https://reactflow.dev/examples/interaction/undo-redo",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public description read and linked public demo exercised through pane creation, empty controls, drag, toolbar undo/redo and Ctrl shortcuts. Subscription implementation was not accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/undo-redo/index.html"
         ],
-        "missing": "Vanilla/Foldkit Schema Studio has bounded app-domain history and shortcuts; no generic FlowDocument history integration. Vue has no history recipe.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/150-transaction-history.md",
         "outcomes": [
           {
             "id": "history",
             "outcome": "Track past/future states for moving, adding and deleting nodes and edges.",
-            "vanilla": "P",
-            "vue": "G",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "apps/shared/schema-studio/model.ts:230",
-                "apps/shared/schema-studio/model.test.ts:206"
+                "packages/core/src/domain/flow-history.ts:18",
+                "packages/core/src/domain/flow-history.test.ts:488"
               ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:394",
-                "apps/vanilla/schema-studio/main.ts:1447",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+                "apps/vanilla/src/mount-flow.ts:3890",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:151"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "packages/vue/src/flow-canvas.ts:1519",
+                "apps/vue/e2e/transaction-history.e2e.ts:111"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:525",
-                "apps/foldkit/schema-studio/main.ts:812",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+                "packages/foldkit/src/application.ts:2857",
+                "apps/foldkit/e2e/transaction-history.e2e.ts:87"
               ]
             },
             "basis": "public-description"
@@ -3627,27 +3625,26 @@
           {
             "id": "buttons",
             "outcome": "Undo and redo through controls with empty-stack states.",
-            "vanilla": "P",
-            "vue": "G",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "apps/shared/schema-studio/model.ts:230",
-                "apps/shared/schema-studio/model.test.ts:206"
+                "packages/core/src/domain/flow-history.ts:18",
+                "packages/core/src/domain/flow-history.test.ts:488"
               ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:394",
-                "apps/vanilla/schema-studio/main.ts:1447",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+                "apps/vanilla/src/mount-flow.ts:3890",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:151",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:300"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "packages/vue/src/flow-canvas.ts:1519",
+                "apps/vue/e2e/transaction-history.e2e.ts:111"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:525",
-                "apps/foldkit/schema-studio/main.ts:812",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+                "packages/foldkit/src/application.ts:2857",
+                "apps/foldkit/e2e/transaction-history.e2e.ts:87"
               ]
             },
             "basis": "public-description"
@@ -3656,26 +3653,27 @@
             "id": "shortcuts",
             "outcome": "Undo with Ctrl+Z and redo with Ctrl+Shift+Z.",
             "vanilla": "C",
-            "vue": "G",
+            "vue": "C",
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "apps/shared/schema-studio/model.ts:230",
-                "apps/shared/schema-studio/model.test.ts:206"
+                "packages/core/src/domain/flow-history.ts:18",
+                "packages/core/src/domain/flow-history.test.ts:488"
               ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:394",
-                "apps/vanilla/schema-studio/main.ts:1447",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+                "apps/vanilla/src/mount-flow.ts:3890",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:151",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:335"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "packages/vue/src/flow-canvas.ts:1519",
+                "apps/vue/e2e/transaction-history.e2e.ts:111",
+                "apps/vue/e2e/transaction-history.e2e.ts:202"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:525",
-                "apps/foldkit/schema-studio/main.ts:812",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+                "packages/foldkit/src/application.ts:2857",
+                "apps/foldkit/e2e/transaction-history.e2e.ts:87",
+                "apps/foldkit/e2e/transaction-history.e2e.ts:295"
               ]
             },
             "basis": "public-description"
@@ -3683,47 +3681,48 @@
           {
             "id": "branch",
             "outcome": "Clear redo after a new edit; coalesce one drag into one history action.",
-            "vanilla": "P",
-            "vue": "G",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "apps/shared/schema-studio/model.ts:230",
-                "apps/shared/schema-studio/model.test.ts:206"
+                "packages/core/src/domain/flow-history.ts:18",
+                "packages/core/src/domain/flow-history.test.ts:488"
               ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:394",
-                "apps/vanilla/schema-studio/main.ts:1447",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1013"
+                "apps/vanilla/src/mount-flow.ts:3890",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:151",
+                "apps/vanilla/e2e/transaction-history.e2e.ts:367"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "packages/vue/src/flow-canvas.ts:1519",
+                "apps/vue/e2e/transaction-history.e2e.ts:111",
+                "apps/vue/e2e/transaction-history.e2e.ts:167"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:525",
-                "apps/foldkit/schema-studio/main.ts:812",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1031"
+                "packages/foldkit/src/application.ts:2857",
+                "apps/foldkit/e2e/transaction-history.e2e.ts:87",
+                "apps/foldkit/e2e/transaction-history.e2e.ts:190"
               ]
             },
             "basis": "delivery-edge-case"
           }
         ],
         "unverified": [
-          "Branch clearing and drag coalescing are necessary delivery cases, not disclosed internals. Reload persistence and local versus remote undo need decisions.",
-          "Schema Studio tests exercise table drag undo/redo and the shared helper clears future on a new record. Generic node/edge coverage and complete gesture transaction grouping remain unverified. History stacks are not persisted, only the current Studio document."
+          "Private Pro source and undisclosed implementation details remain unavailable.",
+          "Selective collaborative undo and collector-side OpenTelemetry delivery are outside this unit."
         ],
         "hostNotes": {
-          "vanilla": "Schema Studio implements Studio snapshots, controls and shortcuts; arbitrary FlowDocument edits and empty-stack control state remain incomplete.",
-          "vue": "Atomic edits exist but no Vue history owner/recipe was found.",
-          "foldkit": "Schema Studio implements Studio snapshots, controls and shortcuts; no general FlowDocument history owner."
+          "vanilla": "Public controller history methods and configurable capacity; native shortcuts and toolbar; controlled replay requires accepted context echo. History is session-only.",
+          "vue": "Shared canvas history exposed by useFlow/useFlowHistory and toolbar. Complete controlled or split prop patches correlate receipt acceptance. History is session-only.",
+          "foldkit": "Model-owned shared reducer, typed history messages/ports and createFoldkitHistoryClient, native subscriptions and toolbar. History is session-only."
         }
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 150"]
     },
     {
       "section": "examples grouping",

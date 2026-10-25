@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": [
     "src/**/*.ts",
+    "history/**/*.ts",
     "e2e/**/*.ts",
     "schema-studio/**/*.ts",
     "live-internal-node/**/*.ts",

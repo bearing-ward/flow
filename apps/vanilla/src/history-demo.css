@@ -1,0 +1,38 @@
+#history-demo {
+  display: grid;
+  grid-template-rows: auto minmax(360px, 1fr) 150px;
+  height: 100%;
+}
+#history-demo header {
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid #cbd5e1;
+}
+#history-demo h1 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+#history-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#history-controls button,
+#history-demo input {
+  padding: 6px 10px;
+  font: inherit;
+}
+#history-status {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+}
+#isolated {
+  border-top: 1px solid #cbd5e1;
+}
+.history-native-input {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  pointer-events: auto;
+}

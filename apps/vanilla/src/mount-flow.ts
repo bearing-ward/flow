@@ -1,4 +1,10 @@
 import {
+  createFlowHistory,
+  reduceFlowHistory,
+  restoreFlowHistoryDocument,
+  flowHistoryStatus,
+  FlowHistoryStatusSchema,
+  FlowTransactionContextSchema,
   FlowNodeSchema,
   FlowEdgeSchema,
   MeasuredNodeSchema,
@@ -150,6 +156,9 @@ import {
   snapPosition,
 } from '@flow/core'
 import type {
+  FlowHistoryEvent,
+  FlowHistoryStatus,
+  FlowTransactionContext,
   ActiveNodeDrag,
   ActiveNodeGroupDrag,
   ActiveConnection,
@@ -429,6 +438,7 @@ export const CanvasUISchema = S.Struct({
 export const FlowMountOptionsSchema = S.Struct({
   ...CanvasInteractionOptionsSchema.fields,
   documentMode: FlowControlModeSchema,
+  historyCapacity: S.optional(S.Int.check(S.isGreaterThanOrEqualTo(0))),
   connectionDragThreshold: S.optional(ConnectionDragThresholdSchema),
   nodeDragThreshold: S.optional(NodeDragThresholdSchema),
   connectOnClick: S.optional(S.Boolean),
@@ -918,6 +928,7 @@ export interface FlowEdgeRenderer {
 
 export interface FlowHostOptions extends CanvasInteractionOptions {
   readonly documentMode: FlowControlMode
+  readonly historyCapacity?: number | undefined
   readonly connectionDragThreshold?:
     | typeof ConnectionDragThresholdSchema.Type
     | undefined
@@ -1308,7 +1319,17 @@ export interface FlowController {
   readonly fitView: (
     options?: FitViewOptions
   ) => Promise<ViewportOperationResult>
-  readonly update: (document: FlowDocument) => void
+  readonly undo: () => Promise<void>
+  readonly redo: () => Promise<void>
+  readonly getHistoryStatus: () => FlowHistoryStatus
+  readonly subscribeHistory: (
+    listener: (status: FlowHistoryStatus) => void
+  ) => () => void
+  readonly rejectHistory: (transactionId: string) => void
+  readonly update: (
+    document: FlowDocument,
+    context?: FlowTransactionContext
+  ) => void
   readonly applyEdit: (
     transaction: FlowEditTransactionInput
   ) => Promise<FlowEditResult>
@@ -1552,7 +1573,15 @@ export interface JavaScriptFlowController extends FlowInstanceApi {
   readonly fitView: (
     options?: typeof FitViewOptionsSchema.Encoded
   ) => Promise<ViewportOperationResult>
-  readonly update: (document: FlowDocumentInput) => void
+  readonly undo: FlowController['undo']
+  readonly redo: FlowController['redo']
+  readonly getHistoryStatus: FlowController['getHistoryStatus']
+  readonly subscribeHistory: FlowController['subscribeHistory']
+  readonly rejectHistory: FlowController['rejectHistory']
+  readonly update: (
+    document: FlowDocumentInput,
+    context?: typeof FlowTransactionContextSchema.Encoded
+  ) => void
   readonly applyEdit: (
     transaction: FlowEditTransactionInput
   ) => Promise<FlowEditResult>
@@ -2665,6 +2694,24 @@ export const createFlowHost = (
     }
 
     let acceptedSnapshot = createFlowSnapshot(document, authoritativeViewport)
+    const historySession = globalThis.crypto.randomUUID()
+
+    let history = createFlowHistory(document, {
+      capacity: options.historyCapacity ?? 100,
+      session: historySession,
+    })
+
+    const sameHistoryStatus = S.toEquivalence(FlowHistoryStatusSchema)
+
+    const historyListeners = new Set<(status: FlowHistoryStatus) => void>()
+    let keyboardHistoryGesture: string | undefined
+    let keyboardPublicationContext: FlowTransactionContext | undefined
+
+    const localHistoryContext = (): FlowTransactionContext => ({
+      transactionId: globalThis.crypto.randomUUID(),
+      origin: { kind: 'local', actorId: historySession },
+    })
+
     let documentRevision = 0
     let destroyPromise: Promise<void> | undefined
 
@@ -3094,6 +3141,8 @@ export const createFlowHost = (
     yield* Scope.addFinalizer(
       hostScope,
       Effect.sync(() => {
+        history = reduceFlowHistory(history, { kind: 'dispose' }).state
+        historyListeners.clear()
         colorMode.dispose()
         renderedPositionListeners.clear()
         nodeSlots.clear()
@@ -3751,12 +3800,103 @@ export const createFlowHost = (
       })
     }
 
-    const publishAcceptedState = (cause: FlowStateChangeCause): void => {
+    const publishHistory = (event: FlowHistoryEvent) => {
+      const previous = flowHistoryStatus(history)
+      const previousRevision = history.revision
+      const result = reduceFlowHistory(history, event)
+      history = result.state
+      const status = flowHistoryStatus(history)
+
+      if (
+        event.kind !== 'gesture' &&
+        (event.kind === 'rejected' ||
+          history.revision !== previousRevision ||
+          previous.pending !== status.pending ||
+          previous.disposed !== status.disposed)
+      ) {
+        const attributes = {
+          [FlowAttribute.changeKind]: `history-${event.kind}`,
+          [FlowAttribute.controlMode]: documentMode,
+          [FlowAttribute.nodeCount]: document.nodes.length,
+          [FlowAttribute.edgeCount]: document.edges.length,
+        }
+
+        let span: (typeof FlowSpan)[keyof typeof FlowSpan] =
+          FlowSpan.controllerUpdate
+
+        switch (event.kind) {
+          case 'dispose': {
+            span = FlowSpan.hostDestroy
+            break
+          }
+
+          case 'rejected': {
+            span = FlowSpan.editFailure
+            break
+          }
+
+          case 'replay': {
+            span = FlowSpan.editPrepare
+            break
+          }
+
+          case 'accepted': {
+            break
+          }
+
+          default: {
+            const exhaustive: never = event
+            void exhaustive
+          }
+        }
+
+        runTelemetry(
+          Effect.logDebug('Changed flow transaction history').pipe(
+            Effect.annotateLogs(attributes),
+            Effect.withSpan(span, { attributes })
+          )
+        )
+      }
+
+      if (!sameHistoryStatus(previous, status)) {
+        const notificationListeners = [...historyListeners]
+
+        for (const listener of notificationListeners) {
+          if (!historyListeners.has(listener)) {
+            continue
+          }
+
+          try {
+            listener(status)
+          } catch (error) {
+            reportStateListenerFailure(Cause.die(error))
+          }
+        }
+      }
+
+      return result.replacement
+    }
+
+    const finishKeyboardHistory = (action: 'end' | 'cancel'): void => {
+      if (keyboardHistoryGesture === undefined) {
+        return
+      }
+
+      const gestureId = keyboardHistoryGesture
+      keyboardHistoryGesture = undefined
+      publishHistory({ kind: 'gesture', action, gestureId })
+    }
+
+    const publishAcceptedState = (
+      cause: FlowStateChangeCause,
+      context?: FlowTransactionContext
+    ): void => {
       if (destroyed) {
         return
       }
 
       const current = createFlowSnapshot(document, authoritativeViewport)
+      publishHistory({ kind: 'accepted', document: current.document, context })
 
       if (flowSnapshotEquivalence(acceptedSnapshot, current)) {
         return
@@ -8188,7 +8328,11 @@ export const createFlowHost = (
           return
         }
 
-        let publishedChange = change
+        let publishedChange: FlowChange =
+          change.kind === 'edit-proposal'
+            ? { ...change, context: change.context ?? localHistoryContext() }
+            : change
+
         const changeBase = document
 
         switch (change.kind) {
@@ -8487,6 +8631,18 @@ export const createFlowHost = (
         }
 
         executeMutation(() => {
+          const previousKeyboardContext = keyboardPublicationContext
+
+          if (
+            publishedChange.kind === 'node-positions' &&
+            keyboardHistoryGesture !== undefined
+          ) {
+            keyboardPublicationContext = {
+              ...localHistoryContext(),
+              gestureId: keyboardHistoryGesture,
+            }
+          }
+
           try {
             notifyElementChanges(changeBase, publishedChange)
 
@@ -8494,7 +8650,19 @@ export const createFlowHost = (
               listener(publishedChange)
             }
           } finally {
-            publishAcceptedState('semantic-change')
+            let context: FlowTransactionContext | undefined
+
+            if (publishedChange.kind === 'edit-proposal') {
+              ;({ context } = publishedChange)
+            } else if (
+              publishedChange.kind === 'node-positions' &&
+              keyboardHistoryGesture !== undefined
+            ) {
+              context = keyboardPublicationContext
+            }
+
+            publishAcceptedState('semantic-change', context)
+            keyboardPublicationContext = previousKeyboardContext
           }
         })
       },
@@ -10564,6 +10732,7 @@ export const createFlowHost = (
           }
 
           case 'activeKeyboardNodeDrag': {
+            finishKeyboardHistory('cancel')
             activeKeyboardNodeDrag = null
             break
           }
@@ -11692,8 +11861,96 @@ export const createFlowHost = (
       }
     }
 
+    const replayHistory = async (direction: 'undo' | 'redo'): Promise<void> => {
+      if (destroyed) {
+        return
+      }
+
+      const pending = Promise.withResolvers<null>()
+
+      const rejectPending = (error: Error): void => {
+        pendingEditRejectors.delete(rejectPending)
+        pending.reject(error)
+      }
+
+      const execute = (): void => {
+        pendingEditRejectors.delete(rejectPending)
+
+        if (destroyed) {
+          pending.resolve(null)
+
+          return
+        }
+
+        executeMutation(() => {
+          try {
+            cancelActiveGestures('history-replay')
+            finishKeyboardHistory('end')
+
+            const replacement = publishHistory({
+              kind: 'replay',
+              direction,
+              transactionId: globalThis.crypto.randomUUID(),
+            })
+
+            if (replacement !== undefined && !destroyed) {
+              operations.publishChange({
+                kind: 'edit-proposal',
+                document: restoreFlowHistoryDocument(
+                  replacement.document,
+                  document
+                ),
+                context: replacement.context,
+                deletion: { deletedNodeIds: [], deletedEdgeIds: [] },
+              })
+            }
+
+            pending.resolve(null)
+          } catch (error) {
+            pending.reject(error)
+          }
+        })
+      }
+
+      if (mutationDepth > 0) {
+        pendingEditRejectors.add(rejectPending)
+        deferredMutations.push(execute)
+      } else {
+        execute()
+      }
+
+      await pending.promise
+    }
+
     // eslint-disable-next-line complexity -- Keyboard actions cover nodes, handles, edges, and the pane.
     const onCanvasKeyDown = (event: KeyboardEvent): void => {
+      if (destroyed) {
+        return
+      }
+
+      const historyKey = event.key.toLowerCase()
+
+      if (
+        !event.isComposing &&
+        !isInputDOMNode(event) &&
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        (historyKey === 'z' || (historyKey === 'y' && !event.shiftKey))
+      ) {
+        event.preventDefault()
+        finishKeyboardHistory('end')
+        const direction = historyKey === 'y' || event.shiftKey ? 'redo' : 'undo'
+        void (async () => {
+          try {
+            await replayHistory(direction)
+          } catch (error) {
+            reportStateListenerFailure(Cause.die(error))
+          }
+        })()
+
+        return
+      }
+
       if (event.key === 'Escape' && cancelCapturedEscape(event)) {
         event.preventDefault()
 
@@ -12068,6 +12325,15 @@ export const createFlowHost = (
             return
           }
 
+          if (keyboardHistoryGesture === undefined) {
+            keyboardHistoryGesture = globalThis.crypto.randomUUID()
+            publishHistory({
+              kind: 'gesture',
+              action: 'begin',
+              gestureId: keyboardHistoryGesture,
+            })
+          }
+
           operations.publishChange(bounded)
 
           const dragPayload: FlowNodeDragPayload = {
@@ -12273,6 +12539,7 @@ export const createFlowHost = (
 
       if (activeKeyboardNodeDrag !== null && event.key.startsWith('Arrow')) {
         const payload = activeKeyboardNodeDrag
+        finishKeyboardHistory('end')
         activeKeyboardNodeDrag = null
 
         if (options.onNodeDragStop !== undefined) {
@@ -13194,6 +13461,8 @@ export const createFlowHost = (
         let stateCleanupFailed = false
 
         destroyed = true
+        publishHistory({ kind: 'dispose' })
+        historyListeners.clear()
 
         try {
           cancelCaptured(snapshotEntry(), 'host-destroyed')
@@ -13794,18 +14063,41 @@ export const createFlowHost = (
 
         return () => viewportListeners.delete(listener)
       },
-      update: (nextDocument): void => {
+      undo: () => replayHistory('undo'),
+      redo: () => replayHistory('redo'),
+      getHistoryStatus: () => flowHistoryStatus(history),
+      subscribeHistory: (listener) => {
+        if (!destroyed) {
+          historyListeners.add(listener)
+        }
+
+        return () => {
+          historyListeners.delete(listener)
+        }
+      },
+      rejectHistory: (transactionId) => {
+        executeMutation(() => {
+          publishHistory({ kind: 'rejected', transactionId })
+        })
+      },
+      update: (nextDocument, context): void => {
         if (destroyed) {
           return
         }
 
         const replacement = structuredClone(nextDocument)
+        const receiptContext = context ?? keyboardPublicationContext
+
+        const receipt =
+          receiptContext === undefined
+            ? undefined
+            : structuredClone(receiptContext)
 
         executeMutation(() => {
           const previous = document
           document = replacement
           operations.reconcile(document, previous)
-          publishAcceptedState('document-update')
+          publishAcceptedState('document-update', receipt)
           runTelemetry(
             Effect.logDebug('Updated flow controller').pipe(
               Effect.annotateLogs({
@@ -13850,13 +14142,17 @@ export const createFlowHost = (
             )
 
             const result = Effect.runSync(
-              prepareFlowEdit(document, transaction)
+              prepareFlowEdit(document, {
+                ...transaction,
+                context: transaction.context ?? localHistoryContext(),
+              })
             )
 
             operations.publishChange({
               kind: 'edit-proposal',
               document: result.document,
               deletion: result.deletion,
+              context: result.context,
             })
             resolve(result)
           } catch (error) {
@@ -14168,6 +14464,11 @@ export const mountFlow = (
 
   const controller: JavaScriptFlowController = {
     ...createFlowInstanceApi(host),
+    undo: host.undo,
+    redo: host.redo,
+    getHistoryStatus: host.getHistoryStatus,
+    subscribeHistory: host.subscribeHistory,
+    rejectHistory: host.rejectHistory,
     overlayPortal: host.overlayPortal,
     getAriaLabelConfig: host.getAriaLabelConfig,
     getRenderedNodePositions: host.getRenderedNodePositions,
@@ -14750,8 +15051,13 @@ export const mountFlow = (
     subscribe: host.subscribe,
     subscribeState: host.subscribeState,
     subscribeViewport: host.subscribeViewport,
-    update: (nextInput): void => {
-      host.update(Effect.runSync(decodeFlowDocument(nextInput)))
+    update: (nextInput, context): void => {
+      host.update(
+        Effect.runSync(decodeFlowDocument(nextInput)),
+        context === undefined
+          ? undefined
+          : S.decodeUnknownSync(FlowTransactionContextSchema)(context)
+      )
     },
     updateViewport: (viewportInput): void => {
       host.updateViewport(

@@ -20,6 +20,7 @@ import {
 } from './flow-reconnection.schema.ts'
 import { snapGroupDelta, snapPosition } from './flow-snap-grid.schema.ts'
 import type { SnapGrid } from './flow-snap-grid.schema.ts'
+import { FlowTransactionContextSchema } from './flow-transaction-context.schema.ts'
 import {
   FlowEdgeSchema,
   FlowDocumentSchema,
@@ -895,6 +896,7 @@ export const FlowEditProposalChangeSchema = S.Struct({
   kind: S.Literal('edit-proposal'),
   document: FlowDocumentSchema,
   deletion: FlowDeleteResultSchema,
+  context: S.optional(FlowTransactionContextSchema),
 })
 
 export const FlowChangeSchema = S.Union([
@@ -1437,10 +1439,11 @@ export const prepareFlowCommand = (
 > =>
   command.kind === 'edit-transaction'
     ? prepareFlowEdit(document, command.transaction).pipe(
-        Effect.map(({ document: candidate, deletion }) => ({
+        Effect.map(({ document: candidate, deletion, context }) => ({
           kind: 'edit-proposal' as const,
           document: candidate,
           deletion,
+          ...(context === undefined ? undefined : { context }),
         }))
       )
     : Effect.succeed(commandToChange(command))

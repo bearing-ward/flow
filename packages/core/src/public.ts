@@ -178,6 +178,34 @@ export {
   DeleteElementsEditSchema,
 } from './domain/flow-edit.schema.ts'
 
+export {
+  FlowTransactionOriginSchema,
+  FlowTransactionContextSchema,
+} from './domain/flow-transaction-context.schema.ts'
+
+export type {
+  FlowTransactionOrigin,
+  FlowTransactionContext,
+} from './domain/flow-transaction-context.schema.ts'
+
+export {
+  FlowHistoryStateSchema,
+  FlowHistoryStatusSchema,
+  FlowHistoryEventSchema,
+  createFlowHistory,
+  reduceFlowHistory,
+  flowHistoryStatus,
+  restoreFlowHistoryDocument,
+  flowHistoryDocument,
+  flowHistoryDocumentsEqual,
+} from './domain/flow-history.ts'
+
+export type {
+  FlowHistoryState,
+  FlowHistoryStatus,
+  FlowHistoryEvent,
+} from './domain/flow-history.ts'
+
 export type {
   FlowEditOperation,
   FlowEditTransaction,
