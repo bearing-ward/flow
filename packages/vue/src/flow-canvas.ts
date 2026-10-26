@@ -5739,11 +5739,9 @@ export const FlowCanvas = defineComponent({
       draw: (positions) => {
         animationPositions.value = positions
       },
-      commit: async (next) => {
+      commit: async (transaction) => {
         animationTime = performance.now()
-        await applyEditResolved(() => ({
-          operations: [{ kind: 'set-nodes', nodes: next.nodes }],
-        }))
+        await applyEditResolved(() => transaction)
         await nextTick()
       },
       reducedMotion: () =>

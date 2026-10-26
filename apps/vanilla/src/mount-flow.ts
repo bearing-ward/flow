@@ -12459,11 +12459,9 @@ export const createFlowHost = (
           renderGraphEdges()
         }
       },
-      commit: async (next) => {
+      commit: async (transaction) => {
         animationTime = performance.now()
-        await applyEditResolved(() => ({
-          operations: [{ kind: 'set-nodes', nodes: next.nodes }],
-        }))
+        await applyEditResolved(() => transaction)
       },
       reducedMotion: () =>
         matchMedia('(prefers-reduced-motion: reduce)').matches,

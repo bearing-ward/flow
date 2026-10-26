@@ -2,6 +2,7 @@ import { Effect, Schema as S } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import { createFlowNodeAnimator } from '../use-cases/node-animation.ts'
+import { prepareFlowEdit } from './flow-edit.ts'
 import { createFlowHistory, reduceFlowHistory } from './flow-history.ts'
 import { defaultFlowLayoutSettings } from './flow-layout-request.ts'
 import {
@@ -51,11 +52,12 @@ const owner = (mode: 'accept' | 'reject' | 'fail' = 'accept') => {
         return Promise.resolve()
       }
 
-      accepted = next
+      const result = Effect.runSync(prepareFlowEdit(accepted, next))
+      accepted = result.document
       commits += 1
       history = reduceFlowHistory(history, {
         kind: 'accepted',
-        document: next,
+        document: accepted,
         context: {
           transactionId: String(commits),
           origin: { kind: 'local', actorId: 'test' },
@@ -273,5 +275,74 @@ describe('node position animation', () => {
       kind: 'disposed',
     })
     expect(host.read().commits).toBe(1)
+  })
+
+  it('accepts topology and destination together as one semantic history entry', async () => {
+    const host = owner()
+
+    const input = Effect.runSync(
+      decodeFlowNodeAnimationRequest({
+        ...request,
+        duration: 0,
+        edit: {
+          operations: [
+            {
+              kind: 'add-nodes',
+              nodes: [{ id: 'new', label: 'New', position: { x: 10, y: 10 } }],
+            },
+            {
+              kind: 'add-edges',
+              edges: [
+                {
+                  id: 'edge',
+                  source: 'a',
+                  target: 'new',
+                  data: { keep: [160] },
+                },
+              ],
+            },
+          ],
+        },
+      })
+    )
+
+    const next = await host.animator.animate(input)
+
+    expect(next.kind).toBe('finished')
+    expect(host.read().accepted.edges).toMatchObject([
+      { id: 'edge', data: { keep: [160] } },
+    ])
+    expect(
+      host.read().accepted.nodes.map(({ id, position }) => ({ id, position }))
+    ).toStrictEqual([
+      { id: 'a', position: { x: 300, y: 80 } },
+      { id: 'new', position: { x: 10, y: 10 } },
+    ])
+    expect(host.read().history.past).toHaveLength(1)
+  })
+
+  it('detects a rejected data-only animated edit even when positions match', async () => {
+    const host = owner('reject')
+
+    const input = Effect.runSync(
+      decodeFlowNodeAnimationRequest({
+        result: { ...request.result, positions: from },
+        edit: {
+          operations: [
+            {
+              kind: 'update-node-data',
+              nodeId: 'a',
+              data: { tree: { version: 1, expanded: false, kind: 'node' } },
+            },
+          ],
+        },
+      })
+    )
+
+    await expect(host.animator.animate(input)).resolves.toMatchObject({
+      kind: 'cancelled',
+    })
+    expect(host.read().accepted.nodes).toStrictEqual(document.nodes)
+    expect(host.read().history.past).toHaveLength(0)
   })
 })

@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 190,
+    "inScopeCloseAllHosts": 192,
     "inScopeCloseByHost": {
-      "vanilla": 190,
-      "vue": 190,
-      "foldkit": 190
+      "vanilla": 192,
+      "vue": 192,
+      "foldkit": 192
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-159 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-160 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 11,
-          "P": 2,
+          "C": 13,
+          "P": 0,
           "G": 3
         },
         "vue": {
-          "C": 11,
-          "P": 2,
+          "C": 13,
+          "P": 0,
           "G": 3
         },
         "foldkit": {
-          "C": 11,
-          "P": 2,
+          "C": 13,
+          "P": 0,
           "G": 3
         }
       }
@@ -4606,31 +4606,31 @@
     {
       "section": "examples layout",
       "name": "Expand and Collapse · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Hidden/data fields and layout APIs exist; no tree visibility reducer or expand/collapse/add-child composition.",
+      "missing": null,
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 160",
         "previousRatings": {
           "vanilla": "P",
           "vue": "P",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Public pages and accessible demos compared through a locked Playwright fixture. Nine tree DOM acceptance cases and six animation regressions passed in each host. C means achievable functional closeness within the trace boundary.",
         "url": "https://reactflow.dev/examples/layout/expand-collapse",
-        "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "accessedOn": "2026-10-26",
+        "sourceAccess": "Public descriptions and interactive public demos. No subscription ZIP or private source accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/expand-collapse/index.html"
         ],
-        "missing": "Hidden/data fields and layout APIs exist; no tree visibility reducer or expand/collapse/add-child composition.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": null,
+        "evidence": "research/traces/160-expand-collapse.md",
         "outcomes": [
           {
             "id": "visibility",
@@ -4640,94 +4640,109 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:159",
-                "packages/core/src/domain/flow-graph.ts:151",
-                "packages/core/src/domain/flow-edge-geometry.ts:183"
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
               ],
-              "vanilla": ["apps/vanilla/src/mount-flow.ts:14308"],
-              "vue": ["packages/vue/src/use-flow.ts:661"],
-              "foldkit": ["packages/foldkit/src/instance.ts:409"]
+              "vanilla": [
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
+              ],
+              "vue": [
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
+              ],
+              "foldkit": [
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
+              ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "toggle-subtree",
             "outcome": "Click a parent to hide or reveal its descendants and incident edges.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "expanded-state",
             "outcome": "Keep expanded/collapsed state in node data.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
-                "apps/vanilla/src/mount-flow.ts:8559"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/whiteboard-recipes.ts:63",
-                "packages/vue/src/flow-canvas.ts:9110"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
-                "packages/foldkit/src/graph.ts:7582"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "child-layout",
             "outcome": "Add a child and recalculate the visible tree layout.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:388",
-                "apps/vanilla/src/ui/layout-recipes.ts:488",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:297",
-                "apps/vue/src/layout-recipes.ts:316",
-                "apps/vue/src/layout-recipes-components.ts:30",
-                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:421",
-                "apps/foldkit/ui-recipes/layout/main.ts:51",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           }
         ],
         "unverified": [
@@ -4738,7 +4753,7 @@
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 160"]
     },
     {
       "section": "examples layout",
@@ -5004,32 +5019,32 @@
     {
       "section": "examples layout",
       "name": "Dynamic Layouting · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
-      "missing": "Placeholder promotion/branching and Dagre relayout are tested; edge insertion, d3-hierarchy and animated transitions are missing.",
+      "missing": null,
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 111", "Plan 149"],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111", "Plan 149", "Plan 160"],
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 160",
         "previousRatings": {
-          "vanilla": "C",
-          "vue": "C",
-          "foldkit": "C"
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Public pages and accessible demos compared through a locked Playwright fixture. Nine tree DOM acceptance cases and six animation regressions passed in each host. C means achievable functional closeness within the trace boundary.",
         "url": "https://reactflow.dev/examples/layout/dynamic-layouting",
-        "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "accessedOn": "2026-10-26",
+        "sourceAccess": "Public descriptions and interactive public demos. No subscription ZIP or private source accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/dynamic-layouting/index.html"
         ],
-        "missing": "Placeholder promotion/branching and Dagre relayout are tested; edge insertion, d3-hierarchy and animated transitions are missing.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": null,
+        "evidence": "research/traces/160-expand-collapse.md",
         "outcomes": [
           {
             "id": "placeholder",
@@ -5038,25 +5053,26 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:388",
-                "apps/vanilla/src/ui/layout-recipes.ts:488",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:297",
-                "apps/vue/src/layout-recipes.ts:316",
-                "apps/vue/src/layout-recipes-components.ts:30",
-                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:421",
-                "apps/foldkit/ui-recipes/layout/main.ts:51",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "branch",
@@ -5065,52 +5081,54 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:388",
-                "apps/vanilla/src/ui/layout-recipes.ts:488",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:297",
-                "apps/vue/src/layout-recipes.ts:316",
-                "apps/vue/src/layout-recipes-components.ts:30",
-                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:421",
-                "apps/foldkit/ui-recipes/layout/main.ts:51",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "edge-insert",
             "outcome": "Click the plus button on an edge to insert a node between endpoints.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:388",
-                "apps/vanilla/src/ui/layout-recipes.ts:488",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:297",
-                "apps/vue/src/layout-recipes.ts:316",
-                "apps/vue/src/layout-recipes-components.ts:30",
-                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:421",
-                "apps/foldkit/ui-recipes/layout/main.ts:51",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "relayout",
@@ -5119,52 +5137,54 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:388",
-                "apps/vanilla/src/ui/layout-recipes.ts:488",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:297",
-                "apps/vue/src/layout-recipes.ts:316",
-                "apps/vue/src/layout-recipes-components.ts:30",
-                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:421",
-                "apps/foldkit/ui-recipes/layout/main.ts:51",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           },
           {
             "id": "transition",
             "outcome": "Animate nodes smoothly to their new layout positions.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:132"],
+              "shared": [
+                "packages/core/src/domain/flow-tree.ts:208",
+                "packages/core/src/domain/flow-tree.schema.ts:25",
+                "packages/core/src/use-cases/tree-editor.ts:72",
+                "apps/shared/tree/acceptance.ts:138"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:388",
-                "apps/vanilla/src/ui/layout-recipes.ts:488",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:263"
+                "apps/vanilla/src/tree-demo.ts:1",
+                "apps/vanilla/e2e/expand-collapse.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:297",
-                "apps/vue/src/layout-recipes.ts:316",
-                "apps/vue/src/layout-recipes-components.ts:30",
-                "apps/vue/e2e/layout-recipes.e2e.ts:270"
+                "apps/vue/src/tree-demo.ts:1",
+                "apps/vue/e2e/expand-collapse.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:421",
-                "apps/foldkit/ui-recipes/layout/main.ts:51",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:291"
+                "apps/foldkit/src/tree-demo.ts:1",
+                "apps/foldkit/e2e/expand-collapse.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-and-local-DOM-acceptance"
           }
         ],
         "unverified": [

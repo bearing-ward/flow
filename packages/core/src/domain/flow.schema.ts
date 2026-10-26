@@ -14,6 +14,7 @@ import { NodeOriginSchema } from './flow-origin.schema.ts'
 import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
 import { FlowFigureDataSchema } from './flow-shape.schema.ts'
 import { FlowClassNameSchema, FlowStyleSchema } from './flow-style.schema.ts'
+import { FlowTreeDataSchema } from './flow-tree.schema.ts'
 import {
   EdgeIdSchema,
   HandleIdSchema,
@@ -175,9 +176,11 @@ export const FlowNodeSchema = S.Struct({
 }).check(
   S.makeFilter(
     (node) =>
-      node.type !== 'shape' ||
-      (node.size !== undefined && S.is(FlowFigureDataSchema)(node.data)) ||
-      'Figure nodes require explicit bounds and decoded figure type/color data'
+      (node.data?.tree === undefined ||
+        S.is(FlowTreeDataSchema)(node.data.tree)) &&
+      (node.type !== 'shape' ||
+        (node.size !== undefined && S.is(FlowFigureDataSchema)(node.data)) ||
+        'Nodes require valid versioned tree data; figures require explicit bounds and figure data')
   )
 )
 

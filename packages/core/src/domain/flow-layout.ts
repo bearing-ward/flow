@@ -1,4 +1,5 @@
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
+import { flowTreeCollapsedIds } from './flow-tree.schema.ts'
 import { flowNodeHandles } from './flow.schema.ts'
 import type {
   FlowDocument,
@@ -51,11 +52,16 @@ export const getFlowLayoutInput = (
   document: FlowDocument,
   getInternalNode: (id: string) => FlowInternalNode | undefined
 ): FlowLayoutInput => {
+  const collapsed = flowTreeCollapsedIds(document)
   const nodes: FlowLayoutNode[] = []
   const unmeasured: string[] = []
 
   for (const node of document.nodes) {
-    if (node.hidden === true || node.parentId !== undefined) {
+    if (
+      node.hidden === true ||
+      node.parentId !== undefined ||
+      collapsed.has(node.id)
+    ) {
       continue
     }
 

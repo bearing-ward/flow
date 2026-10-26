@@ -3,6 +3,7 @@ import type { NodeExtent } from './flow-node-extent.schema.ts'
 import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { NodeOrigin } from './flow-origin.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
+import { flowTreeCollapsedIds } from './flow-tree.schema.ts'
 import type { HandleId } from './flow-values.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
 import type {
@@ -75,6 +76,7 @@ export const createFlowGraph = (
   } = fallbackDimensions,
   nodeExtent?: NodeExtent
 ): FlowGraphView => {
+  const collapsed = flowTreeCollapsedIds(document)
   const documentIndex = new Map<NodeId, number>()
   const nodeById = new Map<NodeId, FlowNode>()
   const childLists = new Map<NodeId, NodeId[]>()
@@ -148,7 +150,8 @@ export const createFlowGraph = (
               y: parent.absolutePosition.y + topLeft.y,
             },
       dimensions,
-      hidden: node.hidden === true || parent?.hidden === true,
+      hidden:
+        node.hidden === true || parent?.hidden === true || collapsed.has(id),
     }
 
     graphNodes.set(id, resolved)

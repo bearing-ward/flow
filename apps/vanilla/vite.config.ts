@@ -20,6 +20,8 @@ export default defineConfig(({ mode }) => {
     build: {
       rolldownOptions: {
         input: {
+          expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
+          dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
           nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
           main: fileURLToPath(new URL('index.html', import.meta.url)),
           figures: `${import.meta.dirname}/shapes/index.html`,
