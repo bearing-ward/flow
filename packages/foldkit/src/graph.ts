@@ -2479,7 +2479,32 @@ const measurementsForDocument = (model: Model, document: FlowDocument) => {
   const pending = model.pendingResizeAcceptance
 
   if (pending === null) {
-    return pruneFlowMeasurements(document, model.measurements)
+    const measurements = pruneFlowMeasurements(document, model.measurements)
+
+    if (model.documentMode === 'controlled') {
+      return measurements
+    }
+
+    const previous = new Map(
+      model.document.nodes.map((node) => [node.id, node])
+    )
+
+    const current = new Map(document.nodes.map((node) => [node.id, node]))
+
+    const nodes = measurements.nodes.filter(({ measurement }) => {
+      const before = previous.get(measurement.nodeId)?.size
+      const after = current.get(measurement.nodeId)?.size
+
+      return (
+        (before?.width === after?.width && before?.height === after?.height) ||
+        (measurement.width === after?.width &&
+          measurement.height === after?.height)
+      )
+    })
+
+    return nodes.length === measurements.nodes.length
+      ? measurements
+      : { ...measurements, nodes, revision: measurements.revision + 1 }
   }
 
   const { change } = pending
