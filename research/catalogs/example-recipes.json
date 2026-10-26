@@ -2468,50 +2468,90 @@
       "family": "advanced-integrations",
       "journey": "Select a parent with a child and internal edge, copy the selection, then paste it.",
       "observableResult": "The pasted subgraph has fresh node and edge IDs, remapped internal references, and no accidental links to the original selection.",
-      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
-      "apiValidation": "pending",
+      "publicApis": [
+        "copySelection",
+        "pasteSelection",
+        "useFlowClipboard",
+        "createFoldkitClipboardClient",
+        "FlowGraphFragmentSchema",
+        "pasteFlowGraphFragment"
+      ],
+      "apiValidation": "validated",
       "hostRoutes": {
         "vanilla": {
-          "path": "/examples/interaction/copy-paste",
-          "status": "planned"
+          "path": "/clipboard/",
+          "status": "runnable",
+          "sourcePath": "apps/vanilla/src/clipboard-demo.ts"
         },
         "vue": {
-          "path": "/examples/interaction/copy-paste",
-          "status": "planned"
+          "path": "/clipboard/",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/clipboard-demo.ts"
         },
         "foldkit": {
-          "path": "/examples/interaction/copy-paste",
-          "status": "planned"
+          "path": "/clipboard/",
+          "status": "runnable",
+          "sourcePath": "apps/foldkit/src/clipboard-demo.ts"
         }
       },
-      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
-      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "resetBehavior": "Reload /clipboard/ to restore the deterministic graph and empty clipboard/history sessions.",
+      "optionalDependencies": "none; internal session clipboard and shared Effect Schema graph fragments",
       "reference": {
-        "availability": "public-page-listed",
-        "licenseReview": "required-before-copy",
-        "comparison": "unverified"
+        "availability": "public-description-and-live-demo",
+        "licenseReview": "independent implementation of public behavior; no subscription code copied",
+        "comparison": "compared",
+        "evidence": {
+          "type": "trace",
+          "path": "research/traces/153-graph-clipboard.md"
+        }
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "complete",
       "testedResult": {
         "vanilla": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vanilla/e2e/graph-clipboard.e2e.ts"
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/graph-clipboard.e2e.ts"
         },
         "foldkit": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/foldkit/e2e/graph-clipboard.e2e.ts"
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "complete",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Select a parent with a child and internal edge, copy the selection, then paste it. Assert: The pasted subgraph has fresh node and edge IDs, remapped internal references, and no accidental links to the original selection. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
-        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
-      }
+        "automated": "Shared native-browser acceptance in all three hosts covers Shift selection, mixed selection, nested descendants, remapped endpoints/handles, repeats, unique IDs, malformed/missing-parent/dangling fragments, transformed placement, native text, one-step undo and disposal. Pure reducers and controlled Foldkit acceptance are tested separately.",
+        "manual": "The independent public-demo test compares publicly observable Shift selection and node/edge copy behavior. D2 defines local hierarchy and 20-unit repeat policies; hidden source and private tests remain unverified. See research/traces/153-graph-clipboard.md."
+      },
+      "apiEvidence": [
+        {
+          "api": "copySelection",
+          "path": "apps/vanilla/src/mount-flow.ts"
+        },
+        {
+          "api": "pasteSelection",
+          "path": "apps/vanilla/src/mount-flow.ts"
+        },
+        {
+          "api": "useFlowClipboard",
+          "path": "packages/vue/src/use-flow.ts"
+        },
+        {
+          "api": "createFoldkitClipboardClient",
+          "path": "packages/foldkit/src/clipboard-client.ts"
+        },
+        {
+          "api": "FlowGraphFragmentSchema",
+          "path": "packages/core/src/domain/flow-clipboard.ts"
+        },
+        {
+          "api": "pasteFlowGraphFragment",
+          "path": "packages/core/src/domain/flow-clipboard.ts"
+        }
+      ]
     },
     {
       "url": "https://reactflow.dev/examples/interaction/undo-redo",

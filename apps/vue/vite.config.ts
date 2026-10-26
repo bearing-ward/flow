@@ -28,6 +28,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: `${import.meta.dirname}/index.html`,
+        clipboard: `${import.meta.dirname}/clipboard/index.html`,
         history: `${import.meta.dirname}/history/index.html`,
       },
     },

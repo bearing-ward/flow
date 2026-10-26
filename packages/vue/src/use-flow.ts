@@ -1,4 +1,5 @@
 import type {
+  FlowClipboardActions,
   FlowHistoryStatus,
   FlowTransactionContext,
   FlowChange,
@@ -181,6 +182,9 @@ export type FlowCanvasFitViewOptions = ViewportAnimationOptions & {
 }
 
 export interface FlowEditor {
+  readonly copySelection?: FlowClipboardActions['copySelection']
+  readonly pasteSelection?: FlowClipboardActions['pasteSelection']
+  readonly setClipboardFragment?: FlowClipboardActions['setClipboardFragment']
   readonly history?: ComputedRef<FlowHistoryStatus>
   readonly undo?: () => Promise<void>
   readonly redo?: () => Promise<void>
@@ -299,7 +303,7 @@ export interface FlowNodeSlot {
   readonly node: FlowNode
 }
 
-export interface FlowActions {
+export interface FlowActions extends FlowClipboardActions {
   readonly history: ComputedRef<FlowHistoryStatus>
   readonly undo: () => Promise<void>
   readonly redo: () => Promise<void>
@@ -662,6 +666,11 @@ export const useFlow = (): FlowActions => {
           createFlowHistory({ nodes: [], edges: [] }, { capacity: 0 })
         )
       ),
+    copySelection: () => editor.copySelection?.() ?? null,
+    pasteSelection: (options) =>
+      editor.pasteSelection?.(options) ??
+      Promise.reject(new Error('FlowClipboardUnavailable')),
+    setClipboardFragment: (input) => editor.setClipboardFragment?.(input),
     undo: () => editor.undo?.() ?? Promise.resolve(),
     redo: () => editor.redo?.() ?? Promise.resolve(),
     rejectHistory: (transactionId) => editor.rejectHistory?.(transactionId),
@@ -1222,4 +1231,10 @@ export const useFlowHistory = (): Pick<
   const { history, undo, redo, rejectHistory } = useFlow()
 
   return { history, undo, redo, rejectHistory }
+}
+
+export const useFlowClipboard = (): FlowClipboardActions => {
+  const { copySelection, pasteSelection, setClipboardFragment } = useFlow()
+
+  return { copySelection, pasteSelection, setClipboardFragment }
 }

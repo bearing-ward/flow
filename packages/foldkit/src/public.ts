@@ -303,3 +303,5 @@ export { createFoldkitHistoryClient } from './history-client.ts'
 export type { FoldkitHistoryClient } from './history-client.ts'
 
 export { HistoryRequestSchema, HistoryResultSchema } from './application.ts'
+
+export { createFoldkitClipboardClient } from './clipboard-client.ts'

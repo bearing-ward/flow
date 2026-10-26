@@ -1,4 +1,5 @@
 import {
+  createFlowClipboardSession,
   createFlowHistory,
   reduceFlowHistory,
   restoreFlowHistoryDocument,
@@ -156,6 +157,7 @@ import {
   snapPosition,
 } from '@flow/core'
 import type {
+  FlowClipboardActions,
   FlowHistoryEvent,
   FlowHistoryStatus,
   FlowTransactionContext,
@@ -1319,6 +1321,9 @@ export interface FlowController {
   readonly fitView: (
     options?: FitViewOptions
   ) => Promise<ViewportOperationResult>
+  readonly copySelection: FlowClipboardActions['copySelection']
+  readonly pasteSelection: FlowClipboardActions['pasteSelection']
+  readonly setClipboardFragment: FlowClipboardActions['setClipboardFragment']
   readonly undo: () => Promise<void>
   readonly redo: () => Promise<void>
   readonly getHistoryStatus: () => FlowHistoryStatus
@@ -1573,6 +1578,9 @@ export interface JavaScriptFlowController extends FlowInstanceApi {
   readonly fitView: (
     options?: typeof FitViewOptionsSchema.Encoded
   ) => Promise<ViewportOperationResult>
+  readonly copySelection: FlowController['copySelection']
+  readonly pasteSelection: FlowController['pasteSelection']
+  readonly setClipboardFragment: FlowController['setClipboardFragment']
   readonly undo: FlowController['undo']
   readonly redo: FlowController['redo']
   readonly getHistoryStatus: FlowController['getHistoryStatus']
@@ -11922,9 +11930,107 @@ export const createFlowHost = (
       await pending.promise
     }
 
+    const applyEditResolved: FlowController['applyEditResolved'] = (
+      resolveInput
+    ) => {
+      const pending = Promise.withResolvers<FlowEditResult>()
+
+      const { resolve, reject } = pending
+
+      const rejectPending = (reason: Error): void => {
+        pendingEditRejectors.delete(rejectPending)
+
+        reject(reason)
+      }
+
+      const execute = (): void => {
+        pendingEditRejectors.delete(rejectPending)
+
+        if (destroyed) {
+          reject(new Error('FlowControllerDisposed'))
+
+          return
+        }
+
+        try {
+          const transaction = resolveInput(
+            createFlowSnapshot(document, authoritativeViewport).document
+          )
+
+          const result = Effect.runSync(
+            prepareFlowEdit(document, {
+              ...transaction,
+              context: transaction.context ?? localHistoryContext(),
+            })
+          )
+
+          operations.publishChange({
+            kind: 'edit-proposal',
+            document: result.document,
+            deletion: result.deletion,
+            context: result.context,
+          })
+          resolve(result)
+        } catch (error) {
+          reject(error)
+        }
+      }
+
+      if (destroyed) {
+        reject(new Error('FlowControllerDisposed'))
+      } else if (mutationDepth > 0) {
+        pendingEditRejectors.add(rejectPending)
+        deferredMutations.push(execute)
+      } else {
+        execute()
+      }
+
+      return pending.promise
+    }
+
+    const clipboard = createFlowClipboardSession({
+      getDocument: () => document,
+      applyEdit: applyEditResolved,
+      isDisposed: () => destroyed,
+    })
+
     // eslint-disable-next-line complexity -- Keyboard actions cover nodes, handles, edges, and the pane.
     const onCanvasKeyDown = (event: KeyboardEvent): void => {
       if (destroyed) {
+        return
+      }
+
+      const clipboardKey = event.key.toLowerCase()
+
+      if (
+        !event.defaultPrevented &&
+        !event.isComposing &&
+        !isInputDOMNode(event) &&
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        (clipboardKey === 'c' || clipboardKey === 'v')
+      ) {
+        event.preventDefault()
+
+        if (!event.repeat) {
+          try {
+            if (clipboardKey === 'c') {
+              clipboard.copySelection()
+            } else {
+              void (async () => {
+                try {
+                  await clipboard.pasteSelection()
+                } catch (error) {
+                  reportStateListenerFailure(Cause.die(error))
+                }
+              })()
+            }
+          } catch (error) {
+            reportStateListenerFailure(Cause.die(error))
+          }
+        }
+
         return
       }
 
@@ -14063,6 +14169,9 @@ export const createFlowHost = (
 
         return () => viewportListeners.delete(listener)
       },
+      copySelection: () => clipboard.copySelection(),
+      pasteSelection: (pasteOptions) => clipboard.pasteSelection(pasteOptions),
+      setClipboardFragment: (input) => clipboard.setClipboardFragment(input),
       undo: () => replayHistory('undo'),
       redo: () => replayHistory('redo'),
       getHistoryStatus: () => flowHistoryStatus(history),
@@ -14116,61 +14225,7 @@ export const createFlowHost = (
       },
       applyEdit: (transaction): Promise<FlowEditResult> =>
         controller.applyEditResolved(() => transaction),
-      applyEditResolved: (resolveInput): Promise<FlowEditResult> => {
-        const pending = Promise.withResolvers<FlowEditResult>()
-
-        const { resolve, reject } = pending
-
-        const rejectPending = (reason: Error): void => {
-          pendingEditRejectors.delete(rejectPending)
-
-          reject(reason)
-        }
-
-        const execute = (): void => {
-          pendingEditRejectors.delete(rejectPending)
-
-          if (destroyed) {
-            reject(new Error('FlowControllerDisposed'))
-
-            return
-          }
-
-          try {
-            const transaction = resolveInput(
-              createFlowSnapshot(document, authoritativeViewport).document
-            )
-
-            const result = Effect.runSync(
-              prepareFlowEdit(document, {
-                ...transaction,
-                context: transaction.context ?? localHistoryContext(),
-              })
-            )
-
-            operations.publishChange({
-              kind: 'edit-proposal',
-              document: result.document,
-              deletion: result.deletion,
-              context: result.context,
-            })
-            resolve(result)
-          } catch (error) {
-            reject(error)
-          }
-        }
-
-        if (destroyed) {
-          reject(new Error('FlowControllerDisposed'))
-        } else if (mutationDepth > 0) {
-          pendingEditRejectors.add(rejectPending)
-          deferredMutations.push(execute)
-        } else {
-          execute()
-        }
-
-        return pending.promise
-      },
+      applyEditResolved,
       withMutation: executeMutation,
       updateViewport: (nextViewport): void => {
         if (destroyed) {
@@ -14464,6 +14519,9 @@ export const mountFlow = (
 
   const controller: JavaScriptFlowController = {
     ...createFlowInstanceApi(host),
+    copySelection: host.copySelection,
+    pasteSelection: host.pasteSelection,
+    setClipboardFragment: host.setClipboardFragment,
     undo: host.undo,
     redo: host.redo,
     getHistoryStatus: host.getHistoryStatus,

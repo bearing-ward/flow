@@ -1,4 +1,5 @@
 import {
+  FlowPasteOptionsSchema,
   FlowColorModeSchema,
   FlowCommandSchema,
   FlowDocumentSchema,
@@ -12,6 +13,16 @@ import { Message as FoldMessage } from 'foldkit'
 import { CanvasOptionsSchema } from './graph.ts'
 
 export const HostAction = FoldMessage.defineMessageUnion({
+  Clipboard: {
+    command: Schema.Union([
+      Schema.Struct({ kind: Schema.Literal('copy') }),
+      Schema.Struct({
+        kind: Schema.Literal('paste'),
+        options: FlowPasteOptionsSchema,
+      }),
+      Schema.Struct({ kind: Schema.Literal('set'), input: Schema.Unknown }),
+    ]),
+  },
   RefreshRenderers: {},
   SetInteractionHandlers: {
     nodePointerHandlers: Schema.Boolean,

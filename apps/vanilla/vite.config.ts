@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
       rolldownOptions: {
         input: {
           main: fileURLToPath(new URL('index.html', import.meta.url)),
+          clipboard: `${import.meta.dirname}/clipboard/index.html`,
           history: fileURLToPath(
             new URL('history/index.html', import.meta.url)
           ),

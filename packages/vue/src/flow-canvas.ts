@@ -1,4 +1,5 @@
 import {
+  createFlowClipboardSession,
   createFlowHistory,
   flowHistoryStatus,
   flowHistoryDocumentsEqual,
@@ -5570,7 +5571,14 @@ export const FlowCanvas = defineComponent({
       return pending.promise
     }
 
+    const clipboard = createFlowClipboardSession({
+      getDocument: () => stateSnapshot.value.document,
+      applyEdit: applyEditResolved,
+      isDisposed: () => stateDisposed,
+    })
+
     const editor: FlowEditor = {
+      ...clipboard,
       document: computed(() => stateSnapshot.value.document),
       viewport: computed(() => stateSnapshot.value.viewport),
       snapshot: stateSnapshot,
@@ -8439,6 +8447,35 @@ export const FlowCanvas = defineComponent({
           null
       ) {
         const key = event.key.toLowerCase()
+
+        if ((key === 'c' || key === 'v') && !event.shiftKey) {
+          event.preventDefault()
+          event.stopPropagation()
+
+          try {
+            if (key === 'c') {
+              clipboard.copySelection()
+            } else {
+              void (async () => {
+                try {
+                  await clipboard.pasteSelection()
+                } catch (error) {
+                  reportError(
+                    error instanceof Error ? error : new Error(String(error)),
+                    'edit'
+                  )
+                }
+              })()
+            }
+          } catch (error) {
+            reportError(
+              error instanceof Error ? error : new Error(String(error)),
+              'edit'
+            )
+          }
+
+          return
+        }
 
         if (key === 'z' || key === 'y') {
           event.preventDefault()
