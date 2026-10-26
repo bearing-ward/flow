@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import type * as CoreModule from '@flow/core'
 import { expect as expectPage, test as playwrightTest } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import type * as EffectModule from 'effect'
 
 import type * as HostModule from '../src/public.ts'
 import type * as TelemetryModule from '../src/telemetry.ts'
@@ -12,6 +11,7 @@ import {
   mountControllerScenario,
   updateScenario,
 } from './controller-conformance.ts'
+import type * as EffectModule from './effect-fixture.ts'
 
 const coreModulePath = `/@fs${fileURLToPath(
   new URL('../../../packages/core/src/public.ts', import.meta.url)
@@ -1843,7 +1843,7 @@ playwrightTest(
     )
 
     const result = await page.evaluate(async (requestedCorePath) => {
-      const effectPath = '/@id/effect'
+      const effectPath = '/e2e/effect-fixture.ts'
       const hostPath = '/src/public.ts'
       const telemetryPath = '/src/telemetry.ts'
       const effectModule: typeof EffectModule = await import(effectPath)
@@ -1855,7 +1855,7 @@ playwrightTest(
         telemetryPath
       )
 
-      const { Effect, Fiber } = effectModule
+      const { Deferred, Effect, Fiber } = effectModule
       const { decodeFlowDocument } = coreModule
       const { acquireFlowHost } = hostModule
       const { makeBrowserRuntime } = telemetryModule
@@ -1867,6 +1867,7 @@ playwrightTest(
       }
 
       const changes: unknown[] = []
+      const mounted = Deferred.makeUnsafe<undefined>()
 
       const program = Effect.scoped(
         Effect.gen(function* program() {
@@ -1892,13 +1893,14 @@ playwrightTest(
           })
 
           host.subscribe((change) => changes.push(change))
+          yield* Deferred.succeed(mounted, undefined)
           yield* Effect.never
         })
       )
 
       const fiber = runtime.runFork(program)
 
-      await runtime.runPromise(Effect.sleep('100 millis'))
+      await runtime.runPromise(Deferred.await(mounted))
 
       const canvas = root.querySelector<HTMLElement>(
         '[data-testid="flow-canvas"]'
@@ -1923,7 +1925,15 @@ playwrightTest(
           deltaY: -500,
         })
       )
-      await runtime.runPromise(Effect.sleep('50 millis'))
+      const delivered = Promise.withResolvers<undefined>()
+
+      const observer = new ResizeObserver(() => {
+        observer.disconnect()
+        delivered.resolve(undefined)
+      })
+
+      observer.observe(node)
+      await delivered.promise
       await runtime.dispose()
 
       return {

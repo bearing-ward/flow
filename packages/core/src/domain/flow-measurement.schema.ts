@@ -12,7 +12,6 @@ import type {
   XYPosition,
 } from './flow.schema.ts'
 import {
-  FlowDocumentSchema,
   FlowHandleSchema,
   FlowNodeSchema,
   flowNodeHandles,
@@ -76,14 +75,13 @@ export const advanceNodeMeasurementGeneration = (
   state: FlowMeasurementState,
   nodeId: NodeId
 ): FlowMeasurementState => {
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
-  const previous = validState.generations.find((item) => item.nodeId === nodeId)
+  const previous = state.generations.find((item) => item.nodeId === nodeId)
   const generation = (previous?.generation ?? -1) + 1
 
   return {
-    ...validState,
+    ...state,
     generations: [
-      ...validState.generations.filter((item) => item.nodeId !== nodeId),
+      ...state.generations.filter((item) => item.nodeId !== nodeId),
       { generation, nodeId },
     ],
   }
@@ -94,14 +92,12 @@ export const setNodeMeasurementGenerations = (
   state: FlowMeasurementState,
   inputs: readonly NodeMeasurementGeneration[]
 ): FlowMeasurementState => {
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
-
   const validInputs = inputs.map((input) =>
     S.decodeUnknownSync(NodeMeasurementGenerationSchema)(input)
   )
 
   const generations = new Map(
-    validState.generations.map(({ nodeId, generation }) => [nodeId, generation])
+    state.generations.map(({ nodeId, generation }) => [nodeId, generation])
   )
 
   let changed = false
@@ -115,40 +111,36 @@ export const setNodeMeasurementGenerations = (
 
   return changed
     ? {
-        ...validState,
+        ...state,
         generations: [...generations].map(([nodeId, generation]) => ({
           generation,
           nodeId,
         })),
       }
-    : validState
+    : state
 }
 
-/** Apply a decoded DOM measurement only while its node and generation are current. */
-/** Apply one observer batch with a single boundary decode and indexed lookup. */
+/** Validate incoming DOM samples; the accepted document and runtime state are already typed. */
 export const applyNodeMeasurements = (
   document: FlowDocument,
   state: FlowMeasurementState,
   inputs: readonly NodeMeasurementInput[]
 ): FlowMeasurementState => {
-  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
-
   const validInputs = inputs.map((input) =>
     S.decodeUnknownSync(NodeMeasurementInputSchema)(input)
   )
 
-  const nodesById = new Map(validDocument.nodes.map((node) => [node.id, node]))
+  const nodesById = new Map(document.nodes.map((node) => [node.id, node]))
 
   const nodes = new Map(
-    validState.nodes.map((record) => [record.measurement.nodeId, record])
+    state.nodes.map((record) => [record.measurement.nodeId, record])
   )
 
   const generations = new Map(
-    validState.generations.map(({ nodeId, generation }) => [nodeId, generation])
+    state.generations.map(({ nodeId, generation }) => [nodeId, generation])
   )
 
-  let { revision } = validState
+  let { revision } = state
   let changed = false
 
   for (const measurement of validInputs) {
@@ -195,7 +187,7 @@ export const applyNodeMeasurements = (
     nodes.set(measurement.nodeId, {
       generation: measurement.generation,
       measurement: nextMeasurement,
-      handleDeclarations,
+      handleDeclarations: handleDeclarations.map((handle) => ({ ...handle })),
     })
     generations.set(measurement.nodeId, measurement.generation)
     revision += 1
@@ -203,7 +195,7 @@ export const applyNodeMeasurements = (
   }
 
   if (!changed) {
-    return validState
+    return state
   }
 
   return {
@@ -227,17 +219,15 @@ export const pruneFlowMeasurements = (
   document: FlowDocument,
   state: FlowMeasurementState
 ): FlowMeasurementState => {
-  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
-  const ids = new Set(validDocument.nodes.map((node) => node.id))
+  const ids = new Set(document.nodes.map((node) => node.id))
 
-  const nodes = validState.nodes.filter(({ measurement }) =>
+  const nodes = state.nodes.filter(({ measurement }) =>
     ids.has(measurement.nodeId)
   )
 
-  return nodes.length === validState.nodes.length
-    ? validState
-    : { ...validState, nodes, revision: validState.revision + 1 }
+  return nodes.length === state.nodes.length
+    ? state
+    : { ...state, nodes, revision: state.revision + 1 }
 }
 
 /** Project only current generation geometry; handle IDs and visibility remain graph-owned. */
@@ -323,12 +313,9 @@ export const areFlowNodesInitialized = (
     readonly mountedNodeIds?: ReadonlySet<NodeId>
   } = {}
 ): boolean => {
-  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
+  const measurements = getFlowMeasuredNodes(document, state)
 
-  const measurements = getFlowMeasuredNodes(validDocument, validState)
-
-  const graph = createFlowGraph(validDocument, measurements)
+  const graph = createFlowGraph(document, measurements)
 
   return (
     graph.orderedNodes.length > 0 &&
@@ -395,12 +382,9 @@ export const getFlowInternalNode = (
   state: FlowMeasurementState,
   nodeId: NodeId
 ): FlowInternalNode | undefined => {
-  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
+  const measurements = getFlowMeasuredNodes(document, state)
 
-  const measurements = getFlowMeasuredNodes(validDocument, validState)
-
-  const graph = createFlowGraph(validDocument, measurements)
+  const graph = createFlowGraph(document, measurements)
   const item = graph.nodes.get(nodeId)
 
   return item === undefined
@@ -417,14 +401,11 @@ export const getFlowInternalNodes = (
   document: FlowDocument,
   state: FlowMeasurementState
 ): readonly FlowInternalNode[] => {
-  const validDocument = S.decodeUnknownSync(FlowDocumentSchema)(document)
-  const validState = S.decodeUnknownSync(FlowMeasurementStateSchema)(state)
+  const measurements = getFlowMeasuredNodes(document, state)
 
-  const measurements = getFlowMeasuredNodes(validDocument, validState)
+  const graph = createFlowGraph(document, measurements)
 
-  const graph = createFlowGraph(validDocument, measurements)
-
-  return validDocument.nodes.flatMap((node) => {
+  return document.nodes.flatMap((node) => {
     const item = graph.nodes.get(node.id)
 
     return item === undefined

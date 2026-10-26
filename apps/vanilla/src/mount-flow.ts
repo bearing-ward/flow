@@ -2744,17 +2744,31 @@ export const createFlowHost = (
         return
       }
 
-      measurementState = applyNodeMeasurements(document, measurementState, [
-        {
-          nodeId,
-          generation,
-          ...size,
-          handles:
-            entry === undefined
-              ? []
-              : measureNodeHandles(node, entry.element, renderedViewport.zoom),
-        },
-      ])
+      const nextMeasurementState = applyNodeMeasurements(
+        document,
+        measurementState,
+        [
+          {
+            nodeId,
+            generation,
+            ...size,
+            handles:
+              entry === undefined
+                ? []
+                : measureNodeHandles(
+                    node,
+                    entry.element,
+                    renderedViewport.zoom
+                  ),
+          },
+        ]
+      )
+
+      if (nextMeasurementState === measurementState) {
+        return
+      }
+
+      measurementState = nextMeasurementState
       measurements = getFlowMeasuredNodes(document, measurementState)
       scheduleMeasuredDimensions()
     }

@@ -47,6 +47,70 @@ const document: FlowDocument = S.decodeUnknownSync(FlowDocumentSchema)({
 })
 
 describe('flow measurement state', () => {
+  it.each([1, 100, 1000])(
+    'does not revalidate %i accepted nodes when one DOM sample arrives',
+    (nodeCount) => {
+      const accepted = S.decodeUnknownSync(FlowDocumentSchema)({
+        nodes: Array.from({ length: nodeCount }, (_, index) => ({
+          id: `node-${index}`,
+          label: `Node ${index}`,
+          position: { x: index, y: 0 },
+        })),
+        edges: [],
+      })
+
+      let documentFieldReads = 0
+      let sampleFieldReads = 0
+
+      const observed = {
+        ...accepted,
+        nodes: accepted.nodes.map((node) => ({
+          ...node,
+          get label() {
+            documentFieldReads += 1
+
+            return node.label
+          },
+        })),
+      }
+
+      const measured = applyNodeMeasurements(
+        observed,
+        emptyFlowMeasurementState(),
+        [
+          {
+            generation: 0,
+            nodeId: id('node-0'),
+            height: 48,
+            get width() {
+              sampleFieldReads += 1
+
+              return 120
+            },
+          },
+        ]
+      )
+
+      expect(measured.nodes).toStrictEqual([
+        {
+          generation: 0,
+          handleDeclarations: [],
+          measurement: {
+            nodeId: 'node-0',
+            width: 120,
+            height: 48,
+            handles: [],
+          },
+        },
+      ])
+      expect(measured.revision).toBe(1)
+      expect({ documentFieldReads, sampleFieldReads }).toStrictEqual({
+        documentFieldReads: 0,
+        sampleFieldReads: 1,
+      })
+    }
+  )
+
   it('tracks zero-size measurements independently from document readiness', () => {
     const initial = emptyFlowMeasurementState()
 
