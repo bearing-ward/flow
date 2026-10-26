@@ -81,8 +81,51 @@ const center = async (page: Page, index = 0) => {
   return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
 }
 
+const maximumRenderedTurn = (
+  page: Page,
+  selector = '.flow-edge-path, .flow-vue-edge-path, .flow-foldkit-edge-path'
+) =>
+  page.locator(selector).evaluateAll((elements) =>
+    elements.map((element) => {
+      if (!(element instanceof SVGPathElement)) {
+        throw new TypeError('Expected rendered edge path')
+      }
+
+      const length = element.getTotalLength()
+      let maximum = 0
+      let previous: { x: number; y: number } | undefined
+
+      for (let distance = 0; distance < length; distance += 0.1) {
+        const a = element.getPointAtLength(distance)
+        const b = element.getPointAtLength(Math.min(length, distance + 0.1))
+        const tangent = { x: b.x - a.x, y: b.y - a.y }
+
+        if (
+          previous !== undefined &&
+          Math.hypot(tangent.x, tangent.y) > 0.001
+        ) {
+          maximum = Math.max(
+            maximum,
+            Math.abs(
+              Math.atan2(
+                previous.x * tangent.y - previous.y * tangent.x,
+                previous.x * tangent.x + previous.y * tangent.y
+              )
+            )
+          )
+        }
+
+        previous = tangent
+      }
+
+      return maximum
+    })
+  )
+
 export const wireTiesAcceptance = (host: string) =>
   describe(`wire ties ${host}`, () => {
+    test.use({ deviceScaleFactor: 3 })
+
     test.beforeEach(async ({ page }) => {
       await page.setViewportSize({ width: 1120, height: 800 })
       await page.goto('/wire-ties/')
@@ -107,6 +150,7 @@ export const wireTiesAcceptance = (host: string) =>
       await expect(page.locator('[data-wire-guide]')).toBeVisible()
       await page.screenshot({
         path: `/tmp/plan163/${info.project.name || host}-guide.png`,
+        scale: 'css',
       })
       await page.mouse.up()
       await expect(marker(page)).toHaveCount(1)
@@ -137,8 +181,39 @@ export const wireTiesAcceptance = (host: string) =>
       await page.mouse.move(1000, 700)
       await page.screenshot({
         path: `/tmp/plan163/${info.project.name || host}-ribbon.png`,
+        scale: 'css',
+      })
+      await page.screenshot({
+        path: `/tmp/plan163/${info.project.name || host}-fan-out.png`,
+        clip: { x: 595, y: 250, width: 230, height: 300 },
+        scale: 'device',
       })
     })
+
+    for (const routed of [false, true]) {
+      it(`keeps every rendered tangent turn below 0.05 radians, router=${routed}`, async ({
+        page,
+      }) => {
+        if (routed) {
+          await page.goto('/wire-ties/?router')
+        }
+
+        await createTie(page)
+        await slash(page, 650)
+        await expect(marker(page, 1)).toHaveCount(1)
+        await expect
+          .poll(async () => {
+            const turns = await maximumRenderedTurn(page)
+
+            return turns.length === 3 && turns.every((turn) => turn < 0.05)
+          })
+          .toBeTruthy()
+        await test.info().attach('maximum-tangent-turn-radians', {
+          body: JSON.stringify(await maximumRenderedTurn(page)),
+          contentType: 'application/json',
+        })
+      })
+    }
 
     it('reverses lane order when the slash direction reverses', async ({
       page,
@@ -475,6 +550,21 @@ export const wireTiesAcceptance = (host: string) =>
         )
 
       await expect.poll(clear).toBeTruthy()
+      await test.info().attach('obstacle-rendered-paths', {
+        body: JSON.stringify(
+          await page
+            .locator(
+              '.flow-edge-path, .flow-vue-edge-path, .flow-foldkit-edge-path'
+            )
+            .evaluateAll((elements) =>
+              elements.map((element) => element.getAttribute('d'))
+            )
+        ),
+        contentType: 'application/json',
+      })
+      await expect
+        .poll(async () => Math.max(...(await maximumRenderedTurn(page))))
+        .toBeLessThan(0.05)
       const start = await center(page)
       await page.mouse.move(start.x, start.y)
       await page.mouse.down()
@@ -485,12 +575,20 @@ export const wireTiesAcceptance = (host: string) =>
       )
       await expect(page.locator('[data-preview-edge]')).toHaveCount(3)
       await expect.poll(() => clear('[data-preview-edge]')).toBeTruthy()
+      await expect
+        .poll(async () =>
+          Math.max(...(await maximumRenderedTurn(page, '[data-preview-edge]')))
+        )
+        .toBeLessThan(0.05)
       await page.mouse.up()
       await expect(page.locator('#wire-routing-state')).toHaveAttribute(
         'data-state',
         'ready'
       )
       await expect.poll(clear).toBeTruthy()
+      await expect
+        .poll(async () => Math.max(...(await maximumRenderedTurn(page))))
+        .toBeLessThan(0.05)
     })
 
     it('keeps one four-unit ribbon corridor around an obstacle between two ties', async ({
@@ -603,6 +701,9 @@ export const wireTiesAcceptance = (host: string) =>
       const { ordinates } = await ribbon()
       expect((ordinates[1] ?? 0) - (ordinates[0] ?? 0)).toBeCloseTo(4, 4)
       expect((ordinates[2] ?? 0) - (ordinates[1] ?? 0)).toBeCloseTo(4, 4)
+      await expect
+        .poll(async () => Math.max(...(await maximumRenderedTurn(page))))
+        .toBeLessThan(0.05)
     })
 
     it('auto-pans a captured tie preview and cancels without a semantic edit', async ({

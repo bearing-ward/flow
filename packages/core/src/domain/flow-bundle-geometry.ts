@@ -212,25 +212,10 @@ const sideVectors = {
   left: { x: -1, y: 0 },
 }
 
-/** Cubic Hermite interpolation. Adjacent segments have identical derivatives at every knot. */
+/** Each cubic uses its own chord length; shared knot directions give G1 joins. */
 export const flowBundleSpline = (
   knots: readonly { readonly point: XYPosition; readonly tangent: XYPosition }[]
 ) => {
-  const derivatives = knots.map(({ point, tangent }, index) => {
-    const before = knots[index - 1]?.point
-    const after = knots[index + 1]?.point
-
-    const lengths = [before, after].flatMap((other) =>
-      other === undefined
-        ? []
-        : [Math.hypot(other.x - point.x, other.y - point.y)]
-    )
-
-    const magnitude = Math.min(...lengths) * 0.8
-
-    return { x: tangent.x * magnitude, y: tangent.y * magnitude }
-  })
-
   const samples: XYPosition[] = []
   const first = knots[0]?.point ?? { x: 0, y: 0 }
   let path = `M${first.x},${first.y}`
@@ -238,10 +223,11 @@ export const flowBundleSpline = (
   for (let i = 1; i < knots.length; i += 1) {
     const a = knots[i - 1]?.point ?? first
     const b = knots[i]?.point ?? first
-    const da = derivatives[i - 1] ?? { x: 0, y: 0 }
-    const db = derivatives[i] ?? { x: 0, y: 0 }
-    const c1 = { x: a.x + da.x / 3, y: a.y + da.y / 3 }
-    const c2 = { x: b.x - db.x / 3, y: b.y - db.y / 3 }
+    const da = knots[i - 1]?.tangent ?? { x: 1, y: 0 }
+    const db = knots[i]?.tangent ?? da
+    const reach = Math.hypot(b.x - a.x, b.y - a.y) / 3
+    const c1 = { x: a.x + da.x * reach, y: a.y + da.y * reach }
+    const c2 = { x: b.x - db.x * reach, y: b.y - db.y * reach }
     path += ` C${c1.x},${c1.y} ${c2.x},${c2.y} ${b.x},${b.y}`
 
     for (let j = 0; j <= 24; j += 1) {

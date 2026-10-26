@@ -10,6 +10,7 @@ import {
   getEdgeDistanceToPoint,
   getEdgeGeometry,
   getEdgesGeometry,
+  getPathPolylines,
 } from './flow-edge-geometry.ts'
 import { prepareFlowEdit } from './flow-edit.ts'
 import { createFlowHistory, reduceFlowHistory } from './flow-history.ts'
@@ -187,26 +188,80 @@ describe('wire bundles', () => {
     )
   })
 
-  it('uses identical cubic derivatives on both sides of each interior knot', () => {
-    const geometry = getEdgeGeometry(tied(), 'ab')
+  it('keeps tangent directions aligned and sampled turns below 0.01 radians across the whole ribbon', () => {
+    const document: FlowDocument = {
+      ...tied(),
+      bundles: [
+        {
+          ...bundle(),
+          ties: [
+            { x: 240, y: 60 },
+            { x: 380, y: 130 },
+          ],
+        },
+      ],
+    }
 
-    const numbers =
-      geometry?.path
-        .match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gu)
-        ?.map(Number) ?? []
+    for (const geometry of getEdgesGeometry(document)) {
+      const numbers =
+        geometry.path
+          .match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gu)
+          ?.map(Number) ?? []
 
-    expect(numbers.length).toBeGreaterThanOrEqual(14)
+      expect(numbers.length).toBeGreaterThanOrEqual(14)
 
-    // M has 2 coordinates; each C has 6. Derivatives are 3*(end-lastControl) and 3*(nextControl-start).
-    for (let offset = 2; offset + 11 < numbers.length; offset += 6) {
-      for (const axis of [0, 1]) {
-        expect(
-          (numbers[offset + 4 + axis] ?? 0) - (numbers[offset + 2 + axis] ?? 0)
-        ).toBeCloseTo(
-          (numbers[offset + 6 + axis] ?? 0) - (numbers[offset + 4 + axis] ?? 0),
+      for (let offset = 2; offset + 11 < numbers.length; offset += 6) {
+        const incoming = {
+          x: (numbers[offset + 4] ?? 0) - (numbers[offset + 2] ?? 0),
+          y: (numbers[offset + 5] ?? 0) - (numbers[offset + 3] ?? 0),
+        }
+
+        const outgoing = {
+          x: (numbers[offset + 6] ?? 0) - (numbers[offset + 4] ?? 0),
+          y: (numbers[offset + 7] ?? 0) - (numbers[offset + 5] ?? 0),
+        }
+
+        expect(incoming.x * outgoing.y - incoming.y * outgoing.x).toBeCloseTo(
+          0,
           8
         )
+        expect(
+          incoming.x * outgoing.x + incoming.y * outgoing.y
+        ).toBeGreaterThan(0)
       }
+
+      const points = getPathPolylines(geometry.path, {
+        curveSegments: 1024,
+      }).flat()
+
+      const tangents = points.slice(1).flatMap((point, index) => {
+        const before = points[index]
+
+        if (before === undefined) {
+          return []
+        }
+
+        const x = point.x - before.x
+        const y = point.y - before.y
+
+        return Math.hypot(x, y) > 1e-9 ? [{ x, y }] : []
+      })
+
+      expect(tangents.length).toBeGreaterThan(1000)
+
+      const turns = tangents.slice(1).map((b, index) => {
+        const a = tangents[index]
+
+        if (a === undefined) {
+          throw new Error('Missing incoming tangent')
+        }
+
+        return Math.abs(
+          Math.atan2(a.x * b.y - a.y * b.x, a.x * b.x + a.y * b.y)
+        )
+      })
+
+      expect(Math.max(...turns)).toBeLessThan(0.01)
     }
   })
 
