@@ -30,6 +30,7 @@ export default defineConfig({
         main: `${import.meta.dirname}/index.html`,
         clipboard: `${import.meta.dirname}/clipboard/index.html`,
         history: `${import.meta.dirname}/history/index.html`,
+        editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
       },
     },
   },

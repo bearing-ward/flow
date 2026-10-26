@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 184,
+    "inScopeCloseAllHosts": 185,
     "inScopeCloseByHost": {
-      "vanilla": 184,
-      "vue": 184,
-      "foldkit": 184
+      "vanilla": 185,
+      "vue": 185,
+      "foldkit": 185
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history, Plan 153 graph-clipboard and Plan 154 grouping acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history, Plan 153 graph-clipboard, Plan 154 grouping and Plan 156 editable-edge acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-25",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 5,
-          "P": 8,
+          "C": 6,
+          "P": 7,
           "G": 3
         },
         "vue": {
-          "C": 5,
-          "P": 8,
+          "C": 6,
+          "P": 7,
           "G": 3
         },
         "foldkit": {
-          "C": 5,
-          "P": 8,
+          "C": 6,
+          "P": 7,
           "G": 3
         }
       }
@@ -2906,31 +2906,30 @@
     {
       "section": "examples edges",
       "name": "Editable Edge · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Custom edge/preview APIs exist; no draggable path-point model or Space freeform connection recipe.",
+      "missing": "Exact subscription spline interpolation and undisclosed Pro gesture rules remain unverified; Plan 156 functional acceptance passes in all hosts.",
       "effort": "L",
       "theme": "pro",
       "reaudit": {
         "on": "2026-10-25",
-        "plan": "Plan 149",
+        "plan": "Plan 156",
         "previousRatings": {
           "vanilla": "P",
           "vue": "P",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Ten native gesture acceptance tests pass in each host. Core route, persistence and clipboard tests pass. C means functional closeness under adopted D9, not exact Pro conformance.",
         "url": "https://reactflow.dev/examples/edges/editable-edge",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public page and accessible demo inspected. A native click selected the Linear edge and a native control drag changed its visible path. Subscription source and tests were not accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/editable-edge/index.html"
         ],
-        "missing": "Custom edge/preview APIs exist; no draggable path-point model or Space freeform connection recipe.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "evidence": "research/traces/156-editable-edges.md",
         "outcomes": [
           {
             "id": "preview",
@@ -2939,80 +2938,209 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-edge-path.ts:26"],
-              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:124"],
-              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:96"],
-              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:121"]
+              "shared": [
+                "packages/core/src/domain/flow-route.test.ts:70",
+                "packages/core/src/domain/flow-route-persistence.test.ts:87"
+              ],
+              "vanilla": [
+                "apps/vanilla/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ],
+              "vue": [
+                "apps/vue/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ],
+              "foldkit": [
+                "apps/foldkit/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ]
             },
-            "basis": "public-description"
+            "basis": "adopted-D9-and-local-gesture-acceptance"
           },
           {
             "id": "control-drag",
             "outcome": "Drag path control points and retain the edited route.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edge-path.ts:26",
-                "packages/core/src/domain/flow-edge-geometry.ts:618"
+                "packages/core/src/domain/flow-route.test.ts:70",
+                "packages/core/src/domain/flow-route-persistence.test.ts:87"
               ],
-              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
-              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
-              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              "vanilla": [
+                "apps/vanilla/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ],
+              "vue": [
+                "apps/vue/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ],
+              "foldkit": [
+                "apps/foldkit/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ]
             },
-            "basis": "public-description"
+            "basis": "adopted-D9-and-local-gesture-acceptance"
           },
           {
             "id": "space-draw",
             "outcome": "Hold Space during connection to draw a freeform edge.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-edge-path.ts:26"],
-              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:124"],
-              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:96"],
-              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:121"]
+              "shared": [
+                "packages/core/src/domain/flow-route.test.ts:70",
+                "packages/core/src/domain/flow-route-persistence.test.ts:87"
+              ],
+              "vanilla": [
+                "apps/vanilla/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ],
+              "vue": [
+                "apps/vue/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ],
+              "foldkit": [
+                "apps/foldkit/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
+              ]
             },
-            "basis": "public-description"
+            "basis": "adopted-D9-and-local-gesture-acceptance"
           },
           {
             "id": "route-state",
             "outcome": "Keep edited points attached to ordinary selectable edges as endpoints move.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/core/src/domain/flow-route.test.ts:70",
+                "packages/core/src/domain/flow-route-persistence.test.ts:87"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/e2e/editable-edges.e2e.ts:1",
+                "apps/shared/editable-edges/acceptance.ts:155"
               ]
             },
-            "basis": "public-description"
+            "basis": "adopted-D9-and-local-gesture-acceptance"
           }
         ],
         "unverified": [
-          "Point deletion, point order, route save-load and cancellation semantics are not disclosed."
+          "Exact subscription interpolation, point deletion and sampling rules; subscription source and tests."
         ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 156"],
+      "reauditHistory": [
+        {
+          "on": "2026-10-25",
+          "plan": "Plan 149",
+          "previousRatings": {
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P"
+          },
+          "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+          "url": "https://reactflow.dev/examples/edges/editable-edge",
+          "accessedOn": "2026-10-25",
+          "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+          "demoUrls": [
+            "https://example-apps.xyflow.com/react/pro/editable-edge/index.html"
+          ],
+          "missing": "Custom edge/preview APIs exist; no draggable path-point model or Space freeform connection recipe.",
+          "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+          "outcomes": [
+            {
+              "id": "preview",
+              "outcome": "Render a custom connection preview.",
+              "vanilla": "C",
+              "vue": "C",
+              "foldkit": "C",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow-edge-path.ts:26"],
+                "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:124"],
+                "vue": ["apps/vue/e2e/renderer-props.e2e.ts:96"],
+                "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:121"]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "control-drag",
+              "outcome": "Drag path control points and retain the edited route.",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-edge-path.ts:26",
+                  "packages/core/src/domain/flow-edge-geometry.ts:618"
+                ],
+                "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+                "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+                "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "space-draw",
+              "outcome": "Hold Space during connection to draw a freeform edge.",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow-edge-path.ts:26"],
+                "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:124"],
+                "vue": ["apps/vue/e2e/renderer-props.e2e.ts:96"],
+                "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:121"]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "route-state",
+              "outcome": "Keep edited points attached to ordinary selectable edges as endpoints move.",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-edit.ts:241",
+                  "packages/core/src/domain/flow.schema.ts:338"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:13829",
+                  "apps/vanilla/src/mount-flow.ts:14308"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:660",
+                  "packages/vue/src/flow-canvas.ts:4405"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/instance.ts:409",
+                  "packages/foldkit/src/graph.ts:1282"
+                ]
+              },
+              "basis": "public-description"
+            }
+          ],
+          "unverified": [
+            "Point deletion, point order, route save-load and cancellation semantics are not disclosed."
+          ]
+        }
+      ]
     },
     {
       "section": "examples interaction",

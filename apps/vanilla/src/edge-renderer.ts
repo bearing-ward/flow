@@ -16,6 +16,7 @@ import {
   simpleBezierEdgePath,
   stepEdgePath,
   straightEdgePath,
+  getManualRouteGeometry,
 } from '@flow/core'
 import type {
   EdgeId,
@@ -141,6 +142,7 @@ const customInteraction = (
 
 /** Canvas options the edge layer reads on every pass. */
 export interface FlowEdgePresentationOptions {
+  readonly editableEdges: boolean
   readonly zIndexMode: FlowZIndexMode | undefined
   readonly elevateEdgesOnSelect: boolean | undefined
   readonly elevateNodesOnSelect: boolean | undefined
@@ -171,6 +173,7 @@ interface EdgeElements {
 }
 
 interface EdgeEntry {
+  readonly routeHandles: Map<number, SVGCircleElement>
   readonly elements: EdgeElements
   readonly scope: Scope.Closeable
   readonly type: string | undefined
@@ -322,6 +325,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
   const slots = new Map<EdgeId, EdgeSlot>()
   let closed = false
+  const routePreviews = new Map<EdgeId, readonly XYPosition[]>()
 
   const installReservation = (
     id: EdgeId,
@@ -530,6 +534,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     const scope = runEffect(Scope.fork(rendererScope, 'sequential'))
 
     return {
+      routeHandles: new Map(),
       elements,
       scope,
       type: edge.type,
@@ -562,6 +567,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     let removed = 0
     let deferred = 0
     let previousGroup: SVGSVGElement | null = null
+    let previousAnchorGroup: SVGGElement | null = null
 
     if (onlyEdges === undefined && !projectionOnly) {
       previousPositions = new Map(
@@ -715,6 +721,19 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         )
       }
 
+      const routePoints =
+        routePreviews.get(edge.id) ??
+        (edge.route?.mode === 'manual' ? edge.route.points : undefined)
+
+      const manualGeometry =
+        routePoints === undefined
+          ? undefined
+          : getManualRouteGeometry(source, target, routePoints)
+
+      if (manualGeometry !== undefined) {
+        pathData = manualGeometry.path
+      }
+
       const registeredRenderer = pass.inputs.edgeRenderers.get(
         edge.type ?? 'default'
       )
@@ -856,6 +875,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
         const labelAnchor =
           customGeometry?.labelAnchor ??
+          manualGeometry?.label ??
           edgeLabelPosition(
             source,
             target,
@@ -968,6 +988,55 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         sourceAnchor.setAttribute('cy', String(source.y))
         targetAnchor.setAttribute('cx', String(target.x))
         targetAnchor.setAttribute('cy', String(target.y))
+
+        const editablePoints = canvasPresentation.editableEdges
+          ? (routePoints ?? [])
+          : []
+
+        for (const [index, handle] of entry.routeHandles) {
+          if (index >= editablePoints.length) {
+            const focused = globalThis.document.activeElement === handle
+
+            handle.remove()
+            entry.routeHandles.delete(index)
+
+            if (focused) {
+              const next =
+                entry.routeHandles.get(editablePoints.length - 1) ?? group
+
+              next.focus()
+            }
+          }
+        }
+
+        for (const [index, point] of editablePoints.entries()) {
+          let handle = entry.routeHandles.get(index)
+
+          if (handle === undefined) {
+            handle = globalThis.document.createElementNS(svgNamespace, 'circle')
+            handle.classList.add('flow-route-point', 'nopan', 'nodrag')
+            handle.dataset.flowRoutePoint = ''
+            handle.dataset.edgeId = edge.id
+            handle.dataset.pointIndex = String(index)
+            handle.setAttribute('tabindex', '0')
+            handle.setAttribute('role', 'button')
+            handle.setAttribute(
+              'aria-description',
+              'Drag or use arrow keys to move. Shift moves by ten. Delete or Backspace removes this point.'
+            )
+            handle.setAttribute('r', '6')
+            anchorGroup.append(handle)
+            entry.routeHandles.set(index, handle)
+          }
+
+          handle.setAttribute(
+            'aria-label',
+            `Route point ${index + 1} of edge ${edge.id}`
+          )
+          handle.setAttribute('cx', String(point.x))
+          handle.setAttribute('cy', String(point.y))
+        }
+
         group.classList.toggle('selected', edge.selected === true)
         anchorGroup.classList.toggle(
           'selected',
@@ -1028,6 +1097,17 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
         group.setAttribute('role', edge.selectable === false ? 'img' : 'button')
         group.setAttribute('aria-roledescription', 'edge')
 
+        if (canvasPresentation.editableEdges) {
+          group.setAttribute('aria-keyshortcuts', 'Enter')
+          group.setAttribute(
+            'aria-description',
+            'Press Enter to insert a route point at the edge label.'
+          )
+        } else {
+          group.removeAttribute('aria-keyshortcuts')
+          group.removeAttribute('aria-description')
+        }
+
         if (edge.selectable === false) {
           group.removeAttribute('aria-pressed')
         } else {
@@ -1077,7 +1157,21 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
           }
 
           previousGroup = entry.elements.svg
-          anchorLayer.append(anchorGroup)
+
+          const nextAnchor: Element | null =
+            previousAnchorGroup === null
+              ? anchorLayer.firstElementChild
+              : previousAnchorGroup.nextElementSibling
+
+          if (nextAnchor !== anchorGroup) {
+            if (nextAnchor === null) {
+              anchorLayer.append(anchorGroup)
+            } else {
+              nextAnchor.before(anchorGroup)
+            }
+          }
+
+          previousAnchorGroup = anchorGroup
         }
 
         visible.add(edge.id)
@@ -1244,6 +1338,16 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
   }
 
   return {
+    previewRoute: (
+      edgeId: EdgeId,
+      points: readonly XYPosition[] | undefined
+    ): void => {
+      if (points === undefined) {
+        routePreviews.delete(edgeId)
+      } else {
+        routePreviews.set(edgeId, points)
+      }
+    },
     captureEntryCohort: (): ReadonlyMap<EdgeId, EdgeSlot> => new Map(slots),
     setVisibleEdges: (edgeIds: ReadonlySet<EdgeId> | null): void => {
       visibleEdgeIds = edgeIds
@@ -1251,6 +1355,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
     reconcile,
     updatePositions,
     destroy: (): void => {
+      routePreviews.clear()
       previousPositions.clear()
 
       closed = true

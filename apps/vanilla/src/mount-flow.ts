@@ -157,6 +157,9 @@ import {
   startFlowNodeResize,
   stepFlowNodeResize,
   snapPosition,
+  sampleRoutePoint,
+  getManualRouteGeometry,
+  FlowEdgeRouteSchema,
 } from '@flow/core'
 import type {
   FlowClipboardActions,
@@ -273,6 +276,7 @@ import type { CanvasInteractionOptions } from './canvas-interaction-options.ts'
 import { createCanvasUI } from './canvas-ui.ts'
 import { bindFlowColorMode } from './color-mode.ts'
 import { createEdgeRenderer, measureNodeHandles } from './edge-renderer.ts'
+import { createEditableEdgeRoutes } from './editable-edge-routes.ts'
 import { FlowBrowser, FlowBrowserLive } from './flow-browser.ts'
 import type {
   FlowConnectionEndDetails,
@@ -443,6 +447,7 @@ export const FlowMountOptionsSchema = S.Struct({
   ...CanvasInteractionOptionsSchema.fields,
   documentMode: FlowControlModeSchema,
   historyCapacity: S.optional(S.Int.check(S.isGreaterThanOrEqualTo(0))),
+  editableEdges: S.optional(S.Boolean),
   connectionDragThreshold: S.optional(ConnectionDragThresholdSchema),
   nodeDragThreshold: S.optional(NodeDragThresholdSchema),
   connectOnClick: S.optional(S.Boolean),
@@ -933,6 +938,8 @@ export interface FlowEdgeRenderer {
 export interface FlowHostOptions extends CanvasInteractionOptions {
   readonly documentMode: FlowControlMode
   readonly historyCapacity?: number | undefined
+  /** Enables manual route point editing and Space-held freeform connections. */
+  readonly editableEdges?: boolean | undefined
   readonly connectionDragThreshold?:
     | typeof ConnectionDragThresholdSchema.Type
     | undefined
@@ -3511,6 +3518,7 @@ export const createFlowHost = (
       cleanupFailures,
       (label, error) => reportEdgeCallbackFailure(label, error),
       () => ({
+        editableEdges: options.editableEdges === true,
         zIndexMode: options.zIndexMode,
         elevateEdgesOnSelect: options.elevateEdgesOnSelect,
         elevateNodesOnSelect: options.elevateNodesOnSelect,
@@ -4509,6 +4517,13 @@ export const createFlowHost = (
     }
 
     let nodeFrame: NodeFrameTicket | undefined
+    let editableRoutes: ReturnType<typeof createEditableEdgeRoutes> | undefined
+    let editableSpacePressed = false
+
+    let freeformConnection:
+      | { readonly pointerId: number; points: readonly XYPosition[] }
+      | undefined
+
     let connectionPointer: XYPosition | null = null
     let connectionPointerStart: XYPosition | null = null
     let connectionFrame: number | null = null
@@ -4980,6 +4995,7 @@ export const createFlowHost = (
       }
 
       pendingConnection = null
+      freeformConnection = undefined
       releaseConnectionCapture()
     }
 
@@ -5537,6 +5553,46 @@ export const createFlowHost = (
             origin: connectionLineOrigin(),
           }) ?? null)
 
+    const renderFreeformPreview = (
+      value: ConnectionPreviewState | null,
+      element: SVGSVGElement | null
+    ): boolean => {
+      if (
+        value?.kind !== 'connect' ||
+        freeformConnection === undefined ||
+        element === null
+      ) {
+        return false
+      }
+
+      let path = element.querySelector<SVGPathElement>(
+        '[data-flow-freeform-preview]'
+      )
+
+      if (path === null) {
+        path = globalThis.document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        )
+        path.classList.add('flow-connection-preview-path')
+        path.dataset.flowFreeformPreview = ''
+        applyFlowStyle(path, options.connectionLineStyle)
+        element.append(path)
+      }
+
+      element.querySelector('line')?.setAttribute('display', 'none')
+      element
+        .querySelector('[data-connection-line-type]')
+        ?.setAttribute('display', 'none')
+      path.setAttribute(
+        'd',
+        getManualRouteGeometry(value.from, value.to, freeformConnection.points)
+          .path
+      )
+
+      return true
+    }
+
     const publishConnectionPreview = (
       preview: ConnectionPreviewState | null,
       element = connectionPreview
@@ -5568,6 +5624,10 @@ export const createFlowHost = (
             )
           )
         }
+      }
+
+      if (renderFreeformPreview(value, element)) {
+        return
       }
 
       const line = connectionLineProps(
@@ -5752,6 +5812,19 @@ export const createFlowHost = (
 
       connectionLine?.setAttribute('x2', String(position.x))
       connectionLine?.setAttribute('y2', String(position.y))
+
+      if (freeformConnection !== undefined && target === null) {
+        const rawPoint = screenToFlowPosition(
+          { x: clientX - canvasBounds.left, y: clientY - canvasBounds.top },
+          renderedViewport
+        )
+
+        freeformConnection.points = sampleRoutePoint(
+          freeformConnection.points,
+          rawPoint,
+          8
+        )
+      }
 
       updateConnectPreviewState(
         source,
@@ -5962,6 +6035,7 @@ export const createFlowHost = (
       const connection = interactionSlots.activeConnection
       const outcome = endSession('connection', connection.pointerId, terminal)
       interactionSlots.activeConnection = null
+      freeformConnection = undefined
       connectionPointer = null
       connectionPointerStart = null
 
@@ -6439,17 +6513,26 @@ export const createFlowHost = (
         return
       }
 
+      if (options.editableEdges === true && editableSpacePressed) {
+        freeformConnection = { pointerId: event.pointerId, points: [] }
+      }
+
       admitConnection(
         {
           kind: 'connection-pending',
           pointerId: event.pointerId,
           startX: event.clientX,
           startY: event.clientY,
-          threshold: connectionDragThreshold,
+          threshold:
+            freeformConnection === undefined ? connectionDragThreshold : 0,
           from: { nodeId: node.id, handleId: handle.id, kind: handle.kind },
         },
         event
       )
+
+      if (connectionCapture !== event.pointerId) {
+        freeformConnection = undefined
+      }
     }
 
     const scheduleConnectionFrame = (
@@ -7736,6 +7819,8 @@ export const createFlowHost = (
         previous?: FlowDocument,
         quiet = false
       ): void {
+        editableRoutes?.documentChanged(next)
+
         if (
           pendingConnection !== null &&
           !pendingConnectionEligible(pendingConnection, next)
@@ -10201,6 +10286,7 @@ export const createFlowHost = (
     }
 
     const hasCanvasPointerGesture = (): boolean =>
+      editableRoutes?.active() === true ||
       pendingConnection !== null ||
       interactionSlots.activeDrag !== null ||
       interactionSlots.activeConnection !== null ||
@@ -10347,12 +10433,70 @@ export const createFlowHost = (
       )
     }
 
+    const startFreeformConnection = (event: PointerEvent): boolean => {
+      const { target } = event
+
+      if (
+        options.editableEdges !== true ||
+        !editableSpacePressed ||
+        !(target instanceof Element)
+      ) {
+        return false
+      }
+
+      const element = target.closest<HTMLElement>('.flow-handle')
+
+      const node = document.nodes.find(
+        ({ id }) => id === element?.dataset.nodeId
+      )
+
+      const handle = flowNodeHandles(node).find(
+        ({ id }) => id === element?.dataset.handleId
+      )
+
+      if (element === null || node === undefined || handle === undefined) {
+        return false
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      startConnection(node, handle, element, event)
+
+      return true
+    }
+
+    const startRoutePointGesture = (event: PointerEvent): boolean => {
+      if (editableRoutes?.active() === true) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        return true
+      }
+
+      if (
+        hasCanvasPointerGesture() ||
+        interactionSlots.activeNodeResize !== null
+      ) {
+        return false
+      }
+
+      return editableRoutes?.pointerDown(event) ?? false
+    }
+
     const onCanvasPointerDownCapture = (event: PointerEvent): void => {
       if (destroyed) {
         return
       }
 
+      if (startRoutePointGesture(event)) {
+        return
+      }
+
       const { target } = event
+
+      if (startFreeformConnection(event)) {
+        return
+      }
 
       const noPanTarget =
         target instanceof Element
@@ -10535,6 +10679,10 @@ export const createFlowHost = (
 
     const onCanvasPointerMove = (event: PointerEvent): void => {
       if (destroyed) {
+        return
+      }
+
+      if (editableRoutes?.pointerMove(event) === true) {
         return
       }
 
@@ -10796,12 +10944,14 @@ export const createFlowHost = (
           }
 
           case 'pendingConnection': {
+            freeformConnection = undefined
             pendingConnection = null
             connectionCapture = null
             break
           }
 
           case 'activeConnection': {
+            freeformConnection = undefined
             endSession('connection', actor.record.pointerId, 'cancelled')
             connectionCapture = null
             connectionPointer = null
@@ -11146,13 +11296,16 @@ export const createFlowHost = (
     }
 
     cancelActiveGestures = (reason: string, pointerId?: number): boolean => {
+      const routeCancelled = editableRoutes?.cancel(reason, pointerId) === true
       const owners = snapshotEntry(pointerId)
       cancelCaptured(owners, reason)
 
-      return owners.actors.length > 0
+      return routeCancelled || owners.actors.length > 0
     }
 
     const onWindowBlur = (): void => {
+      editableSpacePressed = false
+      editableRoutes?.cancel('window-blur')
       selectionKeyPressed = false
       panKeyPressed = false
       renderPaneSelectionClass()
@@ -11160,6 +11313,10 @@ export const createFlowHost = (
     }
 
     const onLostPointerCapture = (event: PointerEvent): void => {
+      if (!canvas.hasPointerCapture(event.pointerId)) {
+        editableRoutes?.cancel('lost-pointer-capture', event.pointerId)
+      }
+
       const entry = terminalDispatches.get(event)
 
       if (entry !== undefined) {
@@ -11168,6 +11325,7 @@ export const createFlowHost = (
     }
 
     const onCanvasPointerCancel = (event: PointerEvent): void => {
+      editableRoutes?.cancel('pointer-cancel', event.pointerId)
       const entry = terminalDispatches.get(event)
 
       if (entry !== undefined) {
@@ -11285,7 +11443,8 @@ export const createFlowHost = (
       started: ActiveClickConnection,
       targetNode: FlowNode,
       targetHandle: FlowHandle,
-      inputKind: 'pointer-connect' | 'click-connect'
+      inputKind: 'pointer-connect' | 'click-connect',
+      routePoints?: readonly XYPosition[]
     ): 'proposed' | 'rejected' => {
       const result = runEffect(
         Effect.result(
@@ -11314,10 +11473,25 @@ export const createFlowHost = (
         return 'rejected'
       }
 
-      const edge = applyDefaultEdgeOptions(
+      const baseEdge = applyDefaultEdgeOptions(
         nextConnectionEdge(document, result.success),
         options.defaultEdgeOptions
       )
+
+      const edge: FlowEdge =
+        routePoints !== undefined && routePoints.length > 0
+          ? {
+              ...baseEdge,
+              route: S.decodeUnknownSync(FlowEdgeRouteSchema)({
+                mode: 'manual',
+                points:
+                  result.success.source === started.source &&
+                  result.success.sourceHandle === started.sourceHandle
+                    ? routePoints
+                    : routePoints.toReversed(),
+              }),
+            }
+          : baseEdge
 
       operations.publishChange({ kind: 'edge-add', edge })
 
@@ -11522,13 +11696,19 @@ export const createFlowHost = (
         return
       }
 
+      const routePoints =
+        freeformConnection?.pointerId === event.pointerId
+          ? freeformConnection.points
+          : undefined
+
       clearConnection()
 
       const outcome = commitConnection(
         started,
         targetNode,
         targetHandle,
-        'pointer-connect'
+        'pointer-connect',
+        routePoints
       )
 
       notifyConnectEnd({
@@ -11761,6 +11941,13 @@ export const createFlowHost = (
 
     // eslint-disable-next-line complexity -- Canvas activation covers pane, node, edge, and modifier selection.
     const onCanvasClick = (event: MouseEvent): void => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('[data-flow-route-point]') !== null
+      ) {
+        return
+      }
+
       if (clickSuppression !== null) {
         clickSuppression = null
 
@@ -12038,6 +12225,50 @@ export const createFlowHost = (
       return pending.promise
     }
 
+    if (options.editableEdges === true) {
+      editableRoutes = createEditableEdgeRoutes({
+        canvas,
+        document: () => document,
+        viewport: () => renderedViewport,
+        geometry: () => ({
+          measurements,
+          positionOverrides: renderedNodePositions,
+        }),
+        capture: (pointerId) =>
+          runEffect(browser.capturePointer(canvas, pointerId)),
+        release: (pointerId) =>
+          runEffect(browser.releasePointer(canvas, pointerId)),
+        preview: (edgeId, points) => {
+          edgeRenderer.previewRoute(edgeId, points)
+
+          if (!destroyed) {
+            edgeRenderer.reconcile(captureProjection(), new Set([edgeId]))
+          }
+        },
+        pan: (next) => {
+          if (!destroyed) {
+            renderViewport(next)
+          }
+        },
+        commitViewport: (next) =>
+          operations.publishChange({ kind: 'viewport', viewport: next }),
+        submit: applyEditResolved,
+        reportFailure: (error) => reportStateListenerFailure(Cause.die(error)),
+        reportCancel: (edgeId, reason) =>
+          runTelemetry(
+            Effect.logDebug('Cancelled edge route gesture').pipe(
+              Effect.annotateLogs({
+                [FlowAttribute.edgeId]: edgeId,
+                [FlowAttribute.cancellationReason]: reason,
+              }),
+              Effect.withSpan(FlowSpan.gestureCancel)
+            )
+          ),
+        suppressClick: () => suppressClickUntilPointerUp(true),
+        autoPanSpeed: options.autoPanSpeed ?? 15,
+      })
+    }
+
     const clipboard = createFlowClipboardSession({
       getDocument: () => document,
       applyEdit: applyEditResolved,
@@ -12047,6 +12278,27 @@ export const createFlowHost = (
     // eslint-disable-next-line complexity -- Keyboard actions cover nodes, handles, edges, and the pane.
     const onCanvasKeyDown = (event: KeyboardEvent): void => {
       if (destroyed) {
+        return
+      }
+
+      if (event.key === 'Escape' && editableRoutes?.cancel('escape') === true) {
+        event.preventDefault()
+
+        return
+      }
+
+      if (editableRoutes?.keyDown(event) === true) {
+        return
+      }
+
+      if (
+        options.editableEdges === true &&
+        event.code === 'Space' &&
+        event.target instanceof Element &&
+        event.target.closest('.flow-handle') !== null
+      ) {
+        event.preventDefault()
+
         return
       }
 
@@ -12679,6 +12931,22 @@ export const createFlowHost = (
     }
 
     const onWindowKeyDown = (event: KeyboardEvent): void => {
+      if (event.code === 'Space' && !isInputDOMNode(event)) {
+        editableSpacePressed = true
+
+        if (
+          options.editableEdges === true &&
+          ((event.target instanceof Element && canvas.contains(event.target)) ||
+            canvas.matches(':hover'))
+        ) {
+          event.preventDefault()
+        }
+      }
+
+      if (event.key === 'Escape' && editableRoutes?.cancel('escape') === true) {
+        event.preventDefault()
+      }
+
       observePaneModifiers(event)
 
       if (event.key === 'Escape' && cancelCapturedEscape(event)) {
@@ -12687,6 +12955,10 @@ export const createFlowHost = (
     }
 
     const onWindowKeyUp = (event: KeyboardEvent): void => {
+      if (event.code === 'Space') {
+        editableSpacePressed = false
+      }
+
       observePaneModifiers(event)
 
       if (activeKeyboardResize?.key === event.key) {
@@ -12950,6 +13222,12 @@ export const createFlowHost = (
       hostBrowserScope
     )
     yield* Scope.provide(
+      browser.listen(canvas, 'pointerup', (event) =>
+        editableRoutes?.pointerUp(event)
+      ),
+      hostBrowserScope
+    )
+    yield* Scope.provide(
       browser.listen(canvas, 'pointerup', finishViewportPan),
       hostBrowserScope
     )
@@ -13145,6 +13423,10 @@ export const createFlowHost = (
 
     yield* Scope.provide(
       browser.listen(canvas, 'dblclick', (event) => {
+        if (editableRoutes?.doubleClick(event) === true) {
+          return
+        }
+
         dispatchCanvasEvent('DoubleClick', event)
 
         if (options.zoomOnDoubleClick === false) {
@@ -13642,6 +13924,8 @@ export const createFlowHost = (
         let stateCleanupFailed = false
 
         destroyed = true
+        editableRoutes?.cancel('host-destroyed')
+        freeformConnection = undefined
         publishHistory({ kind: 'dispose' })
         historyListeners.clear()
 
@@ -14268,6 +14552,8 @@ export const createFlowHost = (
         if (destroyed) {
           return
         }
+
+        editableRoutes?.cancel('document-replacement')
 
         const replacement = structuredClone(nextDocument)
         const receiptContext = context ?? keyboardPublicationContext

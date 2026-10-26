@@ -1,8 +1,9 @@
-import { Effect, Schema as S } from 'effect'
+import { Effect, Match, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { findLegacyEndpointKindIssue } from './flow-legacy-handle-compatibility.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
+import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
 import type { Viewport } from './flow-runtime.schema.ts'
 import { SavedFlowFormatError } from './flow-save-format-error.ts'
 import type { SavedFlowFormatFailureCode } from './flow-save-format-error.ts'
@@ -109,7 +110,7 @@ const rejectLegacyFormat = (code: SavedFlowFormatFailureCode): never => {
   throw new SavedFlowFormatError({ code })
 }
 
-// Plan 114 presentation fields. Only the v3 envelope stores them.
+// Plan 114 presentation fields. The v3 and newer envelopes store them.
 const presentationNodeKeys = [
   'style',
   'className',
@@ -170,6 +171,9 @@ const legacyMarkerEdge = (edge: FlowEdge): LegacyMarkerEdge => {
   return rest
 }
 
+const hasRoutes = (document: FlowDocument): boolean =>
+  document.edges.some((edge) => Object.hasOwn(edge, 'route'))
+
 const versionedFormatReason = (
   document: FlowDocument
 ): SavedFlowFormatFailureCode | undefined => {
@@ -201,6 +205,10 @@ const versionedFormatReason = (
 
   if (hasPresentationFields(document)) {
     return 'presentation-fields-require-versioned-session'
+  }
+
+  if (hasRoutes(document)) {
+    return 'route-requires-versioned-session'
   }
 }
 
@@ -254,9 +262,31 @@ export const encodeSavedFlowDocument = (
   )
 }
 
+// Inspect raw route ownership before frozen schemas can discard known semantics.
+// Unknown extension keys and opaque edge data retain their existing treatment.
+const SavedRouteInspectionSchema = S.Struct({
+  document: S.Struct({
+    edges: S.Array(S.Struct({ route: S.optional(S.Unknown) })),
+  }),
+})
+
+const rejectLegacySavedRoutes = <Input>(input: Input) =>
+  S.decodeUnknownEffect(SavedRouteInspectionSchema)(input).pipe(
+    Effect.flatMap((saved) =>
+      saved.document.edges.some((edge) => Object.hasOwn(edge, 'route'))
+        ? Effect.fail(
+            new SavedFlowFormatError({
+              code: 'route-requires-versioned-session',
+            })
+          )
+        : Effect.void
+    )
+  )
+
 /** Decode the versioned envelope, then apply the normal graph integrity workflow. */
 export const decodeSavedFlowDocument = <Input>(savedFlowDocument: Input) =>
   S.decodeUnknownEffect(SavedFlowDocumentSchema)(savedFlowDocument).pipe(
+    Effect.tap(() => rejectLegacySavedRoutes(savedFlowDocument)),
     Effect.tapError((failure) =>
       Effect.logError('Legacy document envelope decode failed').pipe(
         Effect.annotateLogs({
@@ -284,6 +314,7 @@ export const encodeSavedFlowSession = (
 /** Decode and validate a saved session through the normal document boundary. */
 export const decodeSavedFlowSession = <Input>(savedFlowSession: Input) =>
   S.decodeUnknownEffect(SavedFlowSessionSchema)(savedFlowSession).pipe(
+    Effect.tap(() => rejectLegacySavedRoutes(savedFlowSession)),
     Effect.tapError((failure) =>
       Effect.logError('Legacy session envelope decode failed').pipe(
         Effect.annotateLogs({
@@ -394,16 +425,43 @@ export type SavedPresentationFlowDocument =
 export type SavedPresentationFlowSession =
   typeof SavedPresentationFlowSessionSchema.Encoded
 
+// v4 alone persists explicit route intent; older literal projections stay frozen.
+const SavedRouteDocumentBodySchema = S.Struct({
+  ...SavedPresentationDocumentBodySchema.fields,
+  edges: S.Array(
+    S.Struct({
+      ...SavedPresentationFlowEdgeSchema.fields,
+      route: S.optional(FlowEdgeRouteSchema),
+    })
+  ),
+})
+
+export const SavedRouteFlowDocumentSchema = S.Struct({
+  version: S.Literal(4),
+  document: SavedRouteDocumentBodySchema,
+})
+
+export const SavedRouteFlowSessionSchema = S.Struct({
+  ...SavedRouteFlowDocumentSchema.fields,
+  viewport: SavedViewportSchema,
+})
+
+export type SavedRouteFlowDocument = typeof SavedRouteFlowDocumentSchema.Encoded
+
+export type SavedRouteFlowSession = typeof SavedRouteFlowSessionSchema.Encoded
+
 export const SavedVersionedFlowDocumentSchema = S.Union([
   SavedFlowDocumentSchema,
   SavedOriginFlowDocumentSchema,
   SavedPresentationFlowDocumentSchema,
+  SavedRouteFlowDocumentSchema,
 ])
 
 export const SavedVersionedFlowSessionSchema = S.Union([
   SavedFlowSessionSchema,
   SavedOriginFlowSessionSchema,
   SavedPresentationFlowSessionSchema,
+  SavedRouteFlowSessionSchema,
 ])
 
 export type SavedOriginFlowDocument =
@@ -419,12 +477,18 @@ export type SavedVersionedFlowSession =
 
 /**
  * Choose the oldest envelope that represents the document: v1, then the v2
- * origin/native body, then the v3 body for presentation fields.
+ * origin/native body, then v3 for presentation fields or v4 for route intent.
  */
 export const encodeVersionedFlowDocument = (
   document: FlowDocument
 ): SavedVersionedFlowDocument => {
   Effect.runSync(validateFlowDocument(document))
+
+  if (hasRoutes(document)) {
+    return structuredClone(
+      S.encodeSync(SavedRouteFlowDocumentSchema)({ version: 4, document })
+    )
+  }
 
   if (versionedFormatReason(document) === undefined) {
     return encodeSavedFlowDocument(document)
@@ -456,7 +520,7 @@ export const encodeVersionedFlowSession = (
 })
 
 const VersionedEnvelopeHeaderSchema = S.Struct({
-  version: S.Literals([1, 2, 3]),
+  version: S.Literals([1, 2, 3, 4]),
   document: S.Unknown,
 })
 
@@ -481,6 +545,10 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
       input
     )
 
+    if (header.version !== 4) {
+      yield* rejectLegacySavedRoutes(input)
+    }
+
     if (header.version === 1) {
       const saved = yield* S.decodeUnknownEffect(ExpandedLegacyDocumentSchema)(
         input
@@ -490,13 +558,17 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
     }
 
     const saved = yield* S.decodeUnknownEffect(
-      header.version === 2
-        ? SavedOriginFlowDocumentSchema
-        : SavedPresentationFlowDocumentSchema
+      Match.value(header.version).pipe(
+        Match.when(2, () => SavedOriginFlowDocumentSchema),
+        Match.when(3, () => SavedPresentationFlowDocumentSchema),
+        Match.when(4, () => SavedRouteFlowDocumentSchema),
+        Match.exhaustive
+      )
     )(input)
 
     return yield* decodeFlowDocument(saved.document)
   }).pipe(
+    Effect.map((document): FlowDocument => document),
     Effect.tapError((failure) =>
       Effect.logError('Versioned document decode failed').pipe(
         Effect.annotateLogs({
@@ -518,6 +590,10 @@ export const decodeVersionedFlowSession = (input: unknown) =>
       input
     )
 
+    if (header.version !== 4) {
+      yield* rejectLegacySavedRoutes(input)
+    }
+
     if (header.version === 1) {
       const saved = yield* S.decodeUnknownEffect(ExpandedLegacySessionSchema)(
         input
@@ -529,9 +605,12 @@ export const decodeVersionedFlowSession = (input: unknown) =>
     }
 
     const saved = yield* S.decodeUnknownEffect(
-      header.version === 2
-        ? SavedOriginFlowSessionSchema
-        : SavedPresentationFlowSessionSchema
+      Match.value(header.version).pipe(
+        Match.when(2, () => SavedOriginFlowSessionSchema),
+        Match.when(3, () => SavedPresentationFlowSessionSchema),
+        Match.when(4, () => SavedRouteFlowSessionSchema),
+        Match.exhaustive
+      )
     )(input)
 
     const document = yield* decodeFlowDocument(saved.document)

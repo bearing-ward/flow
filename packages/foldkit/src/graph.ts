@@ -1,4 +1,9 @@
 import {
+  editEdgeRoute,
+  FlowRoutePointsSchema,
+  FlowRouteChangeSchema,
+  getManualRouteGeometry,
+  sampleRoutePoint,
   calculateFlowExpandParent,
   decodeInitialViewport,
   calculateFlowExpandParentDrag,
@@ -197,6 +202,7 @@ import {
   NodeDragOriginSchema,
   placeDraggedNodes,
 } from './drag-constraints.ts'
+import { createEditableEdgesResource } from './editable-edges.ts'
 import { fitGroupingModel } from './grouping-model.ts'
 import { firstEventElement, isInputDOMNode } from './key-press-observer.ts'
 import {
@@ -304,6 +310,12 @@ const mergeResizerPatches = (
   return [...merged.values()]
 }
 
+const RoutePreviewSchema = Schema.Struct({
+  edgeId: EdgeIdSchema,
+  points: FlowRoutePointsSchema,
+  gestureId: Schema.String,
+})
+
 const PendingHandleSchema = Schema.Struct({
   nodeId: NodeIdSchema,
   handleId: HandleIdSchema,
@@ -321,6 +333,9 @@ const PendingConnectionSchema = Schema.Union([
   Schema.Struct({
     ...PendingPointerSchema.fields,
     kind: Schema.Literal('connection-pending'),
+    routePoints: Schema.optional(
+      Schema.Array(Schema.Struct({ x: Schema.Finite, y: Schema.Finite }))
+    ),
     from: PendingHandleSchema,
   }),
   Schema.Struct({
@@ -370,6 +385,9 @@ const PointerSessionSchema = Schema.Union([
   }),
   Schema.Struct({
     kind: Schema.Literal('connection'),
+    routePoints: Schema.optional(
+      Schema.Array(Schema.Struct({ x: Schema.Finite, y: Schema.Finite }))
+    ),
     pointerId: Schema.Number,
     startX: Schema.Number,
     startY: Schema.Number,
@@ -483,6 +501,8 @@ export const ModelSchema = Schema.Struct({
   fitViewPending: Schema.Boolean,
   paneSize: PaneSizeSchema,
   rendererRevision: Schema.Number,
+  editableEdges: Schema.Boolean,
+  routePreview: Schema.NullOr(RoutePreviewSchema),
   selectionKeyPressed: Schema.Boolean,
   panKeyPressed: Schema.Boolean,
   viewportLimits: ViewportLimitsSchema,
@@ -786,6 +806,12 @@ export const Message = FoldMessage.defineMessageUnion({
   SystemColorScheme: { prefersDark: Schema.Boolean },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
   DispatchCommand: { command: FlowCommandSchema },
+  RoutePreview: { preview: Schema.NullOr(RoutePreviewSchema) },
+  RouteCommand: {
+    edgeId: EdgeIdSchema,
+    gestureId: Schema.optional(Schema.String),
+    command: FlowRouteChangeSchema,
+  },
   EditRequest: {
     requestId: Schema.String,
     transaction: FlowEditTransactionSchema,
@@ -794,6 +820,7 @@ export const Message = FoldMessage.defineMessageUnion({
     result: FlowEditResultSchema,
   },
   PointerDown: {
+    freeform: Schema.optional(Schema.Boolean),
     pointerId: Schema.Number,
     clientX: Schema.Number,
     clientY: Schema.Number,
@@ -905,6 +932,8 @@ const noChange = (
 })
 
 export interface GraphInteractionOptions extends Partial<ClosingOptions> {
+  /** Enable route point editing and Space-held freeform connections. Defaults to false. */
+  readonly editableEdges?: boolean
   readonly nodeDragThreshold?: typeof NodeDragThresholdSchema.Type | undefined
   readonly connectionDragThreshold?:
     | typeof ConnectionDragThresholdSchema.Type
@@ -988,6 +1017,7 @@ export const defaultInteractionOptions: GraphInteractionOptions = {
   nodesConnectable: true,
   elementsSelectable: true,
   nodesResizable: false,
+  editableEdges: false,
 }
 
 export const selectSnapshot = (model: Model): FlowSnapshot => ({
@@ -1473,8 +1503,19 @@ const finishConnection = (
 
   const connection = validated.value
 
+  const routePoints = Schema.decodeUnknownOption(FlowRoutePointsSchema)(
+    connection.source === source.id &&
+      connection.sourceHandle === sourceHandle.id
+      ? session.routePoints
+      : session.routePoints?.toReversed()
+  )
+
+  const baseEdge = nextConnectionEdge(model.document, connection)
+
   const edge = applyDefaultEdgeOptions(
-    nextConnectionEdge(model.document, connection),
+    Option.isSome(routePoints)
+      ? { ...baseEdge, route: { mode: 'manual', points: routePoints.value } }
+      : baseEdge,
     model.defaultEdgeOptions
   )
 
@@ -3167,6 +3208,7 @@ const activatePending = (
         startY: pending.startY,
         nodeId: pending.from.nodeId,
         sourceHandleId: pending.from.handleId,
+        routePoints: pending.routePoints,
         currentX: flowX,
         currentY: flowY,
         autoPanDelta: { x: 0, y: 0 },
@@ -3771,6 +3813,32 @@ const updateState = (
         keyboardConnectionSession: null,
       },
     }),
+    RoutePreview: ({ preview }) => ({
+      model: { ...model, routePreview: preview },
+    }),
+    RouteCommand: ({ edgeId, command, gestureId }) => {
+      if (
+        !model.editableEdges ||
+        (gestureId !== undefined && model.routePreview?.gestureId !== gestureId)
+      ) {
+        return noChange(model)
+      }
+
+      const cleared = { ...model, routePreview: null }
+
+      const transaction = Effect.runSyncExit(
+        editEdgeRoute(model.document, edgeId, command, {
+          measurements: getFlowMeasuredNodes(
+            model.document,
+            model.measurements
+          ),
+        })
+      )
+
+      return Exit.isFailure(transaction)
+        ? { model: cleared }
+        : requestEdit(cleared, crypto.randomUUID(), transaction.value)
+    },
     DispatchCommand: ({ command }) => dispatchCommand(model, command),
     EditRequest: ({ requestId, transaction }) =>
       requestEdit(model, requestId, transaction),
@@ -3800,6 +3868,7 @@ const updateState = (
       }
     },
     PointerDown: ({
+      freeform,
       pointerId,
       clientX,
       clientY,
@@ -3822,6 +3891,7 @@ const updateState = (
             nodeId,
             handleId,
             direction: null,
+            freeform,
             edgeId,
             endpoint,
           })
@@ -3909,6 +3979,7 @@ const updateState = (
         pending = {
           ...origin,
           kind: 'connection-pending',
+          routePoints: freeform && model.editableEdges ? [] : undefined,
           from: { nodeId: node.id, handleId: handle.id, kind: handle.kind },
         }
       }
@@ -3985,7 +4056,20 @@ const updateState = (
 
       const pointerSession =
         session.kind === 'connection'
-          ? { ...session, autoPanDelta, currentX: flowX, currentY: flowY }
+          ? {
+              ...session,
+              autoPanDelta,
+              currentX: flowX,
+              currentY: flowY,
+              routePoints:
+                session.routePoints === undefined
+                  ? undefined
+                  : sampleRoutePoint(
+                      session.routePoints,
+                      { x: flowX, y: flowY },
+                      12 / model.viewport.zoom
+                    ),
+            }
           : { ...session, currentX: flowX, currentY: flowY }
 
       return { model: { ...model, pointerSession } }
@@ -5473,14 +5557,21 @@ const calculateEdgeGeometry = (
 
   const pathType: FlowEdgePath = edge.path ?? 'straight'
 
-  const path = {
-    straight: () => straightEdgePath(start, end),
-    bezier: () => bezierEdgePath(start, end, sourceSide, targetSide),
-    step: () => stepEdgePath(start, end, sourceSide, targetSide),
-    smoothstep: () => smoothStepEdgePath(start, end, sourceSide, targetSide),
-    simplebezier: () =>
-      simpleBezierEdgePath(start, end, sourceSide, targetSide),
-  }[pathType]()
+  const manual =
+    edge.route?.mode === 'manual'
+      ? getManualRouteGeometry(start, end, edge.route.points)
+      : undefined
+
+  const path =
+    manual?.path ??
+    {
+      straight: () => straightEdgePath(start, end),
+      bezier: () => bezierEdgePath(start, end, sourceSide, targetSide),
+      step: () => stepEdgePath(start, end, sourceSide, targetSide),
+      smoothstep: () => smoothStepEdgePath(start, end, sourceSide, targetSide),
+      simplebezier: () =>
+        simpleBezierEdgePath(start, end, sourceSide, targetSide),
+    }[pathType]()
 
   const markerStartId =
     edge.markerStart === undefined
@@ -5490,13 +5581,9 @@ const calculateEdgeGeometry = (
   const markerEndId =
     edge.markerEnd === undefined ? undefined : `${markerScope}-${edge.id}-end`
 
-  const labelPosition = edgeLabelPosition(
-    start,
-    end,
-    pathType,
-    sourceSide,
-    targetSide
-  )
+  const labelPosition =
+    manual?.label ??
+    edgeLabelPosition(start, end, pathType, sourceSide, targetSide)
 
   const geometry: FoldkitEdgeGeometry = {
     sourceNode: projectFlowInternalNode(
@@ -6373,6 +6460,18 @@ export const createPointerResource = (initial: Model) => {
   const observations = new WeakMap<GraphMessageData, 'queued' | 'consumed'>()
   const queue = Effect.runSync(Queue.unbounded<GraphMessageData>())
 
+  const editable = createEditableEdgesResource(
+    Message,
+    () => current,
+    () => canvasForModel(current),
+    (message) => {
+      if (!closed) {
+        Queue.offerUnsafe(queue, message)
+      }
+    },
+    capturePointer
+  )
+
   const associate = (message: GraphMessageData, origin: NativeOrigin) => {
     origins.set(message, origin)
 
@@ -6422,6 +6521,7 @@ export const createPointerResource = (initial: Model) => {
       return
     }
 
+    editable.dispose()
     closed = true
     ready = false
     invalidate()
@@ -6582,6 +6682,16 @@ export const createPointerResource = (initial: Model) => {
   }): void => {
     ;({ current } = input)
     const { message } = input
+
+    if (
+      message !== undefined &&
+      Predicate.isTagged('RouteCommand')(message) &&
+      message.gestureId !== undefined
+    ) {
+      editable.settle(message.gestureId)
+    }
+
+    editable.reconcile()
     const origin = message === undefined ? undefined : origins.get(message)
 
     if (message !== undefined && observations.has(message)) {
@@ -6594,6 +6704,7 @@ export const createPointerResource = (initial: Model) => {
         message !== undefined &&
         Predicate.isTagged('CancelGesture')(message))
     ) {
+      editable.invalidate()
       invalidate()
 
       return
@@ -6768,18 +6879,45 @@ export const createPointerResource = (initial: Model) => {
     )
   }
 
+  const invalidRouteMessage = (message: GraphMessageData): boolean => {
+    if (closed) {
+      return true
+    }
+
+    if (Predicate.isTagged('RouteCommand')(message)) {
+      return (
+        message.gestureId !== undefined && !editable.valid(message.gestureId)
+      )
+    }
+
+    if (Predicate.isTagged('RoutePreview')(message)) {
+      return (
+        message.preview !== null && !editable.valid(message.preview.gestureId)
+      )
+    }
+
+    return false
+  }
+
+  const freeformPress = (message: GraphMessageData): GraphMessageData =>
+    Predicate.isTagged('PointerDown')(message) &&
+    message.handleId !== null &&
+    editable.freeform()
+      ? Message.PointerDown({ ...message, freeform: true })
+      : message
+
   const prepare = (
     message: GraphMessageData
   ): Option.Option<GraphMessageData> => {
-    if (closed) {
-      return Option.none()
-    }
-
     if (
       Predicate.isTagged('ObserveMouse')(message) &&
       message.name === 'onNodeClick'
     ) {
       return brokerObservation(message)
+    }
+
+    if (invalidRouteMessage(message)) {
+      return Option.none()
     }
 
     const origin = origins.get(message)
@@ -6927,7 +7065,10 @@ export const createPointerResource = (initial: Model) => {
   }
 
   const admissionOpen = (): boolean =>
-    ready && !closed && nativeCurrent?.native !== 'pressed'
+    ready &&
+    !closed &&
+    !editable.pressed() &&
+    nativeCurrent?.native !== 'pressed'
 
   const classifyPress = (
     raw: PanePointer,
@@ -6972,7 +7113,7 @@ export const createPointerResource = (initial: Model) => {
       return Option.none()
     }
 
-    const down = classified.value
+    const down = freeformPress(classified.value)
 
     if (nativeCurrent !== undefined) {
       releaseCapture(nativeCurrent)
@@ -7249,6 +7390,8 @@ export const createPointerResource = (initial: Model) => {
         throw new Error('Pointer resource cannot be reacquired')
       }
 
+      editable.mount()
+
       const stopCanvasInput = observeCanvasInput(
         Message,
         () => current,
@@ -7400,14 +7543,24 @@ const connectionLineView = (
 
   const straight = `M ${previewState.from.x} ${previewState.from.y} L ${previewState.to.x} ${previewState.to.y}`
 
-  return {
-    connectionLine,
-    lineTypeAttribute,
-    builtinPreviewPath:
-      connectionLineType === undefined || connectionLine === null
-        ? straight
-        : connectionLine.path,
+  let builtinPreviewPath =
+    connectionLineType === undefined || connectionLine === null
+      ? straight
+      : connectionLine.path
+
+  if (
+    session?.kind === 'connection' &&
+    session.routePoints !== undefined &&
+    session.routePoints.length > 0
+  ) {
+    builtinPreviewPath = getManualRouteGeometry(
+      previewState.from,
+      previewState.to,
+      session.routePoints
+    ).path
   }
+
+  return { connectionLine, lineTypeAttribute, builtinPreviewPath }
 }
 
 /** What Foldkit's own node keys do: select, rectangle-select and cancel. */
@@ -7461,7 +7614,15 @@ const graphView = (
     const mountedNodeIds = selectMountedNodeIds(model, measurements, graph)
 
     const renderEdges = model.document.edges.map((edge) =>
-      applyDefaultEdgeOptions(edge, model.defaultEdgeOptions)
+      applyDefaultEdgeOptions(
+        model.routePreview?.edgeId === edge.id
+          ? {
+              ...edge,
+              route: { mode: 'manual', points: model.routePreview.points },
+            }
+          : edge,
+        model.defaultEdgeOptions
+      )
     )
 
     const stacking = computeFlowStacking({
@@ -7857,6 +8018,28 @@ const graphView = (
               ? []
               : [h.defs([], markerDefinitions)]),
             ...content,
+            ...(model.editableEdges && edge.route?.mode === 'manual'
+              ? edge.route.points.map((point, index) =>
+                  h.circle([
+                    h.Class('flow-foldkit-route-point'),
+                    h.DataAttribute('flow-route-point', ''),
+                    h.DataAttribute('edge-id', edge.id),
+                    h.DataAttribute('point-index', String(index)),
+                    h.Attribute('tabindex', '0'),
+                    h.Attribute('role', 'button'),
+                    h.AriaLabel(`Route point ${index + 1} of ${edge.id}`),
+                    h.Attribute('cx', String(point.x)),
+                    h.Attribute('cy', String(point.y)),
+                    h.Attribute('r', String(6 / model.viewport.zoom)),
+                    h.Fill('white'),
+                    h.Stroke('#2563eb'),
+                    h.Style({
+                      pointerEvents: 'all',
+                      cursor: 'move',
+                    }),
+                  ])
+                )
+              : []),
           ]
         )
       })
@@ -8469,6 +8652,7 @@ export const initialModel = (
   fitViewPending: interactionOptions.fitView === true,
   paneSize: { width: 0, height: 0, bounds: { width: 0, height: 0 } },
   rendererRevision: 0,
+  routePreview: null,
   selectionKeyPressed: false,
   panKeyPressed: false,
   viewportLimits,
@@ -8483,6 +8667,10 @@ export const initialModel = (
   allowedConnectionTargets: allowedTargets,
   ...withoutCallbacks(defaultInteractionOptions),
   ...withoutCallbacks(interactionOptions),
+  editableEdges:
+    interactionOptions.editableEdges === undefined
+      ? false
+      : interactionOptions.editableEdges,
   ...resolveFlowInteractivity(interactionOptions),
   connectionDragThreshold: Schema.decodeUnknownSync(
     ConnectionDragThresholdSchema

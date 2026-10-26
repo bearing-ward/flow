@@ -284,6 +284,24 @@ export const pasteFlowGraphFragment = (
             edge.targetHandle),
     }
 
+    if (edge.route?.mode === 'manual') {
+      const [first, ...rest] = edge.route.points
+
+      remapped = {
+        ...remapped,
+        route: {
+          mode: 'manual',
+          points: [
+            { x: first.x + offset.x, y: first.y + offset.y },
+            ...rest.map((point) => ({
+              x: point.x + offset.x,
+              y: point.y + offset.y,
+            })),
+          ],
+        },
+      }
+    }
+
     for (const extension of extensions) {
       remapped = extension.remapEdge?.(remapped, references) ?? remapped
     }

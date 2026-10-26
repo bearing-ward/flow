@@ -1,4 +1,8 @@
 import {
+  FlowEdgeRouteSchema,
+  getManualRouteGeometry,
+  editEdgeRoute,
+  sampleRoutePoint,
   refitFlowGroups,
   createFlowClipboardSession,
   createFlowHistory,
@@ -209,8 +213,9 @@ import {
   declaredRendererProps,
   FlowEdgeLabelRendererContextKey,
 } from './edge-label-renderer.ts'
+import { createVueRouteEditor } from './editable-edges.ts'
 import { createFlowInteractivityState } from './interactivity.ts'
-import { observeKeyPress } from './key-press-observer.ts'
+import { isInputDOMNode, observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 import { FlowMiniMapContextKey } from './minimap.ts'
 import {
@@ -357,6 +362,7 @@ const PendingConnectionSchema = S.Union([
 ])
 
 type PendingConnectionData = typeof PendingConnectionSchema.Type & {
+  readonly freeform?: boolean | undefined
   readonly captureTarget: HTMLElement | SVGElement
 }
 
@@ -368,6 +374,7 @@ interface ConnectionData {
   readonly sourceHandle: FlowHandle['id']
   readonly start: { readonly x: number; readonly y: number }
   readonly pointer: { readonly x: number; readonly y: number }
+  readonly freeform?: readonly XYPosition[] | undefined
   readonly reconnect?: {
     readonly edgeId: string
     readonly endpoint: 'source' | 'target'
@@ -934,6 +941,8 @@ export const FlowCanvas = defineComponent({
     edgesFocusable: { type: Boolean, default: true },
     /** React `edgesReconnectable`; an edge's own `reconnectable` wins. */
     edgesReconnectable: { type: Boolean, default: true },
+    /** Enable manual route-point editing and Space-held freeform connections. */
+    editableEdges: { type: Boolean, default: false },
     /**
      * React `deleteKeyCode`: document-level deletion of selected, deletable
      * elements outside editable controls. `null` disables it.
@@ -4693,6 +4702,88 @@ export const FlowCanvas = defineComponent({
       transaction: FlowEditTransactionInput
     ): Promise<FlowEditResult> => applyEditResolved(() => transaction)
 
+    const routeEditor = createVueRouteEditor({
+      enabled: () => props.editableEdges,
+      available: () =>
+        !stateDisposed &&
+        session.value === undefined &&
+        clickConnection.value === undefined,
+      edge: (id) => activeDocument.value.edges.find((edge) => edge.id === id),
+      owns: (target) => canvas.value?.contains(target) === true,
+      observe: (phase, edgeId, pointerId) =>
+        recordFlowTelemetry(
+          phase === 'start'
+            ? 'Started Vue route-point drag'
+            : 'Cancelled Vue route-point drag',
+          phase === 'start'
+            ? FlowSpan.browserPointerCapture
+            : FlowSpan.gestureCancel,
+          {
+            [FlowAttribute.edgeId]: edgeId,
+            [FlowAttribute.pointerId]: pointerId,
+            [FlowAttribute.inputKind]: 'pointer',
+          }
+        ),
+      captureFailed: (error) =>
+        recordFlowFailure(
+          'Vue route-point capture failed',
+          FlowSpan.browserPointerCapture,
+          { [FlowAttribute.failureMessage]: error.message }
+        ),
+      point: (event) => clientToFlow(event.clientX, event.clientY),
+      autoPan: (event) => {
+        const bounds = canvas.value?.getBoundingClientRect()
+
+        if (!props.autoPanOnConnect || bounds === undefined) {
+          return false
+        }
+
+        const delta = selectionAutoPanDelta(
+          { x: event.clientX - bounds.left, y: event.clientY - bounds.top },
+          bounds.width,
+          bounds.height,
+          40,
+          props.autoPanSpeed
+        )
+
+        if (delta.x === 0 && delta.y === 0) {
+          return false
+        }
+
+        updateViewport(panViewport(activeViewport.value, delta))
+
+        return !stateDisposed
+      },
+      commit: async (edgeId, command) => {
+        try {
+          await applyEditResolved((document) =>
+            Effect.runSync(
+              editEdgeRoute(document, edgeId, command, {
+                measurements: getFlowMeasuredNodes(document, measurementState),
+              })
+            )
+          )
+        } catch (error) {
+          reportError(
+            error instanceof Error ? error : new Error(String(error)),
+            'edit'
+          )
+        }
+      },
+    })
+
+    watch(
+      () => props.editableEdges,
+      () => routeEditor.cancel(),
+      { flush: 'sync' }
+    )
+    watch(
+      () => activeDocument.value,
+      () => routeEditor.cancel(),
+      { flush: 'sync' }
+    )
+    onBeforeUnmount(routeEditor.cancel)
+
     const liveResizePreview = shallowRef<{
       readonly change: NodeBoundsChange
       readonly graph: FlowGraphView
@@ -5227,6 +5318,8 @@ export const FlowCanvas = defineComponent({
     }
 
     const cancelActiveSession = (reason = 'superseded'): void => {
+      routeEditor.cancel()
+
       if (stateDisposed) {
         return
       }
@@ -6094,6 +6187,7 @@ export const FlowCanvas = defineComponent({
           sourceHandle: source.handle.id,
           start: source.start,
           pointer: source.start,
+          freeform: pending.freeform === true ? [] : undefined,
         }
       }
 
@@ -6879,7 +6973,12 @@ export const FlowCanvas = defineComponent({
 
     // eslint-disable-next-line complexity -- One pointer entry admits node drags and handle connections under the interaction switches.
     const onPointerDown = (event: PointerEvent, node: FlowNode): void => {
-      if (stateDisposed || event.button !== 0 || session.value !== undefined) {
+      if (
+        stateDisposed ||
+        event.button !== 0 ||
+        session.value !== undefined ||
+        routeEditor.dragging()
+      ) {
         return
       }
 
@@ -6953,7 +7052,11 @@ export const FlowCanvas = defineComponent({
           pointerId: event.pointerId,
           startX: event.clientX,
           startY: event.clientY,
-          threshold: connectionDragThreshold,
+          threshold:
+            props.editableEdges && pressedKeys.has('Space')
+              ? 0
+              : connectionDragThreshold,
+          freeform: props.editableEdges && pressedKeys.has('Space'),
           captureTarget: currentTarget,
           from: {
             nodeId: node.id,
@@ -7229,12 +7332,28 @@ export const FlowCanvas = defineComponent({
         return { kind: 'rejected', reason: 'invalid-target' }
       }
 
+      let edge = nextConnectionEdge(activeDocument.value, validated.value)
+
+      if (claim.source.freeform !== undefined) {
+        const route = S.decodeUnknownExit(FlowEdgeRouteSchema)({
+          mode: 'manual',
+          points:
+            validated.value.source === sourceNode.id &&
+            validated.value.sourceHandle === sourceHandleId
+              ? claim.source.freeform
+              : claim.source.freeform.toReversed(),
+        })
+
+        if (Exit.isFailure(route)) {
+          return { kind: 'rejected', reason: 'invalid-route' }
+        }
+
+        edge = { ...edge, route: route.value }
+      }
+
       publish({
         kind: 'edge-add',
-        edge: applyDefaultEdgeOptions(
-          nextConnectionEdge(activeDocument.value, validated.value),
-          defaultEdgeOptions.value
-        ),
+        edge: applyDefaultEdgeOptions(edge, defaultEdgeOptions.value),
       })
 
       return {
@@ -7824,6 +7943,7 @@ export const FlowCanvas = defineComponent({
 
       if (
         sameHandle &&
+        source.freeform === undefined &&
         props.connectOnClick &&
         input.kind !== 'retained-keyboard'
       ) {
@@ -7921,6 +8041,7 @@ export const FlowCanvas = defineComponent({
 
       if (
         stateDisposed ||
+        routeEditor.dragging() ||
         event.button !== 0 ||
         currentEdge.selected !== true ||
         !canReconnectEdge(currentEdge, endpoint) ||
@@ -8433,6 +8554,20 @@ export const FlowCanvas = defineComponent({
       pressedKeys.add(event.key)
       pressedKeys.add(event.code)
 
+      if (
+        props.editableEdges &&
+        event.code === 'Space' &&
+        !isInputDOMNode(event) &&
+        ((target instanceof Element && canvas.value?.contains(target)) ||
+          canvas.value?.matches(':hover'))
+      ) {
+        event.preventDefault()
+      }
+
+      if (routeEditor.keyboard(event)) {
+        return
+      }
+
       const active = session.value
 
       const eventCanvas = path.find(
@@ -8740,6 +8875,7 @@ export const FlowCanvas = defineComponent({
           connectionMode.value,
           connectionRadius.value,
           props.autoPanOnConnect,
+          props.editableEdges,
         ] as const,
       (current, previous) => {
         if (
@@ -8807,7 +8943,7 @@ export const FlowCanvas = defineComponent({
 
     // eslint-disable-next-line complexity -- The public pointer admission entry preserves the existing selection, pan and interactive-target policies.
     const onCanvasPointerDown = (event: PointerEvent): void => {
-      if (stateDisposed) {
+      if (stateDisposed || routeEditor.dragging()) {
         return
       }
 
@@ -9069,6 +9205,12 @@ export const FlowCanvas = defineComponent({
       handle: FlowHandle,
       event: KeyboardEvent
     ): void => {
+      if (props.editableEdges && event.key === ' ') {
+        event.preventDefault()
+
+        return
+      }
+
       if (
         stateDisposed ||
         (event.key !== 'Enter' && event.key !== ' ') ||
@@ -9287,8 +9429,14 @@ export const FlowCanvas = defineComponent({
             style: flowVueStyle(props.connectionLineStyle),
             'data-connection-line-type': props.connectionLineType,
             d:
-              typedPath ??
-              straightEdgePath(connection.start, connection.pointer),
+              connection.freeform === undefined
+                ? (typedPath ??
+                  straightEdgePath(connection.start, connection.pointer))
+                : getManualRouteGeometry(
+                    connection.start,
+                    connection.pointer,
+                    connection.freeform
+                  ).path,
           }),
         ]
       }
@@ -9754,13 +9902,20 @@ export const FlowCanvas = defineComponent({
       )
 
       return {
-        path: edgePath(
-          edge.path,
-          sourceAnchor,
-          targetAnchor,
-          resolved.sourceHandle.side,
-          resolved.targetHandle.side
-        ),
+        path:
+          routeEditor.points(edge) === undefined
+            ? edgePath(
+                edge.path,
+                sourceAnchor,
+                targetAnchor,
+                resolved.sourceHandle.side,
+                resolved.targetHandle.side
+              )
+            : getManualRouteGeometry(
+                sourceAnchor,
+                targetAnchor,
+                routeEditor.points(edge) ?? []
+              ).path,
         sourceNode,
         targetNode,
         sourceAnchor,
@@ -9818,10 +9973,48 @@ export const FlowCanvas = defineComponent({
           emit('edgeMouseEnter', edge, event),
         onMouseleave: (event: MouseEvent) =>
           emit('edgeMouseLeave', edge, event),
-        onDblclick: (event: MouseEvent) => emit('edgeDoubleClick', edge, event),
+        onDblclick: (event: MouseEvent) => {
+          routeEditor.insert(edge, event)
+          emit('edgeDoubleClick', edge, event)
+        },
         onContextmenu: (event: MouseEvent) =>
           emit('edgeContextMenu', edge, event),
         onKeydown: (event: KeyboardEvent) => {
+          if (props.editableEdges && event.key === ' ') {
+            event.preventDefault()
+
+            return
+          }
+
+          if (props.editableEdges && event.key === 'Enter') {
+            const geometry = resolveRenderedEdge(edge)
+
+            if (geometry !== undefined) {
+              const points = routeEditor.points(edge)
+
+              const position =
+                points === undefined
+                  ? edgeLabelPosition(
+                      geometry.sourceAnchor,
+                      geometry.targetAnchor,
+                      edge.path ?? 'straight',
+                      geometry.sourceHandle.side,
+                      geometry.targetHandle.side
+                    )
+                  : getManualRouteGeometry(
+                      geometry.sourceAnchor,
+                      geometry.targetAnchor,
+                      points
+                    ).label
+
+              event.preventDefault()
+              event.stopPropagation()
+              routeEditor.insertPoint(edge, position)
+            }
+
+            return
+          }
+
           if (
             !props.disableKeyboardA11y &&
             (event.key === 'Enter' || event.key === ' ')
@@ -9881,7 +10074,7 @@ export const FlowCanvas = defineComponent({
         return []
       }
 
-      const controls: VNode[] = []
+      const controls: VNode[] = routeEditor.render(edge)
 
       if (edge.selected === true) {
         for (const endpoint of ['source', 'target'] as const) {
@@ -9907,6 +10100,7 @@ export const FlowCanvas = defineComponent({
               class: 'flow-vue-edge-reconnect-anchor',
               'data-testid': 'flow-edge-reconnect-anchor',
               'data-endpoint': endpoint,
+              'data-edge-endpoint': endpoint,
               'data-edge-id': edge.id,
               tabindex: 0,
               role: 'button',
@@ -10174,6 +10368,15 @@ export const FlowCanvas = defineComponent({
         'g',
         {
           key: edge.id,
+          onDblclick: (event: MouseEvent) => {
+            if (
+              event.target instanceof Element &&
+              event.target.closest('.flow-vue-edge-path') !== null
+            ) {
+              routeEditor.insert(edge, event)
+              emit('edgeDoubleClick', edge, event)
+            }
+          },
           onPointerdown: (event: PointerEvent) => {
             if (
               !(event.target instanceof Element) ||
@@ -10261,13 +10464,19 @@ export const FlowCanvas = defineComponent({
 
       return (
         edgeLabelAnchor(edge) ??
-        edgeLabelPosition(
-          source,
-          target,
-          edge.path ?? 'straight',
-          resolved.sourceHandle.side,
-          resolved.targetHandle.side
-        )
+        (routeEditor.points(edge) === undefined
+          ? edgeLabelPosition(
+              source,
+              target,
+              edge.path ?? 'straight',
+              resolved.sourceHandle.side,
+              resolved.targetHandle.side
+            )
+          : getManualRouteGeometry(
+              source,
+              target,
+              routeEditor.points(edge) ?? []
+            ).label)
       )
     }
 
@@ -11273,6 +11482,14 @@ export const FlowCanvas = defineComponent({
               const updated: PhysicalConnection = {
                 ...active,
                 pointer: clientToFlow(event.clientX, event.clientY),
+                freeform:
+                  active.freeform === undefined
+                    ? undefined
+                    : sampleRoutePoint(
+                        active.freeform,
+                        clientToFlow(event.clientX, event.clientY),
+                        8
+                      ),
               }
 
               session.value = updated

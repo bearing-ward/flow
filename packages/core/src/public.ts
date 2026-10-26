@@ -1090,3 +1090,36 @@ export type {
 export { createFlowClipboardSession } from './domain/flow-clipboard-session.ts'
 
 export type { FlowClipboardActions } from './domain/flow-clipboard-session.ts'
+
+export {
+  FlowEdgeRouteSchema,
+  FlowRoutePointSchema,
+  FlowRoutePointsSchema,
+  FlowRouteChangeSchema,
+} from './domain/flow-route.schema.ts'
+
+export type {
+  FlowEdgeRoute,
+  FlowRoutePoint,
+  FlowRoutePoints,
+  FlowRouteChange,
+} from './domain/flow-route.schema.ts'
+
+export {
+  getManualRouteGeometry,
+  editEdgeRoute,
+  hitTestRoutePoint,
+  sampleRoutePoint,
+} from './domain/flow-route.ts'
+
+export { InvalidEdgeRoute } from './domain/flow-route-error.ts'
+
+export {
+  SavedRouteFlowDocumentSchema,
+  SavedRouteFlowSessionSchema,
+} from './domain/flow-persistence.ts'
+
+export type {
+  SavedRouteFlowDocument,
+  SavedRouteFlowSession,
+} from './domain/flow-persistence.ts'

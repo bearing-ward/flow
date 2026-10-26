@@ -372,7 +372,7 @@ export const completeVersionedSession = encodeVersionedFlowSession(document, {
   zoom: 1,
 })
 
-export const completeVersion: 1 | 2 | 3 = completeVersionedSession.version
+export const completeVersion: 1 | 2 | 3 | 4 = completeVersionedSession.version
 
 // @ts-expect-error An additive encoder cannot promise literal-v1 output.
 export const additiveLiteralOne: 1 = completeVersionedSession.version
@@ -398,8 +398,8 @@ export const explicitVersionTwo: SavedVersionedFlowSession = {
 
 export const invalidVersionedFormat: SavedVersionedFlowSession = {
   ...completeVersionedSession,
-  // @ts-expect-error A fourth format is outside the v1/v2/v3 contract.
-  version: 4,
+  // @ts-expect-error Version 5 is outside the supported v1/v2/v3/v4 contract.
+  version: 5,
 }
 
 export const inspectPublicPersistence = (flow: FlowActions) => {

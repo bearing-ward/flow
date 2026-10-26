@@ -60,7 +60,7 @@ const hasKeyboardEventFields = (event: Event): event is KeyboardEvent =>
   'metaKey' in event &&
   'shiftKey' in event
 
-const isInputDOMNode = (event: KeyboardEvent): boolean => {
+export const isInputDOMNode = (event: KeyboardEvent): boolean => {
   const element = firstEventElement(event)
 
   if (element === null) {

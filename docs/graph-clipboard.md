@@ -2,6 +2,8 @@
 
 Each mounted Flow canvas has an internal session clipboard. Copy selects nodes from the accepted document and includes their descendants and every edge whose endpoints are both copied. Selected edges with an uncopied endpoint are excluded. Copy strips selection and measurements while preserving authored fields and opaque JSON data.
 
+[Manual edge route points](editable-edges.md) are absolute graph coordinates. Paste translates those points by the same placement offset as the copied roots, once per copied edge, before extension hooks.
+
 Pasting allocates unused node and edge IDs, remaps declared handles and edge endpoints, and remaps copied parents. A copied root with an absent parent becomes top-level at its original absolute graph position. Descendants retain their parent-relative positions. Each paste offsets the copied roots by another 20 graph units. An explicit `position` places the minimum copied root anchor at a graph-space point. Pan and zoom do not alter these graph coordinates.
 
 ## Vanilla
