@@ -1,4 +1,6 @@
 import {
+  solveFlowAlignment,
+  resolveFlowAlignmentGuides,
   refitFlowGroups,
   createFlowClipboardSession,
   createFlowHistory,
@@ -159,6 +161,7 @@ import {
   snapPosition,
 } from '@flow/core'
 import type {
+  FlowAlignmentGuide,
   FlowClipboardActions,
   FlowHistoryEvent,
   FlowHistoryStatus,
@@ -477,6 +480,8 @@ export const FlowMountOptionsSchema = S.Struct({
   connectionMode: S.optional(ConnectionModeSchema),
   connectionLineType: S.optional(FlowConnectionLineTypeSchema),
   autoPanOnConnect: S.optional(S.Boolean),
+  /** Show node-relative alignment guides and snap during pointer drags. */
+  helperLines: S.optional(S.Boolean),
   /** The `{ x, y }` record or React's `[x, y]` tuple. */
   snapGrid: S.optional(FlowSnapGridInputSchema),
   /** React `snapToGrid`: `false` ignores `snapGrid`; `true` alone snaps to 15x15. */
@@ -1047,6 +1052,7 @@ export interface FlowHostOptions extends CanvasInteractionOptions {
   /** Built-in connection line path; unset keeps the straight preview line. */
   readonly connectionLineType?: FlowConnectionLineType | undefined
   readonly autoPanOnConnect?: boolean | undefined
+  readonly helperLines?: boolean | undefined
   readonly snapToGrid?: boolean | undefined
   readonly snapGrid?: SnapGrid | undefined
   readonly connectionRadius?: ConnectionRadius | undefined
@@ -1163,6 +1169,7 @@ const isSelectionActivationEnabled = (
 
 /** Runtime canvas settings share the mount boundary's schemas and defaults. */
 export const FlowCanvasOptionsSchema = S.Struct({
+  helperLines: FlowMountOptionsSchema.fields.helperLines,
   snapGrid: FlowMountOptionsSchema.fields.snapGrid,
   snapToGrid: FlowMountOptionsSchema.fields.snapToGrid,
   panOnScroll: FlowMountOptionsSchema.fields.panOnScroll,
@@ -6532,7 +6539,17 @@ export const createFlowHost = (
       runEffect(Scope.close(ticket.registrationScope, Exit.void))
     }
 
+    let alignmentGuides: readonly FlowAlignmentGuide[] = []
+
+    const helperLayer = globalThis.document.createElement('div')
+    helperLayer.className = 'flow-helper-lines'
+    helperLayer.style.cssText =
+      'position:absolute;inset:0;pointer-events:none;z-index:10000'
+
     const cancelNodeDragFrame = (): void => {
+      alignmentGuides = []
+      helperLayer.replaceChildren()
+      helperLayer.remove()
       nodeSample = undefined
 
       if (nodeFrame !== undefined) {
@@ -6885,6 +6902,85 @@ export const createFlowHost = (
       )
     }
 
+    const alignedDragPoint = (
+      drag: ActiveNodeDrag | ActiveNodeGroupDrag,
+      point: XYPosition
+    ): XYPosition => {
+      alignmentGuides = []
+      helperLayer.replaceChildren()
+      helperLayer.remove()
+
+      if (!options.helperLines) {
+        return point
+      }
+
+      const nodeIds =
+        'positions' in drag
+          ? drag.positions.map(({ nodeId }) => nodeId)
+          : [drag.nodeId]
+
+      const raw =
+        'positions' in drag ? moveNodeGroupDrag(drag, point) : undefined
+
+      const [first] = nodeIds
+
+      const origin =
+        'positions' in drag
+          ? drag.positions[0]?.position
+          : graphFor(document, new Map()).nodes.get(drag.nodeId)
+              ?.absolutePosition
+
+      const position =
+        'positions' in drag
+          ? raw?.positions[0]?.position
+          : moveNodeDrag(drag, point)
+
+      if (
+        first === undefined ||
+        origin === undefined ||
+        position === undefined
+      ) {
+        return point
+      }
+
+      const delta = { x: position.x - origin.x, y: position.y - origin.y }
+
+      const result = solveFlowAlignment({
+        graph: graphFor(document, new Map()),
+        nodeIds,
+        delta,
+        zoom: renderedViewport.zoom,
+        snapGrid: options.snapGrid,
+      })
+
+      alignmentGuides = result.guides
+
+      return {
+        x: point.x + result.delta.x - delta.x,
+        y: point.y + result.delta.y - delta.y,
+      }
+    }
+
+    const renderHelperGuides = (): void => {
+      if (alignmentGuides.length === 0) {
+        return
+      }
+
+      const guides = resolveFlowAlignmentGuides(graphFor(), alignmentGuides)
+
+      if (guides.length > 0) {
+        viewport.append(helperLayer)
+      }
+
+      for (const guide of guides) {
+        const line = globalThis.document.createElement('div')
+        line.dataset.helperAxis = guide.axis
+        line.dataset.coordinate = String(guide.coordinate)
+        line.style.cssText = `position:absolute;background:#f43f5e;pointer-events:none;left:${guide.axis === 'x' ? guide.coordinate : guide.from}px;top:${guide.axis === 'y' ? guide.coordinate : guide.from}px;width:${guide.axis === 'x' ? 1 / renderedViewport.zoom : guide.to - guide.from}px;height:${guide.axis === 'y' ? 1 / renderedViewport.zoom : guide.to - guide.from}px`
+        helperLayer.append(line)
+      }
+    }
+
     const updateNodeDragPreview = (
       sample: NodeSample,
       point: XYPosition
@@ -6894,11 +6990,16 @@ export const createFlowHost = (
       }
 
       const { drag } = sample
+      const alignedPoint = alignedDragPoint(drag, point)
 
       if ('positions' in drag) {
         const change = boundedGroupChange(
           drag,
-          moveNodeGroupDrag(drag, point, options.snapGrid)
+          moveNodeGroupDrag(
+            drag,
+            alignedPoint,
+            options.helperLines ? undefined : options.snapGrid
+          )
         )
 
         for (const { nodeId, position } of previewExpandParent(
@@ -6925,7 +7026,11 @@ export const createFlowHost = (
           drag.nodeId,
           localPositionFromAbsolute(
             drag.nodeId,
-            moveNodeDrag(drag, point, options.snapGrid)
+            moveNodeDrag(
+              drag,
+              alignedPoint,
+              options.helperLines ? undefined : options.snapGrid
+            )
           )
         )
 
@@ -6944,6 +7049,8 @@ export const createFlowHost = (
 
         edgeRenderer.updatePositions(paintPass, new Set([drag.nodeId]))
       }
+
+      renderHelperGuides()
 
       if (
         nodeSampleLive(sample) &&
@@ -9635,17 +9742,21 @@ export const createFlowHost = (
             dragPointer = pointerInCanvas(event)
             cancelNodeDragFrame()
 
+            const alignedPoint = alignedDragPoint(drag, pointerInFlow(event))
+            helperLayer.replaceChildren()
+            helperLayer.remove()
+
             const candidate =
               'positions' in interactionSlots.activeDrag
                 ? moveNodeGroupDrag(
                     interactionSlots.activeDrag,
-                    pointerInFlow(event),
-                    options.snapGrid
+                    alignedPoint,
+                    options.helperLines ? undefined : options.snapGrid
                   )
                 : completeNodeDrag(
                     interactionSlots.activeDrag,
-                    pointerInFlow(event),
-                    options.snapGrid
+                    alignedPoint,
+                    options.helperLines ? undefined : options.snapGrid
                   )
 
             const boundedChange = changeForFinishedDrag(
@@ -10774,6 +10885,8 @@ export const createFlowHost = (
             endSession('node-drag', actor.record.pointerId, 'cancelled')
             dragPointerStart = null
             dragPointer = null
+            helperLayer.replaceChildren()
+            helperLayer.remove()
             nodeSample = undefined
             break
           }

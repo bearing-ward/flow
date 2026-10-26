@@ -1090,3 +1090,14 @@ export type {
 export { createFlowClipboardSession } from './domain/flow-clipboard-session.ts'
 
 export type { FlowClipboardActions } from './domain/flow-clipboard-session.ts'
+
+export {
+  FlowAlignmentGuideSchema,
+  resolveFlowAlignmentGuides,
+  solveFlowAlignment,
+} from './domain/flow-helper-lines.ts'
+
+export type {
+  FlowAlignmentGuide,
+  FlowAlignmentResult,
+} from './domain/flow-helper-lines.ts'

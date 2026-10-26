@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 184,
+    "inScopeCloseAllHosts": 185,
     "inScopeCloseByHost": {
-      "vanilla": 184,
-      "vue": 184,
-      "foldkit": 184
+      "vanilla": 185,
+      "vue": 185,
+      "foldkit": 185
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history, Plan 153 graph-clipboard and Plan 154 grouping acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history, Plan 153 graph-clipboard, Plan 154 grouping and Plan 155 helper-line acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-25",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 5,
-          "P": 8,
+          "C": 6,
+          "P": 7,
           "G": 3
         },
         "vue": {
-          "C": 5,
-          "P": 8,
+          "C": 6,
+          "P": 7,
           "G": 3
         },
         "foldkit": {
-          "C": 5,
-          "P": 8,
+          "C": 6,
+          "P": 7,
           "G": 3
         }
       }
@@ -3176,90 +3176,125 @@
     {
       "section": "examples interaction",
       "name": "Helper Lines · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Fixed-grid snapping exists; no node-relative alignment solver, guide overlay or snapping lifecycle.",
+      "missing": "",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
         "on": "2026-10-25",
-        "plan": "Plan 149",
+        "plan": "Plan 155",
         "previousRatings": {
           "vanilla": "P",
           "vue": "P",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Eight pure solver/projection tests and nine shared public-gesture acceptance scenarios in each host. Public demo DOM and visible guides inspected independently. C means functional closeness for the delivered outcomes, not private-source or catalog-wide reference conformance.",
         "url": "https://reactflow.dev/examples/interaction/helper-lines",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public description and linked live demo exercised with native pointer gestures and rendered DOM inspection. No subscription source or private tests accessed. Exact upstream tolerance and tie ordering remain unverified; Flow uses adopted D8 policy.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/helper-lines/index.html"
         ],
-        "missing": "Fixed-grid snapping exists; no node-relative alignment solver, guide overlay or snapping lifecycle.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/155-helper-lines.md",
         "outcomes": [
           {
             "id": "guides",
             "outcome": "Show horizontal and vertical alignment guides while dragging nodes.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-snap-grid.schema.ts:34"
+                "packages/core/src/domain/flow-helper-lines.ts:47",
+                "packages/core/src/domain/flow-helper-lines.test.ts:1"
               ],
-              "vanilla": ["apps/vanilla/src/mount-flow.ts:467"],
-              "vue": ["packages/vue/src/flow-canvas.ts:878"],
-              "foldkit": ["packages/foldkit/src/graph.ts:936"]
+              "vanilla": [
+                "apps/vanilla/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ],
+              "vue": [
+                "apps/vue/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ],
+              "foldkit": [
+                "apps/foldkit/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ]
             },
             "basis": "public-description"
           },
           {
             "id": "alignment-snap",
             "outcome": "Snap the drag to other nodes rather than only a fixed grid.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-snap-grid.schema.ts:34"
+                "packages/core/src/domain/flow-helper-lines.ts:47",
+                "packages/core/src/domain/flow-helper-lines.test.ts:1"
               ],
-              "vanilla": ["apps/vanilla/src/mount-flow.ts:467"],
-              "vue": ["packages/vue/src/flow-canvas.ts:878"],
-              "foldkit": ["packages/foldkit/src/graph.ts:936"]
+              "vanilla": [
+                "apps/vanilla/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ],
+              "vue": [
+                "apps/vue/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ],
+              "foldkit": [
+                "apps/foldkit/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ]
             },
             "basis": "public-description"
           },
           {
             "id": "transformed",
             "outcome": "Keep guides and alignment accurate after pan and zoom.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-snap-grid.schema.ts:34"
+                "packages/core/src/domain/flow-helper-lines.ts:47",
+                "packages/core/src/domain/flow-helper-lines.test.ts:1"
               ],
-              "vanilla": ["apps/vanilla/src/mount-flow.ts:467"],
-              "vue": ["packages/vue/src/flow-canvas.ts:878"],
-              "foldkit": ["packages/foldkit/src/graph.ts:936"]
+              "vanilla": [
+                "apps/vanilla/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ],
+              "vue": [
+                "apps/vue/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ],
+              "foldkit": [
+                "apps/foldkit/e2e/helper-lines.e2e.ts:1",
+                "apps/shared/helper-lines/acceptance.ts:117"
+              ]
             },
             "basis": "public-description"
           }
         ],
         "unverified": [
-          "Tolerance, center/edge preference, multiple selected nodes and cancellation need explicit tests."
-        ]
+          "Private source/tests and exact upstream tolerance, tie order, grid precedence and group semantics. Flow deliberately uses adopted D8 six CSS pixel inclusive tolerance, stable nearest-candidate ties and per-axis alignment precedence."
+        ],
+        "hostNotes": {
+          "vanilla": "Public helperLines option uses the shared measured-bounds solver, constrained preview geometry and graph-space overlay; nine browser scenarios passed, including history, clipboard, cancellation, auto-pan and disposal.",
+          "vue": "Public helperLines option uses the shared measured-bounds solver, constrained preview geometry and graph-space overlay; nine browser scenarios passed, including history, clipboard, cancellation, auto-pan and disposal.",
+          "foldkit": "Public helperLines option uses the shared measured-bounds solver, constrained preview geometry and graph-space overlay; nine browser scenarios passed, including history, clipboard, cancellation, auto-pan and disposal."
+        }
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 155"]
     },
     {
       "section": "examples interaction",

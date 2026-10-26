@@ -1,4 +1,6 @@
 import {
+  solveFlowAlignment,
+  resolveFlowAlignmentGuides,
   calculateFlowExpandParent,
   decodeInitialViewport,
   calculateFlowExpandParentDrag,
@@ -533,6 +535,8 @@ export const ModelSchema = Schema.Struct({
   /** Selected nodes show resize controls only when this is on. */
   nodesResizable: Schema.Boolean,
   defaultEdgeOptions: FlowDefaultEdgeOptionsSchema,
+  /** Show node-relative alignment guides and snap during pointer drags. */
+  helperLines: Schema.Boolean,
   /** React Flow `snapToGrid` and `snapGrid` for node drags and resizes. */
   snapToGrid: Schema.Boolean,
   snapGrid: SnapGridSchema,
@@ -569,6 +573,7 @@ export type Model = typeof ModelSchema.Type
 
 /** Runtime canvas patches retain the active gesture and disabled snap grid. */
 export const CanvasOptionsSchema = Schema.Struct({
+  helperLines: Schema.optional(Schema.Boolean),
   snapToGrid: Schema.optional(ModelSchema.fields.snapToGrid),
   snapGrid: Schema.optional(FlowSnapGridInputSchema),
   panOnDrag: Schema.optional(ModelSchema.fields.panOnDrag),
@@ -938,6 +943,8 @@ export interface GraphInteractionOptions extends Partial<ClosingOptions> {
   readonly nodesResizable?: boolean
   /** React Flow `snapToGrid`. Defaults to false. */
   readonly snapToGrid?: boolean
+  /** Show node-relative alignment guides and snap during pointer drags. */
+  readonly helperLines?: boolean
   /** React Flow `snapGrid`: `[x, y]` or `{ x, y }`. Defaults to `[15, 15]`. */
   readonly snapGrid?: typeof FlowSnapGridInputSchema.Encoded
   /** React Flow `nodeExtent`: `[[minX, minY], [maxX, maxY]]` or a record. */
@@ -1758,48 +1765,6 @@ const nodeDragStart = (
   return { nodeIds, origins, expandParent }
 }
 
-/**
- * Each dragged node's position once the pointer is at `clientX`/`clientY`:
- * its drag origin plus the pointer travel, snapped and clamped as React
- * `XYDrag` does, so a frame costs O(dragged nodes) plus one id lookup.
- */
-const nodeDragPositions = (
-  model: Model,
-  session: NodeDragSession,
-  clientX: number,
-  clientY: number
-): readonly {
-  readonly nodeId: NodeId
-  readonly position: XYPosition
-  readonly positionAbsolute: XYPosition
-}[] => {
-  const interactivity = selectInteractivity(model)
-  const nodes = new Map(model.document.nodes.map((node) => [node.id, node]))
-
-  const origins = session.origins.filter(({ nodeId }) => {
-    const node = nodes.get(nodeId)
-
-    return (
-      node !== undefined &&
-      node.hidden !== true &&
-      isNodeDraggable(interactivity, node)
-    )
-  })
-
-  return placeDraggedNodes(
-    origins,
-    {
-      x:
-        (clientX - session.startX - (session.panOffset?.x ?? 0)) /
-        model.viewport.zoom,
-      y:
-        (clientY - session.startY - (session.panOffset?.y ?? 0)) /
-        model.viewport.zoom,
-    },
-    model.snapToGrid ? model.snapGrid : undefined
-  )
-}
-
 /** Keep expandParent's accepted parent dimensions while observing live node and handle geometry. */
 const dragMeasurements = (model: Model): Model['measurements'] => {
   const frozen =
@@ -1830,6 +1795,115 @@ const dragMeasurements = (model: Model): Model['measurements'] => {
           }
     }),
   }
+}
+
+const nodeDragAlignment = (
+  model: Model,
+  session: NodeDragSession,
+  clientX: number,
+  clientY: number
+) => {
+  const delta = {
+    x:
+      (clientX - session.startX - (session.panOffset?.x ?? 0)) /
+      model.viewport.zoom,
+    y:
+      (clientY - session.startY - (session.panOffset?.y ?? 0)) /
+      model.viewport.zoom,
+  }
+
+  if (!model.helperLines) {
+    return { delta, guides: [] }
+  }
+
+  const graph = createFlowGraph(
+    model.document,
+    getFlowMeasuredNodes(model.document, dragMeasurements(model))
+  )
+
+  return solveFlowAlignment({
+    graph,
+    nodeIds: session.origins.map(({ nodeId }) => nodeId),
+    delta,
+    zoom: model.viewport.zoom,
+    snapGrid: model.snapToGrid ? model.snapGrid : undefined,
+  })
+}
+
+const renderHelperLines = (
+  model: Model,
+  h: FoldHtml.HtmlBuilder<GraphMessageData>,
+  graph: FlowGraphView
+): readonly FoldHtml.Html[] => {
+  const session = model.pointerSession
+
+  if (session?.kind !== 'node-drag') {
+    return []
+  }
+
+  const alignment = nodeDragAlignment(
+    model,
+    session,
+    session.currentX,
+    session.currentY
+  )
+
+  return resolveFlowAlignmentGuides(graph, alignment.guides).map((guide) =>
+    h.div(
+      [
+        h.DataAttribute('helper-axis', guide.axis),
+        h.DataAttribute('coordinate', String(guide.coordinate)),
+        h.Style({
+          position: 'absolute',
+          pointerEvents: 'none',
+          zIndex: '10000',
+          background: '#f43f5e',
+          left: `${guide.axis === 'x' ? guide.coordinate : guide.from}px`,
+          top: `${guide.axis === 'y' ? guide.coordinate : guide.from}px`,
+          width: `${guide.axis === 'x' ? 1 / model.viewport.zoom : guide.to - guide.from}px`,
+          height: `${guide.axis === 'y' ? 1 / model.viewport.zoom : guide.to - guide.from}px`,
+        }),
+      ],
+      []
+    )
+  )
+}
+
+/**
+ * Each dragged node's position once the pointer is at `clientX`/`clientY`:
+ * its drag origin plus the pointer travel, snapped and clamped as React
+ * `XYDrag` does, so a frame costs O(dragged nodes) plus one id lookup.
+ */
+const nodeDragPositions = (
+  model: Model,
+  session: NodeDragSession,
+  clientX: number,
+  clientY: number
+): readonly {
+  readonly nodeId: NodeId
+  readonly position: XYPosition
+  readonly positionAbsolute: XYPosition
+}[] => {
+  const interactivity = selectInteractivity(model)
+  const nodes = new Map(model.document.nodes.map((node) => [node.id, node]))
+
+  const origins = session.origins.filter(({ nodeId }) => {
+    const node = nodes.get(nodeId)
+
+    return (
+      node !== undefined &&
+      node.hidden !== true &&
+      isNodeDraggable(interactivity, node)
+    )
+  })
+
+  const alignment = nodeDragAlignment(model, session, clientX, clientY)
+
+  return placeDraggedNodes(
+    origins,
+    alignment.delta,
+    !model.helperLines && model.snapToGrid ? model.snapGrid : undefined
+  )
 }
 
 /**
@@ -3578,6 +3652,7 @@ const updateState = (
     SetCanvasOptions: ({ options }) => ({
       model: {
         ...model,
+        helperLines: options.helperLines ?? model.helperLines,
         snapToGrid: options.snapToGrid ?? model.snapToGrid,
         panOnDrag: options.panOnDrag ?? model.panOnDrag,
         selectionOnDrag: options.selectionOnDrag ?? model.selectionOnDrag,
@@ -7985,6 +8060,7 @@ const graphView = (
               ],
               customEdgeLabels
             ),
+            ...renderHelperLines(model, h, graph),
             ...nodes,
             ...(selectedBounds === undefined
               ? []
@@ -8511,6 +8587,7 @@ export const initialModel = (
       : (interactionOptions.keyboardActivation ?? true),
   connectOnClick: interactionOptions.connectOnClick ?? true,
   nodesResizable: interactionOptions.nodesResizable ?? false,
+  helperLines: interactionOptions.helperLines ?? false,
   snapToGrid: interactionOptions.snapToGrid ?? false,
   snapGrid: Schema.decodeUnknownSync(FlowSnapGridInputSchema)(
     interactionOptions.snapGrid ?? [15, 15]
