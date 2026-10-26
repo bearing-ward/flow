@@ -18,12 +18,20 @@ export default defineConfig({
     baseURL: url,
     viewport: { width: 960, height: 640 },
   },
-  webServer: {
-    command:
-      process.env.FLOW_VUE_TEST_PORT === undefined
-        ? 'bun run dev:conformance'
-        : `bun run --cwd ../.. build:vue:packages && vite --host 127.0.0.1 --port ${port} --strictPort`,
-    reuseExistingServer: false,
-    url,
-  },
+  webServer: [
+    {
+      command:
+        process.env.FLOW_VUE_TEST_PORT === undefined
+          ? 'bun run dev:conformance'
+          : `bun run --cwd ../.. build:vue:packages && vite --host 127.0.0.1 --port ${port} --strictPort`,
+      reuseExistingServer: false,
+      url,
+    },
+    {
+      command: 'bun run --cwd packages/collaboration-yjs server',
+      cwd: new URL('../..', import.meta.url).pathname,
+      reuseExistingServer: false,
+      url: 'http://127.0.0.1:4193',
+    },
+  ],
 })

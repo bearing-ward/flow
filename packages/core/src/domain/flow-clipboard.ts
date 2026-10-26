@@ -3,6 +3,7 @@ import { Effect, Schema as S } from 'effect'
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { pruneFlowBundles } from './flow-bundle-pruning.ts'
 import { FlowBundleSchema } from './flow-bundle.schema.ts'
+import { allocateFlowClipboardId } from './flow-clipboard-ids.ts'
 import type { FlowEditTransaction } from './flow-edit.schema.ts'
 import { createFlowGraph } from './flow-graph.ts'
 import { flowHistoryDocument } from './flow-history.ts'
@@ -39,6 +40,8 @@ export const FlowClipboardStateSchema = S.Struct({
 export type FlowClipboardState = typeof FlowClipboardStateSchema.Type
 
 export const FlowPasteOptionsSchema = S.Struct({
+  /** Fresh caller-owned namespace for concurrent room pastes. */
+  idNamespace: S.optional(S.NonEmptyString),
   /** Place the copied root anchor at this graph-space point. */
   position: S.optional(XYPositionSchema),
 })
@@ -166,19 +169,6 @@ export const extractFlowGraphFragment = (
   }
 }
 
-const freshId = (base: string, used: Set<string>): string => {
-  let sequence = 1
-
-  while (used.has(`${base}-copy-${sequence}`)) {
-    sequence += 1
-  }
-
-  const id = `${base}-copy-${sequence}`
-  used.add(id)
-
-  return id
-}
-
 interface FlowClipboardPaste {
   readonly state: FlowClipboardState
   readonly transaction: FlowEditTransaction
@@ -204,14 +194,18 @@ export const pasteFlowGraphFragment = (
   const nodeIds = new Map(
     fragment.nodes.map(({ id }) => [
       id,
-      NodeIdSchema.make(freshId(id, nodeUsed)),
+      NodeIdSchema.make(
+        allocateFlowClipboardId(id, nodeUsed, options.idNamespace)
+      ),
     ])
   )
 
   const edgeIds = new Map(
     fragment.edges.map(({ id }) => [
       id,
-      EdgeIdSchema.make(freshId(id, edgeUsed)),
+      EdgeIdSchema.make(
+        allocateFlowClipboardId(id, edgeUsed, options.idNamespace)
+      ),
     ])
   )
 
@@ -318,7 +312,7 @@ export const pasteFlowGraphFragment = (
   const bundles = fragment.bundles?.map((bundle) =>
     S.decodeUnknownSync(FlowBundleSchema)({
       ...bundle,
-      id: freshId(bundle.id, bundleUsed),
+      id: allocateFlowClipboardId(bundle.id, bundleUsed, options.idNamespace),
       edgeIds: bundle.edgeIds.map((id) => edgeIds.get(id) ?? id),
       ties: bundle.ties.map((point) => ({
         x: point.x + offset.x,

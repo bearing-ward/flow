@@ -1,7 +1,7 @@
 import { Schema as S } from 'effect'
 import ts from 'typescript-api'
 
-const routingOwners = new Set([
+const adapterOwners = new Set([
   'packages/core',
   'packages/vue',
   'packages/foldkit',
@@ -10,6 +10,11 @@ const routingOwners = new Set([
 
 const routingDependency = (specifier: string): boolean =>
   /(?:^|\/)(?:routing-libavoid|libavoid-js)(?:\/|$)/u.test(specifier)
+
+const collaborationDependency = (specifier: string): boolean =>
+  /(?:^|\/)(?:collaboration-yjs|yjs|y-websocket|y-protocols|@y\/websocket-server)(?:\/|$)/u.test(
+    specifier
+  )
 
 const browserGlobals = new Set([
   'cancelAnimationFrame',
@@ -181,13 +186,13 @@ export const findArchitectureViolations = (
       const appSource = normalizedSourcePath.startsWith('apps/')
 
       if (
-        [...routingOwners].some((owner) =>
+        [...adapterOwners].some((owner) =>
           normalizedSourcePath.startsWith(`${owner}/src/`)
         ) &&
-        routingDependency(normalized)
+        (routingDependency(normalized) || collaborationDependency(normalized))
       ) {
         violations.push(
-          `${source.path}:${line} imports an optional routing engine: ${specifier}`
+          `${source.path}:${line} imports an optional integration: ${specifier}`
         )
       }
 
@@ -242,30 +247,32 @@ export const findArchitectureViolations = (
   return violations
 }
 
-const RoutingManifestSchema = S.Struct({
+const IntegrationManifestSchema = S.Struct({
   dependencies: S.optional(S.Record(S.String, S.String)),
   devDependencies: S.optional(S.Record(S.String, S.String)),
   optionalDependencies: S.optional(S.Record(S.String, S.String)),
   peerDependencies: S.optional(S.Record(S.String, S.String)),
 })
 
-export const findRoutingPackageViolations = (
+export const findOptionalIntegrationPackageViolations = (
   source: ArchitectureSource
 ): readonly string[] => {
-  if (!routingOwners.has(source.path.replace(/\/package\.json$/u, ''))) {
+  if (!adapterOwners.has(source.path.replace(/\/package\.json$/u, ''))) {
     return []
   }
 
-  const manifest = S.decodeUnknownSync(RoutingManifestSchema)(
+  const manifest = S.decodeUnknownSync(IntegrationManifestSchema)(
     JSON.parse(source.text)
   )
 
   return Object.entries(manifest).flatMap(([section, dependencies]) =>
     Object.keys(dependencies ?? {})
-      .filter(routingDependency)
+      .filter(
+        (name) => routingDependency(name) || collaborationDependency(name)
+      )
       .map(
         (name) =>
-          `${source.path}: ${section} must not depend on optional routing engine ${name}`
+          `${source.path}: ${section} must not depend on optional integration ${name}`
       )
   )
 }

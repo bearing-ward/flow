@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@flow/collaboration-yjs": "workspace:*",
     "@flow/core": "workspace:*",
     "@flow/layout": "workspace:*",
     "@flow/routing-libavoid": "workspace:*",

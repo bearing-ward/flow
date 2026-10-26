@@ -8,10 +8,18 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4178',
     viewport: { width: 960, height: 640 },
   },
-  webServer: {
-    command:
-      'bun run --cwd ../.. build:foldkit:package && vite --host 127.0.0.1 --port 4178 --strictPort',
-    reuseExistingServer: false,
-    url: 'http://127.0.0.1:4178',
-  },
+  webServer: [
+    {
+      command:
+        'bun run --cwd ../.. build:foldkit:package && vite --host 127.0.0.1 --port 4178 --strictPort',
+      reuseExistingServer: false,
+      url: 'http://127.0.0.1:4178',
+    },
+    {
+      command: 'bun run --cwd packages/collaboration-yjs server',
+      cwd: new URL('../..', import.meta.url).pathname,
+      reuseExistingServer: false,
+      url: 'http://127.0.0.1:4193',
+    },
+  ],
 })

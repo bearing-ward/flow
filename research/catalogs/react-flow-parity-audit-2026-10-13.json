@@ -12,31 +12,31 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 193,
+    "inScopeCloseAllHosts": 194,
     "inScopeCloseByHost": {
-      "vanilla": 193,
-      "vue": 193,
-      "foldkit": 193
+      "vanilla": 194,
+      "vue": 194,
+      "foldkit": 194
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-160 acceptance follow-ups; other ratings retain their recorded audit boundaries; Plan 162 obstacle routing acceptance",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-160 acceptance follow-ups; other ratings retain their recorded audit boundaries; Plan 162 obstacle routing acceptance; Plan 164 collaborative rooms acceptance",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 14,
+          "C": 15,
           "P": 0,
-          "G": 2
+          "G": 1
         },
         "vue": {
-          "C": 14,
+          "C": 15,
           "P": 0,
-          "G": 2
+          "G": 1
         },
         "foldkit": {
-          "C": 14,
+          "C": 15,
           "P": 0,
-          "G": 2
+          "G": 1
         }
       }
     }
@@ -3763,52 +3763,54 @@
     {
       "section": "examples interaction",
       "name": "Collaborative · Pro",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Local edits and persistence do not supply rooms, shared state, awareness, transport or conflict resolution.",
+      "missing": null,
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 164",
         "previousRatings": {
-          "vanilla": "P",
-          "vue": "P",
-          "foldkit": "P"
+          "vanilla": "G",
+          "vue": "G",
+          "foldkit": "G"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "D12 optional Yjs/y-websocket contract; public-description/dependency comparison; real local server tests; eight shared Chromium acceptance cases per Flow host plus three-origin mixed-host convergence. C means achievable functional closeness, not private Pro source equivalence.",
         "url": "https://reactflow.dev/examples/interaction/collaborative",
-        "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
-        "demoUrls": [],
-        "missing": "Local edits and persistence do not supply rooms, shared state, awareness, transport or conflict resolution.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "accessedOn": "2026-10-26",
+        "sourceAccess": "Public description, dependency list and linked Yjs documentation only. Subscription-only source and hidden conflict policy were not accessed.",
+        "demoUrls": ["/collaborative/"],
+        "missing": null,
+        "evidence": "research/traces/164-collaborative-rooms.md",
         "outcomes": [
           {
             "id": "room",
             "outcome": "Join an isolated room from a shareable URL or a second tab.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -3816,25 +3818,27 @@
           {
             "id": "shared-edits",
             "outcome": "Synchronize node/edge edits and live movement between users.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "linked-public-docs"
@@ -3842,25 +3846,27 @@
           {
             "id": "context-add",
             "outcome": "Right-click the shared pane to add a node visible to peers.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -3868,53 +3874,69 @@
           {
             "id": "reconnect",
             "outcome": "Converge after concurrent edits and connection loss.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-persistence.ts:424",
-                "packages/core/src/domain/flow-persistence.ts:478"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
-              "vanilla": ["apps/vanilla/src/mount-flow.ts:14308"],
-              "vue": ["packages/vue/src/use-flow.ts:661"],
-              "foldkit": ["packages/foldkit/src/instance.ts:409"]
+              "vanilla": [
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
+              ],
+              "vue": [
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
+              ],
+              "foldkit": [
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
+              ]
             },
             "basis": "linked-public-docs"
           },
           {
             "id": "presence",
             "outcome": "Show peer presence while keeping selection and measurements local.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "shared": [
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
-                "apps/vanilla/src/mount-flow.ts:8559"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/whiteboard-recipes.ts:63",
-                "packages/vue/src/flow-canvas.ts:9110"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
-                "packages/foldkit/src/graph.ts:7582"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "linked-public-docs"
           }
         ],
         "unverified": [
-          "Reconnect and presence requirements come from linked multiplayer guidance, not an inspected Pro implementation. Backend durability/authentication are integration decisions."
+          "Exact Pro implementation and conflict policy; hosting, authenticated room access, durability and offline retention; full-profile and collector delivery acceptance."
         ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 164"]
     },
     {
       "section": "examples interaction",

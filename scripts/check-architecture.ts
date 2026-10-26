@@ -3,7 +3,7 @@ import { Effect, FileSystem, Path } from 'effect'
 
 import {
   findArchitectureViolations,
-  findRoutingPackageViolations,
+  findOptionalIntegrationPackageViolations,
 } from './architecture-rules.ts'
 
 const rootUrl = new URL('../', import.meta.url)
@@ -80,13 +80,21 @@ const fixtureChecks = (): readonly string[] => {
     'packages/foldkit',
     'apps/vanilla',
   ]) {
-    for (const dependency of ['libavoid-js', '@flow/routing-libavoid']) {
+    for (const dependency of [
+      'libavoid-js',
+      '@flow/routing-libavoid',
+      'yjs',
+      'y-websocket',
+      'y-protocols',
+      '@y/websocket-server',
+      '@flow/collaboration-yjs',
+    ]) {
       if (
         findArchitectureViolations({
           path: `${owner}/src/forbidden-routing.ts`,
           text: `export { router } from '${dependency}'`,
         }).length === 0 ||
-        findRoutingPackageViolations({
+        findOptionalIntegrationPackageViolations({
           path: `${owner}/package.json`,
           text: JSON.stringify({
             optionalDependencies: { [dependency]: '0.0.0' },
@@ -94,7 +102,7 @@ const fixtureChecks = (): readonly string[] => {
         }).length === 0
       ) {
         failures.push(
-          `${owner}: optional routing isolation rule did not reject ${dependency}`
+          `${owner}: optional integration isolation rule did not reject ${dependency}`
         )
       }
     }
@@ -174,7 +182,7 @@ const program = Effect.gen(function* checkArchitecture() {
   ]) {
     const manifestPath = `${owner}/package.json`
     violations.push(
-      ...findRoutingPackageViolations({
+      ...findOptionalIntegrationPackageViolations({
         path: manifestPath,
         text: yield* fileSystem.readFileString(path.join(root, manifestPath)),
       })

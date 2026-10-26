@@ -8,6 +8,7 @@ export const isFlowTraceSourcePath = (relativePath: string): boolean =>
   relativePath.startsWith('packages/core/') ||
   relativePath.startsWith('packages/layout/') ||
   relativePath.startsWith('packages/routing-libavoid/') ||
+  relativePath.startsWith('packages/collaboration-yjs/') ||
   relativePath.startsWith('tests/routing/') ||
   relativePath.startsWith('packages/conformance/') ||
   relativePath.startsWith('packages/foldkit/') ||

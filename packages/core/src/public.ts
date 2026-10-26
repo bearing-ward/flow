@@ -1301,3 +1301,12 @@ export {
   flowBundleAffectedEdges,
   flowBundleEndpointNodeIds,
 } from './domain/flow-bundle-dependencies.ts'
+
+export {
+  FlowRoomPresenceSchema,
+  FlowRoomStatusSchema,
+  projectFlowRoomDocument,
+  projectFlowRoomPresence,
+} from './domain/flow-room.ts'
+
+export type { FlowRoomPresence, FlowRoomStatus } from './domain/flow-room.ts'
