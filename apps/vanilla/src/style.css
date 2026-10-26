@@ -797,6 +797,19 @@ body,
   pointer-events: none;
 }
 
+.flow-route-point {
+  fill: var(--flow-background-color, white);
+  stroke: #2563eb;
+  stroke-width: 2;
+  pointer-events: all;
+  cursor: move;
+  touch-action: none;
+}
+
+.flow-route-point:focus-visible {
+  stroke-width: 4;
+}
+
 .flow-connection-preview line,
 .flow-connection-preview-path {
   fill: none;

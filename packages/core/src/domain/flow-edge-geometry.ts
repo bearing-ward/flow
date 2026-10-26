@@ -11,6 +11,7 @@ import { createFlowGraph } from './flow-graph.ts'
 import type { FlowGraphNode, FlowGraphView } from './flow-graph.ts'
 import type { FlowIntersectionCandidate } from './flow-intersection.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
+import { getManualRouteGeometry } from './flow-route-geometry.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { smoothStepEdgePath, stepEdgePath } from './flow-step-edge.schema.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
@@ -201,25 +202,34 @@ export const getEdgesGeometry = (
     const sourcePosition = resolved.sourceHandle.side
     const targetPosition = resolved.targetHandle.side
 
+    const manual =
+      edge.route?.mode === 'manual'
+        ? getManualRouteGeometry(source, target, edge.route.points)
+        : undefined
+
     return [
       {
         id: edge.id,
         edge,
         pathType,
-        path: pathFor(pathType, source, target, sourcePosition, targetPosition),
+        path:
+          manual?.path ??
+          pathFor(pathType, source, target, sourcePosition, targetPosition),
         source,
         target,
         sourcePosition,
         targetPosition,
         sourceHandleId: resolved.sourceHandle.id,
         targetHandleId: resolved.targetHandle.id,
-        label: edgeLabelPosition(
-          source,
-          target,
-          pathType,
-          sourcePosition,
-          targetPosition
-        ),
+        label:
+          manual?.label ??
+          edgeLabelPosition(
+            source,
+            target,
+            pathType,
+            sourcePosition,
+            targetPosition
+          ),
       },
     ]
   })

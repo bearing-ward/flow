@@ -11,6 +11,7 @@ import { DuplicateEdgeId } from './duplicate-edge-id.ts'
 import { DuplicateHandleId } from './duplicate-handle-id.ts'
 import { DuplicateNodeId } from './duplicate-node-id.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
+import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
 import { FlowClassNameSchema, FlowStyleSchema } from './flow-style.schema.ts'
 import {
   EdgeIdSchema,
@@ -303,6 +304,7 @@ export const FlowEdgeSchema = S.Struct({
   sourceHandle: S.optional(HandleIdSchema),
   targetHandle: S.optional(HandleIdSchema),
   path: S.optional(FlowEdgePathSchema),
+  route: S.optional(FlowEdgeRouteSchema),
   label: S.optional(S.String),
   data: S.optional(S.JsonObject),
   markerStart: S.optional(FlowEdgeMarkerOptionSchema),

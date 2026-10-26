@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle; Plan 150 transaction history; Plan 154 grouping actions and sizing; Plan 154 Schema Studio area undo regression; Plan 152 resize completion node changes; Plan 153 graph clipboard; Plan 155 alignment helper lines",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle; Plan 150 transaction history; Plan 154 grouping actions and sizing; Plan 154 Schema Studio area undo regression; Plan 152 resize completion node changes; Plan 153 graph clipboard; Plan 155 alignment helper lines; Plan 156 editable and freeform edges",
   "checks": [
     "api-members",
     "catalog",
@@ -79,7 +79,8 @@
       "grouping-actions.e2e.ts",
       "resize-completion.e2e.ts",
       "graph-clipboard.e2e.ts",
-      "helper-lines.e2e.ts"
+      "helper-lines.e2e.ts",
+      "editable-edges.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -140,7 +141,8 @@
       "grouping-actions.e2e.ts",
       "resize-completion.e2e.ts",
       "graph-clipboard.e2e.ts",
-      "helper-lines.e2e.ts"
+      "helper-lines.e2e.ts",
+      "editable-edges.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -213,7 +215,8 @@
       "grouping-actions.e2e.ts",
       "resize-completion.e2e.ts",
       "graph-clipboard.e2e.ts",
-      "helper-lines.e2e.ts"
+      "helper-lines.e2e.ts",
+      "editable-edges.e2e.ts"
     ]
   }
 }

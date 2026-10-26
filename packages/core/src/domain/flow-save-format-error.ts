@@ -5,6 +5,7 @@ export const SavedFlowFormatFailureCodeSchema = Schema.Literals([
   'native-fields-require-versioned-session',
   'noncanonical-handles-require-versioned-session',
   'presentation-fields-require-versioned-session',
+  'route-requires-versioned-session',
 ])
 
 export type SavedFlowFormatFailureCode =

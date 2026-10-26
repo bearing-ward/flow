@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => {
           main: fileURLToPath(new URL('index.html', import.meta.url)),
           clipboard: `${import.meta.dirname}/clipboard/index.html`,
           helperLines: `${import.meta.dirname}/helper-lines/index.html`,
+          editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
           history: fileURLToPath(
             new URL('history/index.html', import.meta.url)
           ),

@@ -90,6 +90,16 @@ export type FlowEdge = {
   readonly sourceHandle?: string;
   readonly targetHandle?: string;
   readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+  readonly route?: {
+    readonly mode: "automatic";
+  }
+  | {
+    readonly mode: "manual";
+    readonly points: ReadonlyArray<{
+      readonly x: number;
+      readonly y: number;
+    }>;
+  };
   readonly label?: string;
   readonly data?: Readonly<Record<string, JsonValue>>;
   readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -131,6 +141,16 @@ export type FlowDocument = {
     readonly sourceHandle?: string;
     readonly targetHandle?: string;
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+    readonly route?: {
+      readonly mode: "automatic";
+    }
+    | {
+      readonly mode: "manual";
+      readonly points: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    };
     readonly label?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
     readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -369,6 +389,16 @@ export type FlowCommand = {
         readonly sourceHandle?: string;
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -405,6 +435,16 @@ export type FlowCommand = {
         readonly sourceHandle?: string;
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -540,6 +580,16 @@ export type FlowChange = {
     readonly sourceHandle?: string;
     readonly targetHandle?: string;
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+    readonly route?: {
+      readonly mode: "automatic";
+    }
+    | {
+      readonly mode: "manual";
+      readonly points: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    };
     readonly label?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
     readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -591,6 +641,16 @@ export type FlowChange = {
     readonly sourceHandle?: string;
     readonly targetHandle?: string;
     readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+    readonly route?: {
+      readonly mode: "automatic";
+    }
+    | {
+      readonly mode: "manual";
+      readonly points: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    };
     readonly label?: string;
     readonly data?: Readonly<Record<string, JsonValue>>;
     readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -632,6 +692,16 @@ export type FlowChange = {
       readonly sourceHandle?: string;
       readonly targetHandle?: string;
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+      readonly route?: {
+        readonly mode: "automatic";
+      }
+      | {
+        readonly mode: "manual";
+        readonly points: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      };
       readonly label?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
       readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -735,6 +805,16 @@ export type FlowSnapshot = {
       readonly sourceHandle?: string;
       readonly targetHandle?: string;
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+      readonly route?: {
+        readonly mode: "automatic";
+      }
+      | {
+        readonly mode: "manual";
+        readonly points: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      };
       readonly label?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
       readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -832,6 +912,16 @@ export type FlowStateChange = {
         readonly sourceHandle?: string;
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -921,6 +1011,16 @@ export type FlowStateChange = {
         readonly sourceHandle?: string;
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -1019,6 +1119,16 @@ export type FlowSnapshot = {
       readonly sourceHandle?: string;
       readonly targetHandle?: string;
       readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+      readonly route?: {
+        readonly mode: "automatic";
+      }
+      | {
+        readonly mode: "manual";
+        readonly points: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      };
       readonly label?: string;
       readonly data?: Readonly<Record<string, JsonValue>>;
       readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -1116,6 +1226,16 @@ export type FlowStateChange = {
         readonly sourceHandle?: string;
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
@@ -1205,6 +1325,16 @@ export type FlowStateChange = {
         readonly sourceHandle?: string;
         readonly targetHandle?: string;
         readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
         readonly label?: string;
         readonly data?: Readonly<Record<string, JsonValue>>;
         readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
