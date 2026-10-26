@@ -77,6 +77,45 @@ export type FlowNode = {
 };
 ```
 
+## Shape data
+
+Generated from `FlowFigureDataSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowFigureData = {
+  readonly type: "circle" | "diamond" | "hexagon";
+  readonly color: "#ff0071" | "#1a8cff" | "#00b884" | "#ffb300";
+};
+```
+
+## Shape commands
+
+Generated from `FlowFigureEditSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowFigureEdit = {
+  readonly kind: "create";
+  readonly id: string;
+  readonly position: {
+    readonly x: number;
+    readonly y: number;
+  };
+  readonly figure: {
+    readonly type: "circle" | "diamond" | "hexagon";
+    readonly color: "#ff0071" | "#1a8cff" | "#00b884" | "#ffb300";
+  };
+  readonly size?: {
+    readonly width: number;
+    readonly height: number;
+  };
+}
+| {
+  readonly kind: "color";
+  readonly nodeId: string;
+  readonly color: "#ff0071" | "#1a8cff" | "#00b884" | "#ffb300";
+};
+```
+
 ## Edge
 
 Generated from `FlowEdgeSchema` in `packages/core/src/public.ts`.

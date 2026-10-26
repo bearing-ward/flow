@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
       rolldownOptions: {
         input: {
           main: fileURLToPath(new URL('index.html', import.meta.url)),
+          figures: `${import.meta.dirname}/shapes/index.html`,
           clipboard: `${import.meta.dirname}/clipboard/index.html`,
           helperLines: `${import.meta.dirname}/helper-lines/index.html`,
           editableEdges: `${import.meta.dirname}/editable-edges/index.html`,

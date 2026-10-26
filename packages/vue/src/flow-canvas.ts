@@ -626,7 +626,7 @@ const hasClassAncestor = (
 
 const isNodePointerTargetAllowed = (
   content: HTMLElement,
-  target: HTMLElement
+  target: Element
 ): boolean => {
   const dragHandle = target.closest<HTMLElement>('[data-flow-drag-handle]')
 
@@ -650,7 +650,7 @@ const isNodePointerTargetAllowed = (
  */
 const insideDragHandle = (
   content: HTMLElement,
-  target: HTMLElement,
+  target: Element,
   dragHandle: string | undefined
 ): boolean => {
   if (dragHandle === undefined) {
@@ -7027,7 +7027,7 @@ export const FlowCanvas = defineComponent({
 
       const { target } = event
 
-      if (!(target instanceof HTMLElement)) {
+      if (!(target instanceof Element)) {
         return
       }
 

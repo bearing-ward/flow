@@ -1126,6 +1126,31 @@ export {
 export { InvalidEdgeRoute } from './domain/flow-route-error.ts'
 
 export {
+  FlowFigureKindSchema,
+  FlowFigureColorSchema,
+  FlowFigureDataSchema,
+  flowFigureNodeType,
+  flowFigureKinds,
+  flowFigureColors,
+  flowFigurePath,
+} from './domain/flow-shape.schema.ts'
+
+export type {
+  FlowFigureKind,
+  FlowFigureColor,
+  FlowFigureData,
+} from './domain/flow-shape.schema.ts'
+
+export {
+  FlowFigureEditSchema,
+  InvalidFigureNode,
+  flowFigureData,
+  prepareFlowFigureEdit,
+} from './domain/flow-shape.ts'
+
+export type { FlowFigureEdit } from './domain/flow-shape.ts'
+
+export {
   SavedRouteFlowDocumentSchema,
   SavedRouteFlowSessionSchema,
 } from './domain/flow-persistence.ts'

@@ -260,3 +260,8 @@ export type {
 } from './ui/toolbar.ts'
 
 export { createFlowGrouping } from './grouping.ts'
+
+export {
+  flowFigureNodeRenderer,
+  createFlowFigureMiniMapNode,
+} from './shape-node.ts'

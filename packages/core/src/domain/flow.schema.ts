@@ -12,6 +12,7 @@ import { DuplicateHandleId } from './duplicate-handle-id.ts'
 import { DuplicateNodeId } from './duplicate-node-id.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
 import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
+import { FlowFigureDataSchema } from './flow-shape.schema.ts'
 import { FlowClassNameSchema, FlowStyleSchema } from './flow-style.schema.ts'
 import {
   EdgeIdSchema,
@@ -171,7 +172,14 @@ export const FlowNodeSchema = S.Struct({
   /** Grow the parent when this child is dragged or resized past its bounds. */
   expandParent: S.optional(S.Boolean),
   measured: S.optional(NodeMeasuredSchema),
-})
+}).check(
+  S.makeFilter(
+    (node) =>
+      node.type !== 'shape' ||
+      (node.size !== undefined && S.is(FlowFigureDataSchema)(node.data)) ||
+      'Figure nodes require explicit bounds and decoded figure type/color data'
+  )
+)
 
 export type FlowNode = typeof FlowNodeSchema.Type
 
