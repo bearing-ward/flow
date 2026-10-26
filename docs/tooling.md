@@ -49,7 +49,7 @@ Keep the scope for ongoing work in the root `verification.config.json`:
 }
 ```
 
-Update `activeWork`, `checks`, and `browserTests` when changing tasks. `--check` accepts `docs`, `catalog`, `api-members`, `contracts`, `proof`, `calibration`, `examples`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, and `upstream-ledger`. For example, public export changes should include `consumer`; research or catalog edits should include their corresponding check. These additions are explicit because the baseline alone does not cover those contracts.
+Update `activeWork`, `checks`, and `browserTests` when changing tasks. `--check` accepts `docs`, `catalog`, `api-members`, `contracts`, `proof`, `calibration`, `examples`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, `upstream-ledger`, and `collaboration`. The collaboration check starts all three hosts plus a local y-websocket server for mixed-host convergence and stops them after the run. For example, public export changes should include `consumer`; research or catalog edits should include their corresponding check. These additions are explicit because the baseline alone does not cover those contracts.
 
 The full profile includes all these extra checks, all three application builds, packed consumers, and every browser suite. Use it at integration and release milestones. `--full` ignores focused browser filters and runs all suites; `--focused` overrides a full configured default. `--list` previews either profile without executing checks. Logs name the selected profile and checks and report elapsed time; record that scope when reporting acceptance.
 

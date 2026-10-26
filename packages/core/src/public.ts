@@ -1323,3 +1323,12 @@ export type { FlowImageExportOptions } from './domain/flow-image-request.ts'
 export { flowImageDocumentRevision } from './domain/flow-image-export.ts'
 
 export { getFlowImageCaptureRouting } from './domain/flow-image-routing.ts'
+
+export {
+  FlowRoomPresenceSchema,
+  FlowRoomStatusSchema,
+  projectFlowRoomDocument,
+  projectFlowRoomPresence,
+} from './domain/flow-room.ts'
+
+export type { FlowRoomPresence, FlowRoomStatus } from './domain/flow-room.ts'

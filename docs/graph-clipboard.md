@@ -35,3 +35,5 @@ Extensions call `pasteFlowGraphFragment` with explicit `FlowClipboardExtension` 
 The `/clipboard/` recipe in all three hosts demonstrates copy, paste, undo, redo, transformed placement and invalid-fragment rejection. [Plan 153's trace](../research/traces/153-graph-clipboard.md) separates production paths, acceptance evidence and the public-reference boundary.
 
 [Dynamic tree](expand-collapse.md) node data retains its version, kind, expansion state, and opaque metadata in fragments. Collapse does not remove descendants from the accepted document. Tree data contains no embedded ID references, so it needs no extension remapping hook.
+
+Room compositions can pass a fresh `idNamespace` in `FlowPasteOptions` for each paste. This separates concurrent node, edge, handle and bundle allocation while retaining the default session-only IDs for existing callers. The collaborative room recipe applies the namespace to buttons and native shortcuts.

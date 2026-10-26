@@ -2446,50 +2446,90 @@
       "family": "advanced-integrations",
       "journey": "Edit different nodes from two independent clients, make concurrent changes, disconnect one, then reconnect it.",
       "observableResult": "Both clients converge on the agreed graph after reconnect; the displayed conflict result follows the documented resolution policy.",
-      "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
-      "apiValidation": "pending",
+      "publicApis": [
+        "acquireYjsRoom",
+        "projectFlowRoomDocument",
+        "FlowPasteOptionsSchema",
+        "subscribeState",
+        "updateDocument",
+        "HostAction"
+      ],
+      "apiValidation": "validated",
       "hostRoutes": {
         "vanilla": {
-          "path": "/examples/interaction/collaborative",
-          "status": "planned"
+          "path": "/collaborative/",
+          "status": "runnable",
+          "sourcePath": "apps/vanilla/src/collaborative-demo.ts"
         },
         "vue": {
-          "path": "/examples/interaction/collaborative",
-          "status": "planned"
+          "path": "/collaborative/",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/collaborative-demo.ts"
         },
         "foldkit": {
-          "path": "/examples/interaction/collaborative",
-          "status": "planned"
+          "path": "/collaborative/",
+          "status": "runnable",
+          "sourcePath": "apps/foldkit/src/collaborative-demo.ts"
         }
       },
-      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
-      "optionalDependencies": "real transport and two independent clients required; protocol decision pending",
+      "resetBehavior": "Open /collaborative/ without a room query for a fresh isolated empty room. Dispose closes the current scope; existing shared-room data remains with the live server.",
+      "optionalDependencies": "Approved optional @flow/collaboration-yjs owns Yjs 13.6.33, y-websocket 3.1.0 and the local @y/websocket-server 0.1.1 test server. Production hosting/authentication/durability/offline retention remain open.",
       "reference": {
         "availability": "public-page-listed",
-        "licenseReview": "required-before-copy",
-        "comparison": "unverified"
-      },
-      "implementedRecipe": "none",
-      "testedResult": {
-        "vanilla": {
-          "status": "not-tested",
-          "path": null
-        },
-        "vue": {
-          "status": "not-tested",
-          "path": null
-        },
-        "foldkit": {
-          "status": "not-tested",
-          "path": null
+        "licenseReview": "independent implementation; public-description comparison only",
+        "comparison": "unverified",
+        "evidence": {
+          "type": "trace",
+          "path": "research/traces/164-collaborative-rooms.md"
         }
       },
-      "acceptanceClaim": "planned",
-      "dependencyDecision": "pending",
+      "implementedRecipe": "complete",
+      "testedResult": {
+        "vanilla": {
+          "status": "tested",
+          "path": "apps/vanilla/e2e/collaborative.e2e.ts"
+        },
+        "vue": {
+          "status": "tested",
+          "path": "apps/vue/e2e/collaborative.e2e.ts"
+        },
+        "foldkit": {
+          "status": "tested",
+          "path": "apps/foldkit/e2e/collaborative.e2e.ts"
+        }
+      },
+      "acceptanceClaim": "complete",
+      "dependencyDecision": "approved",
       "testBoundary": {
-        "automated": "In each host, run the journey: Edit different nodes from two independent clients, make concurrent changes, disconnect one, then reconnect it. Assert: Both clients converge on the agreed graph after reconnect; the displayed conflict result follows the documented resolution policy. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
-        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
-      }
+        "automated": "Real local websocket transport, eight native-browser cases per host and three-origin mixed-host convergence: isolated/shareable rooms, right-click creation, live drag and edge output, simultaneous fields, delete-versus-move, reconnect, selective undo, concurrent clipboard IDs, local presentation, extensions and presence cleanup. Unit tests also inject duplicate websocket frames and malformed state.",
+        "manual": "Public example description and dependency list were read on 2026-10-26. Subscription-only source, exact demo behavior and hidden conflict rules remain unverified. Flow conflict policy and open production decisions are documented in the package README."
+      },
+      "apiEvidence": [
+        {
+          "api": "acquireYjsRoom",
+          "path": "packages/collaboration-yjs/src/public.ts"
+        },
+        {
+          "api": "projectFlowRoomDocument",
+          "path": "packages/core/src/domain/flow-room.ts"
+        },
+        {
+          "api": "FlowPasteOptionsSchema",
+          "path": "packages/core/src/domain/flow-clipboard.ts"
+        },
+        {
+          "api": "subscribeState",
+          "path": "apps/vanilla/src/mount-flow.ts"
+        },
+        {
+          "api": "updateDocument",
+          "path": "packages/vue/src/use-flow.ts"
+        },
+        {
+          "api": "HostAction",
+          "path": "packages/foldkit/src/host-action.ts"
+        }
+      ]
     },
     {
       "url": "https://reactflow.dev/examples/interaction/copy-paste",

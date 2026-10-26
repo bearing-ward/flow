@@ -18,6 +18,7 @@ const extraCheckNames = [
   'foldkit-build',
   'upstream-ledger',
   'reference-host',
+  'collaboration',
 ] as const
 
 const ExtraCheckSchema = S.Literals(extraCheckNames)
@@ -72,6 +73,14 @@ const baselineChecks = [
 ]
 
 const extraChecks = {
+  collaboration: bunCheck('mixed-host collaborative transport', [
+    'run',
+    'playwright',
+    'test',
+    '-c',
+    'scripts/collaborative.config.ts',
+    '--workers=1',
+  ]),
   'reference-host': bunCheck('React reference host', [
     'run',
     'scripts/check-react-reference.ts',

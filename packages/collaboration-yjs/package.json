@@ -1,0 +1,32 @@
+{
+  "name": "@flow/collaboration-yjs",
+  "version": "0.0.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    }
+  },
+  "scripts": {
+    "build": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect --external @flow/core --external yjs --external y-websocket && tsc --project tsconfig.build.json",
+    "server": "env -u YPERSISTENCE -u CALLBACK_URL HOST=127.0.0.1 PORT=4193 y-websocket"
+  },
+  "dependencies": {
+    "y-websocket": "3.1.0",
+    "yjs": "13.6.33"
+  },
+  "devDependencies": {
+    "@flow/core": "workspace:*",
+    "@y/websocket-server": "0.1.1",
+    "effect": "4.0.0"
+  },
+  "peerDependencies": {
+    "@flow/core": "0.0.0",
+    "effect": "4.0.0"
+  }
+}

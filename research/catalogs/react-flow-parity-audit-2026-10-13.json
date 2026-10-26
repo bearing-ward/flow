@@ -12,31 +12,31 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 194,
+    "inScopeCloseAllHosts": 195,
     "inScopeCloseByHost": {
-      "vanilla": 194,
-      "vue": 194,
-      "foldkit": 194
+      "vanilla": 195,
+      "vue": 195,
+      "foldkit": 195
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-160 acceptance follow-ups; other ratings retain their recorded audit boundaries; Plan 162 obstacle routing acceptance; Plan 165 Chromium server image acceptance",
+    "reaudit": "2026-10-26 Plan 149 Pro audit with Plans 150, 153-160 and 162-165 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 15,
+          "C": 16,
           "P": 0,
-          "G": 1
+          "G": 0
         },
         "vue": {
-          "C": 15,
+          "C": 16,
           "P": 0,
-          "G": 1
+          "G": 0
         },
         "foldkit": {
-          "C": 15,
+          "C": 16,
           "P": 0,
-          "G": 1
+          "G": 0
         }
       }
     }
@@ -2253,7 +2253,7 @@
     },
     {
       "section": "examples nodes",
-      "name": "Node Position Animation \u00b7 Pro",
+      "name": "Node Position Animation · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -2440,7 +2440,7 @@
     },
     {
       "section": "examples nodes",
-      "name": "Shapes \u00b7 Pro",
+      "name": "Shapes · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -2999,7 +2999,7 @@
     },
     {
       "section": "examples edges",
-      "name": "Edge Routing \u00b7 Pro",
+      "name": "Edge Routing · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3241,7 +3241,7 @@
     },
     {
       "section": "examples edges",
-      "name": "Editable Edge \u00b7 Pro",
+      "name": "Editable Edge · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3639,7 +3639,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Helper Lines \u00b7 Pro",
+      "name": "Helper Lines · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3762,53 +3762,55 @@
     },
     {
       "section": "examples interaction",
-      "name": "Collaborative \u00b7 Pro",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "name": "Collaborative · Pro",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Local edits and persistence do not supply rooms, shared state, awareness, transport or conflict resolution.",
+      "missing": null,
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 164",
         "previousRatings": {
-          "vanilla": "P",
-          "vue": "P",
-          "foldkit": "P"
+          "vanilla": "G",
+          "vue": "G",
+          "foldkit": "G"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "D12 optional Yjs/y-websocket contract; public-description/dependency comparison; real local server tests; eight shared Chromium acceptance cases per Flow host plus three-origin mixed-host convergence. C means achievable functional closeness, not private Pro source equivalence.",
         "url": "https://reactflow.dev/examples/interaction/collaborative",
-        "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
-        "demoUrls": [],
-        "missing": "Local edits and persistence do not supply rooms, shared state, awareness, transport or conflict resolution.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "accessedOn": "2026-10-26",
+        "sourceAccess": "Public description, dependency list and linked Yjs documentation only. Subscription-only source and hidden conflict policy were not accessed.",
+        "demoUrls": ["/collaborative/"],
+        "missing": null,
+        "evidence": "research/traces/164-collaborative-rooms.md",
         "outcomes": [
           {
             "id": "room",
             "outcome": "Join an isolated room from a shareable URL or a second tab.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -3816,25 +3818,27 @@
           {
             "id": "shared-edits",
             "outcome": "Synchronize node/edge edits and live movement between users.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "linked-public-docs"
@@ -3842,25 +3846,27 @@
           {
             "id": "context-add",
             "outcome": "Right-click the shared pane to add a node visible to peers.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -3868,57 +3874,73 @@
           {
             "id": "reconnect",
             "outcome": "Converge after concurrent edits and connection loss.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-persistence.ts:424",
-                "packages/core/src/domain/flow-persistence.ts:478"
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
               ],
-              "vanilla": ["apps/vanilla/src/mount-flow.ts:14308"],
-              "vue": ["packages/vue/src/use-flow.ts:661"],
-              "foldkit": ["packages/foldkit/src/instance.ts:409"]
+              "vanilla": [
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
+              ],
+              "vue": [
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
+              ],
+              "foldkit": [
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
+              ]
             },
             "basis": "linked-public-docs"
           },
           {
             "id": "presence",
             "outcome": "Show peer presence while keeping selection and measurements local.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "shared": [
+                "packages/collaboration-yjs/src/public.ts:1",
+                "packages/core/src/domain/flow-room.ts:1",
+                "apps/shared/collaborative/acceptance.ts:1",
+                "apps/shared/collaborative/mixed-host.e2e.ts:1"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
-                "apps/vanilla/src/mount-flow.ts:8559"
+                "apps/vanilla/src/collaborative-demo.ts:1",
+                "apps/vanilla/e2e/collaborative.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/whiteboard-recipes.ts:63",
-                "packages/vue/src/flow-canvas.ts:9110"
+                "apps/vue/src/collaborative-demo.ts:1",
+                "apps/vue/e2e/collaborative.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
-                "packages/foldkit/src/graph.ts:7582"
+                "apps/foldkit/src/collaborative-demo.ts:1",
+                "apps/foldkit/e2e/collaborative.e2e.ts:1"
               ]
             },
             "basis": "linked-public-docs"
           }
         ],
         "unverified": [
-          "Reconnect and presence requirements come from linked multiplayer guidance, not an inspected Pro implementation. Backend durability/authentication are integration decisions."
+          "Exact Pro implementation and conflict policy; hosting, authenticated room access, durability and offline retention; full-profile and collector delivery acceptance."
         ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 164"]
     },
     {
       "section": "examples interaction",
-      "name": "Copy and Paste \u00b7 Pro",
+      "name": "Copy and Paste · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4075,7 +4097,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Undo and Redo \u00b7 Pro",
+      "name": "Undo and Redo · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4232,7 +4254,7 @@
     },
     {
       "section": "examples grouping",
-      "name": "Selection Grouping \u00b7 Pro",
+      "name": "Selection Grouping · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4420,7 +4442,7 @@
     },
     {
       "section": "examples grouping",
-      "name": "Parent Child Relation \u00b7 Pro",
+      "name": "Parent Child Relation · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4666,7 +4688,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Expand and Collapse \u00b7 Pro",
+      "name": "Expand and Collapse · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4818,7 +4840,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Auto Layout \u00b7 Pro",
+      "name": "Auto Layout · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4935,7 +4957,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Force Layout \u00b7 Pro",
+      "name": "Force Layout · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5079,7 +5101,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Dynamic Layouting \u00b7 Pro",
+      "name": "Dynamic Layouting · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5398,7 +5420,7 @@
     },
     {
       "section": "examples whiteboard",
-      "name": "Freehand Draw \u00b7 Pro",
+      "name": "Freehand Draw · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5533,7 +5555,7 @@
     },
     {
       "section": "examples misc",
-      "name": "Server Side Image Creation \u00b7 Pro",
+      "name": "Server Side Image Creation · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
