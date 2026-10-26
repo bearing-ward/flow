@@ -26,6 +26,8 @@ In Vanilla and Vue, an explicit `panOnDrag` button array containing `2` suppress
 
 [Transaction history](transaction-history.md) describes the shared semantic history, host APIs, controlled acknowledgements, and session policy.
 
+[Graph clipboard](graph-clipboard.md) describes `copySelection`, `pasteSelection`, `useFlowClipboard`, the Foldkit clipboard client, and versioned graph fragments.
+
 ## Accepted-state reads
 
 Both controller facades expose `getSnapshot()`, `getNodes()`, `getEdges()`, `getNode(id)`, `getEdge(id)`, and `getViewport()`. They read the current accepted document and viewport. Snapshots contain all document nodes and edges, including hidden items and items omitted from rendering by viewport culling. Node positions remain parent-relative. Missing IDs return `undefined`.

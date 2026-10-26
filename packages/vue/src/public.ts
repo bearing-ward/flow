@@ -149,3 +149,5 @@ export type {
 export { FlowLabeledGroupNode } from './ui/labeled-group.ts'
 
 export { useFlowGrouping } from './grouping.ts'
+
+export { useFlowClipboard } from './use-flow.ts'

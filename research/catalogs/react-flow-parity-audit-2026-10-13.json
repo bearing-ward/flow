@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 183,
+    "inScopeCloseAllHosts": 184,
     "inScopeCloseByHost": {
-      "vanilla": 183,
-      "vue": 183,
-      "foldkit": 183
+      "vanilla": 184,
+      "vue": 184,
+      "foldkit": 184
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history and Plan 154 grouping acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history, Plan 153 graph-clipboard and Plan 154 grouping acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-25",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 4,
-          "P": 9,
+          "C": 5,
+          "P": 8,
           "G": 3
         },
         "vue": {
-          "C": 4,
-          "P": 9,
+          "C": 5,
+          "P": 8,
           "G": 3
         },
         "foldkit": {
-          "C": 4,
-          "P": 9,
+          "C": 5,
+          "P": 8,
           "G": 3
         }
       }
@@ -3420,31 +3420,31 @@
     {
       "section": "examples interaction",
       "name": "Copy and Paste · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Vanilla/Foldkit Schema Studio copies selected tables and their internal relationships with fresh IDs and a 40-unit offset; no generic fragment/parent remapping. Vue has selection and edits but no clipboard recipe.",
+      "missing": "",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
         "on": "2026-10-25",
-        "plan": "Plan 149",
+        "plan": "Plan 153",
         "previousRatings": {
           "vanilla": "P",
           "vue": "P",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Shared fragment/reducer tests, Foldkit model acceptance tests and public native-gesture acceptance in Vanilla, Vue and Foldkit. A separate live public-demo comparison checks Shift selection and node/edge copying. C means functional closeness for the delivered outcomes, not private-source or catalog-wide reference conformance.",
         "url": "https://reactflow.dev/examples/interaction/copy-paste",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public description read and linked public demo exercised independently. No subscription source or private tests were accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/copy-paste/index.html"
         ],
-        "missing": "Vanilla/Foldkit Schema Studio copies selected tables and their internal relationships with fresh IDs and a 40-unit offset; no generic fragment/parent remapping. Vue has selection and edits but no clipboard recipe.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/153-graph-clipboard.md",
         "outcomes": [
           {
             "id": "select",
@@ -3454,23 +3454,22 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-grouping.ts:73",
-                "packages/core/src/domain/flow-grouping.ts:220"
+                "packages/core/src/domain/flow-clipboard.ts:101",
+                "packages/core/src/domain/flow-clipboard.ts:184",
+                "packages/core/src/domain/flow-clipboard.test.ts:1",
+                "apps/shared/clipboard/acceptance.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/subflows-recipes.ts:50",
-                "apps/vanilla/src/ui/subflows-recipes.ts:90",
-                "apps/vanilla/e2e/subflows-recipes.e2e.ts:60"
+                "apps/vanilla/src/clipboard-demo.ts:1",
+                "apps/vanilla/e2e/graph-clipboard.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/subflows-recipes.ts:81",
-                "apps/vue/src/subflows-recipes.ts:113",
-                "apps/vue/e2e/subflows-recipes.e2e.ts:76"
+                "apps/vue/src/clipboard-demo.ts:1",
+                "apps/vue/e2e/graph-clipboard.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/subflows/main.ts:73",
-                "apps/foldkit/ui-recipes/subflows/main.ts:102",
-                "apps/foldkit/e2e/subflows-recipes.e2e.ts:77"
+                "apps/foldkit/src/clipboard-demo.ts:1",
+                "apps/foldkit/e2e/graph-clipboard.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -3478,24 +3477,27 @@
           {
             "id": "copy-paste",
             "outcome": "Copy and paste a selected graph fragment including its edges.",
-            "vanilla": "P",
-            "vue": "G",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["apps/shared/schema-studio/model.ts:242"],
+              "shared": [
+                "packages/core/src/domain/flow-clipboard.ts:101",
+                "packages/core/src/domain/flow-clipboard.ts:184",
+                "packages/core/src/domain/flow-clipboard.test.ts:1",
+                "apps/shared/clipboard/acceptance.ts:1"
+              ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:541",
-                "apps/vanilla/schema-studio/main.ts:1465",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1078"
+                "apps/vanilla/src/clipboard-demo.ts:1",
+                "apps/vanilla/e2e/graph-clipboard.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/clipboard-demo.ts:1",
+                "apps/vue/e2e/graph-clipboard.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:266",
-                "apps/foldkit/schema-studio/model.ts:563",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1100"
+                "apps/foldkit/src/clipboard-demo.ts:1",
+                "apps/foldkit/e2e/graph-clipboard.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -3503,24 +3505,27 @@
           {
             "id": "remap",
             "outcome": "Allocate fresh IDs and remap copied edge endpoints and parents.",
-            "vanilla": "P",
-            "vue": "G",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["apps/shared/schema-studio/model.ts:242"],
+              "shared": [
+                "packages/core/src/domain/flow-clipboard.ts:101",
+                "packages/core/src/domain/flow-clipboard.ts:184",
+                "packages/core/src/domain/flow-clipboard.test.ts:1",
+                "apps/shared/clipboard/acceptance.ts:1"
+              ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:541",
-                "apps/vanilla/schema-studio/main.ts:1465",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1078"
+                "apps/vanilla/src/clipboard-demo.ts:1",
+                "apps/vanilla/e2e/graph-clipboard.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/clipboard-demo.ts:1",
+                "apps/vue/e2e/graph-clipboard.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:266",
-                "apps/foldkit/schema-studio/model.ts:563",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1100"
+                "apps/foldkit/src/clipboard-demo.ts:1",
+                "apps/foldkit/e2e/graph-clipboard.e2e.ts:1"
               ]
             },
             "basis": "delivery-edge-case"
@@ -3528,44 +3533,46 @@
           {
             "id": "placement",
             "outcome": "Place repeated pastes predictably without changing the original fragment.",
-            "vanilla": "P",
-            "vue": "G",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["apps/shared/schema-studio/model.ts:242"],
+              "shared": [
+                "packages/core/src/domain/flow-clipboard.ts:101",
+                "packages/core/src/domain/flow-clipboard.ts:184",
+                "packages/core/src/domain/flow-clipboard.test.ts:1",
+                "apps/shared/clipboard/acceptance.ts:1"
+              ],
               "vanilla": [
-                "apps/vanilla/schema-studio/main.ts:541",
-                "apps/vanilla/schema-studio/main.ts:1465",
-                "apps/vanilla/e2e/schema-studio.e2e.ts:1078"
+                "apps/vanilla/src/clipboard-demo.ts:1",
+                "apps/vanilla/e2e/graph-clipboard.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "apps/vue/src/clipboard-demo.ts:1",
+                "apps/vue/e2e/graph-clipboard.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/schema-studio/model.ts:266",
-                "apps/foldkit/schema-studio/model.ts:563",
-                "apps/foldkit/e2e/schema-studio.e2e.ts:1100"
+                "apps/foldkit/src/clipboard-demo.ts:1",
+                "apps/foldkit/e2e/graph-clipboard.e2e.ts:1"
               ]
             },
             "basis": "delivery-edge-case"
           }
         ],
         "unverified": [
-          "Exact shortcuts, clipboard persistence, dangling-edge inclusion and paste placement are unspecified. Shift box selection is public guidance; existing group tests use Meta/Control clicks.",
-          "Schema Studio copy/paste is table-specific; no general hierarchy copy, extension reference remapping or independent edge selection clipboard is supplied. Repeated pastes use the same offset from the copied originals."
+          "Private source/tests, system clipboard JSON, cross-tab persistence and undocumented upstream hierarchy/data/placement policies. D2 defines Flow session-only descendants, detached roots, explicit extension hooks and 20-unit repeat offsets."
         ],
         "hostNotes": {
-          "vanilla": "Schema Studio table-only clipboard and relationship remapping, with fixed 40-unit displacement.",
-          "vue": "No clipboard integration found in Vue app/recipes.",
-          "foldkit": "Schema Studio table-only clipboard and relationship remapping, with fixed 40-unit displacement."
+          "vanilla": "Generic /clipboard/ recipe uses the shared graph fragment reducer and one accepted history transaction per paste; browser acceptance covers all unit-2 outcomes.",
+          "vue": "Generic /clipboard/ recipe uses the shared graph fragment reducer and one accepted history transaction per paste; browser acceptance covers all unit-2 outcomes.",
+          "foldkit": "Generic /clipboard/ recipe uses the shared graph fragment reducer and one accepted history transaction per paste; browser acceptance covers all unit-2 outcomes."
         }
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 153"]
     },
     {
       "section": "examples interaction",

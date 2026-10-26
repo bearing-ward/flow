@@ -113,6 +113,12 @@ const createProviderEditor = (
           ).state
         )
     ),
+    copySelection: () => target('copySelection').copySelection?.() ?? null,
+    pasteSelection: (options) =>
+      target('pasteSelection').pasteSelection?.(options) ??
+      Promise.reject(missingCanvas('pasteSelection')),
+    setClipboardFragment: (input) =>
+      target('setClipboardFragment').setClipboardFragment?.(input),
     undo: () => target('undo').undo?.() ?? Promise.resolve(),
     redo: () => target('redo').redo?.() ?? Promise.resolve(),
     rejectHistory: (id) => target('rejectHistory').rejectHistory?.(id),

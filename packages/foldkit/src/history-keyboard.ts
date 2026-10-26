@@ -6,7 +6,8 @@ import { isInputDOMNode } from './key-press-observer.ts'
 export const historyKeyboardStream = <Message>(
   instanceId: string,
   replay: (action: 'undo' | 'redo') => Message,
-  endGesture: () => Message
+  endGesture: () => Message,
+  clipboard?: (action: 'copy' | 'paste') => Message
 ): Stream.Stream<Message> => {
   const owns = (event: KeyboardEvent): boolean =>
     !isInputDOMNode(event) &&
@@ -35,6 +36,20 @@ export const historyKeyboardStream = <Message>(
       }
 
       const key = event.key.toLowerCase()
+
+      if (
+        (key === 'c' || key === 'v') &&
+        !event.shiftKey &&
+        clipboard !== undefined
+      ) {
+        event.preventDefault()
+
+        if (!event.repeat) {
+          Queue.offerUnsafe(queue, clipboard(key === 'c' ? 'copy' : 'paste'))
+        }
+
+        return
+      }
 
       if (key !== 'z' && !(key === 'y' && event.ctrlKey)) {
         return

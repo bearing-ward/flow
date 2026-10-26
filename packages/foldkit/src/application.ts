@@ -1,4 +1,9 @@
 import {
+  FlowClipboardStateSchema,
+  createFlowClipboard,
+  copyFlowSelection,
+  decodeFlowGraphFragment,
+  pasteFlowGraphFragment,
   FlowChangeSchema,
   FlowHistoryStateSchema,
   FlowHistoryStatusSchema,
@@ -727,6 +732,7 @@ export const createViewportClient = (
 
 export const ModelSchema = Schema.Struct({
   graph: Graph.ModelSchema,
+  clipboard: FlowClipboardStateSchema,
   history: FlowHistoryStateSchema,
   historyPublicationActive: Schema.Boolean,
   changeKinds: Schema.Array(Schema.String),
@@ -2323,6 +2329,65 @@ const routeAction = (
   publishDimensions = true
 ): AppReduction =>
   HostAction.match<AppReduction>(action, {
+    Clipboard: ({ command }) => {
+      try {
+        if (command.kind === 'copy') {
+          return {
+            model: {
+              ...model,
+              clipboard: Effect.runSync(
+                copyFlowSelection(model.graph.document)
+              ),
+            },
+          }
+        }
+
+        if (command.kind === 'set') {
+          return {
+            model: {
+              ...model,
+              clipboard: {
+                fragment: Effect.runSync(
+                  decodeFlowGraphFragment(command.input)
+                ),
+                pasteCount: 0,
+              },
+            },
+          }
+        }
+
+        const pasted = pasteFlowGraphFragment(
+          model.clipboard,
+          model.graph.document,
+          command.options
+        )
+
+        return graphFold(
+          { ...model, clipboard: pasted.state },
+          Graph.Message.EditRequest({
+            requestId: crypto.randomUUID(),
+            transaction: {
+              ...pasted.transaction,
+              context: {
+                transactionId: crypto.randomUUID(),
+                origin: { kind: 'local', actorId: model.history.session },
+              },
+            },
+          })
+        )
+      } catch (error) {
+        Effect.runSync(
+          Effect.logWarning('Foldkit graph clipboard failed').pipe(
+            Effect.annotateLogs({
+              [FlowAttribute.failureMessage]: String(error),
+            }),
+            Effect.withSpan(FlowSpan.editFailure)
+          )
+        )
+
+        return { model }
+      }
+    },
     RequestKeyboardDelete: () => ({
       model,
       outMessage: [
@@ -3813,6 +3878,7 @@ export const initialModel = (
     undefined,
     viewportLimits
   ),
+  clipboard: createFlowClipboard(),
   history: createFlowHistory(document, {
     capacity: historyOptions.historyCapacity ?? 100,
     session: crypto.randomUUID(),
@@ -4033,6 +4099,7 @@ export const createProgramUpdate =
           ? model
           : {
               ...model,
+              clipboard: createFlowClipboard(),
               historyPublicationActive: false,
               history: createFlowHistory(model.graph.document, {
                 capacity: model.history.capacity,
@@ -4139,6 +4206,7 @@ export const createProgram = (
     init: () => ({
       model: {
         graph: initialGraph,
+        clipboard: createFlowClipboard(),
         history,
         historyPublicationActive: false,
         changeKinds: [],
@@ -4170,7 +4238,16 @@ export const createProgram = (
                     AppMessage.HistoryRequest({
                       request: { requestId: crypto.randomUUID(), action },
                     }),
-                  () => AppMessage.HistoryGestureEnd()
+                  () => AppMessage.HistoryGestureEnd(),
+                  (action) =>
+                    AppMessage.HostAction({
+                      action: HostAction.Clipboard({
+                        command:
+                          action === 'copy'
+                            ? { kind: 'copy' }
+                            : { kind: 'paste', options: {} },
+                      }),
+                    })
                 )
               ),
           }

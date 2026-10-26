@@ -305,3 +305,5 @@ export type { FoldkitHistoryClient } from './history-client.ts'
 export { HistoryRequestSchema, HistoryResultSchema } from './application.ts'
 
 export { createFoldkitGroupingClient } from './grouping-client.ts'
+
+export { createFoldkitClipboardClient } from './clipboard-client.ts'

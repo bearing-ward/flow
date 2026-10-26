@@ -1067,3 +1067,26 @@ export type {
   FlowGroupingAction,
   FlowGroupingActionInput,
 } from './domain/flow-grouping-actions.ts'
+
+export {
+  FlowGraphFragmentSchema,
+  FlowClipboardStateSchema,
+  FlowPasteOptionsSchema,
+  createFlowClipboard,
+  decodeFlowGraphFragment,
+  extractFlowGraphFragment,
+  pasteFlowGraphFragment,
+  copyFlowSelection,
+} from './domain/flow-clipboard.ts'
+
+export type {
+  FlowGraphFragment,
+  FlowClipboardState,
+  FlowPasteOptions,
+  FlowClipboardReferences,
+  FlowClipboardExtension,
+} from './domain/flow-clipboard.ts'
+
+export { createFlowClipboardSession } from './domain/flow-clipboard-session.ts'
+
+export type { FlowClipboardActions } from './domain/flow-clipboard-session.ts'
