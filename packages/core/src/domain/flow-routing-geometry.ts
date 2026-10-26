@@ -1,3 +1,4 @@
+import { getBundleRouteGeometry } from './flow-bundle-geometry.ts'
 import type { FlowEdgeGeometryOptions } from './flow-edge-geometry.ts'
 import { getManualRouteGeometry } from './flow-route-geometry.ts'
 import type { FlowDocument, FlowEdge, XYPosition } from './flow.schema.ts'
@@ -7,6 +8,7 @@ export const flowRoutingRevision = (
   options: FlowEdgeGeometryOptions = {}
 ): string =>
   JSON.stringify({
+    bundles: document.bundles,
     nodes: document.nodes.map((node) => [
       node.id,
       node.position.x,
@@ -66,12 +68,28 @@ export const getAutomaticRouteGeometry = (
 ) => {
   const result = options.edgeRouting
 
-  if (
-    edge.route?.mode === 'manual' ||
-    result === null ||
-    result === undefined ||
-    result.revision !== flowRoutingRevision(document, options)
-  ) {
+  const current =
+    result !== null &&
+    result !== undefined &&
+    result.revision === flowRoutingRevision(document, options)
+
+  const bundled = getBundleRouteGeometry(
+    document,
+    edge,
+    source,
+    target,
+    options
+  )
+
+  if (bundled !== undefined) {
+    return (
+      (current
+        ? result.bundlePaths?.find(({ id }) => id === edge.id)
+        : undefined) ?? bundled
+    )
+  }
+
+  if (edge.route?.mode === 'manual' || !current) {
     return
   }
 

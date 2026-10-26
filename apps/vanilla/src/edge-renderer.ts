@@ -1,5 +1,6 @@
 import {
   getAutomaticRouteGeometry,
+  flowBundleAffectedEdges,
   bezierEdgePath,
   applyDefaultEdgeOptions,
   edgeAttachmentPosition,
@@ -726,7 +727,10 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
       const routePoints =
         routePreviews.get(edge.id) ??
-        (edge.route?.mode === 'manual' ? edge.route.points : undefined)
+        (edge.route?.mode === 'manual' &&
+        !document.bundles?.some(({ edgeIds }) => edgeIds.includes(edge.id))
+          ? edge.route.points
+          : undefined)
 
       const manualGeometry =
         routePoints === undefined
@@ -1341,7 +1345,7 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
     return affected.size === 0
       ? { added: 0, updated: 0, removed: 0, deferred: 0 }
-      : reconcile(pass, affected)
+      : reconcile(pass, flowBundleAffectedEdges(pass.inputs.document, affected))
   }
 
   return {

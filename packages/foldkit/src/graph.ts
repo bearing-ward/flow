@@ -5577,7 +5577,8 @@ const calculateEdgeGeometry = (
   const pathType: FlowEdgePath = edge.path ?? 'straight'
 
   const manual =
-    edge.route?.mode === 'manual'
+    edge.route?.mode === 'manual' &&
+    !document.bundles?.some(({ edgeIds }) => edgeIds.includes(edge.id))
       ? getManualRouteGeometry(start, end, edge.route.points)
       : getAutomaticRouteGeometry(document, edge, start, end, {
           measurements,
@@ -8042,7 +8043,11 @@ const graphView = (
               ? []
               : [h.defs([], markerDefinitions)]),
             ...content,
-            ...(model.editableEdges && edge.route?.mode === 'manual'
+            ...(model.editableEdges &&
+            edge.route?.mode === 'manual' &&
+            !renderDocument.bundles?.some(({ edgeIds }) =>
+              edgeIds.includes(edge.id)
+            )
               ? edge.route.points.map((point, index) =>
                   h.circle([
                     h.Class('flow-foldkit-route-point'),

@@ -206,7 +206,8 @@ export const getEdgesGeometry = (
     const targetPosition = resolved.targetHandle.side
 
     const manual =
-      edge.route?.mode === 'manual'
+      edge.route?.mode === 'manual' &&
+      !document.bundles?.some(({ edgeIds }) => edgeIds.includes(edge.id))
         ? getManualRouteGeometry(source, target, edge.route.points)
         : getAutomaticRouteGeometry(document, edge, source, target, options)
 
@@ -245,7 +246,10 @@ export const getEdgeGeometry = (
   options: FlowEdgeGeometryOptions = {}
 ): FlowEdgeRenderGeometry | undefined =>
   getEdgesGeometry(
-    options.edgeRouting === null || options.edgeRouting === undefined
+    (options.edgeRouting === null || options.edgeRouting === undefined) &&
+      !document.bundles?.some(({ edgeIds }) =>
+        edgeIds.some((id) => id === edgeId)
+      )
       ? { ...document, edges: document.edges.filter(({ id }) => id === edgeId) }
       : document,
     options

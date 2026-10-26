@@ -20,7 +20,7 @@ Automatic paths are derived presentation state. `FlowEdge.route` remains authore
 
 Applications own the Effect service, scheduling, cancellation and disposal. Hosts own framework/browser rendering. No engine is installed by these APIs. The separately installed [libavoid adapter](../packages/routing-libavoid/README.md) implements the service.
 
-`getEdgesGeometry` and `getEdgeGeometry` accept `edgeRouting` beside measurements and position overrides. The resulting path serves label midpoints, distance queries, rectangle/path intersections and built-in SVG interaction paths. A stale, missing, unreachable or failed automatic route uses the edge's existing path algorithm. Manual geometry always takes precedence. The application must show the failure/fallback state rather than present that path as obstacle-avoiding.
+`getEdgesGeometry` and `getEdgeGeometry` accept `edgeRouting` beside measurements and position overrides. The resulting path serves label midpoints, distance queries, rectangle/path intersections and built-in SVG interaction paths. A stale, missing, unreachable or failed automatic route uses the edge's existing path algorithm. Manual geometry takes precedence for unbundled edges. [Wire bundles](wire-ties.md) add shared tie intent, routed lane paths and bundle revisions; their geometry takes precedence while membership exists. The application must show the failure/fallback state rather than present that path as obstacle-avoiding.
 
 ## Examples and verification
 

@@ -424,7 +424,7 @@ describe('complete single v2 persistence contract', () => {
     ]).toStrictEqual([2, false, false])
   })
 
-  it.each([0, 5, '2', null])(
+  it.each([0, 6, '2', null])(
     'rejects unknown/malformed version %j',
     (version) => {
       expect(

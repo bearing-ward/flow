@@ -8,6 +8,8 @@ import {
   createFlowHistory,
   reduceFlowHistory,
   restoreFlowHistoryDocument,
+  flowBundleChanges,
+  flowBundleEndpointNodeIds,
   flowHistoryStatus,
   FlowHistoryStatusSchema,
   FlowTransactionContextSchema,
@@ -3480,6 +3482,11 @@ export const createFlowHost = (
           : options.edgeRenderers?.[currentType]
 
       return (
+        (pass.inputs.document.bundles === document.bundles ||
+          flowBundleChanges(pass.inputs.document, document).length === 0) &&
+        flowBundleEndpointNodeIds(document, id).every((nodeId) =>
+          nodeDependenciesMatch(pass, nodeId)
+        ) &&
         captured.data === current.data &&
         edgeReadEqual(
           { ...captured, data: undefined },

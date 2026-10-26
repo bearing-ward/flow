@@ -1,7 +1,10 @@
 import { Effect, Exit, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
-import { getEdgesGeometry, getFlowNodeBounds } from './flow-edge-geometry.ts'
+import { getFlowRoutingEdges } from './flow-bundle-routing-input.ts'
+import { routeFlowBundlePaths } from './flow-bundle-routing.ts'
+import { findFlowBundleIssue } from './flow-bundle.schema.ts'
+import { getFlowNodeBounds } from './flow-edge-geometry.ts'
 import type { FlowEdgeGeometryOptions } from './flow-edge-geometry.ts'
 import { flowRoutingRevision } from './flow-routing-geometry.ts'
 import {
@@ -76,16 +79,20 @@ export const createFlowRoutingRequest = (
   constraints: FlowRoutingRequest['constraints'] = defaultRoutingConstraints
 ): FlowRoutingRequest => ({
   revision: flowRoutingRevision(document, options),
+  ...(document.bundles === undefined
+    ? undefined
+    : { wireBundles: document.bundles }),
   constraints,
   obstacles: getFlowNodeBounds(document, options).map(({ id, bounds }) => ({
     id,
     ...bounds,
   })),
-  connections: getEdgesGeometry(document, {
+  connections: getFlowRoutingEdges(document, {
     ...options,
     edgeRouting: undefined,
   }).flatMap((geometry) =>
-    geometry.edge.route?.mode === 'manual'
+    geometry.edge.route?.mode === 'manual' &&
+    !document.bundles?.some(({ edgeIds }) => edgeIds.includes(geometry.id))
       ? []
       : [
           {
@@ -195,6 +202,18 @@ export const routeFlowEdges = Effect.fn(FlowSpan.editPrepare)(
       Effect.withSpan(FlowSpan.documentDecode)
     )
 
+    const bundleIssue = findFlowBundleIssue({
+      edges: request.connections,
+      bundles: request.wireBundles,
+    })
+
+    if (bundleIssue !== undefined) {
+      return yield* new FlowRoutingFailure({
+        reason: 'invalid-request',
+        message: bundleIssue.reason,
+      })
+    }
+
     const router = yield* FlowRouter
 
     const result = yield* router.route(request).pipe(
@@ -225,6 +244,26 @@ export const routeFlowEdges = Effect.fn(FlowSpan.editPrepare)(
         [FlowAttribute.edgeCount]: result.paths.length,
       })
     )
+
+    if ((request.wireBundles?.length ?? 0) > 0) {
+      const derived = yield* routeFlowBundlePaths(
+        request,
+        router,
+        validateFlowRoutingResult
+      )
+
+      return {
+        ...result,
+        bundlePaths: derived.bundlePaths,
+        paths: result.paths.map((path) => {
+          const reason = derived.unreachable.get(path.id)
+
+          return reason === undefined
+            ? path
+            : { kind: 'unreachable' as const, id: path.id, reason }
+        }),
+      }
+    }
 
     return result
   }

@@ -1,0 +1,104 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #111619;
+  color: #d1d8dd;
+  font-family: system-ui, sans-serif;
+}
+h1 {
+  margin: 12px 20px 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+#wire-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 20px;
+}
+#wire-controls button {
+  border: 1px solid #37434a;
+  border-radius: 5px;
+  color: #d2d8e1;
+  background: #20292d;
+  padding: 6px 9px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+#wire-controls button[aria-pressed='true'] {
+  border-color: #a59bfa;
+  background: #3c3659;
+}
+#app {
+  position: relative;
+  height: calc(100vh - 118px);
+  min-height: 400px;
+}
+#app > div {
+  height: 100%;
+}
+.flow-canvas,
+.flow-vue-canvas,
+.flow-foldkit-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  background: #111619;
+}
+#app [data-node-id] {
+  background: #1c252a;
+  color: #e0e5e7;
+  border-color: #46535c;
+}
+#app [data-edge-id] {
+  color: #c5cbd0;
+}
+.wire-tie-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+  touch-action: none;
+}
+.wire-tie-overlay.tying {
+  pointer-events: all;
+  cursor: crosshair;
+}
+.wire-tie-marker {
+  pointer-events: stroke;
+  stroke: #d3cfe9;
+  stroke-width: 3;
+  stroke-linecap: round;
+  cursor: move;
+}
+.wire-tie-marker:focus,
+.wire-tie-marker[aria-pressed='true'] {
+  outline: none;
+  stroke: #fff;
+  filter: drop-shadow(0 0 3px #a59bfa);
+}
+.wire-tie-tooltip {
+  position: absolute;
+  z-index: 21;
+  pointer-events: none;
+  border: 1px solid #4b4a5b;
+  background: #24252e;
+  color: #e0ddec;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px #0006;
+}
