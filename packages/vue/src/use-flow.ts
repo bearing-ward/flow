@@ -1,4 +1,6 @@
 import type {
+  FlowNodeAnimationRequest,
+  FlowNodeAnimationResult,
   FlowClipboardActions,
   FlowHistoryStatus,
   FlowTransactionContext,
@@ -182,6 +184,10 @@ export type FlowCanvasFitViewOptions = ViewportAnimationOptions & {
 }
 
 export interface FlowEditor {
+  readonly animateNodePositions?: (
+    request: FlowNodeAnimationRequest
+  ) => Promise<FlowNodeAnimationResult>
+  readonly cancelNodeAnimation?: () => void
   readonly copySelection?: FlowClipboardActions['copySelection']
   readonly pasteSelection?: FlowClipboardActions['pasteSelection']
   readonly setClipboardFragment?: FlowClipboardActions['setClipboardFragment']
@@ -304,6 +310,10 @@ export interface FlowNodeSlot {
 }
 
 export interface FlowActions extends FlowClipboardActions {
+  readonly animateNodePositions: (
+    request: FlowNodeAnimationRequest
+  ) => Promise<FlowNodeAnimationResult>
+  readonly cancelNodeAnimation: () => void
   readonly history: ComputedRef<FlowHistoryStatus>
   readonly undo: () => Promise<void>
   readonly redo: () => Promise<void>
@@ -691,6 +701,10 @@ export const useFlow = (): FlowActions => {
     fitBounds: editor.fitBounds,
     fitView: editor.fitView,
     getViewportForBounds: editor.getViewportForBounds,
+    animateNodePositions: (request) =>
+      editor.animateNodePositions?.(request) ??
+      Promise.resolve({ revision: request.result.revision, kind: 'disposed' }),
+    cancelNodeAnimation: () => editor.cancelNodeAnimation?.(),
     applyEdit: editor.applyEdit,
     setNodes: (nodes) =>
       isNodeListUpdater(nodes)

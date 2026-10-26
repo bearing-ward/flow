@@ -312,3 +312,5 @@ export {
   foldkitFigureNodeRenderer,
   createFoldkitFigureMiniMapNode,
 } from './shape-node.ts'
+
+export { createFoldkitNodeAnimationClient } from './node-animation-client.ts'

@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 189,
+    "inScopeCloseAllHosts": 190,
     "inScopeCloseByHost": {
-      "vanilla": 189,
-      "vue": 189,
-      "foldkit": 189
+      "vanilla": 190,
+      "vue": 190,
+      "foldkit": 190
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-158 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-159 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 10,
-          "P": 3,
+          "C": 11,
+          "P": 2,
           "G": 3
         },
         "vue": {
-          "C": 10,
-          "P": 3,
+          "C": 11,
+          "P": 2,
           "G": 3
         },
         "foldkit": {
-          "C": 10,
-          "P": 3,
+          "C": 11,
+          "P": 2,
           "G": 3
         }
       }
@@ -2254,31 +2254,31 @@
     {
       "section": "examples nodes",
       "name": "Node Position Animation · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Layout destinations and attached edges exist; no node-position tween or interruption lifecycle.",
+      "missing": null,
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 159",
         "previousRatings": {
           "vanilla": "P",
           "vue": "P",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Public page read and accessible demo driven through horizontal/vertical toggles. All-host DOM acceptance observes intermediate positions, exact destinations, attached paths/labels, interruption, removal, pan/zoom, manual drag, reduced motion, history, clipboard and disposal. C means achievable functional closeness, not hidden-source or exact-coordinate conformance.",
         "url": "https://reactflow.dev/examples/nodes/node-position-animation",
-        "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "accessedOn": "2026-10-26",
+        "sourceAccess": "Public page and accessible demo DOM only; no subscription ZIP or private source. The public demo renders five nodes and no edges. Edge and label attachment is established by local DOM acceptance, not a reference edge comparison.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/node-position-animation/index.html"
         ],
-        "missing": "Layout destinations and attached edges exist; no node-position tween or interruption lifecycle.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": null,
+        "evidence": "research/traces/159-node-animation.md",
         "outcomes": [
           {
             "id": "layout-toggle",
@@ -2288,61 +2288,53 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-node-animation.ts:38",
+                "packages/core/src/use-cases/node-animation.ts:19",
+                "packages/core/src/domain/flow-node-animation.test.ts:1",
+                "apps/shared/node-animation/acceptance.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170",
-                "apps/vanilla/src/ui/layout-recipes.ts:233",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:98"
+                "apps/vanilla/src/node-animation-demo.ts:1",
+                "apps/vanilla/e2e/node-animation.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177",
-                "apps/vue/src/layout-recipes.ts:144",
-                "apps/vue/e2e/layout-recipes.e2e.ts:101"
+                "apps/vue/src/node-animation-demo.ts:1",
+                "apps/vue/e2e/node-animation.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188",
-                "apps/foldkit/ui-recipes/layout/main.ts:373",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:109"
+                "apps/foldkit/src/node-animation-demo.ts:1",
+                "apps/foldkit/e2e/node-animation.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-observation"
           },
           {
             "id": "tween",
             "outcome": "Interpolate node positions over time when layout is toggled.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-node-animation.ts:38",
+                "packages/core/src/use-cases/node-animation.ts:19",
+                "packages/core/src/domain/flow-node-animation.test.ts:1",
+                "apps/shared/node-animation/acceptance.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+                "apps/vanilla/src/node-animation-demo.ts:1",
+                "apps/vanilla/e2e/node-animation.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+                "apps/vue/src/node-animation-demo.ts:1",
+                "apps/vue/e2e/node-animation.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+                "apps/foldkit/src/node-animation-demo.ts:1",
+                "apps/foldkit/e2e/node-animation.e2e.ts:1"
               ]
             },
-            "basis": "public-description"
+            "basis": "public-demo-observation"
           },
           {
             "id": "edges-follow",
@@ -2352,54 +2344,64 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edge-path.ts:26",
-                "packages/core/src/domain/flow-edge-geometry.ts:618"
+                "packages/core/src/domain/flow-node-animation.ts:38",
+                "packages/core/src/use-cases/node-animation.ts:19",
+                "packages/core/src/domain/flow-node-animation.test.ts:1",
+                "apps/shared/node-animation/acceptance.ts:1"
               ],
-              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
-              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
-              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              "vanilla": [
+                "apps/vanilla/src/node-animation-demo.ts:1",
+                "apps/vanilla/e2e/node-animation.e2e.ts:1"
+              ],
+              "vue": [
+                "apps/vue/src/node-animation-demo.ts:1",
+                "apps/vue/e2e/node-animation.e2e.ts:1"
+              ],
+              "foldkit": [
+                "apps/foldkit/src/node-animation-demo.ts:1",
+                "apps/foldkit/e2e/node-animation.e2e.ts:1"
+              ]
             },
-            "basis": "public-description"
+            "basis": "delivery-edge-case"
           },
           {
             "id": "reentry",
             "outcome": "Retarget an animation while another transition is running.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-node-animation.ts:38",
+                "packages/core/src/use-cases/node-animation.ts:19",
+                "packages/core/src/domain/flow-node-animation.test.ts:1",
+                "apps/shared/node-animation/acceptance.ts:1"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+                "apps/vanilla/src/node-animation-demo.ts:1",
+                "apps/vanilla/e2e/node-animation.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+                "apps/vue/src/node-animation-demo.ts:1",
+                "apps/vue/e2e/node-animation.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+                "apps/foldkit/src/node-animation-demo.ts:1",
+                "apps/foldkit/e2e/node-animation.e2e.ts:1"
               ]
             },
             "basis": "delivery-edge-case"
           }
         ],
         "unverified": [
-          "Public page does not specify duration, easing, interruption, reduced motion or persistence. Reentry is a delivery edge case, not an observed upstream guarantee."
+          "Private Pro implementation and exact duration/coordinate constants are unverified. Linear interpolation is described publicly. Flow uses adopted D5: configurable 300 ms default, reduced-motion completion, display-based interruption and destination-only history. The reference demo has no edges; local attached paths/labels are delivery acceptance, not upstream edge parity. Dynamic Layouting remains partial until unit 6."
         ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 159"]
     },
     {
       "section": "examples nodes",

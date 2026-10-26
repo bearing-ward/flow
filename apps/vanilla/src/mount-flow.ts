@@ -1,4 +1,5 @@
 import {
+  createFlowNodeAnimator,
   solveFlowAlignment,
   resolveFlowAlignmentGuides,
   refitFlowGroups,
@@ -164,6 +165,8 @@ import {
   FlowEdgeRouteSchema,
 } from '@flow/core'
 import type {
+  FlowNodeAnimationRequest,
+  FlowNodeAnimationResult,
   FlowAlignmentGuide,
   FlowClipboardActions,
   FlowHistoryEvent,
@@ -1201,6 +1204,10 @@ const projectHandleConnectionEdges = (edges: readonly FlowEdge[]) =>
   }))
 
 export interface FlowController {
+  readonly animateNodePositions: (
+    request: FlowNodeAnimationRequest
+  ) => Promise<FlowNodeAnimationResult>
+  readonly cancelNodeAnimation: () => void
   readonly overlayPortal: HTMLElement
   /** The resolved `ariaLabelConfig`, for UI components mounted on this canvas. */
   readonly getAriaLabelConfig: () => FlowAriaLabelConfig
@@ -1594,6 +1601,8 @@ export interface JavaScriptFlowController extends FlowInstanceApi {
   readonly fitView: (
     options?: typeof FitViewOptionsSchema.Encoded
   ) => Promise<ViewportOperationResult>
+  readonly animateNodePositions: FlowController['animateNodePositions']
+  readonly cancelNodeAnimation: FlowController['cancelNodeAnimation']
   readonly copySelection: FlowController['copySelection']
   readonly pasteSelection: FlowController['pasteSelection']
   readonly setClipboardFragment: FlowController['setClipboardFragment']
@@ -2684,6 +2693,28 @@ export const createFlowHost = (
 
     const renderedNodePositions = new Map<NodeId, XYPosition>()
 
+    interface NodeAnimationLifecycle {
+      cancel?: () => void
+    }
+
+    const nodeAnimationLifecycle: NodeAnimationLifecycle = {}
+    let animationPositions: ReadonlyMap<string, XYPosition> = new Map()
+    let heldAnimationPositions: ReadonlyMap<string, XYPosition> = new Map()
+
+    const presentationPosition = (id: NodeId) =>
+      animationPositions.get(id) ?? renderedNodePositions.get(id)
+
+    const presentationPositions = () =>
+      animationPositions.size === 0
+        ? renderedNodePositions
+        : new Map(
+            document.nodes.flatMap(({ id }) => {
+              const position = presentationPosition(id)
+
+              return position === undefined ? [] : [[id, position] as const]
+            })
+          )
+
     const acceptMeasurement = (
       nodeId: NodeId,
       size: {
@@ -3374,7 +3405,7 @@ export const createFlowHost = (
         if (
           !pointMatches(
             pass.inputs.positions.get(currentId),
-            renderedNodePositions.get(currentId)
+            presentationPosition(currentId)
           )
         ) {
           return false
@@ -3563,7 +3594,7 @@ export const createFlowHost = (
       }
 
       const positions = new Map(
-        [...renderedNodePositions].map(([id, point]) => [id, { ...point }])
+        [...presentationPositions()].map(([id, point]) => [id, { ...point }])
       )
 
       const measured = new Map(
@@ -4174,6 +4205,13 @@ export const createFlowHost = (
     let activeKeyboardNodeDrag: FlowNodeDragPayload | null = null
 
     const adoptedPosition = (node: FlowNode): XYPosition => {
+      const animated =
+        animationPositions.get(node.id) ?? heldAnimationPositions.get(node.id)
+
+      if (animated !== undefined) {
+        return animated
+      }
+
       if (node.parentId !== undefined || options.nodeExtent === undefined) {
         return boundedNodePosition(node.id, node.position)
       }
@@ -4195,7 +4233,7 @@ export const createFlowHost = (
 
     const graphFor = (
       target: FlowDocument = document,
-      overrides: ReadonlyMap<NodeId, XYPosition> = renderedNodePositions
+      overrides: ReadonlyMap<NodeId, XYPosition> = presentationPositions()
     ) => createFlowGraph(target, measurements, overrides)
 
     let selectionBoundsActive = false
@@ -9606,6 +9644,8 @@ export const createFlowHost = (
               return
             }
 
+            nodeAnimationLifecycle.cancel?.()
+
             const selectedNodes =
               current.selected === true && nodeIsDraggable(current.id)
                 ? selectedMovableNodes()
@@ -12382,6 +12422,79 @@ export const createFlowHost = (
       })
     }
 
+    const animatedNodeIds = new Set<NodeId>()
+    let animationTime = performance.now()
+
+    const nodeAnimator = createFlowNodeAnimator({
+      document: () => document,
+      displayed: () => {
+        const displayed = presentationPositions()
+
+        return new Map(
+          document.nodes.map((node) => [
+            node.id,
+            displayed.get(node.id) ?? node.position,
+          ])
+        )
+      },
+      draw: (positions) => {
+        for (const node of document.nodes) {
+          if (positions.has(node.id)) {
+            animatedNodeIds.add(node.id)
+          }
+        }
+
+        if (positions.size === 0) {
+          for (const id of animatedNodeIds) {
+            renderedNodePositions.delete(id)
+          }
+
+          animatedNodeIds.clear()
+          heldAnimationPositions = new Map()
+        }
+
+        animationPositions = positions
+
+        if (!destroyed) {
+          renderGraphEdges()
+        }
+      },
+      commit: async (next) => {
+        animationTime = performance.now()
+        await applyEditResolved(() => ({
+          operations: [{ kind: 'set-nodes', nodes: next.nodes }],
+        }))
+      },
+      reducedMotion: () =>
+        matchMedia('(prefers-reduced-motion: reduce)').matches,
+      schedule: (step) => {
+        const frame = requestAnimationFrame((now) => {
+          const delta = now - animationTime
+          animationTime = now
+          step(delta)
+        })
+
+        return () => cancelAnimationFrame(frame)
+      },
+    })
+
+    nodeAnimationLifecycle.cancel = () => {
+      nodeAnimator.cancel('cancelled', true)
+
+      for (const node of document.nodes) {
+        const position = animationPositions.get(node.id)
+
+        if (position !== undefined) {
+          renderedNodePositions.set(node.id, position)
+        }
+      }
+
+      heldAnimationPositions = animationPositions
+      animationPositions = new Map()
+    }
+
+    stateListeners.add(() => nodeAnimator.reconcile())
+
     const clipboard = createFlowClipboardSession({
       getDocument: () => document,
       applyEdit: applyEditResolved,
@@ -14037,6 +14150,7 @@ export const createFlowHost = (
         let stateCleanupFailed = false
 
         destroyed = true
+        nodeAnimator.dispose()
         editableRoutes?.cancel('host-destroyed')
         freeformConnection = undefined
         publishHistory({ kind: 'dispose' })
@@ -14113,7 +14227,7 @@ export const createFlowHost = (
       getAriaLabelConfig: () => ariaLabels.config,
       getRenderedNodePositions: () =>
         new Map(
-          [...renderedNodePositions].map(([id, position]) => [
+          [...presentationPositions()].map(([id, position]) => [
             id,
             { ...position },
           ])
@@ -14697,6 +14811,8 @@ export const createFlowHost = (
           )
         })
       },
+      animateNodePositions: nodeAnimator.animate,
+      cancelNodeAnimation: () => nodeAnimator.cancel(),
       applyEdit: (transaction): Promise<FlowEditResult> =>
         controller.applyEditResolved(() => transaction),
       applyEditResolved,
@@ -15568,6 +15684,8 @@ export const mountFlow = (
 
       return result.deletion
     },
+    animateNodePositions: host.animateNodePositions,
+    cancelNodeAnimation: host.cancelNodeAnimation,
     applyEdit: (transaction) => host.applyEdit(transaction),
     fitView: (fitOptions) =>
       host.fitView(

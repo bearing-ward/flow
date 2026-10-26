@@ -1,4 +1,11 @@
 import {
+  FlowNodeTransitionSchema,
+  FlowNodeAnimationResultSchema,
+  createFlowNodeTransition,
+  stepFlowNodeTransition,
+  finishFlowNodeTransition,
+  nodeAnimationDocument,
+  decodeFlowNodeAnimationRequest,
   FlowClipboardStateSchema,
   createFlowClipboard,
   copyFlowSelection,
@@ -90,6 +97,7 @@ import {
   Message as FoldMessage,
   Port,
   Runtime,
+  Render,
   Subscription,
   Update,
 } from 'foldkit'
@@ -397,6 +405,8 @@ export const AppMessage = FoldMessage.defineMessageUnion({
   MeasurementPublished: {},
   ViewportRequest: { request: ViewportRequestSchema },
   ViewportPublished: {},
+  NodeAnimationFrame: { delta: Schema.Finite },
+  NodeAnimationPublished: {},
   ViewportFrame: { delta: Schema.Finite },
   ViewportEventPublished: {},
   InteractionEventsPublished: {},
@@ -435,6 +445,12 @@ export const ports = {
     deleteResults: Port.outbound(DeleteResultSchema),
     deleteCancellationAcks: Port.outbound(DeleteCancellationAckSchema),
     measurementResults: Port.outbound(MeasurementResultSchema),
+    nodeAnimationResults: Port.outbound(
+      Schema.Struct({
+        requestId: Schema.String,
+        result: FlowNodeAnimationResultSchema,
+      })
+    ),
     viewportResults: Port.outbound(ViewportResponseSchema),
     viewportEvents: Port.outbound(ViewportEventSchema),
     interactionEvents: Port.outbound(InteractionEventsSchema),
@@ -731,6 +747,14 @@ export const createViewportClient = (
 }
 
 export const ModelSchema = Schema.Struct({
+  nodeAnimation: Schema.optional(
+    Schema.NullOr(
+      Schema.Struct({
+        requestId: Schema.String,
+        transition: FlowNodeTransitionSchema,
+      })
+    )
+  ),
   graph: Graph.ModelSchema,
   clipboard: FlowClipboardStateSchema,
   history: FlowHistoryStateSchema,
@@ -1172,6 +1196,41 @@ const PublishViewportEvent = Command.define('PublishFlowViewportEvent', {
     Port.emit(ports.outbound.viewportEvents, event).pipe(
       Effect.as(AppMessage.ViewportEventPublished())
     ),
+})
+
+const RespondNodeAnimation = Command.define('RespondNodeAnimation', {
+  args: { requestId: Schema.String, result: FlowNodeAnimationResultSchema },
+  messages: [AppMessage.NodeAnimationPublished],
+  execute: (response) =>
+    Render.afterPaint.pipe(
+      Effect.andThen(Port.emit(ports.outbound.nodeAnimationResults, response)),
+      Effect.as(AppMessage.NodeAnimationPublished()),
+      Effect.withSpan(FlowSpan.controllerUpdate)
+    ),
+})
+
+const endNodeAnimation = (
+  model: Model,
+  kind: (typeof FlowNodeAnimationResultSchema.Type)['kind'],
+  hold = false
+): AppReduction => ({
+  model: {
+    ...model,
+    nodeAnimation: null,
+    graph: hold ? model.graph : { ...model.graph, nodePresentation: undefined },
+  },
+  commands:
+    model.nodeAnimation === null || model.nodeAnimation === undefined
+      ? []
+      : [
+          RespondNodeAnimation({
+            requestId: model.nodeAnimation.requestId,
+            result: finishFlowNodeTransition(
+              model.nodeAnimation.transition,
+              kind
+            ),
+          }),
+        ],
 })
 
 const PublishHistory = Command.define('PublishFoldkitHistory', {
@@ -2148,6 +2207,11 @@ const hostSubscriptions = Subscription.make<Model, AppMessageData>()(() => ({
     ports.inbound.viewportRequests,
     (request) => AppMessage.ViewportRequest({ request })
   ),
+  nodeAnimationFrames: Subscription.animationFrameEntry<Model, AppMessageData>({
+    isActive: (model) =>
+      model.nodeAnimation !== null && model.nodeAnimation !== undefined,
+    toMessage: (delta) => AppMessage.NodeAnimationFrame({ delta }),
+  }),
   viewportFrames: Subscription.animationFrameEntry<Model, AppMessageData>({
     isActive: (model) => model.viewportAnimation !== null,
     toMessage: (delta) => AppMessage.ViewportFrame({ delta }),
@@ -2329,6 +2393,90 @@ const routeAction = (
   publishDimensions = true
 ): AppReduction =>
   HostAction.match<AppReduction>(action, {
+    AnimateNodePositions: ({ requestId, request: input, reducedMotion }) => {
+      const request = Effect.runSync(decodeFlowNodeAnimationRequest(input))
+      const displayed = Graph.selectLiveDocument(model.graph)
+
+      const transition = createFlowNodeTransition(
+        request,
+        new Map(displayed.nodes.map((node) => [node.id, node.position])),
+        reducedMotion
+      )
+
+      const superseded = endNodeAnimation(model, 'superseded', true)
+
+      const edited = graphFold(
+        superseded.model,
+        Graph.Message.EditRequest({
+          requestId,
+          transaction: {
+            context: {
+              transactionId: requestId,
+              origin: { kind: 'local', actorId: model.history.session },
+            },
+            operations: [
+              {
+                kind: 'set-nodes',
+                nodes: nodeAnimationDocument(model.graph.document, transition)
+                  .nodes,
+              },
+            ],
+          },
+        })
+      )
+
+      const accepted = edited.model.graph.document.nodes.every((node) => {
+        const target = transition.to.get(node.id)
+
+        return (
+          target === undefined ||
+          (target.x === node.position.x && target.y === node.position.y)
+        )
+      })
+
+      if (!accepted) {
+        return {
+          ...edited,
+          commands: [
+            ...(superseded.commands ?? []),
+            ...(edited.commands ?? []),
+            RespondNodeAnimation({
+              requestId,
+              result: finishFlowNodeTransition(transition, 'cancelled'),
+            }),
+          ],
+        }
+      }
+
+      const frame = stepFlowNodeTransition(transition, 0)
+
+      return {
+        ...edited,
+        model: {
+          ...edited.model,
+          nodeAnimation:
+            frame.kind === 'finished' ? null : { requestId, transition },
+          graph: {
+            ...edited.model.graph,
+            nodePresentation:
+              frame.kind === 'finished' ? undefined : frame.positions,
+          },
+        },
+        commands: [
+          ...(superseded.commands ?? []),
+          ...(edited.commands ?? []),
+          ...(frame.kind === 'finished'
+            ? [
+                RespondNodeAnimation({
+                  requestId,
+                  result: finishFlowNodeTransition(transition, 'finished'),
+                }),
+              ]
+            : []),
+        ],
+      }
+    },
+    CancelNodeAnimation: () => endNodeAnimation(model, 'cancelled'),
     Clipboard: ({ command }) => {
       try {
         if (command.kind === 'copy') {
@@ -2942,6 +3090,14 @@ const prepareHistoryInput = (input: Model, message: AppMessageData) => {
       origin: { kind: 'local', actorId: model.history.session },
       gestureId,
     }
+  } else if (
+    Predicate.isTagged('HostAction')(message) &&
+    Predicate.isTagged('AnimateNodePositions')(message.action)
+  ) {
+    acceptedContext = {
+      transactionId: message.action.requestId,
+      origin: { kind: 'local', actorId: model.history.session },
+    }
   } else if (Predicate.isTagged('EditRequest')(message)) {
     acceptedContext = message.request.transaction.context ?? {
       transactionId: crypto.randomUUID(),
@@ -3055,7 +3211,7 @@ export const update = (input: Model, message: AppMessageData): AppReduction => {
 
   let acceptedContext = initialContext
 
-  const updateResult = AppMessage.match<AppReduction>(message, {
+  let updateResult = AppMessage.match<AppReduction>(message, {
     GraphMessage: ({ message: graphMessage }) => {
       if (Predicate.isTagged('DeleteSelected')(graphMessage)) {
         return {
@@ -3077,7 +3233,28 @@ export const update = (input: Model, message: AppMessageData): AppReduction => {
           })
         : graphMessage
 
-      const folded = graphFold(model, contextualMessage, 'full')
+      const takeover =
+        Predicate.isTagged('PointerDown')(graphMessage) &&
+        graphMessage.nodeId !== null &&
+        graphMessage.handleId === null
+
+      const animationCancelled = takeover
+        ? endNodeAnimation(model, 'cancelled', true)
+        : { model }
+
+      const foldedGraph = graphFold(
+        animationCancelled.model,
+        contextualMessage,
+        'full'
+      )
+
+      const folded = {
+        ...foldedGraph,
+        commands: [
+          ...(animationCancelled.commands ?? []),
+          ...(foldedGraph.commands ?? []),
+        ],
+      }
 
       const result = Predicate.isTagged('PaneResized')(graphMessage)
         ? fitInitialView(model, folded)
@@ -3643,6 +3820,50 @@ export const update = (input: Model, message: AppMessageData): AppReduction => {
     ViewportPublished: () => ({ model }),
     ViewportEventPublished: () => ({ model }),
     InteractionEventsPublished: () => ({ model }),
+    NodeAnimationPublished: () => ({ model }),
+    NodeAnimationFrame: ({ delta }) => {
+      const animation = model.nodeAnimation
+
+      if (animation === null || animation === undefined) {
+        return { model }
+      }
+
+      if (
+        model.graph.document.nodes.some((node) => {
+          const target = animation.transition.to.get(node.id)
+
+          return (
+            target !== undefined &&
+            (target.x !== node.position.x || target.y !== node.position.y)
+          )
+        })
+      ) {
+        return endNodeAnimation(model, 'cancelled')
+      }
+
+      const frame = stepFlowNodeTransition(animation.transition, delta)
+
+      if (frame.kind === 'finished') {
+        return endNodeAnimation(model, 'finished')
+      }
+
+      const live = new Set<string>(
+        model.graph.document.nodes.map(({ id }) => id)
+      )
+
+      return {
+        model: {
+          ...model,
+          nodeAnimation: { ...animation, transition: frame.transition },
+          graph: {
+            ...model.graph,
+            nodePresentation: new Map(
+              [...frame.positions].filter(([id]) => live.has(id))
+            ),
+          },
+        },
+      }
+    },
     ViewportFrame: ({ delta }) => {
       const animation = model.viewportAnimation
 
@@ -3849,6 +4070,31 @@ export const update = (input: Model, message: AppMessageData): AppReduction => {
     },
   })
 
+  if (
+    (updateResult.model.nodeAnimation === null ||
+      updateResult.model.nodeAnimation === undefined) &&
+    updateResult.model.graph.nodePresentation !== undefined &&
+    input.graph.document.nodes.some((node) => {
+      const next = updateResult.model.graph.document.nodes.find(
+        ({ id }) => id === node.id
+      )
+
+      return (
+        next === undefined ||
+        next.position.x !== node.position.x ||
+        next.position.y !== node.position.y
+      )
+    })
+  ) {
+    updateResult = {
+      ...updateResult,
+      model: {
+        ...updateResult.model,
+        graph: { ...updateResult.model.graph, nodePresentation: undefined },
+      },
+    }
+  }
+
   return withAcceptedHistory(
     input,
     model,
@@ -3886,6 +4132,7 @@ export const initialModel = (
   historyPublicationActive: false,
   changeKinds: [],
   viewportAnimation: null,
+  nodeAnimation: null,
   viewportLimits,
   lifecycleReady: false,
   acceptedDocumentRevision: 0,

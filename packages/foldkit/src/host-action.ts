@@ -1,4 +1,5 @@
 import {
+  FlowNodeAnimationRequestSchema,
   FlowPasteOptionsSchema,
   FlowColorModeSchema,
   FlowCommandSchema,
@@ -13,6 +14,12 @@ import { Message as FoldMessage } from 'foldkit'
 import { CanvasOptionsSchema } from './graph.ts'
 
 export const HostAction = FoldMessage.defineMessageUnion({
+  AnimateNodePositions: {
+    requestId: Schema.String,
+    request: FlowNodeAnimationRequestSchema,
+    reducedMotion: Schema.Boolean,
+  },
+  CancelNodeAnimation: {},
   Clipboard: {
     command: Schema.Union([
       Schema.Struct({ kind: Schema.Literal('copy') }),
