@@ -27,6 +27,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        edgeRouting: `${import.meta.dirname}/edge-routing/index.html`,
         expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
         dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
         nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,

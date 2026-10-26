@@ -5,6 +5,7 @@
   "dependencies": {
     "@flow/core": "workspace:*",
     "@flow/layout": "workspace:*",
+    "@flow/routing-libavoid": "workspace:*",
     "effect": "4.0.0"
   }
 }

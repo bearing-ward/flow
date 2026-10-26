@@ -100,9 +100,14 @@ test('Vue desktop gesture controls expose connection events and keyboard resize 
 
 test('Vue narrow touch-ready controls stay keyboard reachable and support touch drag', async ({
   browser,
+  baseURL,
 }) => {
+  if (baseURL === undefined) {
+    throw new Error('Missing configured Vue test URL')
+  }
+
   const context = await browser.newContext({
-    baseURL: 'http://127.0.0.1:4177',
+    baseURL,
     viewport: { width: 360, height: 780 },
     isMobile: true,
     hasTouch: true,

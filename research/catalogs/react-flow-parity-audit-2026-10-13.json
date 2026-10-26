@@ -12,31 +12,31 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 192,
+    "inScopeCloseAllHosts": 193,
     "inScopeCloseByHost": {
-      "vanilla": 192,
-      "vue": 192,
-      "foldkit": 192
+      "vanilla": 193,
+      "vue": 193,
+      "foldkit": 193
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-160 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153-160 acceptance follow-ups; other ratings retain their recorded audit boundaries; Plan 162 obstacle routing acceptance",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 13,
+          "C": 14,
           "P": 0,
-          "G": 3
+          "G": 2
         },
         "vue": {
-          "C": 13,
+          "C": 14,
           "P": 0,
-          "G": 3
+          "G": 2
         },
         "foldkit": {
-          "C": 13,
+          "C": 14,
           "P": 0,
-          "G": 3
+          "G": 2
         }
       }
     }
@@ -3000,76 +3000,137 @@
     {
       "section": "examples edges",
       "name": "Edge Routing · Pro",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Endpoint-based path helpers and path intersections do not perform obstacle-aware routing.",
+      "missing": null,
       "effort": "L",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 162",
         "previousRatings": {
           "vanilla": "G",
           "vue": "G",
           "foldkit": "G"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "Adopted D10 contract and public-description comparison, real libavoid-js contract tests, separate packed consumer, and 11 shared Chromium gesture cases in each Flow host. C records achievable functional closeness, not private Pro source or exact reference-path parity.",
         "url": "https://reactflow.dev/examples/edges/edge-routing",
-        "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "accessedOn": "2026-10-26",
+        "sourceAccess": "Public description and routing docs read. Private subscription source was not accessed; no live Pro demo interaction is claimed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/edge-routing/index.html"
         ],
-        "missing": "Endpoint-based path helpers and path intersections do not perform obstacle-aware routing.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": null,
+        "evidence": "research/traces/162-edge-routing.md",
         "outcomes": [
           {
             "id": "obstacles",
             "outcome": "Automatically route edges around node obstacles.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edge-path.ts:26",
-                "packages/core/src/domain/flow-edge-geometry.ts:618"
+                "packages/core/src/domain/flow-routing.ts:185",
+                "packages/routing-libavoid/src/public.ts:91",
+                "apps/shared/edge-routing/acceptance.ts:113"
               ],
-              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
-              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
-              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              "vanilla": ["apps/vanilla/e2e/edge-routing.e2e.ts:3"],
+              "vue": ["apps/vue/e2e/edge-routing.e2e.ts:3"],
+              "foldkit": ["apps/foldkit/e2e/edge-routing.e2e.ts:3"]
             },
             "basis": "public-description"
           },
           {
             "id": "reroute",
             "outcome": "Recompute obstacle-avoiding paths as the diagram changes.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edge-path.ts:26",
-                "packages/core/src/domain/flow-edge-geometry.ts:618"
+                "packages/core/src/domain/flow-routing.ts:185",
+                "packages/routing-libavoid/src/public.ts:91",
+                "apps/shared/edge-routing/acceptance.ts:241"
               ],
-              "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
-              "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
-              "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              "vanilla": ["apps/vanilla/e2e/edge-routing.e2e.ts:3"],
+              "vue": ["apps/vue/e2e/edge-routing.e2e.ts:3"],
+              "foldkit": ["apps/foldkit/e2e/edge-routing.e2e.ts:3"]
             },
             "basis": "linked-public-docs"
           }
         ],
         "unverified": [
-          "No-route fallback, routing constraints, resize timing and saved route policy need reference or maintainer decisions."
+          "Exact private Pro routing/nudging rules and constants, arbitrary custom-renderer geometry, mid-transaction WASM preemption, collector delivery and full-profile acceptance."
         ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 162"],
+      "reauditHistory": [
+        {
+          "on": "2026-10-25",
+          "plan": "Plan 149",
+          "previousRatings": {
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G"
+          },
+          "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+          "url": "https://reactflow.dev/examples/edges/edge-routing",
+          "accessedOn": "2026-10-25",
+          "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+          "demoUrls": [
+            "https://example-apps.xyflow.com/react/pro/edge-routing/index.html"
+          ],
+          "missing": "Endpoint-based path helpers and path intersections do not perform obstacle-aware routing.",
+          "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+          "outcomes": [
+            {
+              "id": "obstacles",
+              "outcome": "Automatically route edges around node obstacles.",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-edge-path.ts:26",
+                  "packages/core/src/domain/flow-edge-geometry.ts:618"
+                ],
+                "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+                "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+                "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "reroute",
+              "outcome": "Recompute obstacle-avoiding paths as the diagram changes.",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-edge-path.ts:26",
+                  "packages/core/src/domain/flow-edge-geometry.ts:618"
+                ],
+                "vanilla": ["apps/vanilla/e2e/renderer-props.e2e.ts:153"],
+                "vue": ["apps/vue/e2e/renderer-props.e2e.ts:125"],
+                "foldkit": ["apps/foldkit/e2e/renderer-props.e2e.ts:150"]
+              },
+              "basis": "linked-public-docs"
+            }
+          ],
+          "unverified": [
+            "No-route fallback, routing constraints, resize timing and saved route policy need reference or maintainer decisions."
+          ]
+        }
+      ]
     },
     {
       "section": "examples edges",

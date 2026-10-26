@@ -1,4 +1,6 @@
 import {
+  getAutomaticRouteGeometry,
+  FlowRoutingResultSchema,
   createFlowNodeAnimator,
   applyFlowLayoutPositions,
   solveFlowAlignment,
@@ -119,6 +121,7 @@ import {
   isEdgeSelectable,
 } from '@flow/core'
 import type {
+  FlowRoutingResult,
   FlowAlignmentGuide,
   FlowHistoryEvent,
   FlowTransactionContext,
@@ -950,6 +953,10 @@ export const FlowCanvas = defineComponent({
     edgesReconnectable: { type: Boolean, default: true },
     /** Enable manual route-point editing and Space-held freeform connections. */
     editableEdges: { type: Boolean, default: false },
+    edgeRouting: {
+      type: Object as PropType<FlowRoutingResult | null>,
+      default: undefined,
+    },
     /**
      * React `deleteKeyCode`: document-level deletion of selected, deletable
      * elements outside editable controls. `null` disables it.
@@ -1836,6 +1843,32 @@ export const FlowCanvas = defineComponent({
         },
       }
     }
+
+    const acceptedEdgeRouting = computed(() =>
+      props.edgeRouting === undefined || props.edgeRouting === null
+        ? undefined
+        : S.decodeUnknownSync(FlowRoutingResultSchema)(props.edgeRouting)
+    )
+
+    const automaticRoute = (
+      edge: FlowEdge,
+      source: XYPosition,
+      target: XYPosition
+    ) =>
+      getAutomaticRouteGeometry(activeDocument.value, edge, source, target, {
+        measurements: measuredNodes.value,
+        positionOverrides: new Map(
+          activeDocument.value.nodes.flatMap((node) => {
+            const next = renderGraphNode(node.id)?.node.position
+
+            return next === undefined ||
+              (next.x === node.position.x && next.y === node.position.y)
+              ? []
+              : [[node.id, next]]
+          })
+        ),
+        edgeRouting: acceptedEdgeRouting.value,
+      })
 
     const visibleHelperGuides = computed(() => {
       if (helperGuides.value.length === 0) {
@@ -9995,13 +10028,14 @@ export const FlowCanvas = defineComponent({
       return {
         path:
           routeEditor.points(edge) === undefined
-            ? edgePath(
+            ? (automaticRoute(edge, sourceAnchor, targetAnchor)?.path ??
+              edgePath(
                 edge.path,
                 sourceAnchor,
                 targetAnchor,
                 resolved.sourceHandle.side,
                 resolved.targetHandle.side
-              )
+              ))
             : getManualRouteGeometry(
                 sourceAnchor,
                 targetAnchor,
@@ -10085,13 +10119,18 @@ export const FlowCanvas = defineComponent({
 
               const position =
                 points === undefined
-                  ? edgeLabelPosition(
+                  ? (automaticRoute(
+                      edge,
+                      geometry.sourceAnchor,
+                      geometry.targetAnchor
+                    )?.label ??
+                    edgeLabelPosition(
                       geometry.sourceAnchor,
                       geometry.targetAnchor,
                       edge.path ?? 'straight',
                       geometry.sourceHandle.side,
                       geometry.targetHandle.side
-                    )
+                    ))
                   : getManualRouteGeometry(
                       geometry.sourceAnchor,
                       geometry.targetAnchor,
@@ -10556,13 +10595,14 @@ export const FlowCanvas = defineComponent({
       return (
         edgeLabelAnchor(edge) ??
         (routeEditor.points(edge) === undefined
-          ? edgeLabelPosition(
+          ? (automaticRoute(edge, source, target)?.label ??
+            edgeLabelPosition(
               source,
               target,
               edge.path ?? 'straight',
               resolved.sourceHandle.side,
               resolved.targetHandle.side
-            )
+            ))
           : getManualRouteGeometry(
               source,
               target,

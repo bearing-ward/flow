@@ -308,6 +308,7 @@ export const createFoldkitFlowInstance = (
     const response = await read({ internalNodes: true })
 
     return {
+      edgeRouting: response.edgeRouting,
       document: response.snapshot.document,
       internals: response.internalNodes ?? [],
     }
@@ -510,6 +511,7 @@ export const createFoldkitFlowInstance = (
       const state = await withInternalNodes()
 
       return coreEdgesGeometry(state.document, {
+        edgeRouting: state.edgeRouting,
         measurements: flowMeasurementsFromInternalNodes(state.internals),
       })
     },

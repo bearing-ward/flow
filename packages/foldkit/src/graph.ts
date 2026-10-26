@@ -1,4 +1,6 @@
 import {
+  FlowRoutingResultSchema,
+  getAutomaticRouteGeometry,
   applyFlowLayoutPositions,
   solveFlowAlignment,
   resolveFlowAlignmentGuides,
@@ -128,12 +130,12 @@ import {
   resolveFlowInteractivity,
 } from '@flow/core'
 import type {
+  FlowRoutingResult,
   FlowChange as CoreFlowChange,
   FlowCommand as CoreFlowCommand,
   FlowDocument,
   NodeBoundsChange,
   NodeResizeCalculationInput,
-  NodeMeasurementInput,
   FlowEditError,
   FlowEditResult,
   FlowSnapshot,
@@ -199,6 +201,10 @@ import {
   connectionTargetOffered,
 } from './connection-rules.ts'
 import type { FoldkitIsValidConnection } from './connection-rules.ts'
+import {
+  measurementsForDocument,
+  measurementsForResize,
+} from './document-measurements.ts'
 import {
   dragGroupBox,
   dragItemExtent,
@@ -581,6 +587,7 @@ export const ModelSchema = Schema.Struct({
   ariaLabelConfig: FlowAriaLabelTextConfigSchema,
   /** React Flow `defaultMarkerColor`; `null` uses each edge's stroke. */
   defaultMarkerColor: Schema.NullOr(Schema.String),
+  edgeRouting: Schema.optional(FlowRoutingResultSchema),
   measurements: FlowMeasurementStateSchema,
   pointerSession: Schema.NullOr(PointerSessionSchema),
   gestureSession: Schema.NullOr(GestureSessionSchema),
@@ -809,6 +816,7 @@ export const Message = FoldMessage.defineMessageUnion({
     elementsSelectable: Schema.optional(Schema.Boolean),
   },
   ReplaceDocument: { document: FlowDocumentSchema },
+  SetEdgeRouting: { result: Schema.NullOr(FlowRoutingResultSchema) },
   ReplaceViewport: { viewport: ViewportSchema },
   SetSelectionMode: { mode: SelectionModeSchema },
   /** React Flow `colorMode` changed at runtime. */
@@ -1430,6 +1438,10 @@ const requestEdit = (
 
       const next = fitGroupingModel(model, {
         ...model,
+        measurements:
+          model.documentMode === 'uncontrolled'
+            ? measurementsForDocument(model, result.document)
+            : model.measurements,
         document:
           model.documentMode === 'uncontrolled'
             ? result.document
@@ -2572,105 +2584,6 @@ const zoomViewportAt = (
     x: screenX - (screenX - model.viewport.x) * ratio,
     y: screenY - (screenY - model.viewport.y) * ratio,
   }
-}
-
-const measurementsForResize = (
-  model: Model,
-  document: FlowDocument,
-  change: NodeBoundsChange,
-  measurement?: NodeMeasurementInput
-) => {
-  const measurements = pruneFlowMeasurements(document, model.measurements)
-
-  const current = getFlowMeasuredNodes(document, measurements).get(
-    change.nodeId
-  )
-
-  if (
-    current?.width === change.size.width &&
-    current.height === change.size.height
-  ) {
-    return measurements
-  }
-
-  const sampled =
-    measurement?.width === change.size.width &&
-    measurement.height === change.size.height
-      ? applyNodeMeasurement(document, measurements, measurement)
-      : measurements
-
-  const accepted = getFlowMeasuredNodes(document, sampled).get(change.nodeId)
-
-  if (
-    accepted?.width === change.size.width &&
-    accepted.height === change.size.height
-  ) {
-    return sampled
-  }
-
-  const nodes = sampled.nodes.filter(
-    ({ measurement: node }) => node.nodeId !== change.nodeId
-  )
-
-  return nodes.length === sampled.nodes.length
-    ? sampled
-    : { ...sampled, nodes, revision: sampled.revision + 1 }
-}
-
-const measurementsForDocument = (model: Model, document: FlowDocument) => {
-  const pending = model.pendingResizeAcceptance
-
-  if (pending === null) {
-    const measurements = pruneFlowMeasurements(document, model.measurements)
-
-    if (model.documentMode === 'controlled') {
-      return measurements
-    }
-
-    const previous = new Map(
-      model.document.nodes.map((node) => [node.id, node])
-    )
-
-    const current = new Map(document.nodes.map((node) => [node.id, node]))
-
-    const nodes = measurements.nodes.filter(({ measurement }) => {
-      const before = previous.get(measurement.nodeId)?.size
-      const after = current.get(measurement.nodeId)?.size
-
-      return (
-        (before?.width === after?.width && before?.height === after?.height) ||
-        (measurement.width === after?.width &&
-          measurement.height === after?.height)
-      )
-    })
-
-    return nodes.length === measurements.nodes.length
-      ? measurements
-      : { ...measurements, nodes, revision: measurements.revision + 1 }
-  }
-
-  const { change } = pending
-  const nodes = new Map(document.nodes.map((node) => [node.id, node]))
-  const resized = nodes.get(change.nodeId)
-
-  const accepted =
-    resized?.position.x === change.position.x &&
-    resized.position.y === change.position.y &&
-    resized.size?.width === change.size.width &&
-    resized.size.height === change.size.height &&
-    change.childPositions.every(({ nodeId, position }) => {
-      const child = nodes.get(nodeId)
-
-      return (
-        child?.parentId === change.nodeId &&
-        child.position.x === position.x &&
-        child.position.y === position.y
-      )
-    })
-
-  return accepted
-    ? measurementsForResize(model, document, change, pending.measurement)
-    : pruneFlowMeasurements(document, model.measurements)
 }
 
 const resizeInput = (
@@ -3858,6 +3771,9 @@ const updateState = (
         },
         'document-update'
       ),
+    SetEdgeRouting: ({ result }) => ({
+      model: { ...model, edgeRouting: result ?? undefined },
+    }),
     ReplaceViewport: ({ viewport }) =>
       acceptReplacement(
         model,
@@ -5621,7 +5537,8 @@ const calculateEdgeGeometry = (
   edge: FlowEdge,
   source: FlowGraphNode,
   target: FlowGraphNode,
-  markerScope: string
+  markerScope: string,
+  edgeRouting?: FlowRoutingResult
 ) => {
   const resolved = resolveEdgeHandles(document, edge)
   const sourceHandle = resolved?.sourceHandle
@@ -5662,7 +5579,10 @@ const calculateEdgeGeometry = (
   const manual =
     edge.route?.mode === 'manual'
       ? getManualRouteGeometry(start, end, edge.route.points)
-      : undefined
+      : getAutomaticRouteGeometry(document, edge, start, end, {
+          measurements,
+          edgeRouting,
+        })
 
   const path =
     manual?.path ??
@@ -5793,7 +5713,8 @@ const connectionPreviewState = (
           reconnectEdge,
           reconnectSource,
           reconnectTarget,
-          'preview'
+          'preview',
+          model.edgeRouting
         ).geometry
 
   let from = to
@@ -7986,12 +7907,13 @@ const graphView = (
         }
 
         const edgeGeometry = calculateEdgeGeometry(
-          model.document,
-          measurements,
+          renderDocument,
+          renderMeasurements,
           edge,
           source,
           target,
-          markerScope
+          markerScope,
+          model.edgeRouting
         )
 
         const { geometry, markerStartId, markerEndId } = edgeGeometry

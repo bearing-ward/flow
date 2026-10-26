@@ -1224,3 +1224,35 @@ export {
   createFlowTreeEditor,
   getFlowTreeLayoutInput,
 } from './use-cases/tree-editor.ts'
+
+export {
+  FlowRouter,
+  FlowRoutingFailure,
+  FlowRoutingRequestSchema,
+  FlowRoutingResultSchema,
+  FlowRoutingObstacleSchema,
+  FlowRoutingPortSchema,
+  FlowRoutingPathSchema,
+} from './domain/flow-routing.schema.ts'
+
+export type {
+  FlowRouterService,
+  FlowRoutingRequest,
+  FlowRoutingResult,
+  FlowRoutingObstacle,
+  FlowRoutingPort,
+} from './domain/flow-routing.schema.ts'
+
+export {
+  createFlowRoutingRequest,
+  createFlowRoutingSession,
+  flowRoutingPortExit,
+  flowRoutingSegmentIntersects,
+  validateFlowRoutingResult,
+  routeFlowEdges,
+} from './domain/flow-routing.ts'
+
+export {
+  flowRoutingRevision,
+  getAutomaticRouteGeometry,
+} from './domain/flow-routing-geometry.ts'

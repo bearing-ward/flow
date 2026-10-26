@@ -1,4 +1,5 @@
 import {
+  FlowRoutingResultSchema,
   FlowNodeTransitionSchema,
   FlowNodeAnimationResultSchema,
   createFlowNodeTransition,
@@ -271,6 +272,7 @@ export const SnapshotResponseSchema = Schema.Struct({
   nodesData: Schema.Array(FlowNodeDataSchema),
   nodeConnections: Schema.Array(FlowNodeConnectionSchema),
   handleConnections: Schema.Array(FlowEdgeSchema),
+  edgeRouting: Schema.optional(FlowRoutingResultSchema),
   connectionPreview: ConnectionPreviewSnapshotSchema,
   savedSession: SavedFlowSessionSchema,
 })
@@ -1025,6 +1027,7 @@ const selectSnapshotProjection = (
 ) =>
   structuredClone({
     requestId: request.requestId,
+    edgeRouting: graph.edgeRouting,
     snapshot: Graph.selectSnapshot(graph),
     node:
       request.nodeId === undefined
@@ -2555,6 +2558,8 @@ const routeAction = (
     }),
     ReplaceDocument: ({ document }) =>
       graphFold(model, Graph.Message.ReplaceDocument({ document }), 'full'),
+    SetEdgeRouting: ({ result }) =>
+      graphFold(model, Graph.Message.SetEdgeRouting({ result })),
     ReplaceViewport: ({ viewport }) =>
       graphFold(model, Graph.Message.ReplaceViewport({ viewport })),
     // Replacing the targets keeps pointer and pane lifecycles silent, but a

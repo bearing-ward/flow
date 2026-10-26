@@ -12,6 +12,8 @@ import type { FlowGraphNode, FlowGraphView } from './flow-graph.ts'
 import type { FlowIntersectionCandidate } from './flow-intersection.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
 import { getManualRouteGeometry } from './flow-route-geometry.ts'
+import { getAutomaticRouteGeometry } from './flow-routing-geometry.ts'
+import type { FlowRoutingResult } from './flow-routing.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { smoothStepEdgePath, stepEdgePath } from './flow-step-edge.schema.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
@@ -44,6 +46,7 @@ export interface FlowEdgeRenderGeometry {
 }
 
 export interface FlowEdgeGeometryOptions {
+  readonly edgeRouting?: FlowRoutingResult | null | undefined
   /** Measured node sizes and handle boxes, such as from internal nodes. */
   readonly measurements?: ReadonlyMap<NodeId, MeasuredNode> | undefined
   /** Parent-relative positions by node id that replace document positions, such as a live drag. */
@@ -205,7 +208,7 @@ export const getEdgesGeometry = (
     const manual =
       edge.route?.mode === 'manual'
         ? getManualRouteGeometry(source, target, edge.route.points)
-        : undefined
+        : getAutomaticRouteGeometry(document, edge, source, target, options)
 
     return [
       {
@@ -242,9 +245,11 @@ export const getEdgeGeometry = (
   options: FlowEdgeGeometryOptions = {}
 ): FlowEdgeRenderGeometry | undefined =>
   getEdgesGeometry(
-    { ...document, edges: document.edges.filter(({ id }) => id === edgeId) },
+    options.edgeRouting === null || options.edgeRouting === undefined
+      ? { ...document, edges: document.edges.filter(({ id }) => id === edgeId) }
+      : document,
     options
-  )[0]
+  ).find(({ id }) => id === edgeId)
 
 /* SVG path flattening. */
 
