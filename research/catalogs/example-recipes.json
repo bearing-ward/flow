@@ -2974,52 +2974,77 @@
       "title": "Expand and Collapse",
       "listedPro": true,
       "family": "grouping-and-layout",
-      "journey": "Collapse a branch, expand it again, and inspect hidden descendants and connecting edges.",
-      "observableResult": "Collapsed descendants are hidden without deletion; expanding restores their prior positions and valid connections.",
-      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
-      "apiValidation": "pending",
+      "journey": "Collapse a nested branch, collapse its ancestor, expand the ancestor, then restore the branch through pointer and keyboard controls. Add a child while its parent is collapsed and undo the gesture.",
+      "observableResult": "The complete tree retains descendants, opaque data, authored hidden flags, and each expansion state. Only the visible projection is rendered and laid out; focus moves to a visible ancestor and undo restores the entire edit.",
+      "publicApis": [
+        "createFlowTreeEditor",
+        "prepareFlowTreeEdit",
+        "animateNodePositions"
+      ],
+      "apiValidation": "validated",
       "hostRoutes": {
         "vanilla": {
-          "path": "/examples/layout/expand-collapse",
-          "status": "planned"
+          "path": "/expand-collapse/",
+          "status": "runnable",
+          "sourcePath": "apps/vanilla/src/tree-demo.ts"
         },
         "vue": {
-          "path": "/examples/layout/expand-collapse",
-          "status": "planned"
+          "path": "/expand-collapse/",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/tree-demo.ts"
         },
         "foldkit": {
-          "path": "/examples/layout/expand-collapse",
-          "status": "planned"
+          "path": "/expand-collapse/",
+          "status": "runnable",
+          "sourcePath": "apps/foldkit/src/tree-demo.ts"
         }
       },
-      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
-      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "resetBehavior": "Reload the route to restore its deterministic complete tree and clear history, clipboard, pending layouts and animation.",
+      "optionalDependencies": "Existing optional @flow/layout integration owns d3-hierarchy; no new dependency.",
       "reference": {
-        "availability": "public-page-listed",
-        "licenseReview": "required-before-copy",
-        "comparison": "unverified"
+        "availability": "public-page-and-demo-accessed-2026-10-26",
+        "licenseReview": "No private source copied; public output observation only.",
+        "comparison": "compared",
+        "evidence": {
+          "type": "trace",
+          "path": "research/traces/160-expand-collapse.md"
+        }
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "complete",
       "testedResult": {
         "vanilla": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vanilla/e2e/expand-collapse.e2e.ts"
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/expand-collapse.e2e.ts"
         },
         "foldkit": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/foldkit/e2e/expand-collapse.e2e.ts"
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "complete",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Collapse a branch, expand it again, and inspect hidden descendants and connecting edges. Assert: Collapsed descendants are hidden without deletion; expanding restores their prior positions and valid connections. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
-        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
-      }
+        "automated": "Nine shared public gesture cases per host cover placeholder replacement, branch growth, edge insertion and data retention, nested visibility, focus, animated measured layout, persistence, clipboard, history, empty/deleted parents and disposal. Two locked public-reference cases observe the named demo gestures.",
+        "manual": "Private Pro implementation, exact constants and coordinates, and hidden persistence/history behavior remain unverified. D6 single-root and versioned-state policies are intentional Flow behavior."
+      },
+      "apiEvidence": [
+        {
+          "api": "createFlowTreeEditor",
+          "path": "packages/core/src/use-cases/tree-editor.ts"
+        },
+        {
+          "api": "prepareFlowTreeEdit",
+          "path": "packages/core/src/domain/flow-tree.ts"
+        },
+        {
+          "api": "animateNodePositions",
+          "path": "apps/vanilla/src/tree-demo.ts"
+        }
+      ]
     },
     {
       "url": "https://reactflow.dev/examples/layout/auto-layout",
@@ -3130,52 +3155,77 @@
       "title": "Dynamic Layouting",
       "listedPro": true,
       "family": "grouping-and-layout",
-      "journey": "Add a node during an asynchronous layout run and allow the earlier run to finish.",
-      "observableResult": "The graph reflects the latest revision; a stale layout result does not overwrite positions after the edit.",
-      "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
-      "apiValidation": "pending",
+      "journey": "Click a regular node to grow a child placeholder, promote that placeholder with its replacement, insert a node through an edge plus, and observe animated hierarchy relayout.",
+      "observableResult": "Each growth or insertion produces a valid single-root tree and one undo step. Inserted edges retain their metadata, rendered positions animate to the hierarchy destination, and saved or copied node data retains its versioned tree fields.",
+      "publicApis": [
+        "createFlowTreeEditor",
+        "prepareFlowTreeEdit",
+        "animateNodePositions"
+      ],
+      "apiValidation": "validated",
       "hostRoutes": {
         "vanilla": {
-          "path": "/examples/layout/dynamic-layouting",
-          "status": "planned"
+          "path": "/dynamic-layouting/",
+          "status": "runnable",
+          "sourcePath": "apps/vanilla/src/tree-demo.ts"
         },
         "vue": {
-          "path": "/examples/layout/dynamic-layouting",
-          "status": "planned"
+          "path": "/dynamic-layouting/",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/tree-demo.ts"
         },
         "foldkit": {
-          "path": "/examples/layout/dynamic-layouting",
-          "status": "planned"
+          "path": "/dynamic-layouting/",
+          "status": "runnable",
+          "sourcePath": "apps/foldkit/src/tree-demo.ts"
         }
       },
-      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
-      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "resetBehavior": "Reload the route to restore its deterministic complete tree and clear history, clipboard, pending layouts and animation.",
+      "optionalDependencies": "Existing optional @flow/layout integration owns d3-hierarchy; no new dependency.",
       "reference": {
-        "availability": "public-page-listed",
-        "licenseReview": "required-before-copy",
-        "comparison": "unverified"
+        "availability": "public-page-and-demo-accessed-2026-10-26",
+        "licenseReview": "No private source copied; public output observation only.",
+        "comparison": "compared",
+        "evidence": {
+          "type": "trace",
+          "path": "research/traces/160-expand-collapse.md"
+        }
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "complete",
       "testedResult": {
         "vanilla": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vanilla/e2e/expand-collapse.e2e.ts"
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/expand-collapse.e2e.ts"
         },
         "foldkit": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/foldkit/e2e/expand-collapse.e2e.ts"
         }
       },
-      "acceptanceClaim": "planned",
+      "acceptanceClaim": "complete",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Add a node during an asynchronous layout run and allow the earlier run to finish. Assert: The graph reflects the latest revision; a stale layout result does not overwrite positions after the edit. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
-        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
-      }
+        "automated": "Nine shared public gesture cases per host cover placeholder replacement, branch growth, edge insertion and data retention, nested visibility, focus, animated measured layout, persistence, clipboard, history, empty/deleted parents and disposal. Two locked public-reference cases observe the named demo gestures.",
+        "manual": "Private Pro implementation, exact constants and coordinates, and hidden persistence/history behavior remain unverified. D6 single-root and versioned-state policies are intentional Flow behavior."
+      },
+      "apiEvidence": [
+        {
+          "api": "createFlowTreeEditor",
+          "path": "packages/core/src/use-cases/tree-editor.ts"
+        },
+        {
+          "api": "prepareFlowTreeEdit",
+          "path": "packages/core/src/domain/flow-tree.ts"
+        },
+        {
+          "api": "animateNodePositions",
+          "path": "apps/vanilla/src/tree-demo.ts"
+        }
+      ]
     },
     {
       "url": "https://reactflow.dev/examples/layout/node-collisions",

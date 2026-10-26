@@ -1,10 +1,13 @@
 import { Effect } from 'effect'
 
+import type { FlowEditTransaction } from '../domain/flow-edit.schema.ts'
+import { prepareFlowEdit } from '../domain/flow-edit.ts'
+import { flowHistoryDocumentsEqual } from '../domain/flow-history.ts'
 import {
   createFlowNodeTransition,
   decodeFlowNodeAnimationRequest,
   finishFlowNodeTransition,
-  nodeAnimationDocument,
+  prepareFlowNodeAnimationEdit,
   stepFlowNodeTransition,
 } from '../domain/flow-node-animation.ts'
 import type {
@@ -20,7 +23,7 @@ export const createFlowNodeAnimator = (owner: {
   readonly document: () => FlowDocument
   readonly displayed: () => ReadonlyMap<string, XYPosition>
   readonly draw: (positions: ReadonlyMap<string, XYPosition>) => void
-  readonly commit: (document: FlowDocument) => Promise<void>
+  readonly commit: (transaction: FlowEditTransaction) => Promise<void>
   readonly reducedMotion: () => boolean
   readonly schedule: (step: (delta: number) => void) => () => void
 }) => {
@@ -98,6 +101,17 @@ export const createFlowNodeAnimator = (owner: {
             return finishFlowNodeTransition(transition, 'disposed')
           }
 
+          const transaction = yield* prepareFlowNodeAnimationEdit(
+            owner.document(),
+            request,
+            transition
+          )
+
+          const destination = (yield* prepareFlowEdit(
+            owner.document(),
+            transaction
+          )).document
+
           cancel('superseded', true)
           const pending = Promise.withResolvers<FlowNodeAnimationResult>()
 
@@ -111,8 +125,7 @@ export const createFlowNodeAnimator = (owner: {
           owner.draw(transition.from)
 
           yield* Effect.tryPromise({
-            try: () =>
-              owner.commit(nodeAnimationDocument(owner.document(), transition)),
+            try: () => owner.commit(transaction),
             catch: (cause) =>
               cause instanceof Error ? cause : new Error(String(cause)),
           }).pipe(
@@ -133,6 +146,12 @@ export const createFlowNodeAnimator = (owner: {
           )
 
           if (active !== run) {
+            return yield* Effect.promise(() => pending.promise)
+          }
+
+          if (!flowHistoryDocumentsEqual(owner.document(), destination)) {
+            cancel()
+
             return yield* Effect.promise(() => pending.promise)
           }
 

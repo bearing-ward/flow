@@ -1188,6 +1188,7 @@ export {
   stepFlowNodeTransition,
   finishFlowNodeTransition,
   nodeAnimationDocument,
+  prepareFlowNodeAnimationEdit,
   decodeFlowNodeAnimationRequest,
 } from './domain/flow-node-animation.ts'
 
@@ -1198,3 +1199,28 @@ export type {
 } from './domain/flow-node-animation.ts'
 
 export { createFlowNodeAnimator } from './use-cases/node-animation.ts'
+
+export {
+  FlowTreeDataSchema,
+  flowTreeData,
+  flowTreeCollapsedIds,
+  flowTreeExpandedState,
+  projectFlowTree,
+} from './domain/flow-tree.schema.ts'
+
+export type { FlowTreeData } from './domain/flow-tree.schema.ts'
+
+export {
+  FlowTreeEditSchema,
+  InvalidFlowTree,
+  createFlowTreeNode,
+  decodeFlowTree,
+  prepareFlowTreeEdit,
+} from './domain/flow-tree.ts'
+
+export type { FlowTreeEdit } from './domain/flow-tree.ts'
+
+export {
+  createFlowTreeEditor,
+  getFlowTreeLayoutInput,
+} from './use-cases/tree-editor.ts'

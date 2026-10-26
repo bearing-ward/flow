@@ -22,8 +22,8 @@ Vanilla supplies `requestAnimationFrame` scheduling and releases it on controlle
 
 ## History, persistence and clipboard
 
-Each animation submits one `set-nodes` destination transaction through the host's existing edit API. [Transaction history](transaction-history.md) records only accepted authored state. Intermediate frames never write document positions, emit semantic edits or add history entries. Undo restores the previous destination; redo restores the new destination.
+Each animation submits one destination transaction through the host's existing edit API. An optional `edit` in the request combines topology or data operations with the final `set-nodes` positions. The complete candidate is validated before presentation changes. [Transaction history](transaction-history.md) records only accepted authored state. Intermediate frames never write document positions, emit semantic edits or add history entries. Undo restores the previous destination; redo restores the new destination.
 
 No document schema or saved field is added. Saving and [copying](graph-clipboard.md) use accepted destination positions and preserve opaque node and edge data. No animation progress survives reload or paste. Foldkit live snapshot queries can expose presentation coordinates. Its explicit saved-session response, history and clipboard read accepted documents.
 
-The [Plan 159 trace](../research/traces/159-node-animation.md) separates production paths, local DOM acceptance and the public reference boundary. Dynamic Layouting still requires unit 6's tree editing and expand/collapse behavior.
+The [Plan 159 trace](../research/traces/159-node-animation.md) separates production paths, local DOM acceptance and the public reference boundary. The [dynamic tree APIs](expand-collapse.md) implement unit 6 with atomic animated topology and expansion edits.

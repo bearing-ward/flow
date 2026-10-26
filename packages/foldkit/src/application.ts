@@ -4,7 +4,9 @@ import {
   createFlowNodeTransition,
   stepFlowNodeTransition,
   finishFlowNodeTransition,
-  nodeAnimationDocument,
+  prepareFlowNodeAnimationEdit,
+  prepareFlowEdit,
+  flowHistoryDocumentsEqual,
   decodeFlowNodeAnimationRequest,
   FlowClipboardStateSchema,
   createFlowClipboard,
@@ -2403,6 +2405,10 @@ const routeAction = (
         reducedMotion
       )
 
+      const transaction = Effect.runSync(
+        prepareFlowNodeAnimationEdit(model.graph.document, request, transition)
+      )
+
       const superseded = endNodeAnimation(model, 'superseded', true)
 
       const edited = graphFold(
@@ -2410,29 +2416,23 @@ const routeAction = (
         Graph.Message.EditRequest({
           requestId,
           transaction: {
-            context: {
+            context: transaction.context ?? {
               transactionId: requestId,
               origin: { kind: 'local', actorId: model.history.session },
             },
-            operations: [
-              {
-                kind: 'set-nodes',
-                nodes: nodeAnimationDocument(model.graph.document, transition)
-                  .nodes,
-              },
-            ],
+            operations: transaction.operations,
           },
         })
       )
 
-      const accepted = edited.model.graph.document.nodes.every((node) => {
-        const target = transition.to.get(node.id)
+      const destination = Effect.runSync(
+        prepareFlowEdit(model.graph.document, transaction)
+      ).document
 
-        return (
-          target === undefined ||
-          (target.x === node.position.x && target.y === node.position.y)
-        )
-      })
+      const accepted = flowHistoryDocumentsEqual(
+        edited.model.graph.document,
+        destination
+      )
 
       if (!accepted) {
         return {

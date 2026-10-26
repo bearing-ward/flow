@@ -27,6 +27,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
+        dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
         nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
         main: `${import.meta.dirname}/index.html`,
         figures: `${import.meta.dirname}/shapes/index.html`,

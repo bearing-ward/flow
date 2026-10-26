@@ -1,6 +1,9 @@
 import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
+import { FlowEditTransactionSchema } from './flow-edit.schema.ts'
+import type { FlowEditTransaction } from './flow-edit.schema.ts'
+import { prepareFlowEdit } from './flow-edit.ts'
 import { FlowLayoutResultSchema } from './flow-layout-request.ts'
 import { applyFlowLayoutPositions } from './flow-layout.ts'
 import type { FlowDocument, XYPosition } from './flow.schema.ts'
@@ -12,6 +15,7 @@ const positions = S.ReadonlyMap(
 
 export const FlowNodeAnimationRequestSchema = S.Struct({
   result: FlowLayoutResultSchema,
+  edit: S.optional(FlowEditTransactionSchema),
   duration: S.optional(S.Finite.check(S.isGreaterThanOrEqualTo(0))),
 })
 
@@ -115,3 +119,30 @@ export const decodeFlowNodeAnimationRequest = Effect.fn(
 
   return request
 })
+
+/** Topology/data and the layout destination share one host transaction. */
+export const prepareFlowNodeAnimationEdit = (
+  document: FlowDocument,
+  request: FlowNodeAnimationRequest,
+  transition: FlowNodeTransition
+) =>
+  Effect.gen(function* prepareAnimationEdit() {
+    const candidate =
+      request.edit === undefined
+        ? document
+        : (yield* prepareFlowEdit(document, request.edit)).document
+
+    const destination = nodeAnimationDocument(candidate, transition)
+
+    const transaction: FlowEditTransaction = {
+      ...request.edit,
+      operations: [
+        ...(request.edit?.operations ?? []),
+        { kind: 'set-nodes', nodes: destination.nodes },
+      ],
+    }
+
+    yield* prepareFlowEdit(document, transaction)
+
+    return transaction
+  })
