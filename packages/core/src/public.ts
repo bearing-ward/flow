@@ -1159,3 +1159,23 @@ export type {
   SavedRouteFlowDocument,
   SavedRouteFlowSession,
 } from './domain/flow-persistence.ts'
+
+export {
+  FlowLayoutResultSchema,
+  FlowLayoutSettingsSchema,
+  FlowForceSettingsSchema,
+  defaultFlowLayoutSettings,
+  defaultFlowForceSettings,
+  decodeFlowLayoutSettings,
+  decodeFlowForceSettings,
+  flowLayoutRevision,
+  flowLayoutInputKey,
+  createFlowLayoutSession,
+} from './domain/flow-layout-request.ts'
+
+export type {
+  FlowLayoutSettings,
+  FlowForceSettings,
+  FlowLayoutRequest,
+  FlowLayoutResult,
+} from './domain/flow-layout-request.ts'

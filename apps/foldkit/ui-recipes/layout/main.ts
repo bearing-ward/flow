@@ -8,10 +8,15 @@ import type {
   FlowLayoutDirection,
   FlowLayoutInput,
 } from '@flow/core'
-import { flowBaseEdge } from '@flow/foldkit'
+import { createFoldkitHistoryClient, flowBaseEdge } from '@flow/foldkit'
 import type { FoldkitRendererRegistry } from '@flow/foldkit'
 import { Option, Schema as S } from 'effect'
 
+import {
+  mountLayoutControls,
+  mountForceControls,
+} from '../../../shared/layout/browser.ts'
+import type { LayoutRecipeOwner } from '../../../shared/layout/browser.ts'
 import { mountRecipeHost } from '../recipe-host.ts'
 import type { EditOperations, RecipeHost } from '../recipe-host.ts'
 import { dagreLayout, elkLayout } from './engines.ts'
@@ -26,7 +31,6 @@ import {
   treeNode,
 } from './fixtures.ts'
 import type { SceneName } from './fixtures.ts'
-import { startForceLayout } from './force.ts'
 
 import './layout.css'
 
@@ -203,14 +207,7 @@ const createLayoutController = (
       direction
     )
 
-    const operations: EditOperations = nodes.map((node) => ({
-      kind: 'update-node',
-      nodeId: node.id,
-      patch:
-        node.handles === undefined
-          ? { position: node.position }
-          : { position: node.position, handles: node.handles },
-    }))
+    const operations: EditOperations = [{ kind: 'set-nodes', nodes }]
 
     await target.edit(operations)
     lastKey = key
@@ -321,6 +318,147 @@ const createLayoutController = (
   }
 }
 
+/** Plan 146: accepted state must reach the DOM before publishing readiness. */
+const layoutOwner = (): LayoutRecipeOwner => {
+  const history = createFoldkitHistoryClient(host.runtime.ports)
+  const waiters = new Set<() => void>()
+  let disposed = false
+
+  const rendered = (matches: () => boolean) => {
+    const { promise, resolve } = Promise.withResolvers<undefined>()
+
+    const check = () => {
+      if (disposed || matches()) {
+        waiters.delete(check)
+        resolve(undefined)
+      }
+    }
+
+    waiters.add(check)
+    check()
+
+    return promise
+  }
+
+  const observer = new MutationObserver(() => {
+    for (const check of waiters) {
+      check()
+    }
+  })
+
+  observer.observe(host.frame, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+  })
+  host.onDispose(() => {
+    disposed = true
+    observer.disconnect()
+
+    for (const check of waiters) {
+      check()
+    }
+
+    history.dispose()
+  })
+
+  return {
+    toolbar: host.toolbar,
+    status: host.status,
+    edit: async (transaction) => {
+      const response = await host.edit(
+        transaction.operations,
+        transaction.context
+      )
+
+      if ('error' in response) {
+        throw new Error(response.error._tag)
+      }
+    },
+    read: async () => {
+      const state = await host.measuredState()
+
+      return {
+        document: state.document,
+        input: getFlowLayoutInput(state.document, (id) =>
+          state.internals.get(id)
+        ),
+      }
+    },
+    write: async (nodes, context) => {
+      const response = await host.edit([{ kind: 'set-nodes', nodes }], context)
+
+      if ('error' in response) {
+        throw new Error(response.error._tag)
+      }
+    },
+    subscribe: (listener) => {
+      const stops = [
+        host.runtime.ports.acceptedStates.subscribe(listener),
+        host.runtime.ports.measurementResults.subscribe(listener),
+      ]
+
+      return () => {
+        for (const stop of stops) {
+          stop()
+        }
+      }
+    },
+    afterLayout: async (nodes) => {
+      const styles = nodes.map((node) => {
+        const { style } = document.createElement('div')
+        style.left = `${node.position.x}px`
+        style.top = `${node.position.y}px`
+
+        return { node, style }
+      })
+
+      await rendered(() =>
+        styles.every(({ node, style }) => {
+          const element = [
+            ...host.frame.querySelectorAll<HTMLElement>('[data-node-id]'),
+          ].find((candidate) => candidate.dataset.nodeId === node.id)
+
+          return (
+            element?.style.left === style.left &&
+            element.style.top === style.top &&
+            (node.handles ?? []).every((handle) =>
+              [
+                ...element.querySelectorAll<HTMLElement>('[data-handle-id]'),
+              ].some(
+                (candidate) =>
+                  candidate.dataset.handleId === handle.id &&
+                  candidate.dataset.handleSide === handle.side
+              )
+            )
+          )
+        })
+      )
+
+      if (disposed) {
+        return
+      }
+
+      host.remeasure()
+      const { viewport } = await host.viewportClient.fitView('all', 0.1)
+      const { style } = document.createElement('div')
+      style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+      await rendered(
+        () =>
+          host.frame.querySelector<HTMLElement>('.flow-foldkit-viewport')?.style
+            .transform === style.transform
+      )
+    },
+    undo: async () => {
+      await history.undo()
+    },
+    redo: async () => {
+      await history.redo()
+    },
+    onDispose: host.onDispose,
+  }
+}
+
 const childOf = (document: FlowDocument, parentId: string) =>
   document.nodes.find(({ id }) => id === parentId)?.position ?? { x: 0, y: 0 }
 
@@ -387,7 +525,7 @@ switch (scene) {
   }
 
   case 'auto-layout': {
-    createLayoutController(host, engineFor(scene), 'TB')
+    mountLayoutControls(layoutOwner())
     const added: string[] = []
 
     host.button('add-child', 'Add child').addEventListener('click', () => {
@@ -414,7 +552,20 @@ switch (scene) {
   }
 
   case 'force-layout': {
-    startForceLayout(host)
+    const force = mountForceControls(layoutOwner(), { x: 0, y: 0 })
+    host.onChange((change) => {
+      if (change.kind === 'node-position') {
+        void force.drop([{ nodeId: change.nodeId, position: change.position }])
+      }
+    })
+
+    const stop = host.runtime.ports.interactionEvents.subscribe((events) => {
+      if (events.some(({ name }) => name === 'onNodeDragStart')) {
+        force.pause()
+      }
+    })
+
+    host.onDispose(stop)
     break
   }
 

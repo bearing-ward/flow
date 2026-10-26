@@ -5,6 +5,7 @@ import {
 } from '@flow/core'
 import type {
   FlowDocument,
+  FlowTransactionContext,
   FlowInternalNode,
   FlowRect,
   Viewport,
@@ -71,7 +72,10 @@ export interface RecipeHost {
   /** The rendered `.flow-foldkit-canvas` pane, once Foldkit has rendered it. */
   readonly pane: () => HTMLElement | null
   /** Send one public edit transaction and wait for its result. */
-  readonly edit: (operations: EditOperations) => Promise<EditResponse>
+  readonly edit: (
+    operations: EditOperations,
+    context?: FlowTransactionContext
+  ) => Promise<EditResponse>
   /** Accepted document and measured internal nodes from the public snapshot port. */
   readonly measuredState: (ids?: readonly string[]) => Promise<MeasuredState>
   /** Client point to flow point through the accepted viewport and pane rect. */
@@ -173,7 +177,10 @@ export const mountRecipeHost = (options: RecipeHostOptions): RecipeHost => {
     initialViewport
   )
 
-  const edit = (operations: EditOperations): Promise<EditResponse> => {
+  const edit = (
+    operations: EditOperations,
+    context?: FlowTransactionContext
+  ): Promise<EditResponse> => {
     requestNumber += 1
     const requestId = `${options.page}-${requestNumber}`
     const { promise, resolve } = Promise.withResolvers<EditResponse>()
@@ -187,7 +194,10 @@ export const mountRecipeHost = (options: RecipeHostOptions): RecipeHost => {
     send(
       runtime.ports.editRequests.send({
         requestId,
-        transaction: { operations },
+        transaction: {
+          operations,
+          ...(context === undefined ? undefined : { context }),
+        },
       })
     )
 

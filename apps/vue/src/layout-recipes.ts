@@ -8,19 +8,32 @@ import type { FlowDocument, FlowLayoutDirection, FlowNode } from '@flow/core'
 import { FlowCanvas, useFlow } from '@flow/vue'
 import type { FlowActions } from '@flow/vue'
 import { Effect } from 'effect'
-import { computed, createApp, defineComponent, h, ref } from 'vue'
+import {
+  computed,
+  createApp,
+  defineComponent,
+  h,
+  ref,
+  onScopeDispose,
+  nextTick,
+} from 'vue'
 import type { Component, VNode } from 'vue'
 
+import {
+  mountLayoutControls,
+  mountForceControls,
+} from '../../shared/layout/browser.ts'
+import type { LayoutRecipeOwner } from '../../shared/layout/browser.ts'
 import { DynamicEdge, PlaceholderNode } from './layout-recipes-components.ts'
 import {
   dagreLayout,
   elkLayout,
   elkPortId,
   notifyElementChanges,
+  subscribeElementChanges,
   useMeasuredLayout,
 } from './layout-recipes-engines.ts'
 import type { LayoutPositions } from './layout-recipes-engines.ts'
-import { useForceLayout } from './layout-recipes-force.ts'
 
 import '@flow/vue/style.css'
 
@@ -205,15 +218,99 @@ const elkMultipleHandles: LayoutScene = {
   },
 }
 
+const recipeControls = (
+  flow: FlowActions,
+  force: boolean,
+  ready?: (value: ReturnType<typeof mountForceControls>) => void
+) => {
+  const disposers: (() => void)[] = []
+  onScopeDispose(() => {
+    for (const dispose of disposers) {
+      dispose()
+    }
+  })
+
+  return () =>
+    h('div', {
+      class: 'layout-controls',
+      onVnodeMounted: (vnode: VNode) => {
+        if (!(vnode.el instanceof HTMLElement)) {
+          return
+        }
+
+        const toolbar = vnode.el
+
+        const status = document.querySelector<HTMLElement>(
+          '[data-testid=recipe-status]'
+        )
+
+        if (status === null) {
+          throw new Error('Missing layout status')
+        }
+
+        const owner: LayoutRecipeOwner = {
+          toolbar,
+          status,
+          edit: async (transaction) => {
+            await flow.applyEdit(transaction)
+          },
+          read: async () => {
+            await nextTick()
+
+            return {
+              document: flow.document.value,
+              input: currentInput(flow),
+            }
+          },
+          write: async (nodes, context) => {
+            await flow.applyEdit({
+              operations: [{ kind: 'set-nodes', nodes }],
+              ...(context === undefined ? undefined : { context }),
+            })
+          },
+          subscribe: (listener) => {
+            const stops = [
+              flow.subscribeState(listener),
+              subscribeElementChanges(listener),
+            ]
+
+            return () => {
+              for (const stop of stops) {
+                stop()
+              }
+            }
+          },
+          afterLayout: async () => {
+            await flow.fitView()
+            layouts.value += 1
+          },
+          undo: async () => {
+            await flow.undo()
+          },
+          redo: async () => {
+            await flow.redo()
+          },
+          onDispose: (dispose) => {
+            disposers.push(dispose)
+          },
+        }
+
+        if (force) {
+          ready?.(mountForceControls(owner, { x: 480, y: 320 }))
+        } else {
+          mountLayoutControls(owner)
+        }
+      },
+    })
+}
+
 const autoLayout: LayoutScene = {
   document: treeDocument,
   setup: (flow) => {
     let added = 0
     const children: string[] = []
 
-    useMeasuredLayout(flow, async (input) => {
-      await applyLayout(flow, dagreLayout(input, 'TB'), 'TB')
-    })
+    const controls = recipeControls(flow, false)
 
     const addChild = async (): Promise<void> => {
       const parent =
@@ -246,6 +343,7 @@ const autoLayout: LayoutScene = {
 
     return {
       controls: () => [
+        controls(),
         button('add-child', 'Add child', addChild),
         button('remove-last', 'Remove last', removeLast),
       ],
@@ -279,15 +377,28 @@ const forceLayout: LayoutScene = {
     })
   },
   setup: (flow) => {
-    const force = useForceLayout(flow, { x: 480, y: 320 })
+    let force: ReturnType<typeof mountForceControls> | undefined
+    let dropFrame = 0
+    onScopeDispose(() => cancelAnimationFrame(dropFrame))
+
+    const controls = recipeControls(flow, true, (value) => {
+      force = value
+    })
 
     return {
-      onNodeDragStart: force.onNodeDragStart,
-      onNodeDragStop: force.onNodeDragStop,
-      status: () => ({
-        'data-running': String(force.running.value),
-        'data-ticks': String(force.ticks.value),
-      }),
+      controls: () => [controls()],
+      onNodeDragStart: () => force?.pause(),
+      onNodeDragStop: (node) => {
+        cancelAnimationFrame(dropFrame)
+        dropFrame = requestAnimationFrame(() => {
+          const accepted = flow.getNode(node.id)
+          void force?.drop(
+            accepted === undefined
+              ? []
+              : [{ nodeId: node.id, position: accepted.position }]
+          )
+        })
+      },
     }
   },
 }

@@ -1,0 +1,10 @@
+{
+  "name": "@flow/recipe-shared",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@flow/core": "workspace:*",
+    "@flow/layout": "workspace:*",
+    "effect": "4.0.0"
+  }
+}

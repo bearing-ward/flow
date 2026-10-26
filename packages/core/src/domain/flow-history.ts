@@ -178,6 +178,45 @@ const appendPast = (
 ): readonly FlowDocument[] =>
   capacity === 0 ? [] : [...past, present].slice(-capacity)
 
+const acceptedGesture = (
+  state: FlowHistoryState,
+  context: FlowTransactionContext | undefined
+): FlowHistoryState['gesture'] => {
+  const gestureId = context?.gestureId
+
+  if (gestureId === undefined) {
+    return null
+  }
+
+  if (state.gesture?.gestureId === gestureId) {
+    return state.gesture
+  }
+
+  if (context?.gestureMode === 'continuation') {
+    return {
+      gestureId,
+      baseline: {
+        past: state.past.slice(0, -1),
+        present: state.past.at(-1) ?? state.present,
+        future: [],
+      },
+    }
+  }
+
+  if (context?.gestureMode !== 'continuous') {
+    return null
+  }
+
+  return {
+    gestureId,
+    baseline: {
+      past: state.past,
+      present: state.present,
+      future: state.future,
+    },
+  }
+}
+
 const acceptDocument = (
   state: FlowHistoryState,
   event: Extract<FlowHistoryEvent, { kind: 'accepted' }>
@@ -227,8 +266,7 @@ const acceptDocument = (
     }
   }
 
-  const gesture =
-    state.gesture?.gestureId === event.context?.gestureId ? state.gesture : null
+  const gesture = acceptedGesture(state, event.context)
 
   const baseline = gesture?.baseline ?? state
   const returned = sameDocument(document, baseline.present)
