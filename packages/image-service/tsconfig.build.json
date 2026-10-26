@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "noEmitOnError": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "./dist",
+    "rootDir": "./src",
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src/public.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

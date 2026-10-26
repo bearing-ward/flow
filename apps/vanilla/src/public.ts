@@ -265,3 +265,5 @@ export {
   flowFigureNodeRenderer,
   createFlowFigureMiniMapNode,
 } from './shape-node.ts'
+
+export { createVanillaImageExportRequest } from './image-export.ts'

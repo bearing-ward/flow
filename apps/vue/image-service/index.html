@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flow server image service</title>
+  </head>
+  <body>
+    <header>
+      <h1>Server image creation</h1>
+      <p>Edit the live graph, then refresh its Chromium image.</p>
+      <button id="edit-image">Edit label</button
+      ><button id="undo-image">Undo</button><button id="redo-image">Redo</button
+      ><button id="refresh-image">Refresh server image</button
+      ><output id="image-status">Ready to render</output>
+    </header>
+    <main>
+      <section>
+        <h2>Live graph</h2>
+        <div id="capture"></div>
+      </section>
+      <section id="preview-section">
+        <h2>Server PNG</h2>
+        <img id="server-image" alt="Server-rendered graph" />
+      </section>
+    </main>
+    <script type="module" src="/src/image-service-demo.ts"></script>
+  </body>
+</html>

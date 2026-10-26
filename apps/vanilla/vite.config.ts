@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
     build: {
       rolldownOptions: {
         input: {
+          imageService: `${import.meta.dirname}/image-service/index.html`,
           wireTies: `${import.meta.dirname}/wire-ties/index.html`,
           edgeRouting: `${import.meta.dirname}/edge-routing/index.html`,
           expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,

@@ -134,6 +134,23 @@
         "foldkit": "0.169.0",
       },
     },
+    "packages/image-service": {
+      "name": "@flow/image-service",
+      "version": "0.0.0",
+      "bin": {
+        "flow-image-service": "./dist/server.js",
+      },
+      "dependencies": {
+        "effect": "4.0.0",
+        "playwright": "1.64.1",
+      },
+      "devDependencies": {
+        "@flow/core": "workspace:*",
+      },
+      "peerDependencies": {
+        "@flow/core": "0.0.0",
+      },
+    },
     "packages/layout": {
       "name": "@flow/layout",
       "version": "0.0.0",
@@ -214,6 +231,8 @@
     "@flow/foldkit": ["@flow/foldkit@workspace:packages/foldkit"],
 
     "@flow/foldkit-demo": ["@flow/foldkit-demo@workspace:apps/foldkit"],
+
+    "@flow/image-service": ["@flow/image-service@workspace:packages/image-service"],
 
     "@flow/layout": ["@flow/layout@workspace:packages/layout"],
 

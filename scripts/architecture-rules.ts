@@ -11,6 +11,11 @@ const routingOwners = new Set([
 const routingDependency = (specifier: string): boolean =>
   /(?:^|\/)(?:routing-libavoid|libavoid-js)(?:\/|$)/u.test(specifier)
 
+const imageServiceDependency = (specifier: string): boolean =>
+  /^(?:@flow\/image-service|playwright(?:-core)?|@playwright\/[^/]+)(?:\/|$)/u.test(
+    specifier
+  ) || /(?:^|\/)packages\/image-service(?:\/|$)/u.test(specifier)
+
 const browserGlobals = new Set([
   'cancelAnimationFrame',
   'document',
@@ -184,10 +189,10 @@ export const findArchitectureViolations = (
         [...routingOwners].some((owner) =>
           normalizedSourcePath.startsWith(`${owner}/src/`)
         ) &&
-        routingDependency(normalized)
+        (routingDependency(normalized) || imageServiceDependency(normalized))
       ) {
         violations.push(
-          `${source.path}:${line} imports an optional routing engine: ${specifier}`
+          `${source.path}:${line} imports an optional engine or image service: ${specifier}`
         )
       }
 
@@ -262,10 +267,10 @@ export const findRoutingPackageViolations = (
 
   return Object.entries(manifest).flatMap(([section, dependencies]) =>
     Object.keys(dependencies ?? {})
-      .filter(routingDependency)
+      .filter((name) => routingDependency(name) || imageServiceDependency(name))
       .map(
         (name) =>
-          `${source.path}: ${section} must not depend on optional routing engine ${name}`
+          `${source.path}: ${section} must not depend on optional engine or image service ${name}`
       )
   )
 }

@@ -80,7 +80,14 @@ const fixtureChecks = (): readonly string[] => {
     'packages/foldkit',
     'apps/vanilla',
   ]) {
-    for (const dependency of ['libavoid-js', '@flow/routing-libavoid']) {
+    for (const dependency of [
+      'libavoid-js',
+      '@flow/routing-libavoid',
+      'playwright',
+      'playwright-core',
+      '@playwright/test',
+      '@flow/image-service',
+    ]) {
       if (
         findArchitectureViolations({
           path: `${owner}/src/forbidden-routing.ts`,

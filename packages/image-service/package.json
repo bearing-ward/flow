@@ -1,0 +1,32 @@
+{
+  "name": "@flow/image-service",
+  "version": "0.0.0",
+  "bin": {
+    "flow-image-service": "./dist/server.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    }
+  },
+  "scripts": {
+    "build": "bun build src/public.ts --outfile dist/public.js --target bun --format esm --external effect --external @flow/core --external playwright && bun build src/server.ts --outfile dist/server.js --target bun --format esm --external effect --external @flow/core --external playwright && tsc --project tsconfig.build.json",
+    "start": "bun dist/server.js"
+  },
+  "dependencies": {
+    "effect": "4.0.0",
+    "playwright": "1.64.1"
+  },
+  "devDependencies": {
+    "@flow/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@flow/core": "0.0.0"
+  }
+}

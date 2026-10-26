@@ -1301,3 +1301,25 @@ export {
   flowBundleAffectedEdges,
   flowBundleEndpointNodeIds,
 } from './domain/flow-bundle-dependencies.ts'
+
+export {
+  FlowExportSceneSchema,
+  FlowImageExportRequestSchema,
+  FlowImageExportFailure,
+  prepareFlowImageExport,
+  isCurrentFlowImage,
+} from './domain/flow-image-export.ts'
+
+export type {
+  FlowExportScene,
+  FlowImageExportRequest,
+  PreparedFlowImageExport,
+} from './domain/flow-image-export.ts'
+
+export { createFlowImageExportRequest } from './domain/flow-image-request.ts'
+
+export type { FlowImageExportOptions } from './domain/flow-image-request.ts'
+
+export { flowImageDocumentRevision } from './domain/flow-image-export.ts'
+
+export { getFlowImageCaptureRouting } from './domain/flow-image-routing.ts'

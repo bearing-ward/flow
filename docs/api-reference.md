@@ -305,6 +305,322 @@ export type FlowHistoryStatus = {
 };
 ```
 
+## Image export scene
+
+Generated from `FlowExportSceneSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowExportScene = {
+  readonly document: {
+    readonly bundles?: ReadonlyArray<{
+      readonly id: string;
+      readonly edgeIds: ReadonlyArray<string>;
+      readonly ties: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    }>;
+    readonly edges: ReadonlyArray<{
+      readonly id: string;
+      readonly source: string;
+      readonly target: string;
+      readonly type?: string;
+      readonly sourceHandle?: string;
+      readonly targetHandle?: string;
+      readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+      readonly route?: {
+        readonly mode: "automatic";
+      }
+      | {
+        readonly mode: "manual";
+        readonly points: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      };
+      readonly label?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
+      readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+      readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
+      readonly stroke?: string;
+      readonly strokeWidth?: number;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly animated?: boolean;
+      readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelShowBg?: boolean;
+      readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+      readonly labelBgPadding?: ReadonlyArray<number>;
+      readonly labelBgBorderRadius?: number;
+      readonly selected?: boolean;
+      readonly deletable?: boolean;
+      readonly selectable?: boolean;
+      readonly focusable?: boolean;
+      readonly reconnectable?: boolean | "source" | "target";
+      readonly interactionWidth?: number;
+      readonly ariaRole?: string;
+      readonly ariaLabel?: string;
+      readonly hidden?: boolean;
+      readonly zIndex?: number;
+    }>;
+    readonly nodeOrigin?: ReadonlyArray<number>;
+    readonly nodes: ReadonlyArray<{
+      readonly id: string;
+      readonly label: string;
+      readonly position: {
+        readonly x: number;
+        readonly y: number;
+      };
+      readonly origin?: ReadonlyArray<number>;
+      readonly parentId?: string;
+      readonly type?: string;
+      readonly data?: Readonly<Record<string, JsonValue>>;
+      readonly zIndex?: number;
+      readonly size?: {
+        readonly width: number;
+        readonly height: number;
+      };
+      readonly extent?: "parent";
+      readonly handles?: ReadonlyArray<{
+        readonly id: string;
+        readonly kind: "source" | "target";
+        readonly side: "top" | "right" | "bottom" | "left";
+        readonly connectable?: boolean;
+        readonly connectableStart?: boolean;
+        readonly connectableEnd?: boolean;
+      }>;
+      readonly selected?: boolean;
+      readonly selectable?: boolean;
+      readonly focusable?: boolean;
+      readonly connectable?: boolean;
+      readonly draggable?: boolean;
+      readonly deletable?: boolean;
+      readonly ariaRole?: string;
+      readonly ariaLabel?: string;
+      readonly ariaDescription?: string;
+      readonly hidden?: boolean;
+      readonly style?: Readonly<Record<string, JsonValue>>;
+      readonly className?: string;
+      readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+      readonly targetPosition?: "top" | "right" | "bottom" | "left";
+      readonly dragHandle?: string;
+      readonly expandParent?: boolean;
+      readonly measured?: {
+        readonly width?: number;
+        readonly height?: number;
+      };
+    }>;
+  };
+  readonly measurements: ReadonlyArray<{
+    readonly handles?: ReadonlyArray<{
+      readonly nodeId: string;
+      readonly handleId: string;
+      readonly offset: {
+        readonly x: number;
+        readonly y: number;
+      };
+      readonly width: number;
+      readonly height: number;
+    }>;
+    readonly height: number;
+    readonly nodeId: string;
+    readonly width: number;
+  }>;
+  readonly edgeRouting: {
+    readonly bundlePaths?: ReadonlyArray<{
+      readonly id: string;
+      readonly path: string;
+      readonly label: {
+        readonly x: number;
+        readonly y: number;
+      };
+    }>;
+    readonly revision: string;
+    readonly paths: ReadonlyArray<{
+      readonly kind: "routed";
+      readonly id: string;
+      readonly points: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    }
+    | {
+      readonly kind: "unreachable";
+      readonly id: string;
+      readonly reason: string;
+    }>;
+  }
+  | null;
+};
+```
+
+## Image export request
+
+Generated from `FlowImageExportRequestSchema` in `packages/core/src/public.ts`.
+
+```ts
+export type FlowImageExportRequest = {
+  readonly version: 1;
+  readonly host: "vanilla" | "vue" | "foldkit";
+  readonly revision: string;
+  readonly width: number;
+  readonly height: number;
+  readonly scene: {
+    readonly document: {
+      readonly bundles?: ReadonlyArray<{
+        readonly id: string;
+        readonly edgeIds: ReadonlyArray<string>;
+        readonly ties: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }>;
+      readonly edges: ReadonlyArray<{
+        readonly id: string;
+        readonly source: string;
+        readonly target: string;
+        readonly type?: string;
+        readonly sourceHandle?: string;
+        readonly targetHandle?: string;
+        readonly path?: "straight" | "bezier" | "step" | "smoothstep" | "simplebezier";
+        readonly route?: {
+          readonly mode: "automatic";
+        }
+        | {
+          readonly mode: "manual";
+          readonly points: ReadonlyArray<{
+            readonly x: number;
+            readonly y: number;
+          }>;
+        };
+        readonly label?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
+        readonly markerStart?: "arrow" | "arrowclosed" | JsonValue;
+        readonly markerEnd?: "arrow" | "arrowclosed" | JsonValue;
+        readonly stroke?: string;
+        readonly strokeWidth?: number;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly animated?: boolean;
+        readonly labelStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelShowBg?: boolean;
+        readonly labelBgStyle?: Readonly<Record<string, JsonValue>>;
+        readonly labelBgPadding?: ReadonlyArray<number>;
+        readonly labelBgBorderRadius?: number;
+        readonly selected?: boolean;
+        readonly deletable?: boolean;
+        readonly selectable?: boolean;
+        readonly focusable?: boolean;
+        readonly reconnectable?: boolean | "source" | "target";
+        readonly interactionWidth?: number;
+        readonly ariaRole?: string;
+        readonly ariaLabel?: string;
+        readonly hidden?: boolean;
+        readonly zIndex?: number;
+      }>;
+      readonly nodeOrigin?: ReadonlyArray<number>;
+      readonly nodes: ReadonlyArray<{
+        readonly id: string;
+        readonly label: string;
+        readonly position: {
+          readonly x: number;
+          readonly y: number;
+        };
+        readonly origin?: ReadonlyArray<number>;
+        readonly parentId?: string;
+        readonly type?: string;
+        readonly data?: Readonly<Record<string, JsonValue>>;
+        readonly zIndex?: number;
+        readonly size?: {
+          readonly width: number;
+          readonly height: number;
+        };
+        readonly extent?: "parent";
+        readonly handles?: ReadonlyArray<{
+          readonly id: string;
+          readonly kind: "source" | "target";
+          readonly side: "top" | "right" | "bottom" | "left";
+          readonly connectable?: boolean;
+          readonly connectableStart?: boolean;
+          readonly connectableEnd?: boolean;
+        }>;
+        readonly selected?: boolean;
+        readonly selectable?: boolean;
+        readonly focusable?: boolean;
+        readonly connectable?: boolean;
+        readonly draggable?: boolean;
+        readonly deletable?: boolean;
+        readonly ariaRole?: string;
+        readonly ariaLabel?: string;
+        readonly ariaDescription?: string;
+        readonly hidden?: boolean;
+        readonly style?: Readonly<Record<string, JsonValue>>;
+        readonly className?: string;
+        readonly sourcePosition?: "top" | "right" | "bottom" | "left";
+        readonly targetPosition?: "top" | "right" | "bottom" | "left";
+        readonly dragHandle?: string;
+        readonly expandParent?: boolean;
+        readonly measured?: {
+          readonly width?: number;
+          readonly height?: number;
+        };
+      }>;
+    };
+    readonly measurements: ReadonlyArray<{
+      readonly handles?: ReadonlyArray<{
+        readonly nodeId: string;
+        readonly handleId: string;
+        readonly offset: {
+          readonly x: number;
+          readonly y: number;
+        };
+        readonly width: number;
+        readonly height: number;
+      }>;
+      readonly height: number;
+      readonly nodeId: string;
+      readonly width: number;
+    }>;
+    readonly edgeRouting: {
+      readonly bundlePaths?: ReadonlyArray<{
+        readonly id: string;
+        readonly path: string;
+        readonly label: {
+          readonly x: number;
+          readonly y: number;
+        };
+      }>;
+      readonly revision: string;
+      readonly paths: ReadonlyArray<{
+        readonly kind: "routed";
+        readonly id: string;
+        readonly points: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }
+      | {
+        readonly kind: "unreachable";
+        readonly id: string;
+        readonly reason: string;
+      }>;
+    }
+    | null;
+  };
+  readonly framing: {
+    readonly kind: "fit";
+    readonly padding: number;
+  }
+  | {
+    readonly kind: "viewport";
+    readonly x: number;
+    readonly y: number;
+    readonly zoom: number;
+  };
+  readonly assets: ReadonlyArray<string>;
+};
+```
+
 ## Commands
 
 Generated from `FlowCommandSchema` in `packages/core/src/public.ts`.
