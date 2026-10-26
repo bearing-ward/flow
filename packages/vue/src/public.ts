@@ -151,3 +151,5 @@ export { FlowLabeledGroupNode } from './ui/labeled-group.ts'
 export { useFlowGrouping } from './grouping.ts'
 
 export { useFlowClipboard } from './use-flow.ts'
+
+export { FlowFigureNode, renderFlowFigureMiniMapNode } from './shape-node.ts'

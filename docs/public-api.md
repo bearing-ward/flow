@@ -1,5 +1,7 @@
 # JavaScript public API
 
+[Shape nodes](shape-nodes.md) documents the decoded shape recipe, normalized geometry, palette, host renderers, and minimap APIs.
+
 [Editable and freeform edges](editable-edges.md) documents the shared route schema, host editing options, gesture controls, and version 4 persistence.
 
 `@flow/core` owns schema-derived graph, change, command, geometry, persistence, and transition contracts. `@flow/vanilla` owns DOM acquisition and rendering. The packages also retain the native Effect host API: `createFlowHost` builds a host from decoded values, while `acquireFlowHost` ties its `destroy` method to the caller's Effect scope.

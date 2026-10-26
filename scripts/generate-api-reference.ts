@@ -7,6 +7,8 @@ import {
   FlowCommandSchema,
   FlowDocumentSchema,
   FlowEdgeSchema,
+  FlowFigureDataSchema,
+  FlowFigureEditSchema,
   FlowHistoryStatusSchema,
   FlowTransactionContextSchema,
   FlowNodeSchema,
@@ -113,6 +115,16 @@ const renderReference = (): string =>
     '',
     '',
     schemaSection('Node', 'FlowNodeSchema', FlowNodeSchema.ast),
+    schemaSection(
+      'Shape data',
+      'FlowFigureDataSchema',
+      FlowFigureDataSchema.ast
+    ),
+    schemaSection(
+      'Shape commands',
+      'FlowFigureEditSchema',
+      FlowFigureEditSchema.ast
+    ),
     schemaSection('Edge', 'FlowEdgeSchema', FlowEdgeSchema.ast),
     schemaSection('Document', 'FlowDocumentSchema', FlowDocumentSchema.ast),
     schemaSection(

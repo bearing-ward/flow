@@ -307,3 +307,8 @@ export { HistoryRequestSchema, HistoryResultSchema } from './application.ts'
 export { createFoldkitGroupingClient } from './grouping-client.ts'
 
 export { createFoldkitClipboardClient } from './clipboard-client.ts'
+
+export {
+  foldkitFigureNodeRenderer,
+  createFoldkitFigureMiniMapNode,
+} from './shape-node.ts'

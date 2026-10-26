@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 186,
+    "inScopeCloseAllHosts": 187,
     "inScopeCloseByHost": {
-      "vanilla": 186,
-      "vue": 186,
-      "foldkit": 186
+      "vanilla": 187,
+      "vue": 187,
+      "foldkit": 187
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153, 154, 155 and 156 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-25 Plan 149 Pro audit with Plans 150, 153, 154, 155, 156 and 158 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
-      "on": "2026-10-25",
+      "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 7,
-          "P": 6,
+          "C": 8,
+          "P": 5,
           "G": 3
         },
         "vue": {
-          "C": 7,
-          "P": 6,
+          "C": 8,
+          "P": 5,
           "G": 3
         },
         "foldkit": {
-          "C": 7,
-          "P": 6,
+          "C": 8,
+          "P": 5,
           "G": 3
         }
       }
@@ -2439,31 +2439,31 @@
     {
       "section": "examples nodes",
       "name": "Shapes · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Custom node/data APIs exist; no composed shape library, sidebar, color toolbar or matching minimap recipe.",
+      "missing": "",
       "effort": "M",
       "theme": "pro",
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 158",
         "previousRatings": {
           "vanilla": "P",
           "vue": "P",
           "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "14 core tests and 20 public-gesture acceptance cases in each host passed. C means functional closeness to the named outcomes, not exact reference conformance. The focused verifier and command results are recorded in research/traces/158-shape-nodes.md.",
         "url": "https://reactflow.dev/examples/nodes/shapes",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public page read; separately locked public demo probe selected a node and observed SVG shapes, six color controls, resize controls, ten displayed shapes and a custom minimap. Subscription source and hidden tests were not accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/shapes/index.html"
         ],
-        "missing": "Custom node/data APIs exist; no composed shape library, sidebar, color toolbar or matching minimap recipe.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/158-shape-nodes.md",
         "outcomes": [
           {
             "id": "custom-svg",
@@ -2472,18 +2472,26 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
-                "apps/vanilla/src/mount-flow.ts:8559"
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/whiteboard-recipes.ts:63",
-                "packages/vue/src/flow-canvas.ts:9110"
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
-                "packages/foldkit/src/graph.ts:7582"
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -2491,22 +2499,30 @@
           {
             "id": "shape-set",
             "outcome": "Provide circle, diamond and hexagon shape choices through one node type.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
-                "apps/vanilla/src/mount-flow.ts:8559"
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/whiteboard-recipes.ts:63",
-                "packages/vue/src/flow-canvas.ts:9110"
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
-                "packages/foldkit/src/graph.ts:7582"
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -2514,22 +2530,30 @@
           {
             "id": "palette",
             "outcome": "Create shape nodes through a shape sidebar.",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
-                "apps/vanilla/src/mount-flow.ts:8559"
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/whiteboard-recipes.ts:63",
-                "packages/vue/src/flow-canvas.ts:9110"
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
-                "packages/foldkit/src/graph.ts:7582"
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -2537,25 +2561,30 @@
           {
             "id": "color-toolbar",
             "outcome": "Change shape color using a node toolbar.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-edit.ts:241",
-                "packages/core/src/domain/flow.schema.ts:338"
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:13829",
-                "apps/vanilla/src/mount-flow.ts:14308"
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:660",
-                "packages/vue/src/flow-canvas.ts:4405"
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/instance.ts:409",
-                "packages/foldkit/src/graph.ts:1282"
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -2563,26 +2592,270 @@
           {
             "id": "shape-minimap",
             "outcome": "Render matching custom minimap shapes.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "vanilla": ["apps/vanilla/src/minimap.ts:50"],
-              "vue": ["packages/vue/src/minimap.ts:112"],
-              "foldkit": ["packages/foldkit/src/ui/minimap.ts:44"]
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
+              ],
+              "vue": [
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
+              ]
             },
             "basis": "public-description"
+          },
+          {
+            "id": "resize-integrity",
+            "outcome": "Resize every shape with matching minimap bounds and attached physical handles after size and color changes.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
+              ],
+              "vue": [
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
+              ]
+            },
+            "basis": "adopted-D7-and-Plan-158-acceptance"
+          },
+          {
+            "id": "document-integrity",
+            "outcome": "Preserve shape intent and opaque data through persistence, clipboard and history; reject malformed saved shapes atomically.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
+              ],
+              "vue": [
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
+              ]
+            },
+            "basis": "adopted-D7-and-Plan-158-acceptance"
+          },
+          {
+            "id": "gesture-history",
+            "outcome": "One accepted creation, color, move, connection or resize gesture is one undo step; viewport and selection remain outside history.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "evidence": {
+              "shared": [
+                "packages/core/src/domain/flow-shape.schema.ts:23",
+                "packages/core/src/domain/flow-shape.ts:51",
+                "packages/core/src/domain/flow-shape.test.ts:1",
+                "apps/shared/shapes/acceptance.ts:186"
+              ],
+              "vanilla": [
+                "apps/vanilla/src/shape-node.ts:36",
+                "apps/vanilla/src/shapes-demo.ts:1",
+                "apps/vanilla/e2e/shapes.e2e.ts:1"
+              ],
+              "vue": [
+                "packages/vue/src/shape-node.ts:7",
+                "apps/vue/src/shapes-demo.ts:1",
+                "apps/vue/e2e/shapes.e2e.ts:1"
+              ],
+              "foldkit": [
+                "packages/foldkit/src/shape-node.ts:7",
+                "apps/foldkit/src/shapes-demo.ts:1",
+                "apps/foldkit/e2e/shapes.e2e.ts:1"
+              ]
+            },
+            "basis": "adopted-D7-and-Plan-158-acceptance"
           }
         ],
         "unverified": [
-          "Shape resizing, handle placement, shape/color save-load and exact sidebar gesture are not specified by the page."
+          "Exact Pro geometry, palette, creation gestures, resize policy and hidden implementation. Flow deliberately delivers the three-shape set required by unit 7 with a fixed four-color palette, affine bounds and two initial ports."
         ]
       },
       "addedToScope": {
         "on": "2026-10-25",
         "reason": "Maintainer added publicly listed Pro example outcomes to the parity checklist"
       },
-      "updatedBy": ["Plan 149"]
+      "updatedBy": ["Plan 149", "Plan 158"],
+      "reauditHistory": [
+        {
+          "on": "2026-10-25",
+          "plan": "Plan 149",
+          "previousRatings": {
+            "vanilla": "P",
+            "vue": "P",
+            "foldkit": "P"
+          },
+          "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+          "url": "https://reactflow.dev/examples/nodes/shapes",
+          "accessedOn": "2026-10-25",
+          "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+          "demoUrls": [
+            "https://example-apps.xyflow.com/react/pro/shapes/index.html"
+          ],
+          "missing": "Custom node/data APIs exist; no composed shape library, sidebar, color toolbar or matching minimap recipe.",
+          "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+          "outcomes": [
+            {
+              "id": "custom-svg",
+              "outcome": "Render data-driven custom SVG node content.",
+              "vanilla": "C",
+              "vue": "C",
+              "foldkit": "C",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+                "vanilla": [
+                  "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                  "apps/vanilla/src/mount-flow.ts:8559"
+                ],
+                "vue": [
+                  "apps/vue/src/whiteboard-recipes.ts:63",
+                  "packages/vue/src/flow-canvas.ts:9110"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                  "packages/foldkit/src/graph.ts:7582"
+                ]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "shape-set",
+              "outcome": "Provide circle, diamond and hexagon shape choices through one node type.",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+                "vanilla": [
+                  "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                  "apps/vanilla/src/mount-flow.ts:8559"
+                ],
+                "vue": [
+                  "apps/vue/src/whiteboard-recipes.ts:63",
+                  "packages/vue/src/flow-canvas.ts:9110"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                  "packages/foldkit/src/graph.ts:7582"
+                ]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "palette",
+              "outcome": "Create shape nodes through a shape sidebar.",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow.schema.ts:145"],
+                "vanilla": [
+                  "apps/vanilla/src/ui/whiteboard-recipes.ts:62",
+                  "apps/vanilla/src/mount-flow.ts:8559"
+                ],
+                "vue": [
+                  "apps/vue/src/whiteboard-recipes.ts:63",
+                  "packages/vue/src/flow-canvas.ts:9110"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/whiteboard/main.ts:62",
+                  "packages/foldkit/src/graph.ts:7582"
+                ]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "color-toolbar",
+              "outcome": "Change shape color using a node toolbar.",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-edit.ts:241",
+                  "packages/core/src/domain/flow.schema.ts:338"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:13829",
+                  "apps/vanilla/src/mount-flow.ts:14308"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:660",
+                  "packages/vue/src/flow-canvas.ts:4405"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/instance.ts:409",
+                  "packages/foldkit/src/graph.ts:1282"
+                ]
+              },
+              "basis": "public-description"
+            },
+            {
+              "id": "shape-minimap",
+              "outcome": "Render matching custom minimap shapes.",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "evidence": {
+                "vanilla": ["apps/vanilla/src/minimap.ts:50"],
+                "vue": ["packages/vue/src/minimap.ts:112"],
+                "foldkit": ["packages/foldkit/src/ui/minimap.ts:44"]
+              },
+              "basis": "public-description"
+            }
+          ],
+          "unverified": [
+            "Shape resizing, handle placement, shape/color save-load and exact sidebar gesture are not specified by the page."
+          ]
+        }
+      ]
     },
     {
       "section": "examples edges",
