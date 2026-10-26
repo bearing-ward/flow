@@ -42,7 +42,7 @@ export const upstreamHostAdapter = (
   const resultFor = (entry: (typeof ledger.cases)[number]) =>
     host === 'react' ? entry.reference : entry.hosts[host]
 
-  const baseURL = `http://127.0.0.1:${{ vanilla: 4176, vue: 4177, foldkit: 4178, react: 4180 }[host]}`
+  const baseURL = `http://127.0.0.1:${{ vanilla: 4176, vue: process.env.FLOW_VUE_TEST_PORT ?? 4177, foldkit: 4178, react: 4180 }[host]}`
   const prefix = host === 'vanilla' ? 'flow' : `flow-${host}`
 
   const edgeSelector =

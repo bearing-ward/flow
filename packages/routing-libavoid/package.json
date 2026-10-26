@@ -1,0 +1,31 @@
+{
+  "name": "@flow/routing-libavoid",
+  "version": "0.0.0",
+  "files": [
+    "dist",
+    "README.md",
+    "COPYING.LIB"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    },
+    "./libavoid.wasm": "./dist/libavoid.wasm"
+  },
+  "scripts": {
+    "build": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect --external @flow/core --external libavoid-js && tsc --project tsconfig.build.json && bun -e 'await Bun.write(\"dist/libavoid.wasm\", Bun.file(new URL(\"./libavoid.wasm\", import.meta.resolve(\"libavoid-js\"))))'"
+  },
+  "dependencies": {
+    "libavoid-js": "0.5.0-beta.5"
+  },
+  "devDependencies": {
+    "@flow/core": "workspace:*",
+    "effect": "4.0.0"
+  },
+  "peerDependencies": {
+    "@flow/core": "0.0.0",
+    "effect": "4.0.0"
+  }
+}

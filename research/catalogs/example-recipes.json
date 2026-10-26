@@ -1388,54 +1388,84 @@
       "journey": "Move nodes in a graph with obstacles and compare the routed edge before and after the move.",
       "observableResult": "The route bends around configured obstacles, updates when geometry changes, and still terminates at the declared handles.",
       "publicApis": [
+        "FlowRouter",
+        "routeFlowEdges",
+        "setEdgeRouting",
         "FlowCanvas",
-        "FlowDocument",
-        "FlowEdit",
-        "FlowConnection"
+        "SetEdgeRouting"
       ],
-      "apiValidation": "pending",
+      "apiValidation": "validated",
       "hostRoutes": {
         "vanilla": {
-          "path": "/examples/edges/edge-routing",
-          "status": "planned"
+          "path": "/edge-routing/",
+          "status": "runnable",
+          "sourcePath": "apps/vanilla/src/edge-routing-demo.ts"
         },
         "vue": {
-          "path": "/examples/edges/edge-routing",
-          "status": "planned"
+          "path": "/edge-routing/",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/edge-routing-demo.ts"
         },
         "foldkit": {
-          "path": "/examples/edges/edge-routing",
-          "status": "planned"
+          "path": "/edge-routing/",
+          "status": "runnable",
+          "sourcePath": "apps/foldkit/src/edge-routing-demo.ts"
         }
       },
-      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
-      "optionalDependencies": "none identified; re-evaluate before adding a dependency",
+      "resetBehavior": "Reset restores the shared deterministic graph and invalidates derived requests. Reload also recreates the router lifecycle.",
+      "optionalDependencies": "Approved D10 optional @flow/routing-libavoid package, pinning unmodified libavoid-js@0.5.0-beta.5; LGPL notes in docs/dependencies.md and the adapter README.",
       "reference": {
-        "availability": "public-page-listed",
-        "licenseReview": "required-before-copy",
-        "comparison": "unverified"
+        "availability": "public-description-accessed-2026-10-26",
+        "licenseReview": "No Pro source copied; separately approved unmodified LGPL engine, with notices and replacement requirements recorded.",
+        "comparison": "unverified",
+        "evidence": {
+          "type": "trace",
+          "path": "research/traces/162-edge-routing.md"
+        }
       },
-      "implementedRecipe": "none",
+      "implementedRecipe": "complete",
       "testedResult": {
         "vanilla": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vanilla/e2e/edge-routing.e2e.ts"
         },
         "vue": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/vue/e2e/edge-routing.e2e.ts"
         },
         "foldkit": {
-          "status": "not-tested",
-          "path": null
+          "status": "tested",
+          "path": "apps/foldkit/e2e/edge-routing.e2e.ts"
         }
       },
-      "acceptanceClaim": "planned",
-      "dependencyDecision": "none-identified",
+      "acceptanceClaim": "complete",
+      "dependencyDecision": "approved",
       "testBoundary": {
-        "automated": "In each host, run the journey: Move nodes in a graph with obstacles and compare the routed edge before and after the move. Assert: The route bends around configured obstacles, updates when geometry changes, and still terminates at the declared handles. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
-        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
-      }
+        "automated": "Eleven public browser cases per host cover the common route, label and hit geometry; native obstacle drag; resize/reconnect; handle directions; unreachable and engine failure fallback; manual points; save/load reconstruction; async races; pan/zoom and disposal. Real engine, cancellation and packaging tests run in the unit gate.",
+        "manual": "Public description is the functional target. Exact private Pro source, routing constants and nudging rules, custom-renderer geometry and collector delivery remain unverified."
+      },
+      "apiEvidence": [
+        {
+          "api": "FlowRouter",
+          "path": "packages/core/src/domain/flow-routing.schema.ts"
+        },
+        {
+          "api": "routeFlowEdges",
+          "path": "packages/core/src/domain/flow-routing.ts"
+        },
+        {
+          "api": "setEdgeRouting",
+          "path": "apps/vanilla/src/mount-flow.ts"
+        },
+        {
+          "api": "FlowCanvas",
+          "path": "packages/vue/src/flow-canvas.ts"
+        },
+        {
+          "api": "SetEdgeRouting",
+          "path": "packages/foldkit/src/host-action.ts"
+        }
+      ]
     },
     {
       "url": "https://reactflow.dev/examples/edges/floating-edges",

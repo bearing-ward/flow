@@ -55,7 +55,7 @@ const Recipe = S.Struct({
   publicApis: S.Array(S.NonEmptyString),
   apiEvidence: S.optional(S.Array(ApiEvidence)),
   apiValidation: S.Literals(['pending', 'validated']),
-  dependencyDecision: S.Literals(['none-identified', 'pending']),
+  dependencyDecision: S.Literals(['none-identified', 'pending', 'approved']),
   testBoundary: S.Struct({
     automated: S.NonEmptyString,
     manual: S.NonEmptyString,
