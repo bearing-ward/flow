@@ -4,6 +4,7 @@ import {
 } from './flow-change-compatibility.ts'
 import type { EdgeChange, NodeChange } from './flow-change-compatibility.ts'
 import { createFlowGraph } from './flow-graph.ts'
+import type { FlowResizeParams } from './flow-node-resizer.ts'
 import {
   applyEdgeReconnectChange,
   applyEdgeRemoveChange,
@@ -328,3 +329,16 @@ export const applyFlowElementChanges = (
       ? document.edges
       : applyEdgeChanges(changes.edges, document.edges),
 })
+
+/** Observer-only resize completion, including gestures with no accepted step. */
+export const flowResizeCompletionChanges = (
+  nodeId: NodeId,
+  accepted: Pick<FlowResizeParams, 'width' | 'height'>
+): readonly NodeChange[] => [
+  {
+    id: nodeId,
+    type: 'dimensions',
+    resizing: false,
+    dimensions: { width: accepted.width, height: accepted.height },
+  },
+]

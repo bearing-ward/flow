@@ -20,9 +20,9 @@ With only the scoped failing ledger entries temporarily marked pass, the five-ca
 
 ## Production paths
 
-Browser wheel input enters Vanilla at `apps/vanilla/src/mount-flow.ts:12309`, computes anchored zoom, and publishes a viewport change at `apps/vanilla/src/mount-flow.ts:12400`. Viewport application updates the rendered transform and emits its change observation at `apps/vanilla/src/mount-flow.ts:4952`. MiniMap subscribes through the public viewport observer at `apps/vanilla/src/mount-flow.ts:13722`.
+Browser wheel input enters Vanilla at `apps/vanilla/src/mount-flow.ts:12324`, computes anchored zoom, and publishes a viewport change at `apps/vanilla/src/mount-flow.ts:12415`. Viewport application updates the rendered transform and emits its change observation at `apps/vanilla/src/mount-flow.ts:4953`. MiniMap subscribes through the public viewport observer at `apps/vanilla/src/mount-flow.ts:13737`.
 
-Vue's native wheel handler is `packages/vue/src/flow-canvas.ts:8477`. It computes anchored zoom and calls updateViewport at `packages/vue/src/flow-canvas.ts:8566`. Uncontrolled writes update owned viewport state at `packages/vue/src/flow-canvas.ts:3636`. The accepted measured graph and canvas dimensions enter MiniMap's injection context at `packages/vue/src/flow-canvas.ts:5463`.
+Vue's native wheel handler is `packages/vue/src/flow-canvas.ts:8483`. It computes anchored zoom and calls updateViewport at `packages/vue/src/flow-canvas.ts:8572`. Uncontrolled writes update owned viewport state at `packages/vue/src/flow-canvas.ts:3637`. The accepted measured graph and canvas dimensions enter MiniMap's injection context at `packages/vue/src/flow-canvas.ts:5464`.
 
 Foldkit's native wheel view emits `ViewportWheel` at `packages/foldkit/src/graph.ts:8011`. The reducer computes the new viewport and accepts replacement state at `packages/foldkit/src/graph.ts:3536`. The example's accepted-state subscription decodes document and viewport and updates UI at `apps/foldkit/src/upstream-examples-fixture.ts:218`. MiniMap observes that accepted state through its existing helper update, without a new acknowledgement path.
 

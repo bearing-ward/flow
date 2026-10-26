@@ -45,6 +45,7 @@ import {
   EdgeChangeSchema,
   NodeChangeSchema,
   flowChangeElementChanges,
+  flowResizeCompletionChanges,
   flowNodeHandles,
   FlowFitViewOptionsSchema,
   flowSelectionEqual,
@@ -920,14 +921,27 @@ const emitPublication = (
       ).length
 
       if (measurementCount > 0) {
+        const completed = elementChanges.nodes.some(
+          (node) => node.type === 'dimensions' && node.resizing === false
+        )
+
         const attributes = {
-          [FlowAttribute.changeKind]: 'dimensions',
+          [FlowAttribute.changeKind]: completed
+            ? 'resize-completion'
+            : 'dimensions',
           [FlowAttribute.measurementCount]: measurementCount,
         }
 
-        yield* Effect.logDebug('Published Foldkit node dimensions').pipe(
+        yield* Effect.logDebug(
+          completed
+            ? 'Published Foldkit resize completion'
+            : 'Published Foldkit node dimensions'
+        ).pipe(
           Effect.annotateLogs(attributes),
-          Effect.withSpan(FlowSpan.geometryMeasure, { attributes })
+          Effect.withSpan(
+            completed ? FlowSpan.nodeDragComplete : FlowSpan.geometryMeasure,
+            { attributes }
+          )
         )
       }
 
@@ -1926,13 +1940,38 @@ const resizerEvents = (
 
 const resizerPublication = (
   previous: Graph.Model,
-  current: Graph.Model
+  current: Graph.Model,
+  message: Graph.GraphMessageData
 ): PublicationBatch => {
   const resized = resizerEvents(previous, current)
 
-  return resized.length === 0
-    ? []
-    : [{ kind: 'interaction' as const, events: resized }]
+  const before = resizerGesture(previous)
+
+  const completed =
+    before !== undefined &&
+    resizerGesture(current) === undefined &&
+    Predicate.isTagged('GestureReleased')(message) &&
+    current.document.nodes.some(({ id }) => id === before.nodeId)
+
+  return [
+    ...(resized.length === 0
+      ? []
+      : [{ kind: 'interaction' as const, events: resized }]),
+    ...(completed
+      ? [
+          {
+            kind: 'change' as const,
+            elementChanges: {
+              nodes: flowResizeCompletionChanges(
+                before.nodeId,
+                before.resize.previous
+              ),
+              edges: [],
+            },
+          },
+        ]
+      : []),
+  ]
 }
 
 const graphFold = (
@@ -2007,7 +2046,7 @@ const graphFold = (
       ...(eligible.length === 0
         ? []
         : [{ kind: 'interaction' as const, events: eligible }]),
-      ...resizerPublication(model.graph, result.model.graph),
+      ...resizerPublication(model.graph, result.model.graph, message),
     ],
   }
 

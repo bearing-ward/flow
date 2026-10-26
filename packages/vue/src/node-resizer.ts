@@ -53,6 +53,8 @@ export interface FlowNodeResizerHost {
   readonly snapGrid: () => SnapGrid | undefined
   /** Commit changes together, as one owner proposal or accepted state. */
   readonly publish: (changes: readonly FlowChange[]) => void
+  /** Notify observers without proposing a document edit. */
+  readonly complete: (nodeId: NodeId, accepted: FlowResizeParams) => void
 }
 
 export const FlowNodeResizerRegistryKey: InjectionKey<FlowNodeResizerHost> =
@@ -437,6 +439,7 @@ export const FlowNodeResizeControl = defineComponent({
         },
         event
       )
+      host.complete(current.nodeId, previous)
     }
 
     return () => {
