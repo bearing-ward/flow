@@ -1,4 +1,6 @@
 import {
+  solveFlowAlignment,
+  resolveFlowAlignmentGuides,
   refitFlowGroups,
   createFlowClipboardSession,
   createFlowHistory,
@@ -111,6 +113,7 @@ import {
   isEdgeSelectable,
 } from '@flow/core'
 import type {
+  FlowAlignmentGuide,
   FlowHistoryEvent,
   FlowTransactionContext,
   FlowInternalNode,
@@ -892,6 +895,8 @@ export const FlowCanvas = defineComponent({
       type: [Object, Array] as PropType<PanExtent | CoordinateExtent>,
       default: undefined,
     },
+    /** Show node-relative alignment guides and snap during pointer drags. */
+    helperLines: { type: Boolean, default: false },
     /** Snap node drags and resizes to `snapGrid`. */
     snapToGrid: { type: Boolean, default: false },
     /** Grid step: React `[x, y]` or `{ x, y }`. */
@@ -1712,6 +1717,7 @@ export const FlowCanvas = defineComponent({
      * The graph at drag start. Preview renders are measured while the drag
      * runs, so later graphs would already contain a previewed parent growth.
      */
+    const helperGuides = shallowRef<readonly FlowAlignmentGuide[]>([])
     let dragStartGraph: FlowGraphView | undefined
 
     /**
@@ -1809,6 +1815,26 @@ export const FlowCanvas = defineComponent({
         },
       }
     }
+
+    const visibleHelperGuides = computed(() => {
+      if (helperGuides.value.length === 0) {
+        return []
+      }
+
+      const current = graph.value
+
+      const nodes = new Map(
+        current.orderedNodes.map((node) => [
+          node.id,
+          renderGraphNode(node.id) ?? node,
+        ])
+      )
+
+      return resolveFlowAlignmentGuides(
+        { ...current, nodes },
+        helperGuides.value
+      )
+    })
 
     const connectionMode = computed(() =>
       S.decodeUnknownSync(ConnectionModeSchema)(props.connectionMode)
@@ -5060,6 +5086,7 @@ export const FlowCanvas = defineComponent({
       }
 
       if (active.kind === 'node' || active.kind === 'node-pending') {
+        helperGuides.value = []
         dragPreview.value = undefined
       }
 
@@ -6458,15 +6485,31 @@ export const FlowCanvas = defineComponent({
       members: readonly DragMember[],
       anchor: FlowNode,
       delta: XYPosition
-    ): FlowVueDragStep =>
-      constrainFlowVueDrag({
-        graph: dragStartGraph ?? graph.value,
+    ): FlowVueDragStep => {
+      const start = dragStartGraph ?? graph.value
+
+      const alignment = props.helperLines
+        ? solveFlowAlignment({
+            graph: start,
+            nodeIds: members.map(({ nodeId }) => nodeId),
+            delta,
+            zoom: activeViewport.value.zoom,
+            snapGrid: props.snapToGrid ? snapGrid.value : undefined,
+          })
+        : undefined
+
+      helperGuides.value = alignment?.guides ?? []
+
+      return constrainFlowVueDrag({
+        graph: start,
         members,
         anchorId: anchor.id,
-        delta,
-        snapGrid: props.snapToGrid ? snapGrid.value : undefined,
+        delta: alignment?.delta ?? delta,
+        snapGrid:
+          props.snapToGrid && !props.helperLines ? snapGrid.value : undefined,
         nodeExtent,
       })
+    }
 
     /** The documents a drag step would commit, for previews and the drop. */
     const documentForDragStep = (step: FlowVueDragStep): FlowDocument => {
@@ -11555,6 +11598,22 @@ export const FlowCanvas = defineComponent({
                   'data-testid': 'flow-edge-label-renderer',
                 },
                 edgeLabelRegistry.render()
+              ),
+              ...visibleHelperGuides.value.map((guide) =>
+                h('div', {
+                  'data-helper-axis': guide.axis,
+                  'data-coordinate': guide.coordinate,
+                  style: {
+                    position: 'absolute',
+                    pointerEvents: 'none',
+                    zIndex: 10_000,
+                    background: '#f43f5e',
+                    left: `${guide.axis === 'x' ? guide.coordinate : guide.from}px`,
+                    top: `${guide.axis === 'y' ? guide.coordinate : guide.from}px`,
+                    width: `${guide.axis === 'x' ? 1 / activeViewport.value.zoom : guide.to - guide.from}px`,
+                    height: `${guide.axis === 'y' ? 1 / activeViewport.value.zoom : guide.to - guide.from}px`,
+                  },
+                })
               ),
               ...graph.value.orderedNodes.map(({ node }) => renderNode(node)),
               h('div', {

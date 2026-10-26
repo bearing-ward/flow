@@ -27,6 +27,7 @@ export default defineConfig({
       input: {
         main: `${import.meta.dirname}/index.html`,
         clipboard: `${import.meta.dirname}/clipboard/index.html`,
+        helperLines: `${import.meta.dirname}/helper-lines/index.html`,
         history: `${import.meta.dirname}/history/index.html`,
         schemaStudio: `${import.meta.dirname}/schema-studio/index.html`,
       },
