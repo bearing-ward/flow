@@ -1,4 +1,5 @@
 import {
+  applyFlowLayoutPositions,
   solveFlowAlignment,
   resolveFlowAlignmentGuides,
   editEdgeRoute,
@@ -499,6 +500,12 @@ const PaneSizeSchema = Schema.Struct({
 })
 
 export const ModelSchema = Schema.Struct({
+  nodePresentation: Schema.optional(
+    Schema.ReadonlyMap(
+      Schema.String,
+      Schema.Struct({ x: Schema.Finite, y: Schema.Finite })
+    )
+  ),
   ...ClosingOptionsSchema.fields,
   fitViewPending: Schema.Boolean,
   paneSize: PaneSizeSchema,
@@ -1672,7 +1679,13 @@ const nodeDragStart = (
   const interactivity = selectInteractivity(model)
 
   const graph = createFlowGraph(
-    model.document,
+    {
+      ...model.document,
+      nodes: applyFlowLayoutPositions(
+        model.document.nodes,
+        model.nodePresentation ?? new Map()
+      ),
+    },
     getFlowMeasuredNodes(model.document, model.measurements),
     undefined,
     undefined,
@@ -2096,6 +2109,20 @@ const applyNodeDragChange = (
  * does, in one pass over the nodes and without building a graph.
  */
 export const selectLiveDocument = (model: Model): FlowDocument => {
+  if (model.nodePresentation !== undefined) {
+    return selectLiveDocument({
+      ...model,
+      nodePresentation: undefined,
+      document: {
+        ...model.document,
+        nodes: applyFlowLayoutPositions(
+          model.document.nodes,
+          model.nodePresentation
+        ),
+      },
+    })
+  }
+
   const gesture = model.gestureSession
 
   if (gesture?.kind === 'node-resizer' && gesture.expandPatches !== null) {

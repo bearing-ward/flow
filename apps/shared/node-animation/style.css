@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+h1 {
+  margin: 12px;
+  font-size: 20px;
+}
+#animation-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  align-items: center;
+}
+#animation-controls input {
+  width: 80px;
+}
+#app {
+  height: 490px;
+  width: 100%;
+  position: relative;
+}
+#app > div,
+#app .flow-foldkit-root,
+#app .flow-foldkit-canvas {
+  height: 100%;
+}
+#animation-status {
+  display: block;
+  padding: 8px;
+}

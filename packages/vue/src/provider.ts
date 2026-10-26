@@ -113,6 +113,11 @@ const createProviderEditor = (
           ).state
         )
     ),
+    animateNodePositions: (request) =>
+      target('animateNodePositions').animateNodePositions?.(request) ??
+      Promise.resolve({ revision: request.result.revision, kind: 'disposed' }),
+    cancelNodeAnimation: () =>
+      target('cancelNodeAnimation').cancelNodeAnimation?.(),
     copySelection: () => target('copySelection').copySelection?.() ?? null,
     pasteSelection: (options) =>
       target('pasteSelection').pasteSelection?.(options) ??

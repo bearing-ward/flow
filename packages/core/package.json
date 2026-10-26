@@ -6,7 +6,8 @@
     "dist/public.js",
     "dist/public.d.ts",
     "dist/domain",
-    "dist/telemetry"
+    "dist/telemetry",
+    "dist/use-cases"
   ],
   "type": "module",
   "exports": {

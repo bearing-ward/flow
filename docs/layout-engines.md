@@ -23,3 +23,5 @@ Every layout destination is one edit. Force frames use a fresh continuous histor
 The recipe-only `globalThis.flowLayoutRecipe` handle exposes `read()` and `edit(transaction)` for inspecting the same public host APIs. Acceptance uses it for adversarial topology and size edits; normal engine and force controls use browser gestures. It is not an exported framework adapter API.
 
 [Plan 157's trace](../research/traces/157-layout-engines.md) records the production paths, test paths, reference observations and verification boundaries.
+
+Accepted layout results can be delivered to the [node position animation](node-animation.md) APIs. The `/node-animation/` recipe uses the same revision/session contracts and commits one destination while frames remain presentation state.

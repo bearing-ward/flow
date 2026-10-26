@@ -1,4 +1,6 @@
 import {
+  createFlowNodeAnimator,
+  applyFlowLayoutPositions,
   solveFlowAlignment,
   resolveFlowAlignmentGuides,
   FlowEdgeRouteSchema,
@@ -1743,6 +1745,10 @@ export const FlowCanvas = defineComponent({
       readonly graph?: ReturnType<typeof createFlowGraph>
     }>()
 
+    const animationPositions = shallowRef<ReadonlyMap<string, XYPosition>>(
+      new Map()
+    )
+
     const graph = computed(() => {
       const measurements = new Map(measuredNodes.value)
       const preview = dragPreview.value?.graph
@@ -1767,7 +1773,13 @@ export const FlowCanvas = defineComponent({
       }
 
       return createFlowGraph(
-        activeDocument.value,
+        {
+          ...activeDocument.value,
+          nodes: applyFlowLayoutPositions(
+            activeDocument.value.nodes,
+            animationPositions.value
+          ),
+        },
         measurements,
         undefined,
         undefined,
@@ -5716,7 +5728,43 @@ export const FlowCanvas = defineComponent({
       isDisposed: () => stateDisposed,
     })
 
+    let animationTime = performance.now()
+
+    const nodeAnimator = createFlowNodeAnimator({
+      document: () => activeDocument.value,
+      displayed: () =>
+        new Map(
+          graph.value.orderedNodes.map((node) => [node.id, node.node.position])
+        ),
+      draw: (positions) => {
+        animationPositions.value = positions
+      },
+      commit: async (next) => {
+        animationTime = performance.now()
+        await applyEditResolved(() => ({
+          operations: [{ kind: 'set-nodes', nodes: next.nodes }],
+        }))
+        await nextTick()
+      },
+      reducedMotion: () =>
+        matchMedia('(prefers-reduced-motion: reduce)').matches,
+      schedule: (step) => {
+        const frame = requestAnimationFrame((now) => {
+          const delta = now - animationTime
+          animationTime = now
+          step(delta)
+        })
+
+        return () => cancelAnimationFrame(frame)
+      },
+    })
+
+    subscribeState(() => nodeAnimator.reconcile())
+    onBeforeUnmount(nodeAnimator.dispose)
+
     const editor: FlowEditor = {
+      animateNodePositions: nodeAnimator.animate,
+      cancelNodeAnimation: () => nodeAnimator.cancel(),
       ...clipboard,
       document: computed(() => stateSnapshot.value.document),
       viewport: computed(() => stateSnapshot.value.viewport),
@@ -6968,6 +7016,8 @@ export const FlowCanvas = defineComponent({
         return
       }
 
+      nodeAnimator.cancel('cancelled', true)
+      const displayedNode = graph.value.nodes.get(node.id)?.node ?? node
       const frame = nodeFrame(node.id)
 
       if (frame === undefined) {
@@ -6996,13 +7046,13 @@ export const FlowCanvas = defineComponent({
         kind: 'node-pending',
         threshold: nodeDragThreshold,
         pointerId: event.pointerId,
-        node,
+        node: displayedNode,
         element: currentTarget,
         captureTarget: currentTarget,
         startX: event.clientX,
         startY: event.clientY,
-        originX: node.position.x,
-        originY: node.position.y,
+        originX: displayedNode.position.x,
+        originY: displayedNode.position.y,
         frame,
         viewportStart: activeViewport.value,
       }

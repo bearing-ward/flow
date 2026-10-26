@@ -1179,3 +1179,22 @@ export type {
   FlowLayoutRequest,
   FlowLayoutResult,
 } from './domain/flow-layout-request.ts'
+
+export {
+  FlowNodeAnimationRequestSchema,
+  FlowNodeTransitionSchema,
+  FlowNodeAnimationResultSchema,
+  createFlowNodeTransition,
+  stepFlowNodeTransition,
+  finishFlowNodeTransition,
+  nodeAnimationDocument,
+  decodeFlowNodeAnimationRequest,
+} from './domain/flow-node-animation.ts'
+
+export type {
+  FlowNodeAnimationRequest,
+  FlowNodeTransition,
+  FlowNodeAnimationResult,
+} from './domain/flow-node-animation.ts'
+
+export { createFlowNodeAnimator } from './use-cases/node-animation.ts'

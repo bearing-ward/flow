@@ -27,6 +27,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
         main: `${import.meta.dirname}/index.html`,
         figures: `${import.meta.dirname}/shapes/index.html`,
         clipboard: `${import.meta.dirname}/clipboard/index.html`,
