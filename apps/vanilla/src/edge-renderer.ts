@@ -1,4 +1,5 @@
 import {
+  getAutomaticRouteGeometry,
   bezierEdgePath,
   applyDefaultEdgeOptions,
   edgeAttachmentPosition,
@@ -19,6 +20,7 @@ import {
   getManualRouteGeometry,
 } from '@flow/core'
 import type {
+  FlowRoutingResult,
   EdgeId,
   FlowDocument,
   FlowEdgeMarkerOption,
@@ -237,6 +239,7 @@ interface Projection<Origin, NodeSlot, UIHandle> {
   readonly graph: FlowGraphView
   readonly inputs: {
     readonly document: FlowDocument
+    readonly edgeRouting?: FlowRoutingResult | undefined
     readonly measurements: ReadonlyMap<NodeId, MeasuredNode>
     readonly positions: ReadonlyMap<NodeId, XYPosition>
     readonly viewport: Viewport
@@ -727,7 +730,11 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
 
       const manualGeometry =
         routePoints === undefined
-          ? undefined
+          ? getAutomaticRouteGeometry(document, edge, source, target, {
+              measurements,
+              positionOverrides: pass.inputs.positions,
+              edgeRouting: pass.inputs.edgeRouting,
+            })
           : getManualRouteGeometry(source, target, routePoints)
 
       if (manualGeometry !== undefined) {

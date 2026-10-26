@@ -1,4 +1,15 @@
+import { Schema as S } from 'effect'
 import ts from 'typescript-api'
+
+const routingOwners = new Set([
+  'packages/core',
+  'packages/vue',
+  'packages/foldkit',
+  'apps/vanilla',
+])
+
+const routingDependency = (specifier: string): boolean =>
+  /(?:^|\/)(?:routing-libavoid|libavoid-js)(?:\/|$)/u.test(specifier)
 
 const browserGlobals = new Set([
   'cancelAnimationFrame',
@@ -169,6 +180,17 @@ export const findArchitectureViolations = (
       const packageSource = normalizedSourcePath.startsWith('packages/')
       const appSource = normalizedSourcePath.startsWith('apps/')
 
+      if (
+        [...routingOwners].some((owner) =>
+          normalizedSourcePath.startsWith(`${owner}/src/`)
+        ) &&
+        routingDependency(normalized)
+      ) {
+        violations.push(
+          `${source.path}:${line} imports an optional routing engine: ${specifier}`
+        )
+      }
+
       const forbiddenAppImport =
         packageSource && importsApplicationSource(normalized)
 
@@ -218,4 +240,32 @@ export const findArchitectureViolations = (
   visit(parsed)
 
   return violations
+}
+
+const RoutingManifestSchema = S.Struct({
+  dependencies: S.optional(S.Record(S.String, S.String)),
+  devDependencies: S.optional(S.Record(S.String, S.String)),
+  optionalDependencies: S.optional(S.Record(S.String, S.String)),
+  peerDependencies: S.optional(S.Record(S.String, S.String)),
+})
+
+export const findRoutingPackageViolations = (
+  source: ArchitectureSource
+): readonly string[] => {
+  if (!routingOwners.has(source.path.replace(/\/package\.json$/u, ''))) {
+    return []
+  }
+
+  const manifest = S.decodeUnknownSync(RoutingManifestSchema)(
+    JSON.parse(source.text)
+  )
+
+  return Object.entries(manifest).flatMap(([section, dependencies]) =>
+    Object.keys(dependencies ?? {})
+      .filter(routingDependency)
+      .map(
+        (name) =>
+          `${source.path}: ${section} must not depend on optional routing engine ${name}`
+      )
+  )
 }

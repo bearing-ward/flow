@@ -140,7 +140,7 @@ External option pages linked above were accessed on 2026-10-25. Recommendations 
 - **D1–D9 and D11:** adopt the recommendations above as written.
 - **D12, sync layer:** optional Yjs + y-websocket integration, kept out of core. Hosting, authenticated room access, durability and offline retention still need separate approval.
 - **D13, image renderer:** Playwright Chromium image service.
-- **D10, routing:** open until the maintainer has reviewed the license. Findings on libavoid-js, checked 2026-10-25 via the GitHub and npm APIs:
+- **D10, routing:** decided 2026-10-26; the maintainer deferred to the recommendation. Use libavoid-js through an optional adapter package that ships separately from core and the host adapters, using libavoid unmodified, so no LGPL obligation reaches Flow's own packages. Core defines a router capability, and the adapter implements it, so ELK or a Flow-written router can replace it without changing the API. Findings from 2026-10-25, via the GitHub and npm APIs:
   - **License:** LGPL-2.1-or-later. It is a weak copyleft, not a permissive license like MIT or Apache.
   - **Maturity:** the latest npm release is `0.5.0-beta.5`, published 2026-02-23. The repository has 46 stars and was last pushed on 2026-09-06.
   - **Size:** the WASM build of the C++ libavoid is about 0.8 MB unpacked.

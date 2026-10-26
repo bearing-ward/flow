@@ -393,6 +393,7 @@ export const createEditableEdgesResource = (
         edgeId === undefined
           ? undefined
           : getEdgeGeometry(model().document, edgeId, {
+              edgeRouting: model().edgeRouting,
               measurements: getFlowMeasuredNodes(
                 model().document,
                 model().measurements

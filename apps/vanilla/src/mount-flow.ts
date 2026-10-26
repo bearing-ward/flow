@@ -1,4 +1,5 @@
 import {
+  FlowRoutingResultSchema,
   createFlowNodeAnimator,
   solveFlowAlignment,
   resolveFlowAlignmentGuides,
@@ -165,6 +166,7 @@ import {
   FlowEdgeRouteSchema,
 } from '@flow/core'
 import type {
+  FlowRoutingResult,
   FlowNodeAnimationRequest,
   FlowNodeAnimationResult,
   FlowAlignmentGuide,
@@ -1204,6 +1206,8 @@ const projectHandleConnectionEdges = (edges: readonly FlowEdge[]) =>
   }))
 
 export interface FlowController {
+  readonly setEdgeRouting: (result: FlowRoutingResult | undefined) => void
+  readonly getEdgeRouting: () => FlowRoutingResult | undefined
   readonly animateNodePositions: (
     request: FlowNodeAnimationRequest
   ) => Promise<FlowNodeAnimationResult>
@@ -1519,6 +1523,12 @@ export type FlowMountOptionsInput = typeof FlowMountOptionsSchema.Encoded & {
 }
 
 export interface JavaScriptFlowController extends FlowInstanceApi {
+  readonly setEdgeRouting: (
+    result: Parameters<
+      ReturnType<typeof S.decodeUnknownSync<typeof FlowRoutingResultSchema>>
+    >[0]
+  ) => void
+  readonly getEdgeRouting: FlowController['getEdgeRouting']
   readonly overlayPortal: HTMLElement
   readonly getAriaLabelConfig: FlowController['getAriaLabelConfig']
   readonly getColorMode: FlowController['getColorMode']
@@ -3593,6 +3603,8 @@ export const createFlowHost = (
         }
       | undefined
 
+    let edgeRouting: FlowRoutingResult | undefined
+
     const captureProjection = (
       target: FlowDocument = document,
       origin?: PaintOrigin
@@ -3623,6 +3635,7 @@ export const createFlowHost = (
         origin: origin ?? { kind: 'semantic', document: target },
         graph: createFlowGraph(values, measured, positions),
         inputs: {
+          edgeRouting,
           document: values,
           measurements: measured,
           positions,
@@ -12398,6 +12411,7 @@ export const createFlowHost = (
         document: () => document,
         viewport: () => renderedViewport,
         geometry: () => ({
+          edgeRouting,
           measurements,
           positionOverrides: renderedNodePositions,
         }),
@@ -14019,6 +14033,15 @@ export const createFlowHost = (
     }
 
     const controller: FlowController = {
+      setEdgeRouting: (result) => {
+        if (!destroyed) {
+          edgeRouting =
+            result === undefined ? undefined : structuredClone(result)
+          renderGraphEdges()
+        }
+      },
+      getEdgeRouting: () =>
+        edgeRouting === undefined ? undefined : structuredClone(edgeRouting),
       overlayPortal,
       mountViewportPortal,
       getConnectionPreview: () => (destroyed ? null : connectionPreviewState),
@@ -15120,6 +15143,13 @@ export const mountFlow = (
   const pendingDeleteRejectors = new Set<(error: Error) => void>()
 
   const controller: JavaScriptFlowController = {
+    setEdgeRouting: (result) =>
+      host.setEdgeRouting(
+        result === undefined
+          ? undefined
+          : S.decodeUnknownSync(FlowRoutingResultSchema)(result)
+      ),
+    getEdgeRouting: host.getEdgeRouting,
     ...createFlowInstanceApi(host),
     copySelection: host.copySelection,
     pasteSelection: host.pasteSelection,

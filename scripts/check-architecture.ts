@@ -1,7 +1,10 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path } from 'effect'
 
-import { findArchitectureViolations } from './architecture-rules.ts'
+import {
+  findArchitectureViolations,
+  findRoutingPackageViolations,
+} from './architecture-rules.ts'
 
 const rootUrl = new URL('../', import.meta.url)
 
@@ -71,6 +74,41 @@ const fixtureChecks = (): readonly string[] => {
 
   const failures: string[] = []
 
+  for (const owner of [
+    'packages/core',
+    'packages/vue',
+    'packages/foldkit',
+    'apps/vanilla',
+  ]) {
+    for (const dependency of ['libavoid-js', '@flow/routing-libavoid']) {
+      if (
+        findArchitectureViolations({
+          path: `${owner}/src/forbidden-routing.ts`,
+          text: `export { router } from '${dependency}'`,
+        }).length === 0 ||
+        findRoutingPackageViolations({
+          path: `${owner}/package.json`,
+          text: JSON.stringify({
+            optionalDependencies: { [dependency]: '0.0.0' },
+          }),
+        }).length === 0
+      ) {
+        failures.push(
+          `${owner}: optional routing isolation rule did not reject ${dependency}`
+        )
+      }
+    }
+  }
+
+  if (
+    findArchitectureViolations({
+      path: 'packages/routing-libavoid/src/public.ts',
+      text: "import { AvoidLib } from 'libavoid-js'",
+    }).length !== 0
+  ) {
+    failures.push('Optional routing owner must be allowed to import its engine')
+  }
+
   for (const fixture of fixtures) {
     const violations = findArchitectureViolations(fixture)
 
@@ -126,6 +164,21 @@ const program = Effect.gen(function* checkArchitecture() {
     const sourcePath = path.join(root, file)
     const text = yield* fileSystem.readFileString(sourcePath)
     violations.push(...findArchitectureViolations({ path: file, text }))
+  }
+
+  for (const owner of [
+    'packages/core',
+    'packages/vue',
+    'packages/foldkit',
+    'apps/vanilla',
+  ]) {
+    const manifestPath = `${owner}/package.json`
+    violations.push(
+      ...findRoutingPackageViolations({
+        path: manifestPath,
+        text: yield* fileSystem.readFileString(path.join(root, manifestPath)),
+      })
+    )
   }
 
   if (violations.length > 0) {

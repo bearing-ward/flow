@@ -1,4 +1,5 @@
 import {
+  FlowRoutingResultSchema,
   FlowNodeAnimationRequestSchema,
   FlowPasteOptionsSchema,
   FlowColorModeSchema,
@@ -41,6 +42,7 @@ export const HostAction = FoldMessage.defineMessageUnion({
     document: FlowDocumentSchema,
     context: Schema.optional(FlowTransactionContextSchema),
   },
+  SetEdgeRouting: { result: Schema.NullOr(FlowRoutingResultSchema) },
   ReplaceViewport: { viewport: ViewportSchema },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
   DispatchCommand: { command: FlowCommandSchema },

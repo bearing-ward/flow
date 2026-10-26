@@ -26,6 +26,7 @@ export const checkPackageArchive = (
     'package/README.md',
     'package/LICENSE',
     'package/LICENSE.md',
+    'package/COPYING.LIB',
   ])
 
   const leakedPathSegment =
