@@ -6,6 +6,8 @@ import {
   FlowChangeSchema,
   FlowCommandSchema,
   FlowDocumentSchema,
+  FlowExportSceneSchema,
+  FlowImageExportRequestSchema,
   FlowEdgeSchema,
   FlowFigureDataSchema,
   FlowFigureEditSchema,
@@ -136,6 +138,16 @@ const renderReference = (): string =>
       'History status',
       'FlowHistoryStatusSchema',
       FlowHistoryStatusSchema.ast
+    ),
+    schemaSection(
+      'Image export scene',
+      'FlowExportSceneSchema',
+      FlowExportSceneSchema.ast
+    ),
+    schemaSection(
+      'Image export request',
+      'FlowImageExportRequestSchema',
+      FlowImageExportRequestSchema.ast
     ),
     schemaSection('Commands', 'FlowCommandSchema', FlowCommandSchema.ast),
     schemaSection('Changes', 'FlowChangeSchema', FlowChangeSchema.ast),

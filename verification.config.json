@@ -1,6 +1,6 @@
 {
   "defaultProfile": "focused",
-  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle; Plan 150 transaction history; Plan 154 grouping actions and sizing; Plan 154 Schema Studio area undo regression; Plan 152 resize completion node changes; Plan 153 graph clipboard; Plan 155 alignment helper lines; Plan 156 editable and freeform edges; Plan 158 shape nodes and palette; Plan 157 layout engine selection; Plan 159 node position animation; Plan 160 dynamic tree editing and expand/collapse; Plan 161 full-profile verification diagnosis and performance; Plan 162 obstacle-aware edge routing and optional libavoid adapter; Plan 163 wire ties",
+  "activeWork": "Plans 126-144 upstream ports and follow-ups; preserving all existing scope; Plans 145-146 initial nodeExtent adoption and Foldkit layout readiness; Plan 147 TypeScript 7 and Ultracite 8 toolchain compatibility; Plan 149 Pro parity audit; Plan 151 upstream 12.12.0 pin and resize lifecycle; Plan 150 transaction history; Plan 154 grouping actions and sizing; Plan 154 Schema Studio area undo regression; Plan 152 resize completion node changes; Plan 153 graph clipboard; Plan 155 alignment helper lines; Plan 156 editable and freeform edges; Plan 158 shape nodes and palette; Plan 157 layout engine selection; Plan 159 node position animation; Plan 160 dynamic tree editing and expand/collapse; Plan 161 full-profile verification diagnosis and performance; Plan 162 obstacle-aware edge routing and optional libavoid adapter; Plan 163 wire ties; Plan 165 Playwright Chromium server image service",
   "checks": [
     "api-members",
     "catalog",
@@ -90,7 +90,8 @@
       "performance-calibration.e2e.ts",
       "routing-preflight.e2e.ts",
       "edge-routing.e2e.ts",
-      "wire-ties.e2e.ts"
+      "wire-ties.e2e.ts",
+      "server-image.e2e.ts"
     ],
     "vue": [
       "connection.e2e.ts",
@@ -160,7 +161,8 @@
       "performance-calibration.e2e.ts",
       "routing-preflight.e2e.ts",
       "edge-routing.e2e.ts",
-      "wire-ties.e2e.ts"
+      "wire-ties.e2e.ts",
+      "server-image.e2e.ts"
     ],
     "foldkit": [
       "computing-flows-recipes.e2e.ts",
@@ -242,7 +244,8 @@
       "performance-calibration.e2e.ts",
       "routing-preflight.e2e.ts",
       "edge-routing.e2e.ts",
-      "wire-ties.e2e.ts"
+      "wire-ties.e2e.ts",
+      "server-image.e2e.ts"
     ]
   }
 }

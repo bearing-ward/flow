@@ -314,3 +314,5 @@ export {
 } from './shape-node.ts'
 
 export { createFoldkitNodeAnimationClient } from './node-animation-client.ts'
+
+export { createFoldkitImageExportRequest } from './image-export.ts'

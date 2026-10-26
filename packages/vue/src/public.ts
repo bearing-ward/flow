@@ -153,3 +153,5 @@ export { useFlowGrouping } from './grouping.ts'
 export { useFlowClipboard } from './use-flow.ts'
 
 export { FlowFigureNode, renderFlowFigureMiniMapNode } from './shape-node.ts'
+
+export { useFlowImageExport } from './image-export.ts'

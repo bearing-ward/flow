@@ -1,0 +1,121 @@
+@font-face {
+  font-family: FlowSans;
+  src: url('/image-service/assets/FlowSans.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: block;
+}
+body {
+  margin: 0;
+  background: #f1f5f9;
+  color: #172033;
+  font-family: FlowSans, sans-serif;
+}
+header {
+  padding: 18px 28px;
+}
+h1 {
+  margin: 0 0 8px;
+  font-size: 25px;
+}
+button {
+  font: inherit;
+  margin-right: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+main {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  overflow: auto;
+}
+section {
+  flex: none;
+}
+#capture {
+  position: relative;
+  overflow: hidden;
+  background: white;
+}
+#capture .flow-canvas {
+  width: 100%;
+  height: 100%;
+  font-family: FlowSans, sans-serif;
+  background: white;
+}
+#capture .flow-node {
+  font-family: FlowSans, sans-serif;
+}
+#capture .flow-node[data-node-type='shape'] {
+  background: transparent;
+  border: none;
+}
+.export-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 8px;
+  font-size: 14px;
+}
+.export-card img {
+  width: 32px;
+  height: 32px;
+}
+.export-card small {
+  display: block;
+  color: #475569;
+}
+#server-image {
+  display: block;
+  background: white;
+  width: 800px;
+  height: 500px;
+}
+.capture-only {
+  background: white;
+}
+.capture-only header,
+.capture-only #preview-section,
+.capture-only h2 {
+  display: none;
+}
+.capture-only main {
+  display: block;
+  padding: 0;
+}
+.capture-only #capture {
+  position: absolute;
+  inset: 0;
+}
+header {
+  height: 160px;
+  box-sizing: border-box;
+}
+h2 {
+  font-size: 20px;
+  line-height: 28px;
+  margin: 0 0 12px;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+#capture > div {
+  width: 100%;
+  height: 100%;
+}
+#capture [data-testid='flow-canvas'] {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  font-family: FlowSans, sans-serif;
+  background: white;
+}
+#capture [data-testid='flow-node'] {
+  font-family: FlowSans, sans-serif;
+}
