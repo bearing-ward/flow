@@ -109,11 +109,11 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 ### force
 
 - shared production: `packages/core/src/domain/flow-layout.ts:119`.
-- vanilla production: `apps/vanilla/src/ui/layout-recipes-force.ts:52`, `apps/vanilla/src/ui/layout-recipes-force.ts:90`.
+- vanilla production: `apps/shared/layout/browser.ts:351`, `apps/shared/layout/browser.ts:351`.
 - vanilla tests: `apps/vanilla/e2e/layout-recipes.e2e.ts:209`.
-- vue production: `apps/vue/src/layout-recipes-force.ts:39`, `apps/vue/src/layout-recipes-force.ts:120`.
+- vue production: `apps/shared/layout/browser.ts:351`, `apps/shared/layout/browser.ts:351`.
 - vue tests: `apps/vue/e2e/layout-recipes.e2e.ts:222`.
-- foldkit production: `apps/foldkit/ui-recipes/layout/force.ts:25`, `apps/foldkit/ui-recipes/layout/force.ts:111`.
+- foldkit production: `apps/shared/layout/browser.ts:351`, `apps/shared/layout/browser.ts:351`.
 - foldkit tests: `apps/foldkit/e2e/layout-recipes.e2e.ts:228`.
 
 ### dynamic
@@ -488,6 +488,8 @@ Unit tests: **2,595 passed across 105 files**. Browser tests: **121 passed**, wi
 A fresh `bun install --frozen-lockfile` supplied this worktree's pinned TypeScript 5.9.3 before verification. The initial docs attempt without local dependencies had resolved an incompatible TypeScript 7 module; it passed after the frozen install. No lockfile or dependency declarations changed.
 
 This is local focused evidence, not `verify:full` acceptance, a paired React Flow comparison or collector-side telemetry proof. Renderer-props citations outside the selected browser files are checked-in test evidence, not browser cases rerun in this profile. Verification output for this run was captured locally at `/tmp/flow149-verify.log`.
+
+Plan 157 replaced the three force-loop files after this audit. Their production citations above now point to the shared browser owner; the original findings describe the pre-157 recipes. See [Plan 157](157-layout-engines.md) for current acceptance.
 
 ## Conformity and deviations
 

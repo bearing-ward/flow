@@ -17,14 +17,17 @@ import type {
 } from '@flow/vanilla'
 
 import {
+  mountLayoutControls,
+  mountForceControls,
+} from '../../../shared/layout/browser.ts'
+import type { LayoutRecipeOwner } from '../../../shared/layout/browser.ts'
+import {
   dagreLayout,
   elkLayout,
   elkPortLayout,
   portId,
 } from './layout-recipes-engines.ts'
 import type { LayoutPositions } from './layout-recipes-engines.ts'
-import { startForceLayout } from './layout-recipes-force.ts'
-import type { ForceLayoutControl } from './layout-recipes-force.ts'
 
 import './layout-recipes.css'
 import { createRecipePage, pageButton, sceneParameter } from './recipe-page.ts'
@@ -191,9 +194,15 @@ const layoutOnChange = (
 }
 
 /** Layout-relevant node changes: a new measured size or a removed node. */
+const measurementListeners = new Set<() => void>()
+
 const onNodesChange = (changes: readonly NodeChange[]): void => {
   if (changes.some(({ type }) => type === 'dimensions' || type === 'remove')) {
     layoutTrigger.current?.()
+
+    for (const listener of measurementListeners) {
+      listener()
+    }
   }
 }
 
@@ -309,6 +318,53 @@ const removeLast = (): void => {
   }
 }
 
+const layoutOwner = (): LayoutRecipeOwner => {
+  const controller = flow.current
+
+  if (controller === undefined) {
+    throw new Error('Layout canvas is not mounted')
+  }
+
+  return {
+    toolbar,
+    status,
+    edit: async (transaction) => {
+      await controller.applyEdit(transaction)
+    },
+    read: () =>
+      Promise.resolve({
+        document: controller.getSnapshot().document,
+        input: measuredInput(controller),
+      }),
+    write: async (nodes, context) => {
+      await controller.applyEdit({
+        operations: [{ kind: 'set-nodes', nodes }],
+        ...(context === undefined ? undefined : { context }),
+      })
+    },
+    subscribe: (listener) => {
+      measurementListeners.add(listener)
+      const stop = controller.subscribeState(listener)
+
+      return () => {
+        measurementListeners.delete(listener)
+        stop()
+      }
+    },
+    afterLayout: async () => {
+      await controller.fitView({ padding: 0.1 })
+    },
+    undo: async () => {
+      await controller.undo()
+    },
+    redo: async () => {
+      await controller.redo()
+    },
+    onDispose: (dispose) =>
+      globalThis.addEventListener('pagehide', dispose, { once: true }),
+  }
+}
+
 const autoLayoutScene = (): Scene => {
   let added = 0
 
@@ -347,7 +403,7 @@ const autoLayoutScene = (): Scene => {
   return {
     document: treeDocument(),
     start: () => {
-      layoutOnChange((input) => applyLayout(dagreLayout(input, 'TB'), 'TB'))
+      mountLayoutControls(layoutOwner())
       toolbar.append(
         pageButton('add-child', 'Add child', addChild),
         pageButton('remove-last', 'Remove last', removeLast)
@@ -490,14 +546,8 @@ const dynamicLayoutScene = (): Scene => {
   }
 }
 
-/** Owns the running simulation so drag callbacks can reach it. */
-interface ForceLayoutOwner {
-  current: ForceLayoutControl | undefined
-}
-
 const forceLayoutScene = (): Scene => {
-  const force: ForceLayoutOwner = { current: undefined }
-
+  let force: ReturnType<typeof mountForceControls> | undefined
   const ids = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
   return {
@@ -524,16 +574,13 @@ const forceLayoutScene = (): Scene => {
       })),
     },
     options: {
-      onNodeDragStart: () => force.current?.pause(),
-      onNodeDragStop: ({ outcome, positions }) =>
-        force.current?.drop(outcome === 'proposed' ? positions : []),
+      onNodeDragStart: () => force?.pause(),
+      onNodeDragStop: ({ outcome, positions }) => {
+        void force?.drop(outcome === 'proposed' ? positions : [])
+      },
     },
     start: () => {
-      const controller = flow.current
-
-      if (controller !== undefined) {
-        force.current = startForceLayout(controller, status)
-      }
+      force = mountForceControls(layoutOwner(), { x: 450, y: 270 })
     },
   }
 }

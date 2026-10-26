@@ -12,30 +12,30 @@
     "inScope": 195,
     "stretch": 3,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 185,
+    "inScopeCloseAllHosts": 187,
     "inScopeCloseByHost": {
-      "vanilla": 185,
-      "vue": 185,
-      "foldkit": 185
+      "vanilla": 187,
+      "vue": 187,
+      "foldkit": 187
     },
-    "reaudit": "2026-10-25 Plan 149 Pro audit with Plan 150 transaction-history, Plan 153 graph-clipboard, Plan 154 grouping and Plan 155 helper-line acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-26 Plan 157 layout acceptance follows the Plan 149 Pro audit and Plans 150, 153, 154 and 155 follow-ups; all other entries retain their recorded evidence boundaries.",
     "proReaudit": {
-      "on": "2026-10-25",
+      "on": "2026-10-26",
       "entries": 16,
       "byHost": {
         "vanilla": {
-          "C": 6,
-          "P": 7,
+          "C": 8,
+          "P": 5,
           "G": 3
         },
         "vue": {
-          "C": 6,
-          "P": 7,
+          "C": 8,
+          "P": 5,
           "G": 3
         },
         "foldkit": {
-          "C": 6,
-          "P": 7,
+          "C": 8,
+          "P": 5,
           "G": 3
         }
       }
@@ -4340,32 +4340,32 @@
     {
       "section": "examples layout",
       "name": "Auto Layout · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
-      "missing": "Dagre automatic relayout and separate Dagre/ELK scenes exist; no d3-hierarchy adapter or same-flow engine selector.",
+      "missing": "",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 112", "Plan 111", "Plan 149"],
+      "updatedBy": ["Plan 109", "Plan 112", "Plan 111", "Plan 149", "Plan 157"],
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 157",
         "previousRatings": {
-          "vanilla": "C",
-          "vue": "C",
-          "foldkit": "C"
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "All-host public-control and rendered-DOM acceptance, real optional-engine and request/history unit tests, and accessible reference descriptions/defaults. C denotes functional closeness; hidden Pro source and exact engine coordinates remain unverified.",
         "url": "https://reactflow.dev/examples/layout/auto-layout",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public descriptions and layout guide read on 2026-10-25. The accessible force demo rendered strength -1000 and distance 150 with no declared input limits. No subscription source was accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/auto-layout/index.html"
         ],
-        "missing": "Dagre automatic relayout and separate Dagre/ELK scenes exist; no d3-hierarchy adapter or same-flow engine selector.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/157-layout-engines.md",
         "outcomes": [
           {
             "id": "automatic",
@@ -4375,23 +4375,21 @@
             "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:161"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -4399,28 +4397,26 @@
           {
             "id": "engine-switch",
             "outcome": "Switch between Dagre, d3-hierarchy and ELK at runtime in one flow.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:161"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -4428,67 +4424,65 @@
           {
             "id": "controls",
             "outcome": "Configure the active layout algorithm interactively.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:50",
-                "packages/core/src/domain/flow-layout.ts:132"
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:161"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:105",
-                "apps/vanilla/src/ui/layout-recipes.ts:312",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:170"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:85",
-                "apps/vue/src/layout-recipes.ts:208",
-                "apps/vue/e2e/layout-recipes.e2e.ts:177"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:185",
-                "apps/foldkit/ui-recipes/layout/main.ts:389",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:188"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
           }
         ],
         "unverified": [
-          "Engine output equality, async stale-result cancellation, saved engine choice and unsupported graph inputs are unverified."
+          "Hidden Pro implementation and exact engine coordinates are unverified. Engine/force settings are intentionally session-only. Dynamic Layouting animation and tree-editing outcomes remain outside unit 4."
         ]
       }
     },
     {
       "section": "examples layout",
       "name": "Force Layout · Pro",
-      "vanilla": "P",
-      "vue": "P",
-      "foldkit": "P",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 6,
-      "missing": "Each host has a live measured simulation with hard-coded force/distance values; no interactive parameter controls.",
+      "missing": "",
       "effort": "M",
       "theme": "layout-integration",
-      "updatedBy": ["Plan 109", "Plan 149"],
+      "updatedBy": ["Plan 109", "Plan 149", "Plan 157"],
       "reaudit": {
-        "on": "2026-10-25",
-        "plan": "Plan 149",
+        "on": "2026-10-26",
+        "plan": "Plan 157",
         "previousRatings": {
-          "vanilla": "C",
-          "vue": "C",
-          "foldkit": "C"
+          "vanilla": "P",
+          "vue": "P",
+          "foldkit": "P"
         },
-        "method": "Current public page and linked docs read; local production and checked-in tests inspected. Focused local test run is recorded in research/traces/pro-parity-audit-2026-10-25.md. C means achievable functional closeness, not reference-conformance.",
+        "method": "All-host public-control and rendered-DOM acceptance, real optional-engine and request/history unit tests, and accessible reference descriptions/defaults. C denotes functional closeness; hidden Pro source and exact engine coordinates remain unverified.",
         "url": "https://reactflow.dev/examples/layout/force-layout",
         "accessedOn": "2026-10-25",
-        "sourceAccess": "Public description/dependency list and linked public docs only. Download ZIP is disabled in the unauthenticated response; subscription source was not accessed. No upstream demo interaction or video observation is claimed.",
+        "sourceAccess": "Public descriptions and layout guide read on 2026-10-25. The accessible force demo rendered strength -1000 and distance 150 with no declared input limits. No subscription source was accessed.",
         "demoUrls": [
           "https://example-apps.xyflow.com/react/pro/force-layout/index.html"
         ],
-        "missing": "Each host has a live measured simulation with hard-coded force/distance values; no interactive parameter controls.",
-        "evidence": "research/traces/pro-parity-audit-2026-10-25.md",
+        "missing": "",
+        "evidence": "research/traces/157-layout-engines.md",
         "outcomes": [
           {
             "id": "simulation",
@@ -4497,21 +4491,22 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "shared": [
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:351"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
-                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes-force.ts:39",
-                "apps/vue/src/layout-recipes-force.ts:120",
-                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/force.ts:25",
-                "apps/foldkit/ui-recipes/layout/force.ts:111",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -4519,25 +4514,26 @@
           {
             "id": "strength",
             "outcome": "Let the user change force strength.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "shared": [
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:351"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
-                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes-force.ts:39",
-                "apps/vue/src/layout-recipes-force.ts:120",
-                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/force.ts:25",
-                "apps/foldkit/ui-recipes/layout/force.ts:111",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -4545,25 +4541,26 @@
           {
             "id": "distance",
             "outcome": "Let the user change link distance.",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "shared": [
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:351"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
-                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes-force.ts:39",
-                "apps/vue/src/layout-recipes-force.ts:120",
-                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/force.ts:25",
-                "apps/foldkit/ui-recipes/layout/force.ts:111",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "public-description"
@@ -4575,28 +4572,29 @@
             "vue": "C",
             "foldkit": "C",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-layout.ts:119"],
+              "shared": [
+                "packages/core/src/domain/flow-layout-request.ts:122",
+                "packages/layout/src/public.ts:34",
+                "apps/shared/layout/browser.ts:351"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes-force.ts:52",
-                "apps/vanilla/src/ui/layout-recipes-force.ts:90",
-                "apps/vanilla/e2e/layout-recipes.e2e.ts:209"
+                "apps/vanilla/e2e/layout-engines.e2e.ts:1",
+                "apps/vanilla/e2e/layout-recipes.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes-force.ts:39",
-                "apps/vue/src/layout-recipes-force.ts:120",
-                "apps/vue/e2e/layout-recipes.e2e.ts:222"
+                "apps/vue/e2e/layout-engines.e2e.ts:1",
+                "apps/vue/e2e/layout-recipes.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/force.ts:25",
-                "apps/foldkit/ui-recipes/layout/force.ts:111",
-                "apps/foldkit/e2e/layout-recipes.e2e.ts:228"
+                "apps/foldkit/e2e/layout-engines.e2e.ts:1",
+                "apps/foldkit/e2e/layout-recipes.e2e.ts:1"
               ]
             },
             "basis": "delivery-edge-case"
           }
         ],
         "unverified": [
-          "Drag/pin is Flow regression evidence, not a documented Pro guarantee. Parameter persistence, numeric range and exact force output are unspecified."
+          "Hidden Pro implementation and exact engine coordinates are unverified. Engine/force settings are intentionally session-only. Dynamic Layouting animation and tree-editing outcomes remain outside unit 4."
         ]
       }
     },

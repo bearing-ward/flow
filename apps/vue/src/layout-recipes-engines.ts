@@ -145,9 +145,14 @@ export const notifyElementChanges = (): void => {
   }
 }
 
-const onElementChanges = (listener: () => void): void => {
+export const subscribeElementChanges = (listener: () => void): (() => void) => {
   elementChangeListeners.add(listener)
-  onScopeDispose(() => elementChangeListeners.delete(listener))
+
+  return () => elementChangeListeners.delete(listener)
+}
+
+const onElementChanges = (listener: () => void): void => {
+  onScopeDispose(subscribeElementChanges(listener))
 }
 
 /** Layout input once every visible node is measured; undefined until then. */

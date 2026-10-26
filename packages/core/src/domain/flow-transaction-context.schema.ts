@@ -11,6 +11,7 @@ export const FlowTransactionContextSchema = S.Struct({
   transactionId: S.NonEmptyString,
   origin: FlowTransactionOriginSchema,
   gestureId: S.optional(S.NonEmptyString),
+  gestureMode: S.optional(S.Literals(['continuous', 'continuation'])),
 })
 
 export type FlowTransactionContext = typeof FlowTransactionContextSchema.Type

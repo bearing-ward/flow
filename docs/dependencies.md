@@ -34,7 +34,7 @@
 
 ## Example-only dependencies
 
-These packages serve the Download Image recipes in all three example apps and the layout recipes in `apps/{vanilla,vue,foldkit}/ui-recipes/layout` ([Plan 109](../plans/109-example-integrations.md)). Each app declares them as exact dev dependencies. No package under `packages/` imports them, and the `@flow/vanilla` package build bundles only `src/public.ts`, so they stay out of published code. Flow core supplies the engine-neutral input and output helpers (`getFlowLayoutInput`, `applyFlowLayoutPositions`), so a consumer can swap engines without Flow changes.
+These packages serve the Download Image recipes in all three example apps and the layout recipes in `apps/{vanilla,vue,foldkit}/ui-recipes/layout` ([Plan 109](../plans/109-example-integrations.md)). Each app declares them as exact dev dependencies. The optional private `@flow/layout` integration also owns layout engine imports. Core and the three framework adapter entry points never import it. The `@flow/vanilla` package build bundles only `src/public.ts`, so these engines stay out of published adapter code. Flow core supplies the engine-neutral input and output helpers (`getFlowLayoutInput`, `applyFlowLayoutPositions`), so a consumer can swap engines without Flow changes.
 
 | Package | Owner | Purpose | Alternatives considered | Removal boundary |
 | --- | --- | --- | --- | --- |
@@ -77,3 +77,13 @@ The toolchain follows the requested native TypeScript and Ultracite major versio
 The host uses `react` and `react-dom` 18.2.0 to match the upstream Cypress `react18` mounts. `@types/react` 18.2.79 and `@types/react-dom` 18.2.25 typecheck the host. Other React major versions would change the lifecycle being measured. Remove these dependencies with the host.
 
 `chai` 6.2.2 executes the 31 pinned utility test bodies in Chromium without translating their assertions. Reusing Vitest's Node runner would not provide the real DOM geometry required by `update-node-internals.cy.ts`. Remove Chai with that reference runner.
+
+## Plan 157 optional layout integration
+
+`packages/layout` owns the private `@flow/layout` integration. It exports Effect-based Dagre, d3-hierarchy and ELK adapters plus a manually ticked d3-force simulation. Core owns request/result identity, settings validation and position application. The example apps and the private `@flow/recipe-shared` workspace opt into the integration; no engine enters the core or framework adapter bundles. Its source export is for workspace recipes, not a packed public distribution.
+
+| Dependency | Owner and purpose | Alternatives and removal boundary |
+| --- | --- | --- |
+| `d3-hierarchy` 3.1.2 and `@types/d3-hierarchy` 3.1.7 | `@flow/layout` supplies the single-root hierarchy choice beside Dagre and ELK. The type package is development-only. | Dagre and ELK handle general graphs but do not supply the requested hierarchy engine. A custom tree algorithm would duplicate D3. Remove when the hierarchy choice is removed. |
+| `@dagrejs/dagre` 3.1.1, `elkjs` 0.12.0, `d3-force` 3.0.0 and `@types/d3-force` 3.0.10 | `@flow/layout` centralizes the existing engines and force solver at their existing exact versions. The original Dagre/ELK port recipes still declare their app dependencies. | Existing alternatives and removal boundaries above apply. ELK uses its bundled implementation without a worker; latest-request rejection prevents a late result from committing. |
+| `@flow/layout` and `@flow/recipe-shared` | Private optional integration and shared browser-recipe composition, respectively. The three demos opt into `@flow/layout`; shared browser composition declares its own core, layout and Effect imports. | Separate per-host solvers drifted in defaults and disposal behavior. Remove these private workspaces when the shared recipes are removed. |

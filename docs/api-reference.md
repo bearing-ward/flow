@@ -218,6 +218,7 @@ export type FlowTransactionContext = {
     readonly actorId: string;
   };
   readonly gestureId?: string;
+  readonly gestureMode?: "continuous" | "continuation";
 };
 ```
 
@@ -467,6 +468,7 @@ export type FlowCommand = {
         readonly actorId: string;
       };
       readonly gestureId?: string;
+      readonly gestureMode?: "continuous" | "continuation";
     };
   };
 };
@@ -716,6 +718,7 @@ export type FlowChange = {
       readonly actorId: string;
     };
     readonly gestureId?: string;
+    readonly gestureMode?: "continuous" | "continuation";
   };
 };
 ```

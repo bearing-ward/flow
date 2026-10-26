@@ -1,0 +1,28 @@
+.layout-controls,
+.recipe-toolbar:has([aria-label='Layout engine']),
+.recipe-toolbar:has([aria-label='Force strength']) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.layout-controls label,
+.recipe-toolbar label {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.layout-controls input,
+.recipe-toolbar input[type='number'] {
+  width: 64px;
+}
+
+.recipe-panel:has(.layout-controls) {
+  max-width: calc(100vw - 16px);
+  flex-wrap: wrap;
+  padding: 8px;
+  border-radius: 6px;
+  background: #fff;
+}
