@@ -20,9 +20,9 @@ No document schema fields are added. Saved documents and clipboard fragments ret
 
 ### Vanilla
 
-The JavaScript controller exposes `animateNodePositions` at `apps/vanilla/src/mount-flow.ts:15687`; its typed contract is at `apps/vanilla/src/mount-flow.ts:1207`. The controller's animator at `apps/vanilla/src/mount-flow.ts:12428` reads current displayed parent-relative coordinates, submits one `set-nodes` edit and supplies browser frame scheduling. Presentation maps enter `captureProjection` at `apps/vanilla/src/mount-flow.ts:3582` and `graphFor` at `apps/vanilla/src/mount-flow.ts:4234`. The same projection drives node wrappers, edge geometry and label positions. The projection dependency check at `apps/vanilla/src/mount-flow.ts:3371` compares the same combined preview/animation positions so current animated edges are not discarded as stale paints.
+The JavaScript controller exposes `animateNodePositions` at `apps/vanilla/src/mount-flow.ts:15701`; its typed contract is at `apps/vanilla/src/mount-flow.ts:1207`. The controller's animator at `apps/vanilla/src/mount-flow.ts:12442` reads current displayed parent-relative coordinates, submits one `set-nodes` edit and supplies browser frame scheduling. Presentation maps enter `captureProjection` at `apps/vanilla/src/mount-flow.ts:3596` and `graphFor` at `apps/vanilla/src/mount-flow.ts:4248`. The same projection drives node wrappers, edge geometry and label positions. The projection dependency check at `apps/vanilla/src/mount-flow.ts:3385` compares the same combined preview/animation positions so current animated edges are not discarded as stale paints.
 
-A draggable node press at `apps/vanilla/src/mount-flow.ts:9647` stops scheduling while retaining the current display as drag origins. An accepted position change releases that held presentation. Destruction disposes the animator and cancels its browser frame. The demo composition is `apps/vanilla/src/node-animation-demo.ts:1`; it uses only public controller commands.
+A draggable node press at `apps/vanilla/src/mount-flow.ts:9661` stops scheduling while retaining the current display as drag origins. An accepted position change releases that held presentation. Destruction disposes the animator and cancels its browser frame. The demo composition is `apps/vanilla/src/node-animation-demo.ts:1`; it uses only public controller commands.
 
 ### Vue
 

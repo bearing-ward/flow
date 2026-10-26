@@ -6,7 +6,7 @@ This trace covers the dated React Flow `Custom Node` journey through Flow's exis
 
 ### Vanilla
 
-`mountFlow` accepts a type-keyed `nodeRenderers` registry whose renderer receives the decoded `FlowNode` and a content element (`apps/vanilla/src/mount-flow.ts:587`, `apps/vanilla/src/mount-flow.ts:797`). When an accepted graph update arrives, the host resolves the renderer by node type and updates the existing instance; the returned update callback can refresh custom DOM from the next node data (`apps/vanilla/src/mount-flow.ts:4395`). The public controller's `updateNodeData` builds an `update-node-data` operation from the current document (`apps/vanilla/src/mount-flow.ts:9213`). Core merges this data into the matching node (`packages/core/src/domain/flow-edit.ts:189`).
+`mountFlow` accepts a type-keyed `nodeRenderers` registry whose renderer receives the decoded `FlowNode` and a content element (`apps/vanilla/src/mount-flow.ts:587`, `apps/vanilla/src/mount-flow.ts:797`). When an accepted graph update arrives, the host resolves the renderer by node type and updates the existing instance; the returned update callback can refresh custom DOM from the next node data (`apps/vanilla/src/mount-flow.ts:4409`). The public controller's `updateNodeData` builds an `update-node-data` operation from the current document (`apps/vanilla/src/mount-flow.ts:9227`). Core merges this data into the matching node (`packages/core/src/domain/flow-edit.ts:189`).
 
 ### Vue
 

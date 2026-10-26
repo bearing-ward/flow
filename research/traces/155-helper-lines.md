@@ -16,9 +16,9 @@ The solver remains framework-independent. It neither mutates documents nor runs 
 
 ## Vanilla production path
 
-`apps/vanilla/src/mount-flow.ts:484` decodes the optional `helperLines` mount option. The public controller also accepts it through `setCanvasOptions`. The pointer move handler calls `apps/vanilla/src/mount-flow.ts:9704`, entering `updateNodeDragPreview` at `apps/vanilla/src/mount-flow.ts:6984`, then `alignedDragPoint` at `apps/vanilla/src/mount-flow.ts:6905`, then the shared solver, followed by existing bounds and parent-expansion rules. The preview updates node DOM positions and attached edge geometry. The viewport contains a pointer-transparent guide layer, so pan and zoom affect both guides and nodes.
+`apps/vanilla/src/mount-flow.ts:484` decodes the optional `helperLines` mount option. The public controller also accepts it through `setCanvasOptions`. The pointer move handler calls `apps/vanilla/src/mount-flow.ts:9718`, entering `updateNodeDragPreview` at `apps/vanilla/src/mount-flow.ts:6998`, then `alignedDragPoint` at `apps/vanilla/src/mount-flow.ts:6919`, then the shared solver, followed by existing bounds and parent-expansion rules. The preview updates node DOM positions and attached edge geometry. The viewport contains a pointer-transparent guide layer, so pan and zoom affect both guides and nodes.
 
-Pointer release at `apps/vanilla/src/mount-flow.ts:9709` recomputes the same aligned point before the atomic drag commit at `apps/vanilla/src/mount-flow.ts:9858`. It clears the guide layer. Cancellation at `apps/vanilla/src/mount-flow.ts:10889` clears the layer with the captured actor, and destruction removes the canvas and frame resources. The complete drag remains one accepted history transaction.
+Pointer release at `apps/vanilla/src/mount-flow.ts:9723` recomputes the same aligned point before the atomic drag commit at `apps/vanilla/src/mount-flow.ts:9872`. It clears the guide layer. Cancellation at `apps/vanilla/src/mount-flow.ts:10903` clears the layer with the captured actor, and destruction removes the canvas and frame resources. The complete drag remains one accepted history transaction.
 
 ## Vue production path
 

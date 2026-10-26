@@ -32,7 +32,7 @@ Existing `editPrepare`, `documentDecode`, `controllerUpdate`, `gestureCancel`, a
 
 ### Vanilla
 
-`apps/vanilla/src/tree-demo.ts:1` creates the public controller and binds its accepted snapshot, measured internal nodes, and animation command to the shared editor. `apps/vanilla/src/mount-flow.ts:12462` accepts the complete animated transaction through the existing edit owner. History observes that accepted document once. The render graph at `apps/vanilla/src/mount-flow.ts:4234` shares collapsed visibility and animated coordinates among node wrappers, edges, and labels. Node reconciliation uses graph visibility, so a collapsed subtree leaves the DOM while remaining in the snapshot.
+`apps/vanilla/src/tree-demo.ts:1` creates the public controller and binds its accepted snapshot, measured internal nodes, and animation command to the shared editor. `apps/vanilla/src/mount-flow.ts:12476` accepts the complete animated transaction through the existing edit owner. History observes that accepted document once. The render graph at `apps/vanilla/src/mount-flow.ts:4248` shares collapsed visibility and animated coordinates among node wrappers, edges, and labels. Node reconciliation uses graph visibility, so a collapsed subtree leaves the DOM while remaining in the snapshot.
 
 The controller still exposes `animateNodePositions`, `applyEdit`, undo/redo, clipboard, and destruction. The recipe's browser observer tracks keyed action controls through animation. It retains focus state when Vanilla moves focus to its canvas after removing a focused descendant, then restores the nearest visible tree ancestor. Pagehide disposes both controls and the controller.
 

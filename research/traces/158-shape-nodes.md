@@ -26,7 +26,7 @@ History's authored document projection at `packages/core/src/domain/flow-history
 
 The real `/shapes/` entry registers `flowFigureNodeRenderer` and enables canvas resize controls at `apps/vanilla/src/shapes-demo.ts:23`. Its renderer at `apps/vanilla/src/shape-node.ts:36` owns SVG content, updates path and fill from accepted data, and releases DOM on renderer destruction. Host-owned handles and canvas resize controls remain siblings.
 
-The minimap callback at `apps/vanilla/src/shape-node.ts:9` uses the same normalized path and resolves data from the current controller. Accepted-state, viewport, and rendered-position subscriptions in the existing minimap mount drive updates. Sidebar and color commands reach `controller.applyEdit` at `apps/vanilla/src/mount-flow.ts:14700`, then the serial edit resolver at `apps/vanilla/src/mount-flow.ts:12283`, shared preparation, and accepted-history owner. The accepted document reconciles through the custom renderer selection at `apps/vanilla/src/mount-flow.ts:8959`, which calls this renderer's update lifecycle.
+The minimap callback at `apps/vanilla/src/shape-node.ts:9` uses the same normalized path and resolves data from the current controller. Accepted-state, viewport, and rendered-position subscriptions in the existing minimap mount drive updates. Sidebar and color commands reach `controller.applyEdit` at `apps/vanilla/src/mount-flow.ts:14714`, then the serial edit resolver at `apps/vanilla/src/mount-flow.ts:12297`, shared preparation, and accepted-history owner. The accepted document reconciles through the custom renderer selection at `apps/vanilla/src/mount-flow.ts:8973`, which calls this renderer's update lifecycle.
 
 ## Vue production path
 
