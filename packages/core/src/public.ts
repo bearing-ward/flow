@@ -447,6 +447,7 @@ export {
   flowEdgeChanges,
   flowElementChanges,
   flowNodeChanges,
+  flowResizeCompletionChanges,
 } from './domain/flow-element-changes.ts'
 
 export type { FlowElementChanges } from './domain/flow-element-changes.ts'

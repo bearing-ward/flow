@@ -99,6 +99,7 @@ import {
   sameFlowEdgeRendererProps,
   sameFlowNodeRendererProps,
   flowChangeElementChanges,
+  flowResizeCompletionChanges,
   flowConnectionState,
   flowFinalConnectionState,
   handleGestureConnectable,
@@ -5888,6 +5889,11 @@ export const FlowCanvas = defineComponent({
       pointerToFlow: (clientX, clientY) => clientToFlow(clientX, clientY),
       snapGrid: () => (props.snapToGrid ? snapGrid.value : undefined),
       publish: (changes) => publishAll(changes),
+      complete: (nodeId, accepted) => {
+        if (!stateDisposed && graph.value.nodes.has(nodeId)) {
+          emit('nodesChange', flowResizeCompletionChanges(nodeId, accepted))
+        }
+      },
     }
 
     provide(FlowNodeResizerRegistryKey, resizerHost)

@@ -1,0 +1,223 @@
+{
+  "upstreamCommit": "3d35b57317576b0916c0bfeaaedd573aaacc2839",
+  "reactVersion": "12.12.0",
+  "referenceHost": "apps/react-reference",
+  "port": 4180,
+  "input": "Chromium mouse",
+  "observations": [
+    {
+      "mode": "controlled",
+      "scenario": "no movement",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 150,
+              "height": 80
+            }
+          }
+        ],
+        [
+          {
+            "id": "r",
+            "type": "select",
+            "selected": true
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "controlled",
+      "scenario": "veto only",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 150,
+              "height": 80
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "controlled",
+      "scenario": "accepted then vetoed",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "position",
+            "position": {
+              "x": 80,
+              "y": 100
+            }
+          },
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": true,
+            "setAttributes": true,
+            "dimensions": {
+              "width": 170,
+              "height": 80
+            }
+          }
+        ],
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 170,
+              "height": 80
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "uncontrolled",
+      "scenario": "no movement",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 150,
+              "height": 80
+            }
+          }
+        ],
+        [
+          {
+            "id": "r",
+            "type": "select",
+            "selected": true
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "uncontrolled",
+      "scenario": "veto only",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 150,
+              "height": 80
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "uncontrolled",
+      "scenario": "accepted then vetoed",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "position",
+            "position": {
+              "x": 80,
+              "y": 100
+            }
+          },
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": true,
+            "setAttributes": true,
+            "dimensions": {
+              "width": 170,
+              "height": 80
+            }
+          }
+        ],
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 170,
+              "height": 80
+            }
+          }
+        ]
+      ]
+    }
+  ],
+  "teardownObservations": [
+    {
+      "mode": "controlled",
+      "action": "Remove node",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "remove"
+          }
+        ],
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 150,
+              "height": 80
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "controlled",
+      "action": "Unmount flow",
+      "onNodesChange": []
+    },
+    {
+      "mode": "uncontrolled",
+      "action": "Remove node",
+      "onNodesChange": [
+        [
+          {
+            "id": "r",
+            "type": "remove"
+          }
+        ],
+        [
+          {
+            "id": "r",
+            "type": "dimensions",
+            "resizing": false,
+            "dimensions": {
+              "width": 150,
+              "height": 80
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "mode": "uncontrolled",
+      "action": "Unmount flow",
+      "onNodesChange": []
+    }
+  ]
+}

@@ -138,6 +138,7 @@ import {
   flowNodeRendererProps,
   sameFlowNodeRendererProps,
   flowChangeElementChanges,
+  flowResizeCompletionChanges,
   flowConnectionState,
   flowFinalConnectionState,
   flowNoConnection,
@@ -9209,6 +9210,20 @@ export const createFlowHost = (
                 (params: FlowResizeParams) =>
                   registered.registration.onResizeEnd?.(event, params),
                 registered.params
+              )
+            }
+
+            if (
+              registered !== undefined &&
+              !destroyed &&
+              findNode(resize.nodeId) !== undefined &&
+              options.onNodesChange !== undefined
+            ) {
+              reportBoundaryCallback(
+                'Nodes change',
+                'resize-completion',
+                options.onNodesChange,
+                flowResizeCompletionChanges(resize.nodeId, registered.params)
               )
             }
 

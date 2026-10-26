@@ -1,4 +1,8 @@
-import { decodeFlowDocument } from '@flow/core'
+import {
+  applyFlowChangeToDocument,
+  decodeFlowDocument,
+  FlowChangeSchema,
+} from '@flow/core'
 import type {
   FlowColorMode,
   FlowNode,
@@ -26,7 +30,7 @@ import type {
   InteractionEventSchema,
   ports,
 } from '@flow/foldkit'
-import { Effect, Exit } from 'effect'
+import { Effect, Exit, Schema } from 'effect'
 import { Runtime } from 'foldkit'
 
 import '@flow/foldkit/style.css'
@@ -44,6 +48,11 @@ export interface ResizeLogEntry {
 }
 
 export interface FoldkitModelStylingFixture {
+  readonly nodeChanges: () => readonly (readonly unknown[])[]
+  readonly callbackFailures: () => number
+  readonly clearNodeChanges: () => void
+  readonly removeNodes: () => void
+  readonly unmount: () => void
   readonly deleteResults: () => number
   readonly deleteApprovals: () => number
   readonly replaceRenderers: () => void
@@ -61,6 +70,9 @@ export interface FoldkitModelStylingFixture {
 }
 
 export interface FoldkitModelStylingInput {
+  readonly resizeEndThrows?: boolean
+  readonly vetoWidthAbove?: number
+  readonly documentMode?: 'controlled' | 'uncontrolled'
   readonly shadowCanvas?: boolean
   readonly initialPaneSize?: { readonly width: number; readonly height: number }
   readonly document: unknown
@@ -101,6 +113,8 @@ export const mountFoldkitModelStylingFixture = (
   const events: InteractionEvent[] = []
   const resizeLog: ResizeLogEntry[] = []
   const changeKinds: string[] = []
+  const nodeChanges: (readonly unknown[])[] = []
+  let callbackFailures = 0
   let veto = false
   let zoom = input.viewport?.zoom ?? 1
 
@@ -108,6 +122,11 @@ export const mountFoldkitModelStylingFixture = (
     (name: string) =>
     (nodeId: string, params: FlowResizeParams): void => {
       resizeLog.push({ name, nodeId, params })
+
+      if (name === 'onResizeEnd' && input.resizeEndThrows) {
+        callbackFailures += 1
+        throw new Error('Fixture resize end failure')
+      }
     }
 
   // React Node Resizer example: a NodeResizer with limits on selection.
@@ -121,7 +140,8 @@ export const mountFoldkitModelStylingFixture = (
     handleClassName: 'fixture-handle',
     lineStyle: { borderStyle: 'dashed' },
     lineClassName: 'fixture-line',
-    shouldResize: () => !veto,
+    shouldResize: (_nodeId, params) =>
+      !veto && params.width <= (input.vetoWidthAbove ?? Number.MAX_VALUE),
     onResizeStart: log('onResizeStart'),
     onResize: log('onResize'),
     onResizeEnd: log('onResizeEnd'),
@@ -212,6 +232,8 @@ export const mountFoldkitModelStylingFixture = (
       ),
   } satisfies FoldkitNodeTypes
 
+  let ownedDocument = Effect.runSync(decodeFlowDocument(input.document))
+
   const viewport = input.viewport ?? { x: 0, y: 0, zoom: 1 }
 
   const ariaLabelConfig = { ...input.options?.ariaLabelConfig }
@@ -229,10 +251,10 @@ export const mountFoldkitModelStylingFixture = (
   const active = Runtime.embed<typeof ports, never, 'Element'>(
     createProgram(
       container,
-      Effect.runSync(decodeFlowDocument(input.document)),
+      ownedDocument,
       viewport,
       [],
-      'uncontrolled',
+      input.documentMode ?? 'uncontrolled',
       'uncontrolled',
       registry,
       undefined,
@@ -284,6 +306,25 @@ export const mountFoldkitModelStylingFixture = (
   })
   active.ports.changes.subscribe((change) => {
     changeKinds.push(change.kind)
+
+    if (input.documentMode === 'controlled') {
+      const next = applyFlowChangeToDocument(
+        ownedDocument,
+        Schema.decodeUnknownSync(FlowChangeSchema)(change)
+      )
+
+      if (next !== undefined) {
+        ownedDocument = next
+        send(
+          active.ports.actions.send(
+            HostAction.ReplaceDocument({ document: next })
+          )
+        )
+      }
+    }
+  })
+  active.ports.elementChanges.subscribe((changes) => {
+    nodeChanges.push(changes.nodes)
   })
   active.ports.acceptedStates.subscribe((state) => {
     ;({ zoom } = state.current.viewport)
@@ -292,7 +333,7 @@ export const mountFoldkitModelStylingFixture = (
     ;({ zoom } = response.viewport)
   })
 
-  createFoldkitNodeMeasurementObserver({
+  const measurements = createFoldkitNodeMeasurementObserver({
     owner,
     zoom: () => zoom,
     onMeasure: (requests) =>
@@ -308,6 +349,28 @@ export const mountFoldkitModelStylingFixture = (
   })
 
   return {
+    nodeChanges: () => nodeChanges,
+    callbackFailures: () => callbackFailures,
+    clearNodeChanges: () => {
+      nodeChanges.length = 0
+    },
+    removeNodes: () => {
+      ownedDocument = { ...ownedDocument, nodes: [], edges: [] }
+      send(
+        active.ports.actions.send(
+          HostAction.ReplaceDocument({ document: ownedDocument })
+        )
+      )
+    },
+    unmount: () => {
+      measurements.dispose()
+      resizer.dispose()
+      plainResizer.dispose()
+      aspectResizer.dispose()
+      lineControl.dispose()
+      iconControl.dispose()
+      active.dispose()
+    },
     deleteResults: () => deleteResults,
     deleteApprovals: () => deleteApprovals,
     replaceRenderers: () =>

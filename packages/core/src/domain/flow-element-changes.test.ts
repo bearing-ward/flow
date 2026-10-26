@@ -19,6 +19,7 @@ import {
   applyFlowElementChanges,
   flowChangeElementChanges,
   flowElementChanges,
+  flowResizeCompletionChanges,
 } from './flow-element-changes.ts'
 import {
   flowInteractivityFor,
@@ -540,5 +541,40 @@ describe('Flow connection state', () => {
     })
 
     expect(state.fromHandle).toMatchObject({ id: 'out', nodeId: 'a' })
+  })
+})
+
+describe('Resize completion node changes', () => {
+  it('reports accepted dimensions without changing document geometry', () => {
+    const document = decode({
+      nodes: [
+        {
+          id: 'r',
+          label: 'Resize',
+          position: { x: 100, y: 100 },
+          size: { width: 150, height: 80 },
+        },
+      ],
+      edges: [],
+    })
+
+    const changes = flowResizeCompletionChanges(NodeIdSchema.make('r'), {
+      width: 150,
+      height: 80,
+    })
+
+    expect(changes).toStrictEqual([
+      {
+        id: 'r',
+        type: 'dimensions',
+        resizing: false,
+        dimensions: { width: 150, height: 80 },
+      },
+    ])
+    const applied = applyFlowElementChanges(document, { nodes: changes })
+    expect(applied.nodes[0]?.position).toStrictEqual({ x: 100, y: 100 })
+    expect(applied.nodes[0]?.size).toStrictEqual({ width: 150, height: 80 })
+    expect(applied.nodes[0]).toMatchObject({ resizing: false })
+    expect(document.nodes[0]).not.toHaveProperty('resizing')
   })
 })

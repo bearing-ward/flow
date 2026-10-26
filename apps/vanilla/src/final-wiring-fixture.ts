@@ -59,6 +59,7 @@ export interface WiringResizerInput {
 }
 
 export interface WiringFixtureInput {
+  readonly resizeEndThrows?: boolean
   readonly document: FlowDocumentInput
   readonly documentMode?: 'controlled' | 'uncontrolled' | undefined
   readonly options?: SerializableMountOptions | undefined
@@ -260,6 +261,10 @@ export const mountWiringFixture = (
       onResizeEnd: (_event: PointerEvent, params: FlowResizeParams) => {
         resizeEvents.push(`end:${resizer.nodeId}`)
         resizeParams.push(params)
+
+        if (input.resizeEndThrows) {
+          throw new Error('Fixture resize end failure')
+        }
       },
     }
 
