@@ -1,6 +1,7 @@
 import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
+import { pruneDeletedFlowBundles } from './flow-bundle-pruning.ts'
 import {
   FlowDeleteCandidateSchema,
   FlowDeleteDecisionSchema,
@@ -128,6 +129,10 @@ const applyOperation = (
 > =>
   Effect.gen(function* applyOperationWorkflow() {
     switch (operation.kind) {
+      case 'set-bundles': {
+        return { ...document, bundles: operation.bundles }
+      }
+
       case 'set-nodes': {
         return { ...document, nodes: [...operation.nodes] }
       }
@@ -257,6 +262,8 @@ export const prepareFlowEdit = (
     for (const operation of transaction.operations) {
       candidate = yield* applyOperation(candidate, operation, deletion)
     }
+
+    candidate = pruneDeletedFlowBundles(document, candidate)
 
     yield* decodeFlowDocument(candidate)
     candidate = refitFlowGroups(candidate)

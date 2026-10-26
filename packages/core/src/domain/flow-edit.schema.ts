@@ -1,5 +1,6 @@
 import { Schema as S } from 'effect'
 
+import { FlowBundleSchema } from './flow-bundle.schema.ts'
 import { FlowTransactionContextSchema } from './flow-transaction-context.schema.ts'
 import {
   EdgeIdSchema,
@@ -63,7 +64,13 @@ export const DeleteElementsEditSchema = S.Struct({
   edgeIds: S.optional(S.Array(EdgeIdSchema)),
 })
 
+export const SetBundlesEditSchema = S.Struct({
+  kind: S.Literal('set-bundles'),
+  bundles: S.Array(FlowBundleSchema),
+})
+
 export const FlowEditOperationSchema = S.Union([
+  SetBundlesEditSchema,
   SetNodesEditSchema,
   AddNodesEditSchema,
   SetEdgesEditSchema,

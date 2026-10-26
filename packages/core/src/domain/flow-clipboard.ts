@@ -1,6 +1,8 @@
 import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
+import { pruneFlowBundles } from './flow-bundle-pruning.ts'
+import { FlowBundleSchema } from './flow-bundle.schema.ts'
 import type { FlowEditTransaction } from './flow-edit.schema.ts'
 import { createFlowGraph } from './flow-graph.ts'
 import { flowHistoryDocument } from './flow-history.ts'
@@ -152,13 +154,15 @@ export const extractFlowGraphFragment = (
 
   return {
     version: 1,
-    document: flowHistoryDocument({
-      ...document,
-      nodes,
-      edges: document.edges.filter(
-        (edge) => included.has(edge.source) && included.has(edge.target)
-      ),
-    }),
+    document: flowHistoryDocument(
+      pruneFlowBundles({
+        ...document,
+        nodes,
+        edges: document.edges.filter(
+          (edge) => included.has(edge.source) && included.has(edge.target)
+        ),
+      })
+    ),
   }
 }
 
@@ -309,10 +313,32 @@ export const pasteFlowGraphFragment = (
     return remapped
   })
 
+  const bundleUsed = new Set((document.bundles ?? []).map(({ id }) => id))
+
+  const bundles = fragment.bundles?.map((bundle) =>
+    S.decodeUnknownSync(FlowBundleSchema)({
+      ...bundle,
+      id: freshId(bundle.id, bundleUsed),
+      edgeIds: bundle.edgeIds.map((id) => edgeIds.get(id) ?? id),
+      ties: bundle.ties.map((point) => ({
+        x: point.x + offset.x,
+        y: point.y + offset.y,
+      })),
+    })
+  )
+
   return {
     state: { ...state, pasteCount },
     transaction: {
       operations: [
+        ...(bundles === undefined
+          ? []
+          : [
+              {
+                kind: 'set-bundles' as const,
+                bundles: [...(document.bundles ?? []), ...bundles],
+              },
+            ]),
         {
           kind: 'set-nodes',
           nodes: [

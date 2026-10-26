@@ -172,6 +172,14 @@ Generated from `FlowDocumentSchema` in `packages/core/src/public.ts`.
 
 ```ts
 export type FlowDocument = {
+  readonly bundles?: ReadonlyArray<{
+    readonly id: string;
+    readonly edgeIds: ReadonlyArray<string>;
+    readonly ties: ReadonlyArray<{
+      readonly x: number;
+      readonly y: number;
+    }>;
+  }>;
   readonly edges: ReadonlyArray<{
     readonly id: string;
     readonly source: string;
@@ -322,6 +330,17 @@ export type FlowCommand = {
   readonly kind: "edit-transaction";
   readonly transaction: {
     readonly operations: ReadonlyArray<{
+      readonly kind: "set-bundles";
+      readonly bundles: ReadonlyArray<{
+        readonly id: string;
+        readonly edgeIds: ReadonlyArray<string>;
+        readonly ties: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }>;
+    }
+    | {
       readonly kind: "set-nodes";
       readonly nodes: ReadonlyArray<{
         readonly id: string;
@@ -725,6 +744,14 @@ export type FlowChange = {
 | {
   readonly kind: "edit-proposal";
   readonly document: {
+    readonly bundles?: ReadonlyArray<{
+      readonly id: string;
+      readonly edgeIds: ReadonlyArray<string>;
+      readonly ties: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    }>;
     readonly edges: ReadonlyArray<{
       readonly id: string;
       readonly source: string;
@@ -839,6 +866,14 @@ Generated from `FlowSnapshotSchema` in `packages/core/src/public.ts`.
 ```ts
 export type FlowSnapshot = {
   readonly document: {
+    readonly bundles?: ReadonlyArray<{
+      readonly id: string;
+      readonly edgeIds: ReadonlyArray<string>;
+      readonly ties: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    }>;
     readonly edges: ReadonlyArray<{
       readonly id: string;
       readonly source: string;
@@ -946,6 +981,14 @@ Generated from `FlowStateChangeSchema` in `packages/core/src/public.ts`.
 export type FlowStateChange = {
   readonly previous: {
     readonly document: {
+      readonly bundles?: ReadonlyArray<{
+        readonly id: string;
+        readonly edgeIds: ReadonlyArray<string>;
+        readonly ties: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }>;
       readonly edges: ReadonlyArray<{
         readonly id: string;
         readonly source: string;
@@ -1045,6 +1088,14 @@ export type FlowStateChange = {
   };
   readonly current: {
     readonly document: {
+      readonly bundles?: ReadonlyArray<{
+        readonly id: string;
+        readonly edgeIds: ReadonlyArray<string>;
+        readonly ties: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }>;
       readonly edges: ReadonlyArray<{
         readonly id: string;
         readonly source: string;
@@ -1153,6 +1204,14 @@ Generated from `FlowSnapshotSchema` in `packages/core/src/public.ts`.
 ```ts
 export type FlowSnapshot = {
   readonly document: {
+    readonly bundles?: ReadonlyArray<{
+      readonly id: string;
+      readonly edgeIds: ReadonlyArray<string>;
+      readonly ties: ReadonlyArray<{
+        readonly x: number;
+        readonly y: number;
+      }>;
+    }>;
     readonly edges: ReadonlyArray<{
       readonly id: string;
       readonly source: string;
@@ -1260,6 +1319,14 @@ Generated from `FlowStateChangeSchema` in `packages/core/src/public.ts`.
 export type FlowStateChange = {
   readonly previous: {
     readonly document: {
+      readonly bundles?: ReadonlyArray<{
+        readonly id: string;
+        readonly edgeIds: ReadonlyArray<string>;
+        readonly ties: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }>;
       readonly edges: ReadonlyArray<{
         readonly id: string;
         readonly source: string;
@@ -1359,6 +1426,14 @@ export type FlowStateChange = {
   };
   readonly current: {
     readonly document: {
+      readonly bundles?: ReadonlyArray<{
+        readonly id: string;
+        readonly edgeIds: ReadonlyArray<string>;
+        readonly ties: ReadonlyArray<{
+          readonly x: number;
+          readonly y: number;
+        }>;
+      }>;
       readonly edges: ReadonlyArray<{
         readonly id: string;
         readonly source: string;

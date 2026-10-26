@@ -1,6 +1,7 @@
 import type { Effect } from 'effect'
 import { Context, Schema as S } from 'effect'
 
+import { FlowBundleSchema } from './flow-bundle.schema.ts'
 import { FlowRoutePointSchema } from './flow-route.schema.ts'
 
 export const FlowRoutingObstacleSchema = S.Struct({
@@ -18,6 +19,7 @@ export const FlowRoutingPortSchema = S.Struct({
 })
 
 export const FlowRoutingRequestSchema = S.Struct({
+  wireBundles: S.optional(S.Array(FlowBundleSchema)),
   revision: S.String,
   obstacles: S.Array(FlowRoutingObstacleSchema),
   connections: S.Array(
@@ -43,6 +45,11 @@ export const FlowRoutingPathSchema = S.Union([
 ])
 
 export const FlowRoutingResultSchema = S.Struct({
+  bundlePaths: S.optional(
+    S.Array(
+      S.Struct({ id: S.String, path: S.String, label: FlowRoutePointSchema })
+    )
+  ),
   revision: S.String,
   paths: S.Array(FlowRoutingPathSchema),
 })

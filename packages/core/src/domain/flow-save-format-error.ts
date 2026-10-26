@@ -6,6 +6,7 @@ export const SavedFlowFormatFailureCodeSchema = Schema.Literals([
   'noncanonical-handles-require-versioned-session',
   'presentation-fields-require-versioned-session',
   'route-requires-versioned-session',
+  'bundles-require-versioned-session',
 ])
 
 export type SavedFlowFormatFailureCode =

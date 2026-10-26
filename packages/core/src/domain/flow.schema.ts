@@ -10,6 +10,12 @@ import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { DuplicateEdgeId } from './duplicate-edge-id.ts'
 import { DuplicateHandleId } from './duplicate-handle-id.ts'
 import { DuplicateNodeId } from './duplicate-node-id.ts'
+import {
+  FlowBundleSchema,
+  InvalidFlowBundle,
+  findFlowBundleIssue,
+} from './flow-bundle.schema.ts'
+import type { FlowBundle } from './flow-bundle.schema.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
 import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
 import { FlowFigureDataSchema } from './flow-shape.schema.ts'
@@ -349,6 +355,7 @@ export const FlowEdgeSchema = S.Struct({
 export type FlowEdge = typeof FlowEdgeSchema.Type
 
 export const FlowDocumentSchema = S.Struct({
+  bundles: S.optional(S.Array(FlowBundleSchema)),
   edges: S.Array(FlowEdgeSchema),
   nodeOrigin: S.optional(NodeOriginSchema),
   nodes: S.Array(FlowNodeSchema),
@@ -367,11 +374,13 @@ export type FlowIntegrityEdge = Pick<
 >
 
 export interface FlowIntegrityDocument {
+  readonly bundles?: readonly FlowBundle[] | undefined
   readonly nodes: readonly FlowIntegrityNode[]
   readonly edges: readonly FlowIntegrityEdge[]
 }
 
 export const FlowDocumentIntegrityErrorSchema = S.Union([
+  InvalidFlowBundle,
   DuplicateNodeId,
   DuplicateEdgeId,
   DuplicateHandleId,
@@ -578,6 +587,7 @@ const findDocumentIntegrityError = (
   const { nodesById } = nodeIndex
 
   return (
+    findFlowBundleIssue(document) ??
     findParentReferenceError(document.nodes, nodesById) ??
     findParentCycleError(document.nodes, nodesById) ??
     findDuplicateEdgeId(document.edges) ??
@@ -589,6 +599,9 @@ const findDocumentIntegrityError = (
 const integrityAttributes = (error: FlowDocumentIntegrityError) =>
   Match.value(error).pipe(
     Match.tagsExhaustive({
+      InvalidFlowBundle: (invalid) => ({
+        [FlowAttribute.documentIssue]: `invalid-bundle:${invalid.bundleId}:${invalid.reason}`,
+      }),
       DuplicateNodeId: (duplicate) => ({
         [FlowAttribute.documentIssue]: 'duplicate-node-id',
         [FlowAttribute.nodeId]: duplicate.nodeId,

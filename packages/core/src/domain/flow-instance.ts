@@ -1,5 +1,6 @@
 import { Predicate } from 'effect'
 
+import type { FlowBundle } from './flow-bundle.schema.ts'
 import { boundedNodeRect } from './flow-intersection.ts'
 import type { FlowBoundedNode } from './flow-intersection.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
@@ -80,6 +81,7 @@ export const getNodesBounds = (
 
 /** React Flow's `toObject` result: detached nodes, edges and viewport. */
 export interface FlowObject {
+  readonly bundles?: FlowBundle[]
   readonly nodes: FlowNode[]
   readonly edges: FlowEdge[]
   readonly viewport: Viewport
@@ -96,6 +98,9 @@ export const toFlowObject = (snapshot: FlowSnapshot): FlowObject => {
   const { document, viewport } = structuredClone(snapshot)
 
   const base = {
+    ...(document.bundles === undefined
+      ? undefined
+      : { bundles: [...document.bundles] }),
     nodes: [...document.nodes],
     edges: [...document.edges],
     viewport,

@@ -1,6 +1,7 @@
 import { Effect, Match, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
+import { FlowBundleSchema } from './flow-bundle.schema.ts'
 import { findLegacyEndpointKindIssue } from './flow-legacy-handle-compatibility.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
 import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
@@ -207,6 +208,10 @@ const versionedFormatReason = (
     return 'presentation-fields-require-versioned-session'
   }
 
+  if (Object.hasOwn(document, 'bundles')) {
+    return 'bundles-require-versioned-session'
+  }
+
   if (hasRoutes(document)) {
     return 'route-requires-versioned-session'
   }
@@ -266,21 +271,30 @@ export const encodeSavedFlowDocument = (
 // Unknown extension keys and opaque edge data retain their existing treatment.
 const SavedRouteInspectionSchema = S.Struct({
   document: S.Struct({
+    bundles: S.optional(S.Unknown),
     edges: S.Array(S.Struct({ route: S.optional(S.Unknown) })),
   }),
 })
 
 const rejectLegacySavedRoutes = <Input>(input: Input) =>
   S.decodeUnknownEffect(SavedRouteInspectionSchema)(input).pipe(
-    Effect.flatMap((saved) =>
-      saved.document.edges.some((edge) => Object.hasOwn(edge, 'route'))
+    Effect.flatMap((saved) => {
+      if (Object.hasOwn(saved.document, 'bundles')) {
+        return Effect.fail(
+          new SavedFlowFormatError({
+            code: 'bundles-require-versioned-session',
+          })
+        )
+      }
+
+      return saved.document.edges.some((edge) => Object.hasOwn(edge, 'route'))
         ? Effect.fail(
             new SavedFlowFormatError({
               code: 'route-requires-versioned-session',
             })
           )
         : Effect.void
-    )
+    })
   )
 
 /** Decode the versioned envelope, then apply the normal graph integrity workflow. */
@@ -450,7 +464,42 @@ export type SavedRouteFlowDocument = typeof SavedRouteFlowDocumentSchema.Encoded
 
 export type SavedRouteFlowSession = typeof SavedRouteFlowSessionSchema.Encoded
 
+/** v5 extends the frozen v4 body with ordered, document-owned wire bundles. */
+export const SavedBundleFlowDocumentSchema = S.Struct({
+  version: S.Literal(5),
+  document: S.Struct({
+    ...SavedRouteDocumentBodySchema.fields,
+    bundles: S.optional(S.Array(FlowBundleSchema)),
+  }),
+})
+
+export const SavedBundleFlowSessionSchema = S.Struct({
+  ...SavedBundleFlowDocumentSchema.fields,
+  viewport: SavedViewportSchema,
+})
+
+export type SavedBundleFlowDocument =
+  typeof SavedBundleFlowDocumentSchema.Encoded
+
+export type SavedBundleFlowSession = typeof SavedBundleFlowSessionSchema.Encoded
+
+const rejectPreBundleEnvelope = (
+  input: Parameters<typeof rejectLegacySavedRoutes>[0]
+) =>
+  S.decodeUnknownEffect(SavedRouteInspectionSchema)(input).pipe(
+    Effect.flatMap((saved) =>
+      Object.hasOwn(saved.document, 'bundles')
+        ? Effect.fail(
+            new SavedFlowFormatError({
+              code: 'bundles-require-versioned-session',
+            })
+          )
+        : Effect.void
+    )
+  )
+
 export const SavedVersionedFlowDocumentSchema = S.Union([
+  SavedBundleFlowDocumentSchema,
   SavedFlowDocumentSchema,
   SavedOriginFlowDocumentSchema,
   SavedPresentationFlowDocumentSchema,
@@ -458,6 +507,7 @@ export const SavedVersionedFlowDocumentSchema = S.Union([
 ])
 
 export const SavedVersionedFlowSessionSchema = S.Union([
+  SavedBundleFlowSessionSchema,
   SavedFlowSessionSchema,
   SavedOriginFlowSessionSchema,
   SavedPresentationFlowSessionSchema,
@@ -477,12 +527,18 @@ export type SavedVersionedFlowSession =
 
 /**
  * Choose the oldest envelope that represents the document: v1, then the v2
- * origin/native body, then v3 for presentation fields or v4 for route intent.
+ * origin/native body, v3 for presentation, v4 for route intent, or v5 for bundles.
  */
 export const encodeVersionedFlowDocument = (
   document: FlowDocument
 ): SavedVersionedFlowDocument => {
   Effect.runSync(validateFlowDocument(document))
+
+  if (Object.hasOwn(document, 'bundles')) {
+    return structuredClone(
+      S.encodeSync(SavedBundleFlowDocumentSchema)({ version: 5, document })
+    )
+  }
 
   if (hasRoutes(document)) {
     return structuredClone(
@@ -520,7 +576,7 @@ export const encodeVersionedFlowSession = (
 })
 
 const VersionedEnvelopeHeaderSchema = S.Struct({
-  version: S.Literals([1, 2, 3, 4]),
+  version: S.Literals([1, 2, 3, 4, 5]),
   document: S.Unknown,
 })
 
@@ -545,7 +601,11 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
       input
     )
 
-    if (header.version !== 4) {
+    if (header.version < 5) {
+      yield* rejectPreBundleEnvelope(input)
+    }
+
+    if (header.version < 4) {
       yield* rejectLegacySavedRoutes(input)
     }
 
@@ -562,6 +622,7 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
         Match.when(2, () => SavedOriginFlowDocumentSchema),
         Match.when(3, () => SavedPresentationFlowDocumentSchema),
         Match.when(4, () => SavedRouteFlowDocumentSchema),
+        Match.when(5, () => SavedBundleFlowDocumentSchema),
         Match.exhaustive
       )
     )(input)
@@ -590,7 +651,11 @@ export const decodeVersionedFlowSession = (input: unknown) =>
       input
     )
 
-    if (header.version !== 4) {
+    if (header.version < 5) {
+      yield* rejectPreBundleEnvelope(input)
+    }
+
+    if (header.version < 4) {
       yield* rejectLegacySavedRoutes(input)
     }
 
@@ -609,6 +674,7 @@ export const decodeVersionedFlowSession = (input: unknown) =>
         Match.when(2, () => SavedOriginFlowSessionSchema),
         Match.when(3, () => SavedPresentationFlowSessionSchema),
         Match.when(4, () => SavedRouteFlowSessionSchema),
+        Match.when(5, () => SavedBundleFlowSessionSchema),
         Match.exhaustive
       )
     )(input)

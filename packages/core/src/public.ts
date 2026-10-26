@@ -171,6 +171,7 @@ export {
   AddEdgesEditSchema,
   SetNodesEditSchema,
   SetEdgesEditSchema,
+  SetBundlesEditSchema,
   UpdateNodeEditSchema,
   UpdateEdgeEditSchema,
   UpdateNodeDataEditSchema,
@@ -1256,3 +1257,47 @@ export {
   flowRoutingRevision,
   getAutomaticRouteGeometry,
 } from './domain/flow-routing-geometry.ts'
+
+export {
+  FlowBundleSchema,
+  FlowBundleChangeSchema,
+  FlowBundleCommandSchema,
+  InvalidFlowBundle,
+} from './domain/flow-bundle.schema.ts'
+
+export type {
+  FlowBundle,
+  FlowBundleChange,
+  FlowBundleCommand,
+} from './domain/flow-bundle.schema.ts'
+
+export { editWireTies, flowBundleChanges } from './domain/flow-bundle.ts'
+
+export {
+  SavedBundleFlowDocumentSchema,
+  SavedBundleFlowSessionSchema,
+} from './domain/flow-persistence.ts'
+
+export type {
+  SavedBundleFlowDocument,
+  SavedBundleFlowSession,
+} from './domain/flow-persistence.ts'
+
+export {
+  FLOW_BUNDLE_LANE_SPACING,
+  flowBundleEndpoints,
+  flowBundleFrame,
+  flowBundleLane,
+  flowBundleSpline,
+  getBundleRouteGeometry,
+} from './domain/flow-bundle-geometry.ts'
+
+export {
+  intersectFlowWireSlash,
+  flowWireSlash,
+} from './domain/flow-bundle-slash.ts'
+
+export {
+  flowBundleAffectedEdges,
+  flowBundleEndpointNodeIds,
+} from './domain/flow-bundle-dependencies.ts'

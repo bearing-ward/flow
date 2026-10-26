@@ -1850,6 +1850,11 @@ export const FlowCanvas = defineComponent({
         : S.decodeUnknownSync(FlowRoutingResultSchema)(props.edgeRouting)
     )
 
+    const usesBundleRoute = (edge: FlowEdge): boolean =>
+      activeDocument.value.bundles?.some(({ edgeIds }) =>
+        edgeIds.includes(edge.id)
+      ) === true
+
     const automaticRoute = (
       edge: FlowEdge,
       source: XYPosition,
@@ -10027,7 +10032,7 @@ export const FlowCanvas = defineComponent({
 
       return {
         path:
-          routeEditor.points(edge) === undefined
+          usesBundleRoute(edge) || routeEditor.points(edge) === undefined
             ? (automaticRoute(edge, sourceAnchor, targetAnchor)?.path ??
               edgePath(
                 edge.path,
@@ -10204,7 +10209,9 @@ export const FlowCanvas = defineComponent({
         return []
       }
 
-      const controls: VNode[] = routeEditor.render(edge)
+      const controls: VNode[] = usesBundleRoute(edge)
+        ? []
+        : routeEditor.render(edge)
 
       if (edge.selected === true) {
         for (const endpoint of ['source', 'target'] as const) {
@@ -10594,7 +10601,7 @@ export const FlowCanvas = defineComponent({
 
       return (
         edgeLabelAnchor(edge) ??
-        (routeEditor.points(edge) === undefined
+        (usesBundleRoute(edge) || routeEditor.points(edge) === undefined
           ? (automaticRoute(edge, source, target)?.label ??
             edgeLabelPosition(
               source,

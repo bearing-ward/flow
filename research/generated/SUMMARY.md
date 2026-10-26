@@ -4,6 +4,10 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project. Long-form plan and review narratives that used to live here are archived verbatim in [docs/archive/PROGRESS-narratives-2026-10-13.md](../docs/archive/PROGRESS-narratives-2026-10-13.md).
 
+### Desired features completed (2026-10-26)
+
+- [x] Wire ties, Plan 163: document bundles and v5 persistence; four-unit lane splines; toolbar slash guide/count; second ties; focusable perpendicular markers; live drag, capture/cancellation and auto-pan; removal, reconnection, deletion pruning, clipboard and history in Vanilla, Vue and Foldkit. All 57 browser cases pass, 19 per host, including shared routing around obstacles between ties. See [wire ties](../docs/wire-ties.md) and the [research trace](traces/163-wire-ties.md). This desired feature is outside the parity catalog.
+
 ### Current status (2026-10-14)
 
 - Latest integrated features: `connectionDragThreshold` (Plan 098) and `nodeDragThreshold` (Plan 099) in Vanilla, Vue, and Foldkit.

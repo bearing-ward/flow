@@ -1,5 +1,6 @@
 import { Effect, Schema as S } from 'effect'
 
+import { pruneFlowBundles } from './flow-bundle-pruning.ts'
 import { ActiveConnectionSchema } from './flow-connection.schema.ts'
 import { MeasuredHandleSchema } from './flow-edge.schema.ts'
 import {
@@ -1136,10 +1137,10 @@ export const applyEdgeRemoveChange = (
     return
   }
 
-  return {
+  return pruneFlowBundles({
     ...document,
     edges: document.edges.filter((item) => item.id !== change.edgeId),
-  }
+  })
 }
 
 export const SetNodePositionCommandSchema = S.Struct({

@@ -21,7 +21,7 @@ type Point = { readonly x: number; readonly y: number }
 
 `FlowRoutePoint`, `FlowRoutePoints`, `FlowEdgeRoute`, and `FlowRouteChange` derive from their Effect schemas. Later document bundles can reuse the point schemas while owning their own membership and point order. This contract contains no bundle references, generated router paths, or browser measurements.
 
-Manual routes produce an SVG polyline through the current anchors and interior points. Labels sit at half the total path length. Coincident endpoint segments collapse in rendered geometry without changing authored points. Edge distance, rectangle selection, and intersection helpers consume the same path. Automatic routes retain the edge's existing `path` algorithm.
+Manual routes produce an SVG polyline through the current anchors and interior points. A [wire bundle](wire-ties.md) takes precedence while the edge is bundled; unbundling restores its retained manual intent. Labels sit at half the total path length. Coincident endpoint segments collapse in rendered geometry without changing authored points. Edge distance, rectangle selection, and intersection helpers consume the same path. Automatic routes retain the edge's existing `path` algorithm.
 
 ## Host APIs and gestures
 
@@ -45,7 +45,7 @@ Holding Space before a pointer connection begins selects freeform mode for that 
 
 Point previews do not change accepted state. Each committed point drag, insertion, removal, or keyboard action uses the existing [transaction history](transaction-history.md). Reconnection and endpoint motion retain interior graph coordinates. A rejected controlled proposal records no history entry.
 
-`encodeVersionedFlowDocument` and `encodeVersionedFlowSession` choose version 4 whenever an edge owns a route field, including explicit automatic mode. V4 extends the frozen v3 saved edge projection. Older writers and mislabeled older envelopes reject route-bearing input with `route-requires-versioned-session` rather than discard route intent.
+`encodeVersionedFlowDocument` and `encodeVersionedFlowSession` choose version 4 whenever an edge owns a route field, including explicit automatic mode. V4 extends the frozen v3 saved edge projection. Documents that own wire bundles use v5. Older writers and mislabeled older envelopes reject route-bearing input with `route-requires-versioned-session` rather than discard route intent.
 
 The [session clipboard](graph-clipboard.md) preserves route fields and opaque data. Paste translates manual points by the same graph-space offset as the copied roots, before extension hooks. Endpoint and handle ID remapping remains unchanged.
 
