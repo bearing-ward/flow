@@ -20,11 +20,11 @@ Accessed 2026-10-25: [custom nodes](https://reactflow.dev/learn/customization/cu
 
 Real browser entries are the recipe HTML module scripts: `apps/vanilla/ui-recipes/subflows/index.html:10`, `apps/vue/ui-recipes/subflows/index.html:54`, and `apps/foldkit/ui-recipes/subflows/index.html:10`. Layout and whiteboard use sibling recipe HTML entries. These runnable recipes exercise public host APIs; their status elements are test instrumentation, not separate graph implementations.
 
-Vanilla recipes mount with `mountFlow`, for example `apps/vanilla/src/ui/subflows-recipes.ts:153`. `setNodes` creates an edit transaction at `apps/vanilla/src/mount-flow.ts:14333`; `applyEditResolved` reads the current authoritative document, prepares it and publishes an edit proposal at `apps/vanilla/src/mount-flow.ts:13856`. Uncontrolled proposals are accepted and reconciled at `apps/vanilla/src/mount-flow.ts:8481`. Core decodes the transaction, applies operations and validates the final document at `packages/core/src/domain/flow-edit.ts:241`. Node projection uses graph absolute positions at `apps/vanilla/src/mount-flow.ts:8578` and applies the DOM transform at `apps/vanilla/src/mount-flow.ts:1714`. Custom SVG content is owned by the recipe renderer, for example `apps/vanilla/src/ui/whiteboard-recipes.ts:62`.
+Vanilla recipes mount with `mountFlow`, for example `apps/vanilla/src/ui/subflows-recipes.ts:153`. `setNodes` creates an edit transaction at `apps/vanilla/src/mount-flow.ts:14356`; `applyEditResolved` reads the current authoritative document, prepares it and publishes an edit proposal at `apps/vanilla/src/mount-flow.ts:13870`. Uncontrolled proposals are accepted and reconciled at `apps/vanilla/src/mount-flow.ts:8494`. Core decodes the transaction, applies operations and validates the final document at `packages/core/src/domain/flow-edit.ts:241`. Node projection uses graph absolute positions at `apps/vanilla/src/mount-flow.ts:8591` and applies the DOM transform at `apps/vanilla/src/mount-flow.ts:1724`. Custom SVG content is owned by the recipe renderer, for example `apps/vanilla/src/ui/whiteboard-recipes.ts:62`.
 
-Vue recipes compose `FlowCanvas` and `useFlow`, for example `apps/vue/src/subflows-recipes.ts:227`. Public `setNodes` maps to editor transactions at `packages/vue/src/use-flow.ts:661`; `FlowCanvas` prepares them at `packages/vue/src/flow-canvas.ts:4391`. Controlled mode emits proposals instead of silently accepting them at `packages/vue/src/flow-canvas.ts:4423`; these recipes use an uncontrolled default document, accepted into `ownedDocument` at `packages/vue/src/flow-canvas.ts:4452`. Rendering assigns absolute positions to node DOM styles at `packages/vue/src/flow-canvas.ts:9116`. Vue waits a frame after a committed drop before reading reparent bounds at `apps/vue/src/subflows-recipes.ts:205`.
+Vue recipes compose `FlowCanvas` and `useFlow`, for example `apps/vue/src/subflows-recipes.ts:227`. Public `setNodes` maps to editor transactions at `packages/vue/src/use-flow.ts:661`; `FlowCanvas` prepares them at `packages/vue/src/flow-canvas.ts:4424`. Controlled mode emits proposals instead of silently accepting them at `packages/vue/src/flow-canvas.ts:4456`; these recipes use an uncontrolled default document, accepted into `ownedDocument` at `packages/vue/src/flow-canvas.ts:4485`. Rendering assigns absolute positions to node DOM styles at `packages/vue/src/flow-canvas.ts:9149`. Vue waits a frame after a committed drop before reading reparent bounds at `apps/vue/src/subflows-recipes.ts:205`.
 
-Foldkit recipes embed the reusable program through `mountRecipeHost` at `apps/foldkit/ui-recipes/recipe-host.ts:96`, decoding the initial document and selecting uncontrolled document/viewport ownership at line 124. Edits reach the adapter command handler at `packages/foldkit/src/graph.ts:1282`, which prepares the core transaction and reports its result. The recipe sends edit requests at `apps/foldkit/ui-recipes/recipe-host.ts:176` and receives accepted documents at `apps/foldkit/ui-recipes/recipe-host.ts:261`. Graph projection selects absolute position and node size at `packages/foldkit/src/graph.ts:7419`; the DOM styles and custom renderer are at `packages/foldkit/src/graph.ts:7437` and `packages/foldkit/src/graph.ts:7582`. Layout acknowledges a result only after the DOM and fitted viewport match at `apps/foldkit/ui-recipes/layout/main.ts:219`.
+Foldkit recipes embed the reusable program through `mountRecipeHost` at `apps/foldkit/ui-recipes/recipe-host.ts:96`, decoding the initial document and selecting uncontrolled document/viewport ownership at line 124. Edits reach the adapter command handler at `packages/foldkit/src/graph.ts:1290`, which prepares the core transaction and reports its result. The recipe sends edit requests at `apps/foldkit/ui-recipes/recipe-host.ts:176` and receives accepted documents at `apps/foldkit/ui-recipes/recipe-host.ts:261`. Graph projection selects absolute position and node size at `packages/foldkit/src/graph.ts:7340`; the DOM styles and custom renderer are at `packages/foldkit/src/graph.ts:7358` and `packages/foldkit/src/graph.ts:7503`. Layout acknowledges a result only after the DOM and fitted viewport match at `apps/foldkit/ui-recipes/layout/main.ts:219`.
 
 Input contracts are schema-derived `FlowNode`, `FlowEdge` and `FlowDocument`, with JSON node/edge data at `packages/core/src/domain/flow.schema.ts:145`, `packages/core/src/domain/flow.schema.ts:307` and `packages/core/src/domain/flow.schema.ts:338`. Grouping consumes nodes plus measured bounds and emits replacement nodes or a rejection at `packages/core/src/domain/flow-grouping.ts:73`. Layout consumes measured `FlowLayoutInput` at `packages/core/src/domain/flow-layout.ts:50` and produces positions applied at `packages/core/src/domain/flow-layout.ts:132`. Freehand consumes graph-space points and emits a quadratic SVG path at `packages/core/src/domain/flow-freeform.ts:229`. Versioned persistence encodes/decodes documents at `packages/core/src/domain/flow-persistence.ts:424` and `packages/core/src/domain/flow-persistence.ts:478`; it does not save recipe closures, history stacks or network rooms.
 
@@ -49,16 +49,16 @@ Every outcome table names an evidence group. The same groups, expanded to exact 
 ### edit
 
 - shared production: `packages/core/src/domain/flow-edit.ts:241`, `packages/core/src/domain/flow.schema.ts:338`.
-- vanilla production: `apps/vanilla/src/mount-flow.ts:13854`, `apps/vanilla/src/mount-flow.ts:14333`.
-- vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4406`.
-- foldkit production: `packages/foldkit/src/instance.ts:409`, `packages/foldkit/src/graph.ts:1282`.
+- vanilla production: `apps/vanilla/src/mount-flow.ts:13868`, `apps/vanilla/src/mount-flow.ts:14356`.
+- vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4439`.
+- foldkit production: `packages/foldkit/src/instance.ts:410`, `packages/foldkit/src/graph.ts:1290`.
 
 ### render
 
 - shared production: `packages/core/src/domain/flow.schema.ts:145`.
-- vanilla production: `apps/vanilla/src/ui/whiteboard-recipes.ts:62`, `apps/vanilla/src/mount-flow.ts:8570`.
-- vue production: `apps/vue/src/whiteboard-recipes.ts:63`, `packages/vue/src/flow-canvas.ts:9116`.
-- foldkit production: `apps/foldkit/ui-recipes/whiteboard/main.ts:62`, `packages/foldkit/src/graph.ts:7582`.
+- vanilla production: `apps/vanilla/src/ui/whiteboard-recipes.ts:62`, `apps/vanilla/src/mount-flow.ts:8583`.
+- vue production: `apps/vue/src/whiteboard-recipes.ts:63`, `packages/vue/src/flow-canvas.ts:9149`.
+- foldkit production: `apps/foldkit/ui-recipes/whiteboard/main.ts:62`, `packages/foldkit/src/graph.ts:7503`.
 
 ### preview
 
@@ -139,7 +139,7 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 
 ### path
 
-- shared production: `packages/core/src/domain/flow-edge-path.ts:26`, `packages/core/src/domain/flow-edge-geometry.ts:618`.
+- shared production: `packages/core/src/domain/flow-edge-path.ts:26`, `packages/core/src/domain/flow-edge-geometry.ts:623`.
 - vanilla tests: `apps/vanilla/e2e/renderer-props.e2e.ts:153`.
 - vue tests: `apps/vue/e2e/renderer-props.e2e.ts:125`.
 - foldkit tests: `apps/foldkit/e2e/renderer-props.e2e.ts:150`.
@@ -147,9 +147,9 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 ### grid
 
 - shared production: `packages/core/src/domain/flow-snap-grid.schema.ts:34`.
-- vanilla production: `apps/vanilla/src/mount-flow.ts:468`.
-- vue production: `packages/vue/src/flow-canvas.ts:879`.
-- foldkit production: `packages/foldkit/src/graph.ts:936`.
+- vanilla production: `apps/vanilla/src/mount-flow.ts:470`.
+- vue production: `packages/vue/src/flow-canvas.ts:882`.
+- foldkit production: `packages/foldkit/src/graph.ts:944`.
 
 ### shape-minimap
 
@@ -159,7 +159,7 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 
 ### visibility
 
-- shared production: `packages/core/src/domain/flow.schema.ts:159`, `packages/core/src/domain/flow-graph.ts:151`, `packages/core/src/domain/flow-edge-geometry.ts:183`. Host edit/persistence entry points are listed under `persist`.
+- shared production: `packages/core/src/domain/flow.schema.ts:159`, `packages/core/src/domain/flow-graph.ts:151`, `packages/core/src/domain/flow-edge-geometry.ts:186`. Host edit/persistence entry points are listed under `persist`.
 
 ### export
 
@@ -171,9 +171,9 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 ### persist
 
 - shared production: `packages/core/src/domain/flow-persistence.ts:424`, `packages/core/src/domain/flow-persistence.ts:478`.
-- vanilla production: `apps/vanilla/src/mount-flow.ts:14333`.
+- vanilla production: `apps/vanilla/src/mount-flow.ts:14356`.
 - vue production: `packages/vue/src/use-flow.ts:661`.
-- foldkit production: `packages/foldkit/src/instance.ts:409`.
+- foldkit production: `packages/foldkit/src/instance.ts:410`.
 
 ### studio-history
 
@@ -181,7 +181,7 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 - shared tests: `apps/shared/schema-studio/model.test.ts:206`.
 - vanilla production: `apps/vanilla/schema-studio/main.ts:394`, `apps/vanilla/schema-studio/main.ts:1447`.
 - vanilla tests: `apps/vanilla/e2e/schema-studio.e2e.ts:1013`.
-- vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4406`.
+- vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4439`.
 - foldkit production: `apps/foldkit/schema-studio/model.ts:525`, `apps/foldkit/schema-studio/main.ts:812`.
 - foldkit tests: `apps/foldkit/e2e/schema-studio.e2e.ts:1031`.
 
@@ -190,7 +190,7 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 - shared production: `apps/shared/schema-studio/model.ts:242`.
 - vanilla production: `apps/vanilla/schema-studio/main.ts:541`, `apps/vanilla/schema-studio/main.ts:1465`.
 - vanilla tests: `apps/vanilla/e2e/schema-studio.e2e.ts:1078`.
-- vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4406`.
+- vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4439`.
 - foldkit production: `apps/foldkit/schema-studio/model.ts:266`, `apps/foldkit/schema-studio/model.ts:563`.
 - foldkit tests: `apps/foldkit/e2e/schema-studio.e2e.ts:1100`.
 

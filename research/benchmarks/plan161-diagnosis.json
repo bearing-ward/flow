@@ -1998,6 +1998,47 @@
     "result": "No failing endpoint: baseline c6cee41, Plan 152 aeabc25, and current 7d78b9b each passed 3/3 isolated runs. A first bad commit cannot be established.",
     "historicalTimeoutAttribution": "Concurrent-agent load, as supplied by the user. Isolated runs here did not reproduce it."
   },
+  "verification": {
+    "focused": {
+      "result": "passed",
+      "elapsedSeconds": 1683.167,
+      "reactReferencePassed": 238,
+      "vanillaPassed": 981,
+      "vanillaSkipped": 4,
+      "vuePassed": 1114,
+      "vueSkipped": 2,
+      "foldkitPassed": 738
+    },
+    "sleepInterruptedFull": {
+      "result": "failed",
+      "sleepAtLocal": "2026-10-26 14:27:55 -0400",
+      "wakeAtLocal": "2026-10-26 15:30:40 -0400",
+      "powerLogReason": "Clamshell Sleep",
+      "vuePassed": 1130,
+      "vueSkipped": 2,
+      "vueFailed": 11
+    },
+    "consecutiveFullPasses": [
+      {
+        "result": "passed",
+        "elapsedSeconds": 1580.044,
+        "vanillaPassed": 1010,
+        "vanillaSkipped": 4,
+        "vuePassed": 1141,
+        "vueSkipped": 2,
+        "foldkitPassed": 744
+      },
+      {
+        "result": "passed",
+        "elapsedSeconds": 1583.896,
+        "vanillaPassed": 1010,
+        "vanillaSkipped": 4,
+        "vuePassed": 1141,
+        "vueSkipped": 2,
+        "foldkitPassed": 744
+      }
+    ]
+  },
   "timingSummary": {
     "baseline": {
       "runs": 3,
@@ -2022,6 +2063,14 @@
       "medianTestSeconds": 13.492,
       "minTestSeconds": 13.378,
       "maxTestSeconds": 13.66
+    },
+    "mergedAfterPlan162": {
+      "mergedMain": "5fda81a",
+      "runs": 5,
+      "testDurationsSeconds": [14.683, 13.9, 13.611, 13.943, 14.486],
+      "medianTestSeconds": 13.943,
+      "minTestSeconds": 13.611,
+      "maxTestSeconds": 14.683
     }
   }
 }
