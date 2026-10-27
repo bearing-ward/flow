@@ -57,6 +57,7 @@ export {
   WorkflowEditError,
   createWorkflowNode,
   prepareWorkflowEdit,
+  prepareWorkflowConnection,
 } from './workflow-edit.ts'
 
 export type {
@@ -65,3 +66,20 @@ export type {
   WorkflowIds,
   WorkflowEditFailure,
 } from './workflow-edit.ts'
+
+export {
+  WorkflowValidationReportSchema,
+  WorkflowExecutionPlanSchema,
+  WorkflowPreparationSchema,
+  WorkflowRevisionError,
+  workflowValidationReport,
+  createWorkflowExecutionPlan,
+  prepareWorkflowExecution,
+} from './workflow-preparation.ts'
+
+export type {
+  WorkflowValidationReport,
+  WorkflowExecutionPlan,
+  WorkflowPreparation,
+  WorkflowPreparationFailure,
+} from './workflow-preparation.ts'

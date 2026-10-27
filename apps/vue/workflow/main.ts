@@ -8,6 +8,8 @@ import {
   onMounted,
   onScopeDispose,
   getCurrentInstance,
+  computed,
+  shallowRef,
 } from 'vue'
 
 import {
@@ -15,6 +17,11 @@ import {
   workflowDocument,
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
+import {
+  workflowValidationSnapshot,
+  workflowDocumentChanged,
+  workflowCanvasConnection,
+} from '../../shared/workflow/validation.ts'
 
 import '../../shared/workflow/style.css'
 
@@ -30,9 +37,21 @@ const Demo = defineComponent({
   setup() {
     const flow = useFlow()
     const instance = getCurrentInstance()
+    const revision = shallowRef(0)
+
+    const validation = computed(() =>
+      workflowValidationSnapshot(flow.document.value, revision.value)
+    )
+
     let release: (() => void) | undefined
     onMounted(() => {
       const controls = mountWorkflowControls({
+        snapshot: () => Promise.resolve(validation.value),
+        replace: (document) => {
+          flow.updateDocument(document)
+
+          return Promise.resolve()
+        },
         document: () => Promise.resolve(flow.document.value),
         edit: async (transaction) => {
           await flow.applyEdit(transaction)
@@ -49,7 +68,16 @@ const Demo = defineComponent({
         dispose: () => instance?.appContext.app.unmount(),
       })
 
-      const stop = flow.subscribeState(() => {
+      const stop = flow.subscribeState((change) => {
+        if (
+          workflowDocumentChanged(
+            change.previous.document,
+            change.current.document
+          )
+        ) {
+          revision.value += 1
+        }
+
         void controls.refresh()
       })
 
@@ -66,6 +94,12 @@ const Demo = defineComponent({
         defaultViewport: { x: 0, y: 0, zoom: 1 },
         nodeTypes: { workflow: WorkflowNode },
         autoPanOnNodeFocus: false,
+        defaultEdgeOptions: {
+          data: { workflow: { version: 1, kind: 'data' } },
+        },
+        isValidConnection: (
+          candidate: Parameters<typeof workflowCanvasConnection>[1]
+        ) => workflowCanvasConnection(flow.document.value, candidate),
       })
   },
 })

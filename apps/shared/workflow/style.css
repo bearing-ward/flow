@@ -128,3 +128,24 @@ label {
   color: #1d4ed8;
   background: #eff6ff;
 }
+
+#validation {
+  padding: 12px;
+  border-top: 1px solid #cbd5e1;
+}
+#validation-report {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#validation output {
+  display: block;
+  margin: 8px 0;
+}
+#validation button {
+  margin: 4px;
+}
+#workflow-import {
+  display: block;
+  margin: 12px;
+  width: min(600px, calc(100% - 24px));
+}
