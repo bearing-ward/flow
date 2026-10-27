@@ -1,6 +1,7 @@
 import '@flow/vue/style.css'
 import type { FlowNode } from '@flow/core'
-import { FlowCanvas, FlowProvider, useFlow } from '@flow/vue'
+import { FlowCanvas, FlowProvider, useFlow, StatusIndicator } from '@flow/vue'
+import type { WorkflowRunState } from '@flow/workflow'
 import {
   createApp,
   defineComponent,
@@ -18,18 +19,16 @@ import {
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
 import {
+  createWorkflowRunOwner,
+  workflowStatus,
+} from '../../shared/workflow/run-owner.ts'
+
+import '../../shared/workflow/style.css'
+import {
   workflowValidationSnapshot,
   workflowDocumentChanged,
   workflowCanvasConnection,
 } from '../../shared/workflow/validation.ts'
-
-import '../../shared/workflow/style.css'
-
-const WorkflowNode = defineComponent(
-  (props: { node: FlowNode }) => () =>
-    h('div', { class: 'workflow-card' }, workflowCaption(props.node)),
-  { props: ['node'] }
-)
 
 const initial = workflowDocument()
 
@@ -38,6 +37,32 @@ const Demo = defineComponent({
     const flow = useFlow()
     const instance = getCurrentInstance()
     const revision = shallowRef(0)
+    const runState = shallowRef<WorkflowRunState | null>(null)
+    const runs = createWorkflowRunOwner(() => revision.value)
+
+    const stopRuns = runs.subscribe(() => {
+      runState.value = runs.state()
+    })
+
+    const WorkflowNode = defineComponent(
+      (props: { node: FlowNode }) => () => {
+        const state = runState.value?.nodes[props.node.id]?.state
+
+        return h('div', [
+          h('div', { class: 'workflow-card' }, workflowCaption(props.node)),
+          h(StatusIndicator, {
+            status: state === undefined ? 'waiting' : workflowStatus(state),
+            label: props.node.id,
+          }),
+          h(
+            'span',
+            { 'data-run-node-state': state ?? 'idle' },
+            state ?? 'No run'
+          ),
+        ])
+      },
+      { props: ['node'] }
+    )
 
     const validation = computed(() =>
       workflowValidationSnapshot(flow.document.value, revision.value)
@@ -46,6 +71,7 @@ const Demo = defineComponent({
     let release: (() => void) | undefined
     onMounted(() => {
       const controls = mountWorkflowControls({
+        runs,
         snapshot: () => Promise.resolve(validation.value),
         replace: (document) => {
           flow.updateDocument(document)
@@ -76,6 +102,7 @@ const Demo = defineComponent({
           )
         ) {
           revision.value += 1
+          runs.invalidate()
         }
 
         void controls.refresh()
@@ -86,13 +113,17 @@ const Demo = defineComponent({
         controls.dispose()
       }
     })
-    onScopeDispose(() => release?.())
+    onScopeDispose(() => {
+      stopRuns()
+      void runs.dispose()
+      release?.()
+    })
 
     return () =>
       h(FlowCanvas, {
         defaultDocument: initial,
         defaultViewport: { x: 0, y: 0, zoom: 1 },
-        nodeTypes: { workflow: WorkflowNode },
+        nodeTypes: { workflow: WorkflowNode, default: WorkflowNode },
         autoPanOnNodeFocus: false,
         defaultEdgeOptions: {
           data: { workflow: { version: 1, kind: 'data' } },

@@ -28,14 +28,18 @@ import type {
 } from '@flow/workflow'
 import { Effect, Option, Result, Schema as S } from 'effect'
 
+import { mountWorkflowRunControls } from './run-controls.ts'
+import type { WorkflowRunOwner } from './run-owner.ts'
 import { mountWorkflowValidation } from './validation-controls.ts'
 import type { WorkflowValidationSnapshot } from './validation.ts'
 
 interface WorkflowValidationControlsOwner {
   controls?: ReturnType<typeof mountWorkflowValidation>
+  runs?: ReturnType<typeof mountWorkflowRunControls>
 }
 
 export interface WorkflowOwner {
+  readonly runs: WorkflowRunOwner
   readonly snapshot: () => Promise<WorkflowValidationSnapshot>
   readonly document: () => Promise<FlowDocument>
   readonly replace: (document: FlowDocument) => Promise<void>
@@ -423,7 +427,9 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       output.readOnly = true
       output.setAttribute('aria-label', 'Run output')
       output.value = 'No run output.'
+      output.dataset.runOutput = id
       panel.append(output)
+      validationState.runs?.render()
 
       if (latestSnapshot !== undefined) {
         validationState.controls?.annotateFields(id, latestSnapshot)
@@ -439,6 +445,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
 
       latestSnapshot = snapshot
       validationState.controls?.refresh(snapshot)
+      validationState.runs?.refresh(snapshot)
 
       if (selectedNode !== undefined) {
         validationState.controls?.annotateFields(selectedNode, snapshot)
@@ -506,6 +513,15 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
     configure: actions.configure,
     changed: actions.refresh,
     allocate: () => ids.allocate('edge'),
+  })
+
+  validationState.runs = mountWorkflowRunControls({
+    runs: owner.runs,
+    controls,
+    panel,
+    canvas,
+    snapshot: owner.snapshot,
+    button,
   })
 
   const add = async (
@@ -694,6 +710,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
     abort.abort()
     edgeActions.remove()
     validationState.controls?.dispose()
+    validationState.runs?.dispose()
     importInput.remove()
   }
 

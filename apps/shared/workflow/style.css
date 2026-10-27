@@ -149,3 +149,15 @@ label {
   margin: 12px;
   width: min(600px, calc(100% - 24px));
 }
+
+#workflow-run {
+  padding: 12px;
+  border-top: 1px solid #cbd5e1;
+}
+
+#run-state {
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

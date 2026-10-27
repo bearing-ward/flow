@@ -35,6 +35,10 @@ export {
   WorkflowRunRequestSchema,
   WorkflowValueSchema,
   WorkflowNodeEventSchema,
+  WorkflowOutputsSchema,
+  WorkflowRunEventSchema,
+  WorkflowRunStateSchema,
+  WorkflowRuntimeError,
 } from './workflow-execution.schema.ts'
 
 export type {
@@ -42,6 +46,9 @@ export type {
   WorkflowRunRequest,
   WorkflowValue,
   WorkflowNodeEvent,
+  WorkflowOutputs,
+  WorkflowRunEvent,
+  WorkflowRunState,
 } from './workflow-execution.schema.ts'
 
 export { baseWorkflowFixture, aiWorkflowFixture } from './fixtures.ts'
@@ -76,6 +83,19 @@ export {
   createWorkflowExecutionPlan,
   prepareWorkflowExecution,
 } from './workflow-preparation.ts'
+
+export {
+  startWorkflowRun,
+  evaluateOfflineWorkflowNode,
+} from './workflow-runner.ts'
+
+export type {
+  WorkflowEvaluation,
+  WorkflowEvaluator,
+  WorkflowRunSession,
+} from './workflow-runner.ts'
+
+export { reduceWorkflowRunEvent } from './workflow-run-state.ts'
 
 export type {
   WorkflowValidationReport,

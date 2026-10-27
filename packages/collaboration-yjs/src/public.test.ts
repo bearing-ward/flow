@@ -15,6 +15,7 @@ import {
   baseWorkflowFixture,
   aiWorkflowFixture,
   decodeWorkflowDocument,
+  startWorkflowRun,
 } from '@flow/workflow'
 import { Effect, Exit, Scope } from 'effect'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -200,7 +201,7 @@ describe('Yjs room over real y-websocket', () => {
     }
   })
 
-  it('synchronizes workflow contracts and preserves configuration through local room undo', async () => {
+  it('keeps runs transient between real peers and preserves configuration through local room undo', async () => {
     const room = crypto.randomUUID()
     const a = await open(room, 'workflow-a')
     const b = await open(room, 'workflow-b')
@@ -224,6 +225,37 @@ describe('Yjs room over real y-websocket', () => {
       expect(
         Effect.runSync(decodeWorkflowDocument(b.client.document()))
       ).toStrictEqual(base)
+      const beforeRun = structuredClone(a.client.document())
+      const states: string[] = []
+      await Effect.runPromise(
+        Effect.scoped(
+          Effect.gen(function* runInRoom() {
+            const run = yield* startWorkflowRun(
+              { document: beforeRun, revision: 0 },
+              {
+                runId: 'room-local',
+                expectedRevision: 0,
+                onEvent: (event) => {
+                  if (event.kind === 'run') {
+                    states.push(event.state)
+                  }
+                },
+              }
+            )
+
+            yield* run.await
+          })
+        )
+      )
+      expect({
+        states,
+        local: a.client.document(),
+        remote: b.client.document(),
+      }).toStrictEqual({
+        states: ['queued', 'running', 'succeeded'],
+        local: beforeRun,
+        remote: beforeRun,
+      })
       Effect.runSync(a.client.commit(a.client.document(), ai))
       await expect
         .poll(() =>
