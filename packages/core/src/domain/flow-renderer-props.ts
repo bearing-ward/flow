@@ -6,6 +6,7 @@ import {
   getStraightPath,
 } from './flow-edge-path.ts'
 import { edgeLabelPosition, resolveEdgeHandles } from './flow-edge.schema.ts'
+import { graphNodeBounds } from './flow-graph.ts'
 import type { FlowGraphNode, FlowGraphView } from './flow-graph.ts'
 import {
   isNodeConnectable,
@@ -45,10 +46,7 @@ export interface FlowNodeBounds {
 export const flowNodeBounds = (graphNode: FlowGraphNode): FlowNodeBounds => ({
   id: graphNode.node.id,
   node: graphNode.node,
-  x: graphNode.absolutePosition.x,
-  y: graphNode.absolutePosition.y,
-  width: graphNode.dimensions.width,
-  height: graphNode.dimensions.height,
+  ...graphNodeBounds(graphNode),
 })
 
 /** Host-neutral props for a custom edge renderer, modeled on React Flow `EdgeProps`. */

@@ -1,0 +1,59 @@
+# Plan 167: rotatable node
+
+## Reference and observed outcomes
+
+Public page: https://reactflow.dev/examples/nodes/rotatable-node, accessed 2026-10-26. Its runnable example is https://example-apps.xyflow.com/react/examples/nodes/rotatable-node/index.html. The page describes a custom node with CSS transforms. The deployed source is https://example-apps.xyflow.com/assets/230-CkZU11NN.js, read on the same date.
+
+The source renders a rotation control and both connection handles inside the rotated element. D3 drag computes an angle from the pointer around a fixed `(100, 100)` center, updates React component state, and calls `useUpdateNodeInternals(id)`. The angle is local component state. It is not written into the example's nodes or node data. The example supplies two nodes with left/right connection sides and a smooth-step edge.
+
+The reproducible DOM observation is `scripts/capture-rotatable-node-reference.ts`. The dated output is recorded in `research/fixtures/rotatable-node-reference.json`. The example source establishes local state ownership, not save/load or history support.
+
+The locked capture moved the control from above the measured center to its right. The visual reached 69.9083 degrees and both its handle box and edge path moved. The observed edge start was `(228.6184, 397.6362)`, while the source-handle box center was `(219.0329, 401.9904)`. That displacement does not follow the rotated outward source normal. Reloading reset the visual to zero. Flow intentionally uses the measured center and rotates the full attachment point; it does not reproduce the reference's fixed-center and bounding-box artifacts.
+
+## Design and ownership
+
+Two designs were compared before implementation. The first gives native hosts a transient rotation preview and keeps semantic edits in their existing document owners. The second adds a shared app-only DOM preview writer. The native design was selected because the DOM writer would compete with Vue/Foldkit rendering, bypass native gesture admission, and duplicate queued-message cancellation. The independent design review agreed. Shared app code supplies only fixture data, controls, and acceptance journeys.
+
+The caller supplies `node.rotation` and uses the existing public `updateNode(id, { rotation })` or `applyEdit` transaction. `FlowNodeRotationSchema` and the derived `FlowNode` own the decoded field in `packages/core/src/domain/flow-node-rotation.ts:8` and `packages/core/src/domain/flow.schema.ts:149`. This keeps rotation in the same document boundary as edits, clipboard, history, collaboration, and export. New core geometry and reducer logic live in one module; browser resources live with their host adapters.
+
+`startFlowRotation` captures the node ID, measured-box center, initial angle, and initial pointer angle at `packages/core/src/domain/flow-node-rotation.ts:35`. `reduceFlowRotation` handles move, complete, and cancel events at `packages/core/src/domain/flow-node-rotation.ts:50`. Moves preserve the grab offset and emit clockwise angles in `[0, 360)`. A center sample retains the prior angle. Completion and cancellation are terminal, and cancellation restores the exact baseline. Finite stored angles are allowed; trigonometry reduces them before evaluation.
+
+## Production call paths
+
+Vanilla's native document capture listener admits its rotation control through `apps/vanilla/src/node-rotation.ts:56`. The canvas composition injects existing pointer capture, viewport rendering, graph projection, click suppression, edit submission, and destruction at `apps/vanilla/src/mount-flow.ts:12520`. The preview changes the paint graph and complete wrapper transform. Dependency validation compares the current presentation angle, so obsolete paint passes cannot overwrite a newer preview. Release clears presentation after one accepted edit. Node handle creation remains with the wrapper renderer.
+
+Vue's rotation resource has the same pure-core gesture boundary at `packages/vue/src/node-rotation.ts:55`. Canvas composition installs the resource in its mounted scope at `packages/vue/src/flow-canvas.ts:4880`. A shallow preview ref feeds the existing measured graph at `packages/vue/src/flow-canvas.ts:1764`; wrapper rotation and edge attachment read that graph. Accepted documents remain unchanged during dragging. Document changes cancel the resource, and unmount removes listeners and frames.
+
+Foldkit owns its optional preview in `ModelSchema` at `packages/foldkit/src/graph.ts:518`. `selectLiveDocument` projects rotation into the presentation document at `packages/foldkit/src/graph.ts:2139`. Rotation messages clear that preview and submit one normal edit at `packages/foldkit/src/graph.ts:3867`. The pointer resource composes native rotation admission at `packages/foldkit/src/graph.ts:6555`. Gesture identities validate queued previews and commits; external barriers and disposal invalidate them before they can enter the update loop. The existing live graph drives the complete wrapper and actual edge path.
+
+Each resource verifies primary-button capture, excludes native gestures already in progress, and schedules auto-pan with the existing 40-pixel band, configured speed, and `autoPanOnNodeDrag` switch. Pointer cancellation, lost capture, Escape, blur, document replacement, and host disposal release capture, abort frames, and clear presentation. Auto-pan reprojects the latest pointer using the current viewport; cancellation restores the initial viewport. Logs use existing capture/cancel spans and structured node/input/reason attributes, without pointer-move logging. Accepted edits use existing semantic/failure spans. No collector delivery claim is made.
+
+## Geometry and other features
+
+`rotatedFlowBounds` encloses the rotated measured rectangle at `packages/core/src/domain/flow-node-rotation.ts:119`. Graph bounds, culling, fitView, public bounds, intersection, helper lines, minimap rectangles, custom edge bounds, and image framing consume it. Layout coordinates and dimensions stay unrotated. `unrotateFlowHandle` converts DOM centers back into local measurements at `packages/core/src/domain/flow-node-rotation.ts:139`. Each adapter samples the physical handle size and center before shared edge geometry rotates its full attachment offset.
+
+Grouping keeps physical boxes for parent-relative position conversion and uses the union of physical and rotated enclosures to size the group. This retains enough space for existing unrotated parent extents. Reparenting preserves the node's anchor and angle. Group transforms remain translation-only, so a rotated parent does not rotate its descendants. Parent extent and resize rules still constrain unrotated layout boxes. Shape nodes rotate their complete wrapper, including SVG, label, and handles. Rotation does not perform alignment snapping; ordinary dragging aligns the enclosing rectangle. Bezier and orthogonal tangents retain the declared cardinal side, while attachment coordinates follow rotation.
+
+The three packed-consumer type fixtures accept explicit v6 rotation sessions and reject unsupported v7, while retaining literal-v1 checks. Version 6 extends the frozen v5 body with the optional rotation field at `packages/core/src/domain/flow-persistence.ts:503`. Encoding selects v6 for any explicitly owned rotation, including zero, and otherwise retains the oldest representable v1-v5 format. Earlier envelopes containing rotation fail instead of discarding it. Legacy APIs return `rotation-requires-versioned-session`. Session viewport data, routes, bundles, origins, and presentation fields remain represented. Clipboard and room projections spread ordinary semantic node fields; they do not need another rotation store.
+
+## Test boundary and results
+
+Pure-core tests in `packages/core/src/domain/flow-node-rotation.test.ts:80` exercise decoding, offset-preserving angles, cancel/terminal behavior, enclosing bounds, culling, fitView, attachment points, inverse local measurements, helper lines, grouping/reparenting, clipboard, history, v6 round trips, older-envelope rejection, and image framing. These tests call exported/domain functions and do not prove rendered host output.
+
+The real Yjs peer test at `packages/collaboration-yjs/src/public.test.ts:80` commits rotation, observes it on another WebSocket peer, and verifies selective undo/redo. The full unit run passed 2,866 tests in 136 files. The focused rotation and grouping checks passed 31 tests, including 14 rotation cases.
+
+The production browser journeys are in `apps/shared/rotatable-node/acceptance.ts`. Each host registers the same suite at `apps/vanilla/e2e/rotatable-node.e2e.ts:1`, `apps/vue/e2e/rotatable-node.e2e.ts:1`, and `apps/foldkit/e2e/rotatable-node.e2e.ts:1`. It drags actual controls, inspects actual SVG path endpoints against transformed physical handle geometry, and tests native viewport input, shape rendering, noncentral refreshed handles, one-step undo/redo, v6 save/load, clipboard, cancellation, auto-pan, replacement, and disposal. These recipes use each host's normal public APIs and native renderer, without a test-only rendering path.
+
+Locked acceptance passes: Vanilla 15/15, Vue 15/15, and Foldkit 15/15. The source fixture now declares border-box sizing. Rotation coordinate conversion excludes the canvas border. Foldkit enables the recipe's native zoom and connection validation, and consumes the rotation release click before the mouse observer can clear selection. Each correction retained the assertions and was followed by a fresh all-host run. The configured Vanilla suite also exposed an extra window blur listener. A locked focused rerun reproduced it; rotation cancellation now runs through each host's existing blur lifecycle, and the unchanged listener-count assertion passes.
+
+Catalog re-audit: Rotatable Node is C/C/C, with 196 of 198 in-scope entries close across all hosts. The historical discovery snapshot is unchanged. The recipe registry points all hosts to `/rotatable-node/` with public-API and acceptance evidence.
+
+The commit report records the final verification result. `verification.config.json` only adds the Plan 167 work description and browser files; no existing checks or tests are removed. The final required command is `scripts/with-flow-browser-lock.sh bun run verify --check reference-host`. It runs the configured focused profile, not `verify:full`.
+
+## Conformity and deviations
+
+- Conforming by reference source: a rotation control changes a complete node visual containing its connection handles, and updates edge geometry. The locked public capture verifies visible rotation, transformed handles, a changed edge path, and a reset on reload. All 45 host cases pass; exact attachment conformity is intentionally not claimed.
+- Intentionally different: Flow stores rotation in the decoded graph field and v6 persistence envelope. The reference stores local React component state. Plan 167 requires save/load, clipboard, collaboration, and undo, so Flow makes rotation semantic. Core, real-peer, and each-host browser tests name that boundary.
+- Intentionally different: Flow uses the measured center and preserves the grab offset instead of a fixed center offset. It rotates the full local handle attachment displacement and preserves existing cardinal path tangents. Rendered attachment tests, including zoom and refreshed noncentral handles, pass in every host and are the acceptance boundary.
+- Intentionally different: Flow defines enclosing bounds, translation-only groups, and cancellation behavior beyond this example. Core and host tests establish Flow's contract; source similarity does not establish upstream parity for these extensions.
+- Unverified: upstream save/load, history, clipboard, collaboration, grouping, and export outcomes are not supplied by this public example. No broad full-suite or collector-delivery parity claim follows from focused verification.

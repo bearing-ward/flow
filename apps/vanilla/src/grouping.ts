@@ -1,4 +1,4 @@
-import { getInternalNodeBounds, prepareFlowGrouping } from '@flow/core'
+import { getInternalNodeLayoutBounds, prepareFlowGrouping } from '@flow/core'
 import type { FlowGroupingActionInput } from '@flow/core'
 import { Effect } from 'effect'
 
@@ -14,7 +14,7 @@ export const createFlowGrouping = (controller: JavaScriptFlowController) => ({
         const internal = controller.getInternalNode(id)
 
         return internal?.measurementStatus === 'measured'
-          ? [[id, getInternalNodeBounds(internal).bounds] as const]
+          ? [[id, getInternalNodeLayoutBounds(internal).bounds] as const]
           : []
       })
     )

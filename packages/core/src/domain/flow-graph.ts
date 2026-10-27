@@ -1,5 +1,6 @@
 import { constrainNodePosition } from './flow-node-extent.schema.ts'
 import type { NodeExtent } from './flow-node-extent.schema.ts'
+import { rotatedFlowBounds } from './flow-node-rotation.ts'
 import { nodeAnchorToTopLeft, resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { NodeOrigin } from './flow-origin.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
@@ -255,12 +256,16 @@ export const graphDescendants = (
   return result
 }
 
-export const graphNodeBounds = (node: FlowGraphNode) => ({
-  x: node.absolutePosition.x,
-  y: node.absolutePosition.y,
-  width: node.dimensions.width,
-  height: node.dimensions.height,
-})
+export const graphNodeBounds = (node: FlowGraphNode) =>
+  rotatedFlowBounds(
+    {
+      x: node.absolutePosition.x,
+      y: node.absolutePosition.y,
+      width: node.dimensions.width,
+      height: node.dimensions.height,
+    },
+    node.node.rotation
+  )
 
 export const graphBounds = (
   graph: FlowGraphView,

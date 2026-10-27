@@ -78,7 +78,8 @@ export const flowBundleEndpoints = (
           measurements
             .get(node.id)
             ?.handles?.find(({ handleId }) => handleId === handle.id) ??
-            inferHandleMeasurement(node.id, handle, node.dimensions)
+            inferHandleMeasurement(node.id, handle, node.dimensions),
+          { ...node.dimensions, rotation: node.node.rotation }
         )
 
       return [

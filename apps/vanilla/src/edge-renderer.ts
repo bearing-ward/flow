@@ -1,4 +1,5 @@
 import {
+  unrotateFlowHandle,
   getAutomaticRouteGeometry,
   flowBundleAffectedEdges,
   bezierEdgePath,
@@ -63,6 +64,8 @@ export const measureNodeHandles = (
   zoom: number
 ): readonly MeasuredHandle[] => {
   const nodeBounds = element.getBoundingClientRect()
+  const rotation = Number(element.dataset.rotation ?? node.rotation ?? 0)
+  const rotated = rotation % 360 !== 0
   const handles = new Map<HandleId, MeasuredHandle>()
 
   for (const handleElement of element.querySelectorAll<HTMLElement>(
@@ -85,16 +88,31 @@ export const measureNodeHandles = (
     handles.set(handle.id, {
       nodeId: node.id,
       handleId: handle.id,
-      offset: {
-        x: localHandleCoordinate(
-          (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom
-        ),
-        y: localHandleCoordinate(
-          (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom
-        ),
-      },
-      width: bounds.width / zoom,
-      height: bounds.height / zoom,
+      offset: (() => {
+        const local = unrotateFlowHandle({
+          center: {
+            x: bounds.x + bounds.width / 2,
+            y: bounds.y + bounds.height / 2,
+          },
+          nodeCenter: {
+            x: nodeBounds.x + nodeBounds.width / 2,
+            y: nodeBounds.y + nodeBounds.height / 2,
+          },
+          size: {
+            width: rotated ? element.offsetWidth : nodeBounds.width / zoom,
+            height: rotated ? element.offsetHeight : nodeBounds.height / zoom,
+          },
+          zoom,
+          rotation,
+        })
+
+        return {
+          x: localHandleCoordinate(local.x),
+          y: localHandleCoordinate(local.y),
+        }
+      })(),
+      width: rotated ? handleElement.offsetWidth : bounds.width / zoom,
+      height: rotated ? handleElement.offsetHeight : bounds.height / zoom,
     })
   }
 
@@ -684,13 +702,21 @@ export const createEdgeRenderer = <Origin, NodeSlot, UIHandle>(
       const source = edgeAttachmentPosition(
         sourceGraphNode.absolutePosition,
         resolved.sourceHandle,
-        sourceMeasured
+        sourceMeasured,
+        {
+          ...sourceGraphNode.dimensions,
+          rotation: sourceGraphNode.node.rotation,
+        }
       )
 
       const target = edgeAttachmentPosition(
         targetGraphNode.absolutePosition,
         resolved.targetHandle,
-        targetMeasured
+        targetMeasured,
+        {
+          ...targetGraphNode.dimensions,
+          rotation: targetGraphNode.node.rotation,
+        }
       )
 
       let pathData = straightEdgePath(source, target)

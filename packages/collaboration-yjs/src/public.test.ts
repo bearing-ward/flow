@@ -77,6 +77,50 @@ describe('Yjs room over real y-websocket', () => {
     }
   })
 
+  it('replicates rotation between real peers and preserves it through selective undo/redo', async () => {
+    const room = crypto.randomUUID()
+    const a = await open(room, 'rotation-a')
+    const b = await open(room, 'rotation-b')
+
+    try {
+      await expect.poll(a.client.status).toBe('connected')
+      Effect.runSync(a.client.commit(empty, initial))
+      await expect.poll(b.client.document).toStrictEqual(a.client.document())
+      const before = a.client.document()
+
+      const rotated = decode({
+        ...before,
+        nodes: before.nodes.map((node) =>
+          node.id === 'a' ? { ...node, rotation: 135 } : node
+        ),
+      })
+
+      Effect.runSync(a.client.commit(before, rotated))
+      await expect
+        .poll(
+          () =>
+            b.client.document().nodes.find((node) => node.id === 'a')?.rotation
+        )
+        .toBe(135)
+      a.client.undo()
+      await expect
+        .poll(
+          () =>
+            b.client.document().nodes.find((node) => node.id === 'a')?.rotation
+        )
+        .toBeUndefined()
+      a.client.redo()
+      await expect
+        .poll(
+          () =>
+            b.client.document().nodes.find((node) => node.id === 'a')?.rotation
+        )
+        .toBe(135)
+    } finally {
+      await Promise.all([a.close(), b.close()])
+    }
+  })
+
   it('converges independent fields, keeps local undo selective and ignores duplicate updates', async () => {
     const room = crypto.randomUUID()
     const a = await open(room, 'a')

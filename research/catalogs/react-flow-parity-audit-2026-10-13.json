@@ -12,13 +12,13 @@
     "inScope": 198,
     "stretch": 0,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 195,
+    "inScopeCloseAllHosts": 196,
     "inScopeCloseByHost": {
-      "vanilla": 195,
-      "vue": 195,
-      "foldkit": 195
+      "vanilla": 196,
+      "vue": 196,
+      "foldkit": 196
     },
-    "reaudit": "2026-10-26 Plan 149 Pro audit with Plans 150, 153-160 and 162-165 acceptance follow-ups; other ratings retain their recorded audit boundaries.",
+    "reaudit": "2026-10-26 Plan 149 Pro audit with Plans 150, 153-160 and 162-165 acceptance follow-ups; other ratings retain their recorded audit boundaries. Plan 167 rotatable-node acceptance.",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
@@ -2237,27 +2237,43 @@
     {
       "section": "examples nodes",
       "name": "Rotatable Node",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Node rotation and rotated handle geometry",
+      "missing": null,
       "effort": "L",
       "theme": "node-transform",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Node rotation and rotated handle geometry",
-        "evidence": "no rotation support in apps/*/src or packages/*/src"
+        "on": "2026-10-26",
+        "plan": "Plan 167",
+        "previousRatings": {
+          "vanilla": "G",
+          "vue": "G",
+          "foldkit": "G"
+        },
+        "missing": null,
+        "evidence": [
+          "research/traces/167-rotatable-node.md",
+          "research/fixtures/rotatable-node-reference.json",
+          "packages/core/src/domain/flow-node-rotation.test.ts",
+          "apps/vanilla/e2e/rotatable-node.e2e.ts",
+          "apps/vue/e2e/rotatable-node.e2e.ts",
+          "apps/foldkit/e2e/rotatable-node.e2e.ts",
+          "packages/collaboration-yjs/src/public.test.ts"
+        ],
+        "boundary": "Functional outcome acceptance: 15 browser cases per host, core contracts, and real Yjs peers. Rotation persists in Flow v6; the reference keeps local component state. Focused verification does not establish verify:full parity."
       },
       "addedToScope": {
         "on": "2026-10-26",
         "reason": "Maintainer asked to proceed with the remaining stretch entries after Pro parity"
-      }
+      },
+      "updatedBy": ["Plan 167"]
     },
     {
       "section": "examples nodes",
-      "name": "Node Position Animation · Pro",
+      "name": "Node Position Animation \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -2444,7 +2460,7 @@
     },
     {
       "section": "examples nodes",
-      "name": "Shapes · Pro",
+      "name": "Shapes \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3003,7 +3019,7 @@
     },
     {
       "section": "examples edges",
-      "name": "Edge Routing · Pro",
+      "name": "Edge Routing \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3245,7 +3261,7 @@
     },
     {
       "section": "examples edges",
-      "name": "Editable Edge · Pro",
+      "name": "Editable Edge \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3643,7 +3659,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Helper Lines · Pro",
+      "name": "Helper Lines \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3766,7 +3782,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Collaborative · Pro",
+      "name": "Collaborative \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3944,7 +3960,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Copy and Paste · Pro",
+      "name": "Copy and Paste \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4101,7 +4117,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Undo and Redo · Pro",
+      "name": "Undo and Redo \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4258,7 +4274,7 @@
     },
     {
       "section": "examples grouping",
-      "name": "Selection Grouping · Pro",
+      "name": "Selection Grouping \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4446,7 +4462,7 @@
     },
     {
       "section": "examples grouping",
-      "name": "Parent Child Relation · Pro",
+      "name": "Parent Child Relation \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4692,7 +4708,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Expand and Collapse · Pro",
+      "name": "Expand and Collapse \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4844,7 +4860,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Auto Layout · Pro",
+      "name": "Auto Layout \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4961,7 +4977,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Force Layout · Pro",
+      "name": "Force Layout \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5105,7 +5121,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Dynamic Layouting · Pro",
+      "name": "Dynamic Layouting \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5424,7 +5440,7 @@
     },
     {
       "section": "examples whiteboard",
-      "name": "Freehand Draw · Pro",
+      "name": "Freehand Draw \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5559,7 +5575,7 @@
     },
     {
       "section": "examples misc",
-      "name": "Server Side Image Creation · Pro",
+      "name": "Server Side Image Creation \u00b7 Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",

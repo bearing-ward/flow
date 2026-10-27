@@ -1,4 +1,6 @@
 import {
+  rotateFlowPoint,
+  normalizeFlowRotation,
   FlowRoutingResultSchema,
   getAutomaticRouteGeometry,
   applyFlowLayoutPositions,
@@ -227,6 +229,7 @@ import {
   ResizerControlSchema,
 } from './node-resizer.ts'
 import type { ResizerControl } from './node-resizer.ts'
+import { createNodeRotationResource } from './node-rotation.ts'
 import { edgeLabelPresentation, foldkitStyle } from './presentation.ts'
 
 /** One node's gesture-owned position and size during an `expandParent` resize. */
@@ -318,6 +321,12 @@ const mergeResizerPatches = (
 
   return [...merged.values()]
 }
+
+const RotationPreviewSchema = Schema.Struct({
+  nodeId: NodeIdSchema,
+  rotation: Schema.Finite,
+  gestureId: Schema.String,
+})
 
 const RoutePreviewSchema = Schema.Struct({
   edgeId: EdgeIdSchema,
@@ -506,6 +515,7 @@ const PaneSizeSchema = Schema.Struct({
 })
 
 export const ModelSchema = Schema.Struct({
+  rotationPreview: Schema.optional(Schema.NullOr(RotationPreviewSchema)),
   nodePresentation: Schema.optional(
     Schema.ReadonlyMap(
       Schema.String,
@@ -826,6 +836,12 @@ export const Message = FoldMessage.defineMessageUnion({
   SystemColorScheme: { prefersDark: Schema.Boolean },
   SetAllowedTargets: { targets: Schema.Array(Schema.String) },
   DispatchCommand: { command: FlowCommandSchema },
+  RotationPreview: { preview: Schema.NullOr(RotationPreviewSchema) },
+  RotationCommand: {
+    nodeId: NodeIdSchema,
+    rotation: Schema.Finite,
+    gestureId: Schema.String,
+  },
   RoutePreview: { preview: Schema.NullOr(RoutePreviewSchema) },
   RouteCommand: {
     edgeId: EdgeIdSchema,
@@ -2121,6 +2137,23 @@ const applyNodeDragChange = (
  * does, in one pass over the nodes and without building a graph.
  */
 export const selectLiveDocument = (model: Model): FlowDocument => {
+  if (model.rotationPreview !== undefined && model.rotationPreview !== null) {
+    const preview = model.rotationPreview
+
+    return selectLiveDocument({
+      ...model,
+      rotationPreview: null,
+      document: {
+        ...model.document,
+        nodes: model.document.nodes.map((node) =>
+          node.id === preview.nodeId
+            ? { ...node, rotation: preview.rotation }
+            : node
+        ),
+      },
+    })
+  }
+
   if (model.nodePresentation !== undefined) {
     return selectLiveDocument({
       ...model,
@@ -3831,6 +3864,18 @@ const updateState = (
         keyboardConnectionSession: null,
       },
     }),
+    RotationPreview: ({ preview }) => ({
+      model: { ...model, rotationPreview: preview },
+    }),
+    RotationCommand: ({ nodeId, rotation, gestureId }) => {
+      if (model.rotationPreview?.gestureId !== gestureId) {
+        return noChange(model)
+      }
+
+      return requestEdit({ ...model, rotationPreview: null }, gestureId, {
+        operations: [{ kind: 'update-node', nodeId, patch: { rotation } }],
+      })
+    },
     RoutePreview: ({ preview }) => ({
       model: { ...model, routePreview: preview },
     }),
@@ -5455,10 +5500,17 @@ const flowPointForElement = (
         ?.handles?.find(({ handleId }) => handleId === handle.id) ??
       inferHandleMeasurement(graphNode.id, handle, graphNode.dimensions)
 
-    return {
-      x: graphNode.absolutePosition.x + measured.offset.x,
-      y: graphNode.absolutePosition.y + measured.offset.y,
-    }
+    return rotateFlowPoint(
+      {
+        x: graphNode.absolutePosition.x + measured.offset.x,
+        y: graphNode.absolutePosition.y + measured.offset.y,
+      },
+      {
+        x: graphNode.absolutePosition.x + graphNode.dimensions.width / 2,
+        y: graphNode.absolutePosition.y + graphNode.dimensions.height / 2,
+      },
+      graphNode.node.rotation ?? 0
+    )
   }
 }
 
@@ -5516,7 +5568,8 @@ const edgePoint = (
   position: { readonly x: number; readonly y: number },
   size: { readonly width: number; readonly height: number },
   side: FlowHandle['side'],
-  measured?: MeasuredHandle
+  measured?: MeasuredHandle,
+  rotation?: number
 ) =>
   edgeAttachmentPosition(
     position,
@@ -5527,7 +5580,8 @@ const edgePoint = (
       offset: handleOffset(side, size),
       width: 11,
       height: 11,
-    }
+    },
+    { ...size, rotation }
   )
 
 // oxlint-disable-next-line complexity
@@ -5560,7 +5614,8 @@ const calculateEdgeGeometry = (
     sourceSide,
     measurements
       .get(source.node.id)
-      ?.handles?.find(({ handleId }) => handleId === sourceHandle?.id)
+      ?.handles?.find(({ handleId }) => handleId === sourceHandle?.id),
+    source.node.rotation
   )
 
   const end = edgePoint(
@@ -5571,7 +5626,8 @@ const calculateEdgeGeometry = (
     targetSide,
     measurements
       .get(target.node.id)
-      ?.handles?.find(({ handleId }) => handleId === targetHandle?.id)
+      ?.handles?.find(({ handleId }) => handleId === targetHandle?.id),
+    target.node.rotation
   )
 
   const pathType: FlowEdgePath = edge.path ?? 'straight'
@@ -6496,6 +6552,51 @@ export const createPointerResource = (initial: Model) => {
     capturePointer
   )
 
+  const rotation = createNodeRotationResource({
+    canvas: () => canvasForModel(current),
+    document: () => current.document,
+    graph: () =>
+      createFlowGraph(
+        selectLiveDocument(current),
+        getFlowMeasuredNodes(current.document, current.measurements)
+      ),
+    viewport: () => current.viewport,
+    available: () =>
+      ready &&
+      !closed &&
+      !editable.pressed() &&
+      nativeCurrent?.native !== 'pressed' &&
+      current.pointerSession === null &&
+      current.gestureSession === null,
+    capture: capturePointer,
+    preview: (preview) => {
+      if (!closed) {
+        Queue.offerUnsafe(queue, Message.RotationPreview({ preview }))
+      }
+    },
+    commit: (nodeId, angle, gestureId) => {
+      if (!closed) {
+        Queue.offerUnsafe(
+          queue,
+          Message.RotationCommand({ nodeId, rotation: angle, gestureId })
+        )
+      }
+    },
+    pan: (viewport) => {
+      if (!closed) {
+        Queue.offerUnsafe(
+          queue,
+          Message.AutoPan({
+            x: viewport.x - current.viewport.x,
+            y: viewport.y - current.viewport.y,
+          })
+        )
+      }
+    },
+    autoPan: () => current.autoPanOnNodeDrag,
+    autoPanSpeed: () => current.autoPanSpeed,
+  })
+
   const associate = (message: GraphMessageData, origin: NativeOrigin) => {
     origins.set(message, origin)
 
@@ -6545,6 +6646,7 @@ export const createPointerResource = (initial: Model) => {
       return
     }
 
+    rotation.dispose()
     editable.dispose()
     closed = true
     ready = false
@@ -6698,6 +6800,15 @@ export const createPointerResource = (initial: Model) => {
     }
   }
 
+  const settleRotation = (message: GraphMessageData | undefined): void => {
+    if (
+      message !== undefined &&
+      Predicate.isTagged('RotationCommand')(message)
+    ) {
+      rotation.settle(message.gestureId)
+    }
+  }
+
   const reconcile = (input: {
     readonly previous: Model
     readonly current: Model
@@ -6715,6 +6826,8 @@ export const createPointerResource = (initial: Model) => {
       editable.settle(message.gestureId)
     }
 
+    settleRotation(message)
+    rotation.reconcile()
     editable.reconcile()
     const origin = message === undefined ? undefined : origins.get(message)
 
@@ -6728,6 +6841,7 @@ export const createPointerResource = (initial: Model) => {
         message !== undefined &&
         Predicate.isTagged('CancelGesture')(message))
     ) {
+      rotation.invalidate()
       editable.invalidate()
       invalidate()
 
@@ -6906,6 +7020,16 @@ export const createPointerResource = (initial: Model) => {
   const invalidRouteMessage = (message: GraphMessageData): boolean => {
     if (closed) {
       return true
+    }
+
+    if (Predicate.isTagged('RotationCommand')(message)) {
+      return !rotation.valid(message.gestureId)
+    }
+
+    if (Predicate.isTagged('RotationPreview')(message)) {
+      return (
+        message.preview !== null && !rotation.valid(message.preview.gestureId)
+      )
     }
 
     if (Predicate.isTagged('RouteCommand')(message)) {
@@ -7091,6 +7215,7 @@ export const createPointerResource = (initial: Model) => {
   const admissionOpen = (): boolean =>
     ready &&
     !closed &&
+    !rotation.active() &&
     !editable.pressed() &&
     nativeCurrent?.native !== 'pressed'
 
@@ -7369,6 +7494,8 @@ export const createPointerResource = (initial: Model) => {
   }
 
   const blur = (): void => {
+    rotation.cancel('window-blur')
+
     if (nativeCurrent !== undefined && nativeCurrent.native !== 'cancelled') {
       cancel(nativeCurrent, Message.CancelGesture({}))
     }
@@ -7414,6 +7541,7 @@ export const createPointerResource = (initial: Model) => {
         throw new Error('Pointer resource cannot be reacquired')
       }
 
+      rotation.mount()
       editable.mount()
 
       const stopCanvasInput = observeCanvasInput(
@@ -7688,6 +7816,13 @@ const graphView = (
           'z-index': String(stacking.nodes.get(node.id) ?? node.zIndex ?? 0),
         }
 
+        if (node.rotation !== undefined) {
+          Object.assign(style, {
+            rotate: `${normalizeFlowRotation(node.rotation)}deg`,
+            'transform-origin': 'center',
+          })
+        }
+
         if (renderSize !== undefined) {
           if (node.size !== undefined || node.style?.width === undefined) {
             Object.assign(style, { width: `${renderSize.width}px` })
@@ -7851,6 +7986,9 @@ const graphView = (
             ),
             h.DataAttribute('testid', 'flow-node'),
             h.DataAttribute('node-id', node.id),
+            ...(node.rotation === undefined
+              ? []
+              : [h.DataAttribute('rotation', String(node.rotation))]),
             h.DataAttribute(
               'height-declared',
               String(
@@ -7877,7 +8015,41 @@ const graphView = (
               : [h.AriaDescribedBy(nodeDescriptionId)]),
             h.Style(style),
           ],
-          [...contents, ...handles, ...resizeHandles, ...selectionControl]
+          [
+            ...contents,
+            ...(node.rotation === undefined
+              ? []
+              : [
+                  h.button(
+                    [
+                      h.Attribute('type', 'button'),
+                      h.DataAttribute('flow-rotation', ''),
+                      h.DataAttribute('node-id', node.id),
+                      h.Class('nodrag nopan'),
+                      h.AriaLabel(`Rotate ${node.id}`),
+                      h.Style({
+                        position: 'absolute',
+                        left: 'calc(50% - 9px)',
+                        top: '-30px',
+                        width: '18px',
+                        height: '18px',
+                        padding: '0',
+                        border: '1px solid #555',
+                        'border-radius': '50%',
+                        background: 'white',
+                        color: '#222',
+                        cursor: 'grab',
+                        'touch-action': 'none',
+                        'pointer-events': 'all',
+                      }),
+                    ],
+                    ['↻']
+                  ),
+                ]),
+            ...handles,
+            ...resizeHandles,
+            ...selectionControl,
+          ]
         )
       })
 

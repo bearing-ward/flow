@@ -1,0 +1,32 @@
+{
+  "url": "https://example-apps.xyflow.com/react/examples/nodes/rotatable-node/index.html",
+  "accessed": "2026-10-26",
+  "initialPath": "M41.6875 10L61.6875 10L160.0078125 10L160.0078125 10L258.328125 10L278.328125 10",
+  "edgeChanged": true,
+  "afterReloadRotation": "transform: rotate(0deg);",
+  "rotation": "transform: rotate(69.9083deg);",
+  "sourceHandle": {
+    "x": 208.7715301513672,
+    "y": 391.7290954589844,
+    "width": 20.522689819335938,
+    "height": 20.522674560546875
+  },
+  "edgeStart": {
+    "x": 228.61839294433594,
+    "y": 397.63616943359375
+  },
+  "path": "M24.30919647216797 33.818084716796875L44.30919647216797 33.818084716796875L 146.31866073608398,33.818084716796875Q 151.31866073608398,33.818084716796875 151.31866073608398,28.818084716796875L 151.31866073608398,15Q 151.31866073608398,10 156.31866073608398,10L258.328125 10L278.328125 10",
+  "source": {
+    "url": "https://example-apps.xyflow.com/assets/230-CkZU11NN.js",
+    "sha256": "06449661a421405231f8f3611bf7975047a2cf80b208dc2a7622e9526937eab2",
+    "rotationState": "React component useState; absent from node document"
+  },
+  "attachmentObservation": {
+    "edgeMinusHandleCenter": {
+      "x": 9.585517883300781,
+      "y": -4.3542633056640625
+    },
+    "followsRotatedOutwardNormal": false,
+    "boundary": "Observed port moves after rotation, but the displacement does not follow the rotated source-side normal. Flow intentionally rotates the complete local attachment point."
+  }
+}

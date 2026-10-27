@@ -2,7 +2,7 @@ import {
   encodeVersionedFlowDocument,
   decodeVersionedFlowDocument,
   getDropParentId,
-  getInternalNodeBounds,
+  getInternalNodeLayoutBounds,
   NodeIdSchema,
   reparentNode,
 } from '@flow/core'
@@ -44,7 +44,7 @@ const measuredBounds = (
         return []
       }
 
-      const { bounds } = getInternalNodeBounds(internal)
+      const { bounds } = getInternalNodeLayoutBounds(internal)
 
       return [[node.id, bounds] as const]
     })

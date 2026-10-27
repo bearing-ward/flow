@@ -3,6 +3,7 @@ import { Effect, Match, Schema as S } from 'effect'
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import { FlowBundleSchema } from './flow-bundle.schema.ts'
 import { findLegacyEndpointKindIssue } from './flow-legacy-handle-compatibility.ts'
+import { FlowNodeRotationSchema } from './flow-node-rotation.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
 import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
 import type { Viewport } from './flow-runtime.schema.ts'
@@ -178,6 +179,10 @@ const hasRoutes = (document: FlowDocument): boolean =>
 const versionedFormatReason = (
   document: FlowDocument
 ): SavedFlowFormatFailureCode | undefined => {
+  if (document.nodes.some((node) => Object.hasOwn(node, 'rotation'))) {
+    return 'rotation-requires-versioned-session'
+  }
+
   if (
     Object.hasOwn(document, 'nodeOrigin') ||
     document.nodes.some((node) => Object.hasOwn(node, 'origin'))
@@ -272,6 +277,7 @@ export const encodeSavedFlowDocument = (
 const SavedRouteInspectionSchema = S.Struct({
   document: S.Struct({
     bundles: S.optional(S.Unknown),
+    nodes: S.Array(S.Struct({ rotation: S.optional(S.Unknown) })),
     edges: S.Array(S.Struct({ route: S.optional(S.Unknown) })),
   }),
 })
@@ -279,6 +285,16 @@ const SavedRouteInspectionSchema = S.Struct({
 const rejectLegacySavedRoutes = <Input>(input: Input) =>
   S.decodeUnknownEffect(SavedRouteInspectionSchema)(input).pipe(
     Effect.flatMap((saved) => {
+      if (
+        saved.document.nodes.some((node) => Object.hasOwn(node, 'rotation'))
+      ) {
+        return Effect.fail(
+          new SavedFlowFormatError({
+            code: 'rotation-requires-versioned-session',
+          })
+        )
+      }
+
       if (Object.hasOwn(saved.document, 'bundles')) {
         return Effect.fail(
           new SavedFlowFormatError({
@@ -483,6 +499,44 @@ export type SavedBundleFlowDocument =
 
 export type SavedBundleFlowSession = typeof SavedBundleFlowSessionSchema.Encoded
 
+/** v6 adds rotation without changing the frozen v1-v5 projections. */
+export const SavedRotationFlowDocumentSchema = S.Struct({
+  version: S.Literal(6),
+  document: S.Struct({
+    ...SavedBundleFlowDocumentSchema.fields.document.fields,
+    nodes: S.Array(
+      S.Struct({
+        ...SavedPresentationFlowNodeSchema.fields,
+        rotation: S.optional(FlowNodeRotationSchema),
+      })
+    ),
+  }),
+})
+
+export const SavedRotationFlowSessionSchema = S.Struct({
+  ...SavedRotationFlowDocumentSchema.fields,
+  viewport: SavedViewportSchema,
+})
+
+export type SavedRotationFlowDocument =
+  typeof SavedRotationFlowDocumentSchema.Encoded
+
+export type SavedRotationFlowSession =
+  typeof SavedRotationFlowSessionSchema.Encoded
+
+const rejectPreRotationEnvelope = <Input>(input: Input) =>
+  S.decodeUnknownEffect(SavedRouteInspectionSchema)(input).pipe(
+    Effect.flatMap((saved) =>
+      saved.document.nodes.some((node) => Object.hasOwn(node, 'rotation'))
+        ? Effect.fail(
+            new SavedFlowFormatError({
+              code: 'rotation-requires-versioned-session',
+            })
+          )
+        : Effect.void
+    )
+  )
+
 const rejectPreBundleEnvelope = (
   input: Parameters<typeof rejectLegacySavedRoutes>[0]
 ) =>
@@ -499,6 +553,7 @@ const rejectPreBundleEnvelope = (
   )
 
 export const SavedVersionedFlowDocumentSchema = S.Union([
+  SavedRotationFlowDocumentSchema,
   SavedBundleFlowDocumentSchema,
   SavedFlowDocumentSchema,
   SavedOriginFlowDocumentSchema,
@@ -507,6 +562,7 @@ export const SavedVersionedFlowDocumentSchema = S.Union([
 ])
 
 export const SavedVersionedFlowSessionSchema = S.Union([
+  SavedRotationFlowSessionSchema,
   SavedBundleFlowSessionSchema,
   SavedFlowSessionSchema,
   SavedOriginFlowSessionSchema,
@@ -527,12 +583,18 @@ export type SavedVersionedFlowSession =
 
 /**
  * Choose the oldest envelope that represents the document: v1, then the v2
- * origin/native body, v3 for presentation, v4 for route intent, or v5 for bundles.
+ * origin/native body, v3 for presentation, v4 for route intent, v5 for bundles, or v6 for rotation.
  */
 export const encodeVersionedFlowDocument = (
   document: FlowDocument
 ): SavedVersionedFlowDocument => {
   Effect.runSync(validateFlowDocument(document))
+
+  if (document.nodes.some((node) => Object.hasOwn(node, 'rotation'))) {
+    return structuredClone(
+      S.encodeSync(SavedRotationFlowDocumentSchema)({ version: 6, document })
+    )
+  }
 
   if (Object.hasOwn(document, 'bundles')) {
     return structuredClone(
@@ -576,7 +638,7 @@ export const encodeVersionedFlowSession = (
 })
 
 const VersionedEnvelopeHeaderSchema = S.Struct({
-  version: S.Literals([1, 2, 3, 4, 5]),
+  version: S.Literals([1, 2, 3, 4, 5, 6]),
   document: S.Unknown,
 })
 
@@ -601,6 +663,10 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
       input
     )
 
+    if (header.version < 6) {
+      yield* rejectPreRotationEnvelope(input)
+    }
+
     if (header.version < 5) {
       yield* rejectPreBundleEnvelope(input)
     }
@@ -623,6 +689,7 @@ export const decodeVersionedFlowDocument = (input: unknown) =>
         Match.when(3, () => SavedPresentationFlowDocumentSchema),
         Match.when(4, () => SavedRouteFlowDocumentSchema),
         Match.when(5, () => SavedBundleFlowDocumentSchema),
+        Match.when(6, () => SavedRotationFlowDocumentSchema),
         Match.exhaustive
       )
     )(input)
@@ -651,6 +718,10 @@ export const decodeVersionedFlowSession = (input: unknown) =>
       input
     )
 
+    if (header.version < 6) {
+      yield* rejectPreRotationEnvelope(input)
+    }
+
     if (header.version < 5) {
       yield* rejectPreBundleEnvelope(input)
     }
@@ -675,6 +746,7 @@ export const decodeVersionedFlowSession = (input: unknown) =>
         Match.when(3, () => SavedPresentationFlowSessionSchema),
         Match.when(4, () => SavedRouteFlowSessionSchema),
         Match.when(5, () => SavedBundleFlowSessionSchema),
+        Match.when(6, () => SavedRotationFlowSessionSchema),
         Match.exhaustive
       )
     )(input)

@@ -1,4 +1,6 @@
 import {
+  rotateFlowPoint,
+  normalizeFlowRotation,
   getAutomaticRouteGeometry,
   FlowRoutingResultSchema,
   createFlowNodeAnimator,
@@ -238,6 +240,7 @@ import type { DragMember } from './node-drag-group.ts'
 import { collectNodeHandles, renderedViewportZoom } from './node-measurement.ts'
 import { FlowNodeResizerRegistryKey } from './node-resizer.ts'
 import type { FlowNodeResizerHost } from './node-resizer.ts'
+import { createNodeRotationResource } from './node-rotation.ts'
 import { FlowNodeToolbarContextKey } from './node-toolbar.ts'
 import { FlowProviderKey } from './provider.ts'
 import { FlowEditorKey, FlowNodeIdKey } from './use-flow.ts'
@@ -510,6 +513,8 @@ interface KeyboardResizeSession {
 }
 
 interface NodePositionStyle {
+  transformOrigin?: string
+  rotate?: string
   left: string
   top: string
   width?: string
@@ -1756,6 +1761,11 @@ export const FlowCanvas = defineComponent({
       new Map()
     )
 
+    const rotationPreview = shallowRef<{
+      readonly nodeId: NodeId
+      readonly rotation: number
+    } | null>(null)
+
     const graph = computed(() => {
       const measurements = new Map(measuredNodes.value)
       const preview = dragPreview.value?.graph
@@ -1783,7 +1793,11 @@ export const FlowCanvas = defineComponent({
         {
           ...activeDocument.value,
           nodes: applyFlowLayoutPositions(
-            activeDocument.value.nodes,
+            activeDocument.value.nodes.map((node) =>
+              rotationPreview.value?.nodeId === node.id
+                ? { ...node, rotation: rotationPreview.value.rotation }
+                : node
+            ),
             animationPositions.value
           ),
         },
@@ -2402,11 +2416,14 @@ export const FlowCanvas = defineComponent({
       const bounds = element.getBoundingClientRect()
       const zoom = renderedViewportZoom(element, activeViewport.value.zoom)
 
+      const rotated =
+        Number(element.dataset.rotation ?? node.rotation ?? 0) % 360 !== 0
+
       return {
         nodeId: node.id,
         generation,
-        width: bounds.width / zoom,
-        height: bounds.height / zoom,
+        width: rotated ? element.offsetWidth : bounds.width / zoom,
+        height: rotated ? element.offsetHeight : bounds.height / zoom,
         handles: collectNodeHandles(node, element, bounds, zoom),
       }
     }
@@ -4860,6 +4877,68 @@ export const FlowCanvas = defineComponent({
     )
     onBeforeUnmount(routeEditor.cancel)
 
+    const rotationResource = createNodeRotationResource({
+      canvas: () => canvas.value ?? null,
+      document: () => activeDocument.value,
+      graph: () => graph.value,
+      viewport: () => activeViewport.value,
+      available: () =>
+        !stateDisposed &&
+        session.value === undefined &&
+        clickConnection.value === undefined &&
+        !routeEditor.dragging(),
+      capture: (owner, pointerId) => {
+        try {
+          owner.setPointerCapture(pointerId)
+
+          return owner.hasPointerCapture(pointerId)
+        } catch (error) {
+          reportError(
+            error instanceof Error ? error : new Error(String(error)),
+            'edit'
+          )
+
+          return false
+        }
+      },
+      preview: (preview) => {
+        rotationPreview.value = preview
+      },
+      pan: (next) => {
+        if (!stateDisposed) {
+          updateViewport(next)
+        }
+      },
+      autoPan: () => props.autoPanOnNodeDrag,
+      autoPanSpeed: () => props.autoPanSpeed,
+      suppressClick: () => {
+        nodePress = undefined
+      },
+      commit: async (nodeId, rotation, gestureId) => {
+        try {
+          await applyEdit({
+            operations: [{ kind: 'update-node', nodeId, patch: { rotation } }],
+          })
+        } catch (error) {
+          reportError(
+            error instanceof Error ? error : new Error(String(error)),
+            'edit'
+          )
+        } finally {
+          rotationResource.settle(gestureId)
+          rotationPreview.value = null
+        }
+      },
+    })
+
+    watch(
+      () => activeDocument.value,
+      () => rotationResource.cancel('document-update'),
+      { flush: 'sync' }
+    )
+    onMounted(rotationResource.mount)
+    onBeforeUnmount(rotationResource.dispose)
+
     const liveResizePreview = shallowRef<{
       readonly change: NodeBoundsChange
       readonly graph: FlowGraphView
@@ -4906,12 +4985,13 @@ export const FlowCanvas = defineComponent({
       element.style.height = `${change.size.height}px`
       const rect = element.getBoundingClientRect()
       const zoom = renderedViewportZoom(element, activeViewport.value.zoom)
+      const rotated = Number(element.dataset.rotation ?? 0) % 360 !== 0
       liveResizePreview.value = {
         change,
         graph: previewGraph,
         size: {
-          width: rect.width / zoom,
-          height: rect.height / zoom,
+          width: rotated ? element.offsetWidth : rect.width / zoom,
+          height: rotated ? element.offsetHeight : rect.height / zoom,
         },
       }
     }
@@ -6203,7 +6283,8 @@ export const FlowCanvas = defineComponent({
         start: edgeAttachmentPosition(
           current.absolutePosition,
           handle,
-          measured
+          measured,
+          { ...current.dimensions, rotation: current.node.rotation }
         ),
       }
     }
@@ -7106,7 +7187,8 @@ export const FlowCanvas = defineComponent({
         stateDisposed ||
         event.button !== 0 ||
         session.value !== undefined ||
-        routeEditor.dragging()
+        routeEditor.dragging() ||
+        rotationResource.active()
       ) {
         return
       }
@@ -7553,10 +7635,21 @@ export const FlowCanvas = defineComponent({
               nodeId: node.id,
               handleId: handle.id,
               kind: handle.kind,
-              center: {
-                x: graphNode.absolutePosition.x + measured.offset.x,
-                y: graphNode.absolutePosition.y + measured.offset.y,
-              },
+              center: rotateFlowPoint(
+                {
+                  x: graphNode.absolutePosition.x + measured.offset.x,
+                  y: graphNode.absolutePosition.y + measured.offset.y,
+                },
+                {
+                  x:
+                    graphNode.absolutePosition.x +
+                    graphNode.dimensions.width / 2,
+                  y:
+                    graphNode.absolutePosition.y +
+                    graphNode.dimensions.height / 2,
+                },
+                graphNode.node.rotation ?? 0
+              ),
             },
           ]
         })
@@ -8992,6 +9085,7 @@ export const FlowCanvas = defineComponent({
         return
       }
 
+      rotationResource.cancel('window-blur')
       pressedKeys.clear()
       keyboardPressedCodes.clear()
       finishKeyboardHistory()
@@ -9072,7 +9166,11 @@ export const FlowCanvas = defineComponent({
 
     // eslint-disable-next-line complexity -- The public pointer admission entry preserves the existing selection, pan and interactive-target policies.
     const onCanvasPointerDown = (event: PointerEvent): void => {
-      if (stateDisposed || routeEditor.dragging()) {
+      if (
+        stateDisposed ||
+        routeEditor.dragging() ||
+        rotationResource.active()
+      ) {
         return
       }
 
@@ -9426,7 +9524,8 @@ export const FlowCanvas = defineComponent({
       const start = edgeAttachmentPosition(
         graphNode.absolutePosition,
         handle,
-        measured
+        measured,
+        { ...graphNode.dimensions, rotation: graphNode.node.rotation }
       )
 
       if (!(event.currentTarget instanceof HTMLElement)) {
@@ -9819,6 +9918,13 @@ export const FlowCanvas = defineComponent({
         top: `${position.y}px`,
       }
 
+      if (node.rotation !== undefined) {
+        Object.assign(style, {
+          rotate: `${normalizeFlowRotation(graph.value.nodes.get(node.id)?.node.rotation ?? 0)}deg`,
+          transformOrigin: 'center',
+        })
+      }
+
       if (size !== undefined) {
         style.width = `${size.width}px`
         style.height = `${size.height}px`
@@ -9845,6 +9951,7 @@ export const FlowCanvas = defineComponent({
           ],
           'data-testid': 'flow-node',
           'data-node-id': node.id,
+          'data-rotation': graph.value.nodes.get(node.id)?.node.rotation,
           'data-height-declared':
             size !== undefined || node.style?.height !== undefined,
           tabindex: focusable ? 0 : undefined,
@@ -9972,6 +10079,36 @@ export const FlowCanvas = defineComponent({
             },
             nodeSlots
           ),
+          ...(node.rotation === undefined
+            ? []
+            : [
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    'data-flow-rotation': '',
+                    'data-node-id': node.id,
+                    class: 'nodrag nopan',
+                    'aria-label': `Rotate ${node.id}`,
+                    style: {
+                      position: 'absolute',
+                      left: 'calc(50% - 9px)',
+                      top: '-30px',
+                      width: '18px',
+                      height: '18px',
+                      padding: 0,
+                      border: '1px solid #555',
+                      borderRadius: '50%',
+                      background: 'white',
+                      color: '#222',
+                      cursor: 'grab',
+                      touchAction: 'none',
+                      pointerEvents: 'all',
+                    },
+                  },
+                  '↻'
+                ),
+              ]),
           ...handleChildren,
           ...resizeChildren,
         ]
@@ -10021,13 +10158,15 @@ export const FlowCanvas = defineComponent({
       const sourceAnchor = edgeAttachmentPosition(
         sourceNode.absolutePosition,
         resolved.sourceHandle,
-        sourceMeasured
+        sourceMeasured,
+        { ...sourceNode.dimensions, rotation: sourceNode.node.rotation }
       )
 
       const targetAnchor = edgeAttachmentPosition(
         targetNode.absolutePosition,
         resolved.targetHandle,
-        targetMeasured
+        targetMeasured,
+        { ...targetNode.dimensions, rotation: targetNode.node.rotation }
       )
 
       return {
@@ -10334,13 +10473,21 @@ export const FlowCanvas = defineComponent({
                 const sourceAnchor = edgeAttachmentPosition(
                   graphSourceNode.absolutePosition,
                   resolved.sourceHandle,
-                  sourceMeasured
+                  sourceMeasured,
+                  {
+                    ...graphSourceNode.dimensions,
+                    rotation: graphSourceNode.node.rotation,
+                  }
                 )
 
                 const targetAnchor = edgeAttachmentPosition(
                   graphTargetNode.absolutePosition,
                   resolved.targetHandle,
-                  targetMeasured
+                  targetMeasured,
+                  {
+                    ...graphTargetNode.dimensions,
+                    rotation: graphTargetNode.node.rotation,
+                  }
                 )
 
                 const start =
@@ -10590,13 +10737,15 @@ export const FlowCanvas = defineComponent({
       const source = edgeAttachmentPosition(
         sourceNode.absolutePosition,
         resolved.sourceHandle,
-        sourceMeasured
+        sourceMeasured,
+        { ...sourceNode.dimensions, rotation: sourceNode.node.rotation }
       )
 
       const target = edgeAttachmentPosition(
         targetNode.absolutePosition,
         resolved.targetHandle,
-        targetMeasured
+        targetMeasured,
+        { ...targetNode.dimensions, rotation: targetNode.node.rotation }
       )
 
       return (

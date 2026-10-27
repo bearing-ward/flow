@@ -7,7 +7,7 @@ import {
   simpleBezierEdgePath,
   straightEdgePath,
 } from './flow-edge.schema.ts'
-import { createFlowGraph } from './flow-graph.ts'
+import { graphNodeBounds, createFlowGraph } from './flow-graph.ts'
 import type { FlowGraphNode, FlowGraphView } from './flow-graph.ts'
 import type { FlowIntersectionCandidate } from './flow-intersection.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
@@ -117,7 +117,8 @@ const anchor = (
     measurements
       .get(graphNode.id)
       ?.handles?.find(({ handleId }) => handleId === handle.id) ??
-      inferHandleMeasurement(graphNode.id, handle, graphNode.dimensions)
+      inferHandleMeasurement(graphNode.id, handle, graphNode.dimensions),
+    { ...graphNode.dimensions, rotation: graphNode.node.rotation }
   )
 
 /** The node graph with measurements and parent-relative overrides applied. */
@@ -161,10 +162,7 @@ export const getFlowNodeBounds = (
       : [
           {
             id,
-            bounds: {
-              ...graphNode.absolutePosition,
-              ...graphNode.dimensions,
-            },
+            bounds: graphNodeBounds(graphNode),
           },
         ]
   })

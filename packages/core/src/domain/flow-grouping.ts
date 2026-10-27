@@ -1,5 +1,6 @@
 import { getIntersectingNodes } from './flow-intersection.ts'
 import type { FlowIntersectionCandidate } from './flow-intersection.ts'
+import { rotatedFlowBounds } from './flow-node-rotation.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
 import type { FlowNode, NodeId } from './flow.schema.ts'
 
@@ -91,7 +92,13 @@ export const groupNodes = (
     return { kind: 'rejected', reason: 'mixed-parents' }
   }
 
-  const rects = members.map(({ id }) => bounds.get(id))
+  const rects = members.map((node) => {
+    const rect = bounds.get(node.id)
+
+    return rect === undefined
+      ? undefined
+      : unionRect([rect, rotatedFlowBounds(rect, node.rotation)])
+  })
 
   const parentId = members[0]?.parentId
 

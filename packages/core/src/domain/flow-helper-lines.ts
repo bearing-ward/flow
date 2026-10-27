@@ -1,5 +1,6 @@
 import { Schema } from 'effect'
 
+import { graphNodeBounds } from './flow-graph.ts'
 import type { FlowGraphView, FlowGraphNode } from './flow-graph.ts'
 import { snapGroupDelta } from './flow-snap-grid.schema.ts'
 import type { SnapGrid } from './flow-snap-grid.schema.ts'
@@ -29,8 +30,9 @@ interface Candidate {
 }
 
 const anchors = (node: FlowGraphNode, axis: 'x' | 'y') => {
-  const start = node.absolutePosition[axis]
-  const size = axis === 'x' ? node.dimensions.width : node.dimensions.height
+  const bounds = graphNodeBounds(node)
+  const start = bounds[axis]
+  const size = axis === 'x' ? bounds.width : bounds.height
 
   return [start + size / 2, start, start + size]
 }
@@ -112,19 +114,19 @@ export const solveFlowAlignment = (input: {
                 axis,
                 coordinate,
                 from: Math.min(
-                  source.absolutePosition[other] + delta[other],
-                  target.absolutePosition[other]
+                  graphNodeBounds(source)[other] + delta[other],
+                  graphNodeBounds(target)[other]
                 ),
                 to: Math.max(
-                  source.absolutePosition[other] +
+                  graphNodeBounds(source)[other] +
                     delta[other] +
                     (other === 'x'
-                      ? source.dimensions.width
-                      : source.dimensions.height),
-                  target.absolutePosition[other] +
+                      ? graphNodeBounds(source).width
+                      : graphNodeBounds(source).height),
+                  graphNodeBounds(target)[other] +
                     (other === 'x'
-                      ? target.dimensions.width
-                      : target.dimensions.height)
+                      ? graphNodeBounds(target).width
+                      : graphNodeBounds(target).height)
                 ),
                 sourceId: source.id,
                 targetId: target.id,
@@ -166,14 +168,14 @@ export const solveFlowAlignment = (input: {
       return {
         ...guide,
         from: Math.min(
-          source.absolutePosition[other] + snapped[other],
-          target.absolutePosition[other]
+          graphNodeBounds(source)[other] + snapped[other],
+          graphNodeBounds(target)[other]
         ),
         to: Math.max(
-          source.absolutePosition[other] +
+          graphNodeBounds(source)[other] +
             snapped[other] +
-            source.dimensions[size],
-          target.absolutePosition[other] + target.dimensions[size]
+            graphNodeBounds(source)[size],
+          graphNodeBounds(target)[other] + graphNodeBounds(target)[size]
         ),
       }
     }),
@@ -214,12 +216,12 @@ export const resolveFlowAlignmentGuides = (
       {
         ...guide,
         from: Math.min(
-          source.absolutePosition[other],
-          target.absolutePosition[other]
+          graphNodeBounds(source)[other],
+          graphNodeBounds(target)[other]
         ),
         to: Math.max(
-          source.absolutePosition[other] + source.dimensions[size],
-          target.absolutePosition[other] + target.dimensions[size]
+          graphNodeBounds(source)[other] + graphNodeBounds(source)[size],
+          graphNodeBounds(target)[other] + graphNodeBounds(target)[size]
         ),
       },
     ]

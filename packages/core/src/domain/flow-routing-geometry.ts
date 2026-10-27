@@ -14,6 +14,7 @@ export const flowRoutingRevision = (
       node.position.x,
       node.position.y,
       node.parentId,
+      node.rotation,
       node.origin,
       node.size?.width,
       node.size?.height,

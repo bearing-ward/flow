@@ -30,6 +30,7 @@ Generated from `FlowNodeSchema` in `packages/core/src/public.ts`.
 
 ```ts
 export type FlowNode = {
+  readonly rotation?: number;
   readonly id: string;
   readonly label: string;
   readonly position: {
@@ -225,6 +226,7 @@ export type FlowDocument = {
   }>;
   readonly nodeOrigin?: ReadonlyArray<number>;
   readonly nodes: ReadonlyArray<{
+    readonly rotation?: number;
     readonly id: string;
     readonly label: string;
     readonly position: {
@@ -365,6 +367,7 @@ export type FlowExportScene = {
     }>;
     readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
+      readonly rotation?: number;
       readonly id: string;
       readonly label: string;
       readonly position: {
@@ -520,6 +523,7 @@ export type FlowImageExportRequest = {
       }>;
       readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {
@@ -659,6 +663,7 @@ export type FlowCommand = {
     | {
       readonly kind: "set-nodes";
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {
@@ -708,6 +713,7 @@ export type FlowCommand = {
     | {
       readonly kind: "add-nodes";
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {
@@ -1113,6 +1119,7 @@ export type FlowChange = {
     }>;
     readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
+      readonly rotation?: number;
       readonly id: string;
       readonly label: string;
       readonly position: {
@@ -1235,6 +1242,7 @@ export type FlowSnapshot = {
     }>;
     readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
+      readonly rotation?: number;
       readonly id: string;
       readonly label: string;
       readonly position: {
@@ -1350,6 +1358,7 @@ export type FlowStateChange = {
       }>;
       readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {
@@ -1457,6 +1466,7 @@ export type FlowStateChange = {
       }>;
       readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {
@@ -1573,6 +1583,7 @@ export type FlowSnapshot = {
     }>;
     readonly nodeOrigin?: ReadonlyArray<number>;
     readonly nodes: ReadonlyArray<{
+      readonly rotation?: number;
       readonly id: string;
       readonly label: string;
       readonly position: {
@@ -1688,6 +1699,7 @@ export type FlowStateChange = {
       }>;
       readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {
@@ -1795,6 +1807,7 @@ export type FlowStateChange = {
       }>;
       readonly nodeOrigin?: ReadonlyArray<number>;
       readonly nodes: ReadonlyArray<{
+        readonly rotation?: number;
         readonly id: string;
         readonly label: string;
         readonly position: {

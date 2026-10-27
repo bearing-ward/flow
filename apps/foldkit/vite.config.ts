@@ -34,6 +34,7 @@ export default defineConfig({
         nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
         main: `${import.meta.dirname}/index.html`,
         editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
+        rotatableNode: `${import.meta.dirname}/rotatable-node/index.html`,
         figures: `${import.meta.dirname}/shapes/index.html`,
         clipboard: `${import.meta.dirname}/clipboard/index.html`,
         helperLines: `${import.meta.dirname}/helper-lines/index.html`,

@@ -378,8 +378,8 @@
       "title": "Easy Connect",
       "listedPro": false,
       "family": "nodes-edges-and-interactions",
-      "journey": "Click a node’s connect affordance and choose a second node from the available targets.",
-      "observableResult": "A single edge joins the chosen pair, and the source node’s connection affordance closes or reports completion.",
+      "journey": "Click a node\u2019s connect affordance and choose a second node from the available targets.",
+      "observableResult": "A single edge joins the chosen pair, and the source node\u2019s connection affordance closes or reports completion.",
       "publicApis": [
         "FlowCanvas",
         "FlowDocument",
@@ -426,7 +426,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Click a node’s connect affordance and choose a second node from the available targets. Assert: A single edge joins the chosen pair, and the source node’s connection affordance closes or reports completion. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Click a node\u2019s connect affordance and choose a second node from the available targets. Assert: A single edge joins the chosen pair, and the source node\u2019s connection affordance closes or reports completion. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
@@ -493,7 +493,7 @@
       "listedPro": false,
       "family": "nodes-edges-and-interactions",
       "journey": "Resize a selected node from a corner and then from an edge handle.",
-      "observableResult": "The node’s rendered bounds and accepted width/height follow both drags while connected edges track the new handle positions.",
+      "observableResult": "The node\u2019s rendered bounds and accepted width/height follow both drags while connected edges track the new handle positions.",
       "publicApis": [
         "FlowCanvas",
         "FlowDocument",
@@ -540,7 +540,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Resize a selected node from a corner and then from an edge handle. Assert: The node’s rendered bounds and accepted width/height follow both drags while connected edges track the new handle positions. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Resize a selected node from a corner and then from an edge handle. Assert: The node\u2019s rendered bounds and accepted width/height follow both drags while connected edges track the new handle positions. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
@@ -664,51 +664,91 @@
       "listedPro": false,
       "family": "styling-stress-and-overview",
       "journey": "Rotate the rotatable node through several angles and connect to one of its handles.",
-      "observableResult": "The node’s orientation indicator and handle geometry rotate together, and the edge meets the rotated handle.",
-      "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
-      "apiValidation": "pending",
+      "observableResult": "The node\u2019s orientation indicator and handle geometry rotate together, and the edge meets the rotated handle.",
+      "publicApis": [
+        "FlowNodeSchema",
+        "createFlow",
+        "useFlow",
+        "createFoldkitFlowInstance",
+        "encodeVersionedFlowDocument",
+        "decodeVersionedFlowDocument"
+      ],
+      "apiValidation": "validated",
       "hostRoutes": {
         "vanilla": {
-          "path": "/examples/nodes/rotatable-node",
-          "status": "planned"
+          "path": "/rotatable-node/",
+          "status": "runnable",
+          "sourcePath": "apps/vanilla/src/rotatable-node-demo.ts"
         },
         "vue": {
-          "path": "/examples/nodes/rotatable-node",
-          "status": "planned"
+          "path": "/rotatable-node/",
+          "status": "runnable",
+          "sourcePath": "apps/vue/src/rotatable-node-demo.ts"
         },
         "foldkit": {
-          "path": "/examples/nodes/rotatable-node",
-          "status": "planned"
+          "path": "/rotatable-node/",
+          "status": "runnable",
+          "sourcePath": "apps/foldkit/src/rotatable-node-demo.ts"
         }
       },
-      "resetBehavior": "Return to a deterministic, versioned fixture snapshot; clear transient gestures and pending async work.",
+      "resetBehavior": "Reload restores the fixed two-node document and releases the prior host and active gestures.",
       "optionalDependencies": "none identified; re-evaluate before adding a dependency",
       "reference": {
-        "availability": "public-page-listed",
-        "licenseReview": "required-before-copy",
-        "comparison": "unverified"
-      },
-      "implementedRecipe": "none",
-      "testedResult": {
-        "vanilla": {
-          "status": "not-tested",
-          "path": null
-        },
-        "vue": {
-          "status": "not-tested",
-          "path": null
-        },
-        "foldkit": {
-          "status": "not-tested",
-          "path": null
+        "availability": "public runnable page and deployed source accessed 2026-10-26",
+        "licenseReview": "Independent implementation; no upstream source copied",
+        "comparison": "different",
+        "evidence": {
+          "type": "trace",
+          "path": "research/traces/167-rotatable-node.md"
         }
       },
-      "acceptanceClaim": "planned",
+      "implementedRecipe": "complete",
+      "testedResult": {
+        "vanilla": {
+          "status": "tested",
+          "path": "apps/vanilla/e2e/rotatable-node.e2e.ts"
+        },
+        "vue": {
+          "status": "tested",
+          "path": "apps/vue/e2e/rotatable-node.e2e.ts"
+        },
+        "foldkit": {
+          "status": "tested",
+          "path": "apps/foldkit/e2e/rotatable-node.e2e.ts"
+        }
+      },
+      "acceptanceClaim": "complete",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Rotate the rotatable node through several angles and connect to one of its handles. Assert: The node’s orientation indicator and handle geometry rotate together, and the edge meets the rotated handle. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
-        "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
-      }
+        "automated": "15 tests per host: measured drag angles, live SVG endpoints, new connections, shape and noncentral measured handles at zoom, native pan/zoom, undo/redo, v6 persistence, clipboard, Escape/blur/pointercancel/capture-loss/replacement cancellation, auto-pan rollback and disposal. Core tests and real Yjs peers cover shared contracts.",
+        "manual": "Dated public example capture and deployed source. Flow intentionally persists a graph rotation and uses measured centers; the example uses local React state and a fixed center."
+      },
+      "apiEvidence": [
+        {
+          "api": "FlowNodeSchema",
+          "path": "packages/core/src/public.ts"
+        },
+        {
+          "api": "createFlow",
+          "path": "apps/vanilla/src/public.ts"
+        },
+        {
+          "api": "useFlow",
+          "path": "packages/vue/src/public.ts"
+        },
+        {
+          "api": "createFoldkitFlowInstance",
+          "path": "packages/foldkit/src/public.ts"
+        },
+        {
+          "api": "encodeVersionedFlowDocument",
+          "path": "packages/core/src/public.ts"
+        },
+        {
+          "api": "decodeVersionedFlowDocument",
+          "path": "packages/core/src/public.ts"
+        }
+      ]
     },
     {
       "url": "https://reactflow.dev/examples/nodes/node-position-animation",
@@ -1328,7 +1368,7 @@
       "title": "Edge Types",
       "listedPro": false,
       "family": "nodes-edges-and-interactions",
-      "journey": "Change an edge’s type through each offered renderer, including the labeled and stepped variants.",
+      "journey": "Change an edge\u2019s type through each offered renderer, including the labeled and stepped variants.",
       "observableResult": "The path style changes for the selected edge while its source, target, label data, and ID remain intact.",
       "publicApis": [
         "FlowCanvas",
@@ -1376,7 +1416,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Change an edge’s type through each offered renderer, including the labeled and stepped variants. Assert: The path style changes for the selected edge while its source, target, label data, and ID remain intact. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Change an edge\u2019s type through each offered renderer, including the labeled and stepped variants. Assert: The path style changes for the selected edge while its source, target, label data, and ID remain intact. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
@@ -2387,7 +2427,7 @@
       "title": "Helper Lines",
       "listedPro": true,
       "family": "nodes-edges-and-interactions",
-      "journey": "Drag a node near another node’s horizontal and vertical alignment guides.",
+      "journey": "Drag a node near another node\u2019s horizontal and vertical alignment guides.",
       "observableResult": "Guides appear at matching coordinates and the node snaps to the documented threshold; guides disappear after release.",
       "publicApis": [
         "FlowCanvas",
@@ -2435,7 +2475,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Drag a node near another node’s horizontal and vertical alignment guides. Assert: Guides appear at matching coordinates and the node snaps to the documented threshold; guides disappear after release. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Drag a node near another node\u2019s horizontal and vertical alignment guides. Assert: Guides appear at matching coordinates and the node snaps to the documented threshold; guides disappear after release. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
@@ -2733,7 +2773,7 @@
       "listedPro": true,
       "family": "grouping-and-layout",
       "journey": "Move a child inside and outside its parent bounds, then move the parent.",
-      "observableResult": "The child’s parent-relative coordinates and visible containment update according to the configured parent rules.",
+      "observableResult": "The child\u2019s parent-relative coordinates and visible containment update according to the configured parent rules.",
       "publicApis": ["FlowDocument", "FlowGeometry", "FlowEdit"],
       "apiValidation": "pending",
       "hostRoutes": {
@@ -2775,7 +2815,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Move a child inside and outside its parent bounds, then move the parent. Assert: The child’s parent-relative coordinates and visible containment update according to the configured parent rules. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Move a child inside and outside its parent bounds, then move the parent. Assert: The child\u2019s parent-relative coordinates and visible containment update according to the configured parent rules. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
@@ -3459,7 +3499,7 @@
       "listedPro": false,
       "family": "styling-stress-and-overview",
       "journey": "Build and open the optional Tailwind example with utility styling enabled.",
-      "observableResult": "The example’s utility classes style the canvas and controls while the core package remains usable without Tailwind.",
+      "observableResult": "The example\u2019s utility classes style the canvas and controls while the core package remains usable without Tailwind.",
       "publicApis": ["FlowCanvas", "FlowViewport", "FlowDocument"],
       "apiValidation": "pending",
       "hostRoutes": {
@@ -3501,7 +3541,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "pending",
       "testBoundary": {
-        "automated": "In each host, run the journey: Build and open the optional Tailwind example with utility styling enabled. Assert: The example’s utility classes style the canvas and controls while the core package remains usable without Tailwind. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Build and open the optional Tailwind example with utility styling enabled. Assert: The example\u2019s utility classes style the canvas and controls while the core package remains usable without Tailwind. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
@@ -3668,7 +3708,7 @@
       "listedPro": false,
       "family": "advanced-integrations",
       "journey": "Drag on empty canvas to draw a rectangle and then select or resize it.",
-      "observableResult": "A persistent rectangle has the gesture’s bounds and declared style; later selection or resize updates that rectangle only.",
+      "observableResult": "A persistent rectangle has the gesture\u2019s bounds and declared style; later selection or resize updates that rectangle only.",
       "publicApis": ["FlowDocument", "FlowEdit", "host integration boundary"],
       "apiValidation": "pending",
       "hostRoutes": {
@@ -3710,7 +3750,7 @@
       "acceptanceClaim": "planned",
       "dependencyDecision": "none-identified",
       "testBoundary": {
-        "automated": "In each host, run the journey: Drag on empty canvas to draw a rectangle and then select or resize it. Assert: A persistent rectangle has the gesture’s bounds and declared style; later selection or resize updates that rectangle only. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
+        "automated": "In each host, run the journey: Drag on empty canvas to draw a rectangle and then select or resize it. Assert: A persistent rectangle has the gesture\u2019s bounds and declared style; later selection or resize updates that rectangle only. Then restore the documented reset state. Current automated evidence is recorded separately in testedResult.",
         "manual": "Compare this specific journey and observable result with the dated public/pinned reference when accessible; record unavailable pages or differences separately. License review is required before copying reference material; host tests do not prove parity."
       }
     },
