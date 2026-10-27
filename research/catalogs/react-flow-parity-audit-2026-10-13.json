@@ -6,11 +6,11 @@
     "P": "partial: exists with notable gaps",
     "G": "gap: no public equivalent"
   },
-  "parityScope": "Functional parity: every in-scope entry is C in Vanilla, Vue and Foldkit. From 2026-10-25 the publicly listed Pro examples are in scope. Remaining stretch entries (non-Pro templates and long tail; wave 7) and intentional gaps are excluded from the parity denominator.",
+  "parityScope": "Functional parity: every in-scope entry is C in Vanilla, Vue and Foldkit. Pro examples joined the scope on 2026-10-25, and the former stretch entries (Rotatable Node and the Workflow Editor and AI Workflow Editor templates) on 2026-10-26. Intentional gaps are excluded from the parity denominator.",
   "summary": {
     "entries": 200,
-    "inScope": 195,
-    "stretch": 3,
+    "inScope": 198,
+    "stretch": 0,
     "intentionalGaps": 2,
     "inScopeCloseAllHosts": 195,
     "inScopeCloseByHost": {
@@ -2240,7 +2240,7 @@
       "vanilla": "G",
       "vue": "G",
       "foldkit": "G",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "Node rotation and rotated handle geometry",
       "effort": "L",
@@ -2249,6 +2249,10 @@
         "on": "2026-10-14",
         "missing": "Node rotation and rotated handle geometry",
         "evidence": "no rotation support in apps/*/src or packages/*/src"
+      },
+      "addedToScope": {
+        "on": "2026-10-26",
+        "reason": "Maintainer asked to proceed with the remaining stretch entries after Pro parity"
       }
     },
     {
@@ -5707,7 +5711,7 @@
       "vanilla": "G",
       "vue": "G",
       "foldkit": "G",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No template; needs editor app, simulated AI runs, save/restore",
       "effort": "L",
@@ -5716,6 +5720,10 @@
         "on": "2026-10-14",
         "missing": "No template or recipe in any host (stretch)",
         "evidence": "no match for 'workflow editor' under apps/ or packages/"
+      },
+      "addedToScope": {
+        "on": "2026-10-26",
+        "reason": "Maintainer asked to proceed with the remaining stretch entries after Pro parity"
       }
     },
     {
@@ -5724,7 +5732,7 @@
       "vanilla": "G",
       "vue": "G",
       "foldkit": "G",
-      "scope": "stretch",
+      "scope": "parity",
       "wave": 7,
       "missing": "No template; needs editor app, deterministic runner, save/restore",
       "effort": "L",
@@ -5733,6 +5741,10 @@
         "on": "2026-10-14",
         "missing": "No template or recipe in any host (stretch)",
         "evidence": "no match for 'workflow editor' under apps/ or packages/"
+      },
+      "addedToScope": {
+        "on": "2026-10-26",
+        "reason": "Maintainer asked to proceed with the remaining stretch entries after Pro parity"
       }
     },
     {
