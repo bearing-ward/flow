@@ -1,4 +1,4 @@
-import { flowNodeHandles } from '@flow/core'
+import { unrotateFlowHandle, flowNodeHandles } from '@flow/core'
 import type { FlowNode, MeasuredHandle } from '@flow/core'
 
 /**
@@ -36,6 +36,8 @@ export const collectNodeHandles = (
   zoom: number
 ): readonly MeasuredHandle[] => {
   const measurements: [string, MeasuredHandle][] = []
+  const rotation = Number(element.dataset.rotation ?? node.rotation ?? 0)
+  const rotated = rotation % 360 !== 0
 
   for (const handleElement of element.querySelectorAll<HTMLElement>(
     '[data-handle-id]'
@@ -59,12 +61,24 @@ export const collectNodeHandles = (
       {
         nodeId: node.id,
         handleId: handle.id,
-        offset: {
-          x: (bounds.left + bounds.width / 2 - nodeBounds.left) / zoom,
-          y: (bounds.top + bounds.height / 2 - nodeBounds.top) / zoom,
-        },
-        width: bounds.width / zoom,
-        height: bounds.height / zoom,
+        offset: unrotateFlowHandle({
+          center: {
+            x: bounds.x + bounds.width / 2,
+            y: bounds.y + bounds.height / 2,
+          },
+          nodeCenter: {
+            x: nodeBounds.x + nodeBounds.width / 2,
+            y: nodeBounds.y + nodeBounds.height / 2,
+          },
+          size: {
+            width: rotated ? element.offsetWidth : nodeBounds.width / zoom,
+            height: rotated ? element.offsetHeight : nodeBounds.height / zoom,
+          },
+          zoom,
+          rotation,
+        }),
+        width: rotated ? handleElement.offsetWidth : bounds.width / zoom,
+        height: rotated ? handleElement.offsetHeight : bounds.height / zoom,
       },
     ])
   }

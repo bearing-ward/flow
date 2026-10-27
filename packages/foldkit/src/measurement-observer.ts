@@ -1,4 +1,5 @@
 import {
+  unrotateFlowHandle,
   NodeIdSchema,
   HandleIdSchema,
   FlowAttribute,
@@ -89,6 +90,8 @@ export const createFoldkitNodeMeasurementObserver = (
     try {
       const bounds = element.getBoundingClientRect()
       const zoom = options.zoom?.() ?? 1
+      const rotation = Number(element.dataset.rotation ?? 0)
+      const rotated = rotation % 360 !== 0
 
       const handles = [
         ...element.querySelectorAll<HTMLElement>('[data-handle-id]'),
@@ -109,12 +112,24 @@ export const createFoldkitNodeMeasurementObserver = (
           {
             nodeId: NodeIdSchema.make(nodeId),
             handleId: HandleIdSchema.make(handleId),
-            offset: {
-              x: (handle.left + handle.width / 2 - bounds.left) / zoom,
-              y: (handle.top + handle.height / 2 - bounds.top) / zoom,
-            },
-            width: handle.width / zoom,
-            height: handle.height / zoom,
+            offset: unrotateFlowHandle({
+              center: {
+                x: handle.x + handle.width / 2,
+                y: handle.y + handle.height / 2,
+              },
+              nodeCenter: {
+                x: bounds.x + bounds.width / 2,
+                y: bounds.y + bounds.height / 2,
+              },
+              size: {
+                width: rotated ? element.offsetWidth : bounds.width / zoom,
+                height: rotated ? element.offsetHeight : bounds.height / zoom,
+              },
+              zoom,
+              rotation,
+            }),
+            width: rotated ? handleElement.offsetWidth : handle.width / zoom,
+            height: rotated ? handleElement.offsetHeight : handle.height / zoom,
           },
         ]
       })

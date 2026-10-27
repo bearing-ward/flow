@@ -4,6 +4,8 @@ Checked items work in the repository today. Unchecked items are still part of th
 
 ### Desired features completed (2026-10-26)
 
+- [x] Rotatable node, Plan 167: decoded rotation, native previews, rotated attachments and bounds, v6 persistence, clipboard, collaboration, and one-step history in Vanilla, Vue and Foldkit. All 45 browser cases pass. The parity audit now rates 196 of 198 in-scope entries C across all hosts. See [node rotation](../docs/node-rotation.md) and the [research trace](traces/167-rotatable-node.md).
+
 - [x] Wire ties, Plan 163: document bundles and v5 persistence; four-unit lane splines; toolbar slash guide/count; second ties; focusable perpendicular markers; live drag, capture/cancellation and auto-pan; removal, reconnection, deletion pruning, clipboard and history in Vanilla, Vue and Foldkit. All 57 browser cases pass, 19 per host, including shared routing around obstacles between ties. See [wire ties](../docs/wire-ties.md) and the [research trace](traces/163-wire-ties.md). This desired feature is outside the parity catalog.
 
 ### Current status (2026-10-14)

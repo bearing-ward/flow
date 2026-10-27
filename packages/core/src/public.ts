@@ -1,3 +1,20 @@
+export {
+  FlowNodeRotationSchema,
+  FlowRotationGestureSchema,
+  FlowRotationEventSchema,
+  normalizeFlowRotation,
+  startFlowRotation,
+  reduceFlowRotation,
+  rotateFlowPoint,
+  rotatedFlowBounds,
+  unrotateFlowHandle,
+} from './domain/flow-node-rotation.ts'
+
+export type {
+  FlowRotationGesture,
+  FlowRotationEvent,
+} from './domain/flow-node-rotation.ts'
+
 export { FlowTypedFailureSchema } from './domain/flow-data-contract.schema.ts'
 
 export type {
@@ -702,6 +719,7 @@ export {
   boundedNodeId,
   boundedNodeRect,
   getInternalNodeBounds,
+  getInternalNodeLayoutBounds,
   getIntersectingNodes,
   getRectOverlapArea,
   isNodeIntersecting,
@@ -1332,3 +1350,13 @@ export {
 } from './domain/flow-room.ts'
 
 export type { FlowRoomPresence, FlowRoomStatus } from './domain/flow-room.ts'
+
+export {
+  SavedRotationFlowDocumentSchema,
+  SavedRotationFlowSessionSchema,
+} from './domain/flow-persistence.ts'
+
+export type {
+  SavedRotationFlowDocument,
+  SavedRotationFlowSession,
+} from './domain/flow-persistence.ts'

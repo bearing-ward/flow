@@ -4,6 +4,7 @@ import type { FlowBundle } from './flow-bundle.schema.ts'
 import { boundedNodeRect } from './flow-intersection.ts'
 import type { FlowBoundedNode } from './flow-intersection.ts'
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
+import { rotatedFlowBounds } from './flow-node-rotation.ts'
 import { nodeAnchorToTopLeft } from './flow-origin.schema.ts'
 import type { NodeOrigin } from './flow-origin.schema.ts'
 import type { Viewport } from './flow-runtime.schema.ts'
@@ -31,7 +32,7 @@ const plainNodeRect = (node: FlowNode, nodeOrigin: NodeOrigin): FlowRect => {
     node.origin ?? nodeOrigin
   )
 
-  return { ...topLeft, ...size }
+  return rotatedFlowBounds({ ...topLeft, ...size }, node.rotation)
 }
 
 /**

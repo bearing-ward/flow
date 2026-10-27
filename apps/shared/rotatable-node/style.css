@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+h1 {
+  margin: 12px;
+  font-size: 20px;
+}
+#rotation-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+#app {
+  height: 620px;
+  width: 100%;
+  position: relative;
+}
+#app > div,
+#app .flow-foldkit-root,
+#app .flow-foldkit-canvas {
+  height: 100%;
+}
+#rotation-status {
+  display: block;
+  padding: 8px;
+}

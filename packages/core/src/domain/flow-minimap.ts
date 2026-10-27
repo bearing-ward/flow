@@ -1,6 +1,6 @@
 import { Predicate, Schema as S } from 'effect'
 
-import { graphBounds } from './flow-graph.ts'
+import { graphBounds, graphNodeBounds } from './flow-graph.ts'
 import type { FlowGraphView } from './flow-graph.ts'
 import { FlowPanelPositionSchema } from './flow-panel-position.ts'
 import type { FlowStyle } from './flow-style.schema.ts'
@@ -220,10 +220,7 @@ export const selectFlowMiniMapProjection = (input: {
 
         return {
           id: node.id,
-          x: node.absolutePosition.x,
-          y: node.absolutePosition.y,
-          width: node.dimensions.width,
-          height: node.dimensions.height,
+          ...graphNodeBounds(node),
           borderRadius:
             options.nodeBorderRadius ?? flowMiniMapDefaults.nodeBorderRadius,
           className: nodeAttribute(options.nodeClassName, node.node) ?? '',

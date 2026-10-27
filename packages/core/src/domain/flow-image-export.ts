@@ -1,7 +1,7 @@
 import { Effect, Schema as S } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
-import { createFlowGraph } from './flow-graph.ts'
+import { createFlowGraph, graphNodeBounds } from './flow-graph.ts'
 import { FlowRoutingResultSchema } from './flow-routing.schema.ts'
 import { MeasuredNodeSchema } from './flow-runtime.schema.ts'
 import { getViewportForBounds } from './flow-viewport-operation.schema.ts'
@@ -141,17 +141,16 @@ export const prepareFlowImageExport = (input: unknown) =>
       }
     }
 
-    const visible = graph.orderedNodes.filter((item) => !item.hidden)
-    const x = Math.min(...visible.map((item) => item.absolutePosition.x))
-    const y = Math.min(...visible.map((item) => item.absolutePosition.y))
+    const visible = graph.orderedNodes
+      .filter((item) => !item.hidden)
+      .map(graphNodeBounds)
 
-    const right = Math.max(
-      ...visible.map((item) => item.absolutePosition.x + item.dimensions.width)
-    )
+    const x = Math.min(...visible.map((item) => item.x))
+    const y = Math.min(...visible.map((item) => item.y))
 
-    const bottom = Math.max(
-      ...visible.map((item) => item.absolutePosition.y + item.dimensions.height)
-    )
+    const right = Math.max(...visible.map((item) => item.x + item.width))
+
+    const bottom = Math.max(...visible.map((item) => item.y + item.height))
 
     const viewport =
       request.framing.kind === 'viewport'

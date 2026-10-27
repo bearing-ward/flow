@@ -1,6 +1,6 @@
 import {
   FlowEditDisposedSchema,
-  getInternalNodeBounds,
+  getInternalNodeLayoutBounds,
   prepareFlowGrouping,
 } from '@flow/core'
 import type { FlowGroupingActionInput } from '@flow/core'
@@ -51,7 +51,7 @@ export const createFoldkitGroupingClient = (runtimePorts: GroupingPorts) => {
             ? [
                 [
                   internal.node.id,
-                  getInternalNodeBounds(internal).bounds,
+                  getInternalNodeLayoutBounds(internal).bounds,
                 ] as const,
               ]
             : []

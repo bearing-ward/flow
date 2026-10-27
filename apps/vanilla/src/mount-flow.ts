@@ -1,4 +1,6 @@
 import {
+  rotateFlowPoint,
+  normalizeFlowRotation,
   FlowRoutingResultSchema,
   createFlowNodeAnimator,
   solveFlowAlignment,
@@ -300,6 +302,10 @@ import type { FlowInstanceApi } from './instance-api.ts'
 import { isInputDOMNode, observeKeyPress } from './key-press-observer.ts'
 import type { FlowKeyCode, FlowKeyPressOptions } from './key-press-observer.ts'
 import { createMeasuredDimensionsTracker } from './measured-dimensions.ts'
+import {
+  createNodeRotationResource,
+  syncNodeRotationHandle,
+} from './node-rotation.ts'
 import { applyFlowStyle, applyNodePresentation } from './presentation.ts'
 import { renderRegisteredResizeControls } from './resize-controls.ts'
 import type {
@@ -1784,7 +1790,10 @@ const applyNodePosition = (
   element: HTMLElement,
   position: XYPosition
 ): void => {
-  element.style.transform = `translate(${position.x}px, ${position.y}px)`
+  const rotation = normalizeFlowRotation(Number(element.dataset.rotation ?? 0))
+  const translate = `translate(${position.x}px, ${position.y}px)`
+  element.style.transform =
+    rotation === 0 ? translate : `${translate} rotate(${rotation}deg)`
 }
 
 const applyViewport = (element: HTMLElement, viewport: Viewport): void => {
@@ -3394,6 +3403,22 @@ export const createFlowHost = (
         : measurementReadEqual(captured, current)
     }
 
+    let rotationPreview: {
+      readonly nodeId: NodeId
+      readonly rotation: number
+    } | null = null
+
+    interface RotationResourceOwner {
+      resource?: ReturnType<typeof createNodeRotationResource>
+    }
+
+    const rotationOwner: RotationResourceOwner = {}
+
+    const presentedRotationNode = (node: FlowNode): FlowNode =>
+      rotationPreview?.nodeId === node.id
+        ? { ...node, rotation: rotationPreview.rotation }
+        : node
+
     const nodeDependenciesMatch = (
       pass: HostProjection,
       id: NodeId
@@ -3411,12 +3436,14 @@ export const createFlowHost = (
           return captured === current
         }
 
+        const presented = presentedRotationNode(current)
+
         if (
           currentId === id &&
-          (captured.data !== current.data ||
+          (captured.data !== presented.data ||
             !nodeReadEqual(
               { ...captured, data: undefined },
-              { ...current, data: undefined }
+              { ...presented, data: undefined }
             ) ||
             pass.inputs.nodeRenderers.get(captured.type ?? 'default') !==
               options.nodeRenderers?.[current.type ?? 'default'])
@@ -3424,7 +3451,7 @@ export const createFlowHost = (
           return false
         }
 
-        if (!nodeGeometryMatches(captured, current)) {
+        if (!nodeGeometryMatches(captured, presented)) {
           return false
         }
 
@@ -3622,7 +3649,13 @@ export const createFlowHost = (
           target.nodeOrigin === undefined
             ? undefined
             : [target.nodeOrigin[0], target.nodeOrigin[1]],
-        nodes: target.nodes.map(copyNodeRead),
+        nodes: target.nodes.map((node) =>
+          copyNodeRead(
+            rotationPreview?.nodeId === node.id
+              ? { ...node, rotation: rotationPreview.rotation }
+              : node
+          )
+        ),
         edges: target.edges.map((edge) => ({ ...edge })),
       }
 
@@ -4458,6 +4491,16 @@ export const createFlowHost = (
           slot.entry.state === 'owned' &&
           resolved !== undefined
         ) {
+          if (resolved.node.rotation !== undefined) {
+            slot.entry.element.style.transformOrigin = 'center'
+          }
+
+          if (resolved.node.rotation === undefined) {
+            delete slot.entry.element.dataset.rotation
+          } else {
+            slot.entry.element.dataset.rotation = String(resolved.node.rotation)
+          }
+
           applyNodePosition(slot.entry.element, resolved.absolutePosition)
           refreshNodeRendererProps(slot.entry, resolved.node, graph)
         }
@@ -5343,10 +5386,17 @@ export const createFlowHost = (
         measured ??
         inferHandleMeasurement(node.id, handle, graphNode.dimensions)
 
-      return {
-        x: graphNode.absolutePosition.x + geometry.offset.x,
-        y: graphNode.absolutePosition.y + geometry.offset.y,
-      }
+      return rotateFlowPoint(
+        {
+          x: graphNode.absolutePosition.x + geometry.offset.x,
+          y: graphNode.absolutePosition.y + geometry.offset.y,
+        },
+        {
+          x: graphNode.absolutePosition.x + graphNode.dimensions.width / 2,
+          y: graphNode.absolutePosition.y + graphNode.dimensions.height / 2,
+        },
+        graphNode.node.rotation ?? 0
+      )
     }
 
     const connectionTargetAt = (
@@ -5569,6 +5619,10 @@ export const createFlowHost = (
         refreshNodeRendererProps(entry, node, graph)
 
         if (node !== undefined) {
+          if (node.rotation !== undefined) {
+            entry.element.style.transformOrigin = 'center'
+          }
+
           applyNodeInteractionState(entry.element, node, {
             nodesFocusable: options.nodesFocusable,
             descriptionId: a11yDescriptions.nodeDescriptionId,
@@ -7998,6 +8052,7 @@ export const createFlowHost = (
         previous?: FlowDocument,
         quiet = false
       ): void {
+        rotationOwner.resource?.cancel('document-update')
         editableRoutes?.documentChanged(next)
 
         if (
@@ -8486,6 +8541,8 @@ export const createFlowHost = (
 
             updated += 1
           }
+
+          syncNodeRotationHandle(entry.element, node)
 
           applyNodePosition(
             entry.element,
@@ -9028,6 +9085,7 @@ export const createFlowHost = (
         element.dataset.nodeId = node.id
         element.dataset.testid = 'flow-node'
         element.append(content, handles)
+        syncNodeRotationHandle(element, node)
         const renderer = options.nodeRenderers?.[node.type ?? 'default']
 
         const rendererType =
@@ -10471,6 +10529,7 @@ export const createFlowHost = (
     }
 
     const hasCanvasPointerGesture = (): boolean =>
+      rotationOwner.resource?.active() === true ||
       editableRoutes?.active() === true ||
       pendingConnection !== null ||
       interactionSlots.activeDrag !== null ||
@@ -11491,6 +11550,7 @@ export const createFlowHost = (
     }
 
     const onWindowBlur = (): void => {
+      rotationOwner.resource?.cancel('window-blur')
       editableSpacePressed = false
       editableRoutes?.cancel('window-blur')
       selectionKeyPressed = false
@@ -12456,6 +12516,64 @@ export const createFlowHost = (
         autoPanSpeed: options.autoPanSpeed ?? 15,
       })
     }
+
+    rotationOwner.resource = createNodeRotationResource({
+      canvas: () => canvas,
+      document: () => document,
+      graph: () => graphFor(),
+      viewport: () => renderedViewport,
+      available: () =>
+        !destroyed &&
+        !hasCanvasPointerGesture() &&
+        interactionSlots.activeNodeResize === null,
+      capture: (owner, pointerId) =>
+        runEffect(browser.capturePointer(owner, pointerId)),
+      preview: (preview) => {
+        rotationPreview = preview
+
+        if (!destroyed) {
+          const pass = captureProjection()
+          renderGraphPositions(pass)
+          renderGraphEdges(pass)
+        }
+      },
+      pan: (next) => {
+        if (!destroyed) {
+          renderViewport(next)
+        }
+      },
+      commitViewport: (next) => {
+        if (!destroyed) {
+          operations.publishChange({ kind: 'viewport', viewport: next })
+        }
+      },
+      autoPan: () => options.autoPanOnNodeDrag !== false,
+      autoPanSpeed: () => options.autoPanSpeed ?? 15,
+      suppressClick: () => suppressClickUntilPointerUp(true),
+      commit: async (nodeId, rotation, gestureId) => {
+        try {
+          await applyEditResolved(() => ({
+            operations: [{ kind: 'update-node', nodeId, patch: { rotation } }],
+          }))
+        } catch (error) {
+          reportStateListenerFailure(Cause.die(error))
+        } finally {
+          rotationOwner.resource?.settle(gestureId)
+          rotationPreview = null
+
+          if (!destroyed) {
+            const pass = captureProjection()
+            renderGraphPositions(pass)
+            renderGraphEdges(pass)
+          }
+        }
+      },
+    })
+    rotationOwner.resource.mount()
+    yield* Scope.addFinalizer(
+      hostBrowserScope,
+      Effect.sync(() => rotationOwner.resource?.dispose())
+    )
 
     const animatedNodeIds = new Set<NodeId>()
     let animationTime = performance.now()
@@ -14192,6 +14310,7 @@ export const createFlowHost = (
         let stateCleanupFailed = false
 
         destroyed = true
+        rotationOwner.resource?.dispose()
         nodeAnimator.dispose()
         editableRoutes?.cancel('host-destroyed')
         freeformConnection = undefined

@@ -12,7 +12,7 @@ Plan 165 implements D13 as an optional Playwright Chromium image service. The se
 | `host` | `vanilla`, `vue` or `foldkit`. The service chooses a configured origin. |
 | `revision` | 1 to 128 ASCII letters, digits, dots, underscores, colons or hyphens. Returned as `X-Flow-Revision`. |
 | `width`, `height` | Integer CSS pixels, 64 through 4096. Device scale is 1. Output has exactly these PNG dimensions. |
-| `scene.document` | The current Flow document, including parent/group membership, tree data, shape data, manual routes and persistence v5 wire-tie bundles. Opaque JSON data remains attached. |
+| `scene.document` | The current Flow document, including parent/group membership, tree data, shape data, manual routes, node rotation, and wire-tie bundles. Opaque JSON data remains attached. |
 | `scene.measurements` | An array of node IDs, positive width/height and explicit handle boxes with node ID, handle ID, graph-space offset, width and height. Every visible node and declared handle needs geometry. Hidden or collapsed nodes need no measurements. |
 | `scene.edgeRouting` | A routing result or `null`. Only a result matching the supplied scene revision can render. Capture preserves its interior waypoints and adapts endpoint anchors and the routing revision to native CSS measurement precision; stale routes remain rejected. Manual routes and bundle ties remain document-owned. |
 | `framing` | `{ kind: 'fit', padding }`, with padding 0 through 0.4 using Flow's existing viewport fitting semantics, or `{ kind: 'viewport', x, y, zoom }`, with finite coordinates and zoom 0.01 through 10. Fit uses visible node bounds. Use an explicit viewport when routes extend outside those bounds. |

@@ -16,6 +16,7 @@ import {
   findFlowBundleIssue,
 } from './flow-bundle.schema.ts'
 import type { FlowBundle } from './flow-bundle.schema.ts'
+import { FlowNodeRotationSchema } from './flow-node-rotation.ts'
 import { NodeOriginSchema } from './flow-origin.schema.ts'
 import { FlowEdgeRouteSchema } from './flow-route.schema.ts'
 import { FlowFigureDataSchema } from './flow-shape.schema.ts'
@@ -145,6 +146,7 @@ export const NodeMeasuredSchema = S.Struct({
 export type NodeMeasured = typeof NodeMeasuredSchema.Type
 
 export const FlowNodeSchema = S.Struct({
+  rotation: S.optional(FlowNodeRotationSchema),
   id: NodeIdSchema,
   label: S.String,
   position: XYPositionSchema,

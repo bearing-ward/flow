@@ -1,6 +1,7 @@
 import { Predicate } from 'effect'
 
 import type { FlowInternalNode } from './flow-measurement.schema.ts'
+import { rotatedFlowBounds } from './flow-node-rotation.ts'
 import type { FlowRect } from './flow-visibility.schema.ts'
 
 /** A node, or any other item, with an absolute flow-space rectangle. */
@@ -81,12 +82,15 @@ export const boundedNodeId = (node: FlowBoundedNode): string =>
 /** Absolute flow-space bounds of a bounded node or rectangle. */
 export const boundedNodeRect = (nodeOrRect: FlowNodeOrRect): FlowRect => {
   if (isInternalNode(nodeOrRect)) {
-    return {
-      x: nodeOrRect.absolutePosition.x,
-      y: nodeOrRect.absolutePosition.y,
-      width: nodeOrRect.width,
-      height: nodeOrRect.height,
-    }
+    return rotatedFlowBounds(
+      {
+        x: nodeOrRect.absolutePosition.x,
+        y: nodeOrRect.absolutePosition.y,
+        width: nodeOrRect.width,
+        height: nodeOrRect.height,
+      },
+      nodeOrRect.node.rotation
+    )
   }
 
   return isCandidate(nodeOrRect) ? nodeOrRect.bounds : nodeOrRect
@@ -180,9 +184,24 @@ export const getInternalNodeBounds = (
   internal: FlowInternalNode
 ): FlowIntersectionCandidate => ({
   id: internal.node.id,
+  bounds: rotatedFlowBounds(
+    {
+      x: internal.absolutePosition.x,
+      y: internal.absolutePosition.y,
+      width: internal.width,
+      height: internal.height,
+    },
+    internal.node.rotation
+  ),
+})
+
+/** Physical layout box for parent-relative coordinate conversion. */
+export const getInternalNodeLayoutBounds = (
+  internal: FlowInternalNode
+): FlowIntersectionCandidate => ({
+  id: internal.node.id,
   bounds: {
-    x: internal.absolutePosition.x,
-    y: internal.absolutePosition.y,
+    ...internal.absolutePosition,
     width: internal.width,
     height: internal.height,
   },

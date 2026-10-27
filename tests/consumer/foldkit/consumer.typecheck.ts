@@ -487,7 +487,7 @@ export type UnapprovedEdgeDescription =
   // @ts-expect-error Edge ariaDescription is outside the approved native field contract.
   FlowDocument['edges'][number]['ariaDescription']
 
-// Complete additive persistence retains literal-v1 callers and narrows the supported v1-v5 union.
+// Complete additive persistence retains literal-v1 callers and narrows the supported v1-v6 union.
 export const completeVersionedDocument = encodeVersionedFlowDocument(document)
 
 export const completeVersionedSession = encodeVersionedFlowSession(document, {
@@ -496,7 +496,7 @@ export const completeVersionedSession = encodeVersionedFlowSession(document, {
   zoom: 1,
 })
 
-export const completeVersion: 1 | 2 | 3 | 4 | 5 =
+export const completeVersion: 1 | 2 | 3 | 4 | 5 | 6 =
   completeVersionedSession.version
 
 // @ts-expect-error An additive encoder cannot promise literal-v1 output.
@@ -527,10 +527,22 @@ export const explicitVersionFive: SavedVersionedFlowSession = {
   viewport: { x: 0, y: 0, zoom: 1 },
 }
 
+export const explicitVersionSix: SavedVersionedFlowSession = {
+  version: 6,
+  document: {
+    ...document,
+    nodes: document.nodes.map((rotatingNode) => ({
+      ...rotatingNode,
+      rotation: 90,
+    })),
+  },
+  viewport: { x: 0, y: 0, zoom: 1 },
+}
+
 export const invalidVersionedFormat: SavedVersionedFlowSession = {
   ...completeVersionedSession,
-  // @ts-expect-error Version 6 is outside the supported v1/v2/v3/v4/v5 contract.
-  version: 6,
+  // @ts-expect-error Version 7 is outside the supported persistence contract.
+  version: 7,
 }
 
 export const inspectCompleteRuntimePorts = (

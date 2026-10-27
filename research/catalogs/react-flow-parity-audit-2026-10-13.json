@@ -12,11 +12,11 @@
     "inScope": 198,
     "stretch": 0,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 195,
+    "inScopeCloseAllHosts": 196,
     "inScopeCloseByHost": {
-      "vanilla": 195,
-      "vue": 195,
-      "foldkit": 195
+      "vanilla": 196,
+      "vue": 196,
+      "foldkit": 196
     },
     "reaudit": "2026-10-26 Plan 149 Pro audit with Plans 150, 153-160 and 162-165 acceptance follow-ups; Plan 168 workflow template outcome audit retains both templates at G; other ratings retain their recorded audit boundaries.",
     "proReaudit": {
@@ -2237,23 +2237,39 @@
     {
       "section": "examples nodes",
       "name": "Rotatable Node",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "Node rotation and rotated handle geometry",
+      "missing": null,
       "effort": "L",
       "theme": "node-transform",
       "reaudit": {
-        "on": "2026-10-14",
-        "missing": "Node rotation and rotated handle geometry",
-        "evidence": "no rotation support in apps/*/src or packages/*/src"
+        "on": "2026-10-26",
+        "plan": "Plan 167",
+        "previousRatings": {
+          "vanilla": "G",
+          "vue": "G",
+          "foldkit": "G"
+        },
+        "missing": null,
+        "evidence": [
+          "research/traces/167-rotatable-node.md",
+          "research/fixtures/rotatable-node-reference.json",
+          "packages/core/src/domain/flow-node-rotation.test.ts",
+          "apps/vanilla/e2e/rotatable-node.e2e.ts",
+          "apps/vue/e2e/rotatable-node.e2e.ts",
+          "apps/foldkit/e2e/rotatable-node.e2e.ts",
+          "packages/collaboration-yjs/src/public.test.ts"
+        ],
+        "boundary": "Functional outcome acceptance: 15 browser cases per host, core contracts, and real Yjs peers. Rotation persists in Flow v6; the reference keeps local component state. Focused verification does not establish verify:full parity."
       },
       "addedToScope": {
         "on": "2026-10-26",
         "reason": "Maintainer asked to proceed with the remaining stretch entries after Pro parity"
-      }
+      },
+      "updatedBy": ["Plan 167"]
     },
     {
       "section": "examples nodes",

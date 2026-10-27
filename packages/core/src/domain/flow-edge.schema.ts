@@ -1,5 +1,6 @@
 import { Match, Schema as S } from 'effect'
 
+import { rotateFlowPoint } from './flow-node-rotation.ts'
 import { stepEdgeLabelPosition } from './flow-step-edge.schema.ts'
 import {
   HandleIdSchema,
@@ -80,7 +81,12 @@ export const resolveEdgeHandles = (document: FlowDocument, edge: FlowEdge) => {
 export const edgeAttachmentPosition = (
   nodePosition: XYPosition,
   handle: FlowHandle,
-  measured: MeasuredHandle
+  measured: MeasuredHandle,
+  geometry?: {
+    readonly width: number
+    readonly height: number
+    readonly rotation?: number | undefined
+  }
 ): XYPosition => {
   const center = {
     x: nodePosition.x + measured.offset.x,
@@ -94,10 +100,21 @@ export const edgeAttachmentPosition = (
     left: { x: -measured.width / 2, y: 0 },
   } satisfies Record<FlowHandle['side'], XYPosition>
 
-  return {
+  const point = {
     x: center.x + displacement[handle.side].x,
     y: center.y + displacement[handle.side].y,
   }
+
+  return geometry === undefined
+    ? point
+    : rotateFlowPoint(
+        point,
+        {
+          x: nodePosition.x + geometry.width / 2,
+          y: nodePosition.y + geometry.height / 2,
+        },
+        geometry.rotation ?? 0
+      )
 }
 
 export const straightEdgePath = (

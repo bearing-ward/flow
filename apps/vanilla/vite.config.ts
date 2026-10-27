@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
           dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
           nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
           main: fileURLToPath(new URL('index.html', import.meta.url)),
+          rotatableNode: `${import.meta.dirname}/rotatable-node/index.html`,
           figures: `${import.meta.dirname}/shapes/index.html`,
           clipboard: `${import.meta.dirname}/clipboard/index.html`,
           helperLines: `${import.meta.dirname}/helper-lines/index.html`,

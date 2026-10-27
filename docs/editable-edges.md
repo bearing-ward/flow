@@ -45,7 +45,7 @@ Holding Space before a pointer connection begins selects freeform mode for that 
 
 Point previews do not change accepted state. Each committed point drag, insertion, removal, or keyboard action uses the existing [transaction history](transaction-history.md). Reconnection and endpoint motion retain interior graph coordinates. A rejected controlled proposal records no history entry.
 
-`encodeVersionedFlowDocument` and `encodeVersionedFlowSession` choose version 4 whenever an edge owns a route field, including explicit automatic mode. V4 extends the frozen v3 saved edge projection. Documents that own wire bundles use v5. Older writers and mislabeled older envelopes reject route-bearing input with `route-requires-versioned-session` rather than discard route intent.
+`encodeVersionedFlowDocument` and `encodeVersionedFlowSession` choose version 4 when an edge owns a route field, including explicit automatic mode, and no newer semantics are present. V4 extends the frozen v3 saved edge projection. Documents that own wire bundles use v5; documents with [node rotation](node-rotation.md) use v6, which preserves both routes and bundles. Older writers and mislabeled older envelopes reject route-bearing input with `route-requires-versioned-session` rather than discard route intent.
 
 The [session clipboard](graph-clipboard.md) preserves route fields and opaque data. Paste translates manual points by the same graph-space offset as the copied roots, before extension hooks. Endpoint and handle ID remapping remains unchanged.
 

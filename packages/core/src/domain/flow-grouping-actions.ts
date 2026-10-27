@@ -2,9 +2,10 @@ import { Effect, Schema } from 'effect'
 
 import { FlowAttribute, FlowSpan } from '../telemetry/flow-telemetry.ts'
 import type { FlowEditTransaction } from './flow-edit.schema.ts'
-import { createFlowGraph, graphNodeBounds } from './flow-graph.ts'
+import { createFlowGraph } from './flow-graph.ts'
 import { groupNodes, reparentNode } from './flow-grouping.ts'
 import type { FlowNodeBoundsLookup } from './flow-grouping.ts'
+import { rotatedFlowBounds } from './flow-node-rotation.ts'
 import { resolveNodeOrigin } from './flow-origin.schema.ts'
 import type { MeasuredNode } from './flow-runtime.schema.ts'
 import { NodeIdSchema } from './flow.schema.ts'
@@ -80,7 +81,13 @@ export const refitGroupNodes = (
     const parent =
       group.parentId === undefined ? { x: 0, y: 0 } : rects.get(group.parentId)
 
-    const childRects = children.map((child) => rects.get(child.id))
+    const childRects = children.flatMap((child) => {
+      const rect = rects.get(child.id)
+
+      return rect === undefined
+        ? [undefined]
+        : [rect, rotatedFlowBounds(rect, child.rotation)]
+    })
 
     if (
       own === undefined ||
@@ -168,7 +175,7 @@ export const refitFlowGroups = (
       node.node.size !== undefined ||
       node.node.measured !== undefined ||
       intrinsic.has(id)
-        ? [[id, graphNodeBounds(node)] as const]
+        ? [[id, { ...node.absolutePosition, ...node.dimensions }] as const]
         : []
     )
   )
