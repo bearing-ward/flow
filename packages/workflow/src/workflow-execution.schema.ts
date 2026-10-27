@@ -41,7 +41,12 @@ const identity = {
 export const WorkflowNodeEventSchema = S.Union([
   S.Struct({
     ...identity,
-    state: S.Literals(['queued', 'running', 'cancelled', 'skipped']),
+    state: S.Literals(['queued', 'cancelled', 'skipped']),
+  }),
+  S.Struct({
+    ...identity,
+    state: S.Literal('running'),
+    text: S.optional(S.String),
   }),
   S.Struct({
     ...identity,

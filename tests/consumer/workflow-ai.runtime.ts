@@ -1,4 +1,12 @@
-import { localWorkflowAiLayer, startWorkflowAiSession } from '@flow/workflow'
+import {
+  localWorkflowAiLayer,
+  startWorkflowAiSession,
+  startWorkflowRun,
+  makeLocalWorkflowAiProvider,
+  createWorkflowAiEvaluator,
+  decodeWorkflowDocument,
+  aiWorkflowFixture,
+} from '@flow/workflow'
 import type { WorkflowAiEvent } from '@flow/workflow'
 import { Effect } from 'effect'
 
@@ -68,3 +76,54 @@ await Effect.runPromise(
     })
   ).pipe(Effect.provide(localWorkflowAiLayer()))
 )
+
+const service = Effect.runSync(makeLocalWorkflowAiProvider())
+
+const outputs: object[] = []
+
+let terminal: string | undefined
+
+await Effect.runPromise(
+  Effect.scoped(
+    Effect.gen(function* packedAiEditor() {
+      const document = yield* decodeWorkflowDocument(aiWorkflowFixture)
+
+      const session = yield* startWorkflowRun(
+        { document, revision: 175 },
+        {
+          runId: 'packed-ai-editor',
+          expectedRevision: 175,
+          capabilities: service.capabilities,
+          evaluate: createWorkflowAiEvaluator(service),
+          onEvent: (event) => {
+            if (event.kind === 'run') {
+              terminal = event.state
+            }
+
+            if (
+              event.kind === 'node' &&
+              (event.event.nodeId === 'generate-text' ||
+                event.event.nodeId === 'image-output') &&
+              event.event.state === 'succeeded'
+            ) {
+              outputs.push({
+                nodeId: event.event.nodeId,
+                outputs: event.event.outputs,
+              })
+            }
+          },
+        }
+      )
+
+      yield* session.await
+    })
+  )
+)
+
+if (
+  terminal !== 'succeeded' ||
+  JSON.stringify(outputs) !==
+    '[{"nodeId":"generate-text","outputs":{"output":{"kind":"text","text":"A quiet tree."}}},{"nodeId":"image-output","outputs":{"result":{"kind":"image","assetId":"flow-local-green-256","mediaType":"image/png","width":256,"height":256}}}]'
+) {
+  throw new Error('Packed AI editor evaluation failed')
+}

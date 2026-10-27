@@ -244,3 +244,35 @@ Plan 173 completes Unit 5 at `/workflow/` in Vanilla, Vue, and Foldkit. All thre
 Vanilla composes `createFlow` controller operations, measured `getInternalNode`, `fitView`, and `setColorMode`. Vue composes `FlowProvider`/`useFlow`, measured `getInternalNode`, `fitView`, and the `FlowCanvas.colorMode` prop within its mounted scope. Foldkit composes `createFoldkitFlowInstance`, accepted `applyEdit`/snapshot responses, measured `getInternalNodes`, `createViewportClient`, history ports, and `HostAction.SetColorMode`. These are app recipes over existing public adapter APIs. Generic adapters remain independent of `@flow/workflow`; architecture fixtures also reject persistence subpath and implementation imports.
 
 `workflow-editor.e2e.ts` in each host drives the same append/configure/validate/run/layout/export/reload/restore fixture. It checks literal configuration and connectivity, HELLO output, non-overlap, SVG endpoint attachment at handle rims, layout/configuration undo, rejected imports, keyboard focus, system theme changes, and a 390-pixel viewport. Foldkit separately holds the viewport DOM patch to prove that completion waits. Package tests cover all presentation extensions with save, history, and clipboard; real local WebSocket tests replicate a restored workflow and undo it. Packed consumers call the save/restore exports beside every adapter archive. These tests establish Flow's base editor outcomes and its explicit offline execution policy. They do not establish upstream runtime or visual equivalence.
+
+## Integrated offline AI editor
+
+Plan 175 implements Unit 7 on each host's `/workflow/` route. **Load AI workflow** opens the same Text Input, Workflow Trigger, Generate Text, Generate Image, and image-output fixture. The existing palette also adds all four AI kinds by button, keyboard, or drop. Prompt and system editors remain outside canvas gestures. Text model, temperature, image model, and image-size selectors use the composed provider's decoded capabilities. The route labels its fixed `flow-local` provider and accepts no credentials.
+
+`createWorkflowAiEvaluator(provider)` returns a `WorkflowEvaluator` over the decoded `WorkflowAiProviderService`. Text Input and Workflow Trigger reuse the offline evaluator. Generation nodes use the provider's text stream and image Effect. Connected `system` and `prompt` text overrides the corresponding inline fallback, including an explicitly connected empty value. Trigger edges are required scheduling dependencies and never become text inputs. Final generated text feeds the downstream image prompt. An image result carries local asset metadata, not an external URL.
+
+`workflowAiSettingIssues(nodeId, workflow, capabilities)` returns stable `invalid-setting` issues for unsupported `modelId`, `temperature`, or `size`. `workflowValidationReport`, `createWorkflowExecutionPlan`, and `prepareWorkflowExecution` accept optional decoded capabilities. `startWorkflowRun` accepts those capabilities alongside its evaluator and checks them before emitting events. Existing callers without an AI provider retain the base evaluator behavior.
+
+```ts
+const provider = yield * makeLocalWorkflowAiProvider()
+const run =
+  yield *
+  startWorkflowRun(accepted, {
+    runId: 'local-ai-1',
+    expectedRevision: accepted.revision,
+    capabilities: provider.capabilities,
+    evaluate: createWorkflowAiEvaluator(provider),
+    onEvent: publishTransientEvent,
+  })
+yield * run.await
+```
+
+`WorkflowEvaluation.onText` publishes cumulative text. A running `WorkflowNodeEvent` can contain `text`; completed nodes retain their schema-decoded `outputs`. The runner attaches the run ID, accepted revision, and node ID, freezes the event, and ignores text callbacks after node settlement. The run reducer rejects obsolete identities, obsolete revisions, and events after termination. Provider failures retain only a diagnostic code. Run and node spans use the central telemetry names and identity attributes. There are no per-chunk logs or collector-delivery claims.
+
+All three hosts use their existing public graph APIs. Vanilla composes `createFlow`, controller snapshots, accepted edits, state subscriptions, history, and destroy. Vue composes `FlowProvider`, `FlowCanvas`, `useFlow`, and scope disposal. Foldkit composes `createProgram`, `createFoldkitFlowInstance`, accepted runtime ports, renderer refresh actions, viewport/history clients, and runtime disposal. No workflow dependency enters core or the reusable adapters.
+
+The selected node shows intermediate text, final output, or a local PNG preview. Every rendered node shows accessible run status. **Run** and **Cancel** use the scoped run owner. Accepted edits invalidate the run and clear output. Replacement and disposal remove image sources and release subscriptions. The embedded PNG uses a data URL, so the editor allocates no temporary object URLs to revoke. Configuration remains separate from run state across history, clipboard, save/restore, and collaboration. Optional groups remain spatial and room peers do not execute distributed runs.
+
+For local failure acceptance, `/workflow/?local-failure=text` and `/workflow/?local-failure=image` select Plan 174's typed fixture failures at application composition. These controls never enter saved configuration. The normal route uses successful deterministic fixtures. No provider SDK, live generation API, fetch fallback, or credential store is included.
+
+The three `workflow-ai-editor.e2e.ts` files drive the real editors. `workflow-ai-editor.test.ts` proves connected-input precedence, literal streaming and final results, setting validation, controlled cancellation/disposal, and stale text/image rejection. Extension, real Yjs transport, and packed-consumer tests also execute the integrated AI graph. See the [Plan 175 trace](../../research/traces/workflow-ai-editor-2026-10-27.md) for the A1–A8 acceptance boundary. These tests establish offline public functional availability. Upstream model, streaming, appearance, and runtime equivalence remain unverified.

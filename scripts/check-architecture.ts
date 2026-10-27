@@ -85,6 +85,8 @@ const fixtureChecks = (): readonly string[] => {
       "import { WorkflowAiProvider } from '@flow/workflow'",
       "export { startWorkflowAiSession } from '@flow/workflow/ai'",
       "import { makeLocalWorkflowAiProvider } from '../../../packages/workflow/src/workflow-ai-local.ts'",
+      "export { createWorkflowAiEvaluator } from '@flow/workflow/ai-editor'",
+      "import { createWorkflowAiEvaluator } from '../../../packages/workflow/src/workflow-ai-evaluator.ts'",
       "export { startWorkflowRun } from '@flow/workflow/runner'",
       "import { startWorkflowRun } from '../../../packages/workflow/src/workflow-runner.ts'",
       "export { decodeSavedWorkflow } from '@flow/workflow/persistence'",

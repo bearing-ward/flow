@@ -1,12 +1,14 @@
 import { getFlowLayoutInput } from '@flow/core'
-
-import '@flow/vanilla/style.css'
 import {
   createFlow,
   createFlowStatusIndicator,
   updateFlowStatusIndicator,
 } from '@flow/vanilla'
 import type { FlowNodeRenderer } from '@flow/vanilla'
+
+import '@flow/vanilla/style.css'
+import { makeLocalWorkflowAiProvider } from '@flow/workflow'
+import { Effect } from 'effect'
 
 import {
   mountWorkflowControls,
@@ -33,7 +35,17 @@ if (root === null) {
 
 let model = workflowValidationSnapshot(workflowDocument(), 0)
 
-const runs = createWorkflowRunOwner(() => model.revision)
+const failure = new URLSearchParams(location.search).get('local-failure')
+
+const provider = Effect.runSync(
+  makeLocalWorkflowAiProvider(
+    failure === 'text' || failure === 'image'
+      ? { delayMillis: 250, fail: failure }
+      : { delayMillis: 250 }
+  )
+)
+
+const runs = createWorkflowRunOwner(() => model.revision, provider)
 
 const renderer: FlowNodeRenderer = (node, content) => {
   const card = document.createElement('div')

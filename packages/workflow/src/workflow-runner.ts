@@ -3,6 +3,7 @@ import type { FlowDocument } from '@flow/core'
 import { Effect, Fiber, Result, Schema as S } from 'effect'
 import type { Scope } from 'effect'
 
+import type { WorkflowAiCapabilities } from './workflow-ai.schema.ts'
 import {
   WorkflowOutputsSchema,
   WorkflowRunIdSchema,
@@ -23,6 +24,7 @@ import type {
 import type { WorkflowNodeData, WorkflowPort } from './workflow.schema.ts'
 
 export interface WorkflowEvaluation {
+  readonly onText?: (text: string) => void
   readonly nodeId: WorkflowNodeEvent['nodeId']
   readonly workflow: WorkflowNodeData
   readonly inputs: readonly {
@@ -170,6 +172,7 @@ export const startWorkflowRun = (
     readonly expectedRevision: number
     readonly onEvent: (event: WorkflowRunEvent) => void
     readonly evaluate?: WorkflowEvaluator
+    readonly capabilities?: WorkflowAiCapabilities
   }
 ): Effect.Effect<WorkflowRunSession, WorkflowPreparationFailure, Scope.Scope> =>
   Effect.uninterruptibleMask((restore) =>
@@ -179,7 +182,11 @@ export const startWorkflowRun = (
       )
 
       const plan = yield* restore(
-        prepareWorkflowExecution(accepted, options.expectedRevision)
+        prepareWorkflowExecution(
+          accepted,
+          options.expectedRevision,
+          options.capabilities
+        )
       )
 
       const request: WorkflowRunRequest = {
@@ -268,6 +275,24 @@ export const startWorkflowRun = (
           const evaluation = Effect.suspend(() =>
             (options.evaluate ?? evaluateOfflineWorkflowNode)({
               nodeId: step.nodeId,
+              onText: (text) => {
+                if (states.get(step.nodeId) !== 'running') {
+                  return
+                }
+
+                const event: WorkflowRunEvent = {
+                  kind: 'node',
+                  event: {
+                    ...identity,
+                    nodeId: step.nodeId,
+                    state: 'running',
+                    text,
+                  },
+                }
+
+                freezeSnapshot(event)
+                options.onEvent(event)
+              },
               workflow,
               inputs,
             })
@@ -343,7 +368,12 @@ export const startWorkflowRun = (
           [FlowAttribute.workflowRunId]: runId,
           [FlowAttribute.workflowRevision]: plan.revision,
         }),
-        Effect.withSpan(FlowSpan.workflowRun)
+        Effect.withSpan(FlowSpan.workflowRun, {
+          attributes: {
+            [FlowAttribute.workflowRunId]: runId,
+            [FlowAttribute.workflowRevision]: plan.revision,
+          },
+        })
       )
 
       const fiber = yield* Effect.forkScoped(restore(execute), {

@@ -21,7 +21,7 @@ const nodeTransitions: Record<
 > = {
   absent: ['queued'],
   queued: ['running', 'skipped', 'cancelled'],
-  running: ['succeeded', 'failed', 'cancelled'],
+  running: ['running', 'succeeded', 'failed', 'cancelled'],
   succeeded: [],
   failed: [],
   cancelled: [],

@@ -141,6 +141,21 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
   let renderRevision = 0
 
   const abort = new AbortController()
+  let configurationAbort = new AbortController()
+
+  const clearConfiguration = () => {
+    configurationAbort.abort()
+    configurationAbort = new AbortController()
+
+    for (const image of panel.querySelectorAll<HTMLImageElement>(
+      '[data-run-image]'
+    )) {
+      image.removeAttribute('src')
+    }
+
+    panel.replaceChildren()
+  }
+
   let disposed = false
   let clipboard = createFlowClipboard()
   let sequence = 0
@@ -186,7 +201,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
     element.type = 'button'
     element.textContent = label
     element.addEventListener('click', () => run(action), {
-      signal: abort.signal,
+      signal: parent === panel ? configurationAbort.signal : abort.signal,
     })
     parent.append(element)
 
@@ -248,7 +263,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       data: WorkflowNodeData
     ) => {
       selectedNode = id
-      panel.replaceChildren()
+      clearConfiguration()
       const title = document.createElement('h2')
       title.textContent = `Configure ${data.kind}`
       panel.append(title)
@@ -367,11 +382,38 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
         }
 
         case 'generate-text': {
-          const modelId = text('Text model', data.config.modelId)
+          const models = owner.runs.capabilities.text
 
-          const temperature = text(
+          const modelId = choice(
+            'Text model',
+            data.config.modelId,
+            models.map((model) => model.modelId)
+          )
+
+          const temperatures = () =>
+            models
+              .find((model) => model.modelId === modelId.value)
+              ?.temperatures.map(String) ?? []
+
+          const temperature = choice(
             'Temperature',
-            String(data.config.temperature)
+            String(data.config.temperature),
+            temperatures()
+          )
+
+          modelId.addEventListener(
+            'change',
+            () => {
+              temperature.replaceChildren(
+                ...temperatures().map((value) =>
+                  Object.assign(document.createElement('option'), {
+                    value,
+                    textContent: value,
+                  })
+                )
+              )
+            },
+            { signal: configurationAbort.signal }
           )
 
           const system = text('System', data.config.system, true)
@@ -389,16 +431,46 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
         }
 
         case 'generate-image': {
-          const modelId = text('Image model', data.config.modelId)
-          const width = text('Width', String(data.config.width))
-          const height = text('Height', String(data.config.height))
+          const models = owner.runs.capabilities.image
+
+          const modelId = choice(
+            'Image model',
+            data.config.modelId,
+            models.map((model) => model.modelId)
+          )
+
+          const sizes = () =>
+            models
+              .find((model) => model.modelId === modelId.value)
+              ?.sizes.map((size) => `${size.width}x${size.height}`) ?? []
+
+          const size = choice(
+            'Image size',
+            `${data.config.width}x${data.config.height}`,
+            sizes()
+          )
+
+          modelId.addEventListener(
+            'change',
+            () => {
+              size.replaceChildren(
+                ...sizes().map((value) =>
+                  Object.assign(document.createElement('option'), {
+                    value,
+                    textContent: value,
+                  })
+                )
+              )
+            },
+            { signal: configurationAbort.signal }
+          )
           const prompt = text('Image prompt', data.config.prompt, true)
           read = () => ({
             ...data,
             config: {
               modelId: modelId.value,
-              width: Number(width.value),
-              height: Number(height.value),
+              width: Number(size.value.split('x')[0]),
+              height: Number(size.value.split('x')[1]),
               prompt: prompt.value,
             },
           })
@@ -426,7 +498,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       })
       button(panel, 'Delete and reconnect', async () => {
         await actions.edit({ kind: 'delete', nodeId: id, reconnect: true })
-        panel.replaceChildren()
+        clearConfiguration()
       })
       const output = document.createElement('textarea')
       output.readOnly = true
@@ -434,6 +506,11 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       output.value = 'No run output.'
       output.dataset.runOutput = id
       panel.append(output)
+      const preview = document.createElement('img')
+      preview.alt = 'Local generated workflow image'
+      preview.dataset.runImage = id
+      preview.hidden = true
+      panel.append(preview)
       validationState.runs?.render()
 
       if (latestSnapshot !== undefined) {
@@ -594,7 +671,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
   ) => {
     const current = await Effect.runPromise(decodeWorkflowDocument(fixture))
     await owner.replace(current)
-    panel.replaceChildren()
+    clearConfiguration()
     await actions.refresh()
   }
 
@@ -633,7 +710,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       editor.setTheme(restored.theme)
     }
 
-    panel.replaceChildren()
+    clearConfiguration()
     selectedNode = undefined
     await actions.refresh()
   })
@@ -733,6 +810,8 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
 
     disposed = true
     abort.abort()
+    clearConfiguration()
+    configurationAbort.abort()
     edgeActions.remove()
     validationState.controls?.dispose()
     validationState.runs?.dispose()

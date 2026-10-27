@@ -1,8 +1,11 @@
-import '@flow/vue/style.css'
 import { getFlowLayoutInput } from '@flow/core'
 import type { FlowColorMode, FlowNode } from '@flow/core'
+
+import '@flow/vue/style.css'
 import { FlowCanvas, FlowProvider, useFlow, StatusIndicator } from '@flow/vue'
+import { makeLocalWorkflowAiProvider } from '@flow/workflow'
 import type { WorkflowRunState } from '@flow/workflow'
+import { Effect } from 'effect'
 import {
   createApp,
   defineComponent,
@@ -41,7 +44,17 @@ const Demo = defineComponent({
     const revision = shallowRef(0)
     const theme = shallowRef<FlowColorMode>('system')
     const runState = shallowRef<WorkflowRunState | null>(null)
-    const runs = createWorkflowRunOwner(() => revision.value)
+    const failure = new URLSearchParams(location.search).get('local-failure')
+
+    const provider = Effect.runSync(
+      makeLocalWorkflowAiProvider(
+        failure === 'text' || failure === 'image'
+          ? { delayMillis: 250, fail: failure }
+          : { delayMillis: 250 }
+      )
+    )
+
+    const runs = createWorkflowRunOwner(() => revision.value, provider)
 
     const stopRuns = runs.subscribe(() => {
       runState.value = runs.state()

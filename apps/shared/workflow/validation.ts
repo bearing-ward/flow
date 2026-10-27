@@ -2,6 +2,7 @@ import { FlowDocumentSchema, flowHistoryDocument } from '@flow/core'
 import type { FlowDocument, FlowEdge } from '@flow/core'
 import {
   workflowValidationReport,
+  localWorkflowAiCapabilities,
   WorkflowDocumentSchema,
   workflowIssues,
   workflowPorts,
@@ -24,7 +25,7 @@ export const workflowValidationSnapshot = (
   return {
     document: decoded,
     revision,
-    report: workflowValidationReport(decoded),
+    report: workflowValidationReport(decoded, localWorkflowAiCapabilities),
   }
 }
 

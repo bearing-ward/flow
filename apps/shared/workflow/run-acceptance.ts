@@ -197,6 +197,7 @@ export const workflowRunAcceptance = (host: string) => {
     it('shows typed failure and prevents invalid runs with visible reasons', async ({
       page,
     }) => {
+      await page.goto('/workflow/?local-failure=text')
       await page
         .getByRole('button', { name: 'Load AI workflow', exact: true })
         .click()
@@ -208,7 +209,7 @@ export const workflowRunAcceptance = (host: string) => {
       const failed = await runState(page)
       expect(failed.nodes['generate-text']).toMatchObject({
         state: 'failed',
-        failure: { code: 'unsupported-kind' },
+        failure: { code: 'provider-failure' },
       })
       await page
         .getByLabel('Workflow JSON', { exact: true })
