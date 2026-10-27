@@ -99,3 +99,7 @@ The Plan 168 change adds this plan, the audit, and catalog re-audit evidence. It
 Checks before final verification passed: `bun run docs:check`, `bun run scripts/check-react-flow-catalog.ts`, `bun run scripts/check-proof-matrix.ts`, and `bun run research:check-traces`. Additional inspection verified all new local links and catalog outcome citations, recomputed unchanged summary counts, and confirmed that only the two template entries changed. The previous re-audit records are retained.
 
 The final command is `scripts/with-flow-browser-lock.sh bun run verify`. The selected profile is focused. The verification runner passes `--workers=1` to all host and mixed-host browser commands. All previous checks and browser files remain selected. The final result is reported in the task handoff. A focused pass does not establish full-suite or template acceptance.
+
+## Maintainer decisions recorded 2026-10-26
+
+The maintainer said "proceed", and their standing practice is to defer to the recommendation. All the recommendations under "Maintainer decisions" above are adopted as written. Live AI providers and server-owned credentials stay out of scope until the maintainer makes a separate decision. Every unit uses the deterministic local providers.
