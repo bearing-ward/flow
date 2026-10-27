@@ -7969,7 +7969,7 @@ const graphView = (
               ]
 
         return h.keyed('div')(
-          node.id,
+          `node:${node.id}`,
           [
             h.Class(
               flowClassNames(
@@ -8165,7 +8165,7 @@ const graphView = (
         customEdgeLabels.push(...htmlLabels.group())
 
         return h.keyed('svg')(
-          edge.id,
+          `edge:${edge.id}`,
           [
             h.Class(
               flowClassNames(

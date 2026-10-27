@@ -18,6 +18,7 @@
     "typed-flow-actor.types.ts",
     "typed-flow-actor.runtime.ts",
     "marker-configuration.types.ts",
-    "marker-configuration.runtime.ts"
+    "marker-configuration.runtime.ts",
+    "workflow-contracts.runtime.ts"
   ]
 }

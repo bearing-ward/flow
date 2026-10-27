@@ -48,6 +48,7 @@ const rootUrl = new URL('../', import.meta.url)
 
 const packageNames = {
   'packages/core': '@flow/core',
+  'packages/workflow': '@flow/workflow',
   'apps/vanilla': '@flow/vanilla',
   'packages/vue': '@flow/vue',
   'packages/foldkit': '@flow/foldkit',
@@ -706,12 +707,50 @@ const program = Effect.gen(function* checkPackedConsumers() {
 
     const archives = {
       core: yield* pack('packages/core'),
+      workflow: yield* pack('packages/workflow'),
       vanilla: yield* pack('apps/vanilla'),
       vue: yield* pack('packages/vue'),
       foldkit: yield* pack('packages/foldkit'),
     }
 
     yield* Effect.log(`Packed archive metadata: ${JSON.stringify(archives)}`)
+
+    const genericRoot = path.join(temp, 'generic-core')
+    yield* fileSystem.makeDirectory(genericRoot, { recursive: true })
+    yield* fileSystem.writeFileString(
+      path.join(genericRoot, 'package.json'),
+      JSON.stringify({
+        name: 'flow-core-without-workflow-consumer',
+        private: true,
+        type: 'module',
+        dependencies: {
+          '@flow/core': `file:../tarballs/${archives.core}`,
+          effect: '4.0.0',
+        },
+      })
+    )
+    yield* run('bun', ['install', '--no-save', '--no-progress'], genericRoot)
+    yield* run(
+      'bun',
+      [
+        '-e',
+        `
+      const { decodeFlowDocument } = await import('@flow/core');
+      const { Effect } = await import('effect');
+      const graph = await Effect.runPromise(decodeFlowDocument({
+        nodes: [{ id: 'generic', label: 'Generic', position: { x: 0, y: 0 } }],
+        edges: [],
+      }));
+      if (graph.nodes[0]?.label !== 'Generic') throw new Error('Generic graph decode failed');
+      const workflowInstalled = await Promise.resolve().then(() => import.meta.resolve('@flow/workflow')).then(() => true, () => false);
+      if (workflowInstalled) throw new Error('Generic consumer unexpectedly installed workflow');
+    `,
+      ],
+      genericRoot
+    )
+    yield* Effect.log(
+      'Packed core consumer decoded a generic graph with workflow absent'
+    )
 
     const consumers = [
       {
@@ -782,6 +821,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
 
       const dependencies = {
         '@flow/core': archivePath('core'),
+        '@flow/workflow': archivePath('workflow'),
         [consumer.adapter]: archivePath(consumer.host),
         effect: '4.0.0',
       }
@@ -843,6 +883,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
         'typed-flow-actor.runtime.ts',
         'marker-configuration.types.ts',
         'marker-configuration.runtime.ts',
+        'workflow-contracts.runtime.ts',
       ]) {
         const contents = yield* fileSystem.readFileString(
           path.join(root, 'tests/consumer', file)
@@ -860,6 +901,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
       yield* run('bun', ['typed-data-factory.runtime.ts'], consumerRoot)
       yield* run('bun', ['typed-flow-actor.runtime.ts'], consumerRoot)
       yield* run('bun', ['marker-configuration.runtime.ts'], consumerRoot)
+      yield* run('bun', ['workflow-contracts.runtime.ts'], consumerRoot)
       yield* run(
         'bun',
         [

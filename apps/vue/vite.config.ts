@@ -27,6 +27,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        workflowContracts: `${import.meta.dirname}/workflow-contracts/index.html`,
         imageService: `${import.meta.dirname}/image-service/index.html`,
         collaborative: `${import.meta.dirname}/collaborative/index.html`,
         wireTies: `${import.meta.dirname}/wire-ties/index.html`,

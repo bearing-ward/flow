@@ -1,0 +1,26 @@
+{
+  "name": "@flow/workflow",
+  "version": "0.0.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    }
+  },
+  "scripts": {
+    "build": "bun build src/public.ts --outfile dist/public.js --target browser --format esm --external effect --external @flow/core && tsc --project tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@flow/core": "workspace:*",
+    "effect": "4.0.0"
+  },
+  "peerDependencies": {
+    "@flow/core": "0.0.0",
+    "effect": "4.0.0"
+  }
+}

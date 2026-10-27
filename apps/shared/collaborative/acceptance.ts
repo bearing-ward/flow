@@ -205,6 +205,30 @@ export const collaborativeAcceptance = (host: string) =>
           )
           .toEqual({ x: 170, y: 140 })
 
+        // Accepted snapshots precede DOM reconciliation in the two canvases.
+        await expect
+          .poll(async () => {
+            const [local, remote] = await Promise.all([
+              node.boundingBox(),
+              peer
+                .locator('[data-testid="flow-node"][data-node-id="a"]')
+                .first()
+                .boundingBox(),
+            ])
+
+            if (local === null || remote === null) {
+              return Number.POSITIVE_INFINITY
+            }
+
+            return Math.max(
+              Math.abs(local.x - bounds.x - 100),
+              Math.abs(local.y - bounds.y - 60),
+              Math.abs(remote.x - bounds.x - 100),
+              Math.abs(remote.y - bounds.y - 60)
+            )
+          })
+          .toBeLessThan(0.0005)
+
         const local = await page
           .locator('[data-testid="flow-node"][data-node-id="a"]')
           .first()

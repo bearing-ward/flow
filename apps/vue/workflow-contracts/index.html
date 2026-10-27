@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Workflow contracts</title>
+  </head>
+  <body>
+    <h1>Workflow document contracts</h1>
+    <p>Contract preview. Execution is reserved for later workflow units.</p>
+    <nav aria-label="Fixtures">
+      <button id="base">Load base workflow</button
+      ><button id="ai">Load AI workflow</button>
+    </nav>
+    <label>Workflow JSON<textarea id="import" rows="5"></textarea></label
+    ><button id="accept">Accept document</button
+    ><button id="dispose">Dispose</button>
+    <p id="status" role="status"></p>
+    <pre
+      id="accepted"
+      aria-label="Accepted document"
+      style="max-height: 120px; overflow: auto"
+    ></pre>
+    <main id="app" style="height: 520px; position: relative"></main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
