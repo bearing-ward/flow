@@ -24,11 +24,16 @@ const collaborationDependency = (specifier: string): boolean =>
 const workflowDependency = (specifier: string): boolean =>
   /(?:^|\/)(?:@flow\/workflow|packages\/workflow)(?:\/|$)/u.test(specifier)
 
+const layoutDependency = (specifier: string): boolean =>
+  /^(?:@flow\/layout)(?:\/|$)/u.test(specifier) ||
+  /(?:^|\/)packages\/layout(?:\/|$)/u.test(specifier)
+
 const optionalIntegrationDependency = (specifier: string): boolean =>
   routingDependency(specifier) ||
   imageServiceDependency(specifier) ||
   collaborationDependency(specifier) ||
-  workflowDependency(specifier)
+  workflowDependency(specifier) ||
+  layoutDependency(specifier)
 
 const browserGlobals = new Set([
   'cancelAnimationFrame',
@@ -282,7 +287,15 @@ export const findOptionalIntegrationPackageViolations = (
 
   return Object.entries(manifest).flatMap(([section, dependencies]) =>
     Object.keys(dependencies ?? {})
-      .filter(optionalIntegrationDependency)
+      .filter(
+        (name) =>
+          optionalIntegrationDependency(name) &&
+          !(
+            source.path === 'apps/vanilla/package.json' &&
+            section === 'devDependencies' &&
+            layoutDependency(name)
+          )
+      )
       .map(
         (name) =>
           `${source.path}: ${section} must not depend on optional integration ${name}`

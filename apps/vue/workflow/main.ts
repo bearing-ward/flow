@@ -158,6 +158,7 @@ const Demo = defineComponent({
         defaultViewport: { x: 0, y: 0, zoom: 1 },
         nodeTypes: { workflow: WorkflowNode, default: WorkflowNode },
         autoPanOnNodeFocus: false,
+        deleteKeyCode: ['Backspace', 'Delete'],
         defaultEdgeOptions: {
           data: { workflow: { version: 1, kind: 'data' } },
         },

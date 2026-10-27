@@ -696,6 +696,9 @@ const StateTools = defineComponent({
             'Saved in this page session only. Reloading discards the snapshot.'
           ),
           h('output', { 'aria-live': 'polite' }, message.value),
+          h('nav', { 'aria-label': 'Template examples' }, [
+            h('a', { href: '/workflow/' }, 'Workflow and offline AI editor'),
+          ]),
         ]
       )
   },

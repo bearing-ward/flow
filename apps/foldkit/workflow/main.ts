@@ -8,6 +8,7 @@ import '@flow/foldkit/style.css'
 import {
   createProgram,
   createFoldkitFlowInstance,
+  createFoldkitDeleteClient,
   createFoldkitHistoryClient,
   createViewportClient,
   createFoldkitNodeMeasurementObserver,
@@ -108,6 +109,7 @@ const runtime = Runtime.embed(
     {
       ...defaultInteractionOptions,
       autoPanOnNodeFocus: false,
+      deleteKeyCode: ['Backspace', 'Delete'],
       defaultEdgeOptions: { data: { workflow: { version: 1, kind: 'data' } } },
       isValidConnection: (candidate, document) =>
         workflowCanvasConnection(document, candidate),
@@ -117,6 +119,8 @@ const runtime = Runtime.embed(
     }
   )
 )
+
+const deletion = createFoldkitDeleteClient(runtime, () => true)
 
 const viewport = createViewportClient(
   runtime.ports,
@@ -236,6 +240,7 @@ const controls = mountWorkflowControls({
     measurement.dispose()
     viewport.dispose()
     history.dispose()
+    deletion.dispose()
     instance.dispose()
     runtime.dispose()
   },

@@ -49,6 +49,9 @@ const rootUrl = new URL('../', import.meta.url)
 const packageNames = {
   'packages/core': '@flow/core',
   'packages/workflow': '@flow/workflow',
+  'packages/routing-libavoid': '@flow/routing-libavoid',
+  'packages/collaboration-yjs': '@flow/collaboration-yjs',
+  'packages/image-service': '@flow/image-service',
   'apps/vanilla': '@flow/vanilla',
   'packages/vue': '@flow/vue',
   'packages/foldkit': '@flow/foldkit',
@@ -708,6 +711,9 @@ const program = Effect.gen(function* checkPackedConsumers() {
     const archives = {
       core: yield* pack('packages/core'),
       workflow: yield* pack('packages/workflow'),
+      routing: yield* pack('packages/routing-libavoid'),
+      collaboration: yield* pack('packages/collaboration-yjs'),
+      image: yield* pack('packages/image-service'),
       vanilla: yield* pack('apps/vanilla'),
       vue: yield* pack('packages/vue'),
       foldkit: yield* pack('packages/foldkit'),
@@ -750,6 +756,55 @@ const program = Effect.gen(function* checkPackedConsumers() {
     )
     yield* Effect.log(
       'Packed core consumer decoded a generic graph with workflow absent'
+    )
+
+    const optionalRoot = path.join(temp, 'optional-integrations')
+    yield* fileSystem.makeDirectory(optionalRoot, { recursive: true })
+    yield* fileSystem.writeFileString(
+      path.join(optionalRoot, 'package.json'),
+      JSON.stringify({
+        name: 'flow-packed-optional-consumer',
+        private: true,
+        type: 'module',
+        dependencies: {
+          '@flow/core': `file:../tarballs/${archives.core}`,
+          '@flow/routing-libavoid': `file:../tarballs/${archives.routing}`,
+          '@flow/collaboration-yjs': `file:../tarballs/${archives.collaboration}`,
+          '@flow/image-service': `file:../tarballs/${archives.image}`,
+          effect: '4.0.0',
+        },
+        overrides: { '@flow/core': `file:../tarballs/${archives.core}` },
+      })
+    )
+    yield* fileSystem.writeFileString(
+      path.join(optionalRoot, 'optional.runtime.ts'),
+      yield* fileSystem.readFileString(
+        path.join(root, 'tests/consumer/optional.runtime.ts')
+      )
+    )
+    yield* run('bun', ['install', '--no-save', '--no-progress'], optionalRoot)
+    yield* run('bun', ['optional.runtime.ts'], optionalRoot)
+    yield* run(
+      'bun',
+      [
+        'run',
+        path.join(root, 'node_modules/typescript/bin/tsc'),
+        '--noEmit',
+        '--strict',
+        '--module',
+        'NodeNext',
+        '--target',
+        'ESNext',
+        '--types',
+        'bun',
+        '--typeRoots',
+        path.join(root, 'node_modules/@types'),
+        'optional.runtime.ts',
+      ],
+      optionalRoot
+    )
+    yield* Effect.log(
+      'Packed optional integrations passed public imports, declarations, WASM asset and typed boundary failures'
     )
 
     const consumers = [

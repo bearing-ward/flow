@@ -18,7 +18,7 @@
       "vue": 198,
       "foldkit": 198
     },
-    "reaudit": "2026-10-27 Plans 149-175 acceptance follow-ups retain their recorded boundaries. Plan 173 closes Workflow Editor W1-W9, and Plan 175 closes AI Workflow Editor A1-A8 and inherited base-editor outcomes by deterministic offline functional acceptance in all three hosts. Counts are recomputed from entries. Upstream runtime/model/visual parity and full-profile integration remain unverified.",
+    "reaudit": "2026-10-27 Plan 176 independently re-audits both workflow templates against W1-W9 and A1-A8 and adopted offline decisions. C records bounded functional availability in all three hosts. Counts are recomputed from entries; upstream runtime, models and visuals remain unverified. Integration results are in the closure trace.",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
@@ -5734,19 +5734,19 @@
       "theme": "template",
       "reaudit": {
         "on": "2026-10-27",
-        "plan": "Plan 175",
+        "plan": "Plan 176",
         "previousRatings": {
-          "vanilla": "G",
-          "vue": "G",
-          "foldkit": "G"
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
         },
-        "method": "Dedicated three-host production-route AI editor acceptance, retained palette/validation/runner/base-editor acceptance, package controlled-clock tests, real Yjs transport and packed-consumer execution. C means public functional availability under the adopted offline policy. No upstream runtime, model, streaming, visual or full-profile parity claim.",
+        "method": "Independent review against Plan 168 W1-W9 and A1-A8, identical offline fixtures on real host routes, native controls, package interoperability and packed consumers. C means bounded functional availability under D1-D8. The closure trace records verification and unverified upstream behavior.",
         "url": "https://reactflow.dev/ui/templates/ai-workflow-editor",
         "accessedOn": "2026-10-26",
         "demoUrls": ["https://ai-workflow-editor.reactflow.dev/workflow"],
         "sourceAccess": "Public descriptions and live DOM only. No public template repository identified; public xyflow/xyflow repository read and distinguished from subscription template source. No licensed ZIP or bundle source used. No run, provider request, or key entry.",
         "missing": "No remaining A1-A8 or inherited base-editor functional outcome gap in the integrated offline editor. Upstream model, streaming, runtime and visual equivalence remain unverified; providers are deterministic local simulation.",
-        "evidence": "research/traces/workflow-ai-editor-2026-10-27.md",
+        "evidence": "research/traces/workflow-closure-2026-10-27.md",
         "delivery": "plans/168-workflow-delivery.md",
         "outcomes": [
           {
@@ -6695,9 +6695,22 @@
           "unverified": [
             "Subscription source/tests; runtime traversal, validation, branch/join and lock semantics; exact ELK output; configuration panels and persistence; streaming, retries, cancellation, credential storage and provider behavior. Flow offline delivery decisions are proposals, not upstream promises."
           ]
+        },
+        {
+          "on": "2026-10-27",
+          "plan": "Plan 175",
+          "previousRatings": {
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G"
+          },
+          "method": "Dedicated three-host production-route AI editor acceptance, retained palette/validation/runner/base-editor acceptance, package controlled-clock tests, real Yjs transport and packed-consumer execution. C means public functional availability under the adopted offline policy. No upstream runtime, model, streaming, visual or full-profile parity claim.",
+          "missing": "No remaining A1-A8 or inherited base-editor functional outcome gap in the integrated offline editor. Upstream model, streaming, runtime and visual equivalence remain unverified; providers are deterministic local simulation.",
+          "evidence": "research/traces/workflow-ai-editor-2026-10-27.md",
+          "delivery": "plans/168-workflow-delivery.md"
         }
       ],
-      "updatedBy": ["Plan 168", "Plan 175"]
+      "updatedBy": ["Plan 168", "Plan 175", "Plan 176"]
     },
     {
       "section": "ui templates",
@@ -6712,19 +6725,19 @@
       "theme": "template",
       "reaudit": {
         "on": "2026-10-27",
-        "plan": "Plan 173",
+        "plan": "Plan 176",
         "previousRatings": {
-          "vanilla": "G",
-          "vue": "G",
-          "foldkit": "G"
+          "vanilla": "C",
+          "vue": "C",
+          "foldkit": "C"
         },
-        "method": "Three-host production-route workflow acceptance plus package, history/clipboard, real WebSocket and packed-consumer proof. C means public functional availability. No upstream runtime, visual or full-profile parity claim.",
+        "method": "Independent review against Plan 168 W1-W9 and A1-A8, identical offline fixtures on real host routes, native controls, package interoperability and packed consumers. C means bounded functional availability under D1-D8. The closure trace records verification and unverified upstream behavior.",
         "url": "https://reactflow.dev/ui/templates/workflow-editor",
         "accessedOn": "2026-10-26",
         "demoUrls": ["https://workflow-editor.reactflow.dev/workflow"],
         "sourceAccess": "Public descriptions and live DOM only. No public template repository identified; public xyflow/xyflow repository read and distinguished from subscription template source. No licensed ZIP or bundle source used. No run, provider request, or key entry.",
         "missing": "No remaining W1-W9 functional outcome gap in the offline base editor. Upstream runtime internals, exact appearance and layout coordinates remain unverified; the runner is explicitly local simulation.",
-        "evidence": "research/traces/workflow-base-editor-2026-10-27.md",
+        "evidence": "research/traces/workflow-closure-2026-10-27.md",
         "delivery": "plans/168-workflow-delivery.md",
         "outcomes": [
           {
@@ -7361,9 +7374,22 @@
           "unverified": [
             "Subscription source/tests; runtime traversal, validation, branch/join and lock semantics; exact ELK output; configuration panels and persistence; streaming, retries, cancellation, credential storage and provider behavior. Flow offline delivery decisions are proposals, not upstream promises."
           ]
+        },
+        {
+          "on": "2026-10-27",
+          "plan": "Plan 173",
+          "previousRatings": {
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G"
+          },
+          "method": "Three-host production-route workflow acceptance plus package, history/clipboard, real WebSocket and packed-consumer proof. C means public functional availability. No upstream runtime, visual or full-profile parity claim.",
+          "missing": "No remaining W1-W9 functional outcome gap in the offline base editor. Upstream runtime internals, exact appearance and layout coordinates remain unverified; the runner is explicitly local simulation.",
+          "evidence": "research/traces/workflow-base-editor-2026-10-27.md",
+          "delivery": "plans/168-workflow-delivery.md"
         }
       ],
-      "updatedBy": ["Plan 168", "Plan 173"]
+      "updatedBy": ["Plan 168", "Plan 173", "Plan 176"]
     },
     {
       "section": "ui components",
