@@ -198,6 +198,39 @@ export const figuresAcceptance = (host: string): void => {
     })
 
     for (const [index, type] of kinds.entries()) {
+      it(`keeps ${type} chrome absent until selection or keyboard focus`, async ({
+        page,
+      }) => {
+        const wrapper = node(page, type)
+        await expect(wrapper).not.toHaveClass(/selected/u)
+        await Promise.all(
+          ['top', 'right', 'bottom', 'left'].map((side) =>
+            expect(wrapper).toHaveCSS(`border-${side}-width`, '0px')
+          )
+        )
+        await expect(wrapper).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+        await wrapper.hover()
+        await expect(wrapper).toHaveCSS('box-shadow', 'none')
+        await expect(wrapper).toHaveCSS('outline-style', 'none')
+        await page.keyboard.press('Tab')
+        await wrapper.focus()
+        await expect(wrapper).toBeFocused()
+        await expect(wrapper).toHaveCSS('outline-style', 'solid')
+        await expect(wrapper).toHaveCSS('outline-width', '2px')
+        await expect(wrapper).toHaveCSS('outline-color', 'rgb(37, 99, 235)')
+        await select(page, type)
+        await page
+          .getByRole('button', { name: 'Create circle', exact: true })
+          .focus()
+        await expect(wrapper).not.toBeFocused()
+        await expect(wrapper).toHaveClass(/selected/u)
+        await expect(wrapper).toHaveCSS('outline-style', 'solid')
+        await expect(wrapper).toHaveCSS('outline-width', '2px')
+        await page.locator('#app').click({ position: { x: 20, y: 500 } })
+        await expect(wrapper).not.toHaveClass(/selected/u)
+        await expect(wrapper).toHaveCSS('outline-style', 'none')
+      })
+
       it(`renders and creates ${type} with a matching minimap and one-step history`, async ({
         page,
       }) => {

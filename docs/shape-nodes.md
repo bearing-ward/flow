@@ -10,6 +10,8 @@ Shape nodes require positive, finite `node.size` bounds. Shared document decodin
 
 `flowFigurePath(kind)` returns a normalized SVG path in a `0 0 100 100` view box. Every renderer scales that path affinely to the complete node bounds. A nonsquare circle therefore appears as an ellipse. The SVG and label do not determine intrinsic size. Creation removes wrapper padding, border, and rectangular background so the measured bounds match the authored size.
 
+Each adapter's stylesheet also removes padding, border, background, and box shadow from wrappers containing the figure renderer's `data-shape-svg` marker. Document-supplied shapes therefore need no recipe-specific class or inline style, including in the image service. Selected or keyboard-focused wrappers show a blue 2px outline with a 3px offset. Unselected, unfocused shapes have no rectangular chrome, including on hover. Selection and focus keep rectangular interaction bounds.
+
 The initial handles are a left target and right source. Their centers lie at the outline's horizontal extrema. Edge endpoints retain Flow's normal attachment to the outside of each handle box. Handle IDs survive color and size changes. Clipboard paste can remap IDs; rendering depends on their role and side. Selection, hit testing, layout, and resizing use rectangular node bounds.
 
 ## Shared edits
@@ -53,4 +55,4 @@ Creation, color changes, movement, connection creation, and resize use existing 
 
 Shape intent uses existing `type`, `data`, `size`, `style`, and `handles` fields, so it introduces no saved-document version. Versioned save and load retain shape intent and opaque metadata. Session clipboard paste preserves the same fields and remaps IDs through the shared clipboard owner. See [transaction history](transaction-history.md) and [graph clipboard](graph-clipboard.md).
 
-The [Plan 158 trace](../research/traces/158-shape-nodes.md) records production paths, gesture tests, reference evidence, and verification results.
+The [Plan 158 trace](../research/traces/158-shape-nodes.md) records production paths, gesture tests, reference evidence, and verification results. The [Plan 166 trace](../research/traces/166-shape-node-border.md) records the image-export border regression and adapter styling boundary.
