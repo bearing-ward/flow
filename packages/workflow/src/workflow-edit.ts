@@ -15,6 +15,7 @@ import { workflowPorts } from './workflow-ports.ts'
 import {
   WorkflowNodeDataSchema,
   WorkflowNodeSchema,
+  WorkflowEdgeSchema,
 } from './workflow.schema.ts'
 import type {
   WorkflowNodeData,
@@ -427,4 +428,33 @@ export const prepareWorkflowEdit = (
       )
     ),
     Effect.withSpan(FlowSpan.editPrepare)
+  )
+
+/** Typed connections use the same structural policy as imported documents. */
+export const prepareWorkflowConnection = (
+  document: FlowDocument,
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- Connections are decoded before preparing a transaction.
+  input: unknown
+) =>
+  Effect.gen(function* prepareConnection() {
+    const edge = yield* S.decodeUnknownEffect(WorkflowEdgeSchema)(input)
+
+    const transaction: FlowEditTransaction = {
+      operations: [{ kind: 'add-edges', edges: [edge] }],
+    }
+
+    const result = yield* prepareFlowEdit(document, transaction)
+    yield* decodeWorkflowDocument(result.document)
+
+    return transaction
+  }).pipe(
+    Effect.tapError((failure) =>
+      Effect.logWarning('Rejected workflow connection').pipe(
+        Effect.annotateLogs({
+          [FlowAttribute.failureName]: failure._tag,
+          [FlowAttribute.inputKind]: 'workflow-connection',
+        })
+      )
+    ),
+    Effect.withSpan(FlowSpan.connectionValidate)
   )

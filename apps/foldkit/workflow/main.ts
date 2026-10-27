@@ -18,6 +18,11 @@ import {
   workflowDocument,
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
+import {
+  workflowValidationSnapshot,
+  workflowDocumentChanged,
+  workflowCanvasConnection,
+} from '../../shared/workflow/validation.ts'
 
 import '../../shared/workflow/style.css'
 
@@ -38,6 +43,8 @@ const renderer: FoldkitNodeRenderer = (node, h) =>
 
 let current = workflowDocument()
 
+let model = workflowValidationSnapshot(current, 0)
+
 let zoom = 1
 
 const runtime = Runtime.embed(
@@ -54,6 +61,9 @@ const runtime = Runtime.embed(
     {
       ...defaultInteractionOptions,
       autoPanOnNodeFocus: false,
+      defaultEdgeOptions: { data: { workflow: { version: 1, kind: 'data' } } },
+      isValidConnection: (candidate, document) =>
+        workflowCanvasConnection(document, candidate),
       panOnDrag: true,
       zoomOnScroll: true,
       selectionOnDrag: false,
@@ -86,6 +96,11 @@ const measurement = createFoldkitNodeMeasurementObserver({
 const stops = new Set<() => void>()
 
 const controls = mountWorkflowControls({
+  snapshot: () => Promise.resolve(model),
+  replace: async (document) => {
+    runtime.ports.actions.send(HostAction.ReplaceDocument({ document }))
+    await instance.toObject()
+  },
   document: async () => {
     const snapshot = await instance.toObject()
 
@@ -124,6 +139,12 @@ stops.add(
   runtime.ports.acceptedStates.subscribe((input) => {
     const state = S.decodeUnknownSync(FlowStateChangeSchema)(input)
     current = state.current.document
+
+    model = workflowValidationSnapshot(
+      current,
+      model.revision +
+        (workflowDocumentChanged(state.previous.document, current) ? 1 : 0)
+    )
     ;({ zoom } = state.current.viewport)
     void controls.refresh()
   })

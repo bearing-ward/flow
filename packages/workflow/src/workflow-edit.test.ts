@@ -17,6 +17,8 @@ import {
   prepareWorkflowEdit,
   workflowKinds,
   workflowPorts,
+  workflowValidationReport,
+  createWorkflowExecutionPlan,
   workflowClipboardExtension,
   WorkflowNodeDataSchema,
   WorkflowEditSchema,
@@ -440,6 +442,22 @@ describe('workflow palette transactions', () => {
           },
         },
       },
+    })
+    const planned = createWorkflowExecutionPlan(after, 171)
+    expect({
+      issues: workflowValidationReport(after).issues,
+      document: planned.kind === 'ready' ? planned.plan.document : undefined,
+      nodeIds:
+        planned.kind === 'ready'
+          ? planned.plan.steps.map((step) => step.nodeId).toSorted()
+          : [],
+    }).toStrictEqual({
+      issues: [],
+      document: after,
+      nodeIds: after.nodes
+        .filter((node) => node.data?.workflow !== undefined)
+        .map((node) => node.id)
+        .toSorted(),
     })
     expect(after.bundles?.[1]).toMatchObject({
       id: 'branches-copy-1',

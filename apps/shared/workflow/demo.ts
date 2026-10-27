@@ -18,16 +18,27 @@ import {
   WorkflowNodeDataSchema,
   workflowClipboardExtension,
   workflowPorts,
+  WorkflowValidationError,
+  WorkflowDecodeError,
 } from '@flow/workflow'
 import type {
   WorkflowEdit,
   WorkflowIds,
   WorkflowNodeData,
 } from '@flow/workflow'
-import { Effect, Option, Schema as S } from 'effect'
+import { Effect, Option, Result, Schema as S } from 'effect'
+
+import { mountWorkflowValidation } from './validation-controls.ts'
+import type { WorkflowValidationSnapshot } from './validation.ts'
+
+interface WorkflowValidationControlsOwner {
+  controls?: ReturnType<typeof mountWorkflowValidation>
+}
 
 export interface WorkflowOwner {
+  readonly snapshot: () => Promise<WorkflowValidationSnapshot>
   readonly document: () => Promise<FlowDocument>
+  readonly replace: (document: FlowDocument) => Promise<void>
   readonly edit: (transaction: FlowEditTransaction) => Promise<void>
   readonly flowToScreen: (
     point: typeof XYPositionSchema.Type
@@ -116,6 +127,10 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
   const edgeActions = document.createElement('div')
   edgeActions.className = 'workflow-edge-actions nodrag nopan'
   canvas.append(edgeActions)
+
+  const validationState: WorkflowValidationControlsOwner = {}
+  let selectedNode: FlowDocument['nodes'][number]['id'] | undefined
+  let latestSnapshot: WorkflowValidationSnapshot | undefined
   let renderRevision = 0
 
   const abort = new AbortController()
@@ -136,12 +151,19 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       }
 
       try {
-        await action()
         status.textContent = 'Accepted edit'
+        await action()
 
         return true
-      } catch {
-        status.textContent = 'Rejected edit. The graph is unchanged.'
+      } catch (error) {
+        if (error instanceof WorkflowValidationError) {
+          status.textContent = `Rejected edit. ${JSON.stringify(error.issues)}`
+        } else if (error instanceof WorkflowDecodeError) {
+          status.textContent =
+            'Rejected document. Invalid document encoding or settings.'
+        } else {
+          status.textContent = 'Rejected edit. The graph is unchanged.'
+        }
 
         return false
       }
@@ -218,6 +240,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       id: FlowDocument['nodes'][number]['id'],
       data: WorkflowNodeData
     ) => {
+      selectedNode = id
       panel.replaceChildren()
       const title = document.createElement('h2')
       title.textContent = `Configure ${data.kind}`
@@ -232,6 +255,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
           : document.createElement('input')
 
         input.value = value
+        input.dataset.field = label
         wrapper.append(input)
         panel.append(wrapper)
 
@@ -255,6 +279,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
         }
 
         input.value = value
+        input.dataset.field = label
         wrapper.append(input)
         panel.append(wrapper)
 
@@ -399,12 +424,24 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       output.setAttribute('aria-label', 'Run output')
       output.value = 'No run output.'
       panel.append(output)
+
+      if (latestSnapshot !== undefined) {
+        validationState.controls?.annotateFields(id, latestSnapshot)
+      }
     },
     refresh: async (): Promise<void> => {
-      const current = await owner.document()
+      const snapshot = await owner.snapshot()
+      const current = snapshot.document
 
       if (disposed) {
         return
+      }
+
+      latestSnapshot = snapshot
+      validationState.controls?.refresh(snapshot)
+
+      if (selectedNode !== undefined) {
+        validationState.controls?.annotateFields(selectedNode, snapshot)
       }
 
       renderRevision += 1
@@ -458,6 +495,18 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
       }
     },
   }
+
+  validationState.controls = mountWorkflowValidation({
+    controls,
+    panel,
+    canvas,
+    button,
+    snapshot: owner.snapshot,
+    edit: owner.edit,
+    configure: actions.configure,
+    changed: actions.refresh,
+    allocate: () => ids.allocate('edge'),
+  })
 
   const add = async (
     nodeKind: typeof WorkflowKindSchema.Type,
@@ -523,16 +572,30 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
     fixture: typeof baseWorkflowFixture | typeof aiWorkflowFixture
   ) => {
     const current = await Effect.runPromise(decodeWorkflowDocument(fixture))
-    await owner.edit({
-      operations: [
-        { kind: 'set-nodes', nodes: current.nodes },
-        { kind: 'set-edges', edges: current.edges },
-      ],
-    })
+    await owner.replace(current)
     panel.replaceChildren()
     await actions.refresh()
   }
 
+  const importInput = document.createElement('textarea')
+  importInput.setAttribute('aria-label', 'Workflow JSON')
+  importInput.id = 'workflow-import'
+  accepted.after(importInput)
+  button(controls, 'Import workflow', async () => {
+    const result = await Effect.runPromise(
+      Effect.result(decodeWorkflowDocument(JSON.parse(importInput.value)))
+    )
+
+    if (Result.isFailure(result)) {
+      throw result.failure
+    }
+
+    const current = result.success
+    await owner.replace(current)
+    panel.replaceChildren()
+    selectedNode = undefined
+    await actions.refresh()
+  })
   button(controls, 'Load base workflow', () => loadFixture(baseWorkflowFixture))
   button(controls, 'Load AI workflow', () => loadFixture(aiWorkflowFixture))
   button(controls, 'Undo', async () => {
@@ -630,6 +693,8 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
     disposed = true
     abort.abort()
     edgeActions.remove()
+    validationState.controls?.dispose()
+    importInput.remove()
   }
 
   button(controls, 'Dispose', () => {

@@ -6,6 +6,8 @@ import {
   decodeWorkflowDocument,
   workflowDataContract,
   workflowIssues,
+  workflowValidationReport,
+  prepareWorkflowExecution,
 } from '@flow/workflow'
 import type { WorkflowDocument, WorkflowNodeData } from '@flow/workflow'
 import { Effect } from 'effect'
@@ -72,4 +74,18 @@ if (
     ?.sourceHandle !== 'no'
 ) {
   throw new Error('Packed workflow atomic append failed')
+}
+
+const plan = Effect.runSync(
+  prepareWorkflowExecution({ document, revision: 171 }, 171)
+)
+
+if (
+  workflowValidationReport(document).issues.length !== 0 ||
+  JSON.stringify(plan.steps.map((step) => step.nodeId)) !==
+    JSON.stringify(['initial', 'transform', 'branch', 'join', 'output'])
+) {
+  throw new Error(
+    'Packed workflow validation or deterministic preparation failed'
+  )
 }

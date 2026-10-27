@@ -156,6 +156,18 @@ export const WorkflowPortSchema = S.Struct({
 export type WorkflowPort = typeof WorkflowPortSchema.Type
 
 export const WorkflowIssueSchema = S.Union([
+  S.Struct({ code: S.Literal('empty-workflow') }),
+  S.Struct({
+    code: S.Literal('missing-input'),
+    nodeId: NodeIdSchema,
+    portId: HandleIdSchema,
+  }),
+  S.Struct({ code: S.Literal('unreachable-node'), nodeId: NodeIdSchema }),
+  S.Struct({
+    code: S.Literal('invalid-setting'),
+    nodeId: NodeIdSchema,
+    field: S.Literals(['modelId', 'value']),
+  }),
   S.Struct({ code: S.Literal('duplicate-node-id'), nodeId: NodeIdSchema }),
   S.Struct({ code: S.Literal('duplicate-edge-id'), edgeId: EdgeIdSchema }),
   S.Struct({

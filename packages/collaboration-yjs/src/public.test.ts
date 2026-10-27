@@ -10,6 +10,8 @@ import {
 import type { FlowDocument } from '@flow/core'
 import {
   prepareWorkflowEdit,
+  workflowValidationReport,
+  createWorkflowExecutionPlan,
   baseWorkflowFixture,
   aiWorkflowFixture,
   decodeWorkflowDocument,
@@ -175,6 +177,18 @@ describe('Yjs room over real y-websocket', () => {
         sourceHandle: 'no',
         target: 'room-node-3',
       })
+      expect(workflowValidationReport(remote).issues).toStrictEqual([])
+      const plan = createWorkflowExecutionPlan(remote, 1)
+      expect(
+        plan.kind === 'ready' ? plan.plan.steps.map((step) => step.nodeId) : []
+      ).toStrictEqual([
+        'initial',
+        'transform',
+        'branch',
+        'room-node-3',
+        'join',
+        'output',
+      ])
       a.client.undo()
       await expect.poll(() => b.client.document().nodes.length).toBe(5)
       expect(
