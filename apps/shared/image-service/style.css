@@ -46,10 +46,6 @@ section {
 #capture .flow-node {
   font-family: FlowSans, sans-serif;
 }
-#capture .flow-node[data-node-type='shape'] {
-  background: transparent;
-  border: none;
-}
 .export-card {
   display: flex;
   align-items: center;

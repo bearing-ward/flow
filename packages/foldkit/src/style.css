@@ -292,6 +292,20 @@
 .flow-foldkit-node[data-height-declared='true'] {
   min-height: 0;
 }
+
+.flow-foldkit-node:has([data-shape-svg]) {
+  box-sizing: border-box;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.flow-foldkit-node:has([data-shape-svg]):is(.selected, :focus-visible) {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
 .flow-foldkit-resize {
   position: absolute;
   z-index: 2;

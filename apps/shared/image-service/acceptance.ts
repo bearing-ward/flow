@@ -161,6 +161,20 @@ export const imageServiceAcceptance = (
           page.locator('[data-testid="flow-node"][data-node-id="card"]')
         ).toContainText('Real host renderer')
         await expect(page.locator('[data-shape="hexagon"]')).toHaveCount(1)
+
+        const figure = page.locator(
+          '[data-testid="flow-node"][data-node-id="shape"]'
+        )
+
+        await expect(figure).not.toHaveClass(/selected/u)
+        await Promise.all(
+          ['top', 'right', 'bottom', 'left'].map((side) =>
+            expect(figure).toHaveCSS(`border-${side}-width`, '0px')
+          )
+        )
+        await expect(figure).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+        await expect(figure).toHaveCSS('box-shadow', 'none')
+        await expect(figure).toHaveCSS('outline-style', 'none')
         await expect(page.locator('[data-node-id="hidden"]')).toHaveCount(0)
         await expect(page.locator('[data-node-id="collapsed"]')).toHaveCount(0)
 
@@ -191,8 +205,9 @@ export const imageServiceAcceptance = (
         const bytes = await response.body()
         expect(bytes.readUInt32BE(16)).toBe(800)
         expect(bytes.readUInt32BE(20)).toBe(500)
-        await mkdir('/tmp/plan165', { recursive: true })
-        await writeFile(`/tmp/plan165/${host}.png`, bytes)
+        const samples = process.env.FLOW_IMAGE_SAMPLE_DIR ?? '/tmp/plan165'
+        await mkdir(samples, { recursive: true })
+        await writeFile(`${samples}/${host}.png`, bytes)
 
         await page.evaluate(
           (value) => globalThis.flowImageHost?.render(value),
@@ -203,7 +218,7 @@ export const imageServiceAcceptance = (
           .locator('#capture')
           .screenshot({ animations: 'disabled' })
 
-        await writeFile(`/tmp/plan165/${host}-live.png`, live)
+        await writeFile(`${samples}/${host}-live.png`, live)
         await expectMatchingPixels(page, bytes, live)
 
         const repeat = await request.post(`${endpoint}/render`, {
