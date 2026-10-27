@@ -161,3 +161,60 @@ label {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+#workflow-export {
+  display: block;
+  margin: 12px;
+  width: min(600px, calc(100% - 24px));
+  min-height: 100px;
+}
+html[data-workflow-theme='dark'] {
+  color-scheme: dark;
+}
+html[data-workflow-theme='dark'] body,
+html[data-workflow-theme='dark'] aside,
+html[data-workflow-theme='dark'] button,
+html[data-workflow-theme='dark'] input,
+html[data-workflow-theme='dark'] textarea,
+html[data-workflow-theme='dark'] select {
+  color: #e2e8f0;
+  background: #172a3a;
+}
+html[data-workflow-theme='dark'] .workflow-card {
+  color: #e2e8f0;
+}
+#controls output {
+  align-self: center;
+}
+#configuration {
+  overflow-wrap: anywhere;
+}
+#configuration input,
+#configuration textarea,
+#configuration select {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 520px) {
+  #layout {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+  #layout > aside:first-child {
+    max-height: 210px;
+  }
+  #app {
+    height: 420px;
+  }
+  #configuration {
+    max-height: 480px;
+  }
+  #palette {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #accepted {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}

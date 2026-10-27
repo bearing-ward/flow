@@ -10,6 +10,8 @@ import {
 import type { FlowDocument } from '@flow/core'
 import {
   prepareWorkflowEdit,
+  encodeSavedWorkflow,
+  decodeSavedWorkflow,
   workflowValidationReport,
   createWorkflowExecutionPlan,
   baseWorkflowFixture,
@@ -55,6 +57,16 @@ const open = async (room: string, actorId: string) => {
     close: () => Effect.runPromise(Scope.close(scope, Exit.void)),
   }
 }
+
+const ordered = (document: FlowDocument) => ({
+  nodes: document.nodes.toSorted((left, right) =>
+    left.id.localeCompare(right.id)
+  ),
+  edges: document.edges.toSorted((left, right) =>
+    left.id.localeCompare(right.id)
+  ),
+  bundles: document.bundles,
+})
 
 describe('Yjs room over real y-websocket', () => {
   beforeAll(async () => {
@@ -131,6 +143,85 @@ describe('Yjs room over real y-websocket', () => {
         .toBe(135)
     } finally {
       await Promise.all([a.close(), b.close()])
+    }
+  })
+
+  it('collaborates on restored workflow configuration and presentation extensions', async () => {
+    const room = crypto.randomUUID()
+    const a = await open(room, 'saved-workflow-a')
+    const b = await open(room, 'saved-workflow-b')
+
+    const document = Effect.runSync(
+      decodeWorkflowDocument({
+        ...baseWorkflowFixture,
+        nodes: [
+          {
+            id: 'group',
+            label: 'Group',
+            position: { x: 0, y: 0 },
+            size: { width: 1400, height: 500 },
+          },
+          ...baseWorkflowFixture.nodes.map((node) => ({
+            ...node,
+            parentId: 'group',
+            extent: 'parent',
+            rotation: 35,
+            data: {
+              ...node.data,
+              tree: { version: 1, kind: 'node', expanded: true },
+            },
+          })),
+          {
+            id: 'shape',
+            label: 'Shape',
+            type: 'shape',
+            position: { x: 30, y: 350 },
+            size: { width: 40, height: 40 },
+            data: { type: 'diamond', color: '#ff0071' },
+          },
+        ],
+        edges: baseWorkflowFixture.edges.map((edge) => ({
+          ...edge,
+          route: {
+            mode: 'manual',
+            points: [
+              { x: 100, y: 100 },
+              { x: 200, y: 200 },
+            ],
+          },
+        })),
+        bundles: [
+          {
+            id: 'branches',
+            edgeIds: ['branch-true', 'branch-false'],
+            ties: [{ x: 600, y: 100 }],
+          },
+        ],
+      })
+    )
+
+    const saved = Effect.runSync(encodeSavedWorkflow(document, 'dark'))
+    const restored = Effect.runSync(decodeSavedWorkflow(saved)).document
+
+    try {
+      await expect.poll(a.client.status).toBe('connected')
+      Effect.runSync(a.client.commit(empty, restored))
+      await expect.poll(() => b.client.document().nodes.length).toBe(7)
+      const remote = Effect.runSync(decodeWorkflowDocument(b.client.document()))
+
+      expect(ordered(remote)).toStrictEqual(ordered(restored))
+      const branch = remote.nodes.find((node) => node.id === 'branch')
+
+      expect(branch?.data?.workflow).toMatchObject({
+        kind: 'branch',
+        config: { operator: 'equals', value: 'HELLO' },
+        ports: { input: 'in', true: 'yes', false: 'no' },
+      })
+      a.client.undo()
+      await expect.poll(() => b.client.document().nodes.length).toBe(0)
+    } finally {
+      await a.close()
+      await b.close()
     }
   })
 

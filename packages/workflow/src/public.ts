@@ -155,3 +155,12 @@ export {
 } from './workflow-ai-local.ts'
 
 export type { LocalWorkflowAiOptions } from './workflow-ai-local.ts'
+
+export {
+  SavedWorkflowSchema,
+  WorkflowPersistenceError,
+  encodeSavedWorkflow,
+  decodeSavedWorkflow,
+} from './workflow-persistence.ts'
+
+export type { SavedWorkflow } from './workflow-persistence.ts'
