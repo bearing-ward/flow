@@ -28,6 +28,8 @@
   "include": [
     "packages/*/src/**/*.ts",
     "apps/*/workflow-contracts/**/*.ts",
+    "apps/*/workflow/**/*.ts",
+    "apps/shared/workflow/**/*.ts",
     "apps/shared/workflow-contracts/**/*.ts",
     "apps/*/src/**/*.ts",
     "apps/shared/schema-studio/**/*.ts",

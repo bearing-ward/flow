@@ -2,9 +2,14 @@ import { spawn } from 'node:child_process'
 import type { ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 
-import { decodeFlowDocument, projectFlowRoomDocument } from '@flow/core'
+import {
+  decodeFlowDocument,
+  projectFlowRoomDocument,
+  prepareFlowEdit,
+} from '@flow/core'
 import type { FlowDocument } from '@flow/core'
 import {
+  prepareWorkflowEdit,
   baseWorkflowFixture,
   aiWorkflowFixture,
   decodeWorkflowDocument,
@@ -123,6 +128,61 @@ describe('Yjs room over real y-websocket', () => {
         .toBe(135)
     } finally {
       await Promise.all([a.close(), b.close()])
+    }
+  })
+
+  it('synchronizes a workflow append as one room undo entry with its branch ports', async () => {
+    const room = crypto.randomUUID()
+    const a = await open(room, 'palette-a')
+    const b = await open(room, 'palette-b')
+
+    const base = {
+      ...projectFlowRoomDocument(
+        Effect.runSync(decodeWorkflowDocument(baseWorkflowFixture))
+      ),
+      bundles: [],
+      nodeOrigin: undefined,
+    }
+
+    let sequence = 0
+
+    const transaction = Effect.runSync(
+      prepareWorkflowEdit(
+        base,
+        {
+          kind: 'append',
+          edgeId: 'branch-false',
+          nodeKind: 'transform',
+          position: { x: 600, y: 200 },
+        },
+        { allocate: (namespace) => `room-${namespace}-${(sequence += 1)}` }
+      )
+    )
+
+    const appended = Effect.runSync(prepareFlowEdit(base, transaction)).document
+
+    try {
+      await expect.poll(a.client.status).toBe('connected')
+      Effect.runSync(a.client.commit(empty, base))
+      await expect.poll(() => b.client.document().nodes.length).toBe(5)
+      Effect.runSync(a.client.commit(base, appended))
+      await expect.poll(() => b.client.document().nodes.length).toBe(6)
+      const remote = Effect.runSync(decodeWorkflowDocument(b.client.document()))
+      expect(
+        remote.edges.find((edge) => edge.id === 'branch-false')
+      ).toMatchObject({
+        source: 'branch',
+        sourceHandle: 'no',
+        target: 'room-node-3',
+      })
+      a.client.undo()
+      await expect.poll(() => b.client.document().nodes.length).toBe(5)
+      expect(
+        Effect.runSync(decodeWorkflowDocument(b.client.document())).edges
+      ).toStrictEqual(base.edges)
+    } finally {
+      await a.close()
+      await b.close()
     }
   })
 

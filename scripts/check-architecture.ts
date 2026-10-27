@@ -74,18 +74,22 @@ const fixtureChecks = (): readonly string[] => {
 
   const failures: string[] = []
 
-  for (const source of [
-    {
-      path: 'packages/core/src/forbidden-workflow.ts',
-      text: "const workflow = import('@flow/workflow')",
-    },
-    {
-      path: 'packages/vue/src/forbidden-workflow.ts',
-      text: "export * from '../../../packages/workflow/src/public.ts'",
-    },
+  for (const owner of [
+    'packages/core',
+    'packages/vue',
+    'packages/foldkit',
+    'apps/vanilla',
   ]) {
-    if (findArchitectureViolations(source).length === 0) {
-      failures.push(`${source.path}: workflow boundary did not reject import`)
+    for (const text of [
+      "const workflow = import('@flow/workflow')",
+      "import type { WorkflowEdit } from '@flow/workflow'",
+      "export * from '../../../packages/workflow/src/public.ts'",
+    ]) {
+      const source = { path: `${owner}/src/forbidden-workflow.ts`, text }
+
+      if (findArchitectureViolations(source).length === 0) {
+        failures.push(`${source.path}: workflow boundary did not reject import`)
+      }
     }
   }
 

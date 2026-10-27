@@ -49,3 +49,19 @@ export { baseWorkflowFixture, aiWorkflowFixture } from './fixtures.ts'
 export { WorkflowDecodeError } from './workflow-decode-error.ts'
 
 export { WorkflowValidationError } from './workflow-validation-error.ts'
+
+export {
+  workflowKinds,
+  WorkflowKindSchema,
+  WorkflowEditSchema,
+  WorkflowEditError,
+  createWorkflowNode,
+  prepareWorkflowEdit,
+} from './workflow-edit.ts'
+
+export type {
+  WorkflowKind,
+  WorkflowEdit,
+  WorkflowIds,
+  WorkflowEditFailure,
+} from './workflow-edit.ts'

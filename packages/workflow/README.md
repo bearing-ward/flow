@@ -21,6 +21,7 @@ const canvasDocument = projectWorkflowDocument(accepted)
 - `workflow.schema.ts` owns schema-derived node, connection, document, port, and issue types.
 - `workflow-ports.ts` projects semantic roles to physical handles, direction, value type and multiplicity.
 - `workflow-validation.ts` owns pure structural and dependency validation.
+- `workflow-edit.ts` owns node factories and validated add, append, delete/reconnect and configuration transactions, with caller-owned ID allocation.
 - `workflow-document.ts` owns Effect decode/validation, the typed document contract, canvas projection and clipboard extension.
 - `workflow-execution.schema.ts` owns transient run identity, accepted revision/snapshot, values and node event contracts.
 - `workflow-decode-error.ts` and `workflow-validation-error.ts` own typed boundary failures.
@@ -77,7 +78,7 @@ Executable dependencies are finite DAGs, including trigger edges. Cycle reports 
 
 Existing grouping, tree, shape, route and bundle schemas remain authoritative. Workflow documents preserve these fields through core history, clipboard, versioned graph persistence and collaborative rooms. Register `workflowClipboardExtension` with the existing paste operation so workflow port bindings follow renamed handles. Workflow configuration contains no node-ID references beyond core endpoints and physical handles. Opaque metadata is not remapped. Presentation parentage does not mean executable subworkflows.
 
-Plan 167 rotation is not merged at the Plan 169 base commit. Rotation is therefore unverified here. The node variant factory inherits core geometry fields, rather than copying a closed list.
+Plan 170 tests rotation together with groups, trees, shapes, manual routes and bundles through workflow edits and clipboard remapping. The node variant factory inherits core geometry fields, rather than copying a closed list.
 
 `WorkflowRunRequest` has a branded `runId`, accepted `revision`, and document snapshot. Runtime composition must detach and retain that immutable snapshot. `WorkflowNodeEvent` repeats run ID, revision and node ID, and distinguishes queued, running, succeeded, failed, cancelled and skipped states. Succeeded events contain typed outputs; failed events carry a diagnostic code. Values distinguish text, trigger, and image asset metadata. Image values use local asset IDs, not credentials or provider objects. These contracts do not implement a run session, stale-event gate, cancellation or provider. Those belong to Units 3, 4 and 6.
 
@@ -90,3 +91,30 @@ Each app has `/workflow-contracts/`, a Unit 1 contract preview with fixture and 
 The package's Vitest acceptance covers schema/configuration rejection, exact issues, DAGs, metadata, generic Flow compatibility, typed actors, presentation extensions, persistence, history and clipboard. The Yjs package adds a real local WebSocket transport test for workflow configuration and room undo. The AI fixture also covers equal node/edge ID strings, with distinct private VNode key namespaces in Foldkit. Each host's `workflow-contracts.e2e.ts` imports both fixtures, checks rendered membership and edges, rejects an invalid import without replacement, and disposes the owner. A separate packed core-only consumer proves generic decode with the workflow package absent. Packed consumer tests install and typecheck the workflow archive beside each adapter.
 
 Decode and integrity workflows reuse centrally registered document spans and structured count/issue logs. Diagnostics omit prompts, output, keys and raw schema errors. No OTLP collector delivery is claimed. These tests establish Flow's Unit 1 contracts, not upstream workflow template parity or later-unit execution acceptance.
+
+## Palette and configuration transactions
+
+Plan 170 implements Unit 2. `workflowKinds` and `WorkflowKindSchema` enumerate all nine kinds. `createWorkflowNode({ kind, position }, ids)` supplies a kind's default configuration, physical handles and the app renderer type `workflow`. Its position is in graph coordinates. `WorkflowIds.allocate(namespace)` is an explicit application capability. It must return fresh IDs for `node`, `edge` and `handle`; callers choose their own deterministic or distributed namespace. The factory performs no browser access or implicit random allocation.
+
+`WorkflowEditSchema` derives the `WorkflowEdit` command union. `prepareWorkflowEdit(document, unknownCommand, ids)` returns an Effect containing one `FlowEditTransaction`. It decodes the command, validates the current workflow, reuses `prepareFlowEdit`, and validates the complete proposed document before returning. It does not mutate the source or accept an edit into a host. Submit the transaction through the host's public edit API.
+
+| Command | Fields and accepted behavior |
+| --- | --- |
+| `add` | `nodeKind`, `position`. Adds a fresh disconnected node with declared ports. Incomplete editor graphs remain valid. |
+| `append` | `nodeKind`, `edgeId`, `position`. Requires compatible input and output ports on the inserted kind. Updates the original edge's target, preserving its ID, source handle, branch role and presentation fields. Adds one downstream edge with a fresh ID. The complete replacement is one transaction and one history entry. |
+| `configure` | `nodeId`, `workflow`. Requires the same kind and valid typed configuration. Retains the accepted port bindings and other node metadata. Invalid connected format changes fail relationship validation. |
+| `delete` | `nodeId`, `reconnect`. Reuses core deletion, including group/edge/bundle cleanup. With reconnect enabled, joins compatible predecessor/successor pairs using the incoming source handle. Duplicate pairs collapse. A reconnection that violates input multiplicity or DAG integrity rejects the entire command. |
+
+`WorkflowEditFailure` names the aggregate typed failure channel. `WorkflowEditError` reports `missing-node`, `missing-edge`, `incompatible-insertion`, `kind-change` or `locked-text`. Schema and existing graph/workflow integrity errors retain their types. Text Input locking is a Flow requirement: while `locked` is true, a configuration edit cannot change `text`. Unlock without changing text first, then edit. Locking does not freeze node geometry. This behavior does not claim upstream lock parity.
+
+All hosts expose `/workflow/` with sidebar drag sources, keyboard-accessible add buttons, kind renderers, small typed configuration panels, edge insertion buttons, delete/reconnect, history, and clipboard controls. Drop coordinates pass through each host's viewport API. Model IDs remain editable strings until Unit 6 supplies provider capabilities. Run output is read-only and empty of execution results in this unit. Browser controls, focus and resource cleanup stay in apps.
+
+| Host | Public composition |
+| --- | --- |
+| Vanilla | `createFlow`, `FlowNodeRenderer`, `controller.applyEdit`, `getSnapshot`, `subscribeState`, `screenToFlowPosition`, `flowToScreenPosition`, `setViewport`, `undo`, `redo`, `destroy`. |
+| Vue | `FlowProvider`, `FlowCanvas`, a Vue node component, and `useFlow().applyEdit`, accepted `document`, `subscribeState`, viewport conversion, `setViewport`, `undo`, `redo`, scope disposal. |
+| Foldkit | `createProgram`/`Runtime.embed`, a `FoldkitNodeRenderer`, `createFoldkitFlowInstance` snapshot/edit ports, `createViewportClient`, `createFoldkitHistoryClient`, accepted-state subscription and measurement observer. All clients and runtime are disposed by the app. |
+
+No workflow-specific API or dependency enters a generic host adapter. Both toolbar clipboard and canvas copy/paste shortcuts use core `copyFlowSelection` and `pasteFlowGraphFragment` with `workflowClipboardExtension`, then validate and accept the resulting transaction through the same owner. Editing controls retain native text shortcuts.
+
+Acceptance is in `workflow-palette.e2e.ts` for each host and the shared production-route test body. It covers every kind by palette and keyboard, every configuration, Text Input lock/unlock and native editing shortcuts, physical DOM handle IDs, drop coordinates after viewport transformation, branch append, one-step undo, delete/reconnect, button/keyboard clipboard remapping and disposal. Public transaction tests cover exact failure codes and optional document extensions. Real local Yjs transport proves append and one room undo; packed consumers execute the public append API beside each host archive. See the [Plan 170 trace](../../research/traces/workflow-palette-2026-10-27.md) for production and test paths. These establish Unit 2's Flow behavior. Execution, provider behavior, complete template acceptance and upstream edge-plus parity remain later or unverified work.
