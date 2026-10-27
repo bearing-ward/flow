@@ -1,5 +1,6 @@
 import '@flow/vue/style.css'
-import type { FlowNode } from '@flow/core'
+import { getFlowLayoutInput } from '@flow/core'
+import type { FlowColorMode, FlowNode } from '@flow/core'
 import { FlowCanvas, FlowProvider, useFlow, StatusIndicator } from '@flow/vue'
 import type { WorkflowRunState } from '@flow/workflow'
 import {
@@ -11,6 +12,7 @@ import {
   getCurrentInstance,
   computed,
   shallowRef,
+  nextTick,
 } from 'vue'
 
 import {
@@ -37,6 +39,7 @@ const Demo = defineComponent({
     const flow = useFlow()
     const instance = getCurrentInstance()
     const revision = shallowRef(0)
+    const theme = shallowRef<FlowColorMode>('system')
     const runState = shallowRef<WorkflowRunState | null>(null)
     const runs = createWorkflowRunOwner(() => revision.value)
 
@@ -72,6 +75,22 @@ const Demo = defineComponent({
     onMounted(() => {
       const controls = mountWorkflowControls({
         runs,
+        layoutInput: () =>
+          Promise.resolve({
+            document: flow.document.value,
+            input: getFlowLayoutInput(
+              flow.document.value,
+              flow.getInternalNode
+            ),
+          }),
+        fit: async () => {
+          await nextTick()
+          await flow.fitView()
+          await nextTick()
+        },
+        theme: (mode) => {
+          theme.value = mode
+        },
         snapshot: () => Promise.resolve(validation.value),
         replace: (document) => {
           flow.updateDocument(document)
@@ -122,6 +141,7 @@ const Demo = defineComponent({
     return () =>
       h(FlowCanvas, {
         defaultDocument: initial,
+        colorMode: theme.value,
         defaultViewport: { x: 0, y: 0, zoom: 1 },
         nodeTypes: { workflow: WorkflowNode, default: WorkflowNode },
         autoPanOnNodeFocus: false,

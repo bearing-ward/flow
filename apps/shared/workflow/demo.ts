@@ -9,6 +9,7 @@ import {
 import type { FlowDocument, FlowEditTransaction, Viewport } from '@flow/core'
 import {
   baseWorkflowFixture,
+  decodeSavedWorkflow,
   aiWorkflowFixture,
   createWorkflowNode,
   decodeWorkflowDocument,
@@ -26,8 +27,10 @@ import type {
   WorkflowIds,
   WorkflowNodeData,
 } from '@flow/workflow'
-import { Effect, Option, Result, Schema as S } from 'effect'
+import { Effect, Option, Schema as S } from 'effect'
 
+import { mountWorkflowEditor } from './editor-controls.ts'
+import type { WorkflowEditorOwner } from './editor-controls.ts'
 import { mountWorkflowRunControls } from './run-controls.ts'
 import type { WorkflowRunOwner } from './run-owner.ts'
 import { mountWorkflowValidation } from './validation-controls.ts'
@@ -38,7 +41,7 @@ interface WorkflowValidationControlsOwner {
   runs?: ReturnType<typeof mountWorkflowRunControls>
 }
 
-export interface WorkflowOwner {
+export interface WorkflowOwner extends WorkflowEditorOwner {
   readonly runs: WorkflowRunOwner
   readonly snapshot: () => Promise<WorkflowValidationSnapshot>
   readonly document: () => Promise<FlowDocument>
@@ -260,6 +263,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
 
         input.value = value
         input.dataset.field = label
+        input.setAttribute('aria-label', label)
         wrapper.append(input)
         panel.append(wrapper)
 
@@ -284,6 +288,7 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
 
         input.value = value
         input.dataset.field = label
+        input.setAttribute('aria-label', label)
         wrapper.append(input)
         panel.append(wrapper)
 
@@ -593,21 +598,41 @@ export const mountWorkflowControls = (owner: WorkflowOwner) => {
     await actions.refresh()
   }
 
+  const editor = mountWorkflowEditor({
+    owner,
+    controls,
+    button,
+    signal: abort.signal,
+    refresh: actions.refresh,
+    edit: async (nodes) => {
+      await owner.edit({ operations: [{ kind: 'set-nodes', nodes }] })
+    },
+  })
+
   const importInput = document.createElement('textarea')
   importInput.setAttribute('aria-label', 'Workflow JSON')
   importInput.id = 'workflow-import'
   accepted.after(importInput)
   button(controls, 'Import workflow', async () => {
-    const result = await Effect.runPromise(
-      Effect.result(decodeWorkflowDocument(JSON.parse(importInput.value)))
+    const input: unknown = JSON.parse(importInput.value)
+
+    const isSaved = Option.isSome(
+      S.decodeUnknownOption(S.Struct({ format: S.Unknown }))(input)
     )
 
-    if (Result.isFailure(result)) {
-      throw result.failure
+    const restored = isSaved
+      ? await Effect.runPromise(decodeSavedWorkflow(input))
+      : {
+          document: await Effect.runPromise(decodeWorkflowDocument(input)),
+          theme: undefined,
+        }
+
+    await owner.replace(restored.document)
+
+    if (restored.theme !== undefined) {
+      editor.setTheme(restored.theme)
     }
 
-    const current = result.success
-    await owner.replace(current)
     panel.replaceChildren()
     selectedNode = undefined
     await actions.refresh()

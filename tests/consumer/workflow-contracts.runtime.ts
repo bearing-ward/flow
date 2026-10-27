@@ -1,6 +1,8 @@
 import { makeTypedFlow, prepareFlowEdit } from '@flow/core'
 import {
   prepareWorkflowEdit,
+  encodeSavedWorkflow,
+  decodeSavedWorkflow,
   aiWorkflowFixture,
   baseWorkflowFixture,
   decodeWorkflowDocument,
@@ -124,3 +126,20 @@ await Effect.runPromise(
     })
   )
 )
+
+const saved = await Effect.runPromise(
+  encodeSavedWorkflow(edited.document, 'dark')
+)
+
+const restored = await Effect.runPromise(decodeSavedWorkflow(saved))
+
+if (
+  restored.theme !== 'dark' ||
+  restored.document.nodes.length !== 6 ||
+  restored.document.edges.find((edge) => edge.id === 'branch-false')
+    ?.sourceHandle !== 'no'
+) {
+  throw new Error(
+    'Packed workflow persistence lost configuration or connectivity'
+  )
+}

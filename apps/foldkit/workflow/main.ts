@@ -1,5 +1,9 @@
 import '@flow/foldkit/style.css'
-import { FlowStateChangeSchema } from '@flow/core'
+import {
+  FlowStateChangeSchema,
+  getFlowLayoutInput,
+  flowTreeCollapsedIds,
+} from '@flow/core'
 import {
   createProgram,
   createFoldkitFlowInstance,
@@ -20,6 +24,10 @@ import {
   workflowDocument,
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
+import {
+  waitWorkflowFrame,
+  waitWorkflowViewport,
+} from '../../shared/workflow/editor-controls.ts'
 import {
   createWorkflowRunOwner,
   workflowStatus,
@@ -129,6 +137,57 @@ const stops = new Set<() => void>([
 
 const controls = mountWorkflowControls({
   runs,
+  layoutInput: async () => {
+    await instance.toObject()
+    const internals = await instance.getInternalNodes()
+
+    const lookup = new Map<string, (typeof internals)[number]>(
+      internals.map((internal) => [internal.node.id, internal])
+    )
+
+    return {
+      document: current,
+      input: getFlowLayoutInput(current, (id) => lookup.get(id)),
+    }
+  },
+  fit: async (signal) => {
+    const collapsed = flowTreeCollapsedIds(current)
+
+    const nodes = current.nodes.filter(
+      (node) =>
+        node.hidden !== true &&
+        node.parentId === undefined &&
+        !collapsed.has(node.id)
+    )
+
+    await waitWorkflowFrame(
+      () =>
+        nodes.every((node) => {
+          const element = [
+            ...root.querySelectorAll<HTMLElement>('[data-testid="flow-node"]'),
+          ].find((item) => item.dataset.nodeId === node.id)
+
+          return (
+            element?.style.left === `${node.position.x}px` &&
+            element.style.top === `${node.position.y}px` &&
+            (node.handles ?? []).every((handle) =>
+              [
+                ...element.querySelectorAll<HTMLElement>('[data-handle-id]'),
+              ].some(
+                (item) =>
+                  item.dataset.handleId === handle.id &&
+                  item.dataset.handleSide === handle.side
+              )
+            )
+          )
+        }),
+      signal
+    )
+    const fitted = await viewport.fitView('all', 0.1)
+    await waitWorkflowViewport(root, fitted.viewport, signal)
+  },
+  theme: (mode) =>
+    runtime.ports.actions.send(HostAction.SetColorMode({ mode })),
   snapshot: () => Promise.resolve(model),
   replace: async (document) => {
     runtime.ports.actions.send(HostAction.ReplaceDocument({ document }))

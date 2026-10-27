@@ -468,8 +468,8 @@
       "title": "Workflow Editor",
       "url": "https://reactflow.dev/ui/templates/workflow-editor",
       "kind": "template",
-      "referenceStatus": "catalog-listed; executable-outcome-unverified",
-      "implementationStatus": "not-started",
+      "referenceStatus": "public-outcome-equivalent; upstream runtime and visual comparison unverified",
+      "implementationStatus": "complete",
       "sourcePolicy": "Original native markup; deterministic local workflow execution only.",
       "dependencies": [
         "base-node",
@@ -506,31 +506,31 @@
       },
       "hosts": {
         "vanilla": {
-          "export": "@flow/vanilla (planned template recipe export)",
-          "recipePath": "apps/vanilla/src/ui/templates/workflow-editor.ts",
-          "test": "apps/vanilla/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/workflow-editor",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vanilla: createFlow, controller layout/fit/theme/history APIs",
+          "recipePath": "apps/vanilla/workflow/main.ts",
+          "test": "apps/vanilla/e2e/workflow-editor.e2e.ts",
+          "route": "/workflow/",
+          "status": "complete",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 173 production-route acceptance passed. Palette, configuration, validation, simulation success/failure/cancellation, measured ELK layout, exact local save/reload/restore, undo, focus, and narrow-screen themes are covered with workflow-palette, workflow-validation, workflow-runner and workflow-editor suites. Offline functional availability only; upstream runtime/visual parity remains unverified."
         },
         "vue": {
-          "export": "@flow/vue (planned template component export)",
-          "recipePath": "packages/vue/src/ui/templates/WorkflowEditor.vue",
-          "test": "apps/vue/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/workflow-editor",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/vue: FlowProvider, FlowCanvas, useFlow",
+          "recipePath": "apps/vue/workflow/main.ts",
+          "test": "apps/vue/e2e/workflow-editor.e2e.ts",
+          "route": "/workflow/",
+          "status": "complete",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 173 production-route acceptance passed. Palette, configuration, validation, simulation success/failure/cancellation, measured ELK layout, exact local save/reload/restore, undo, focus, and narrow-screen themes are covered with workflow-palette, workflow-validation, workflow-runner and workflow-editor suites. Offline functional availability only; upstream runtime/visual parity remains unverified."
         },
         "foldkit": {
-          "export": "@flow/foldkit (planned template view export; not yet implemented)",
-          "recipePath": "packages/foldkit/src/ui/templates/workflow-editor.ts",
-          "test": "apps/foldkit/e2e/ui-recipes.e2e.ts",
-          "route": "/ui-recipes/workflow-editor",
-          "status": "not-started",
-          "evidenceStatus": "not-run",
-          "testEvidence": "planned test path; no test has been run for this recipe"
+          "export": "@flow/foldkit: createProgram, createFoldkitFlowInstance, viewport/history clients, HostAction",
+          "recipePath": "apps/foldkit/workflow/main.ts",
+          "test": "apps/foldkit/e2e/workflow-editor.e2e.ts",
+          "route": "/workflow/",
+          "status": "complete",
+          "evidenceStatus": "passed",
+          "testEvidence": "Plan 173 production-route acceptance passed. Palette, configuration, validation, simulation success/failure/cancellation, measured ELK layout, exact local save/reload/restore, undo, focus, and narrow-screen themes are covered with workflow-palette, workflow-validation, workflow-runner and workflow-editor suites. Offline functional availability only; upstream runtime/visual parity remains unverified."
         }
       },
       "requiredOutcome": "Add, connect, configure, delete, save and restore a workflow; run success, failure and cancellation through a deterministic example-owned simulator."
@@ -1520,7 +1520,7 @@
             "Vue mini map keyboard activation preserves an active canvas selection",
             "Vue mini map handles an empty graph accessibly"
           ],
-          "testedOutcome": "Seven focused Vue E2Es pass 7/7. They cover visible node rectangles, hidden-node omission, the viewport mask, pointer click recentering, Enter/Space graph centering with target x/y derived from actual canvas clientWidth/clientHeight, accessible inert empty state, and a keyboard-active selection that remains visible through MiniMap Enter/Escape use. Event isolation stops pointer, mouse, wheel, context-menu, double-click, click, and MiniMap keydown propagation; the regression dispatches bubbling input events and verifies pane event count remains zero and zoom remains 1. A production-path measurement case changes a rendered node's inline dimensions, waits for FlowCanvas's accepted internal-node measurement, confirms document node size data is unchanged, and compares the rendered SVG rectangle dimensions to a fresh shared projection built from those accepted measurements (fixture projection helper: apps/vue/src/minimap-test.ts:70-98). For wheel specifically, the source stop-propagation guard plus zero pane events and unchanged zoom are asserted; there is no separate MiniMap wheel-callback counter. FlowCanvas computes one aggregate graph projection from accepted document and measured-node state with measurementRevision and provides it to FlowMiniMap, whose computed projection also tracks viewport and canvas dimensions. Current options remain fixed: 180×120 SVG, fixed colors/styles, bottom-right placement, click recentering, and Enter/Space graph centering.",
+          "testedOutcome": "Seven focused Vue E2Es pass 7/7. They cover visible node rectangles, hidden-node omission, the viewport mask, pointer click recentering, Enter/Space graph centering with target x/y derived from actual canvas clientWidth/clientHeight, accessible inert empty state, and a keyboard-active selection that remains visible through MiniMap Enter/Escape use. Event isolation stops pointer, mouse, wheel, context-menu, double-click, click, and MiniMap keydown propagation; the regression dispatches bubbling input events and verifies pane event count remains zero and zoom remains 1. A production-path measurement case changes a rendered node's inline dimensions, waits for FlowCanvas's accepted internal-node measurement, confirms document node size data is unchanged, and compares the rendered SVG rectangle dimensions to a fresh shared projection built from those accepted measurements (fixture projection helper: apps/vue/src/minimap-test.ts:70-98). For wheel specifically, the source stop-propagation guard plus zero pane events and unchanged zoom are asserted; there is no separate MiniMap wheel-callback counter. FlowCanvas computes one aggregate graph projection from accepted document and measured-node state with measurementRevision and provides it to FlowMiniMap, whose computed projection also tracks viewport and canvas dimensions. Current options remain fixed: 180\u00d7120 SVG, fixed colors/styles, bottom-right placement, click recentering, and Enter/Space graph centering.",
           "remaining": "Partial: this focused measurement case proves accepted DOM measurement reaches the SVG projection in the tested Vue fixture, not every measurement lifecycle or custom renderer. Custom colors/renderers, map pan/zoom, configurable placement/size, and exhaustive styling/options remain unsupported or unverified. There is no upstream comparison or performance evidence, and no two-Runtime MiniMap isolation proof. No cross-host parity is claimed."
         }
       }

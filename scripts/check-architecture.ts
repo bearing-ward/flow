@@ -84,6 +84,8 @@ const fixtureChecks = (): readonly string[] => {
       "const workflow = import('@flow/workflow')",
       "export { startWorkflowRun } from '@flow/workflow/runner'",
       "import { startWorkflowRun } from '../../../packages/workflow/src/workflow-runner.ts'",
+      "export { decodeSavedWorkflow } from '@flow/workflow/persistence'",
+      "import { decodeSavedWorkflow } from '../../../packages/workflow/src/workflow-persistence.ts'",
       "export type { WorkflowExecutionPlan } from '@flow/workflow/preparation'",
       "import { prepareWorkflowExecution } from '../../../packages/workflow/src/workflow-preparation.ts'",
       "import type { WorkflowEdit } from '@flow/workflow'",

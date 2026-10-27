@@ -1,3 +1,5 @@
+import { getFlowLayoutInput } from '@flow/core'
+
 import '@flow/vanilla/style.css'
 import {
   createFlow,
@@ -93,6 +95,18 @@ model = workflowValidationSnapshot(controller.getSnapshot().document, 0)
 
 const controls = mountWorkflowControls({
   runs,
+  layoutInput: () => {
+    const { document } = controller.getSnapshot()
+
+    return Promise.resolve({
+      document,
+      input: getFlowLayoutInput(document, controller.getInternalNode),
+    })
+  },
+  fit: async () => {
+    await controller.fitView()
+  },
+  theme: controller.setColorMode,
   snapshot: () => Promise.resolve(model),
   replace: (document) => {
     controller.update(document)

@@ -103,3 +103,12 @@ export type {
   WorkflowPreparation,
   WorkflowPreparationFailure,
 } from './workflow-preparation.ts'
+
+export {
+  SavedWorkflowSchema,
+  WorkflowPersistenceError,
+  encodeSavedWorkflow,
+  decodeSavedWorkflow,
+} from './workflow-persistence.ts'
+
+export type { SavedWorkflow } from './workflow-persistence.ts'

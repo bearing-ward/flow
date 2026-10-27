@@ -29,3 +29,7 @@ bun run verify:full
 Open [http://127.0.0.1:4173](http://127.0.0.1:4173) after starting the development server. The source `index.html` is a Vite entry point; a `file://` URL displays launch instructions.
 
 See [research](research/README.md) for the pinned source and trace coverage, and [observability](docs/observability.md) for telemetry configuration and verification limits.
+
+## Workflow editor
+
+Each host provides `/workflow/` with a palette, typed configuration, validation, an offline simulator, measured ELK layout, history, clipboard, themes, and versioned local JSON export/import. See the [workflow package contract](packages/workflow/README.md#base-editor-and-local-persistence) for public APIs, the save policy, and acceptance boundaries.
