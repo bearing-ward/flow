@@ -166,7 +166,7 @@ export const WorkflowIssueSchema = S.Union([
   S.Struct({
     code: S.Literal('invalid-setting'),
     nodeId: NodeIdSchema,
-    field: S.Literals(['modelId', 'value']),
+    field: S.Literals(['modelId', 'value', 'temperature', 'size']),
   }),
   S.Struct({ code: S.Literal('duplicate-node-id'), nodeId: NodeIdSchema }),
   S.Struct({ code: S.Literal('duplicate-edge-id'), edgeId: EdgeIdSchema }),

@@ -61,28 +61,27 @@ const configureKind = async (
     }
 
     case 'generate-text': {
-      await panel.getByLabel('Text model').fill('local-text')
-      await panel.getByLabel('Temperature').fill('0.7')
+      await panel.getByLabel('Text model').selectOption('local-text')
+      await panel.getByLabel('Temperature').selectOption('1')
       await panel.getByLabel('System').fill('Concise')
       await panel.getByLabel('Prompt', { exact: true }).fill('A tree')
 
       return {
         modelId: 'local-text',
-        temperature: 0.7,
+        temperature: 1,
         system: 'Concise',
         prompt: 'A tree',
       }
     }
 
     case 'generate-image': {
-      await panel.getByLabel('Image model').fill('local-image')
-      await panel.getByLabel('Width').fill('512')
-      await panel.getByLabel('Height').fill('256')
+      await panel.getByLabel('Image model').selectOption('local-image')
+      await panel.getByLabel('Image size').selectOption('256x256')
       await panel.getByLabel('Image prompt').fill('A tree')
 
       return {
         modelId: 'local-image',
-        width: 512,
+        width: 256,
         height: 256,
         prompt: 'A tree',
       }

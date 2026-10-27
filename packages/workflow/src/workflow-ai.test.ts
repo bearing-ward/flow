@@ -32,6 +32,8 @@ import {
   makeWorkflowAiProvider,
   reduceWorkflowAiEvent,
   startWorkflowAiSession,
+  startWorkflowRun,
+  createWorkflowAiEvaluator,
   WorkflowAiEventSchema,
   WorkflowAiIdentitySchema,
 } from './public.ts'
@@ -658,6 +660,45 @@ describe('offline AI capability contract', () => {
 
     await collect()
     await collect({ ...identity, kind: 'image', request: imageRequest })
+    const service = Effect.runSync(makeLocalWorkflowAiProvider())
+    const outputs: object[] = []
+    await Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function* integratedExtensions() {
+          const run = yield* startWorkflowRun(
+            { document, revision: 175 },
+            {
+              runId: 'extensions-175',
+              expectedRevision: 175,
+              capabilities: service.capabilities,
+              evaluate: createWorkflowAiEvaluator(service),
+              onEvent: (event) => {
+                if (
+                  event.kind === 'node' &&
+                  event.event.nodeId === 'image-output' &&
+                  event.event.state === 'succeeded'
+                ) {
+                  outputs.push(event.event.outputs)
+                }
+              },
+            }
+          )
+
+          yield* run.await
+        })
+      )
+    )
+    expect(outputs).toStrictEqual([
+      {
+        result: {
+          kind: 'image',
+          assetId: 'flow-local-green-256',
+          mediaType: 'image/png',
+          width: 256,
+          height: 256,
+        },
+      },
+    ])
     expect({
       document,
       history,

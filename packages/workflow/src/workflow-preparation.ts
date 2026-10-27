@@ -9,6 +9,8 @@ import {
 import type { FlowDocument } from '@flow/core'
 import { Effect, Schema as S } from 'effect'
 
+import { workflowAiSettingIssues } from './workflow-ai-settings.ts'
+import type { WorkflowAiCapabilities } from './workflow-ai.schema.ts'
 import { decodeWorkflowDocument } from './workflow-document.ts'
 import { workflowPorts } from './workflow-ports.ts'
 import { WorkflowValidationError } from './workflow-validation-error.ts'
@@ -99,7 +101,8 @@ const settingIssues = (
 
 /** Editable integrity is separate from readiness. Every report uses physical, stable IDs. */
 export const workflowValidationReport = (
-  document: WorkflowDocument
+  document: WorkflowDocument,
+  capabilities?: WorkflowAiCapabilities
 ): WorkflowValidationReport => {
   const issues: WorkflowIssue[] = [
     ...workflowIssues({
@@ -176,7 +179,10 @@ export const workflowValidationReport = (
       issues.push({ code: 'unreachable-node', nodeId: node.id })
     }
 
-    issues.push(...settingIssues(node.id, data))
+    issues.push(
+      ...settingIssues(node.id, data),
+      ...workflowAiSettingIssues(node.id, data, capabilities)
+    )
   }
 
   return {
@@ -231,9 +237,10 @@ export type WorkflowPreparation = typeof WorkflowPreparationSchema.Type
 /** Pure deterministic preparation. A detached snapshot prevents later edits changing the plan. */
 export const createWorkflowExecutionPlan = (
   document: WorkflowDocument,
-  revision: number
+  revision: number,
+  capabilities?: WorkflowAiCapabilities
 ): WorkflowPreparation => {
-  const report = workflowValidationReport(document)
+  const report = workflowValidationReport(document, capabilities)
 
   if (report.issues.length > 0) {
     return { kind: 'invalid', report }
@@ -353,7 +360,8 @@ export type WorkflowPreparationFailure =
 /** Call with a fresh atomic owner snapshot immediately before starting a run. */
 export const prepareWorkflowExecution = (
   accepted: { readonly revision: number; readonly document: FlowDocument },
-  expectedRevision: number
+  expectedRevision: number,
+  capabilities?: WorkflowAiCapabilities
 ): Effect.Effect<WorkflowExecutionPlan, WorkflowPreparationFailure> =>
   Effect.gen(function* prepareExecution() {
     yield* S.decodeUnknownEffect(RevisionSchema)(accepted.revision)
@@ -367,7 +375,12 @@ export const prepareWorkflowExecution = (
     }
 
     const document = yield* decodeWorkflowDocument(accepted.document)
-    const result = createWorkflowExecutionPlan(document, accepted.revision)
+
+    const result = createWorkflowExecutionPlan(
+      document,
+      accepted.revision,
+      capabilities
+    )
 
     if (result.kind === 'invalid') {
       return yield* new WorkflowValidationError({

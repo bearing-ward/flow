@@ -12,13 +12,13 @@
     "inScope": 198,
     "stretch": 0,
     "intentionalGaps": 2,
-    "inScopeCloseAllHosts": 197,
+    "inScopeCloseAllHosts": 198,
     "inScopeCloseByHost": {
-      "vanilla": 197,
-      "vue": 197,
-      "foldkit": 197
+      "vanilla": 198,
+      "vue": 198,
+      "foldkit": 198
     },
-    "reaudit": "2026-10-26 Plan 149 Pro audit with Plans 150, 153-160 and 162-165 acceptance follow-ups; Plan 168 workflow template outcome audit retains both templates at G; other ratings retain their recorded audit boundaries. Plan 173 closes Workflow Editor W1-W9 by offline functional acceptance in all three hosts; AI Workflow Editor remains G.",
+    "reaudit": "2026-10-27 Plans 149-175 acceptance follow-ups retain their recorded boundaries. Plan 173 closes Workflow Editor W1-W9, and Plan 175 closes AI Workflow Editor A1-A8 and inherited base-editor outcomes by deterministic offline functional acceptance in all three hosts. Counts are recomputed from entries. Upstream runtime/model/visual parity and full-profile integration remain unverified.",
     "proReaudit": {
       "on": "2026-10-26",
       "entries": 16,
@@ -2273,7 +2273,7 @@
     },
     {
       "section": "examples nodes",
-      "name": "Node Position Animation \u00b7 Pro",
+      "name": "Node Position Animation · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -2460,7 +2460,7 @@
     },
     {
       "section": "examples nodes",
-      "name": "Shapes \u00b7 Pro",
+      "name": "Shapes · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3019,7 +3019,7 @@
     },
     {
       "section": "examples edges",
-      "name": "Edge Routing \u00b7 Pro",
+      "name": "Edge Routing · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3261,7 +3261,7 @@
     },
     {
       "section": "examples edges",
-      "name": "Editable Edge \u00b7 Pro",
+      "name": "Editable Edge · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3659,7 +3659,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Helper Lines \u00b7 Pro",
+      "name": "Helper Lines · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3782,7 +3782,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Collaborative \u00b7 Pro",
+      "name": "Collaborative · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -3960,7 +3960,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Copy and Paste \u00b7 Pro",
+      "name": "Copy and Paste · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4117,7 +4117,7 @@
     },
     {
       "section": "examples interaction",
-      "name": "Undo and Redo \u00b7 Pro",
+      "name": "Undo and Redo · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4274,7 +4274,7 @@
     },
     {
       "section": "examples grouping",
-      "name": "Selection Grouping \u00b7 Pro",
+      "name": "Selection Grouping · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4462,7 +4462,7 @@
     },
     {
       "section": "examples grouping",
-      "name": "Parent Child Relation \u00b7 Pro",
+      "name": "Parent Child Relation · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4708,7 +4708,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Expand and Collapse \u00b7 Pro",
+      "name": "Expand and Collapse · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4860,7 +4860,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Auto Layout \u00b7 Pro",
+      "name": "Auto Layout · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -4977,7 +4977,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Force Layout \u00b7 Pro",
+      "name": "Force Layout · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5121,7 +5121,7 @@
     },
     {
       "section": "examples layout",
-      "name": "Dynamic Layouting \u00b7 Pro",
+      "name": "Dynamic Layouting · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5440,7 +5440,7 @@
     },
     {
       "section": "examples whiteboard",
-      "name": "Freehand Draw \u00b7 Pro",
+      "name": "Freehand Draw · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5575,7 +5575,7 @@
     },
     {
       "section": "examples misc",
-      "name": "Server Side Image Creation \u00b7 Pro",
+      "name": "Server Side Image Creation · Pro",
       "vanilla": "C",
       "vue": "C",
       "foldkit": "C",
@@ -5724,29 +5724,29 @@
     {
       "section": "ui templates",
       "name": "AI Workflow Editor",
-      "vanilla": "G",
-      "vue": "G",
-      "foldkit": "G",
+      "vanilla": "C",
+      "vue": "C",
+      "foldkit": "C",
       "scope": "parity",
       "wave": 7,
-      "missing": "No integrated workflow template, workflow kind/configuration contract, semantic validation, or runner. Generic editing, layout, themes and persistence are reusable building blocks. No text/image provider boundary, typed AI execution, or output lifecycle.",
+      "missing": "No remaining A1-A8 or inherited base-editor functional outcome gap in the integrated offline editor. Upstream model, streaming, runtime and visual equivalence remain unverified; providers are deterministic local simulation.",
       "effort": "L",
       "theme": "template",
       "reaudit": {
-        "on": "2026-10-26",
-        "plan": "Plan 168",
+        "on": "2026-10-27",
+        "plan": "Plan 175",
         "previousRatings": {
           "vanilla": "G",
           "vue": "G",
           "foldkit": "G"
         },
-        "method": "Public pages and live demo DOM/actions inspected; current public production and checked-in test paths traced independently in each host. Availability ratings only, not runtime reference parity. Complete templates remain G.",
+        "method": "Dedicated three-host production-route AI editor acceptance, retained palette/validation/runner/base-editor acceptance, package controlled-clock tests, real Yjs transport and packed-consumer execution. C means public functional availability under the adopted offline policy. No upstream runtime, model, streaming, visual or full-profile parity claim.",
         "url": "https://reactflow.dev/ui/templates/ai-workflow-editor",
         "accessedOn": "2026-10-26",
         "demoUrls": ["https://ai-workflow-editor.reactflow.dev/workflow"],
         "sourceAccess": "Public descriptions and live DOM only. No public template repository identified; public xyflow/xyflow repository read and distinguished from subscription template source. No licensed ZIP or bundle source used. No run, provider request, or key entry.",
-        "missing": "No integrated workflow template, workflow kind/configuration contract, semantic validation, or runner. Generic editing, layout, themes and persistence are reusable building blocks. No text/image provider boundary, typed AI execution, or output lifecycle.",
-        "evidence": "research/traces/workflow-templates-audit-2026-10-26.md",
+        "missing": "No remaining A1-A8 or inherited base-editor functional outcome gap in the integrated offline editor. Upstream model, streaming, runtime and visual equivalence remain unverified; providers are deterministic local simulation.",
+        "evidence": "research/traces/workflow-ai-editor-2026-10-27.md",
         "delivery": "plans/168-workflow-delivery.md",
         "outcomes": [
           {
@@ -5755,74 +5755,77 @@
             "vanilla": "C",
             "vue": "C",
             "foldkit": "C",
-            "basis": "demo",
-            "missing": "E1 and E2 provide the graph and navigation APIs. This excludes workflow-specific ports and commands.",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783",
-                "apps/vanilla/src/ui/closing-recipes.ts:165",
-                "apps/vanilla/src/ui/closing-recipes.ts:237"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588",
-                "apps/vue/src/closing-recipes.ts:197",
-                "apps/vue/src/closing-recipes.ts:420"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "W5",
             "outcome": "Validate workflow structure and report actionable node/port errors",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
-            "basis": "proposal",
-            "missing": "E1 and E2 validate documents and connection rules. No executable workflow contract, required-input checks, or runner validation report.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783",
-                "apps/vanilla/src/ui/closing-recipes.ts:165",
-                "apps/vanilla/src/ui/closing-recipes.ts:237"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588",
-                "apps/vue/src/closing-recipes.ts:197",
-                "apps/vue/src/closing-recipes.ts:420"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107",
-                "apps/foldkit/schema-studio/main.ts:213",
-                "apps/foldkit/e2e/events-and-changes-fixture.ts:203",
-                "apps/foldkit/e2e/events-and-changes.e2e.ts:328"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
@@ -5832,25 +5835,37 @@
             "vanilla": "C",
             "vue": "C",
             "foldkit": "C",
-            "basis": "page, demo control",
-            "missing": "E5 provides measured ELK layout and host controls. Exact template coordinates and port routing remain unverified.",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-layout.ts:51",
-                "packages/layout/src/public.ts:34",
-                "apps/shared/layout/browser.ts:161"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/ui/layout-recipes.ts:406",
-                "apps/vanilla/e2e/layout-engines.e2e.ts:1"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/layout-recipes.ts:301",
-                "apps/vue/e2e/layout-engines.e2e.ts:1"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/layout/main.ts:528",
-                "apps/foldkit/e2e/layout-engines.e2e.ts:1"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
@@ -5860,278 +5875,397 @@
             "vanilla": "C",
             "vue": "C",
             "foldkit": "C",
-            "basis": "page, demo panel",
-            "missing": "E6 provides shared color-mode resolution and host styling. Template theme composition is still absent.",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-theme.ts:4",
-                "packages/core/src/domain/flow-theme.ts:19"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:2337",
-                "apps/vanilla/e2e/styling-recipes.e2e.ts:1"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/flow-canvas.ts:1261",
-                "apps/vue/e2e/final-wiring.e2e.ts:465"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:8141",
-                "apps/foldkit/e2e/model-styling.e2e.ts:200"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "W9",
             "outcome": "Save and restore an editable workflow",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
-            "basis": "proposal",
-            "missing": "E7 saves generic graphs. No versioned workflow configuration or migration contract. Upstream persistence is unverified.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow-persistence.ts:532",
-                "packages/core/src/domain/flow-persistence.ts:598"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
-              "vanilla": ["apps/vanilla/e2e/graph-editing-examples.e2e.ts:136"],
-              "vue": ["apps/vue/e2e/graph-editing-examples.e2e.ts:138"],
-              "foldkit": ["apps/foldkit/e2e/graph-editing-examples.e2e.ts:154"]
+              "vanilla": [
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
+              ],
+              "vue": [
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
+              ],
+              "foldkit": [
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
+              ]
             }
           },
           {
             "id": "A1",
             "outcome": "Palette for Text Input, Generate Text, Generate Image, and Workflow Trigger",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
-            "basis": "demo",
-            "missing": "E2 supports drops, but no AI kind registry or template.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-edit.ts:247"],
+              "shared": [
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/closing-recipes.ts:165",
-                "apps/vanilla/src/ui/closing-recipes.ts:237"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/closing-recipes.ts:197",
-                "apps/vue/src/closing-recipes.ts:420"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A2",
             "outcome": "Edit prompt and system text without dragging the node",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
-            "basis": "demo",
-            "missing": "E3 provides text input and propagation. No prompt/system configuration contract or AI bindings.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow.schema.ts:154"],
+              "shared": [
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/computing-flows-recipes.ts:62",
-                "apps/vanilla/e2e/computing-flows-recipes.e2e.ts:3"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/computing-flows-recipes.ts:31",
-                "apps/vue/e2e/computing-flows-recipes.e2e.ts:3"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/computing-flows/main.ts:41",
-                "apps/foldkit/e2e/computing-flows-recipes.e2e.ts:3"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A3",
             "outcome": "Configure a text model and temperature; inspect generated text",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
-            "basis": "demo",
-            "missing": "E1 stores opaque JSON, but no model capability registry, generation request, or generated-text contract.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A4",
             "outcome": "Configure image model and size; inspect generated image",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
-            "basis": "demo",
-            "missing": "No image-generation boundary or output-preview lifecycle. E1's custom rendering alone is insufficient.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A5",
             "outcome": "Connect text, image, system, prompt, and trigger ports",
-            "vanilla": "P",
-            "vue": "P",
-            "foldkit": "P",
-            "basis": "demo",
-            "missing": "E1 supplies named directional handles and E2 supplies connection policies. Semantic compatibility and trigger/data separation are missing.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783",
-                "apps/vanilla/src/ui/closing-recipes.ts:165",
-                "apps/vanilla/src/ui/closing-recipes.ts:237"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588",
-                "apps/vue/src/closing-recipes.ts:197",
-                "apps/vue/src/closing-recipes.ts:420"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
-                "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107",
-                "apps/foldkit/schema-studio/main.ts:213",
-                "apps/foldkit/e2e/events-and-changes-fixture.ts:203",
-                "apps/foldkit/e2e/events-and-changes.e2e.ts:328"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A6",
             "outcome": "Trigger runs and display per-node execution state",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
-            "basis": "demo controls, execution unverified",
-            "missing": "E4's status display is usable, but no run scheduler or provider lifecycle exists.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
-              "shared": ["packages/core/src/domain/flow-edit.ts:247"],
+              "shared": [
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
+              ],
               "vanilla": [
-                "apps/vanilla/src/ui/status-indicator-test.ts:30",
-                "apps/vanilla/e2e/ui-recipes.e2e.ts:95"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "apps/vue/src/status-indicator-test.ts:32",
-                "apps/vue/e2e/ui-recipes.e2e.ts:3"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "apps/foldkit/ui-recipes/status-indicator/main.ts:66",
-                "apps/foldkit/e2e/ui-recipes.e2e.ts:3"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A7",
             "outcome": "Display incremental text output with cancellation and failure handling",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
-            "basis": "proposal, upstream unverified",
-            "missing": "No generation stream or run-event reducer. Do not infer streaming from the AI SDK dependency.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           },
           {
             "id": "A8",
             "outcome": "Configure a provider without exposing credentials in graph data",
-            "vanilla": "G",
-            "vue": "G",
-            "foldkit": "G",
-            "basis": "demo key field, security behavior unverified",
-            "missing": "No workflow provider capability or credential boundary. Recommend offline fixtures by default, not a copied API-key field.",
+            "vanilla": "C",
+            "vue": "C",
+            "foldkit": "C",
+            "basis": "Flow production-route acceptance and adopted deterministic offline policy",
+            "missing": "No offline functional outcome gap. Upstream runtime and exact appearance remain unverified.",
             "evidence": {
               "shared": [
-                "packages/core/src/domain/flow.schema.ts:147",
-                "packages/core/src/domain/flow-edit.ts:247",
-                "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                "packages/workflow/src/workflow-ai-evaluator.ts:10",
+                "packages/workflow/src/workflow-ai-editor.test.ts:70",
+                "apps/shared/workflow/ai-editor-acceptance.ts:113"
               ],
               "vanilla": [
-                "apps/vanilla/src/mount-flow.ts:12357",
-                "apps/vanilla/src/mount-flow.ts:8918",
-                "apps/vanilla/src/mount-flow.ts:1783"
+                "apps/vanilla/workflow/main.ts:1",
+                "apps/vanilla/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-editor.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-palette.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-validation.e2e.ts:1",
+                "apps/vanilla/e2e/workflow-runner.e2e.ts:1"
               ],
               "vue": [
-                "packages/vue/src/use-flow.ts:766",
-                "packages/vue/src/flow-canvas.ts:4668",
-                "packages/vue/src/flow-canvas.ts:9588"
+                "apps/vue/workflow/main.ts:1",
+                "apps/vue/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-editor.e2e.ts:1",
+                "apps/vue/e2e/workflow-palette.e2e.ts:1",
+                "apps/vue/e2e/workflow-validation.e2e.ts:1",
+                "apps/vue/e2e/workflow-runner.e2e.ts:1"
               ],
               "foldkit": [
-                "packages/foldkit/src/graph.ts:1344",
-                "packages/foldkit/src/graph.ts:7660",
-                "packages/foldkit/src/graph.ts:7829"
+                "apps/foldkit/workflow/main.ts:1",
+                "apps/foldkit/e2e/workflow-ai-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-editor.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-palette.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-validation.e2e.ts:1",
+                "apps/foldkit/e2e/workflow-runner.e2e.ts:1"
               ]
             }
           }
@@ -6149,9 +6283,421 @@
           "on": "2026-10-14",
           "missing": "No template or recipe in any host (stretch)",
           "evidence": "no match for 'workflow editor' under apps/ or packages/"
+        },
+        {
+          "on": "2026-10-26",
+          "plan": "Plan 168",
+          "previousRatings": {
+            "vanilla": "G",
+            "vue": "G",
+            "foldkit": "G"
+          },
+          "method": "Public pages and live demo DOM/actions inspected; current public production and checked-in test paths traced independently in each host. Availability ratings only, not runtime reference parity. Complete templates remain G.",
+          "url": "https://reactflow.dev/ui/templates/ai-workflow-editor",
+          "accessedOn": "2026-10-26",
+          "demoUrls": ["https://ai-workflow-editor.reactflow.dev/workflow"],
+          "sourceAccess": "Public descriptions and live DOM only. No public template repository identified; public xyflow/xyflow repository read and distinguished from subscription template source. No licensed ZIP or bundle source used. No run, provider request, or key entry.",
+          "missing": "No integrated workflow template, workflow kind/configuration contract, semantic validation, or runner. Generic editing, layout, themes and persistence are reusable building blocks. No text/image provider boundary, typed AI execution, or output lifecycle.",
+          "evidence": "research/traces/workflow-templates-audit-2026-10-26.md",
+          "delivery": "plans/168-workflow-delivery.md",
+          "outcomes": [
+            {
+              "id": "W1",
+              "outcome": "View, select, move, connect, delete, zoom, and fit a graph",
+              "vanilla": "C",
+              "vue": "C",
+              "foldkit": "C",
+              "basis": "demo",
+              "missing": "E1 and E2 provide the graph and navigation APIs. This excludes workflow-specific ports and commands.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783",
+                  "apps/vanilla/src/ui/closing-recipes.ts:165",
+                  "apps/vanilla/src/ui/closing-recipes.ts:237"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588",
+                  "apps/vue/src/closing-recipes.ts:197",
+                  "apps/vue/src/closing-recipes.ts:420"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107"
+                ]
+              }
+            },
+            {
+              "id": "W5",
+              "outcome": "Validate workflow structure and report actionable node/port errors",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "basis": "proposal",
+              "missing": "E1 and E2 validate documents and connection rules. No executable workflow contract, required-input checks, or runner validation report.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783",
+                  "apps/vanilla/src/ui/closing-recipes.ts:165",
+                  "apps/vanilla/src/ui/closing-recipes.ts:237"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588",
+                  "apps/vue/src/closing-recipes.ts:197",
+                  "apps/vue/src/closing-recipes.ts:420"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107",
+                  "apps/foldkit/schema-studio/main.ts:213",
+                  "apps/foldkit/e2e/events-and-changes-fixture.ts:203",
+                  "apps/foldkit/e2e/events-and-changes.e2e.ts:328"
+                ]
+              }
+            },
+            {
+              "id": "W6",
+              "outcome": "Automatically arrange nodes and edges with ELK",
+              "vanilla": "C",
+              "vue": "C",
+              "foldkit": "C",
+              "basis": "page, demo control",
+              "missing": "E5 provides measured ELK layout and host controls. Exact template coordinates and port routing remain unverified.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-layout.ts:51",
+                  "packages/layout/src/public.ts:34",
+                  "apps/shared/layout/browser.ts:161"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/ui/layout-recipes.ts:406",
+                  "apps/vanilla/e2e/layout-engines.e2e.ts:1"
+                ],
+                "vue": [
+                  "apps/vue/src/layout-recipes.ts:301",
+                  "apps/vue/e2e/layout-engines.e2e.ts:1"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/layout/main.ts:528",
+                  "apps/foldkit/e2e/layout-engines.e2e.ts:1"
+                ]
+              }
+            },
+            {
+              "id": "W7",
+              "outcome": "Switch light, dark, and system themes",
+              "vanilla": "C",
+              "vue": "C",
+              "foldkit": "C",
+              "basis": "page, demo panel",
+              "missing": "E6 provides shared color-mode resolution and host styling. Template theme composition is still absent.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-theme.ts:4",
+                  "packages/core/src/domain/flow-theme.ts:19"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:2337",
+                  "apps/vanilla/e2e/styling-recipes.e2e.ts:1"
+                ],
+                "vue": [
+                  "packages/vue/src/flow-canvas.ts:1261",
+                  "apps/vue/e2e/final-wiring.e2e.ts:465"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:8141",
+                  "apps/foldkit/e2e/model-styling.e2e.ts:200"
+                ]
+              }
+            },
+            {
+              "id": "W9",
+              "outcome": "Save and restore an editable workflow",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "basis": "proposal",
+              "missing": "E7 saves generic graphs. No versioned workflow configuration or migration contract. Upstream persistence is unverified.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow-persistence.ts:532",
+                  "packages/core/src/domain/flow-persistence.ts:598"
+                ],
+                "vanilla": [
+                  "apps/vanilla/e2e/graph-editing-examples.e2e.ts:136"
+                ],
+                "vue": ["apps/vue/e2e/graph-editing-examples.e2e.ts:138"],
+                "foldkit": [
+                  "apps/foldkit/e2e/graph-editing-examples.e2e.ts:154"
+                ]
+              }
+            },
+            {
+              "id": "A1",
+              "outcome": "Palette for Text Input, Generate Text, Generate Image, and Workflow Trigger",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "basis": "demo",
+              "missing": "E2 supports drops, but no AI kind registry or template.",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow-edit.ts:247"],
+                "vanilla": [
+                  "apps/vanilla/src/ui/closing-recipes.ts:165",
+                  "apps/vanilla/src/ui/closing-recipes.ts:237"
+                ],
+                "vue": [
+                  "apps/vue/src/closing-recipes.ts:197",
+                  "apps/vue/src/closing-recipes.ts:420"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107"
+                ]
+              }
+            },
+            {
+              "id": "A2",
+              "outcome": "Edit prompt and system text without dragging the node",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "basis": "demo",
+              "missing": "E3 provides text input and propagation. No prompt/system configuration contract or AI bindings.",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow.schema.ts:154"],
+                "vanilla": [
+                  "apps/vanilla/src/ui/computing-flows-recipes.ts:62",
+                  "apps/vanilla/e2e/computing-flows-recipes.e2e.ts:3"
+                ],
+                "vue": [
+                  "apps/vue/src/computing-flows-recipes.ts:31",
+                  "apps/vue/e2e/computing-flows-recipes.e2e.ts:3"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/computing-flows/main.ts:41",
+                  "apps/foldkit/e2e/computing-flows-recipes.e2e.ts:3"
+                ]
+              }
+            },
+            {
+              "id": "A3",
+              "outcome": "Configure a text model and temperature; inspect generated text",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "basis": "demo",
+              "missing": "E1 stores opaque JSON, but no model capability registry, generation request, or generated-text contract.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829"
+                ]
+              }
+            },
+            {
+              "id": "A4",
+              "outcome": "Configure image model and size; inspect generated image",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "basis": "demo",
+              "missing": "No image-generation boundary or output-preview lifecycle. E1's custom rendering alone is insufficient.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829"
+                ]
+              }
+            },
+            {
+              "id": "A5",
+              "outcome": "Connect text, image, system, prompt, and trigger ports",
+              "vanilla": "P",
+              "vue": "P",
+              "foldkit": "P",
+              "basis": "demo",
+              "missing": "E1 supplies named directional handles and E2 supplies connection policies. Semantic compatibility and trigger/data separation are missing.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783",
+                  "apps/vanilla/src/ui/closing-recipes.ts:165",
+                  "apps/vanilla/src/ui/closing-recipes.ts:237"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588",
+                  "apps/vue/src/closing-recipes.ts:197",
+                  "apps/vue/src/closing-recipes.ts:420"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:92",
+                  "apps/foldkit/ui-recipes/drag-and-drop/main.ts:107",
+                  "apps/foldkit/schema-studio/main.ts:213",
+                  "apps/foldkit/e2e/events-and-changes-fixture.ts:203",
+                  "apps/foldkit/e2e/events-and-changes.e2e.ts:328"
+                ]
+              }
+            },
+            {
+              "id": "A6",
+              "outcome": "Trigger runs and display per-node execution state",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "basis": "demo controls, execution unverified",
+              "missing": "E4's status display is usable, but no run scheduler or provider lifecycle exists.",
+              "evidence": {
+                "shared": ["packages/core/src/domain/flow-edit.ts:247"],
+                "vanilla": [
+                  "apps/vanilla/src/ui/status-indicator-test.ts:30",
+                  "apps/vanilla/e2e/ui-recipes.e2e.ts:95"
+                ],
+                "vue": [
+                  "apps/vue/src/status-indicator-test.ts:32",
+                  "apps/vue/e2e/ui-recipes.e2e.ts:3"
+                ],
+                "foldkit": [
+                  "apps/foldkit/ui-recipes/status-indicator/main.ts:66",
+                  "apps/foldkit/e2e/ui-recipes.e2e.ts:3"
+                ]
+              }
+            },
+            {
+              "id": "A7",
+              "outcome": "Display incremental text output with cancellation and failure handling",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "basis": "proposal, upstream unverified",
+              "missing": "No generation stream or run-event reducer. Do not infer streaming from the AI SDK dependency.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829"
+                ]
+              }
+            },
+            {
+              "id": "A8",
+              "outcome": "Configure a provider without exposing credentials in graph data",
+              "vanilla": "G",
+              "vue": "G",
+              "foldkit": "G",
+              "basis": "demo key field, security behavior unverified",
+              "missing": "No workflow provider capability or credential boundary. Recommend offline fixtures by default, not a copied API-key field.",
+              "evidence": {
+                "shared": [
+                  "packages/core/src/domain/flow.schema.ts:147",
+                  "packages/core/src/domain/flow-edit.ts:247",
+                  "packages/core/src/domain/flow-data-contract.schema.ts:62"
+                ],
+                "vanilla": [
+                  "apps/vanilla/src/mount-flow.ts:12357",
+                  "apps/vanilla/src/mount-flow.ts:8918",
+                  "apps/vanilla/src/mount-flow.ts:1783"
+                ],
+                "vue": [
+                  "packages/vue/src/use-flow.ts:766",
+                  "packages/vue/src/flow-canvas.ts:4668",
+                  "packages/vue/src/flow-canvas.ts:9588"
+                ],
+                "foldkit": [
+                  "packages/foldkit/src/graph.ts:1344",
+                  "packages/foldkit/src/graph.ts:7660",
+                  "packages/foldkit/src/graph.ts:7829"
+                ]
+              }
+            }
+          ],
+          "unverified": [
+            "Subscription source/tests; runtime traversal, validation, branch/join and lock semantics; exact ELK output; configuration panels and persistence; streaming, retries, cancellation, credential storage and provider behavior. Flow offline delivery decisions are proposals, not upstream promises."
+          ]
         }
       ],
-      "updatedBy": ["Plan 168"]
+      "updatedBy": ["Plan 168", "Plan 175"]
     },
     {
       "section": "ui templates",

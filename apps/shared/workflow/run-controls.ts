@@ -1,5 +1,55 @@
+import { localWorkflowImageAsset } from '@flow/workflow'
+import type { WorkflowRunState, WorkflowNodeEvent } from '@flow/workflow'
+
 import type { WorkflowRunOwner } from './run-owner.ts'
 import type { WorkflowValidationSnapshot } from './validation.ts'
+
+const outputText = (node: WorkflowNodeEvent | undefined) => {
+  if (node?.state === 'succeeded') {
+    return JSON.stringify(node.outputs)
+  }
+
+  if (node?.state === 'failed') {
+    return `Failed: ${node.failure.code}`
+  }
+
+  return node?.state === 'running' && node.text !== undefined
+    ? node.text
+    : 'No run output.'
+}
+
+const renderOutputs = (panel: Element, state: WorkflowRunState | null) => {
+  for (const output of panel.querySelectorAll<HTMLTextAreaElement>(
+    '[data-run-output]'
+  )) {
+    const node = state?.nodes[output.dataset.runOutput ?? '']
+    output.value = outputText(node)
+  }
+
+  for (const preview of panel.querySelectorAll<HTMLImageElement>(
+    '[data-run-image]'
+  )) {
+    const node = state?.nodes[preview.dataset.runImage ?? '']
+
+    const image =
+      node?.state === 'succeeded'
+        ? Object.values(node.outputs).find((value) => value.kind === 'image')
+        : undefined
+
+    if (
+      image?.kind === 'image' &&
+      image.assetId === localWorkflowImageAsset.assetId
+    ) {
+      preview.src = localWorkflowImageAsset.dataUrl
+      preview.width = image.width
+      preview.height = image.height
+      preview.hidden = false
+    } else {
+      preview.removeAttribute('src')
+      preview.hidden = true
+    }
+  }
+}
 
 export const mountWorkflowRunControls = (owner: {
   readonly runs: WorkflowRunOwner
@@ -22,7 +72,9 @@ export const mountWorkflowRunControls = (owner: {
   const events = document.createElement('pre')
   events.id = 'run-state'
   events.setAttribute('aria-label', 'Transient run state')
-  section.append(summary, events)
+  const providerLabel = document.createElement('p')
+  providerLabel.textContent = `Offline provider: ${owner.runs.capabilities.providerId}. Deterministic local text and image simulation.`
+  section.append(providerLabel, summary, events)
   owner.canvas.closest('#layout')?.after(section)
   let latest: WorkflowValidationSnapshot | undefined
 
@@ -58,15 +110,7 @@ export const mountWorkflowRunControls = (owner: {
       latest?.report.issues.length === 0 ? 'workflow-run' : 'validation-report'
     )
 
-    for (const output of owner.panel.querySelectorAll<HTMLTextAreaElement>(
-      '[data-run-output]'
-    )) {
-      const node = state?.nodes[output.dataset.runOutput ?? '']
-      output.value =
-        node?.state === 'succeeded'
-          ? JSON.stringify(node.outputs)
-          : 'No run output.'
-    }
+    renderOutputs(owner.panel, state)
   }
 
   const stop = owner.runs.subscribe(render)
@@ -80,6 +124,14 @@ export const mountWorkflowRunControls = (owner: {
     render,
     dispose: () => {
       stop()
+
+      for (const preview of owner.panel.querySelectorAll<HTMLImageElement>(
+        '[data-run-image]'
+      )) {
+        preview.removeAttribute('src')
+        preview.hidden = true
+      }
+
       run.remove()
       cancel.remove()
       section.remove()

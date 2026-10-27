@@ -218,3 +218,8 @@ html[data-workflow-theme='dark'] .workflow-card {
     overflow-wrap: anywhere;
   }
 }
+
+#configuration img {
+  max-width: 100%;
+  height: auto;
+}

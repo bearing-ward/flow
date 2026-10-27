@@ -164,3 +164,7 @@ export {
 } from './workflow-persistence.ts'
 
 export type { SavedWorkflow } from './workflow-persistence.ts'
+
+export { createWorkflowAiEvaluator } from './workflow-ai-evaluator.ts'
+
+export { workflowAiSettingIssues } from './workflow-ai-settings.ts'

@@ -1,9 +1,10 @@
-import '@flow/foldkit/style.css'
 import {
   FlowStateChangeSchema,
   getFlowLayoutInput,
   flowTreeCollapsedIds,
 } from '@flow/core'
+
+import '@flow/foldkit/style.css'
 import {
   createProgram,
   createFoldkitFlowInstance,
@@ -15,8 +16,9 @@ import {
   createFoldkitStatusIndicator,
 } from '@flow/foldkit'
 import type { FoldkitNodeRenderer } from '@flow/foldkit'
+import { makeLocalWorkflowAiProvider } from '@flow/workflow'
 import type { WorkflowRunState } from '@flow/workflow'
-import { Schema as S } from 'effect'
+import { Effect, Schema as S } from 'effect'
 import { Runtime } from 'foldkit'
 
 import {
@@ -78,7 +80,17 @@ const renderer: FoldkitNodeRenderer = (node, h) => {
   )
 }
 
-const runs = createWorkflowRunOwner(() => model.revision)
+const failure = new URLSearchParams(location.search).get('local-failure')
+
+const provider = Effect.runSync(
+  makeLocalWorkflowAiProvider(
+    failure === 'text' || failure === 'image'
+      ? { delayMillis: 250, fail: failure }
+      : { delayMillis: 250 }
+  )
+)
+
+const runs = createWorkflowRunOwner(() => model.revision, provider)
 
 let zoom = 1
 

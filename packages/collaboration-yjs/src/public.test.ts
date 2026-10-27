@@ -18,6 +18,8 @@ import {
   aiWorkflowFixture,
   decodeWorkflowDocument,
   startWorkflowRun,
+  createWorkflowAiEvaluator,
+  makeLocalWorkflowAiProvider,
 } from '@flow/workflow'
 import { Effect, Exit, Scope } from 'effect'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -361,6 +363,40 @@ describe('Yjs room over real y-websocket', () => {
         kind: 'generate-image',
         config: { modelId: 'local-image', width: 256, height: 256, prompt: '' },
         ports: { trigger: 'start', prompt: 'prompt', image: 'image' },
+      })
+      const service = Effect.runSync(makeLocalWorkflowAiProvider())
+      const beforeAiRun = structuredClone(b.client.document())
+      const aiStates: string[] = []
+      await Effect.runPromise(
+        Effect.scoped(
+          Effect.gen(function* aiRunInRoom() {
+            const session = yield* startWorkflowRun(
+              { document: a.client.document(), revision: 175 },
+              {
+                runId: 'room-ai-175',
+                expectedRevision: 175,
+                capabilities: service.capabilities,
+                evaluate: createWorkflowAiEvaluator(service),
+                onEvent: (event) => {
+                  if (event.kind === 'run') {
+                    aiStates.push(event.state)
+                  }
+                },
+              }
+            )
+
+            yield* session.await
+          })
+        )
+      )
+      expect({
+        states: aiStates,
+        local: a.client.document(),
+        remote: b.client.document(),
+      }).toStrictEqual({
+        states: ['queued', 'running', 'succeeded'],
+        local: beforeAiRun,
+        remote: beforeAiRun,
       })
       a.client.undo()
       await expect

@@ -3,6 +3,7 @@ import {
   prepareWorkflowExecution,
   prepareWorkflowConnection,
   WorkflowRevisionError,
+  localWorkflowAiCapabilities,
 } from '@flow/workflow'
 import type { WorkflowIssue, WorkflowNodeData } from '@flow/workflow'
 import { Effect, Result } from 'effect'
@@ -29,6 +30,14 @@ const fieldLabel = (
   )?.data?.workflow
 
   if (issue.code === 'invalid-setting') {
+    if (issue.field === 'temperature') {
+      return 'Temperature'
+    }
+
+    if (issue.field === 'size') {
+      return 'Image size'
+    }
+
     if (issue.field === 'value') {
       return 'Compare value'
     }
@@ -239,7 +248,13 @@ export const mountWorkflowValidation = (owner: {
     const current = await owner.snapshot()
 
     const result = await Effect.runPromise(
-      Effect.result(prepareWorkflowExecution(current, expectedRevision))
+      Effect.result(
+        prepareWorkflowExecution(
+          current,
+          expectedRevision,
+          localWorkflowAiCapabilities
+        )
+      )
     )
 
     if (Result.isFailure(result)) {
