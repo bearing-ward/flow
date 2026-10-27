@@ -21,11 +21,14 @@ const collaborationDependency = (specifier: string): boolean =>
     specifier
   )
 
+const workflowDependency = (specifier: string): boolean =>
+  /(?:^|\/)(?:@flow\/workflow|packages\/workflow)(?:\/|$)/u.test(specifier)
+
 const optionalIntegrationDependency = (specifier: string): boolean =>
   routingDependency(specifier) ||
   imageServiceDependency(specifier) ||
   collaborationDependency(specifier) ||
-  /(?:^|\/)(?:@flow\/workflow|packages\/workflow)(?:\/|$)/u.test(specifier)
+  workflowDependency(specifier)
 
 const browserGlobals = new Set([
   'cancelAnimationFrame',

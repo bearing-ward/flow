@@ -1,5 +1,6 @@
-import { makeTypedFlow } from '@flow/core'
+import { makeTypedFlow, prepareFlowEdit } from '@flow/core'
 import {
+  prepareWorkflowEdit,
   aiWorkflowFixture,
   baseWorkflowFixture,
   decodeWorkflowDocument,
@@ -47,3 +48,28 @@ await Effect.runPromise(
     })
   )
 )
+
+let sequence = 0
+
+const append = await Effect.runPromise(
+  prepareWorkflowEdit(
+    document,
+    {
+      kind: 'append',
+      edgeId: 'branch-false',
+      nodeKind: 'transform',
+      position: { x: 600, y: 200 },
+    },
+    { allocate: (namespace) => `packed-${namespace}-${(sequence += 1)}` }
+  )
+)
+
+const edited = await Effect.runPromise(prepareFlowEdit(document, append))
+
+if (
+  edited.document.nodes.length !== 6 ||
+  edited.document.edges.find((edge) => edge.id === 'branch-false')
+    ?.sourceHandle !== 'no'
+) {
+  throw new Error('Packed workflow atomic append failed')
+}

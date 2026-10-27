@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Workflow editor</title>
+  </head>
+  <body>
+    <header>
+      <h1>Workflow editor</h1>
+      <p>Build workflows locally. Running workflows is not available yet.</p>
+      <nav id="controls" aria-label="Workflow actions"></nav>
+      <p id="status" role="status"></p>
+    </header>
+    <div id="layout">
+      <aside>
+        <nav id="palette" aria-label="Node palette"></nav>
+        <h2>Nodes</h2>
+        <nav id="members" aria-label="Configure nodes"></nav>
+      </aside>
+      <main id="app" aria-label="Workflow canvas"></main>
+      <aside id="configuration" aria-label="Node configuration">
+        Choose a node to configure it.
+      </aside>
+    </div>
+    <section id="edges" aria-label="Edge insertion"></section>
+    <pre id="accepted" aria-label="Accepted document"></pre>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
