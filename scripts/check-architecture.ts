@@ -128,6 +128,8 @@ const fixtureChecks = (): readonly string[] => {
     'apps/vanilla',
   ]) {
     for (const dependency of [
+      '@flow/layout',
+      '../../../packages/layout/src/public.ts',
       'libavoid-js',
       '@flow/routing-libavoid',
       'playwright',

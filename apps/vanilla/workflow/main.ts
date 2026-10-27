@@ -91,6 +91,7 @@ const controller = await createFlow(root, workflowDocument(), {
   documentMode: 'uncontrolled',
   nodeRenderers: { workflow: renderer, default: renderer },
   autoPanOnNodeFocus: false,
+  deleteKeyCode: ['Backspace', 'Delete'],
   defaultEdgeOptions: { data: { workflow: { version: 1, kind: 'data' } } },
   isValidConnection: (candidate) =>
     workflowCanvasConnection(controller.getSnapshot().document, candidate),

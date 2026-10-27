@@ -33,3 +33,5 @@ See [research](research/README.md) for the pinned source and trace coverage, and
 ## Workflow editor
 
 Each host provides `/workflow/` with a palette, typed configuration, validation, an offline simulator, measured ELK layout, history, clipboard, themes, and versioned local JSON export/import. See the [workflow package contract](packages/workflow/README.md#base-editor-and-local-persistence) for public APIs, the save policy, and acceptance boundaries.
+
+The [workflow guide](docs/workflows.md) covers keyboard operations, simulation, and local saves. The [optional integration index](docs/optional-integrations.md) links routing, collaborative rooms, server image export, measured layout, and workflow contracts.

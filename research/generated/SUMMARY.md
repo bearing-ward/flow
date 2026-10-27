@@ -4,6 +4,12 @@
 
 Checked items work in the repository today. Unchecked items are still part of the planned project. Long-form plan and review narratives that used to live here are archived verbatim in [docs/archive/PROGRESS-narratives-2026-10-13.md](../docs/archive/PROGRESS-narratives-2026-10-13.md).
 
+### Workflow and optional integrations closure (2026-10-27)
+
+- [x] Workflow Editor W1-W9 and offline AI Workflow Editor A1-A8 are available through `/workflow/` in Vanilla, Vue, and Foldkit. Plan 176 independently checks the original audit, identical fixtures, native controls, layout, local persistence and transient output. See the [workflow guide](../docs/workflows.md) and [closure trace](traces/workflow-closure-2026-10-27.md) for evidence and unverified upstream boundaries.
+- [x] Review public exports and dependency ownership for routing, collaboration, image service, layout and workflow. The [optional integration index](../docs/optional-integrations.md) links every capability and its distribution/lifecycle contract. Packed acceptance now includes all four distributable optional packages; layout remains private and source-only.
+- Catalog counts recomputed from entries are 198 of 198 in-scope entries rated C in all three hosts. This records functional availability. It does not establish upstream runtime, visual, external-provider or OTLP delivery parity. Full-profile and final focused results are recorded in the closure trace.
+
 ### Desired features completed (2026-10-26)
 
 - [x] Rotatable node, Plan 167: decoded rotation, native previews, rotated attachments and bounds, v6 persistence, clipboard, collaboration, and one-step history in Vanilla, Vue and Foldkit. All 45 browser cases pass. The parity audit now rates 196 of 198 in-scope entries C across all hosts. See [node rotation](../docs/node-rotation.md) and the [research trace](traces/167-rotatable-node.md).

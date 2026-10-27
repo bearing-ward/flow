@@ -136,6 +136,11 @@ if (aside === null) {
 
 aside.insertAdjacentHTML(
   'beforeend',
+  '<nav aria-label="Template examples"><a href="/workflow/">Workflow and offline AI editor</a></nav>'
+)
+
+aside.insertAdjacentHTML(
+  'beforeend',
   `<section class="flow-interaction-tools" aria-labelledby="interaction-heading">
     <h2 id="interaction-heading">Interaction demos</h2>
     <p>Choose a mode, then use pointer or keyboard input on the canvas.</p>
