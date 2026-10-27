@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
       rolldownOptions: {
         input: {
           workflow: `${import.meta.dirname}/workflow/index.html`,
+          workflowAiCapability: `${import.meta.dirname}/workflow-ai-capability/index.html`,
           workflowContracts: `${import.meta.dirname}/workflow-contracts/index.html`,
           imageService: `${import.meta.dirname}/image-service/index.html`,
           collaborative: `${import.meta.dirname}/collaborative/index.html`,

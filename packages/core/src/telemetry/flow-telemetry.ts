@@ -30,6 +30,8 @@ export const FlowSpan = {
   viewportPanStart: 'flow.viewport.pan.start',
   viewportUpdate: 'flow.viewport.update',
   viewportZoom: 'flow.viewport.zoom',
+  workflowAi: 'flow.workflow.ai',
+  workflowAiDecode: 'flow.workflow.ai.decode',
   workflowRun: 'flow.workflow.run',
   workflowNode: 'flow.workflow.node',
 }

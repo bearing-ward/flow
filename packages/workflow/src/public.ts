@@ -103,3 +103,55 @@ export type {
   WorkflowPreparation,
   WorkflowPreparationFailure,
 } from './workflow-preparation.ts'
+
+export {
+  WorkflowAiCapabilitiesSchema,
+  WorkflowAiIdentitySchema,
+  WorkflowTextRequestSchema,
+  WorkflowImageRequestSchema,
+  WorkflowTextEventSchema,
+  WorkflowImageResultSchema,
+  WorkflowAiRequestSchema,
+  WorkflowAiEventSchema,
+  WorkflowAiStateSchema,
+  WorkflowAiError,
+} from './workflow-ai.schema.ts'
+
+export type {
+  WorkflowAiCapabilities,
+  WorkflowAiIdentity,
+  WorkflowTextRequest,
+  WorkflowImageRequest,
+  WorkflowTextEvent,
+  WorkflowImageResult,
+  WorkflowAiRequest,
+  WorkflowAiEvent,
+  WorkflowAiState,
+} from './workflow-ai.schema.ts'
+
+export {
+  WorkflowAiProvider,
+  makeWorkflowAiProvider,
+  workflowAiProviderLayer,
+} from './workflow-ai-provider.ts'
+
+export type {
+  WorkflowAiProviderService,
+  WorkflowAiImplementation,
+} from './workflow-ai-provider.ts'
+
+export {
+  startWorkflowAiSession,
+  reduceWorkflowAiEvent,
+} from './workflow-ai-session.ts'
+
+export type { WorkflowAiSession } from './workflow-ai-session.ts'
+
+export {
+  localWorkflowImageAsset,
+  localWorkflowAiCapabilities,
+  makeLocalWorkflowAiProvider,
+  localWorkflowAiLayer,
+} from './workflow-ai-local.ts'
+
+export type { LocalWorkflowAiOptions } from './workflow-ai-local.ts'

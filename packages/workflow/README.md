@@ -184,3 +184,51 @@ Queued/running/cancelled/skipped map to the existing waiting indicator with expl
 Runner acceptance is in `workflow-runner.test.ts` and the three `workflow-runner.e2e.ts` files. Tests cover literal event order and outputs, both branches, inactive chains, active joins, stable ordering, typed failure stops, cancellation, scope disposal, immutable snapshots, reruns, stale events and D4 isolation. Browser tests block unexpected network traffic and inspect actual controls, rendered status, output and timer release. The real Yjs test verifies unchanged peer documents during a local run. Packed consumers execute the runner beside every adapter archive. These tests establish Flow's offline contract, not upstream workflow template parity, provider delivery or durable job behavior.
 
 Runner and node spans use `FlowSpan.workflowRun` and `FlowSpan.workflowNode`, with `FlowAttribute.workflowRunId`, `workflowRevision` and `nodeId`. Lifecycle logs contain identities and diagnostic codes, never configuration text or output. OTLP export and shutdown remain application-owned; collector delivery is unverified.
+
+## Offline AI capabilities
+
+Plan 174 implements Unit 6, independently of the base editor. `WorkflowAiProvider` is an Effect service with decoded `capabilities`, a typed `text(unknown)` stream, and an `image(unknown)` Effect. `makeWorkflowAiProvider(unknownCapabilities, implementation)` and `workflowAiProviderLayer` wrap an implementation whose results enter as `unknown`. They decode requests, capabilities and results with excess-property rejection. Implementations receive schema-derived text or image requests. No credential field is accepted.
+
+`WorkflowAiCapabilities` lists text model IDs with supported temperatures and image model IDs with supported width/height pairs. IDs are provider data. An unknown model or a setting outside its declared list fails with `unsupported-setting` before implementation code runs. `WorkflowTextRequest` contains `modelId`, `temperature`, `system` and a nonempty `prompt`. `WorkflowImageRequest` contains `modelId`, positive integer `width` and `height`, and a nonempty `prompt`.
+
+`WorkflowTextEvent` is either `{ kind: 'chunk', text }` or `{ kind: 'complete', text }`. Exactly one completion must end the stream, and its text must equal the concatenated chunks. Missing completion, duplicate completion, trailing chunks and mismatched final text fail with `invalid-result`. The wrapper publishes completion only after validating the stream's end. `WorkflowImageResult` contains a local `assetId`, `mediaType: 'image/png'`, `width` and `height`. Returned dimensions must match the request. Asset resolution belongs to application composition.
+
+`WorkflowAiError` has only a diagnostic `code`: `invalid-capabilities`, `invalid-request`, `unsupported-setting`, `invalid-result` or `provider-failure`. Schema failures and provider defects omit raw input, exception messages, prompts, system text and output. `WorkflowAiCapabilitiesSchema`, `WorkflowAiIdentitySchema`, `WorkflowTextRequestSchema`, `WorkflowImageRequestSchema`, `WorkflowTextEventSchema`, `WorkflowImageResultSchema`, `WorkflowAiRequestSchema`, `WorkflowAiEventSchema` and `WorkflowAiStateSchema` export their corresponding schema-derived types.
+
+```ts
+import { localWorkflowAiLayer, startWorkflowAiSession } from '@flow/workflow'
+import { Effect } from 'effect'
+
+const program = Effect.scoped(
+  Effect.gen(function* () {
+    const session = yield* startWorkflowAiSession(
+      {
+        runId: 'local-request-1',
+        revision: 0,
+        nodeId: 'generate-text',
+        kind: 'text',
+        request: {
+          modelId: 'local-text',
+          temperature: 0,
+          system: '',
+          prompt: 'A tree',
+        },
+      },
+      (event) => transientEvents.push(event)
+    )
+    yield* session.await
+  })
+).pipe(Effect.provide(localWorkflowAiLayer()))
+```
+
+`startWorkflowAiSession(unknownRequest, onEvent)` returns `WorkflowAiSession` with an immutable detached `request`, `cancel` and `await`. The request combines run ID, accepted revision and node ID with a text or image request. Invalid envelopes fail before emitting events. A session emits `running`, text events or an image result, and `failed` or `cancelled` when applicable. Typed provider failures become events; `await` completes after them. Cancellation interrupts `await`. Scope closure interrupts provider work and waits for finalizers. Events are detached and frozen before publication.
+
+`reduceWorkflowAiEvent(current, event, acceptedRevision)` rejects another run, revision or node, an obsolete accepted revision, and every event after a terminal state. Applications select a fresh identity before subscribing. Provider state and output never enter workflow documents, history, clipboard fragments, persistence or room data. The browser owner also rejects callbacks from replaced requests and removes its listeners on disposal.
+
+`localWorkflowAiLayer(options)` and `makeLocalWorkflowAiProvider(options)` use the same deterministic implementation. `localWorkflowAiCapabilities` advertises `local-text` with temperatures `0` and `1`, and `local-image` at `256` by `256`. Text always emits the literal chunks `"A "`, `"quiet "`, `"tree."`, followed by final text `"A quiet tree."`. `localWorkflowImageAsset` supplies an original embedded green PNG and matching metadata under asset ID `flow-local-green-256`. It requires no fetch or temporary object URL. `LocalWorkflowAiOptions` permits an interruptible `delayMillis` per event or image and typed failure injection with `fail: 'text'` or `'image'`. These are local fixture controls, separate from saved configuration.
+
+Vanilla, Vue and Foldkit compose this service at `/workflow-ai-capability/`. Their entry points allocate the provider; shared app code owns the scope, controls, event projection and image resolution. This route proves the capability before Unit 7 integrates AI node evaluators and editor controls. The existing base runner still reports `unsupported-kind` for generation nodes. No adapter depends on the provider, and no provider SDK, key field, remote fallback, backend or generation API is included.
+
+Acceptance lives in `workflow-ai.test.ts`, each host's `workflow-ai-capability.e2e.ts`, the shared browser acceptance body and `tests/consumer/workflow-ai.runtime.ts`. It covers literal chunks and final output, PNG bytes and displayed dimensions, malformed boundaries, credential-field rejection, unsupported settings, typed failure, cancellation, disposal, timer release, immutable requests and capabilities, stale text/image rejection, redacted diagnostics and central spans. Network canaries reject unexpected generation traffic. Extension acceptance preserves groups, trees, shapes, rotation, routes and bundles and checks persistence, history, clipboard and room projections. Existing workflow transport tests remain the real collaboration boundary; these sessions do not introduce distributed execution.
+
+Telemetry uses `FlowSpan.workflowAi` and `FlowSpan.workflowAiDecode` with the existing run ID, revision, node ID and failure attributes. There is no per-chunk log. Application composition continues to own OTLP export and shutdown. Collector delivery and upstream streaming/model parity remain unverified. See the [Plan 174 trace](../../research/traces/workflow-ai-capability-2026-10-27.md).

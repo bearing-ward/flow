@@ -82,6 +82,9 @@ const fixtureChecks = (): readonly string[] => {
   ]) {
     for (const text of [
       "const workflow = import('@flow/workflow')",
+      "import { WorkflowAiProvider } from '@flow/workflow'",
+      "export { startWorkflowAiSession } from '@flow/workflow/ai'",
+      "import { makeLocalWorkflowAiProvider } from '../../../packages/workflow/src/workflow-ai-local.ts'",
       "export { startWorkflowRun } from '@flow/workflow/runner'",
       "import { startWorkflowRun } from '../../../packages/workflow/src/workflow-runner.ts'",
       "export type { WorkflowExecutionPlan } from '@flow/workflow/preparation'",
