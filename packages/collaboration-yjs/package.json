@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@flow/core": "workspace:*",
+    "@flow/workflow": "workspace:*",
     "@y/websocket-server": "0.1.1",
     "effect": "4.0.0"
   },

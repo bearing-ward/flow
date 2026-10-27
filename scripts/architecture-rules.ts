@@ -24,7 +24,8 @@ const collaborationDependency = (specifier: string): boolean =>
 const optionalIntegrationDependency = (specifier: string): boolean =>
   routingDependency(specifier) ||
   imageServiceDependency(specifier) ||
-  collaborationDependency(specifier)
+  collaborationDependency(specifier) ||
+  /(?:^|\/)(?:@flow\/workflow|packages\/workflow)(?:\/|$)/u.test(specifier)
 
 const browserGlobals = new Set([
   'cancelAnimationFrame',
@@ -238,7 +239,8 @@ export const findArchitectureViolations = (
     }
 
     if (
-      normalizedSourcePath.startsWith('packages/core/src/') &&
+      (normalizedSourcePath.startsWith('packages/core/src/') ||
+        normalizedSourcePath.startsWith('packages/workflow/src/')) &&
       ts.isIdentifier(node) &&
       browserGlobals.has(node.text) &&
       (isGlobalThisReference(node) || !bindings.has(node.text)) &&

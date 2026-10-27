@@ -2,8 +2,13 @@ import { spawn } from 'node:child_process'
 import type { ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 
-import { decodeFlowDocument } from '@flow/core'
+import { decodeFlowDocument, projectFlowRoomDocument } from '@flow/core'
 import type { FlowDocument } from '@flow/core'
+import {
+  baseWorkflowFixture,
+  aiWorkflowFixture,
+  decodeWorkflowDocument,
+} from '@flow/workflow'
 import { Effect, Exit, Scope } from 'effect'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { WebsocketProvider } from 'y-websocket'
@@ -74,6 +79,60 @@ describe('Yjs room over real y-websocket', () => {
       const exited = once(server, 'exit')
       server.kill('SIGTERM')
       await exited
+    }
+  })
+
+  it('synchronizes workflow contracts and preserves configuration through local room undo', async () => {
+    const room = crypto.randomUUID()
+    const a = await open(room, 'workflow-a')
+    const b = await open(room, 'workflow-b')
+
+    const base = {
+      ...projectFlowRoomDocument(
+        Effect.runSync(decodeWorkflowDocument(baseWorkflowFixture))
+      ),
+      bundles: [],
+      nodeOrigin: undefined,
+    }
+
+    const ai = projectFlowRoomDocument(
+      Effect.runSync(decodeWorkflowDocument(aiWorkflowFixture))
+    )
+
+    try {
+      await expect.poll(a.client.status).toBe('connected')
+      Effect.runSync(a.client.commit(empty, base))
+      await expect.poll(() => b.client.document().nodes.length).toBe(5)
+      expect(
+        Effect.runSync(decodeWorkflowDocument(b.client.document()))
+      ).toStrictEqual(base)
+      Effect.runSync(a.client.commit(a.client.document(), ai))
+      await expect
+        .poll(() =>
+          b.client.document().nodes.some(({ id }) => id === 'generate-image')
+        )
+        .toBeTruthy()
+      expect(
+        Effect.runSync(decodeWorkflowDocument(b.client.document())).nodes.find(
+          ({ id }) => id === 'generate-image'
+        )?.data?.workflow
+      ).toMatchObject({
+        kind: 'generate-image',
+        config: { modelId: 'local-image', width: 256, height: 256, prompt: '' },
+        ports: { trigger: 'start', prompt: 'prompt', image: 'image' },
+      })
+      a.client.undo()
+      await expect
+        .poll(() =>
+          b.client.document().nodes.some(({ id }) => id === 'initial')
+        )
+        .toBeTruthy()
+      expect(
+        Effect.runSync(decodeWorkflowDocument(b.client.document()))
+      ).toStrictEqual(base)
+    } finally {
+      await a.close()
+      await b.close()
     }
   })
 

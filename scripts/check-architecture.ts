@@ -74,6 +74,38 @@ const fixtureChecks = (): readonly string[] => {
 
   const failures: string[] = []
 
+  for (const source of [
+    {
+      path: 'packages/core/src/forbidden-workflow.ts',
+      text: "const workflow = import('@flow/workflow')",
+    },
+    {
+      path: 'packages/vue/src/forbidden-workflow.ts',
+      text: "export * from '../../../packages/workflow/src/public.ts'",
+    },
+  ]) {
+    if (findArchitectureViolations(source).length === 0) {
+      failures.push(`${source.path}: workflow boundary did not reject import`)
+    }
+  }
+
+  for (const source of [
+    {
+      path: 'packages/workflow/src/allowed-core.ts',
+      text: "export { FlowDocumentSchema } from '@flow/core'",
+    },
+    {
+      path: 'apps/vanilla/workflow-contracts/main.ts',
+      text: "import { decodeWorkflowDocument } from '@flow/workflow'",
+    },
+  ]) {
+    if (findArchitectureViolations(source).length !== 0) {
+      failures.push(
+        `${source.path}: optional workflow composition must be allowed`
+      )
+    }
+  }
+
   for (const owner of [
     'packages/core',
     'packages/vue',
@@ -92,6 +124,8 @@ const fixtureChecks = (): readonly string[] => {
       'y-protocols',
       '@y/websocket-server',
       '@flow/collaboration-yjs',
+      '@flow/workflow',
+      '../../../packages/workflow/src/public.ts',
     ]) {
       if (
         findArchitectureViolations({
