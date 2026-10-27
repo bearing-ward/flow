@@ -884,6 +884,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
         'marker-configuration.types.ts',
         'marker-configuration.runtime.ts',
         'workflow-contracts.runtime.ts',
+        'workflow-ai.runtime.ts',
       ]) {
         const contents = yield* fileSystem.readFileString(
           path.join(root, 'tests/consumer', file)
@@ -902,6 +903,7 @@ const program = Effect.gen(function* checkPackedConsumers() {
       yield* run('bun', ['typed-flow-actor.runtime.ts'], consumerRoot)
       yield* run('bun', ['marker-configuration.runtime.ts'], consumerRoot)
       yield* run('bun', ['workflow-contracts.runtime.ts'], consumerRoot)
+      yield* run('bun', ['workflow-ai.runtime.ts'], consumerRoot)
       yield* run(
         'bun',
         [
