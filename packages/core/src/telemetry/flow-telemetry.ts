@@ -30,6 +30,8 @@ export const FlowSpan = {
   viewportPanStart: 'flow.viewport.pan.start',
   viewportUpdate: 'flow.viewport.update',
   viewportZoom: 'flow.viewport.zoom',
+  workflowRun: 'flow.workflow.run',
+  workflowNode: 'flow.workflow.node',
 }
 
 export const FlowAttribute = {
@@ -72,4 +74,6 @@ export const FlowAttribute = {
   viewportY: 'flow.viewport.y',
   viewportZoom: 'flow.viewport.zoom',
   viewportZoomClamped: 'flow.viewport.zoom.clamped',
+  workflowRunId: 'flow.workflow.run.id',
+  workflowRevision: 'flow.workflow.revision',
 }

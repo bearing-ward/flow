@@ -7954,8 +7954,7 @@ const graphView = (
                 ]),
               ]
 
-        const renderer =
-          node.type === undefined ? undefined : renderers.nodeTypes?.[node.type]
+        const renderer = renderers.nodeTypes?.[node.type ?? 'default']
 
         const contents =
           renderer === undefined

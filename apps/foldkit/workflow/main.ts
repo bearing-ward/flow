@@ -8,8 +8,10 @@ import {
   createFoldkitNodeMeasurementObserver,
   defaultInteractionOptions,
   HostAction,
+  createFoldkitStatusIndicator,
 } from '@flow/foldkit'
 import type { FoldkitNodeRenderer } from '@flow/foldkit'
+import type { WorkflowRunState } from '@flow/workflow'
 import { Schema as S } from 'effect'
 import { Runtime } from 'foldkit'
 
@@ -19,12 +21,17 @@ import {
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
 import {
+  createWorkflowRunOwner,
+  workflowStatus,
+} from '../../shared/workflow/run-owner.ts'
+
+import '../../shared/workflow/style.css'
+import {
   workflowValidationSnapshot,
   workflowDocumentChanged,
   workflowCanvasConnection,
 } from '../../shared/workflow/validation.ts'
-
-import '../../shared/workflow/style.css'
+import type { WorkflowValidationSnapshot } from '../../shared/workflow/validation.ts'
 
 const root = document.querySelector<HTMLElement>('#app')
 
@@ -38,12 +45,32 @@ container.id = 'workflow-runtime'
 
 root.append(container)
 
-const renderer: FoldkitNodeRenderer = (node, h) =>
-  h.div([h.Class('workflow-card')], [workflowCaption(node)])
-
 let current = workflowDocument()
 
-let model = workflowValidationSnapshot(current, 0)
+let model: WorkflowValidationSnapshot & {
+  readonly run: WorkflowRunState | null
+} = {
+  ...workflowValidationSnapshot(current, 0),
+  run: null,
+}
+
+const renderer: FoldkitNodeRenderer = (node, h) => {
+  const state = model.run?.nodes[node.id]?.state
+
+  return h.div(
+    [],
+    [
+      h.div([h.Class('workflow-card')], [workflowCaption(node)]),
+      createFoldkitStatusIndicator(
+        state === undefined ? 'waiting' : workflowStatus(state),
+        h,
+        state ?? 'No run'
+      ),
+    ]
+  )
+}
+
+const runs = createWorkflowRunOwner(() => model.revision)
 
 let zoom = 1
 
@@ -55,7 +82,7 @@ const runtime = Runtime.embed(
     [],
     'uncontrolled',
     'uncontrolled',
-    { nodeTypes: { workflow: renderer } },
+    { nodeTypes: { workflow: renderer, default: renderer } },
     undefined,
     'full',
     {
@@ -93,9 +120,15 @@ const measurement = createFoldkitNodeMeasurementObserver({
     runtime.ports.actions.send(HostAction.MeasureNodes({ requests })),
 })
 
-const stops = new Set<() => void>()
+const stops = new Set<() => void>([
+  runs.subscribe(() => {
+    model = { ...model, run: runs.state() }
+    runtime.ports.actions.send(HostAction.RefreshRenderers({}))
+  }),
+])
 
 const controls = mountWorkflowControls({
+  runs,
   snapshot: () => Promise.resolve(model),
   replace: async (document) => {
     runtime.ports.actions.send(HostAction.ReplaceDocument({ document }))
@@ -123,6 +156,8 @@ const controls = mountWorkflowControls({
   undo: history.undo,
   redo: history.redo,
   dispose: () => {
+    controls.dispose()
+
     for (const stop of stops) {
       stop()
     }
@@ -140,11 +175,15 @@ stops.add(
     const state = S.decodeUnknownSync(FlowStateChangeSchema)(input)
     current = state.current.document
 
-    model = workflowValidationSnapshot(
-      current,
-      model.revision +
-        (workflowDocumentChanged(state.previous.document, current) ? 1 : 0)
-    )
+    model = {
+      ...workflowValidationSnapshot(
+        current,
+        model.revision +
+          (workflowDocumentChanged(state.previous.document, current) ? 1 : 0)
+      ),
+      run: model.run,
+    }
+    runs.invalidate()
     ;({ zoom } = state.current.viewport)
     void controls.refresh()
   })

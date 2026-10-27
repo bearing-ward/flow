@@ -1,5 +1,9 @@
 import '@flow/vanilla/style.css'
-import { createFlow } from '@flow/vanilla'
+import {
+  createFlow,
+  createFlowStatusIndicator,
+  updateFlowStatusIndicator,
+} from '@flow/vanilla'
 import type { FlowNodeRenderer } from '@flow/vanilla'
 
 import {
@@ -8,12 +12,16 @@ import {
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
 import {
+  createWorkflowRunOwner,
+  workflowStatus,
+} from '../../shared/workflow/run-owner.ts'
+
+import '../../shared/workflow/style.css'
+import {
   workflowValidationSnapshot,
   workflowDocumentChanged,
   workflowCanvasConnection,
 } from '../../shared/workflow/validation.ts'
-
-import '../../shared/workflow/style.css'
 
 const root = document.querySelector<HTMLElement>('#app')
 
@@ -21,10 +29,33 @@ if (root === null) {
   throw new Error('Missing workflow root')
 }
 
+let model = workflowValidationSnapshot(workflowDocument(), 0)
+
+const runs = createWorkflowRunOwner(() => model.revision)
+
 const renderer: FlowNodeRenderer = (node, content) => {
   const card = document.createElement('div')
   card.className = 'workflow-card'
   content.append(card)
+
+  const indicator = createFlowStatusIndicator(document, {
+    status: 'waiting',
+    label: 'No run',
+  })
+
+  content.append(indicator)
+
+  const renderStatus = () => {
+    const state = runs.state()?.nodes[node.id]?.state
+    updateFlowStatusIndicator(
+      indicator,
+      state === undefined ? 'waiting' : workflowStatus(state),
+      state ?? 'No run'
+    )
+  }
+
+  const stop = runs.subscribe(renderStatus)
+  renderStatus()
 
   const update = (current: typeof node) => {
     card.textContent = workflowCaption(current)
@@ -32,12 +63,19 @@ const renderer: FlowNodeRenderer = (node, content) => {
 
   update(node)
 
-  return { update, destroy: () => card.remove() }
+  return {
+    update,
+    destroy: () => {
+      stop()
+      indicator.remove()
+      card.remove()
+    },
+  }
 }
 
 const controller = await createFlow(root, workflowDocument(), {
   documentMode: 'uncontrolled',
-  nodeRenderers: { workflow: renderer },
+  nodeRenderers: { workflow: renderer, default: renderer },
   autoPanOnNodeFocus: false,
   defaultEdgeOptions: { data: { workflow: { version: 1, kind: 'data' } } },
   isValidConnection: (candidate) =>
@@ -51,9 +89,10 @@ const controller = await createFlow(root, workflowDocument(), {
 
 const stops = new Set<() => void>()
 
-let model = workflowValidationSnapshot(controller.getSnapshot().document, 0)
+model = workflowValidationSnapshot(controller.getSnapshot().document, 0)
 
 const controls = mountWorkflowControls({
+  runs,
   snapshot: () => Promise.resolve(model),
   replace: (document) => {
     controller.update(document)
@@ -74,6 +113,8 @@ const controls = mountWorkflowControls({
   undo: controller.undo,
   redo: controller.redo,
   dispose: () => {
+    controls.dispose()
+
     for (const stop of stops) {
       stop()
     }
@@ -94,6 +135,7 @@ stops.add(
           ? 1
           : 0)
     )
+    runs.invalidate()
     void controls.refresh()
   })
 )

@@ -56,3 +56,42 @@ export const WorkflowNodeEventSchema = S.Union([
 ])
 
 export type WorkflowNodeEvent = typeof WorkflowNodeEventSchema.Type
+
+export const WorkflowOutputsSchema = S.Record(S.String, WorkflowValueSchema)
+
+export type WorkflowOutputs = typeof WorkflowOutputsSchema.Type
+
+export const WorkflowRunEventSchema = S.Union([
+  S.Struct({ kind: S.Literal('node'), event: WorkflowNodeEventSchema }),
+  S.Struct({
+    kind: S.Literal('run'),
+    runId: WorkflowRunIdSchema,
+    revision: RevisionSchema,
+    state: S.Literals(['queued', 'running', 'succeeded', 'cancelled']),
+  }),
+  S.Struct({
+    kind: S.Literal('run'),
+    runId: WorkflowRunIdSchema,
+    revision: RevisionSchema,
+    state: S.Literal('failed'),
+    failure: S.Struct({ code: S.NonEmptyString }),
+  }),
+])
+
+export type WorkflowRunEvent = typeof WorkflowRunEventSchema.Type
+
+export const WorkflowRunStateSchema = S.Struct({
+  runId: WorkflowRunIdSchema,
+  revision: RevisionSchema,
+  state: S.Literals(['queued', 'running', 'succeeded', 'failed', 'cancelled']),
+  nodes: S.Record(S.String, WorkflowNodeEventSchema),
+})
+
+export type WorkflowRunState = typeof WorkflowRunStateSchema.Type
+
+const tagged = S.TaggedError
+
+export class WorkflowRuntimeError extends tagged<WorkflowRuntimeError>()(
+  'WorkflowRuntimeError',
+  { code: S.NonEmptyString }
+) {}

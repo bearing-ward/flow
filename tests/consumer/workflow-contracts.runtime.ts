@@ -8,6 +8,7 @@ import {
   workflowIssues,
   workflowValidationReport,
   prepareWorkflowExecution,
+  startWorkflowRun,
 } from '@flow/workflow'
 import type { WorkflowDocument, WorkflowNodeData } from '@flow/workflow'
 import { Effect } from 'effect'
@@ -89,3 +90,37 @@ if (
     'Packed workflow validation or deterministic preparation failed'
   )
 }
+
+await Effect.runPromise(
+  Effect.scoped(
+    Effect.gen(function* packedRunner() {
+      let output: string | undefined
+
+      const run = yield* startWorkflowRun(
+        { document, revision: 172 },
+        {
+          runId: 'packed-run',
+          expectedRevision: 172,
+          onEvent: (event) => {
+            if (
+              event.kind === 'node' &&
+              event.event.nodeId === 'output' &&
+              event.event.state === 'succeeded'
+            ) {
+              const value = event.event.outputs.result
+              output = value?.kind === 'text' ? value.text : undefined
+            }
+          },
+        }
+      )
+
+      yield* run.await
+
+      if (output !== 'HELLO') {
+        return yield* Effect.die(
+          new Error('Packed workflow runner output mismatch')
+        )
+      }
+    })
+  )
+)

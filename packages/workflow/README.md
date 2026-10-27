@@ -58,7 +58,7 @@ Each `ports` value is a physical Flow handle ID. Every role must bind a distinct
 
 A semantic edge carries `data.workflow = { version: 1, kind: 'data' | 'trigger' }`. Both endpoints must be workflow nodes, the source handle must be a declared source port, and the target must be a declared target port. Value types must match and trigger ports require trigger edges. At most one connection targets a port except a join's multiple-input port. Edges between two executable nodes require this contract. Ordinary presentation edges remain ordinary Flow edges.
 
-Executable dependencies are finite DAGs, including trigger edges. Cycle reports contain sorted strongly connected node and internal edge IDs, excluding downstream nodes. Spatial parentage and optional presentation edges do not create executable groups. Adopted later semantics remain explicit: true/false branches, joins over active predecessor outputs, skipped inactive branches, and sequential stable node-ID scheduling. This unit defines no scheduler or evaluator.
+Executable dependencies are finite DAGs, including trigger edges. Cycle reports contain sorted strongly connected node and internal edge IDs, excluding downstream nodes. Spatial parentage and optional presentation edges do not create executable groups. Adopted later semantics remain explicit: true/false branches, joins over active predecessor outputs, skipped inactive branches, and sequential stable node-ID scheduling. Preparation defines no scheduler or evaluator. The Unit 4 runner executes the policy below.
 
 ## Integrity issues
 
@@ -80,7 +80,7 @@ Existing grouping, tree, shape, route and bundle schemas remain authoritative. W
 
 Plan 170 tests rotation together with groups, trees, shapes, manual routes and bundles through workflow edits and clipboard remapping. The node variant factory inherits core geometry fields, rather than copying a closed list.
 
-`WorkflowRunRequest` has a branded `runId`, accepted `revision`, and document snapshot. Runtime composition must detach and retain that immutable snapshot. `WorkflowNodeEvent` repeats run ID, revision and node ID, and distinguishes queued, running, succeeded, failed, cancelled and skipped states. Succeeded events contain typed outputs; failed events carry a diagnostic code. Values distinguish text, trigger, and image asset metadata. Image values use local asset IDs, not credentials or provider objects. These contracts do not implement a run session, stale-event gate, cancellation or provider. Those belong to Units 3, 4 and 6.
+`WorkflowRunRequest` has a branded `runId`, accepted `revision`, and document snapshot. Runtime composition must detach and retain that immutable snapshot. `WorkflowNodeEvent` repeats run ID, revision and node ID, and distinguishes queued, running, succeeded, failed, cancelled and skipped states. Succeeded events contain typed outputs; failed events carry a diagnostic code. Values distinguish text, trigger, and image asset metadata. Image values use local asset IDs, not credentials or provider objects. Plan 172 implements scoped sessions, cancellation and stale-event rejection as described below. Providers remain Unit 6.
 
 Run output, credentials, provider objects and run state have no field inside saved workflow configuration. Unknown workflow/configuration fields are rejected. Applications own transient execution outside graph history, clipboard, persistence and collaboration. No backend, remote AI dependency or credential entry UI is included.
 
@@ -142,3 +142,45 @@ The three `/workflow/` routes expose **Prepare run**, typed source and target po
 Vanilla replaces imports with `controller.update`, Vue uses `useFlow().updateDocument`, and Foldkit uses `HostAction.ReplaceDocument` followed by a public snapshot read. Each replacement is one accepted history step. Vanilla derives the report from `createFlow().getSnapshot()` and `subscribeState`. Vue derives it through `computed` over `useFlow().document` and scope-owned revision state. Foldkit stores document, revision and report in its application model and updates it from `acceptedStates`. Focus stays in the browser composition. No workflow dependency enters core or a generic adapter. The architecture check rejects workflow preparation subpath imports and direct implementation imports from adapter owners.
 
 The rerunnable acceptance files are `workflow-preparation.test.ts`, each host's `workflow-validation.e2e.ts`, and `apps/shared/workflow/validation-acceptance.ts`. Existing extension, clipboard, history, real Yjs transport and packed-consumer tests now also inspect readiness or execution preparation. The [Plan 171 trace](../../research/traces/workflow-validation-2026-10-27.md) records production and test paths. These tests establish Flow's adopted validation contract; they do not establish upstream execution or complete template parity.
+
+## Scoped offline runner
+
+Plan 172 implements Unit 4. `startWorkflowRun(accepted, options)` revalidates a fresh `{ document, revision }` against `options.expectedRevision`, decodes `options.runId`, and starts one scope-owned fiber. It returns `WorkflowRunSession` with a detached, recursively frozen `request`, a `cancel` Effect, and an `await` Effect. Scope closure interrupts evaluation and waits for its finalizers. Preparation failures remain typed Effect failures and emit no run events. Runtime failures become failed node and run events; `await` completes after those events. Cancellation interrupts `await`.
+
+```ts
+import { startWorkflowRun } from '@flow/workflow'
+import { Effect } from 'effect'
+
+const program = Effect.scoped(
+  Effect.gen(function* () {
+    const run = yield* startWorkflowRun(acceptedSnapshot, {
+      runId: 'local-run-1',
+      expectedRevision: acceptedSnapshot.revision,
+      onEvent: (event) => transientEvents.push(event),
+    })
+    yield* run.await
+  })
+)
+```
+
+The caller allocates a fresh run ID and keeps the scope open for the session's lifetime. `WorkflowRunEventSchema` defines run lifecycle events and wrapped `WorkflowNodeEvent` values. The event sequence is run queued, every executable node queued in plan order, run running, then each node's running and terminal events. Successful completion emits run succeeded. A node failure emits node failed, skips every pending node, and emits run failed. Cancellation marks unfinished nodes cancelled before run cancelled. Completed nodes retain their results. Events and output values are frozen before publication.
+
+`evaluateOfflineWorkflowNode` implements initial text, uppercase/lowercase/trim transforms, equals/contains branches, ordered joins and output results. Text Input and Workflow Trigger are also local evaluators. Generate Text and Generate Image fail with `unsupported-kind` until Unit 6 supplies a provider. No evaluator calls a network service. The optional `WorkflowEvaluator` returns an Effect with `WorkflowRuntimeError`; it receives decoded configuration and active inputs with their semantic and physical port identities. Its results pass `WorkflowOutputsSchema` and output-role/type validation. Invalid outputs fail with `invalid-output`; unexpected defects become `evaluator-defect` without exposing their content.
+
+One ready node executes at a time in the preparation plan's stable node-ID order. Outputs are keyed by semantic role. A branch emits exactly one of `true` or `false`; an absent output deactivates that edge. Nodes wait for predecessor settlement. A node with an inactive required input is skipped. A join uses active predecessor outputs in source-node-ID then edge-ID order and skips when all inputs are inactive. The output evaluator publishes its consumed value under `result`.
+
+`WorkflowRunStateSchema` defines transient projection state. `reduceWorkflowRunEvent(current, event, acceptedRevision)` rejects events from another run, another revision, an obsolete accepted revision, a terminal session, or an invalid node transition. The owner selects a new run identity before subscribing. An event cannot select a new identity. Run state, events, results, evaluator services and scopes stay outside saved documents, history, clipboard fragments and collaborative rooms, as required by D4. Accepted semantic edits, undo, redo, paste and remote document replacements invalidate the active session. Selection, measurements and viewport movement do not invalidate it.
+
+All three `/workflow/` apps expose **Run**, **Cancel**, accessible node status, a transient run report, and read-only output for the configured node. The demo paces evaluation by 200 milliseconds through Effect's interruptible clock so progress and cancellation remain observable. This pacing belongs to application composition, not the package evaluator.
+
+| Host | Public Flow API used by the app | Transient ownership and disposal |
+| --- | --- | --- |
+| Vanilla | `createFlow`, `getSnapshot`, `subscribeState`, `applyEdit`, `createFlowStatusIndicator`, `updateFlowStatusIndicator`, `destroy` | App run owner and renderer subscriptions. Destroy/pagehide disposes controls, closes the scope and removes listeners. |
+| Vue | `FlowProvider`, `FlowCanvas`, `useFlow`, `subscribeState`, `applyEdit`, `StatusIndicator` | `shallowRef` run state in component scope. `onScopeDispose` closes the run scope and releases subscriptions. |
+| Foldkit | `createProgram`, `createFoldkitFlowInstance`, `acceptedStates`, `HostAction.RefreshRenderers`, `createFoldkitStatusIndicator` | Run events reduce into the app model. Renderer refresh changes presentation without editing the document. Runtime disposal closes the scope and releases clients. |
+
+Queued/running/cancelled/skipped map to the existing waiting indicator with explicit state text. Succeeded maps to ready and failed to error. Foldkit also honors a registered `default` node renderer for nodes whose type is omitted, matching the other hosts. Generic adapters and core have no workflow dependency.
+
+Runner acceptance is in `workflow-runner.test.ts` and the three `workflow-runner.e2e.ts` files. Tests cover literal event order and outputs, both branches, inactive chains, active joins, stable ordering, typed failure stops, cancellation, scope disposal, immutable snapshots, reruns, stale events and D4 isolation. Browser tests block unexpected network traffic and inspect actual controls, rendered status, output and timer release. The real Yjs test verifies unchanged peer documents during a local run. Packed consumers execute the runner beside every adapter archive. These tests establish Flow's offline contract, not upstream workflow template parity, provider delivery or durable job behavior.
+
+Runner and node spans use `FlowSpan.workflowRun` and `FlowSpan.workflowNode`, with `FlowAttribute.workflowRunId`, `workflowRevision` and `nodeId`. Lifecycle logs contain identities and diagnostic codes, never configuration text or output. OTLP export and shutdown remain application-owned; collector delivery is unverified.
