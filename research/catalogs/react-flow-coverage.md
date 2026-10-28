@@ -374,19 +374,19 @@ Tests: [document schema tests](../../packages/core/src/domain/flow.schema.test.t
 
 Production: [FlowChangeSchema](../../packages/core/src/domain/flow-runtime.schema.ts#L819) names semantic changes; [Vue emits](../../packages/vue/src/flow-canvas.ts#L202) adds typed model update events; [Foldkit OutMessage](../../packages/foldkit/src/graph.ts#L42) carries a semantic change. Core exports separate change-application helpers. Final-only movement events differ from React Flow's richer callback lifecycle, as recorded in [architecture](../../docs/architecture.md#conformity-and-deviations).
 
-Tests: [core change/drag behavior](../../packages/core/src/domain/flow-runtime.schema.test.ts#L1112), [vanilla controlled keyboard movement](../../apps/vanilla/e2e/movement-slices.e2e.ts#L515), [Vue local-coordinate drag](../../apps/vue/e2e/shared-conformance.e2e.ts#L183), and [Foldkit local-coordinate drag](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L189). Complete upstream callback ordering and change-array equivalence remain unverified.
+Tests: [core change/drag behavior](../../packages/core/src/domain/flow-runtime.schema.test.ts#L1112), [vanilla controlled keyboard movement](../../apps/vanilla/e2e/node-movement.e2e.ts#L517), [Vue local-coordinate drag](../../apps/vue/e2e/shared-conformance.e2e.ts#L183), and [Foldkit local-coordinate drag](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L189). Complete upstream callback ordering and change-array equivalence remain unverified.
 
 ### Geometry
 
 Production: [graph bounds and queries](../../packages/core/src/domain/flow-graph.ts#L206), [reference-shaped node and edge queries](../../packages/core/src/domain/flow-graph.ts#L268), [legacy edge-returning queries](../../packages/core/src/domain/flow-graph.ts#L253), [edge path helpers](../../packages/core/src/domain/flow-edge.schema.ts#L78), [step paths](../../packages/core/src/domain/flow-step-edge.schema.ts#L230), and [fitViewportToNodes](../../packages/core/src/domain/flow-fit-view.ts#L42). The legacy `graphIncomers` and `graphOutgoers` retain their edge-returning semantics. Path and label helpers are separate. Fit accepts a document and measurements rather than only bounds.
 
-Tests: [graph query cases](../../packages/core/src/domain/flow-graph.test.ts#L251), [reference-shaped utility cases](../../packages/core/src/domain/flow-graph.test.ts#L438), [edge geometry tests](../../packages/core/src/domain/flow-edge.schema.test.ts), [fit tests](../../packages/core/src/domain/flow-fit-view.test.ts#L43), and [vanilla fit behavior](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L2098). These helpers are available through core in all three frameworks. Recipe-level rendering and executable reference output comparisons remain open.
+Tests: [graph query cases](../../packages/core/src/domain/flow-graph.test.ts#L251), [reference-shaped utility cases](../../packages/core/src/domain/flow-graph.test.ts#L438), [edge geometry tests](../../packages/core/src/domain/flow-edge.schema.test.ts), [fit tests](../../packages/core/src/domain/flow-fit-view.test.ts#L43), and [vanilla fit behavior](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L2089). These helpers are available through core in all three frameworks. Recipe-level rendering and executable reference output comparisons remain open.
 
 ### Connections
 
 Production: [core connection contracts](../../packages/core/src/domain/flow-connection.schema.ts), [reconnection](../../packages/core/src/domain/flow-reconnection.schema.ts), [vanilla validator options](../../apps/vanilla/src/mount-flow.ts#L382), [Vue target-node predicate](../../packages/vue/src/flow-canvas.ts#L191), and [Foldkit allowed targets](../../packages/foldkit/src/graph.ts#L470). Validator inputs differ. Basic connections exist in all three hosts; rich reconnection and click interactions are currently evidenced in vanilla.
 
-Tests: [shared connection-validity fixture](../fixtures/README.md), [Vue rendered connection](../../apps/vue/e2e/connection.e2e.ts#L3), [Foldkit controlled connection](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L139), [vanilla validator](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L2216), and [reconnection validation](../../apps/vanilla/e2e/validator-followups.e2e.ts#L120). Limits, reactive query APIs, and connection lifecycle callbacks require further work.
+Tests: [shared connection-validity fixture](../fixtures/README.md), [Vue rendered connection](../../apps/vue/e2e/connection.e2e.ts#L3), [Foldkit controlled connection](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L139), [vanilla validator](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L2223), and [reconnection validation](../../apps/vanilla/e2e/validator-followups.e2e.ts#L120). Limits, reactive query APIs, and connection lifecycle callbacks require further work.
 
 ### Rendering
 
@@ -404,13 +404,13 @@ Evidence: [shared renderer trace](../traces/shared-renderer-contract.md), [edge 
 
 Production: [background and controls/minimap options](../../apps/vanilla/src/mount-flow.ts#L125) and [createCanvasUI](../../apps/vanilla/src/canvas-ui.ts#L220). Vanilla has dots, lines, and none background choices, plus optional controls and minimap. The Vue playground has application controls; these do not constitute reusable exported Controls or MiniMap components.
 
-Tests: [vanilla canvas UI](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L56) and [interaction mode](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L136). Reusable Vue/Foldkit equivalents and complete option-by-option reference comparison remain open.
+Tests: [vanilla canvas UI](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L58) and [interaction mode](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L135). Reusable Vue/Foldkit equivalents and complete option-by-option reference comparison remain open.
 
 ### Resize
 
 Production: [resize contracts](../../packages/core/src/domain/flow-runtime.schema.ts#L103), [resize calculation](../../packages/core/src/domain/flow-runtime.schema.ts#L666), and the [vanilla resize scene](../../apps/vanilla/src/main.ts#L125). The fit-options row refers separately to [FitViewOptionsSchema](../../apps/vanilla/src/mount-flow.ts#L254), a host fit operation rather than resizing.
 
-Tests: [directional resize](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L1117), [keyboard resize](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L1531), and [controlled left resize with a child](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L939). The last case matches one normalized pinned capture. It does not close the entire NodeResizer/NodeResizeControl API, all directions, or other adapters.
+Tests: [directional resize](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L1109), [keyboard resize](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L1528), and [controlled left resize with a child](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L931). The last case matches one normalized pinned capture. It does not close the entire NodeResizer/NodeResizeControl API, all directions, or other adapters.
 
 ### Toolbars
 
@@ -420,7 +420,7 @@ Production: [core toolbar anchors](../../packages/core/src/domain/flow-toolbar-a
 
 Production: [panel and overlay contract](../../docs/public-api.md#ownership-and-acknowledgement), [panel placements](../../apps/vanilla/src/mount-flow.ts#L156), and [controller overlayPortal](../../apps/vanilla/src/mount-flow.ts#L424). Flow's host-local overlay is a useful primitive; the inventory does not assert that it implements the transformed coordinate system of ViewportPortal.
 
-Tests: [placement and restoration](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L409), [host isolation](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L752), and [six positions](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L832). Viewport-coordinate portal behavior and reusable framework components remain open.
+Tests: [placement and restoration](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L408), [host isolation](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L751), and [six positions](../../apps/vanilla/e2e/canvas-ui.e2e.ts#L831). Viewport-coordinate portal behavior and reusable framework components remain open.
 
 ### Hierarchy
 
@@ -434,7 +434,7 @@ Production: vanilla renderer drag markers are part of the [renderer contract](..
 
 Production: [FlowBrowser observation capability](../../apps/vanilla/src/flow-browser.ts), [measured-node schema](../../packages/core/src/domain/flow-runtime.schema.ts#L50), and [Vue measurement-fed edge rendering](../../packages/vue/src/flow-canvas.ts#L904). Internal measurements exist, but readiness, explicit refresh, and internal-node subscription APIs still need public contracts.
 
-Tests/evidence: [measurement trace](../traces/node-measurement.md), [unmeasured fit](../../apps/vanilla/e2e/flow-followups.e2e.ts#L155), and [Vue default measured edge](../../apps/vue/e2e/connection.e2e.ts#L3). Foldkit's current view uses fixed dimensions; measurement parity is unverified.
+Tests/evidence: [measurement trace](../traces/node-measurement.md), [unmeasured fit](../../apps/vanilla/e2e/viewport-operations.e2e.ts#L161), and [Vue default measured edge](../../apps/vue/e2e/connection.e2e.ts#L3). Foldkit's current view uses fixed dimensions; measurement parity is unverified.
 
 ### Persistence
 
@@ -442,11 +442,11 @@ Production: [versioned document persistence](../../packages/core/src/domain/flow
 
 ### Styles
 
-Production: separate [vanilla CSS](../../apps/vanilla/src/style.css), [Vue adapter CSS](../../packages/vue/src/style.css), and [Foldkit CSS](../../packages/foldkit/src/style.css). Tests: [vanilla playground scenes](../../apps/vanilla/e2e/playground.e2e.ts#L11), [Vue playground](../../apps/vue/e2e/demo.e2e.ts#L3), and [Foldkit smoke](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L44). These establish inspectable host styling; dark mode, styling integrations, and composed visual recipes remain open.
+Production: separate [vanilla CSS](../../apps/vanilla/src/style.css), [Vue adapter CSS](../../packages/vue/src/style.css), and [Foldkit CSS](../../packages/foldkit/src/style.css). Tests: [vanilla playground scenes](../../apps/vanilla/e2e/playground.e2e.ts#L3), [Vue playground](../../apps/vue/e2e/demo.e2e.ts#L3), and [Foldkit smoke](../../apps/foldkit/e2e/shared-conformance.e2e.ts#L44). These establish inspectable host styling; dark mode, styling integrations, and composed visual recipes remain open.
 
 ### Input
 
-Production: [vanilla host input options](../../apps/vanilla/src/mount-flow.ts#L382), [node accessibility fields](../../packages/core/src/domain/flow.schema.ts#L63), and core interaction sessions. Tests: [touch viewport gestures](../../apps/vanilla/e2e/movement-slices.e2e.ts#L655), [native keyboard ownership](../../apps/vanilla/e2e/graph-renderers.e2e.ts#L571), and [two skipped native multi-pointer cases](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L914). A per-node label is not the complete AriaLabelConfig contract; click connection mode is not strict/loose ConnectionMode. Full type and native device equivalence remains open.
+Production: [vanilla host input options](../../apps/vanilla/src/mount-flow.ts#L382), [node accessibility fields](../../packages/core/src/domain/flow.schema.ts#L63), and core interaction sessions. Tests: [touch viewport gestures](../../apps/vanilla/e2e/input-configuration.e2e.ts#L646), [native keyboard ownership](../../apps/vanilla/e2e/graph-renderers.e2e.ts#L571), and [two skipped native multi-pointer cases](../../apps/vanilla/e2e/advanced-gestures.e2e.ts#L926). A per-node label is not the complete AriaLabelConfig contract; click connection mode is not strict/loose ConnectionMode. Full type and native device equivalence remains open.
 
 ### Performance
 

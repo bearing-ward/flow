@@ -1178,7 +1178,7 @@
         },
         "vue": {
           "status": "tested",
-          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
+          "path": "apps/vue/e2e/interaction-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
@@ -2121,7 +2121,7 @@
         },
         "vue": {
           "status": "tested",
-          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
+          "path": "apps/vue/e2e/interaction-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
@@ -2179,7 +2179,7 @@
         },
         "vue": {
           "status": "tested",
-          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
+          "path": "apps/vue/e2e/interaction-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
@@ -2237,7 +2237,7 @@
         },
         "vue": {
           "status": "tested",
-          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
+          "path": "apps/vue/e2e/interaction-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
@@ -3584,7 +3584,7 @@
         },
         "vue": {
           "status": "tested",
-          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
+          "path": "apps/vue/e2e/interaction-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",
@@ -3845,7 +3845,7 @@
         },
         "vue": {
           "status": "tested",
-          "path": "apps/vue/e2e/closing-recipes.e2e.ts"
+          "path": "apps/vue/e2e/interaction-recipes.e2e.ts"
         },
         "foldkit": {
           "status": "not-tested",

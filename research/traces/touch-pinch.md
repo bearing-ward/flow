@@ -1,6 +1,6 @@
 # Touch pan and pinch zoom
 
-Status: traced from pinned xyflow source at commit `0a1f9575b25679f2880175de8d3eae21aedde921`. The pinned browser tests cover one-finger touch panning and touch selection. They do not exercise a two-finger pinch or trackpad pinch. Flow's targeted Chromium touch test passed in this checkout with `bunx playwright test apps/vanilla/e2e/movement-slices.e2e.ts -g 'real touch pan and pinch' --reporter=line`. The full `bun run verify` also passed, including 48 browser tests.
+Status: traced from pinned xyflow source at commit `0a1f9575b25679f2880175de8d3eae21aedde921`. The pinned browser tests cover one-finger touch panning and touch selection. They do not exercise a two-finger pinch or trackpad pinch. Flow's targeted Chromium touch test passed in this checkout with `bunx playwright test apps/vanilla/e2e/node-movement.e2e.ts -g 'real touch pan and pinch' --reporter=line`. The full `bun run verify` also passed, including 48 browser tests.
 
 All xyflow paths below are relative to `research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/`.
 
@@ -32,7 +32,7 @@ Flow's canvas uses `touch-action: none` at `apps/vanilla/src/style.css:27-35`. T
 
 The host publishes one semantic viewport change on the first pinch pointer's release and releases both captures at `apps/vanilla/src/mount-flow.ts:1873-1909`. Cancellation releases both captures and restores the authoritative viewport; both pointer cancellation and host destruction call that cleanup at `apps/vanilla/src/mount-flow.ts:1817-1852` and `apps/vanilla/src/mount-flow.ts:2397-2408`. Uncontrolled publication applies the new viewport; controlled publication restores the caller's authoritative viewport pending acknowledgement at `apps/vanilla/src/mount-flow.ts:973-982`. Ctrl-modified wheel input remains a separate cursor-anchored zoom path at `apps/vanilla/src/mount-flow.ts:2287-2313`.
 
-Flow's browser scenario sends real Chromium CDP touch events. It asserts that one-finger movement publishes `x: 30` with unchanged zoom, then spreads two touch points around a fixed midpoint and asserts `x: -250` with `zoom: 1.5` at `apps/vanilla/e2e/movement-slices.e2e.ts:243-290`. That checks the translation needed to keep the midpoint's flow position fixed during zoom. The targeted test and the full verifier passed locally. The scenario does not assert a moving midpoint, rendered CSS, controlled acknowledgement, cancellation, or Ctrl-wheel behavior. Those remain separate test boundaries.
+Flow's browser scenario sends real Chromium CDP touch events. It asserts that one-finger movement publishes `x: 30` with unchanged zoom, then spreads two touch points around a fixed midpoint and asserts `x: -250` with `zoom: 1.5` at `apps/vanilla/e2e/node-movement.e2e.ts:244`. That checks the translation needed to keep the midpoint's flow position fixed during zoom. The targeted test and the full verifier passed locally. The scenario does not assert a moving midpoint, rendered CSS, controlled acknowledgement, cancellation, or Ctrl-wheel behavior. Those remain separate test boundaries.
 
 ## Conformity and deviations
 

@@ -62,7 +62,7 @@ The regression came from mixing DOM measurements of an `expandParent` preview in
 The census is committed in `apps/vue/e2e/node-extent-adoption.e2e.ts`. Its `testInfo.attach` records each actor; use `--reporter=json` to retain the snapshots. The original regression, census, and settled extent test passed together in three repetitions, 9/9:
 
 ```sh
-scripts/with-flow-browser-lock.sh bun run playwright test --config apps/vue/playwright.config.ts apps/vue/e2e/final-wiring.e2e.ts apps/vue/e2e/node-extent-adoption.e2e.ts --grep 'nodeExtent, parent extents|reclamps an initially|parent preview measurement' --workers=1 --repeat-each=3
+scripts/with-flow-browser-lock.sh bun run playwright test --config apps/vue/playwright.config.ts apps/vue/e2e/canvas-configuration.e2e.ts apps/vue/e2e/node-extent-adoption.e2e.ts --grep 'nodeExtent, parent extents|reclamps an initially|parent preview measurement' --workers=1 --repeat-each=3
 ```
 
 The final Foldkit targeted command above passed all three cases, including its settled extent test and two expected failures. An earlier census draft had a missing test import and then used a live public read as owner state; the final census uses the controlled owner's `ownerNodes()` and separates that state from displayed geometry.

@@ -173,7 +173,7 @@ Verification remains focused. All previous checks and browser files are retained
 | vue | 42 | 866 | 19 | 0 | 885 |
 | foldkit | 57 | 521 | 15 | 0 | 536 |
 
-There were zero unexpected failures or unexpected passes. Playwright's terminal passed totals include expected failures: Vanilla 758, Vue 885, Foldkit 536. The two pre-existing Vanilla skips are the native pointer-capture and native two-contact pinch placeholders in `apps/vanilla/e2e/advanced-gestures.e2e.ts:914,918`; neither is a phase 127 case. The named next-slices flake passed on its first attempt; no flake rerun was needed. The complete receipt is `/tmp/plan134-verify-final.log`, ending with `Verification passed` and `elapsedMs: 1251855`.
+There were zero unexpected failures or unexpected passes. Playwright's terminal passed totals include expected failures: Vanilla 758, Vue 885, Foldkit 536. The two pre-existing Vanilla skips are the native pointer-capture and native two-contact pinch placeholders in the two throwing placeholders removed by Plan 179; neither is a phase 127 case. The named selection-and-culling flake passed on its first attempt; no flake rerun was needed. The complete receipt is `/tmp/plan134-verify-final.log`, ending with `Verification passed` and `elapsedMs: 1251855`.
 
 Only the receipt prose changed after this run; the source, contracts, ledger outcomes, and verification selection are the verified candidate. Focused acceptance does not establish full-profile or release acceptance.
 

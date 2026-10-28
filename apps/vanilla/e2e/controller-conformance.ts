@@ -13,6 +13,7 @@ import type {
   PublicStateQuery,
   PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 
 const documentWith = (
   nodes: readonly {
@@ -232,7 +233,7 @@ export const createVanillaConformanceAdapter = (
         },
         { nextDocument: document, cull: renderOnlyVisible }
       )
-      await page.waitForTimeout(50)
+      await browserFrames(page, 3)
     },
     async updateMeasurementDocument(document) {
       measurementDocument = document
@@ -245,7 +246,7 @@ export const createVanillaConformanceAdapter = (
 
         controller.update(nextDocument)
       }, document)
-      await page.waitForTimeout(50)
+      await browserFrames(page, 3)
     },
     internalNode(nodeId) {
       return page.evaluate((id) => {

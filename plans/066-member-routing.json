@@ -4731,7 +4731,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "bgcolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4762,7 +4762,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "classname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4793,7 +4793,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "color",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4824,7 +4824,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "gap",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4855,7 +4855,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "id",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4886,7 +4886,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "linewidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4917,7 +4917,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "offset",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4948,7 +4948,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "patternclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4979,7 +4979,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "size",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5010,7 +5010,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "style",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5041,7 +5041,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "variant",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5072,7 +5072,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "interactionwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5103,7 +5103,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "label",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5134,7 +5134,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgborderradius",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5165,7 +5165,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgpadding",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5196,7 +5196,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5227,7 +5227,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelshowbg",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5258,7 +5258,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5289,7 +5289,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelx",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5320,7 +5320,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labely",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5351,7 +5351,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "markerend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5382,7 +5382,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "markerstart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5413,7 +5413,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "path",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5444,7 +5444,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5475,7 +5475,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5506,7 +5506,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "aria-label",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5537,7 +5537,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5568,7 +5568,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "classname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5599,7 +5599,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "fitviewoptions",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5630,7 +5630,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onfitview",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5661,7 +5661,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "oninteractivechange",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5692,7 +5692,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onzoomin",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5723,7 +5723,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onzoomout",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5754,7 +5754,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "orientation",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5785,7 +5785,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5816,7 +5816,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "showfitview",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5847,7 +5847,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "showinteractive",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5878,7 +5878,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "showzoom",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5909,7 +5909,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "style",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5940,7 +5940,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5971,7 +5971,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "label",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6002,7 +6002,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgborderradius",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6033,7 +6033,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgpadding",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6064,7 +6064,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6095,7 +6095,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelshowbg",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6126,7 +6126,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6157,7 +6157,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6188,7 +6188,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "x",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6219,7 +6219,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "y",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6250,7 +6250,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "alignx",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6281,7 +6281,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "aligny",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6312,7 +6312,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "edgeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6343,7 +6343,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvisible",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6374,7 +6374,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6405,7 +6405,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "x",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6436,7 +6436,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "y",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6467,7 +6467,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "id",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6498,7 +6498,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isconnectable",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6529,7 +6529,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isconnectableend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6560,7 +6560,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isconnectablestart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6591,7 +6591,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvalidconnection",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6622,7 +6622,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onconnect",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6653,7 +6653,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6684,7 +6684,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6715,7 +6715,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "type",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6746,7 +6746,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "arialabel",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6777,7 +6777,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "bgcolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6808,7 +6808,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "inversepan",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6839,7 +6839,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maskcolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6870,7 +6870,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maskstrokecolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6901,7 +6901,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maskstrokewidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6932,7 +6932,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeborderradius",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6963,7 +6963,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6994,7 +6994,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodecolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7025,7 +7025,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodecomponent",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7056,7 +7056,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodestrokecolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7087,7 +7087,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodestrokewidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7118,7 +7118,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "offsetscale",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7149,7 +7149,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onclick",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7180,7 +7180,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onnodeclick",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7211,7 +7211,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "pannable",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7242,7 +7242,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7273,7 +7273,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7304,7 +7304,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "zoomable",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7335,7 +7335,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "zoomstep",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7366,7 +7366,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "autoscale",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7397,7 +7397,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7428,7 +7428,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "classname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7459,7 +7459,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "color",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7490,7 +7490,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "keepaspectratio",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7521,7 +7521,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7552,7 +7552,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7583,7 +7583,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7614,7 +7614,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7645,7 +7645,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7676,7 +7676,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7707,7 +7707,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizeend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7738,7 +7738,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizestart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7769,7 +7769,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7800,7 +7800,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "resizedirection",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7831,7 +7831,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "shouldresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7862,7 +7862,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "style",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7893,7 +7893,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "variant",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7924,7 +7924,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "autoscale",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7955,7 +7955,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "color",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7986,7 +7986,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "handleclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8017,7 +8017,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "handlestyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8048,7 +8048,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvisible",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8079,7 +8079,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "keepaspectratio",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8110,7 +8110,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "lineclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8141,7 +8141,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "linestyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8172,7 +8172,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8203,7 +8203,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8234,7 +8234,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8265,7 +8265,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8296,7 +8296,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8327,7 +8327,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8358,7 +8358,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizeend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8389,7 +8389,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizestart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8420,7 +8420,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "shouldresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8451,7 +8451,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "align",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8482,7 +8482,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvisible",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8513,7 +8513,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8544,7 +8544,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "offset",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8575,7 +8575,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8606,7 +8606,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8637,7 +8637,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8668,7 +8668,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8699,7 +8699,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -10223,7 +10223,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "Align",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -10626,7 +10626,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "BackgroundVariant",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -23828,7 +23828,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "PanelPosition",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -23859,7 +23859,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "Position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25818,7 +25818,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "height",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25855,7 +25855,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "ResizeParams",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25886,7 +25886,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "width",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25917,7 +25917,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "x",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25948,7 +25948,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "y",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {

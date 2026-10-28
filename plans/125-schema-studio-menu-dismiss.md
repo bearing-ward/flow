@@ -12,11 +12,11 @@ No changes to `packages/`, `apps/vanilla/src`, or imported research evidence.
 
 ## Browser evidence
 
-Real Playwright mouse input covers pane dismissal with continued panning, table selection, table-menu dismissal through the side list, one-menu replacement at the new point, cardinality opening and dismissal, Escape for both menu types, note and area selection, toolbar zoom, and edge-label pointerdown followed by popover opening on click. Existing S14 and cardinality-choice tests cover actions inside the menu. Tests begin at `apps/vanilla/e2e/schema-studio.e2e.ts:849` and `apps/foldkit/e2e/schema-studio.e2e.ts:867`.
+Real Playwright mouse input covers pane dismissal with continued panning, table selection, table-menu dismissal through the side list, one-menu replacement at the new point, cardinality opening and dismissal, Escape for both menu types, note and area selection, toolbar zoom, and edge-label pointerdown followed by popover opening on click. Existing S14 and cardinality-choice tests cover actions inside the menu. Tests begin at `apps/vanilla/e2e/schema-studio.e2e.ts:75` and `apps/foldkit/e2e/schema-studio.e2e.ts:94`.
 
 Before the fix, the six required new tests produced **4 failures and 2 passes per host**. The four failures were outside dismissal on the pane, table, side list, and cardinality popover. Replacement and Escape passed. The first Foldkit attempt used a point covered by its taller minimap; the corrected baseline uses bare pane at the same coordinates in both hosts.
 
-Schema Studio suites: Vanilla **40 passed**, Foldkit **41 passed**. Both had **0 failed and 0 skipped**. The saved focused verifier passed all **16 gates**, including **96 unit files / 2,510 unit tests**, and browser scopes of **Vanilla 508 passed / 2 skipped**, **Vue 721 passed / 0 skipped**, and **Foldkit 335 passed / 0 skipped**. No failures remained. The known `next-slices.e2e.ts:364` flake did not occur; no flake rerun was needed.
+Schema Studio suites: Vanilla **40 passed**, Foldkit **41 passed**. Both had **0 failed and 0 skipped**. The saved focused verifier passed all **16 gates**, including **96 unit files / 2,510 unit tests**, and browser scopes of **Vanilla 508 passed / 2 skipped**, **Vue 721 passed / 0 skipped**, and **Foldkit 335 passed / 0 skipped**. No failures remained. The known `selection-and-culling.e2e.ts:364` flake did not occur; no flake rerun was needed.
 
 Foldkit queries the persistent app root because `Runtime.embed` replaces its supplied mount element. The regression tests rejected the detached-element implementation with 33 passes and 8 dismissal failures before the corrected complete suite passed.
 

@@ -27,7 +27,7 @@ New modules keep `mount-flow.ts` edits to small hooks.
 ## Tests
 
 - Unit: `apps/vanilla/src/{instance-api,node-resizer}.test.ts` (Vanilla unit tests are now in `vitest.config.ts`).
-- Browser: `apps/vanilla/e2e/final-wiring.e2e.ts` (22 tests) with `src/final-wiring-fixture.ts`, and `styling-recipes.e2e.ts` (5 tests). Both passed 3 runs in a row. Coverage includes `autoScale`, `handleStyle`/`lineStyle`, left-edge and top-left expandParent resizes with live parent growth, a controlled owner that applies only the latest proposal (resize and two-parent drag), and MiniMap `onClick`, `onNodeClick`, `zoomStep` and live drag updates.
+- Browser: `apps/vanilla/e2e/canvas-configuration.e2e.ts` (22 tests) with `src/final-wiring-fixture.ts`, and `styling-recipes.e2e.ts` (5 tests). Both passed 3 runs in a row. Coverage includes `autoScale`, `handleStyle`/`lineStyle`, left-edge and top-left expandParent resizes with live parent growth, a controlled owner that applies only the latest proposal (resize and two-parent drag), and MiniMap `onClick`, `onNodeClick`, `zoomStep` and live drag updates.
 - Updated expectations: React aria defaults (`Zoom In`, `Fit View`, `Mini Map`, `Toggle Interactivity`); screenshot baselines for the React theme colours and label backgrounds; marker id regexes (`canvas.e2e.ts`), marker kind from `data-marker-type` (`renderer-contract.e2e.ts`), React stacking of a child above a lower sibling (`graph-renderers.e2e.ts`), z-index excluded from the button-handle style check, `measured` dropped from the shared public-state read, and a v3-era invalid-version probe (`version: 99`) in `versioned-persistence-fixture.ts`.
 
 ## Conformity and deviations

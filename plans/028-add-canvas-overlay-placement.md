@@ -17,7 +17,7 @@ Vanilla can preserve one caller panel and position keyed toolbar containers, but
 
 - `apps/vanilla/src/mount-flow.ts:194-215` exposes one `panel?: HTMLElement`, keyed toolbar containers, and `onToolbarAnchors`. The unknown-input facade passes panel and toolbar values at `:4240-4253` after decoding serializable options.
 - `apps/vanilla/src/canvas-ui.ts:19-34` accepts one panel and its former parent/sibling; `:116-133` reparents keyed toolbar elements, and its returned destroy path restores caller elements.
-- `apps/vanilla/e2e/canvas-ui.e2e.ts:93-145` proves a panel and caller toolbar survive keyed update, viewport change, culling, and destroy.
+- `apps/vanilla/e2e/canvas-ui.e2e.ts:103` proves a panel and caller toolbar survive keyed update, viewport change, culling, and destroy.
 - `research/traces/reusable-canvas-ui.md:5-15,21-31` compares reference panels/toolbars and records the missing general portal/placement API. `research/PROGRESS.md:158` is open.
 
 ```ts

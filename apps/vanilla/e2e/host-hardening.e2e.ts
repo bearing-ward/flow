@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import type {
   HardeningFixture,
   HardeningFixtureOptions,
@@ -124,7 +125,7 @@ const pointerResize = async (page: Page, nodeId: string, dx: number) => {
   await page.mouse.move(grip.x + 3, grip.y)
   await page.mouse.move(grip.x + dx / 2, grip.y, { steps: 3 })
   await expect(node(page, nodeId)).toHaveClass(/resizing/u)
-  await page.waitForTimeout(150)
+  await browserFrames(page, 9)
   await page.mouse.move(grip.x + dx, grip.y, { steps: 3 })
   await expect(node(page, nodeId)).toHaveClass(/resizing/u)
   await page.mouse.up()
@@ -136,10 +137,10 @@ test.describe('Vanilla host hardening', () => {
   }) => {
     await mount(page, { documentMode: 'uncontrolled' })
     const alpha = node(page, 'a')
-    await expect(alpha).not.toHaveClass(/selected/u)
+    await expect(alpha).not.toHaveAttribute('aria-pressed', 'true')
 
     await alpha.locator('.flow-node-content').click()
-    await expect(alpha).toHaveClass(/selected/u)
+    await expect(alpha).toHaveAttribute('aria-pressed', 'true')
     await expect.poll(() => nodeClicks(page)).toEqual(['a'])
 
     await alpha.locator('.flow-node-content').click()
@@ -224,7 +225,7 @@ test.describe('Vanilla host hardening', () => {
       await expect.poll(() => edgeClicks(page)).toEqual(['e'])
       await expect(
         page.locator('[data-edge-id="e"].flow-edge-group')
-      ).toHaveClass(/selected/u)
+      ).toHaveAttribute('aria-pressed', 'true')
     })
   }
 
@@ -250,13 +251,13 @@ test.describe('Vanilla host hardening', () => {
   }) => {
     await mount(page, { documentMode: 'uncontrolled' })
     await node(page, 'a').locator('.flow-node-content').click()
-    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(node(page, 'a')).toHaveAttribute('aria-pressed', 'true')
     await expect(page.locator('.flow-node-resize-handle')).toHaveCount(0)
 
     await mount(page, { documentMode: 'uncontrolled', nodesResizable: true })
     const alpha = node(page, 'a')
     await alpha.locator('.flow-node-content').click()
-    await expect(alpha).toHaveClass(/selected/u)
+    await expect(alpha).toHaveAttribute('aria-pressed', 'true')
     await expect(alpha.locator('.flow-node-resize-handle')).toHaveCount(8)
 
     const handle = alpha.locator('.flow-handle[data-handle-id="out"]')
@@ -285,7 +286,7 @@ test.describe('Vanilla host hardening', () => {
     await mount(page, { documentMode: 'controlled', nodesResizable: true })
     await expect.poll(() => dimensionIds(page)).toEqual(['a', 'b'])
     await node(page, 'a').locator('.flow-node-content').click()
-    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(node(page, 'a')).toHaveAttribute('aria-pressed', 'true')
 
     const initial = await widthOf(page, 'a')
     await pointerResize(page, 'a', 60)
@@ -308,7 +309,7 @@ test.describe('Vanilla host hardening', () => {
     await page.keyboard.down('ArrowRight')
     await expect(node(page, 'a')).toHaveClass(/resizing/u)
     // Let the observer measure the keyboard preview before the keyup.
-    await page.waitForTimeout(150)
+    await browserFrames(page, 9)
     await expect(node(page, 'a')).toHaveClass(/resizing/u)
     await page.keyboard.up('ArrowRight')
     await expect(node(page, 'a')).not.toHaveClass(/resizing/u)
@@ -357,7 +358,7 @@ test.describe('Vanilla host hardening', () => {
     await page.mouse.move(to.x, to.y, { steps: 6 })
     await page.mouse.up()
 
-    await page.waitForTimeout(100)
+    await browserFrames(page, 6)
     expect(await nodeClicks(page)).toEqual(['a'])
 
     // A plain click still reports.

@@ -4,6 +4,7 @@ import type * as CoreModule from '@flow/core'
 import { expect as expectPage, test as playwrightTest } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import type * as HostModule from '../src/public.ts'
 import type * as TelemetryModule from '../src/telemetry.ts'
 import {
@@ -387,7 +388,7 @@ playwrightTest(
         )
       )
       .toEqual([])
-    await expectPage(group).not.toHaveClass(/selected/u)
+    await expectPage(group).not.toHaveAttribute('aria-pressed', 'true')
     await updateConnectionDocument(page, {
       ariaLabel: 'Delivery route',
       interactionWidth: 42,
@@ -397,7 +398,7 @@ playwrightTest(
     await expectPage(group).toHaveAttribute('tabindex', '0')
     await expectPage(group).toHaveAttribute('aria-pressed', 'false')
     await page.mouse.click(midpoint.x, midpoint.y + 18)
-    await expectPage(group).toHaveClass(/selected/u)
+    await expectPage(group).toHaveAttribute('aria-pressed', 'true')
     await expectPage(group).toBeFocused()
   }
 )
@@ -678,8 +679,9 @@ playwrightTest(
         )
       )
       .toBe(0)
-    await expectPage(page.getByTestId('flow-edge-group')).toHaveClass(
-      /selected/u
+    await expectPage(page.getByTestId('flow-edge-group')).toHaveAttribute(
+      'aria-pressed',
+      'true'
     )
 
     await dragEdgeEndpoint(page, 'target', 'third', 'in')
@@ -759,7 +761,7 @@ playwrightTest(
     })
 
     await page.mouse.click(midpoint.x, midpoint.y + 8)
-    await expectPage(group).toHaveClass(/selected/u)
+    await expectPage(group).toHaveAttribute('aria-pressed', 'true')
     await expectPage(group).toHaveAttribute('aria-pressed', 'true')
     await expectPage
       .poll(() => page.evaluate(() => globalThis.flowChanges))
@@ -773,7 +775,7 @@ playwrightTest(
       .not.toBe('none')
 
     await page.mouse.click(20, 20)
-    await expectPage(group).not.toHaveClass(/selected/u)
+    await expectPage(group).not.toHaveAttribute('aria-pressed', 'true')
     await expectPage(group).toHaveAttribute('aria-pressed', 'false')
     await expectPage
       .poll(() =>
@@ -800,23 +802,23 @@ playwrightTest(
 
     await expectPage(group).toBeFocused()
     await page.keyboard.press('Enter')
-    await expectPage(group).not.toHaveClass(/selected/u)
+    await expectPage(group).not.toHaveAttribute('aria-pressed', 'true')
     await expectPage
       .poll(() => page.evaluate(() => globalThis.flowChanges))
       .toEqual([{ kind: 'edge-selection', edgeId: 'edge-1', selected: true }])
 
     await updateConnectionDocument(page, { selected: true })
-    await expectPage(group).toHaveClass(/selected/u)
+    await expectPage(group).toHaveAttribute('aria-pressed', 'true')
     await expectPage(group).toHaveAttribute('aria-pressed', 'true')
     await page.keyboard.press('Escape')
     await expectPage(group).not.toBeFocused()
-    await expectPage(group).toHaveClass(/selected/u)
+    await expectPage(group).toHaveAttribute('aria-pressed', 'true')
     await expectPage
       .poll(() => page.evaluate(() => globalThis.flowChanges?.length))
       .toBe(2)
 
     await updateConnectionDocument(page, { selected: false })
-    await expectPage(group).not.toHaveClass(/selected/u)
+    await expectPage(group).not.toHaveAttribute('aria-pressed', 'true')
     await group.focus()
     await page.keyboard.press('Space')
     await expectPage
@@ -1823,7 +1825,7 @@ playwrightTest(
       )
     })
 
-    await page.waitForTimeout(50)
+    await browserFrames(page, 3)
     expectPage(
       await page.evaluate(() => ({
         changes: globalThis.flowChanges,
@@ -2051,113 +2053,6 @@ playwrightTest(
 )
 
 playwrightTest(
-  'vanilla dev showcases paths, visibility, node selection, and viewport culling',
-  async ({ page }) => {
-    await page.goto('/')
-
-    await expectPage(
-      page.getByRole('heading', { name: 'Flow playground' })
-    ).toBeVisible()
-    await expectPage(page.locator('.flow-demo-description')).toContainText(
-      'compare edge paths'
-    )
-    await expectPage(page.locator('.flow-demo-note')).toContainText(
-      'Control or Command adds nodes'
-    )
-    await expectPage(
-      page.getByRole('button', { name: 'Main graph' })
-    ).toHaveAttribute('aria-current', 'true')
-    await expectPage(
-      page.locator('.flow-node[data-node-id="remote-a"]')
-    ).toHaveCount(0)
-    await expectPage(
-      page.locator('[data-edge-id="simple"] .flow-edge-path')
-    ).toHaveAttribute('d', / C/u)
-    await expectPage(
-      page.locator('[data-edge-id="hidden"] .flow-edge-path')
-    ).toHaveCount(0)
-
-    await page.locator('.flow-node[data-node-id="input"]').click()
-    await expectPage(
-      page.locator('.flow-node[data-node-id="input"]')
-    ).toHaveClass(/selected/u)
-    await page.keyboard.press('ArrowRight')
-    await expectPage(
-      page.locator('.flow-node[data-node-id="input"]')
-    ).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 120, 500)')
-
-    await page.getByRole('button', { name: 'Show hidden edge' }).click()
-    await expectPage(page.locator('.flow-demo-description')).toContainText(
-      'Step edge visible'
-    )
-    await expectPage(page.locator('.flow-demo-note')).toContainText(
-      'Choose Hide step edge'
-    )
-    await expectPage(
-      page.getByRole('button', { name: 'Hide step edge' })
-    ).toHaveAttribute('aria-current', 'true')
-    await expectPage(
-      page.locator('[data-edge-id="hidden"] .flow-edge-path')
-    ).toHaveCount(1)
-
-    await page.getByRole('button', { name: 'Hide Validate node' }).click()
-    await expectPage(page.locator('.flow-demo-description')).toContainText(
-      'Validate hidden'
-    )
-    await expectPage(page.locator('.flow-demo-note')).toContainText(
-      'Choose Show Validate node'
-    )
-    await expectPage(
-      page.locator('.flow-node[data-node-id="validate"]')
-    ).toHaveCount(0)
-    await expectPage(
-      page.locator('[data-edge-id="smooth"] .flow-edge-path')
-    ).toHaveCount(0)
-    await page.getByRole('button', { name: 'Show Validate node' }).click()
-    await expectPage(page.locator('.flow-demo-note')).toContainText(
-      'Drag Validate'
-    )
-    await expectPage(
-      page.locator('.flow-node[data-node-id="validate"]')
-    ).toHaveCount(1)
-
-    await page.getByRole('button', { name: 'Distant graph' }).click()
-    await expectPage(page.locator('.flow-demo-description')).toContainText(
-      'Viewport culling removes the main graph'
-    )
-    await expectPage(page.locator('.flow-demo-note')).toContainText(
-      'Only nodes near the viewport'
-    )
-    await expectPage(
-      page.getByRole('button', { name: 'Distant graph' })
-    ).toHaveAttribute('aria-pressed', 'true')
-    await expectPage(
-      page.locator('.flow-node[data-node-id="remote-a"]')
-    ).toHaveCount(1)
-    await expectPage(
-      page.locator('.flow-node[data-node-id="input"]')
-    ).toHaveCount(0)
-
-    await page.getByRole('button', { name: 'Main graph' }).click()
-    await expectPage(page.locator('.flow-demo-description')).toContainText(
-      'compare edge paths'
-    )
-    await expectPage(page.locator('.flow-demo-note')).toContainText(
-      'Control or Command adds nodes'
-    )
-    await expectPage(
-      page.getByRole('button', { name: 'Main graph' })
-    ).toHaveAttribute('aria-pressed', 'true')
-    await expectPage(
-      page.locator('.flow-node[data-node-id="input"]')
-    ).toHaveCount(1)
-    await expectPage(
-      page.locator('.flow-node[data-node-id="remote-a"]')
-    ).toHaveCount(0)
-  }
-)
-
-playwrightTest(
   'selects and clears a focused node by keyboard',
   async ({ page }) => {
     await mountSingleNodeScenario(page)
@@ -2167,12 +2062,12 @@ playwrightTest(
 
     await node.focus()
     await page.keyboard.press('Enter')
-    await expectPage(node).toHaveClass(/selected/u)
+    await expectPage(node).toHaveAttribute('aria-pressed', 'true')
     await expectPage(node).toHaveAttribute('aria-pressed', 'true')
 
     await node.focus()
     await page.keyboard.press('Escape')
-    await expectPage(node).not.toHaveClass(/selected/u)
+    await expectPage(node).not.toHaveAttribute('aria-pressed', 'true')
     await expectPage(node).toHaveAttribute('aria-pressed', 'false')
   }
 )

@@ -17,7 +17,7 @@ The host has cancellation helpers for most gestures, but Escape currently cancel
 - `apps/vanilla/src/mount-flow.ts:870-1009` has connection, click-connection, and reconnection cancellation. `:1169-1247` has node-drag and viewport-pan cancellation. `:2126-2141` clears a selection rectangle; `:2501-2526` cancels pinch.
 - `:2528-2555` handles `pointercancel` on canvas. `:3037-3043` handles Escape only when `activeClickConnection` exists. `:3261-3303` registers canvas listeners but no blur or `lostpointercapture` path.
 - `apps/vanilla/src/flow-browser.ts:19-26,45-54` provides scoped HTMLElement listeners through `Effect.acquireRelease`. Use that resource pattern for any window/document event listener; do not add unscoped globals.
-- `apps/vanilla/e2e/canvas.e2e.ts:504-540` shows real reconnection preview and pointer-cancel assertions; `advanced-gestures.e2e.ts:378` exercises Escape. `docs/standards.md:7-16` assigns lifecycle to apps and requires structured cancellation telemetry.
+- `apps/vanilla/e2e/canvas.e2e.ts:507` shows real reconnection preview and pointer-cancel assertions; `advanced-gestures.e2e.ts:378` exercises Escape. `docs/standards.md:7-16` assigns lifecycle to apps and requires structured cancellation telemetry.
 
 ```ts
 // apps/vanilla/src/mount-flow.ts:3037-3043

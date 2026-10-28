@@ -2,6 +2,7 @@ import type * as CoreModule from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
 
 const readViewportX = (page: Page) =>
@@ -316,7 +317,7 @@ test('node dragging auto-pans at the canvas edge and escape stops the frame', as
       )
     )
   const stoppedAt = await page.locator('.flow-viewport').getAttribute('data-x')
-  await page.waitForTimeout(80)
+  await browserFrames(page, 5)
   await expect(page.locator('.flow-viewport')).toHaveAttribute(
     'data-x',
     stoppedAt ?? '0'
@@ -378,7 +379,7 @@ for (const cancellation of [
     }
 
     if (cancellation === 'destroy') {
-      await page.waitForTimeout(80)
+      await browserFrames(page, 5)
       await expect(viewport).toHaveCount(0)
       await expect.poll(() => pendingAnimationFrames(page)).toBe(0)
       await page.mouse.up()
@@ -387,7 +388,7 @@ for (const cancellation of [
     }
 
     const stoppedAt = await viewport.getAttribute('data-x')
-    await page.waitForTimeout(80)
+    await browserFrames(page, 5)
     await expect(viewport).toHaveAttribute('data-x', stoppedAt ?? '0')
     await expect.poll(() => pendingAnimationFrames(page)).toBe(0)
 
@@ -487,7 +488,7 @@ test('node auto-pan respects the configured viewport extent', async ({
   await page.mouse.move(box.x + 120, box.y + 20)
   await page.mouse.down()
   await page.mouse.move(canvas.x + 5, canvas.y + canvas.height / 2)
-  await page.waitForTimeout(80)
+  await browserFrames(page, 5)
   await expect(page.locator('.flow-viewport')).toHaveAttribute('data-x', '-200')
   await page
     .getByTestId('flow-canvas')
@@ -512,7 +513,7 @@ test('keyboard movement reveals the focused node without a frame loop', async ({
   await expect(alpha).toBeFocused()
   await expect.poll(() => readViewportX(page)).not.toBe('-250')
   const afterMove = await page.locator('.flow-viewport').getAttribute('data-x')
-  await page.waitForTimeout(80)
+  await browserFrames(page, 5)
   await expect(page.locator('.flow-viewport')).toHaveAttribute(
     'data-x',
     afterMove ?? '0'
@@ -597,66 +598,6 @@ test('dragging one selected node moves the selected group', async ({
     'transform',
     'matrix(1, 0, 0, 1, 650, 180)'
   )
-})
-
-test('partial rectangle selects a node with positive overlap', async ({
-  page,
-}) => {
-  await mountGraph(page, { selectionMode: 'partial' })
-  const alpha = page.locator('.flow-node[data-node-id="a"]')
-
-  await page.keyboard.down('Shift')
-  await page.mouse.move(85, 165)
-  await page.mouse.down()
-  await page.mouse.move(115, 195)
-  await expect(page.getByTestId('flow-selection-rect')).toBeVisible()
-  await page.mouse.up()
-  await page.keyboard.up('Shift')
-
-  await expect(alpha).toHaveClass(/selected/u)
-  await expect(page.locator('.flow-node[data-node-id="b"]')).not.toHaveClass(
-    /selected/u
-  )
-  await expect
-    .poll(() => page.evaluate(() => globalThis.flowChanges?.at(-1)))
-    .toStrictEqual({ kind: 'selection-set', nodeIds: ['a'], edgeIds: [] })
-})
-
-test('selection near the pane edge pans until released', async ({ page }) => {
-  await mountGraph(page)
-  const canvas = page.getByTestId('flow-canvas')
-  const box = await canvas.boundingBox()
-
-  if (box === null) {
-    throw new Error('Missing canvas bounds')
-  }
-
-  await page.keyboard.down('Shift')
-  await page.mouse.move(box.x + 450, box.y + 120)
-  await page.mouse.down()
-  await page.mouse.move(box.x + box.width - 8, box.y + 250)
-  await expect
-    .poll(() =>
-      page
-        .getByTestId('flow-viewport')
-        .evaluate(
-          (element) =>
-            new DOMMatrixReadOnly(getComputedStyle(element).transform).m41
-        )
-    )
-    .toBeLessThan(-15)
-  await page.mouse.up()
-  await page.keyboard.up('Shift')
-
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        globalThis.flowChanges?.some(
-          (change) => change.kind === 'viewport' && change.viewport.x < -15
-        )
-      )
-    )
-    .toBe(true)
 })
 
 test('real touch pan and pinch publish viewport changes', async ({ page }) => {

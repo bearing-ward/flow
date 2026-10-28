@@ -4,7 +4,7 @@ Undo restores the Schema Studio note's authored size, but Plan 154 leaves its en
 
 ## Comparison and observed evidence
 
-The unchanged Foldkit S9 browser test passes at `3c8d895`, the commit before Plan 154, and fails at `da9acb9`. Both runs use the same locked dependencies, Chromium, and one worker. The failure waits for `heading-sales-area` at `apps/foldkit/e2e/schema-studio.e2e.ts:604` and the snapshot contains Lost in canvas.
+The unchanged Foldkit S9 browser test passes at `3c8d895`, the commit before Plan 154, and fails at `da9acb9`. Both runs use the same locked dependencies, Chromium, and one worker. The failure waits for `heading-sales-area` at `apps/shared-e2e/schema-studio-contract.ts:598` and the snapshot contains Lost in canvas.
 
 Temporary browser diagnostics at the measurement and fit entry points on `da9acb9` capture these values:
 
@@ -41,7 +41,7 @@ No graph semantics or Effect workflows move into the browser application. The ex
 
 The focused regression at `packages/foldkit/src/grouping-measurement.test.ts:82` invokes the real application reducer with public `MeasureNodes` and `ReplaceDocument` actions. It covers a manually sized group and a note without auto-fit metadata. It asserts the restored internal dimensions before observer redelivery, exact document preservation, retained generation registration, fresh same-generation measurement, and rejection of an older receipt. It does not replace the browser gesture path.
 
-The unchanged Foldkit S9 at `apps/foldkit/e2e/schema-studio.e2e.ts:536` drives pointer resizes, Undo, Show all, heading selection, and the next area resize. It passes five consecutive runs after the fix. Its assertions, waits, and inputs are unchanged.
+The unchanged Foldkit S9 at `apps/shared-e2e/schema-studio-contract.ts:534` drives pointer resizes, Undo, Show all, heading selection, and the next area resize. It passes five consecutive runs after the fix. Its assertions, waits, and inputs are unchanged.
 
 Vanilla uses its own Studio history at `apps/vanilla/schema-studio/main.ts:394`, then calls `current.update(graph())` at `apps/vanilla/schema-studio/main.ts:357`. Its reconciler applies the authored DOM size at `apps/vanilla/src/mount-flow.ts:8226`, then records the DOM measurement during that reconciliation at `apps/vanilla/src/mount-flow.ts:8282`. This differs from Foldkit's measured view and asynchronous observer path. The Vanilla Schema Studio and grouping suites provide the separate browser boundary; no Vanilla product change is needed for this regression.
 

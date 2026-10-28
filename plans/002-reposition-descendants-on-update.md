@@ -18,7 +18,7 @@
 - `:1297` derives `graph = createFlowGraph(next, measurements, renderedNodePositions)`. `:1430-1454` applies `graphNode.absolutePosition` only inside `!sameNode(previousNodes.get(node.id), node)`; an unchanged child skips that branch.
 - `:514-520` already has `renderGraphPositions`, which positions every retained entry and updates toolbar anchors. Preserve drag previews held in `renderedNodePositions`; do not derive positions from raw child coordinates.
 - `apps/vanilla/src/edge-renderer.ts:162,202-211` uses the newly derived graph positions for endpoints.
-- `apps/vanilla/e2e/graph-renderers.e2e.ts:10-51` tests a parent pointer drag, not a parent-only controlled `update`. Follow its real `mountFlow` and bounding-box pattern.
+- `apps/vanilla/e2e/graph-renderers.e2e.ts:10` tests a parent pointer drag, not a parent-only controlled `update`. Follow its real `mountFlow` and bounding-box pattern.
 - `docs/architecture.md:85-87` says parent movement moves descendants and the core graph owns absolute geometry. Keep browser lifecycle in `apps/` and graph meaning in `packages/` per `docs/standards.md:7-16`.
 
 Current branch condition:

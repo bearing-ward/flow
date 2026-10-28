@@ -161,7 +161,7 @@ All browser invocations use `scripts/with-flow-browser-lock.sh` and one worker. 
 
 These runs have zero skips and zero unexpected failures. Logs are `/tmp/flow-133/upstream-{vanilla,vue,foldkit}.log` and `/tmp/flow-133/repeat-{vanilla,vue,foldkit}.log`.
 
-Standalone affected suites select complete edge-recipes, edge-geometry-recipes, subflows-recipes, canvas-ui-contract, ui-controls, renderer-contract, and renderer-props files in every host. Vanilla also selects styling-recipes, next-slices, final-wiring, and graph-renderers; Vue selects node-toolbar, edge-toolbar, and final-wiring; Foldkit selects toolbars, model-styling, and presentation-followups. Logs are `/tmp/flow-133/affected-{vanilla,vue,foldkit}.log`.
+Standalone affected suites select complete edge-recipes, edge-geometry-recipes, subflows-recipes, canvas-ui-contract (Vanilla now uses canvas-ui), ui-controls, renderer-contract, and renderer-props files in every host. Vanilla also selects styling-recipes, selection-and-culling, canvas-configuration, and graph-renderers; Vue selects node-toolbar, edge-toolbar, and canvas-configuration; Foldkit selects toolbars, model-styling, and presentation-followups. Logs are `/tmp/flow-133/affected-{vanilla,vue,foldkit}.log`.
 
 The uninterrupted standalone affected runs passed with Vanilla 68, Vue 44, and Foldkit 34 tests, all with zero skips and zero unexpected failures.
 
@@ -173,7 +173,7 @@ The final focused verifier passed all 18 gates. All 15 non-browser gates passed,
 | Vue     | 41                  | 818 passed     | 0     | 0                   |
 | Foldkit | 55                  | 463 passed     | 0     | 0                   |
 
-The two Vanilla skips are the pre-existing native concurrent-pointer and two-contact-pinch capture cases at apps/vanilla/e2e/advanced-gestures.e2e.ts:914 and :918. The terminal run passed the named Vanilla next-slices and graph-renderers checks and Foldkit layout-recipes checks without a flake rerun. It includes all three unchanged upstream runners, the added Vue toolbar files, the revised geometry/animation expectations, and the new Foldkit hidden-toolbar regression.
+The two Vanilla skips are the pre-existing native concurrent-pointer and two-contact-pinch capture cases in the two throwing placeholders removed by Plan 179. The terminal run passed the named Vanilla selection-and-culling and graph-renderers checks and Foldkit layout-recipes checks without a flake rerun. It includes all three unchanged upstream runners, the added Vue toolbar files, the revised geometry/animation expectations, and the new Foldkit hidden-toolbar regression.
 
 Two earlier affected-suite attempts hit startup and action timeouts during repeated machine maintenance sleep. Their unchanged logs are retained in /tmp/flow-133/attempt1 and /tmp/flow-133/attempt2; power events are in /tmp/flow-133/power-events.log. The first had a Vanilla startup timeout, four Vue timeouts, and two Foldkit timeouts; the second had Vanilla/Foldkit startup timeouts and one Vue action timeout. No source, assertion, timeout, retry, or browser configuration was changed in response. The successful run uses an AC system-sleep assertion as well as an idle-sleep assertion, both bound to the validation process. Those assertions and the owner-token browser lock end with that process.
 

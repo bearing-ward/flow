@@ -2,7 +2,7 @@
 
 > **Executor instructions:** Work in an isolated checkout. Follow each step and its verification gate. Record observed behavior and measured results, including failures; do not change production code to make this characterization pass. If a STOP condition occurs, report it instead of broadening scope. A reviewer may maintain `plans/README.md`; otherwise update this plan's status row only after all done criteria pass.
 >
-> **Drift check (run first):** `git diff --stat 5274aef..HEAD -- packages/core/src/domain/flow-graph.ts packages/core/src/domain/flow-visibility.schema.ts packages/core/src/domain/flow-graph.test.ts apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/next-slices.e2e.ts research/PROGRESS.md research/generated/SUMMARY.md research/traces research/spatial-gesture-baseline.md scripts/bench-flow-geometry.ts plans/README.md` Compare any changed implementation or test path with the excerpts below. Stop if the entry points, geometry ownership, or test fixture have changed in a way that invalidates this plan. Also inspect `git status --short` and preserve unrelated dirty work; `HANDOFF.md` was already modified in the advisor checkout.
+> **Drift check (run first):** `git diff --stat 5274aef..HEAD -- packages/core/src/domain/flow-graph.ts packages/core/src/domain/flow-visibility.schema.ts packages/core/src/domain/flow-graph.test.ts apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/selection-and-culling.e2e.ts research/PROGRESS.md research/generated/SUMMARY.md research/traces research/spatial-gesture-baseline.md scripts/bench-flow-geometry.ts plans/README.md` Compare any changed implementation or test path with the excerpts below. Stop if the entry points, geometry ownership, or test fixture have changed in a way that invalidates this plan. Also inspect `git status --short` and preserve unrelated dirty work; `HANDOFF.md` was already modified in the advisor checkout.
 
 ## Status
 
@@ -36,7 +36,7 @@ The graph contract exists, but `createFlowGraph` rebuilds derived geometry and s
 
 - `packages/core/src/domain/flow-visibility.schema.ts:25-35` converts viewport pixels into flow coordinates; lines 46-93 test node and edge visibility; `selectionInRect` at lines 95-140 scans ordered nodes and edges and excludes hidden or nonselectable elements. Its partial-overlap rule uses strict overlap, while graph intersection at `flow-graph.ts:141-145` includes a touching edge. Do not collapse these two contracts in the characterization.
 - `apps/vanilla/src/mount-flow.ts:488-491` creates the graph view from current host measurements and preview positions. Lines 1296-1340 use that view for viewport culling and retain endpoints of visible edges. Lines 2226-2240 build a graph for rectangle selection. Lines 2539-2643 centralize gesture cancellation, including blur, pointer-capture loss, and pointer cancellation.
-- `apps/vanilla/e2e/next-slices.e2e.ts:168-257` mounts 200 offscreen nodes and a crossing edge, then asserts culling as the viewport changes. It proves visibility behavior but has no latency budget. Use its `resetDemo`, public `mountFlow`, `page.evaluate`, and DOM locator pattern for the browser case. `packages/core/src/domain/flow-graph.test.ts:75-112` demonstrates `decodeFlowDocument` plus pure geometry assertions; extend that pattern.
+- `apps/vanilla/e2e/selection-and-culling.e2e.ts:99` mounts 200 offscreen nodes and a crossing edge, then asserts culling as the viewport changes. It proves visibility behavior but has no latency budget. Use its `resetDemo`, public `mountFlow`, `page.evaluate`, and DOM locator pattern for the browser case. `packages/core/src/domain/flow-graph.test.ts:75-112` demonstrates `decodeFlowDocument` plus pure geometry assertions; extend that pattern.
 - The pinned reference is `research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/`. In `packages/system/src/utils/graph.ts:264-303`, `getNodesInside` converts a screen rectangle to flow coordinates, scans `nodeLookup`, uses measured or declared dimensions, and temporarily includes unmeasured or dragging nodes. In `packages/system/src/xyresizer/XYResizer.ts:141-205`, resize start records measured size and position and examines parent and child extents. In `packages/system/src/xydrag/XYDrag.ts:324-380`, drag handles the threshold, auto-pan, node removal, and multi-touch abort. These are leads for tracing, not proof of parity.
 - `docs/architecture.md:83-91` fixes ownership: `FlowNode.position` is parent-local for children; live measurement belongs to host runtime and is never saved; pure geometry stays in core; DOM, gestures, and renderer lifetime stay in the host. Preserve Effect v4 RC.117 and schema-derived public types. Follow `docs/standards.md` and the trace order in `research/traces/README.md`. Each trace ends with `## Conformity and deviations`, with named test limits.
 
@@ -52,7 +52,7 @@ After this slice, use the evidence to plan the measured-geometry/index and gestu
 | --- | --- | --- |
 | Trace citations | `bun run research:check-traces` | exit 0; every new citation resolves |
 | Focused core tests | `bunx vitest run packages/core/src/domain/flow-graph.test.ts` | exit 0; all tests pass |
-| Focused browser tests | `bunx playwright test apps/vanilla/e2e/next-slices.e2e.ts` | exit 0; all tests pass |
+| Focused browser tests | `bunx playwright test apps/vanilla/e2e/selection-and-culling.e2e.ts` | exit 0; all tests pass |
 | Geometry benchmark | `bun run scripts/bench-flow-geometry.ts` | exit 0; prints all fixture sizes and operations |
 | Full gate | `bun run verify` | exit 0; research, typecheck, unit, build, and browser pass |
 | Diff hygiene | `git diff --check` and `git status --short` | no whitespace errors; only scoped changes plus preserved pre-existing work |
@@ -70,7 +70,7 @@ After this slice, use the evidence to plan the measured-geometry/index and gestu
 - `research/generated/SUMMARY.md` (generated by `research:inventory` only)
 - `scripts/bench-flow-geometry.ts` (new)
 - `packages/core/src/domain/flow-graph.test.ts`
-- `apps/vanilla/e2e/next-slices.e2e.ts`
+- `apps/vanilla/e2e/selection-and-culling.e2e.ts`
 - `plans/README.md` (status row only, after completion)
 
 **Out of scope:** production implementation in `packages/` or `apps/`, schema changes, a new index, a new gesture machine, resize controls, adapter scaffolds, new dependencies, imported files under `research/artifacts/`, `HANDOFF.md`, and any separate generated artifact. If characterization reveals a defect or missing contract, record it as a follow-up with a reproduction; do not fix it here.
@@ -91,7 +91,7 @@ Write `research/traces/gesture-resize-lifecycle.md` for drag, keyboard move, aut
 
 In `flow-graph.test.ts`, add focused cases for (a) parent-local child coordinates plus a position override, (b) measured > declared > fallback size precedence affecting bounds/intersection, and (c) hidden descendants excluded from spatial results while directed edge queries still follow document edges. Assert actual ids and rectangles; avoid timing assertions or tests that merely reimplement the filter. Keep fixture values small and fixed.
 
-In `next-slices.e2e.ts`, add one 1,000-node culling case derived from the existing 200-node fixture. Use the public `mountFlow` call and a deterministic viewport. Assert that a near node is rendered, far nodes are absent after measurement, visible crossing-edge endpoints remain mounted, a viewport move changes the rendered set, and returning restores it. Use Playwright's waiting assertions, not a fixed sleep or elapsed-time pass/fail threshold. Record the exact fixture construction in the baseline note so another adapter can use the same semantic case later.
+In `selection-and-culling.e2e.ts`, add one 1,000-node culling case derived from the existing 200-node fixture. Use the public `mountFlow` call and a deterministic viewport. Assert that a near node is rendered, far nodes are absent after measurement, visible crossing-edge endpoints remain mounted, a viewport move changes the rendered set, and returning restores it. Use Playwright's waiting assertions, not a fixed sleep or elapsed-time pass/fail threshold. Record the exact fixture construction in the baseline note so another adapter can use the same semantic case later.
 
 **Verify:** the focused Vitest and Playwright commands above exit 0, including the new cases. If a new expected semantic result differs from current behavior, record the observed failure and STOP rather than modifying production code.
 
@@ -114,7 +114,7 @@ Update `research/PROGRESS.md:46` only if the spatial trace is complete. Leave th
 ## Test plan
 
 - Follow `packages/core/src/domain/flow-graph.test.ts:75-112` for decoded, schema-valid fixtures and exact graph assertions. Test outputs, not the internal loop structure.
-- Follow `apps/vanilla/e2e/next-slices.e2e.ts:168-257` for real-browser visibility after viewport updates. A large fixture is a semantic regression case here; performance numbers belong in the benchmark report.
+- Follow `apps/vanilla/e2e/selection-and-culling.e2e.ts:99` for real-browser visibility after viewport updates. A large fixture is a semantic regression case here; performance numbers belong in the benchmark report.
 - Cite existing drag/cancellation tests in the gesture trace, but do not add a test for an unimplemented resize or auto-pan feature in this slice.
 - `bun run verify` is the completion gate, not a build or typecheck alone.
 

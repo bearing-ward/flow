@@ -12,9 +12,9 @@ The marker is host-rendered DOM state, not persisted graph data. A marked descen
 
 ## Browser test paths
 
-- **Vanilla:** `apps/vanilla/e2e/playground.e2e.ts:66-96` activates the custom handle scene, checks the handle is visible and a card action leaves position unchanged, then drags the header and asserts the node position changes. `apps/vanilla/e2e/playground.e2e.ts:107-120` switches scenes and confirms the card fixture is restored. Focused command reported by the executor: `bun run test:browser -- playground.e2e.ts` passed all 3 tests.
-- **Vue:** `apps/vue/e2e/drag-handle-recipe.e2e.ts:3-73` checks marked-handle movement, content-area suppression, normal body dragging on an unmarked node, and reload reset. Focused command reported by the executor passed 1/1.
-- **Foldkit:** `apps/foldkit/e2e/drag-handle-recipe.e2e.ts:3-169` checks body suppression, nested no-drag details and keyboard controls retaining click/focus behavior, pointer dragging from the marked handle, keyboard arrow movement, and reload reset. Focused command reported by the executor passed 1/1.
+- **Vanilla:** `apps/vanilla/e2e/playground.e2e.ts:3` activates the custom handle scene, checks the handle is visible and a card action leaves position unchanged, then drags the header and asserts the node position changes. `apps/vanilla/e2e/playground.e2e.ts:3` switches scenes and confirms the card fixture is restored. Focused command reported by the executor: `bun run test:browser -- playground.e2e.ts` passed all 3 tests.
+- **Vue:** `apps/vue/e2e/drag-handle-recipe.e2e.ts:3` checks marked-handle movement, content-area suppression, normal body dragging on an unmarked node, and reload reset. Focused command reported by the executor passed 1/1.
+- **Foldkit:** `apps/foldkit/e2e/drag-handle-recipe.e2e.ts:3` checks body suppression, nested no-drag details and keyboard controls retaining click/focus behavior, pointer dragging from the marked handle, keyboard arrow movement, and reload reset. Focused command reported by the executor passed 1/1.
 
 The automated test evidence is a focused per-host slice, not proof that three navigable gallery routes exist. The catalog retains all host route statuses as `planned`.
 

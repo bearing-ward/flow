@@ -16,9 +16,9 @@ Deterministic tests cover cancellation on Escape, blur, capture loss, removal, a
 
 ## Current state and conventions
 
-- `apps/vanilla/e2e/advanced-gestures.e2e.ts:356-359` holds two `test.fixme` cases for concurrent connection/node drag and two-contact pinch. Do not replace them with synthetic events that miss native capture.
+- `apps/vanilla/e2e/advanced-gestures.e2e.ts:653` holds two `test.fixme` cases for concurrent connection/node drag and two-contact pinch. Do not replace them with synthetic events that miss native capture.
 - `docs/browser-and-accessibility.md:5` states the Chromium/CDP limitation. `research/traces/interaction-parity-next.md:48-50,69-74` labels native multi-pointer parity unverified.
-- `apps/vanilla/e2e/advanced-gestures.e2e.ts:285-340` is the deterministic cancellation pattern: inspect rendered state, semantic changes, and ability to begin a fresh gesture. `docs/tooling.md:23-27` assigns vanilla Playwright port 4176 with strict binding.
+- `apps/vanilla/e2e/advanced-gestures.e2e.ts:653` is the deterministic cancellation pattern: inspect rendered state, semantic changes, and ability to begin a fresh gesture. `docs/tooling.md:23-27` assigns vanilla Playwright port 4176 with strict binding.
 
 ## Commands and scope
 

@@ -55,7 +55,7 @@ No existing test directly asserts a fixed viewBox. The related-suite run exposed
 | --- | --- | --- |
 | `packages/core/src/domain/flow-minimap.test.ts` | Viewport width was `(600 / 2) * (164 / 350)` projected pixels. | Assert `{ x: 10, y: 5, width: 300, height: 200 }` in graph units. Citation comment names pinned `packages/react/src/additional-components/MiniMap/MiniMap.tsx:19-24`. All visible-node, bounds, center, inverse-pointer, empty/hidden, and presentation assertions remain. |
 | `apps/foldkit/e2e/minimap.e2e.ts` | Accepted measured width and height multiplied by `projection.scale`. | Compare the same live SVG attributes directly with accepted measured dimensions. Citation comment names pinned `packages/react/src/additional-components/MiniMap/MiniMapNodes.tsx:94-115`. The DOM resize, accepted measurement, original rectangle change, and precise dimension assertions remain. |
-| `apps/vanilla/e2e/final-wiring.e2e.ts` | A mask regex required a fixed 200 by 150 pixel outer path. The live-preview test expected dragging A to rescale B's x attribute. | Assert exact initial and panned viewBox/mask values from pinned `MiniMap.tsx:107-116,212-215`. Assert A's live rectangle changes while B stays at graph x=600, citing `MiniMapNodes.tsx:94-115`. Keep accepted-document-before-drop and live-instance assertions. Custom colors, position, aria, click, wheel, and pan coverage remain. |
+| `apps/vanilla/e2e/canvas-configuration.e2e.ts` | A mask regex required a fixed 200 by 150 pixel outer path. The live-preview test expected dragging A to rescale B's x attribute. | Assert exact initial and panned viewBox/mask values from pinned `MiniMap.tsx:107-116,212-215`. Assert A's live rectangle changes while B stays at graph x=600, citing `MiniMapNodes.tsx:94-115`. Keep accepted-document-before-drop and live-instance assertions. Custom colors, position, aria, click, wheel, and pan coverage remain. |
 | `packages/foldkit/src/ui/minimap.test.ts` | One direct string assertion covered the removed host-local fixed mask helper. | Remove the obsolete helper and its direct unit test. The shared core's new literal mask assertion covers the production owner, including offset and viewport coordinates from pinned `MiniMap.tsx:212-215`. Three Foldkit accessible-label tests remain. |
 
 Four added core regressions fail before the repair and pass afterward. They assert literal zoom and pan viewBoxes, hidden-node omission, unchanged graph-space node dimensions, the padded mask path, and inverse clicks through SVG letterboxing. They do not derive expected geometry by calling the implementation. The focused units pass 13/13 across two files.
@@ -110,7 +110,7 @@ The complete upstream receipts are `/tmp/plan137-cypress-{host}.json` and `/tmp/
 
 All browser gates used one worker and passed with zero unexpected failures or flakes. The expected failures are the unchanged ledger failures and intentional differences in phases 126 and 127. The original Vanilla related-suite failures are explicitly recorded above; they were repaired by correcting local projection expectations, without changing product code again or weakening the upstream port. The Plan 134 index links now point to this renamed plan.
 
-Every browser command uses `scripts/with-flow-browser-lock.sh` and one worker. For each host, the acceptance batch runs the complete `upstream-cypress.e2e.ts` with `--repeat-each=3`, the complete `upstream-playwright.e2e.ts`, and filename filters `minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts final-wiring.e2e.ts`. Vanilla has no separate minimap-named file; its standalone component cases live in `final-wiring.e2e.ts`. Vue and Foldkit use their host config paths.
+Every browser command uses `scripts/with-flow-browser-lock.sh` and one worker. For each host, the acceptance batch runs the complete `upstream-cypress.e2e.ts` with `--repeat-each=3`, the complete `upstream-playwright.e2e.ts`, and filename filters `minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts canvas-configuration.e2e.ts`. Vanilla has no separate minimap-named file; its standalone component cases live in `canvas-configuration.e2e.ts`. Vue and Foldkit use their host config paths.
 
 ```sh
 scripts/with-flow-browser-lock.sh bunx playwright test upstream-cypress.e2e.ts --workers=1 --repeat-each=3
@@ -119,9 +119,9 @@ scripts/with-flow-browser-lock.sh bunx playwright test -c apps/foldkit/playwrigh
 scripts/with-flow-browser-lock.sh bunx playwright test upstream-playwright.e2e.ts --workers=1
 scripts/with-flow-browser-lock.sh bunx playwright test -c apps/vue/playwright.config.ts upstream-playwright.e2e.ts --workers=1
 scripts/with-flow-browser-lock.sh bunx playwright test -c apps/foldkit/playwright.config.ts upstream-playwright.e2e.ts --workers=1
-scripts/with-flow-browser-lock.sh bunx playwright test minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts final-wiring.e2e.ts --workers=1
-scripts/with-flow-browser-lock.sh bunx playwright test -c apps/vue/playwright.config.ts minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts final-wiring.e2e.ts --workers=1
-scripts/with-flow-browser-lock.sh bunx playwright test -c apps/foldkit/playwright.config.ts minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts final-wiring.e2e.ts --workers=1
+scripts/with-flow-browser-lock.sh bunx playwright test minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts canvas-configuration.e2e.ts --workers=1
+scripts/with-flow-browser-lock.sh bunx playwright test -c apps/vue/playwright.config.ts minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts canvas-configuration.e2e.ts --workers=1
+scripts/with-flow-browser-lock.sh bunx playwright test -c apps/foldkit/playwright.config.ts minimap ui-controls.e2e.ts canvas-ui-contract.e2e.ts canvas-configuration.e2e.ts --workers=1
 scripts/with-flow-browser-lock.sh bun run verify
 ```
 

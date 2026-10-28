@@ -28,7 +28,7 @@ The shared Playwright suite opens `/tests/generic/edges/general` at `tests/playw
 
 Public `mountFlow` decodes per-edge `focusable`, `selectable`, `deletable`, `ariaLabel`, and `interactionWidth` at `apps/vanilla/src/mount-flow.ts:1628` and `packages/core/src/domain/flow.schema.ts:77`. The keyed SVG group receives a tab stop, role, selected state, and custom or node-label-based name at `apps/vanilla/src/edge-renderer.ts:304` through `apps/vanilla/src/edge-renderer.ts:317`. A transparent hit path receives the configured width at `apps/vanilla/src/edge-renderer.ts:285`. The host handles click, Enter, space, Escape, Delete, and Backspace at `apps/vanilla/src/mount-flow.ts:1288` and `apps/vanilla/src/mount-flow.ts:1339`. The core selection and deletion transitions enforce `selectable: false` and `deletable: false` at `packages/core/src/domain/flow-runtime.schema.ts:116` and `packages/core/src/domain/flow-runtime.schema.ts:177`.
 
-Browser tests enter through public mount and verify focus, keyboard selection, and blur at `apps/vanilla/e2e/canvas.e2e.ts:786`, deletion and focus transfer at `apps/vanilla/e2e/canvas.e2e.ts:289`, and custom name, role, tab stop, and actual width-42 pointer selection at `apps/vanilla/e2e/canvas.e2e.ts:338`. These assert DOM behavior, not a spoken screen-reader result.
+Browser tests enter through public mount and verify focus, keyboard selection, and blur at `apps/vanilla/e2e/canvas.e2e.ts:780`, deletion and focus transfer at `apps/vanilla/e2e/canvas.e2e.ts:304`, and custom name, role, tab stop, and actual width-42 pointer selection at `apps/vanilla/e2e/canvas.e2e.ts:352`. These assert DOM behavior, not a spoken screen-reader result.
 
 ## Conformity and deviations
 

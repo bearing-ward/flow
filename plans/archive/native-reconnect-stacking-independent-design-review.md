@@ -60,7 +60,7 @@ Revise `Main/plans/native-reconnect-stacking-amendment.md:28-30` to expressly al
 | source | a | in:next | b | out:old |
 | target | a | out:fixed | a | in:next |
 
-Also retain reconnect preview kind, selected endpoint/edge identity, valid=true, exactly one canonical start, actual native center ownership and the existing accepted edge assertions. The browser native file currently checks both real endpoint paths and valid preview at `Candidate/apps/foldkit/e2e/origin-connection-contract.e2e.ts:2805-2813`, `:2986-3015` and exact endpoint-aware accepted identity at `:3016-3044`; adding the same meaningful preview identity is within its stated scope. This is an assertion correction preserving the contract, not permission to change graph normalization or untouched-handle semantics.
+Also retain reconnect preview kind, selected endpoint/edge identity, valid=true, exactly one canonical start, actual native center ownership and the existing accepted edge assertions. The browser native file currently checks both real endpoint paths and valid preview at `Candidate/apps/foldkit/e2e/origin-connection-contract.e2e.ts:2805`, `:2986-3015` and exact endpoint-aware accepted identity at `:3016-3044`; adding the same meaningful preview identity is within its stated scope. This is an assertion correction preserving the contract, not permission to change graph normalization or untouched-handle semantics.
 
 ## Scope and acceptance boundaries
 

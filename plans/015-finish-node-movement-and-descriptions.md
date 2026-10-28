@@ -22,12 +22,12 @@ hidden: S.optional(S.Boolean),
 
 ## Scope and gates
 
-Only edit `packages/core/src/domain/flow.schema.ts`, `packages/core/src/domain/flow-runtime.schema.ts`, `packages/core/src/domain/flow.schema.test.ts`, `packages/core/src/domain/flow-runtime.schema.test.ts`, `packages/core/src/domain/flow-persistence.test.ts`, `packages/core/src/public.ts`, `apps/vanilla/src/flow-browser.ts`, `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/src/style.css`, `apps/vanilla/e2e/advanced-gestures.e2e.ts`, `apps/vanilla/e2e/movement-slices.e2e.ts`, `research/traces/gesture-resize-lifecycle.md`, `research/traces/keyboard-node-movement.md`, `research/traces/node-dragging.md`, `research/PROGRESS.md`, generated summary via inventory, and index row. No framework adapter or new dependency. Use branch `codex/015-node-movement` if needed; no commit, push, merge, or PR without operator instruction.
+Only edit `packages/core/src/domain/flow.schema.ts`, `packages/core/src/domain/flow-runtime.schema.ts`, `packages/core/src/domain/flow.schema.test.ts`, `packages/core/src/domain/flow-runtime.schema.test.ts`, `packages/core/src/domain/flow-persistence.test.ts`, `packages/core/src/public.ts`, `apps/vanilla/src/flow-browser.ts`, `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/src/style.css`, `apps/vanilla/e2e/advanced-gestures.e2e.ts`, `apps/vanilla/e2e/node-movement.e2e.ts`, `research/traces/gesture-resize-lifecycle.md`, `research/traces/keyboard-node-movement.md`, `research/traces/node-dragging.md`, `research/PROGRESS.md`, generated summary via inventory, and index row. No framework adapter or new dependency. Use branch `codex/015-node-movement` if needed; no commit, push, merge, or PR without operator instruction.
 
 | Gate | Command | Expected |
 | --- | --- | --- |
 | Core | `bunx vitest run packages/core/src/domain/flow.schema.test.ts packages/core/src/domain/flow-runtime.schema.test.ts` | exit 0 |
-| Browser | `bunx playwright test apps/vanilla/e2e/advanced-gestures.e2e.ts apps/vanilla/e2e/movement-slices.e2e.ts` | exit 0 |
+| Browser | `bunx playwright test apps/vanilla/e2e/advanced-gestures.e2e.ts apps/vanilla/e2e/node-movement.e2e.ts` | exit 0 |
 | Complete | `bun run verify` | exit 0 |
 
 ## Steps

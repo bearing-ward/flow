@@ -2,7 +2,7 @@
 
 > **Executor instructions:** Work in an isolated worktree. Read `AGENTS.md`, `docs/standards.md`, Plans 027, 029, and 031, and this whole plan. Plan 032 is a host keyboard-routing fix. Do not change the graph schema or pointer gesture ownership. Do not commit, push, merge, or open a PR without operator instruction.
 >
-> **Drift check first:** inspect `apps/vanilla/src/mount-flow.ts:3958-4165,4338-4348`, `apps/vanilla/e2e/graph-renderers.e2e.ts:143-230`, `apps/vanilla/e2e/advanced-gestures.e2e.ts:578-640`, and the Plan 029 browser failure. STOP if the host event path or resize key ownership changed.
+> **Drift check first:** inspect `apps/vanilla/src/mount-flow.ts:3958-4165,4338-4348`, `apps/vanilla/e2e/graph-renderers.e2e.ts:143`, `apps/vanilla/e2e/advanced-gestures.e2e.ts:653`, and the Plan 029 browser failure. STOP if the host event path or resize key ownership changed.
 
 ## Status
 
@@ -20,8 +20,8 @@ The node keyboard handler treats a focused native control inside a custom render
 - The handler gives `.flow-node-resize-handle` arrow keys a dedicated path first (`apps/vanilla/src/mount-flow.ts:3967-4000`). Preserve that path and its propagation rules.
 - For other targets, the handler finds the closest `.flow-node`, then applies arrow movement and Enter/Space selection (`apps/vanilla/src/mount-flow.ts:4046-4069,4080-4112,4147-4159`). It does not distinguish the node wrapper from a focused interactive renderer descendant.
 - Custom renderer content and drag markers live inside `.flow-node-content`; pointer behavior treats `[data-flow-no-drag]` as a drag exclusion (`apps/vanilla/src/mount-flow.ts:2595-2609`). That marker does not currently change keyboard routing.
-- `custom drag handle gates pointer movement and keeps its visual state stable` covers a mouse drag marker and a keyboard action. It currently fails when Enter does not activate the focused button (`apps/vanilla/e2e/graph-renderers.e2e.ts:143-230`).
-- `keyboard resize ...` cases prove direction-specific arrow handling and focus retention for resize controls (`apps/vanilla/e2e/advanced-gestures.e2e.ts:578-640`).
+- `custom drag handle gates pointer movement and keeps its visual state stable` covers a mouse drag marker and a keyboard action. It currently fails when Enter does not activate the focused button (`apps/vanilla/e2e/graph-renderers.e2e.ts:143`).
+- `keyboard resize ...` cases prove direction-specific arrow handling and focus retention for resize controls (`apps/vanilla/e2e/advanced-gestures.e2e.ts:653`).
 
 ## Proposed keyboard contract
 
@@ -37,13 +37,13 @@ Do not change pointer capture, pointer sessions, graph document state, or render
 
 ## Scope and verification
 
-**In scope:** `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/graph-renderers.e2e.ts`, `apps/vanilla/e2e/movement-slices.e2e.ts` or `apps/vanilla/e2e/advanced-gestures.e2e.ts` for regressions, and `docs/guides/custom-nodes-and-edges.md` or `docs/browser-and-accessibility.md` if needed.
+**In scope:** `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/graph-renderers.e2e.ts`, `apps/vanilla/e2e/node-movement.e2e.ts` or `apps/vanilla/e2e/advanced-gestures.e2e.ts` for regressions, and `docs/guides/custom-nodes-and-edges.md` or `docs/browser-and-accessibility.md` if needed.
 
 **Out of scope:** core schemas, persisted graph data, pointer drag/resize session semantics, custom ARIA widget emulation, framework adapters, and broad keyboard shortcut redesign.
 
 | Purpose | Command | Expected |
 | --- | --- | --- |
-| Renderer and keyboard regressions | `bunx playwright test apps/vanilla/e2e/graph-renderers.e2e.ts apps/vanilla/e2e/movement-slices.e2e.ts apps/vanilla/e2e/advanced-gestures.e2e.ts --workers=1` | exit 0; only the two documented native pointer skips remain |
+| Renderer and keyboard regressions | `bunx playwright test apps/vanilla/e2e/graph-renderers.e2e.ts apps/vanilla/e2e/node-movement.e2e.ts apps/vanilla/e2e/advanced-gestures.e2e.ts --workers=1` | exit 0; only the two documented native pointer skips remain |
 | Full gate | `bun run verify` | exit 0 |
 | Whitespace | `git diff --check` | exit 0 |
 

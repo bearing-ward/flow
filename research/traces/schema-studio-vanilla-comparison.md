@@ -31,7 +31,7 @@ The two apps lay the sample out differently, so absolute coordinates, fit zoom a
 
 ## What the clone found in Flow
 
-- **Gap, fixed: runtime canvas options.** Vanilla could not change snap, scroll or culling settings after mount. React Flow props are reactive. The first build remounted the canvas on every Shift press. Plan 121 added `setCanvasOptions`, which takes effect mid-gesture as React's XYDrag does, and has host tests in `closing-options.e2e.ts`. Vue and Foldkit need to be checked for the same gap before their ports start.
+- **Gap, fixed: runtime canvas options.** Vanilla could not change snap, scroll or culling settings after mount. React Flow props are reactive. The first build remounted the canvas on every Shift press. Plan 121 added `setCanvasOptions`, which takes effect mid-gesture as React's XYDrag does, and has host tests in `input-configuration.e2e.ts`. Vue and Foldkit need to be checked for the same gap before their ports start.
 - **Gap, fixed: per-field handle placement.** There was no public way to position host-owned handles per field row. Plan 121 added the opt-in, Vanilla-only `onHandleRender`.
 - **No gap: keyboard movement.** Flow's built-in movement already matches React (`useMoveSelectedNodes.ts:29-33`). An app-level override in the first build was a planning error and has been removed.
 

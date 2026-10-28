@@ -50,7 +50,7 @@ Finding01 blocks dispatch. Finding02 is a mechanical planning correction and sho
 
 Plan095 correctly bases assembly on accepted087 rather than HEAD or an old overlay. `accepted087:packages/foldkit/src/snapshot-client.ts:130-168,171-205,278-298` owns both protocols in one tagged pending map, checks protocol/disposal before decoding, deletes before resolving, and unsubscribes every channel during disposal. Actual assertions at `accepted087:packages/foldkit/src/snapshot-client.test.ts:266-314,455-548` cover failure during send/unsubscribe, wrong-channel decoding traps, duplicate/foreign responses and simultaneous protocol disposal. These are materially stronger than the archived client and must remain.
 
-The accepted harness's Runtime-handle WeakMap at `accepted087:apps/foldkit/e2e/test-harness.ts:325-329`, requestVersioned route at363-385 and disposal route at388-407 agree with the plan's protected ownership. The adapted old disposal probe must use that same client for the actual handle. It must not restore `publicSnapshotClients`, raw pending maps or a second correlated client. The pending/subsequent literal disposed assertions remain required even though the old request helper is excluded.
+The accepted harness's Runtime-handle WeakMap at `accepted087:apps/foldkit/e2e/test-harness.ts:325`, requestVersioned route at363-385 and disposal route at388-407 agree with the plan's protected ownership. The adapted old disposal probe must use that same client for the actual handle. It must not restore `publicSnapshotClients`, raw pending maps or a second correlated client. The pending/subsequent literal disposed assertions remain required even though the old request helper is excluded.
 
 ### Counterless Model restoration
 
@@ -72,7 +72,7 @@ The meaningful historical callback logic is at `cf4d8de:packages/foldkit/src/obs
 
 Historical notification traversal and terminal disposal are at195-256 and496-527. These are starting points, not accepted proofs. The added reentrancy coverage must include teardown/unsubscribe from user selectors and equality functions, not only from disconnect listeners: the historical projection at271-286 checks activity before invoking selector/equality, then invokes a listener without another guard. A selector or equality function can dispose the owner during evaluation. The actual adapted implementation must honor the plan's terminal-null/no-later-delivery rule in that case. This fits the already allowed observer/controller changes and does not authorize a new store or source overlay.
 
-Preserve the complete six-test, 271-line historical observer suite. Preserve all three browser additions. The Vanilla source/assertion ranges at `cf4d8de:apps/vanilla/e2e/public-state.e2e.ts:1319-1534,1462-1467,1519-1533` are correct, including the sole generic correction and all exact callback/preview/controlled/retained-value expectations. The original tests use synthetic pointer inputs. New trusted input and rendered-output evidence must extend them, as Step5 already requires.
+Preserve the complete six-test, 271-line historical observer suite. Preserve all three browser additions. The Vanilla source/assertion ranges at `cf4d8de:apps/vanilla/e2e/public-state.e2e.ts:1319,1462-1467,1519-1533` are correct, including the sole generic correction and all exact callback/preview/controlled/retained-value expectations. The original tests use synthetic pointer inputs. New trusted input and rendered-output evidence must extend them, as Step5 already requires.
 
 ## Gates and acceptance accounting
 

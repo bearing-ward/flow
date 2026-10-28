@@ -10,7 +10,7 @@ On pointer down, the child stores a transient session. While that session is act
 
 ## Test path
 
-The adapter has an isolated Playwright config and Vite server on port 4175 (`apps/foldkit/playwright.config.ts:1-14`). Its browser driver mounts the same fixture definitions imported by the vanilla adapter and drives host-specific pointer events/selectors (`apps/foldkit/e2e/conformance.ts:1-53`). The shared suite compares the same expected snapshots and semantic output for all shared fixtures; separate cases verify keyed identity, emitted movement, disposal, and controlled edge acknowledgement (`apps/foldkit/e2e/shared-conformance.e2e.ts:5-69`). The harness runs the actual Foldkit runtime through `Runtime.embed`, subscribes to its output port, and disposes the runtime before measuring post-disposal output and remaining DOM (`apps/foldkit/e2e/test-harness.ts:20-71`).
+The adapter has an isolated Playwright config and Vite server on port 4175 (`apps/foldkit/playwright.config.ts:1-14`). Its browser driver mounts the same fixture definitions imported by the vanilla adapter and drives host-specific pointer events/selectors (`apps/foldkit/e2e/conformance.ts:1-53`). The shared suite compares the same expected snapshots and semantic output for all shared fixtures; separate cases verify keyed identity, emitted movement, disposal, and controlled edge acknowledgement (`apps/foldkit/e2e/shared-conformance.e2e.ts:5`). The harness runs the actual Foldkit runtime through `Runtime.embed`, subscribes to its output port, and disposes the runtime before measuring post-disposal output and remaining DOM (`apps/foldkit/e2e/test-harness.ts:20`).
 
 ## Conformity and deviations
 

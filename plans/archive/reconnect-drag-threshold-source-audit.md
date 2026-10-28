@@ -22,10 +22,10 @@ I read main `.agents/skills/improve/SKILL.md` and `.agents/skills/improve/refere
 
 ### [TEST-COVERAGE-01] Characterize reconnect threshold behavior through real public owners
 
-- **Evidence**: `apps/vanilla/e2e/canvas.e2e.ts:503` is a reconnect cancellation test. Its candidate addition at `:524` expects no preview immediately after default-threshold down, then moves at `:525`. N's actual reconnect source above still creates preview immediately. The scoped diff shows this addition alongside legitimate pending fresh-connection changes at `:119`.
+- **Evidence**: `apps/vanilla/e2e/canvas.e2e.ts:507` is a reconnect cancellation test. Its candidate addition at `:524` expects no preview immediately after default-threshold down, then moves at `:525`. N's actual reconnect source above still creates preview immediately. The scoped diff shows this addition alongside legitimate pending fresh-connection changes at `:119`.
 - **Evidence**: `research/fixtures/interaction-lifecycle.json:242` supplies reconnection completion cases for both endpoints, invalid target and no-op. It specifies no pointer threshold phases. `apps/shared-e2e/interaction-lifecycle-contract.ts:37` imports those cases directly.
 - **Evidence**: `research/fixtures/interaction-lifecycle-reference.json:15` contains reference connection, resize, looseConnections, radius and cancellation groups, with no reconnect group. `research/traces/edge-reconnection.md:19` explicitly records the earlier absence of a pinned reconnection browser assertion.
-- **Evidence**: `packages/foldkit/src/application.test.ts:1089` tests current reconnect completion admission using separately constructed reducer models. It bypasses public down/capture/pending activation. `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:4788` characterizes fresh-connection pending auto-pan, not reconnect threshold.
+- **Evidence**: `packages/foldkit/src/application.test.ts:1089` tests current reconnect completion admission using separately constructed reducer models. It bypasses public down/capture/pending activation. `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:3026` characterizes fresh-connection pending auto-pan, not reconnect threshold.
 - **Impact**: The inherited Vanilla assertion exposes a real mismatch but proves neither reference behavior nor all-host repair. Completion/admission units cannot prove which trusted native control owns capture, whether a down activated too early, or whether a cancelled pending gesture revives on a late move.
 - **Effort**: M for meaningful units plus all-host mounted tests; paired reference capture adds its own bounded task.
 - **Risk**: MED. Tests can accidentally hide activation errors by moving before asserting, filter out unexpected reconnect events, or mistake graph-space motion for screen-space distance.
@@ -60,7 +60,7 @@ Cancellation funnels through `cancelConnectionGestures` at `:4499`, active recon
 
 The fresh connection capture guard in `:6985` checks actual owner target before capture-loss cancellation. Reconnect uses canvas capture and does not enter that guard. A pending reconnect must use an explicit owner, retain it across promotion, and avoid interpreting an old owner's release as a new gesture's loss. Existing canvas capture must not silently become physical-handle capture without a separate reviewed reason and native test.
 
-`apps/vanilla/e2e/canvas.e2e.ts:503` uses actual mouse down, a pre-movement preview assertion, one movement, and a synthetic pointercancel delivered to the canvas. This is a mounted Flow cancellation assertion, not a pinned reference comparison and not a native capture-loss proof.
+`apps/vanilla/e2e/canvas.e2e.ts:507` uses actual mouse down, a pre-movement preview assertion, one movement, and a synthetic pointercancel delivered to the canvas. This is a mounted Flow cancellation assertion, not a pinned reference comparison and not a native capture-loss proof.
 
 ## Vue production and test paths
 
@@ -92,7 +92,7 @@ Native capture has an independent stable subscription at `graph.ts:4500`, separa
 
 Current owner capture-loss filtering at `:4677` admits active reconnect, and must admit pending reconnect. `PointerCancelled` at `:2331` and `CancelGesture` at `:2347` clear ownership and suppress trailing clicks. Origin participant discovery at `:1019` recognizes active reconnect and must recognize pending identity too. A pending variant must also follow existing document/handle removal and admitted-target setter cancellation. It must never appear in `previewSession`, active telemetry, terminal proposal logic or auto-pan frame admission before promotion.
 
-Tests at `packages/foldkit/src/application.test.ts:1089` are separately constructed reducer completion controls. Existing mounted tests at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:930`, `:1342`, and `:3288` cover selected controls, cancellation and replacement/unmount retry. These are useful regression boundaries but do not supply a dedicated positive reconnect threshold sequence.
+Tests at `packages/foldkit/src/application.test.ts:1089` are separately constructed reducer completion controls. Existing mounted tests at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:925`, `:1342`, and `:3288` cover selected controls, cancellation and replacement/unmount retry. These are useful regression boundaries but do not supply a dedicated positive reconnect threshold sequence.
 
 ## Feasibility and ownership
 

@@ -30,7 +30,7 @@ Core `moveSelectedNodes` creates a grouped flow-space change from visible select
 
 The vanilla key handler accepts arrows on a focused selected node, computes the configured 5-unit or 20-unit step, applies node extents, and publishes the grouped change. It skips an empty result when all selected nodes are locked, retains focus through `FlowBrowserService.focus`, and pans once when needed to reveal the moved focused node. Keyboard movement does not schedule a frame loop (`apps/vanilla/src/mount-flow.ts:3606-3681`, `apps/vanilla/src/flow-browser.ts:19-49`).
 
-Flow browser tests cover selected group movement, controlled acknowledgement, a locked mixed group, focus retention, one-shot reveal, and that the viewport remains stable after movement (`apps/vanilla/e2e/movement-slices.e2e.ts:77-127`, `apps/vanilla/e2e/movement-slices.e2e.ts:267-325`). These are Flow tests, not direct comparisons against the pinned reference browser suite.
+Flow browser tests cover selected group movement, controlled acknowledgement, a locked mixed group, focus retention, one-shot reveal, and that the viewport remains stable after movement (`apps/vanilla/e2e/node-movement.e2e.ts:190`, `apps/vanilla/e2e/node-movement.e2e.ts:270`). These are Flow tests, not direct comparisons against the pinned reference browser suite.
 
 ## Conformity and deviations
 

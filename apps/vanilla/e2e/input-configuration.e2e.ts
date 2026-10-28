@@ -125,7 +125,7 @@ test('default deletion exempts Panel controls and edge-label HTML and preserves 
     await control.focus()
     await page.keyboard.press('Backspace')
     await page.keyboard.press('Delete')
-    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(node(page, 'a')).toHaveAttribute('aria-pressed', 'true')
     await expect(page.locator('.flow-edge-group')).toHaveCount(1)
   }
 
@@ -151,7 +151,7 @@ test('default deletion still removes only the focused selected edge', async ({
     await page.locator('.flow-edge-group').focus()
     await page.keyboard.press(key)
     await expect(page.locator('.flow-edge-group')).toHaveCount(0)
-    await expect(node(page, 'a')).toHaveClass(/selected/u)
+    await expect(node(page, 'a')).toHaveAttribute('aria-pressed', 'true')
     await expect(node(page, 'b')).toBeVisible()
   }
 })
@@ -239,8 +239,8 @@ test('selectionKeyCode uses an ordinary held key and null disables the selection
     await panePoint(page, 600, 270)
   )
   await page.keyboard.up('k')
-  await expect(node(page, 'a')).toHaveClass(/selected/u)
-  await expect(node(page, 'b')).toHaveClass(/selected/u)
+  await expect(node(page, 'a')).toHaveAttribute('aria-pressed', 'true')
+  await expect(node(page, 'b')).toHaveAttribute('aria-pressed', 'true')
   await mount(page, { options: { selectionKeyCode: null, panOnDrag: false } })
   await page.keyboard.down('Shift')
   await drag(
@@ -249,7 +249,7 @@ test('selectionKeyCode uses an ordinary held key and null disables the selection
     await panePoint(page, 600, 270)
   )
   await page.keyboard.up('Shift')
-  await expect(node(page, 'a')).not.toHaveClass(/selected/u)
+  await expect(node(page, 'a')).not.toHaveAttribute('aria-pressed', 'true')
 })
 
 test('multiSelectionKeyCode overrides modifier defaults and supports null', async ({
@@ -260,14 +260,14 @@ test('multiSelectionKeyCode overrides modifier defaults and supports null', asyn
   await page.keyboard.down('Alt')
   await node(page, 'b').click()
   await page.keyboard.up('Alt')
-  await expect(node(page, 'a')).toHaveClass(/selected/u)
-  await expect(node(page, 'b')).toHaveClass(/selected/u)
+  await expect(node(page, 'a')).toHaveAttribute('aria-pressed', 'true')
+  await expect(node(page, 'b')).toHaveAttribute('aria-pressed', 'true')
   await mount(page, { options: { multiSelectionKeyCode: null } })
   await node(page, 'a').click()
   await page.keyboard.down('Control')
   await node(page, 'b').click()
   await page.keyboard.up('Control')
-  await expect(node(page, 'a')).not.toHaveClass(/selected/u)
+  await expect(node(page, 'a')).not.toHaveAttribute('aria-pressed', 'true')
 })
 
 test('zoomActivationKeyCode temporarily zooms instead of scroll panning', async ({

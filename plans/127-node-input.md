@@ -66,10 +66,10 @@ Focused regressions were added in each host's `node-input.e2e.ts` for measured b
 
 The complete upstream runners passed as recorded above. The selected Vanilla affected suites ran **212 tests: 203 passed, 9 failed, 0 skipped**. Eight failures are existing Flow tests, which remain unchanged:
 
-- `apps/vanilla/e2e/node-threshold.e2e.ts:98` expects only the two position changes in the mounted-Stop replacement proof. The repair adds node selection.
-- Five cases at `apps/vanilla/e2e/node-threshold.e2e.ts:318` cover node threshold 0, connection thresholds 5 and 0, and reconnection thresholds 5 and 0. They require the previous selection and publication stream to survive the old stationary release. The repair selects `a`, clears the selected edge and `b`, and prevents the reconnection successor from acquiring capture.
-- The real-browser stationary down/up test at `apps/vanilla/e2e/node-threshold.e2e.ts:783` expects position publication without selection publication. The repair inserts `node-selection` into that native receipt.
-- `apps/vanilla/e2e/node-threshold.e2e.ts:863` explicitly expects `[false, false, false]` selection after the first threshold-zero release and suppressed click. The repair instead returns `[false, true, false]`.
+- `apps/vanilla/e2e/node-threshold.e2e.ts:105` expects only the two position changes in the mounted-Stop replacement proof. The repair adds node selection.
+- Five cases at `apps/vanilla/e2e/gesture-ownership.e2e.ts:226` cover node threshold 0, connection thresholds 5 and 0, and reconnection thresholds 5 and 0. They require the previous selection and publication stream to survive the old stationary release. The repair selects `a`, clears the selected edge and `b`, and prevents the reconnection successor from acquiring capture.
+- The real-browser stationary down/up test at `apps/vanilla/e2e/node-threshold.e2e.ts:147` expects position publication without selection publication. The repair inserts `node-selection` into that native receipt.
+- `apps/vanilla/e2e/gesture-ownership.e2e.ts:534` explicitly expects `[false, false, false]` selection after the first threshold-zero release and suppressed click. The repair instead returns `[false, true, false]`.
 
 The ninth failure is the new bounds regression's incorrect exact-count assumption described above. No existing test was changed. Per the task's explicit stop rule, implementation stopped rather than changing those opposing contracts. The queued Vue and Foldkit affected suites were cancelled before execution. `bun run verify` was not run after discovering the conflict, and no commit was created.
 
@@ -81,7 +81,7 @@ Commands already executed, each prefixed with `scripts/with-flow-browser-lock.sh
 bun run playwright test apps/vanilla/e2e/upstream-playwright.e2e.ts --workers=1
 bun run playwright test --config apps/vue/playwright.config.ts apps/vue/e2e/upstream-playwright.e2e.ts --workers=1
 bun run playwright test --config apps/foldkit/playwright.config.ts apps/foldkit/e2e/upstream-playwright.e2e.ts --workers=1
-bun run playwright test apps/vanilla/e2e/node-input.e2e.ts apps/vanilla/e2e/node-threshold.e2e.ts apps/vanilla/e2e/gesture-options.e2e.ts apps/vanilla/e2e/closing-options.e2e.ts --workers=1
+bun run playwright test apps/vanilla/e2e/node-input.e2e.ts apps/vanilla/e2e/node-threshold.e2e.ts apps/vanilla/e2e/gesture-options.e2e.ts apps/vanilla/e2e/input-configuration.e2e.ts --workers=1
 ```
 
 Local receipts are `/tmp/plan127-red-{vanilla,vue,foldkit}.log`, `/tmp/plan127-upstream-{vanilla,vue,foldkit}.log`, and `/tmp/plan127-affected-vanilla.log`. The baseline Foldkit diagnosis is `/tmp/plan127-probe-foldkit.log`. No known-flake rerun applies: neither named flaky file was part of the failed invocation.
@@ -108,33 +108,33 @@ The eight conflicts all disable drag selection in their harnesses. Changing thei
 
 | Existing test | Configuration evidence | Decision and upstream citation |
 | --- | --- | --- |
-| `apps/vanilla/e2e/node-threshold.e2e.ts:80`, mounted Stop replacement | `apps/vanilla/e2e/node-reentry-harness.ts:89` sets false for the node actor | Keep only the two position changes. XYDrag.ts:282 gates selection on the option. |
-| `apps/vanilla/e2e/node-threshold.e2e.ts:157`, pointerup to node 0 | `apps/vanilla/e2e/node-reentry-harness.ts:184` | Keep selection and complete capture/publication history. XYDrag.ts:282. |
+| `apps/vanilla/e2e/node-threshold.e2e.ts:87`, mounted Stop replacement | `apps/vanilla/e2e/node-reentry-harness.ts:14` sets false for the node actor | Keep only the two position changes. XYDrag.ts:282 gates selection on the option. |
+| `apps/vanilla/e2e/gesture-ownership.e2e.ts:65`, pointerup to node 0 | `apps/vanilla/e2e/gesture-ownership-harness.ts:19` | Keep selection and complete capture/publication history. XYDrag.ts:282. |
 | Same generated test, pointerup to connection 5 | Same false option | Keep selection and connection capture. XYDrag.ts:282. |
 | Same generated test, pointerup to connection 0 | Same false option | Keep selection and connection capture. XYDrag.ts:282. |
 | Same generated test, pointerup to reconnection 5 | Same false option | Keep selected edge and reconnection capture. XYDrag.ts:282. |
 | Same generated test, pointerup to reconnection 0 | Same false option | Keep selected edge and reconnection capture. XYDrag.ts:282. |
-| `apps/vanilla/e2e/node-threshold.e2e.ts:747`, native capture release order | `apps/vanilla/e2e/node-reentry-harness.ts:724` defaults its new optional argument to false | Keep native set, start, up, release, position, stop, loss with no selection insertion. XYDrag.ts:282. |
-| `apps/vanilla/e2e/node-threshold.e2e.ts:845`, old reset timer | `apps/vanilla/e2e/node-reentry-harness.ts:958` | Keep first selection flags `[false, false, false]`, final `[false, true, false]`, and both click propagation sequences. XYDrag.ts:282 and :307. |
+| `apps/vanilla/e2e/node-threshold.e2e.ts:147`, native capture release order | `apps/vanilla/e2e/gesture-ownership-harness.ts:303` defaults its new optional argument to false | Keep native set, start, up, release, position, stop, loss with no selection insertion. XYDrag.ts:282. |
+| `apps/vanilla/e2e/gesture-ownership.e2e.ts:512`, old reset timer | `apps/vanilla/e2e/gesture-ownership-harness.ts:601` | Keep first selection flags `[false, false, false]`, final `[false, true, false]`, and both click propagation sequences. XYDrag.ts:282 and :307. |
 
-The eight disabled-option expectations above are unchanged. Two additional default-option projection cases need selection-only updates, listed below. Vue's physical-reentry coverage at `apps/vue/e2e/node-threshold.e2e.ts:184` configures drag selection by disposal mode at `apps/vue/e2e/node-reentry-harness.ts:196`; the terminal reentry fixture explicitly disables it at `apps/vue/e2e/node-reentry-harness.ts:314`. Foldkit's native release-publication cases at `apps/foldkit/e2e/node-threshold.e2e.ts:136` use the unchanged release fixture and a real move. The shared native threshold contract at `apps/shared-e2e/node-threshold-contract.ts:149` observes lifecycle and position output in all hosts. None requires an expectation update. Complete affected-suite runs below check those boundaries.
+The eight disabled-option expectations above are unchanged. Two additional default-option projection cases need selection-only updates, listed below. Vue's physical-reentry coverage at `apps/vue/e2e/node-threshold.e2e.ts:152` configures drag selection by disposal mode at `apps/vue/e2e/node-reentry-harness.ts:34`; the terminal reentry fixture explicitly disables it at `apps/vue/e2e/node-reentry-harness.ts:155`. Foldkit's native release-publication cases at `apps/foldkit/e2e/node-threshold.e2e.ts:136` use the unchanged release fixture and a real move. The shared native threshold contract at `apps/shared-e2e/node-threshold-contract.ts:149` observes lifecycle and position output in all hosts. None requires an expectation update. Complete affected-suite runs below check those boundaries.
 
 ### Changed existing tests
 
-Both generated cases are at `apps/vanilla/e2e/node-threshold.e2e.ts:3408`:
+Both generated cases are at `apps/vanilla/e2e/renderer-ownership.e2e.ts:2404`:
 
-- `ownership round five projection cancel-control`: the final document previously kept B and its edge selected. It now selects A and clears B, C, and the edge. The state stream gains the initial selection notification before the original viewport notification; the change stream gains `node-selection` before the existing viewport change.
-- `ownership round five projection cancel-restore`: the restored and final documents receive those same selection flags. The state stream previously had no notification; it now has the selection notification. The change stream gains `node-selection` before the viewport change. The cancellation and restoration callbacks stay in the same order with the same geometry and viewport values.
+- `projection cancel-control`: the final document previously kept B and its edge selected. It now selects A and clears B, C, and the edge. The state stream gains the initial selection notification before the original viewport notification; the change stream gains `node-selection` before the existing viewport change.
+- `projection cancel-restore`: the restored and final documents receive those same selection flags. The state stream previously had no notification; it now has the selection notification. The change stream gains `node-selection` before the viewport change. The cancellation and restoration callbacks stay in the same order with the same geometry and viewport values.
 
 Their shared one-line comment cites pinned `packages/system/src/xydrag/XYDrag.ts:282`. Selection precedes drag start at :298, and the harness dispatches its viewport wheel only after the press and move. The node/edge flags follow `packages/react/src/store/index.ts:306` and :307, which select the requested nodes and clear the edges. The Flow-specific state/publication shapes retain their existing owner. No capture, release, lifecycle, cancellation, geometry, suppression-timer, or held-count assertion changes.
 
 The initial targeted run was **211 passed / 2 failed / 0 skipped / 0 expected-fail**. All eight round-1 conflicts and all three new Vanilla node-input checks passed. The two failures were these enabled-option projection cases, whose unchanged cancellation/capture/geometry receipts matched; the assertion diff contained selection flags and the resulting state/change publications.
 
-The existing keyboard-status test at `apps/vanilla/e2e/flow-followups.e2e.ts:305` also gains a setup-only visibility wait before its original `source.focus()` call. All assertions remain unchanged. Its one-line comment cites pinned `packages/react/src/components/NodeWrapper/index.tsx:207`, which hides nodes until dimensions exist. Flow's own initial hidden style is `apps/vanilla/src/style.css:441`; its resize observer exposes measured nodes at `apps/vanilla/src/mount-flow.ts:4715`. Native focus does not wait for visibility. The failed diagnostic captured Enter targeting the body without a preceding handle focus event. Waiting for the actual visible handle supplies that missing input precondition, with no sleep or relaxed assertion. The exact hidden-at-focus timing was not directly captured and remains an inference from that trace and the source.
+The existing keyboard-status test at `apps/vanilla/e2e/viewport-operations.e2e.ts:305` also gains a setup-only visibility wait before its original `source.focus()` call. All assertions remain unchanged. Its one-line comment cites pinned `packages/react/src/components/NodeWrapper/index.tsx:207`, which hides nodes until dimensions exist. Flow's own initial hidden style is `apps/vanilla/src/style.css:441`; its resize observer exposes measured nodes at `apps/vanilla/src/mount-flow.ts:4715`. Native focus does not wait for visibility. The failed diagnostic captured Enter targeting the body without a preceding handle focus event. Waiting for the actual visible handle supplies that missing input precondition, with no sleep or relaxed assertion. The exact hidden-at-focus timing was not directly captured and remains an inference from that trace and the source.
 
 `apps/vanilla/e2e/graph-renderers.e2e.ts:949` gains the same initial-visibility setup barrier before its existing `elementFromPoint` hit test and focus-retention checks. The old setup read bounding boxes and hit-tested immediately after mounting; the new setup waits for the topmost child to be visible first. Its one-line comment cites pinned `packages/react/src/components/NodeWrapper/index.tsx:207`. Every graph order, hit target, retained element, controlled update, focus, lifecycle, and geometry assertion remains unchanged.
 
-The Foldkit handle-refresh fixture at `apps/foldkit/e2e/handle-refresh-fixture.ts:175` now waits for the declared handles of visible nodes to exist in the DOM after a replacement snapshot acknowledgement. Acknowledgement previously proved model acceptance while the framework patch could still be pending. An Effect-backed MutationObserver at `apps/foldkit/e2e/handle-refresh-fixture.ts:96` supplies an actual DOM handoff without counting frames or sleeping; it disconnects on completion or interruption. Hidden nodes are intentionally excluded from that DOM wait. The comment cites pinned `packages/react/src/hooks/useUpdateNodeInternals.ts:67`, which measures DOM after an update. Shared assertions at `apps/shared-e2e/handle-refresh-contract.ts:288`, all four Foldkit variants at `apps/foldkit/e2e/measured-geometry.e2e.ts:347`, the equivalent-layout case at :394, and both hidden-member cases at :401 are unchanged.
+The Foldkit handle-refresh fixture at `apps/foldkit/e2e/handle-refresh-fixture.ts:175` now waits for the declared handles of visible nodes to exist in the DOM after a replacement snapshot acknowledgement. Acknowledgement previously proved model acceptance while the framework patch could still be pending. An Effect-backed MutationObserver at `apps/foldkit/e2e/handle-refresh-fixture.ts:96` supplies an actual DOM handoff without counting frames or sleeping; it disconnects on completion or interruption. Hidden nodes are intentionally excluded from that DOM wait. The comment cites pinned `packages/react/src/hooks/useUpdateNodeInternals.ts:67`, which measures DOM after an update. Shared assertions at `apps/shared-e2e/handle-refresh-contract.ts:288`, all four Foldkit variants at `apps/foldkit/e2e/measured-geometry.e2e.ts:349`, the equivalent-layout case at :394, and both hidden-member cases at :401 are unchanged.
 
 ### Changed round-1 tests
 
@@ -147,7 +147,7 @@ The new native receipt at `apps/vanilla/e2e/node-input.e2e.ts:30` asserts `nativ
 
 Vanilla selects during zero-threshold activation, before notifying the drag-start callback, only when `selectNodesOnDrag` is enabled and the node is selectable. It uses the existing selection publication and telemetry owner. It checks that the drag still owns the interaction after selection listeners return. The round-1 stationary activated-release selection is removed. This preserves the disabled-option and real-drag click-suppression contracts instead of rewriting their receipts.
 
-Round-1 bounds rendering, selected markup, and Foldkit fixture deletion wiring remain. The middle-button exception over graph elements is narrowed to button 1: the initial broad exception also admitted right-button node presses, letting Vanilla canvas capture retarget their context menus to the pane. The unchanged `[2]` and `[0, 2]` context-menu cases at `apps/vanilla/e2e/context-menu-event.e2e.ts:103` reproduced that regression. The existing primary/right-button graph-target guards remain in place, while middle-button presses can reach pan admission. Verification scope only grows. The saved focused scope includes all prior files, all host test files mentioning selection or pan, and the requested lifecycle, threshold, movement, next-slices, event, and renderer-props suites where present.
+Round-1 bounds rendering, selected markup, and Foldkit fixture deletion wiring remain. The middle-button exception over graph elements is narrowed to button 1: the initial broad exception also admitted right-button node presses, letting Vanilla canvas capture retarget their context menus to the pane. The unchanged `[2]` and `[0, 2]` context-menu cases at `apps/vanilla/e2e/context-menu-event.e2e.ts:103` reproduced that regression. The existing primary/right-button graph-target guards remain in place, while middle-button presses can reach pan admission. Verification scope only grows. The saved focused scope includes all prior files, all host test files mentioning selection or pan, and the requested lifecycle, threshold, movement, selection-and-culling, event, and renderer-props suites where present.
 
 ### Results
 
@@ -159,7 +159,7 @@ The fourth `bun run verify` passed the **focused** profile with all saved checks
 | Vue     |    35 |             791 |       0 |      0 |            11 |   802 |
 | Foldkit |    47 |             418 |       0 |      0 |            16 |   434 |
 
-The two Vanilla skips are unchanged native multi-pointer proofs at `apps/vanilla/e2e/advanced-gestures.e2e.ts:914` and :918. No unexpected failure or unexpected pass remains. This is focused-profile acceptance of the saved 126-file browser scope, not full-profile integration or release acceptance.
+The two Vanilla skips are unchanged native multi-pointer proofs in the two throwing placeholders removed by Plan 179. No unexpected failure or unexpected pass remains. This is focused-profile acceptance of the saved 126-file browser scope, not full-profile integration or release acceptance.
 
 The three independent unchanged upstream runners also passed with no skips or unexpected results:
 
@@ -187,7 +187,7 @@ The first three verifier attempts passed every non-browser check but exposed add
 
 | Attempt | Vanilla | Vue | Foldkit | Stopping case |
 | --- | --- | --- | --- | --- |
-| 1 | 633 / 2 / 1 / 14 | Not reached | Not reached | `flow-followups.e2e.ts:305`, empty connection status after Enter |
+| 1 | 633 / 2 / 1 / 14 | Not reached | Not reached | `viewport-operations.e2e.ts:305`, empty connection status after Enter |
 | 2 | 633 / 2 / 1 / 14 | Not reached | Not reached | `graph-renderers.e2e.ts:949`, initial hit test before visible nodes |
 | 3 | 634 / 2 / 0 / 14 | 791 / 0 / 0 / 11 | 417 / 0 / 1 / 16 | `measured-geometry.e2e.ts:347`, new handle absent after model acknowledgement |
 

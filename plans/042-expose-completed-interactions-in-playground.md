@@ -17,7 +17,7 @@ The playground currently demonstrates graph navigation, visibility, and connecti
 ## Current state and conventions
 
 - `apps/vanilla/src/main.ts:201-238` mounts the host with custom renderers, controls, and minimap; `:240-255` adds Main graph, Distant graph, Fit, validator, and visibility actions. `:380-448` applies semantic changes, including `node-bounds`, to the demo document. Preserve that document update path when switching scenes.
-- `apps/vanilla/e2e/graph-renderers.e2e.ts:143-165` shows a marked `data-flow-drag-handle`; `advanced-gestures.e2e.ts:370-396` shows a selected parent with child and atomic resize; `canvas-ui.e2e.ts:166-217` shows caller-owned panel placement. `research/fixtures/README.md:38-41` says these are vanilla-only proofs.
+- `apps/vanilla/e2e/graph-renderers.e2e.ts:143` shows a marked `data-flow-drag-handle`; `advanced-gestures.e2e.ts:370-396` shows a selected parent with child and atomic resize; `canvas-ui.e2e.ts:166-217` shows caller-owned panel placement. `research/fixtures/README.md:38-41` says these are vanilla-only proofs.
 - Browser lifecycle belongs in `apps/`; graph meaning belongs in `packages/` (`docs/standards.md:5-11`). Use the existing `playgroundCopy` and `data-action` pattern at `apps/vanilla/src/main.ts:127-188,240-255` for scene labels and help text.
 
 ## Commands and scope

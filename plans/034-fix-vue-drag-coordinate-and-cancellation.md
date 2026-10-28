@@ -18,7 +18,7 @@ Vue captures a child's absolute position at drag start and publishes it as a par
 
 - `apps/vue/src/FlowCanvas.ts:147-168`: drag start stores `originX: nodePosition(node).x`; pointerup publishes `originX + dx`. Core's `FlowNode.position` is parent-local (`packages/core/src/domain/flow-graph.ts:52-65`). Keep the local position in the semantic change.
 - `apps/vue/src/FlowCanvas.ts:164,230-234`: pointerup and move use an interpolated `querySelector`; Escape and pointercancel only clear `session.value`. `packages/core/src/domain/flow-values.ts:3` accepts any nonempty node ID, including selector punctuation.
-- `apps/vue/e2e/shared-conformance.e2e.ts:5-29` drives shared fixtures; `apps/vue/e2e/conformance.ts:37-49,61-70` performs a drag and snapshots `left/top` but not `transform`. The test must assert actual visual restoration as well as emitted changes. Follow the existing controlled acknowledgement test at `apps/vue/e2e/shared-conformance.e2e.ts:42-83`.
+- `apps/vue/e2e/shared-conformance.e2e.ts:5` drives shared fixtures; `apps/vue/e2e/conformance.ts:37-49,61-70` performs a drag and snapshots `left/top` but not `transform`. The test must assert actual visual restoration as well as emitted changes. Follow the existing controlled acknowledgement test at `apps/vue/e2e/shared-conformance.e2e.ts:42`.
 
 ## Commands and scope
 

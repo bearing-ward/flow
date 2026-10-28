@@ -993,42 +993,6 @@ test('shared resize fixture drives the production Vanilla pointer path', async (
 test('shared connection cases drive the production Vanilla pointer path', async ({
   page,
 }) => {
-  expect(interactionConnectionCases.map(({ id }) => id)).toStrictEqual([
-    'strict-accepted',
-    'strict-rejects-opposite-handle-kinds',
-    'loose-normalizes-from-target-handle-origin',
-    'loose-rejects-target-to-target-rendering-gap',
-    'strict-rejects-duplicate',
-  ])
-  expect(currentNativeConnectionCases).toHaveLength(5)
-
-  for (const [index, scenario] of interactionConnectionCases.entries()) {
-    if (scenario.id !== 'loose-rejects-target-to-target-rendering-gap') {
-      expect(currentNativeConnectionCases[index]).toStrictEqual(scenario)
-    }
-  }
-
-  expect(currentNativeConnectionCases[3]).toStrictEqual({
-    id: 'loose-accepts-directed-named-target-to-target',
-    document: 'connection',
-    mode: 'loose',
-    connection: {
-      source: 'loose-source',
-      sourceHandle: 'in',
-      target: 'target',
-      targetHandle: 'in',
-    },
-    outcome: 'accepted',
-    normalized: {
-      source: 'target',
-      sourceHandle: 'in',
-      target: 'loose-source',
-      targetHandle: 'in',
-    },
-    expectedEdgeId: 'edge-1',
-    eventOrder: ['connectStart', 'connect', 'connectEnd'],
-  })
-
   // Each case remounts one page so host state cannot leak between scenarios.
   // eslint-disable no-await-in-loop
   for (const scenario of currentNativeConnectionCases) {

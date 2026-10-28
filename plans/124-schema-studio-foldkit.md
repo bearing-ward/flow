@@ -50,7 +50,7 @@ The Foldkit Vite build includes `/schema-studio/`, served by the development hos
 - The Plan 122 resize instance gap is closed. `selectLiveModel` at `packages/foldkit/src/graph.ts:2692` now combines built-in pointer resize, held-key resize, and custom resizer previews with the current document and measurement generations. `previewMeasurements` at line 2643 carries handle offsets to resized borders. The view uses that projection at line 7085; snapshot-backed instance reads use it at `packages/foldkit/src/application.ts:945`. Accepted state remains separate until release. Three public-instance browser cases compare single/bulk reads with the DOM while input remains held, verify unchanged accepted bounds, and restore through Escape.
 - Custom edges already supported SVG markers, HTML labels and interaction paths. Their synchronous geometry had endpoint bounds but lacked the complete live field-handle projection available through the asynchronous instance. `FoldkitEdgeGeometry.sourceNode`/`targetNode` at `packages/foldkit/src/graph.ts:4939` expose detached internals from the current render graph, constructed at line 5189. Relationships use those projections to recompute sides, paths and markers during drag/resize. App browser tests compare the held path with the post-drop path exactly.
 - Context-menu suppression already existed at `packages/foldkit/src/mouse-observation.ts:198`; no cancellation fix was needed. The app test observes `defaultPrevented` at window for both pane and table right-clicks. A native-event probe additionally found macOS Chromium delivers Control-click as button-0 `contextmenu` without `click`. With Control configured for multiselection, `packages/foldkit/src/graph.ts:3120` now applies the selection toggle on that event. Button-2 context menus retain their existing behavior. A unit test covers both inputs, and S7 proves 2/3/4 selected tables plus Full box selection in the browser.
-- Keyboard announcements reported the old absolute position. `packages/foldkit/src/graph.ts:3365` now reads the placed absolute position. The existing unit expectation changes from x 20 to x 40 for the actual group move. The existing custom-callback browser assertion in `apps/foldkit/e2e/closing-gaps.e2e.ts:202` now expects `Live right 105/100` after moving from x 100 to x 105, matching the node position already asserted in that test. The application browser test asserts resulting positions and native announcements for 5px and snapped 20/80px movement.
+- Keyboard announcements reported the old absolute position. `packages/foldkit/src/graph.ts:3365` now reads the placed absolute position. The existing unit expectation changes from x 20 to x 40 for the actual group move. The existing custom-callback browser assertion in `apps/foldkit/e2e/canvas-options.e2e.ts:202` now expects `Live right 105/100` after moving from x 100 to x 105, matching the node position already asserted in that test. The application browser test asserts resulting positions and native announcements for 5px and snapped 20/80px movement.
 
 `docs/public-api.md` documents each package change. No blocking Plan 124 gap remains. Arbitrary minimap dimensions remain outside the existing Foldkit API, whose fixed size is declared at `packages/foldkit/src/ui/minimap.ts:27` and line 29; the app uses its public helper's fixed default dimensions.
 
@@ -89,7 +89,7 @@ Build/type/lint diagnostics were also corrected before acceptance: v4 schema opt
 ### Files changed
 
 - Application: `apps/foldkit/schema-studio/index.html`, `main.ts`, `model.ts`, `graph.ts`, `renderers.ts`, and `style.css`.
-- Browser proof: `apps/foldkit/e2e/closing-gaps.e2e.ts`, `apps/foldkit/e2e/schema-studio.e2e.ts`, `apps/foldkit/e2e/live-internal-node.e2e.ts`, and `apps/foldkit/live-internal-node/index.html` plus `main.ts`.
+- Browser proof: `apps/foldkit/e2e/canvas-options.e2e.ts`, `apps/foldkit/e2e/schema-studio.e2e.ts`, `apps/foldkit/e2e/live-internal-node.e2e.ts`, and `apps/foldkit/live-internal-node/index.html` plus `main.ts`.
 - Package: `packages/foldkit/src/application.ts`, `graph.ts`, `renderer-registry.ts`, `live-resize.test.ts`, and `closing-options.test.ts`.
 - Composition and verification: `apps/foldkit/vite.config.ts`, `apps/foldkit/tsconfig.json`, root `tsconfig.json`, and `verification.config.json`.
 - Documentation: `docs/public-api.md`, `research/traces/schema-studio-foldkit-comparison.md`, and this plan.
@@ -107,11 +107,11 @@ bunx playwright test -c apps/foldkit/playwright.config.ts apps/foldkit/e2e/schem
 The first broad focused verifier, `/tmp/plan124-verify.log`, exited 1 in Vanilla after **497 passed, 2 skipped, 1 failed**. Its unchanged minimap case failed before the node was rendered:
 
 ```text
-apps/vanilla/e2e/final-wiring.e2e.ts:748:3
+apps/vanilla/e2e/canvas-configuration.e2e.ts:752:3
 Vanilla MiniMap component > onClick reports flow points, zoomStep scales wheel zoom, drags update live
 Error: Expected a rendered element
-  at box (.../apps/vanilla/e2e/final-wiring.e2e.ts:45:11)
-  at .../apps/vanilla/e2e/final-wiring.e2e.ts:757:19
+  at box (.../apps/vanilla/e2e/canvas-configuration.e2e.ts:185:11)
+  at .../apps/vanilla/e2e/canvas-configuration.e2e.ts:757:19
 1 failed
 2 skipped
 497 passed (3.0m)
@@ -120,14 +120,14 @@ Error: vanilla browser tests failed with exit code 1
 
 The verifier stopped there; that attempt did not run Vue or Foldkit browser gates. All 30 Vanilla Schema Studio tests passed in it. No file or scope was changed to bypass the failure.
 
-The case was rerun ten times from an archive of main's exact commit `30901c92c9a0d853adcebd04ac8d2aa76fb66061`, with its own frozen dependency install inside the assigned worktree's ignored test output directory. The command was `bunx playwright test apps/vanilla/e2e/final-wiring.e2e.ts --workers=1 --repeat-each=10 -g 'onClick reports flow points'`, under the same browser lock. `/tmp/plan124-main-minimap.log` ends with **`10 passed (13.9s)`**. The test, fixture, Vanilla minimap implementation, and core minimap projection were also checked byte-for-byte against the archive and matched. The original failure is recorded as transient and not reproduced on main, not asserted to be a proven main failure. The complete verifier is rerun unchanged below.
+The case was rerun ten times from an archive of main's exact commit `30901c92c9a0d853adcebd04ac8d2aa76fb66061`, with its own frozen dependency install inside the assigned worktree's ignored test output directory. The command was `bunx playwright test apps/vanilla/e2e/canvas-configuration.e2e.ts --workers=1 --repeat-each=10 -g 'onClick reports flow points'`, under the same browser lock. `/tmp/plan124-main-minimap.log` ends with **`10 passed (13.9s)`**. The test, fixture, Vanilla minimap implementation, and core minimap projection were also checked byte-for-byte against the archive and matched. The original failure is recorded as transient and not reproduced on main, not asserted to be a proven main failure. The complete verifier is rerun unchanged below.
 
 The next verifier invocation stopped at quality because this appended record needed formatting. `/tmp/plan124-verify-quality-retry.log` reports `Format issues found in above 1 files` for `plans/124-schema-studio-foldkit.md`, followed by `Error: quality check failed with exit code 1`. Formatting was corrected before the next complete run; no source or scope changed for this correction.
 
 The subsequent complete run reached all three hosts. `/tmp/plan124-verify-aria.log` records **Vanilla 498 passed with 2 existing skips, Vue 721 passed, Foldkit 324 passed with 1 failure**. That failure belongs to this implementation's intentional announcement correction, not to an unrelated baseline problem:
 
 ```text
-apps/foldkit/e2e/closing-gaps.e2e.ts:202:1
+apps/foldkit/e2e/canvas-options.e2e.ts:202:1
 keyboard node movement uses the custom aria-live callback
 Expected: "Live right 100/100"
 Received: "Live right 105/100"
@@ -161,6 +161,6 @@ Verification passed {
 | Foldkit |                  32 |    325 |       0 |      0 |
 | Total   |                  87 |  1,544 |       2 |      0 |
 
-The two unchanged Vanilla skips are the real-pointer-capture concurrent connection/drag cancellation and real-touch two-contact pinch cancellation cases at `apps/vanilla/e2e/advanced-gestures.e2e.ts:914` and line 918. No new test is skipped. The final verifier includes all 30 Vanilla Schema Studio cases and all 31 Foldkit Schema Studio cases. Quality, architecture, package builds, typechecking, API/catalog inventories, packed consumers, documentation, recipe registry, both selected app builds, and research citations also pass. Packed-consumer invalid-input probes intentionally log typed rejection errors while their gates pass; Foldkit emits framework slow-update diagnostics without test failures or a performance claim.
+The two unchanged Vanilla skips are the real-pointer-capture concurrent connection/drag cancellation and real-touch two-contact pinch cancellation cases in the two throwing placeholders removed by Plan 179. No new test is skipped. The final verifier includes all 30 Vanilla Schema Studio cases and all 31 Foldkit Schema Studio cases. Quality, architecture, package builds, typechecking, API/catalog inventories, packed consumers, documentation, recipe registry, both selected app builds, and research citations also pass. Packed-consumer invalid-input probes intentionally log typed rejection errors while their gates pass; Foldkit emits framework slow-update diagnostics without test failures or a performance claim.
 
 The saved scope was checked against the base configuration: every original browser file remains in the same host list and order, and every original check remains. Shared domain/DBML, Vanilla implementation/tests, reference records, and imported evidence have no diff. All browser locks are released. This is focused acceptance with broad saved browser scope, not `verify:full`, a release decision, a native-device result, full pixel parity, or collector-side OpenTelemetry proof.

@@ -40,7 +40,7 @@ Vanilla shortcut input at `apps/vanilla/schema-studio/main.ts:1447` calls `apply
 
 Foldkit shortcut input at `apps/foldkit/schema-studio/main.ts:812` sends model messages. Undo/redo updates app-owned history and invokes host persistence/paint at `apps/foldkit/schema-studio/model.ts:525`. Graph projection at `apps/foldkit/schema-studio/main.ts:118` produces the Flow document; host paint sends `HostAction.ReplaceDocument` at `apps/foldkit/schema-studio/main.ts:301`. Copy/Paste handles selected tables at `apps/foldkit/schema-studio/model.ts:563`, with remapped relationship IDs and 40-unit placement at `apps/foldkit/schema-studio/model.ts:266`. Both hosts then reach the ordinary graph renderers described above. No Vue Schema Studio counterpart or clipboard/history recipe was found.
 
-Tests are separate: `apps/vanilla/e2e/schema-studio.e2e.ts:1013` and `apps/foldkit/e2e/schema-studio.e2e.ts:1031` drive table drag, Ctrl+Z, Ctrl+Shift+Z and present-document reload. `apps/vanilla/e2e/schema-studio.e2e.ts:1078` and `apps/foldkit/e2e/schema-studio.e2e.ts:1100` exercise table copy/paste. `apps/shared/schema-studio/model.test.ts:206` checks undo, redo, no-ops and abandoned future states. These tests do not prove generic Flow graph history or clipboard coverage. Empty-stack button disabling and general gesture grouping remain unverified.
+Tests are separate: `apps/shared-e2e/schema-studio-contract.ts:955` and `apps/shared-e2e/schema-studio-contract.ts:955` drive table drag, Ctrl+Z, Ctrl+Shift+Z and present-document reload. `apps/shared-e2e/schema-studio-contract.ts:1026` and `apps/shared-e2e/schema-studio-contract.ts:1026` exercise table copy/paste. `apps/shared/schema-studio/model.test.ts:206` checks undo, redo, no-ops and abandoned future states. These tests do not prove generic Flow graph history or clipboard coverage. Empty-stack button disabling and general gesture grouping remain unverified.
 
 ## Evidence groups
 
@@ -131,7 +131,7 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 - shared production: `packages/core/src/domain/flow-freeform.ts:229`.
 - shared tests: `packages/core/src/domain/flow-freeform.test.ts:109`.
 - vanilla production: `apps/vanilla/src/ui/whiteboard-recipes.ts:359`, `apps/vanilla/src/ui/whiteboard-recipes.ts:424`.
-- vanilla tests: `apps/vanilla/e2e/whiteboard-recipes.e2e.ts:193`.
+- vanilla tests: `apps/vanilla/e2e/whiteboard-recipes.e2e.ts:196`.
 - vue production: `apps/vue/src/whiteboard-recipes.ts:259`, `apps/vue/src/whiteboard-recipes.ts:326`.
 - vue tests: `apps/vue/e2e/whiteboard-recipes.e2e.ts:179`.
 - foldkit production: `apps/foldkit/ui-recipes/whiteboard/main.ts:285`, `apps/foldkit/ui-recipes/whiteboard/main.ts:393`.
@@ -180,19 +180,19 @@ Layout direction controls and their tests are also at `apps/vanilla/src/ui/layou
 - shared production: `apps/shared/schema-studio/model.ts:230`.
 - shared tests: `apps/shared/schema-studio/model.test.ts:206`.
 - vanilla production: `apps/vanilla/schema-studio/main.ts:394`, `apps/vanilla/schema-studio/main.ts:1447`.
-- vanilla tests: `apps/vanilla/e2e/schema-studio.e2e.ts:1013`.
+- vanilla tests: `apps/shared-e2e/schema-studio-contract.ts:955`.
 - vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4439`.
 - foldkit production: `apps/foldkit/schema-studio/model.ts:525`, `apps/foldkit/schema-studio/main.ts:812`.
-- foldkit tests: `apps/foldkit/e2e/schema-studio.e2e.ts:1031`.
+- foldkit tests: `apps/shared-e2e/schema-studio-contract.ts:955`.
 
 ### studio-clipboard
 
 - shared production: `apps/shared/schema-studio/model.ts:242`.
 - vanilla production: `apps/vanilla/schema-studio/main.ts:541`, `apps/vanilla/schema-studio/main.ts:1465`.
-- vanilla tests: `apps/vanilla/e2e/schema-studio.e2e.ts:1078`.
+- vanilla tests: `apps/shared-e2e/schema-studio-contract.ts:1026`.
 - vue production: `packages/vue/src/use-flow.ts:660`, `packages/vue/src/flow-canvas.ts:4439`.
 - foldkit production: `apps/foldkit/schema-studio/model.ts:266`, `apps/foldkit/schema-studio/model.ts:563`.
-- foldkit tests: `apps/foldkit/e2e/schema-studio.e2e.ts:1100`.
+- foldkit tests: `apps/shared-e2e/schema-studio-contract.ts:1026`.
 
 ## Per-example outcomes
 

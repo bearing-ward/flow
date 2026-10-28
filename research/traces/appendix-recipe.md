@@ -8,9 +8,9 @@
 
 ## Production test paths
 
-- Vanilla `apps/vanilla/e2e/ui-recipes.e2e.ts:3-80` passed 1/1 for Appendix within the 2-test suite. It checks hidden/revealed content, `aria-expanded`, Enter/Space, unchanged graph viewport and node transform, pointer gesture exclusion, and a fresh collapsed disclosure after explicit controller destroy/remount.
-- Vue `apps/vue/e2e/appendix-recipe.e2e.ts:3-41` passed 1/1; the separate `apps/vue/e2e/ui-recipes.e2e.ts` Status Indicator test passed 1/1. The Appendix case checks trigger/region semantics, hidden/revealed slot content, Enter/Space/click, stable node coordinates, reload reset, and retained node identity.
-- Foldkit `apps/foldkit/e2e/ui-recipes.e2e.ts:40-96` passed 1/1 for Appendix within the 2-test suite. It checks disclosure semantics, Enter/Space, hidden/revealed content, unchanged viewport after wheel and keyboard activation, reload reset, and explicit app/runtime unmount cleanup.
+- Vanilla `apps/vanilla/e2e/ui-recipes.e2e.ts:3` passed 1/1 for Appendix within the 2-test suite. It checks hidden/revealed content, `aria-expanded`, Enter/Space, unchanged graph viewport and node transform, pointer gesture exclusion, and a fresh collapsed disclosure after explicit controller destroy/remount.
+- Vue `apps/vue/e2e/appendix-recipe.e2e.ts:3` passed 1/1; the separate `apps/vue/e2e/ui-recipes.e2e.ts` Status Indicator test passed 1/1. The Appendix case checks trigger/region semantics, hidden/revealed slot content, Enter/Space/click, stable node coordinates, reload reset, and retained node identity.
+- Foldkit `apps/foldkit/e2e/ui-recipes.e2e.ts:40` passed 1/1 for Appendix within the 2-test suite. It checks disclosure semantics, Enter/Space, hidden/revealed content, unchanged viewport after wheel and keyboard activation, reload reset, and explicit app/runtime unmount cleanup.
 
 ## Conformity and deviations
 

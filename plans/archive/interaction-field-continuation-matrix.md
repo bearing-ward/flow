@@ -24,7 +24,7 @@ Core graph meaning stays in `packages/`; native DOM/lifecycle stays in the ownin
 
 ## Separate test and reference paths
 
-Existing production examples are real public fixtures: Vanilla `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:18` dynamically imports `/src/public.ts` and mounts `mountFlow`; Vue `apps/vue/e2e/renderer-contract.e2e.ts:20` calls `apps/vue/src/renderer-contract.ts:203` using `@flow/vue` FlowCanvas; Foldkit `apps/foldkit/e2e/renderer-contract.e2e.ts:22` calls `apps/foldkit/e2e/test-harness.ts:816` using package-public createProgram. Those are exemplars with bounded assertions, not proof for all rows below.
+Existing production examples are real public fixtures: Vanilla `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:458` dynamically imports `/src/public.ts` and mounts `mountFlow`; Vue `apps/vue/e2e/renderer-contract.e2e.ts:20` calls `apps/vue/src/renderer-contract.ts:203` using `@flow/vue` FlowCanvas; Foldkit `apps/foldkit/e2e/renderer-contract.e2e.ts:22` calls `apps/foldkit/e2e/test-harness.ts:816` using package-public createProgram. Those are exemplars with bounded assertions, not proof for all rows below.
 
 Each JSON cell retains its original production test and capture target, and proposes the exact assertion identity `contractId::member::host`. A test must record its own production operation, exact expected payload/accepted state/DOM value and pinned comparison. NEW `scripts/capture-interaction-member-reference.ts` and relevant per-host member suites may not exist yet; no command was run against invented files.
 

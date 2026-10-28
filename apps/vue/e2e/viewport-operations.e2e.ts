@@ -413,3 +413,77 @@ test('Vue double-click doubles around the pointer and Shift double-click halves'
     )
     .toStrictEqual({ x: 10, y: 20, zoom: 1 })
 })
+
+test('Vue viewport operations scene exposes fitted coordinates, animation cancellation, and custom node sizes', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Viewport operations' }).click()
+  await expect(page.locator('[data-node-id="viewport-selected"]')).toHaveCSS(
+    'width',
+    '260px'
+  )
+  await expect(page.locator('[data-node-id="viewport-peer"]')).toHaveCSS(
+    'width',
+    '190px'
+  )
+
+  await page.getByTestId('viewport-center').click()
+  await expect(page.getByTestId('viewport-operation-status')).toHaveText(
+    'Center: accepted'
+  )
+  await page.getByTestId('viewport-fit-selected').click()
+  await expect(page.getByTestId('viewport-operation-status')).toHaveText(
+    'Fit selected: accepted'
+  )
+  await expect(page.getByTestId('viewport-observation')).toHaveText(
+    'end:accepted'
+  )
+
+  const fitCenter = await page.evaluate(() => {
+    const pane = document
+      .querySelector('.flow-vue-canvas')
+      ?.getBoundingClientRect()
+
+    const node = document
+      .querySelector<HTMLElement>('[data-node-id="viewport-selected"]')
+      ?.getBoundingClientRect()
+
+    return pane === undefined || node === undefined
+      ? undefined
+      : {
+          dx: node.left + node.width / 2 - pane.left - pane.width / 2,
+          dy: node.top + node.height / 2 - pane.top - pane.height / 2,
+        }
+  })
+
+  expect(Math.abs(fitCenter?.dx ?? Infinity)).toBeLessThan(2)
+  expect(Math.abs(fitCenter?.dy ?? Infinity)).toBeLessThan(2)
+
+  await page.getByTestId('viewport-marker').click()
+
+  const marker = await page
+    .getByTestId('viewport-conversion-marker')
+    .boundingBox()
+
+  const pane = await page.getByTestId('flow-canvas').boundingBox()
+
+  if (marker === null || pane === null) {
+    throw new Error('Viewport marker or canvas bounds are unavailable')
+  }
+
+  expect(marker.x).toBeGreaterThanOrEqual(pane.x)
+  expect(marker.x + marker.width).toBeLessThanOrEqual(pane.x + pane.width)
+
+  await page.getByTestId('viewport-zoom-to').click()
+  await expect(page.getByTestId('viewport-operation-status')).toHaveText(
+    'Zoom to 0.65: pending'
+  )
+  await page.getByTestId('viewport-cancel').click()
+  await expect(page.getByTestId('viewport-operation-status')).toHaveText(
+    'Zoom to 0.65: superseded'
+  )
+  await expect(page.getByTestId('viewport-observation')).toHaveText(
+    'end:superseded'
+  )
+})

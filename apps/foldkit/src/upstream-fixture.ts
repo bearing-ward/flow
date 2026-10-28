@@ -5,7 +5,7 @@ import {
   ViewportSchema,
   NodeIdSchema,
 } from '@flow/core'
-import type { FlowDocument, MeasuredNode, NodeId } from '@flow/core'
+import type { FlowChange, FlowDocument, MeasuredNode, NodeId } from '@flow/core'
 import {
   createProgram,
   createViewportClient,
@@ -33,6 +33,8 @@ import {
 } from '../../shared/upstream/fixture.ts'
 
 import '@flow/foldkit/style.css'
+
+export const upstreamChanges: FlowChange[] = []
 
 if (location.pathname.startsWith('/upstream-component/')) {
   await import('./upstream-component-fixture.ts')
@@ -205,10 +207,9 @@ if (location.pathname.startsWith('/upstream-component/')) {
   )
 
   const unsubscribeChanges = runtime.ports.changes.subscribe((change) => {
-    const next = applyUpstreamChange(
-      acceptedDocument,
-      Schema.decodeUnknownSync(FlowChangeSchema)(change)
-    )
+    const decoded = Schema.decodeUnknownSync(FlowChangeSchema)(change)
+    upstreamChanges.push(decoded)
+    const next = applyUpstreamChange(acceptedDocument, decoded)
 
     if (next !== acceptedDocument) {
       acceptedDocument = next

@@ -18,7 +18,7 @@ Core defines parent-before-child and sibling `zIndex` ordering, but the vanilla 
 - `apps/vanilla/src/mount-flow.ts:1419-1458` loops over `next.nodes` and `viewport.append(entry.element)` for every visible node. Appending retained nodes moves them in the DOM to that array order.
 - `apps/vanilla/src/style.css:108-110` assigns every `.flow-node` the same `z-index: 1`. DOM order therefore decides overlap within the node layer.
 - `docs/architecture.md:85` expressly promises parent behind descendant and `zIndex` among siblings. Keep that contract rather than replacing it with per-node CSS offsets.
-- `apps/vanilla/e2e/graph-renderers.e2e.ts:10-51` provides the nested-node mount pattern. Use a browser overlap assertion for paint and hit behavior, not only an array-order unit test.
+- `apps/vanilla/e2e/graph-renderers.e2e.ts:10` provides the nested-node mount pattern. Use a browser overlap assertion for paint and hit behavior, not only an array-order unit test.
 
 ```ts
 // packages/core/src/domain/flow-graph.ts:75-88

@@ -17,7 +17,7 @@ Each node pointer move invokes full `edgeRenderer.reconcile`. That builds a grap
 - `apps/vanilla/src/mount-flow.ts:1913-1955` writes the preview positions, calls `renderGraphPositions`, then `edgeRenderer.reconcile(document, renderedNodePositions)` for every pointer move. `:514-520` already derives the graph and applies each visible node's absolute position.
 - `apps/vanilla/src/edge-renderer.ts:66-71` stores measured handles and keyed edge elements. `:150-172` builds a fresh graph and iterates all ordered edges. `:202-265` computes endpoints, built-in/custom paths, and label anchors. `:337-449` updates custom visuals, hit path, reconnect anchors, and labels. Preserve one geometry calculation path so full and incremental updates cannot disagree.
 - `packages/core/src/domain/flow-edge.schema.ts:37-40` uses two node-array searches per edge in `resolveEdgeHandles`; avoid that lookup on each drag frame by retaining a validated endpoint index from full reconciliation.
-- `apps/vanilla/e2e/graph-renderers.e2e.ts:53-181` provides custom renderer lifecycle recording and path assertions; `:10-51` covers parent and child movement. `research/PROGRESS.md:224` calls for large-graph performance coverage. Do not equate a static code change with measured responsiveness.
+- `apps/vanilla/e2e/graph-renderers.e2e.ts:53` provides custom renderer lifecycle recording and path assertions; `:10-51` covers parent and child movement. `research/PROGRESS.md:224` calls for large-graph performance coverage. Do not equate a static code change with measured responsiveness.
 - `docs/architecture.md:85,91` keeps absolute geometry in the core graph and visual SVG lifetimes in the host. Do not put DOM or renderer instances in `packages/`.
 
 ```ts

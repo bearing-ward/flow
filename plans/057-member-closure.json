@@ -4732,7 +4732,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "bgcolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4763,7 +4763,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "classname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4794,7 +4794,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "color",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4825,7 +4825,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "gap",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4856,7 +4856,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "id",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4887,7 +4887,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "linewidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4918,7 +4918,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "offset",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4949,7 +4949,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "patternclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -4980,7 +4980,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "size",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5011,7 +5011,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "style",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5042,7 +5042,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "variant",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5073,7 +5073,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "interactionwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5104,7 +5104,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "label",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5135,7 +5135,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgborderradius",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5166,7 +5166,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgpadding",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5197,7 +5197,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5228,7 +5228,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelshowbg",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5259,7 +5259,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5290,7 +5290,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelx",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5321,7 +5321,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labely",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5352,7 +5352,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "markerend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5383,7 +5383,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "markerstart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5414,7 +5414,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "path",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5445,7 +5445,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5476,7 +5476,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5507,7 +5507,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "aria-label",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5538,7 +5538,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5569,7 +5569,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "classname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5600,7 +5600,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "fitviewoptions",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5631,7 +5631,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onfitview",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5662,7 +5662,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "oninteractivechange",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5693,7 +5693,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onzoomin",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5724,7 +5724,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onzoomout",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5755,7 +5755,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "orientation",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5786,7 +5786,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5817,7 +5817,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "showfitview",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5848,7 +5848,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "showinteractive",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5879,7 +5879,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "showzoom",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5910,7 +5910,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "style",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5941,7 +5941,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -5972,7 +5972,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "label",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6003,7 +6003,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgborderradius",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6034,7 +6034,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgpadding",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6065,7 +6065,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelbgstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6096,7 +6096,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelshowbg",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6127,7 +6127,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "labelstyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6158,7 +6158,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6189,7 +6189,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "x",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6220,7 +6220,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "y",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6251,7 +6251,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "alignx",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6282,7 +6282,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "aligny",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6313,7 +6313,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "edgeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6344,7 +6344,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvisible",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6375,7 +6375,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6406,7 +6406,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "x",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6437,7 +6437,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "y",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6468,7 +6468,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "id",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6499,7 +6499,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isconnectable",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6530,7 +6530,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isconnectableend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6561,7 +6561,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isconnectablestart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6592,7 +6592,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvalidconnection",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6623,7 +6623,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onconnect",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6654,7 +6654,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6685,7 +6685,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6716,7 +6716,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "type",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6747,7 +6747,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "arialabel",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6778,7 +6778,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "bgcolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6809,7 +6809,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "inversepan",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6840,7 +6840,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maskcolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6871,7 +6871,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maskstrokecolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6902,7 +6902,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maskstrokewidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6933,7 +6933,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeborderradius",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6964,7 +6964,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -6995,7 +6995,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodecolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7026,7 +7026,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodecomponent",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7057,7 +7057,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodestrokecolor",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7088,7 +7088,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodestrokewidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7119,7 +7119,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "offsetscale",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7150,7 +7150,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onclick",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7181,7 +7181,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onnodeclick",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7212,7 +7212,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "pannable",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7243,7 +7243,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7274,7 +7274,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7305,7 +7305,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "zoomable",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7336,7 +7336,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "zoomstep",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7367,7 +7367,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "autoscale",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7398,7 +7398,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7429,7 +7429,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "classname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7460,7 +7460,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "color",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7491,7 +7491,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "keepaspectratio",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7522,7 +7522,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7553,7 +7553,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7584,7 +7584,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7615,7 +7615,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7646,7 +7646,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7677,7 +7677,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7708,7 +7708,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizeend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7739,7 +7739,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizestart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7770,7 +7770,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7801,7 +7801,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "resizedirection",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7832,7 +7832,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "shouldresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7863,7 +7863,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "style",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7894,7 +7894,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "variant",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7925,7 +7925,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "autoscale",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7956,7 +7956,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "color",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -7987,7 +7987,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "handleclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8018,7 +8018,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "handlestyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8049,7 +8049,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvisible",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8080,7 +8080,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "keepaspectratio",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8111,7 +8111,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "lineclassname",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8142,7 +8142,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "linestyle",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8173,7 +8173,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8204,7 +8204,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "maxwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8235,7 +8235,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minheight",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8266,7 +8266,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "minwidth",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8297,7 +8297,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8328,7 +8328,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8359,7 +8359,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizeend",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8390,7 +8390,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "onresizestart",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8421,7 +8421,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "shouldresize",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8452,7 +8452,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "align",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8483,7 +8483,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "isvisible",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8514,7 +8514,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "nodeid",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8545,7 +8545,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "offset",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8576,7 +8576,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8607,7 +8607,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8638,7 +8638,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8669,7 +8669,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "props",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -8700,7 +8700,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "children",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -10224,7 +10224,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "Align",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -10627,7 +10627,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "BackgroundVariant",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -23829,7 +23829,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "PanelPosition",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -23860,7 +23860,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "Position",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25819,7 +25819,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "height",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25856,7 +25856,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "ResizeParams",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25887,7 +25887,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "width",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25918,7 +25918,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "x",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -25949,7 +25949,7 @@
           "publicEntry": "apps/vanilla/src/public.ts",
           "exportName": "mountFlow",
           "operation": "y",
-          "productionTest": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "productionTest": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "capture": "scripts/capture-renderer-contract-reference.ts"
         },
         "vue": {
@@ -36722,7 +36722,7 @@
         "reason": "useUpdateNodeInternals: Owner-local stable refresh facade. Vanilla/Vue accept one ID or readonly batch; Foldkit refresher accepts branded batch. Ordered per-ID promise statuses replace React void hook. Requested means dispatched, not universal rendered completion. Proven by Batch duplicate/missing results; retained actual controller/useFlow/refresher callback across accepted replacement; pending/late disposal settle explicitly; public SVG polling proves output, never timeout-as-disposal. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:141-146, apps/shared-e2e/handle-refresh-contract.ts:370-403, apps/shared-e2e/handle-refresh-contract.ts:546-546. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -56351,7 +56351,7 @@
         "reason": "height: FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -56804,7 +56804,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height: FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -56849,7 +56849,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height.<union:1>: FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -56894,7 +56894,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.height.<union:2>: FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -56939,7 +56939,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width: FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -56984,7 +56984,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width.<union:1>: FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57029,7 +57029,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.bounds.<type:NodeBounds>.<intersection:2>.width.<union:2>: FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57074,7 +57074,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds: both kinds collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the both kinds partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57119,7 +57119,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>: both kinds collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the both kinds partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57164,7 +57164,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source: source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57209,7 +57209,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>: source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57254,7 +57254,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>: source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57299,7 +57299,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>: source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57344,7 +57344,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.<type:HandleBound>: source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57396,7 +57396,7 @@
         "host": "foldkit",
         "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.height: Each source handle has expected owner nodeId; height equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID. Public assertion: apps/shared-e2e/handle-refresh-contract.ts:614-614",
         "implementation": "packages/core/src/domain/flow-edge.schema.ts:18-24",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401",
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403",
         "reference": "packages/conformance/src/handle-refresh-reference.test.ts:99-120",
         "upstreamMember": "https://reactflow.dev/api-reference/types/internal-node"
       }
@@ -57443,7 +57443,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id: source Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant. Proven by Every source public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:548-549, apps/shared-e2e/handle-refresh-contract.ts:611-611. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57488,7 +57488,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id.<union:1>: source Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant. Proven by Every source public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:548-549, apps/shared-e2e/handle-refresh-contract.ts:611-611. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57533,7 +57533,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.id.<union:2>: source Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant. Proven by Every source public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:548-549, apps/shared-e2e/handle-refresh-contract.ts:611-611. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57585,7 +57585,7 @@
         "host": "foldkit",
         "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.nodeId: Each source handle has expected owner nodeId; nodeId equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID. Public assertion: apps/shared-e2e/handle-refresh-contract.ts:612-612",
         "implementation": "packages/core/src/domain/flow-edge.schema.ts:18-24",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401",
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403",
         "reference": "packages/conformance/src/handle-refresh-reference.test.ts:99-120",
         "upstreamMember": "https://reactflow.dev/api-reference/types/internal-node"
       }
@@ -57632,7 +57632,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position: source Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57677,7 +57677,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>: source Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57722,7 +57722,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Bottom: source Handle.position maps to accepted node.handles[].side (bottom). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57767,7 +57767,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Left: source Handle.position maps to accepted node.handles[].side (left). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57812,7 +57812,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Right: source Handle.position maps to accepted node.handles[].side (right). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57857,7 +57857,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Top: source Handle.position maps to accepted node.handles[].side (top). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For source, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57902,7 +57902,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type: source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57947,7 +57947,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>: source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -57992,7 +57992,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:1>: source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58037,7 +58037,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:2>: source Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58089,7 +58089,7 @@
         "host": "foldkit",
         "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.width: Each source handle has expected owner nodeId; width equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID. Public assertion: apps/shared-e2e/handle-refresh-contract.ts:613-613",
         "implementation": "packages/core/src/domain/flow-edge.schema.ts:18-24",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401",
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403",
         "reference": "packages/conformance/src/handle-refresh-reference.test.ts:99-120",
         "upstreamMember": "https://reactflow.dev/api-reference/types/internal-node"
       }
@@ -58136,7 +58136,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.x: source Handle.x top-left maps to native offset.x center. Top-left = center minus graph-unit width/2. Explicit center representation feeds core endpoint geometry and remains detached. Proven by All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed x top-left equals DOM graph-unit top-left. Native projection lacks raw x. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:615-617. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58181,7 +58181,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:1>.<array-element>.<type:Handle>.y: source Handle.y top-left maps to native offset.y center. Top-left = center minus graph-unit height/2. Explicit center representation feeds core endpoint geometry and remains detached. Proven by All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed y top-left equals DOM graph-unit top-left. Native projection lacks raw y. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:616-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58226,7 +58226,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.source.<union:2>: source collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the source partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58271,7 +58271,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target: target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58316,7 +58316,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>: target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58361,7 +58361,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>: target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58406,7 +58406,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>: target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58451,7 +58451,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.<type:HandleBound>: target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58503,7 +58503,7 @@
         "host": "foldkit",
         "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.height: Each target handle has expected owner nodeId; height equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID. Public assertion: apps/shared-e2e/handle-refresh-contract.ts:614-614",
         "implementation": "packages/core/src/domain/flow-edge.schema.ts:18-24",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401",
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403",
         "reference": "packages/conformance/src/handle-refresh-reference.test.ts:99-120",
         "upstreamMember": "https://reactflow.dev/api-reference/types/internal-node"
       }
@@ -58550,7 +58550,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id: target Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant. Proven by Every target public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:548-549, apps/shared-e2e/handle-refresh-contract.ts:611-611. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58595,7 +58595,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id.<union:1>: target Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant. Proven by Every target public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:548-549, apps/shared-e2e/handle-refresh-contract.ts:611-611. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58640,7 +58640,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.id.<union:2>: target Handle.id maps to handles[].handleId. Native required nonempty branded ID excludes omitted/null IDs. Stable graph declaration identity enables generation invalidation and explicit per-handle routing without DOM-derived identity. The string branch maps to same nonempty ID; null branch has no native inhabitant. Proven by Every target public handle ID equals its graph declaration and rendered marker; installed Encoded probes reject missing/null ID and Type probes reject unbranded IDs; runtime schema rejects empty/null/missing IDs; actual public controller.setNodes, useFlow.setNodes and Foldkit inbound actions reject corrupted missing/null/empty IDs and leave accepted document unchanged. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:548-549, apps/shared-e2e/handle-refresh-contract.ts:611-611. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58692,7 +58692,7 @@
         "host": "foldkit",
         "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.nodeId: Each target handle has expected owner nodeId; nodeId equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID. Public assertion: apps/shared-e2e/handle-refresh-contract.ts:612-612",
         "implementation": "packages/core/src/domain/flow-edge.schema.ts:18-24",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401",
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403",
         "reference": "packages/conformance/src/handle-refresh-reference.test.ts:99-120",
         "upstreamMember": "https://reactflow.dev/api-reference/types/internal-node"
       }
@@ -58739,7 +58739,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position: target Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58784,7 +58784,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>: target Handle.position maps to accepted node.handles[].side (all four sides). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58829,7 +58829,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Bottom: target Handle.position maps to accepted node.handles[].side (bottom). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58874,7 +58874,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Left: target Handle.position maps to accepted node.handles[].side (left). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58919,7 +58919,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Right: target Handle.position maps to accepted node.handles[].side (right). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -58964,7 +58964,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.position.<type:Position>.Top: target Handle.position maps to accepted node.handles[].side (top). Graph declaration owns side, measured geometry owns offset/size; no duplicate side field in handles[]. Position type parent is the closed top/right/bottom/left native literal union. Proven by For target, declaration sides and rendered markers cover top/right/bottom/left, measured rectangles agree on every side. Installed side probes accept all four and reject unknown/null; measured object rejects position property. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59009,7 +59009,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type: target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59054,7 +59054,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>: target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59099,7 +59099,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:1>: target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59144,7 +59144,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.type.<type:HandleType>.<union:2>: target Handle.type / HandleType union maps to accepted node.handles[].kind (source / target). Both union variants inhabit graph declarations; measured handles carry no duplicate kind. A source/target partition is derived by matching IDs to those declarations. Proven by Public snapshot and node projection agree with four source and four target declarations on same node; derived partitions preserve all measured IDs. Installed kind probes accept source/target and reject invalid kind; measured handle rejects type field. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:568-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59196,7 +59196,7 @@
         "host": "foldkit",
         "assertion": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.width: Each target handle has expected owner nodeId; width equals corresponding DOM graph-unit value for every side and both kinds. Installed public types preserve numeric dimensions and branded owner ID. Public assertion: apps/shared-e2e/handle-refresh-contract.ts:613-613",
         "implementation": "packages/core/src/domain/flow-edge.schema.ts:18-24",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401",
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403",
         "reference": "packages/conformance/src/handle-refresh-reference.test.ts:99-120",
         "upstreamMember": "https://reactflow.dev/api-reference/types/internal-node"
       }
@@ -59243,7 +59243,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.x: target Handle.x top-left maps to native offset.x center. Top-left = center minus graph-unit width/2. Explicit center representation feeds core endpoint geometry and remains detached. Proven by All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed x top-left equals DOM graph-unit top-left. Native projection lacks raw x. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:615-617. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59288,7 +59288,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:1>.<array-element>.<type:Handle>.y: target Handle.y top-left maps to native offset.y center. Top-left = center minus graph-unit height/2. Explicit center representation feeds core endpoint geometry and remains detached. Proven by All four side/kind public offsets equal actual DOM centers, including transformed zooms; reconstructed y top-left equals DOM graph-unit top-left. Native projection lacks raw y. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:616-618. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59333,7 +59333,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.internals.handleBounds.<type:NodeHandleBounds>.target.<union:2>: target collection/type/array member maps to readonly flat handles plus accepted graph declarations. Derive the target partition by ID join; unmeasured/hidden/no declaration/removed samples yield [] with status, rather than omitted handleBounds or null collections. Handle/HandleBound parent aliases denote the complete same mapped aggregate, not extra runtime properties. All child mappings below are required to approve these parent identities. Proven by Public eight-record aggregate has unique IDs, owner/size/center fields, declaration-derived four-per-kind partitions and all four sides; no internals/handleBounds, no nullable arrays, no duplicate type/position fields; hidden, no declaration and removed handles explicitly produce []. Installed array/element/aggregate probes preserve readonly records and reject null/undefined. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:568-618, apps/shared-e2e/handle-refresh-contract.ts:641-671. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59570,7 +59570,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured: FlowInternalNode.width/height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width and height equal graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59615,7 +59615,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured.height: FlowInternalNode.height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured height equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59660,7 +59660,7 @@
         "reason": "InternalNode#1.<type:InternalNodeBase>.<intersection:2>.measured.width: FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -59753,7 +59753,7 @@
         "reason": "measured: FlowInternalNode.width/height and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width and height equal graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {
@@ -60014,7 +60014,7 @@
         "reason": "width: FlowInternalNode.width and measurementStatus. Required finite numeric dimensions resolve current DOM sample, including hidden dimensions while the generation remains current, or declared/default fallback when unmeasured or lifetime-invalidated; zero is valid. Status distinguishes unmeasured, measured, hidden. No measured object or nullable internals.bounds wrapper. React optional/missing measured dimensions and nullable bounds are represented by explicit status with usable dimensions, keeping a detached total projection and transient measurements separate from graph declarations. Proven by Public measured width equals graph-unit DOM size, unmeasured and never-measured hidden fallback equals declared size; hidden samples with a still-current generation retain numeric dimensions; Vue hide unmount invalidates the generation and uses declared fallback; explicit zero remains measured; no measured/internals properties; installed declarations reject null and missing dimension while accepting status variants. Public assertions: apps/shared-e2e/handle-refresh-contract.ts:534-561, apps/shared-e2e/handle-refresh-contract.ts:707-717, apps/shared-e2e/measured-geometry-contract.ts:101-127. Installed declarations: tests/consumer/foldkit/consumer.typecheck.ts:239-420.",
         "testBoundary": "Mounted foldkit public facade at zoom0.5/2; original handle kinds/all four sides and status/lifetime variants. Installed positive/negative declaration probes are separate from runtime browser proof. Exact React callback/frame timing is not compared. Nullable connection-handle contracts remain 067-owned.",
         "architectureReview": "plans/archive/measured-handle-acceptance-design.md:100-102",
-        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+        "productionTest": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
       }
     },
     {

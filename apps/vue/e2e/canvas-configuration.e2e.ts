@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import type {
   FinalWiringFixture,
   FinalWiringOptions,
@@ -687,7 +688,7 @@ test.describe('Vue MiniMap options', () => {
     const panned = await fixture(page, (api) => api.flow().getViewport())
 
     // The drag does not also recenter on release.
-    await page.waitForTimeout(100)
+    await browserFrames(page, 6)
     expect(await fixture(page, (api) => api.flow().getViewport())).toEqual(
       panned
     )

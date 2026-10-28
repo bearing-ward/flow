@@ -25,7 +25,7 @@ Current 086 at `/Users/richardmcandrews/.codex/worktrees/native-parity-acceptanc
 
 ### [COVERAGE-068-02] Repair the locator while preserving the failed behavior assertion
 
-- Evidence: historical `apps/vanilla/e2e/appearance-config.e2e.ts:47-49` expects `flow-edge`; actual historical `apps/vanilla/src/edge-renderer.ts:354-358` creates `flow-edge-group`, appends hit/path/visual at `:402`, and applies description at `:489-495`.
+- Evidence: historical `apps/vanilla/e2e/appearance-config.e2e.ts:47` expects `flow-edge`; actual historical `apps/vanilla/src/edge-renderer.ts:354-358` creates `flow-edge-group`, appends hit/path/visual at `:402`, and applies description at `:489-495`.
 - Impact: the required suite cannot reach its edge description. Six passing cases do not establish that description or any whole-068 acceptance.
 - Effort: S. Risk: LOW if the future repair selects the actual focusable edge element and preserves `toHaveAccessibleDescription('First edge help')`; HIGH if changed to an attribute-only or count assertion. Confidence: HIGH.
 - Resumption requirement: inspect actual renderer role/description ownership and assert computed description on that element. Do not remove, skip, weaken, or substitute away this failed check. The historical repeated-gate STOP prohibits another automatic repair on the stopped artifact.

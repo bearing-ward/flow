@@ -65,7 +65,7 @@ Real gaps, so `<ReactFlow />` stays P:
 ## Tests
 
 - Unit: `packages/vue/src/drag-constraints.test.ts` covers snap, group `nodeExtent`, the parent clamp, `expandParent` growth and label style mapping.
-- Browser: `apps/vue/e2e/final-wiring.e2e.ts`, 12 tests, 3 of 3 runs. The tests cover:
+- Browser: `apps/vue/e2e/canvas-configuration.e2e.ts`, 12 tests, 3 of 3 runs. The tests cover:
   - provider, composables, instance helpers and `fitView`;
   - Base Style and Updating Nodes;
   - Dark Mode;
@@ -73,7 +73,7 @@ Real gaps, so `<ReactFlow />` stays P:
   - snap and extents;
   - MiniMap options and gestures;
   - the resizer components, the switch relationship, and Labeled Group.
-- Review tests in `final-wiring.e2e.ts`:
+- Review tests in `canvas-configuration.e2e.ts`:
   - a two-parent mixed-selection drag and an `expandParent` resize, each in uncontrolled, controlled and split models, with one proposal per drop;
   - provider sibling `measured` and the two-canvas fallback;
   - edge and label layers in `basic` and `auto` modes, and focus kept across an `elevateEdgesOnSelect` move;
@@ -106,4 +106,4 @@ Real gaps, so `<ReactFlow />` stays P:
   - Canvas default edge stroke and node look now follow the React theme. FlowBaseEdge without a caller stroke uses the themed CSS stroke instead of the `#64748b` attribute.
   - `nodesResizable` remains a canvas switch alongside the components.
 - **Unverified.** No live React runtime comparison. The `node.a11yDescription.ariaLiveMessage` key is unused because Vue has no keyboard node move.
-- **Test boundary.** `apps/vue/e2e/final-wiring.e2e.ts`, `packages/vue/src/drag-constraints.test.ts`.
+- **Test boundary.** `apps/vue/e2e/canvas-configuration.e2e.ts`, `packages/vue/src/drag-constraints.test.ts`.

@@ -1,6 +1,6 @@
 # Plan 008: Refresh the handoff, progress checklist, and dependency record
 
-> **Executor instructions:** This is a documentation-only correction. Read the current code and tests before changing a status claim. Run the checks below and update only this plan's row in `plans/README.md` after success. **Drift check first:** `git diff --stat e393e3e..HEAD -- HANDOFF.md research/PROGRESS.md research/generated/SUMMARY.md docs/dependencies.md package.json apps/vanilla/e2e/flow-followups.e2e.ts`. Recheck every claim against live evidence if any path changed.
+> **Executor instructions:** This is a documentation-only correction. Read the current code and tests before changing a status claim. Run the checks below and update only this plan's row in `plans/README.md` after success. **Drift check first:** `git diff --stat e393e3e..HEAD -- HANDOFF.md research/PROGRESS.md research/generated/SUMMARY.md docs/dependencies.md package.json apps/vanilla/e2e/viewport-operations.e2e.ts`. Recheck every claim against live evidence if any path changed.
 
 ## Status
 
@@ -15,7 +15,7 @@ The handoff says the repository has no commits and nested graph work is next, al
 ## Current state
 
 - `HANDOFF.md:302-304,333,341` says there is no committed baseline; `:316-320,341` still asks for nested graphs next. `research/PROGRESS.md:5,112` records nested graph completion.
-- `research/PROGRESS.md:91` leaves unmeasured fit unchecked, while `apps/vanilla/e2e/flow-followups.e2e.ts:157-190` mounts a culled, initially unmeasured distant node and verifies fit; `docs/architecture.md:110` explains fallback dimensions.
+- `research/PROGRESS.md:91` leaves unmeasured fit unchecked, while `apps/vanilla/e2e/viewport-operations.e2e.ts:161` mounts a culled, initially unmeasured distant node and verifies fit; `docs/architecture.md:110` explains fallback dimensions.
 - `docs/dependencies.md:16-17` and `HANDOFF.md:292` describe a pinned `@effect/vitest`; `package.json` has `vitest` but no `@effect/vitest` dependency. Do not install it for a documentation fix.
 - `scripts/verify.ts:6` runs the research inventory generator. It embeds `research/PROGRESS.md` in tracked `research/generated/SUMMARY.md`; regenerate that file through the command only.
 - `docs/standards.md:7-16` distinguishes verified behavior from reference parity and requires `bun run verify`. Retain any accurate open gaps and the policy against hand-editing imported research artifacts.
@@ -34,7 +34,7 @@ The directory is a Git repository on branch `main`, but it has no commits.
 | --- | --- | --- |
 | Status evidence | `git log -1 --oneline` | Shows the current commit, at least `e393e3e` |
 | Dependency evidence | `rg -n '"@effect/vitest"' package.json` | No match, unless dependency was independently added before execution |
-| Browser evidence | `bunx playwright test apps/vanilla/e2e/flow-followups.e2e.ts` | All cases pass |
+| Browser evidence | `bunx playwright test apps/vanilla/e2e/viewport-operations.e2e.ts` | All cases pass |
 | Complete gate | `bun run verify` | All stages pass |
 
 Modify only `HANDOFF.md`, `research/PROGRESS.md`, `docs/dependencies.md`, the generated `research/generated/SUMMARY.md` **through `bun run research:inventory` only**, and this plan's index row. Read code/tests, but do not modify source, `research/artifacts/**`, or any generated file by hand. Use `codex/008-status-docs` if isolated; no commit/push/PR without instruction.
@@ -48,7 +48,7 @@ Modify only `HANDOFF.md`, `research/PROGRESS.md`, `docs/dependencies.md`, the ge
 
 ## Test plan and done criteria
 
-- This plan adds no test; it relies on the existing `flow-followups.e2e.ts:157-190` browser test and current manifest/Git facts.
+- This plan adds no test; it relies on the existing `viewport-operations.e2e.ts:157-190` browser test and current manifest/Git facts.
 - [ ] Handoff Git state, next work, and continuation prompt reflect the current checkout and completed graph milestone.
 - [ ] The fit checklist claim is supported by a passing browser test; `@effect/vitest` is not described as installed unless it actually is.
 - [ ] Full verify and `git diff --check` pass; compared with preflight `git status --short`, no new changes exist outside the scoped documentation, generated summary, and index row.

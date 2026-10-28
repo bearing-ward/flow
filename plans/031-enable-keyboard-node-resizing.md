@@ -21,7 +21,7 @@ Plan 025 added eight named, focusable resize buttons, but they only start a resi
 - `apps/vanilla/src/mount-flow.ts:3763+` handles Escape cancellation and selected-node arrow movement, but does not distinguish a focused resize control. A focused resize button can therefore fall through to node movement.
 - `apps/vanilla/src/mount-flow.ts:1535-1578` restores pointer-resize preview on cancellation. Keyboard resize must preserve the same geometry and semantic guarantees without inventing a pointer id.
 - Core already provides the pure `calculateNodeResize` geometry and atomic `node-bounds` application (`packages/core/src/domain/flow-runtime.schema.ts`); do not change the document schema or saved format.
-- Pointer geometry and cancellation coverage lives in `apps/vanilla/e2e/advanced-gestures.e2e.ts:353-555`; selected-node keyboard movement lives in `apps/vanilla/e2e/movement-slices.e2e.ts`.
+- Pointer geometry and cancellation coverage lives in `apps/vanilla/e2e/advanced-gestures.e2e.ts:653`; selected-node keyboard movement lives in `apps/vanilla/e2e/node-movement.e2e.ts`.
 
 ## Proposed keyboard contract
 
@@ -33,7 +33,7 @@ Cancel without publishing on Escape, window blur, destroy, owner removal from th
 
 ## Scope and verification
 
-**In scope:** `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/advanced-gestures.e2e.ts`, `apps/vanilla/e2e/movement-slices.e2e.ts` only if required to protect arrow movement, `docs/guides/gestures.md`, `docs/browser-and-accessibility.md`, and generated API docs only if public API descriptions change.
+**In scope:** `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/advanced-gestures.e2e.ts`, `apps/vanilla/e2e/node-movement.e2e.ts` only if required to protect arrow movement, `docs/guides/gestures.md`, `docs/browser-and-accessibility.md`, and generated API docs only if public API descriptions change.
 
 **Out of scope:** core document/session schema changes, pointer-resize redesign, Vue/Foldkit support, a full WCAG or screen-reader audit, mobile-device certification, broad keyboard shortcut redesign.
 

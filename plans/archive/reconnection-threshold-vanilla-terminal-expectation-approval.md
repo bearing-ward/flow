@@ -2,7 +2,7 @@
 
 Reviewed 2026-10-02 against the isolated native-parity-acceptance candidate. This is a correction to a newly added test expectation, not a production behavior change or a SOURCE review revision.
 
-The actual public completion path in `apps/vanilla/src/mount-flow.ts:7496-7550` publishes the successful `edge-reconnect` change, calls the reconnection proposal observer, and reports `onReconnectEnd` with outcome `proposed`. The new matrix in `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:1738-1775` independently checks the full accepted edge with preserved metadata and opposite endpoint, unchanged viewport, cleared preview, released physical capture, one change and complete callback ordering.
+The actual public completion path in `apps/vanilla/src/mount-flow.ts:7496-7550` publishes the successful `edge-reconnect` change, calls the reconnection proposal observer, and reports `onReconnectEnd` with outcome `proposed`. The new matrix in `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:1430` independently checks the full accepted edge with preserved metadata and opposite endpoint, unchanged viewport, cleared preview, released physical capture, one change and complete callback ordering.
 
 Authorize replacing only the newly added expected callback string `onReconnectEnd:accepted` with `onReconnectEnd:proposed`. Keep every accepted graph, metadata, geometry, capture, pending-frame, preview and order assertion. Do not change production classification, old tests, callback timing, or reference expectations. Preserve the first eight failures and artifact directories before editing. Re-run the same eight actual native cases after the edit.
 

@@ -45,8 +45,8 @@
         "ordinaryPasses": 362,
         "retainedExpectedFailures": 6,
         "skippedTitles": [
-          "concurrent native connection and node drag cancellation requires real pointer capture",
-          "native two-contact pinch cancellation requires real touch pointer capture"
+          "[Historical placeholder removed by Plan 179] concurrent native connection and node drag cancellation requires real pointer capture",
+          "[Historical placeholder removed by Plan 179] native two-contact pinch cancellation requires real touch pointer capture"
         ],
         "phase126OrdinaryPasses": 44,
         "phase126RetainedExpectedFailures": 6
@@ -520,7 +520,7 @@
     "apps/vanilla/e2e/node-threshold.e2e.ts": "7160f0c3c549ac5dd35f09022540ebee2d99a0d45e551ba5ccee35bef7e7a3f7",
     "apps/vanilla/src/mount-flow.ts": "b5f426ecad62c5196335c450a36666cab739233bfc16f640004de23f8a3473f8",
     "apps/vanilla/src/upstream-examples-fixture.ts": "657633cd0ce70b4f635ce67daf36bd0a16e4a848d9b3866a4895dd35fdd7d3e3",
-    "apps/vue/e2e/closing-gaps.e2e.ts": "438f4b69e2f43792cf7bb552a58f8084a74a7d0677ee467526e24ae393f43ed0",
+    "apps/vue/e2e/canvas-options.e2e.ts": "438f4b69e2f43792cf7bb552a58f8084a74a7d0677ee467526e24ae393f43ed0",
     "apps/vue/e2e/node-reentry-harness.ts": "119253e7a8c02ad7a069d24115b6f9d5c72d77cf4a5114b3cfbdb35c4ada48bb",
     "apps/vue/e2e/node-threshold.e2e.ts": "01172f2e439b6787ca7e91e70a27b2d9527a68822ad9b0ad121dc343d42a9ef4",
     "packages/foldkit/src/graph.ts": "3b093fa8534147ed632e05526d210bb1d142ba4289c5be83f28097f373820b83",

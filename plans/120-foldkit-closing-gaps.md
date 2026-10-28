@@ -12,9 +12,9 @@ Close the nine remaining Foldkit parity entries from the independent re-audit on
 
 ## Conformity and deviations
 
-Conforming review fixes: `closing-gaps.e2e.ts` covers non-focusable nodes, editable/.nokey/shadow-input ownership, non-draggable click distance, modifier deletion, shadow-root deletion, late pane sizing, resize culling and crossing edges. `closing-options.test.ts` proves individual keyboard snapping/clamping and parent-only measurement freezing. Pointer dragging retains group constraints; keyboard moves use independent node constraints, matching React `react/src/hooks/useMoveSelectedNodes.ts:49` versus `system/src/xydrag/XYDrag.ts:178`. Controlled keyboard proposals do not announce an unaccepted move.
+Conforming review fixes: `canvas-options.e2e.ts` covers non-focusable nodes, editable/.nokey/shadow-input ownership, non-draggable click distance, modifier deletion, shadow-root deletion, late pane sizing, resize culling and crossing edges. `closing-options.test.ts` proves individual keyboard snapping/clamping and parent-only measurement freezing. Pointer dragging retains group constraints; keyboard moves use independent node constraints, matching React `react/src/hooks/useMoveSelectedNodes.ts:49` versus `system/src/xydrag/XYDrag.ts:178`. Controlled keyboard proposals do not announce an unaccepted move.
 
-Intentional default changes to match React, all retained and tested in `closing-gaps.e2e.ts`:
+Intentional default changes to match React, all retained and tested in `canvas-options.e2e.ts`:
 
 - Shift+pane drag selects even with panning enabled, matching `react/src/container/ReactFlow/index.tsx:69`. The default-key test proves this with `selectionOnDrag:false`.
 - The platform modifier (Meta on macOS, Control elsewhere) activates wheel zoom, matching `react/src/container/ReactFlow/index.tsx:74`. The default-key test proves activation while Foldkit's existing `zoomOnScroll:false` remains.

@@ -9,8 +9,8 @@ import {
   PublicEditQueuedDisposalSchema,
 } from '../../../packages/conformance/src/index.ts'
 import {
+  interactionLifecycleContract,
   interactionConnectionCases,
-  currentNativeConnectionCases,
   interactionCancellationRetryCases,
   interactionLifecycleFixture,
   interactionReconnectionCases,
@@ -896,135 +896,6 @@ test('Vue custom connection preview receives candidate state and clears at termi
   )
   expect(await adapter.snapshot()).toMatchObject({ edgeIds: [] })
   expect(await adapter.changeKinds()).toEqual([])
-  await adapter.destroy()
-})
-
-test('Vue production connection gestures follow shared strict and loose cases', async ({
-  page,
-}) => {
-  const base = conformanceFixtures.find(({ id }) => id === 'keyed-update')
-
-  if (base === undefined) {
-    throw new Error('Missing keyed-update fixture')
-  }
-
-  const adapter = createVueConformanceAdapter(page)
-
-  /* eslint-disable no-await-in-loop */
-  for (const connectionCase of currentNativeConnectionCases) {
-    const document =
-      connectionCase.document === 'duplicate'
-        ? interactionLifecycleFixture.duplicateDocument
-        : interactionLifecycleFixture.connectionDocument
-
-    await adapter.mount({
-      ...base,
-      documentMode: 'uncontrolled',
-      document,
-    })
-    await page.evaluate((mode) => {
-      window.__flowVueTest?.setConnectionOptions({
-        mode,
-        radius: 20,
-        autoPanOnConnect: false,
-      })
-    }, connectionCase.mode)
-
-    const source = page.locator(
-      `[data-node-id="${connectionCase.connection.source}"] [data-handle-id="${connectionCase.connection.sourceHandle}"]`
-    )
-
-    const target = page.locator(
-      `[data-node-id="${connectionCase.connection.target}"] [data-handle-id="${connectionCase.connection.targetHandle}"]`
-    )
-
-    const sourceBounds = await source.boundingBox()
-    const targetBounds = await target.boundingBox()
-
-    if (sourceBounds === null || targetBounds === null) {
-      throw new Error(`Missing handles for ${connectionCase.id}`)
-    }
-
-    await page.mouse.move(
-      sourceBounds.x + sourceBounds.width / 2,
-      sourceBounds.y + sourceBounds.height / 2
-    )
-    await page.mouse.down()
-    await page.mouse.move(
-      targetBounds.x + targetBounds.width / 2,
-      targetBounds.y + targetBounds.height / 2,
-      { steps: 3 }
-    )
-    await page.mouse.up()
-
-    const expectedEdgeIds =
-      connectionCase.outcome === 'accepted' ||
-      connectionCase.document === 'duplicate'
-        ? ['edge-1']
-        : []
-
-    expect(await adapter.snapshot()).toMatchObject({ edgeIds: expectedEdgeIds })
-
-    if (
-      connectionCase.outcome === 'accepted' &&
-      connectionCase.normalized !== undefined
-    ) {
-      expect(await adapter.readState({ edgeId: 'edge-1' })).toMatchObject({
-        edge: connectionCase.normalized,
-      })
-    }
-  }
-  /* eslint-enable no-await-in-loop */
-
-  await adapter.mount({
-    ...base,
-    documentMode: 'uncontrolled',
-    document: interactionLifecycleFixture.connectionDocument,
-  })
-  await page.evaluate(() => {
-    window.__flowVueTest?.setConnectionOptions({
-      mode: 'loose',
-      radius: 20,
-      autoPanOnConnect: false,
-    })
-  })
-
-  const sameKindSource = page.locator(
-    '[data-node-id="source"] [data-handle-id="out"]'
-  )
-
-  const sameKindTarget = page.locator(
-    '[data-node-id="target-next"] [data-handle-id="in-next"]'
-  )
-
-  const sameKindSourceBounds = await sameKindSource.boundingBox()
-  const sameKindTargetBounds = await sameKindTarget.boundingBox()
-
-  if (sameKindSourceBounds === null || sameKindTargetBounds === null) {
-    throw new Error('Missing loose same-kind connection handles')
-  }
-
-  await page.mouse.move(
-    sameKindSourceBounds.x + sameKindSourceBounds.width / 2,
-    sameKindSourceBounds.y + sameKindSourceBounds.height / 2
-  )
-  await page.mouse.down()
-  await page.mouse.move(
-    sameKindTargetBounds.x + sameKindTargetBounds.width / 2,
-    sameKindTargetBounds.y + sameKindTargetBounds.height / 2,
-    { steps: 3 }
-  )
-  await page.mouse.up()
-
-  expect(await adapter.readState({ edgeId: 'edge-1' })).toMatchObject({
-    edge: {
-      source: 'source',
-      sourceHandle: 'out',
-      target: 'target-next',
-      targetHandle: 'in-next',
-    },
-  })
-
   await adapter.destroy()
 })
 
@@ -2012,70 +1883,6 @@ test('Vue gives a native input ownership of Escape and wheel events', async ({
     const stateAfterPointer = await adapter.readState({ nodeId: 'source' })
 
     expect(stateAfterPointer.node?.position).toEqual(originalPosition)
-  }
-  /* eslint-enable no-await-in-loop */
-
-  await adapter.destroy()
-})
-
-test('Vue rectangle selection honors full and partial modes', async ({
-  page,
-}) => {
-  const adapter = createVueConformanceAdapter(page)
-
-  const selectionDocument = {
-    ...interactionLifecycleFixture.document,
-    nodes: interactionLifecycleFixture.document.nodes.map((node) => ({
-      ...node,
-      selected: false,
-    })),
-  }
-
-  /* eslint-disable no-await-in-loop */
-  for (const selectionCase of interactionLifecycleFixture.selectionCases) {
-    await adapter.mount({
-      ...lifecycleFixture('uncontrolled', false),
-      document: selectionDocument,
-    })
-    await page.evaluate(
-      (mode) => window.__flowVueTest?.setSelectionMode(mode),
-      selectionCase.mode
-    )
-    await page.evaluate(() =>
-      window.__flowVueTest?.setGestureOptions({ autoPanOnSelection: false })
-    )
-    const canvas = await page.getByTestId('flow-canvas').boundingBox()
-
-    if (canvas === null) {
-      throw new Error('Missing selection canvas bounds')
-    }
-
-    const start = {
-      x: canvas.x + selectionCase.rect.x + 2,
-      y: canvas.y + selectionCase.rect.y + 2,
-    }
-
-    const end = {
-      x: start.x + selectionCase.rect.width,
-      y: start.y + selectionCase.rect.height,
-    }
-
-    await page.keyboard.down('Shift')
-    await page.mouse.move(start.x, start.y)
-    await page.mouse.down()
-    await page.mouse.move(end.x, end.y, { steps: 4 })
-    await expect(page.getByTestId('flow-selection-rect')).toBeVisible()
-    await page.mouse.up()
-    await page.keyboard.up('Shift')
-
-    expect(await adapter.changeKinds()).toContain('selection-set')
-
-    for (const node of selectionDocument.nodes) {
-      const state = await adapter.readState({ nodeId: node.id })
-      expect(state.node?.selected === true).toBe(
-        selectionCase.nodeIds.includes(node.id)
-      )
-    }
   }
   /* eslint-enable no-await-in-loop */
 
@@ -3101,63 +2908,22 @@ test('Vue top-left resize preserves nested child graph position and blur cancels
   await adapter.destroy()
 })
 
-test('Vue honors node drag/focus and edge select/focus flags', async ({
-  page,
-}) => {
-  const base = conformanceFixtures.find(({ id }) => id === 'keyed-update')
-
-  if (base === undefined) {
-    throw new Error('Missing keyed-update fixture')
-  }
-
-  const adapter = createVueConformanceAdapter(page)
-
-  const document = {
-    ...interactionLifecycleFixture.reconnectDocument,
-    nodes: interactionLifecycleFixture.reconnectDocument.nodes.map((node) =>
-      node.id === 'source'
-        ? { ...node, draggable: false, focusable: false }
-        : node
-    ),
-    edges: interactionLifecycleFixture.reconnectDocument.edges.map((edge) =>
-      edge.id === 'edge-existing'
-        ? { ...edge, focusable: false, selectable: false }
-        : edge
-    ),
-  }
-
-  await adapter.mount({ ...base, documentMode: 'uncontrolled', document })
-
-  const source = page.locator('[data-node-id="source"]')
-
-  await expect(source).not.toHaveAttribute('tabindex')
-  const sourceBounds = await source.boundingBox()
-
-  if (sourceBounds === null) {
-    throw new Error('Missing non-draggable source geometry')
-  }
-
-  await page.mouse.move(
-    sourceBounds.x + sourceBounds.width / 2,
-    sourceBounds.y + sourceBounds.height / 2
-  )
-  await page.mouse.down()
-  await page.mouse.move(
-    sourceBounds.x + sourceBounds.width + 70,
-    sourceBounds.y + 20
-  )
-  await page.mouse.up()
-  const stateAfterDrag = await adapter.readState({ nodeId: 'source' })
-
-  expect(stateAfterDrag.node?.position).toEqual({
-    x: 20,
-    y: 20,
-  })
-
-  const edgeTarget = page.getByTestId('flow-edge-hit-target')
-  await expect(edgeTarget).toHaveAttribute('tabindex', '-1')
-  await expect(edgeTarget).toHaveAttribute('role', 'img')
-  await edgeTarget.click({ force: true })
-  expect(await adapter.changeKinds()).not.toContain('edge-selection')
-  await adapter.destroy()
+interactionLifecycleContract({
+  host: 'vue',
+  createAdapter: createVueConformanceAdapter,
+  mount: async (page, adapter, fixture, selectionMode, connectionMode) => {
+    await adapter.mount(fixture)
+    await page.evaluate(
+      ({ selection, mode }) => {
+        window.__flowVueTest?.setSelectionMode(selection)
+        window.__flowVueTest?.setGestureOptions({ autoPanOnSelection: false })
+        window.__flowVueTest?.setConnectionOptions({
+          mode,
+          radius: 20,
+          autoPanOnConnect: false,
+        })
+      },
+      { selection: selectionMode, mode: connectionMode }
+    )
+  },
 })

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { upstreamChange } from './upstream-changes.ts'
+
 test('edge hit paths honor configured width and the upstream default', async ({
   page,
 }) => {
@@ -40,5 +42,11 @@ test('edge hit paths honor configured width and the upstream default', async ({
   })
 
   await page.mouse.click(point.x, point.y)
-  await expect(edge).toHaveClass(/selected/u)
+  await expect
+    .poll(() => upstreamChange(page, 'edge-selection'))
+    .toEqual({
+      kind: 'edge-selection',
+      edgeId: 'interaction-width',
+      selected: true,
+    })
 })

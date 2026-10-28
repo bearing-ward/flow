@@ -388,7 +388,7 @@ for (const mode of ['uncontrolled', 'controlled']) {
     await replay(page, 'redo')
     await restored(page, dragged)
     await node.click()
-    await expect(node).toHaveClass(/selected/u)
+    await expect(node).toHaveAttribute('aria-pressed', 'true')
     await expect(node).toBeFocused()
     await expect
       .poll(
@@ -659,9 +659,9 @@ test('selection and viewport noise stay outside history and replay preserves cur
       () => globalThis.flowHistoryFixture?.controller.getNode('b')?.selected
     )
   ).toBe(true)
-  await expect(page.locator('#app .flow-node[data-node-id="b"]')).toHaveClass(
-    /selected/u
-  )
+  await expect(
+    page.locator('#app .flow-node[data-node-id="b"]')
+  ).toHaveAttribute('aria-pressed', 'true')
   await page.evaluate(() =>
     globalThis.flowHistoryFixture?.controller.updateViewport({
       x: 10,
