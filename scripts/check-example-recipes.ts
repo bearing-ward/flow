@@ -1,8 +1,9 @@
 import { readFileSync, realpathSync, statSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
 import pathModule from 'node:path'
 
 import { Schema as S } from 'effect'
+
+import { loadCatalogJson } from './catalog-json.ts'
 
 const baselinePath = 'research/catalogs/react-flow-2026-09-26.json'
 
@@ -613,17 +614,17 @@ export const checkExampleRecipes = (
   return failures
 }
 
-const run = async (): Promise<void> => {
+export const exampleRecipes = async (): Promise<void> => {
   const baseline = S.decodeUnknownSync(Baseline)(
-    JSON.parse(await readFile(baselinePath, 'utf-8'))
+    await loadCatalogJson(baselinePath)
   )
 
   const registry = S.decodeUnknownSync(Registry)(
-    JSON.parse(await readFile(registryPath, 'utf-8'))
+    await loadCatalogJson(registryPath)
   )
 
   const allocation = S.decodeUnknownSync(Allocation)(
-    JSON.parse(await readFile('plans/next-chunks-coverage.json', 'utf-8'))
+    await loadCatalogJson('plans/next-chunks-coverage.json')
   )
 
   const failures = checkExampleRecipes(
@@ -644,5 +645,5 @@ const run = async (): Promise<void> => {
 }
 
 if (import.meta.main) {
-  await run()
+  await exampleRecipes()
 }

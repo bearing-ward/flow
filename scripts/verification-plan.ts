@@ -5,12 +5,8 @@ const VerificationProfileSchema = S.Literals(['focused', 'full'])
 const extraCheckNames = [
   'persistence-provenance',
   'docs',
-  'catalog',
-  'api-members',
-  'contracts',
-  'proof',
+  'catalogs',
   'calibration',
-  'examples',
   'inventory',
   'traces',
   'consumer',
@@ -25,7 +21,7 @@ const extraCheckNames = [
 const ExtraCheckSchema = S.Literals(extraCheckNames)
 
 const BrowserTestSchema = S.NonEmptyString.check(
-  S.isPattern(/^[\w-]+\.e2e\.ts$/u)
+  S.isPattern(/^(?:[\w-]+\/)*[\w-]+\.e2e\.ts$/u)
 )
 
 const BrowserTestsSchema = S.Struct({
@@ -36,9 +32,8 @@ const BrowserTestsSchema = S.Struct({
 
 export const VerificationConfigSchema = S.Struct({
   defaultProfile: VerificationProfileSchema,
-  activeWork: S.NonEmptyString,
   checks: S.Array(ExtraCheckSchema),
-  browserTests: BrowserTestsSchema,
+  pinned: S.optionalKey(BrowserTestsSchema),
 })
 
 export type VerificationConfig = typeof VerificationConfigSchema.Type
@@ -96,31 +91,16 @@ const extraChecks = {
     'scripts/check-upstream-test-ledger.ts',
   ]),
   docs: bunCheck('documentation', ['run', 'docs:check']),
-  catalog: bunCheck('React Flow catalog coverage', [
-    'run',
-    'scripts/check-react-flow-catalog.ts',
-  ]),
-  'api-members': bunCheck('React Flow API member inventory', [
-    'run',
-    'scripts/check-api-members.ts',
-  ]),
-  contracts: bunCheck('public member contract ownership', [
-    'run',
-    'scripts/check-api-member-contracts.ts',
-  ]),
-  proof: bunCheck('catalog proof matrix', [
-    'run',
-    'scripts/check-proof-matrix.ts',
-  ]),
+  catalogs: bunCheck('catalogs', ['run', 'scripts/check-catalogs.ts']),
   calibration: bunCheck('benchmark calibration registry', [
     'run',
     'scripts/check-benchmark-calibration.ts',
   ]),
-  examples: bunCheck('example recipe registry', [
+  inventory: bunCheck('research inventory', [
     'run',
-    'scripts/check-example-recipes.ts',
+    'research:inventory',
+    '--check',
   ]),
-  inventory: bunCheck('research inventory', ['run', 'research:inventory']),
   traces: bunCheck('research trace citations', [
     'run',
     'research:check-traces',
@@ -144,7 +124,38 @@ const extraChecks = {
   ]),
 } satisfies Record<typeof ExtraCheckSchema.Type, VerificationCheck>
 
-type BrowserHost = keyof VerificationConfig['browserTests']
+export type BrowserHost = keyof VerificationRequest['browserTests']
+
+export type BrowserTests = VerificationRequest['browserTests']
+
+export const emptyBrowserTests = (): Record<BrowserHost, string[]> => ({
+  vanilla: [],
+  vue: [],
+  foldkit: [],
+})
+
+export const changedBrowserTests = (paths: readonly string[]): BrowserTests => {
+  const tests = emptyBrowserTests()
+
+  for (const path of paths) {
+    const match =
+      /^apps\/(?<host>vanilla|vue|foldkit)\/e2e\/(?<file>(?:[\w-]+\/)*[\w-]+\.e2e\.ts)$/u.exec(
+        path
+      )
+
+    const host = match?.groups?.host
+    const file = match?.groups?.file
+
+    if (
+      (host === 'vanilla' || host === 'vue' || host === 'foldkit') &&
+      file !== undefined
+    ) {
+      tests[host].push(file)
+    }
+  }
+
+  return tests
+}
 
 const browserCheck = (
   host: BrowserHost,
@@ -259,7 +270,8 @@ export const parseVerificationArguments = (
 
 export const selectVerificationChecks = (
   config: VerificationConfig,
-  request: VerificationRequest
+  request: VerificationRequest,
+  changed: BrowserTests = emptyBrowserTests()
 ): readonly VerificationCheck[] => {
   const profile = request.profile ?? config.defaultProfile
   const checks = [...baselineChecks]
@@ -278,7 +290,11 @@ export const selectVerificationChecks = (
 
   for (const host of ['vanilla', 'vue', 'foldkit'] satisfies BrowserHost[]) {
     const files = [
-      ...new Set([...config.browserTests[host], ...request.browserTests[host]]),
+      ...new Set([
+        ...(config.pinned?.[host] ?? []),
+        ...changed[host],
+        ...request.browserTests[host],
+      ]),
     ]
 
     if (profile === 'full' || files.length > 0) {

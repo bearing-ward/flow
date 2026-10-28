@@ -1,6 +1,8 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path, Schema as S } from 'effect'
 
+import { readCatalogJson } from './catalog-json.ts'
+
 const Evidence = S.Struct({
   kind: S.Literals([
     'implementation',
@@ -359,24 +361,20 @@ export const checkApiMembers = (
   return failures
 }
 
-const program = Effect.gen(function* checkApiMembersEffect() {
+export const apiMembers = Effect.gen(function* checkApiMembersEffect() {
   const fileSystem = yield* FileSystem.FileSystem
   const path = yield* Path.Path
   const root = yield* path.fromFileUrl(new URL('..', import.meta.url))
 
   const catalog = yield* S.decodeUnknownEffect(ApiMemberCatalogSchema)(
-    JSON.parse(
-      yield* fileSystem.readFileString(
-        path.join(root, 'research/catalogs/api-members.json')
-      )
+    yield* readCatalogJson(
+      path.join(root, 'research/catalogs/api-members.json')
     )
   )
 
   const datedCatalog = yield* S.decodeUnknownEffect(DatedCatalog)(
-    JSON.parse(
-      yield* fileSystem.readFileString(
-        path.join(root, 'research/catalogs/react-flow-2026-09-26.json')
-      )
+    yield* readCatalogJson(
+      path.join(root, 'research/catalogs/react-flow-2026-09-26.json')
     )
   )
 
@@ -466,5 +464,5 @@ const program = Effect.gen(function* checkApiMembersEffect() {
 })
 
 if (import.meta.main) {
-  BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))
+  BunRuntime.runMain(apiMembers.pipe(Effect.provide(BunServices.layer)))
 }

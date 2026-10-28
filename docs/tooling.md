@@ -22,38 +22,42 @@ bunx ultracite doctor
 
 ## Verification profiles
 
-Verification temporarily defaults to a focused profile while feature work continues. Its baseline runs quality checks, architecture checks, one package build, workspace typechecking, and the unit suite. Add checks and browser files that exercise the current changes; the verifier does not infer scope from Git changes.
+Local verification defaults to `focused`. Its baseline runs quality checks, architecture checks, one build of all eight packages, workspace typechecking, and unit tests. Browser scope combines changed e2e files, optional pinned files, and CLI selections.
 
 ```sh
 bun run verify
-bun run verify --vue measured-geometry.e2e.ts --check contracts
+bun run verify --vue measured-geometry.e2e.ts --check catalogs
 bun run verify --vanilla advanced-gestures.e2e.ts --foldkit measured-geometry.e2e.ts
 bun run verify --list
+bun run verify --full --list
 bun run verify:full
 ```
 
-Browser options take exact filenames from the selected host's `e2e` directory. Repeat an option to select several files. The verifier rejects nonexistent files before starting checks, merges CLI selections with saved scope, and runs only hosts with selected files. Both focused and full browser tests use one worker. Test servers remain isolated from development servers.
+Changed browser files come from `git diff` against `git merge-base HEAD main`, including staged and unstaged changes, plus untracked files. Deleted files are excluded. Only files under `apps/vanilla/e2e/`, `apps/vue/e2e/`, and `apps/foldkit/e2e/` select browser tests. Changes to shared acceptance modules do not select their host wrappers automatically. Add those wrappers with CLI flags or pins. A missing `main` merge base fails selection with the Git diagnostic.
 
-Keep the scope for ongoing work in the root `verification.config.json`:
+Keep optional checks and a short pinned browser scope in the root `verification.config.json`:
 
 ```json
 {
   "defaultProfile": "focused",
-  "activeWork": "Vue measured geometry",
-  "checks": ["contracts"],
-  "browserTests": {
+  "checks": [],
+  "pinned": {
     "vanilla": [],
-    "vue": ["measured-geometry.e2e.ts"],
+    "vue": [],
     "foldkit": []
   }
 }
 ```
 
-Update `activeWork`, `checks`, and `browserTests` when changing tasks. `--check` accepts `docs`, `catalog`, `api-members`, `contracts`, `proof`, `calibration`, `examples`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, `upstream-ledger`, and `collaboration`. The collaboration check starts all three hosts plus a local y-websocket server for mixed-host convergence and stops them after the run. For example, public export changes should include `consumer`; research or catalog edits should include their corresponding check. These additions are explicit because the baseline alone does not cover those contracts.
+`pinned` is optional. Browser flags accept exact filenames relative to the host's `e2e` directory. Repeat a flag to select several files. Selection deduplicates changed files, pins, and CLI additions. The verifier rejects nonexistent pinned or requested files before running checks. Both profiles use one browser worker and isolated test servers. `--list` prints the resolved checks and browser files without running them.
 
-The full profile includes all these extra checks, all three application builds, packed consumers, and every browser suite. Use it at integration and release milestones. `--full` ignores focused browser filters and runs all suites; `--focused` overrides a full configured default. `--list` previews either profile without executing checks. Logs name the selected profile and checks and report elapsed time; record that scope when reporting acceptance.
+`--check` accepts `docs`, `catalogs`, `calibration`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, `upstream-ledger`, `collaboration`, and `reference-host`. `catalogs` runs catalog coverage, API member inventory, contract ownership, proof matrix, and example recipe rules in one process with shared JSON parsing. `inventory` compares generated output in memory. `bun run research:inventory` still writes that output.
 
-Automatic CI uses the configured default. A manual CI run can choose `focused` or `full`; a manual full run also runs the release dry run. To restore broad verification locally and in automatic CI, change `defaultProfile` to `full` in `verification.config.json`.
+The full profile retains every extra check except the opt-in React reference host, all three app builds, packed consumers, and every host browser file. It ignores focused filters. `--focused` overrides a full configured default. Full verification is required at integration and release milestones. A focused pass proves only its reported selection.
+
+After the baseline package build passes, verification passes `FLOW_PACKAGES_PREBUILT=1` to later commands. App builds, browser servers, and nested package build scripts reuse those eight package outputs. Standalone commands build normally. The Vanilla app emits to `apps/vanilla/dist/app`, preserving the package exports beside that directory. `scripts/build-packages.ts [package...]` builds selected packages and their core dependency in dependency order, then rewrites declaration import extensions. With no arguments it builds all eight packages.
+
+CI defaults to `full`. Manual CI runs can choose either profile; manual full runs also run the release dry run. Local defaults remain controlled by `defaultProfile` in `verification.config.json`. Logs report each check's duration and the total execution time, excluding browser-lock wait time.
 
 ## Browser test servers
 

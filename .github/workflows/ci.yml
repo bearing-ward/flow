@@ -18,9 +18,16 @@ on:
 jobs:
   verify:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - if: inputs.profile == 'focused'
+        run: |
+          if ! git show-ref --verify --quiet refs/heads/main; then
+            git branch main origin/main
+          fi
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.3
@@ -33,6 +40,8 @@ jobs:
             bun run verify
           fi
         env:
-          VERIFICATION_PROFILE: ${{ inputs.profile || '' }}
+          VERIFICATION_PROFILE: ${{ inputs.profile || 'full' }}
       - if: github.event_name == 'workflow_dispatch' && inputs.profile == 'full'
         run: bun run release:dry-run
+        env:
+          FLOW_PACKAGES_PREBUILT: '1'

@@ -8,6 +8,7 @@ export default defineConfig({
       'apps/foldkit/src/**/*.test.ts',
       'apps/vanilla/src/**/*.test.ts',
       'scripts/check-research-traces.test.ts',
+      'scripts/check-catalogs.test.ts',
       'scripts/check-api-members.test.ts',
       'scripts/check-api-member-contracts.test.ts',
       'scripts/check-proof-matrix.test.ts',

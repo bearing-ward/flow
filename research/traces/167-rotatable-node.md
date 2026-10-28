@@ -6,7 +6,7 @@ Public page: https://reactflow.dev/examples/nodes/rotatable-node, accessed 2026-
 
 The source renders a rotation control and both connection handles inside the rotated element. D3 drag computes an angle from the pointer around a fixed `(100, 100)` center, updates React component state, and calls `useUpdateNodeInternals(id)`. The angle is local component state. It is not written into the example's nodes or node data. The example supplies two nodes with left/right connection sides and a smooth-step edge.
 
-The reproducible DOM observation is `scripts/capture-rotatable-node-reference.ts`. The dated output is recorded in `research/fixtures/rotatable-node-reference.json`. The example source establishes local state ownership, not save/load or history support.
+The reproducible DOM observation is `scripts/capture/capture-rotatable-node-reference.ts`. The dated output is recorded in `research/fixtures/rotatable-node-reference.json`. The example source establishes local state ownership, not save/load or history support.
 
 The locked capture moved the control from above the measured center to its right. The visual reached 69.9083 degrees and both its handle box and edge path moved. The observed edge start was `(228.6184, 397.6362)`, while the source-handle box center was `(219.0329, 401.9904)`. That displacement does not follow the rotated outward source normal. Reloading reset the visual to zero. Flow intentionally uses the measured center and rotates the full attachment point; it does not reproduce the reference's fixed-center and bounding-box artifacts.
 

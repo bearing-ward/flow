@@ -4,32 +4,33 @@ import path from 'node:path'
 import { chromium } from '@playwright/test'
 import { Schema as S } from 'effect'
 
-import {
-  HandleRefreshCasesSchema,
-  HandleRefreshFixtureSchema,
-} from '../research/harnesses/handle-refresh/fixture-schema.ts'
-
 declare global {
   interface Window {
-    __handleRefreshCapture?: string
-    __handleRefreshProbeDebug?: string
+    __measuredGeometryCapture?: string
+    __measurementProbeDebug?: string
   }
 }
 
 const expectedSha = '0a1f9575b25679f2880175de8d3eae21aedde921'
 
-const root = path.resolve(import.meta.dir, '..')
+const root = path.resolve(import.meta.dir, '../..')
 
 const fixturePath = path.resolve(
   root,
-  'research/fixtures/handle-refresh-reference.json'
+  'research/fixtures/measured-geometry-reference.json'
 )
 
-const harnessRoot = path.resolve(root, 'research/harnesses/handle-refresh')
+const harnessRoot = path.resolve(root, 'research/harnesses/measured-geometry')
 
-const port = 4193
+const port = 4191
 
-const CaptureSchema = HandleRefreshCasesSchema
+const CaptureSchema = S.Struct({
+  initial: S.NullOr(S.Json),
+  readiness: S.Struct({ visibleOnly: S.Boolean, includingHidden: S.Boolean }),
+  hiddenInternal: S.NullOr(S.Json),
+  missingInternal: S.NullOr(S.Json),
+  refreshed: S.NullOr(S.Json),
+})
 
 const arg = process.argv.find((value) => value.startsWith('--checkout='))
 
@@ -39,7 +40,7 @@ const checkoutArg =
 
 if (checkoutArg === undefined || !path.isAbsolute(checkoutArg)) {
   throw new Error(
-    'Usage: bun run scripts/capture-handle-refresh-reference.ts --checkout /absolute/path/to/disposable-xyflow-checkout'
+    'Usage: bun run scripts/capture/capture-measured-geometry-reference.ts --checkout /absolute/path/to/disposable-xyflow-checkout'
   )
 }
 
@@ -137,37 +138,7 @@ const server = Bun.spawn(
 const browser = await chromium.launch({ headless: true })
 
 try {
-  const deadline = Date.now() + 15_000
-
-  const waitForServer = async (): Promise<void> => {
-    if (server.exitCode !== null) {
-      throw new Error(
-        `Reference server exited before readiness: ${server.exitCode}`
-      )
-    }
-
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}`)
-
-      if (response.ok) {
-        return
-      }
-    } catch {
-      // The strict-port Vite process has not bound its listener yet.
-    }
-
-    if (Date.now() >= deadline) {
-      throw new Error('Reference server did not become ready within 15 seconds')
-    }
-
-    await Bun.sleep(100)
-
-    return waitForServer()
-  }
-
-  await waitForServer()
-
-  const captureOnce = async (): Promise<typeof CaptureSchema.Type> => {
+  const captureOnce = async (): Promise<typeof S.Json.Type> => {
     const page = await browser.newPage()
     const diagnostics: string[] = []
     page.on('pageerror', (error) =>
@@ -191,7 +162,7 @@ try {
 
       try {
         await page.waitForFunction(
-          () => window.__handleRefreshCapture !== undefined,
+          () => window.__measuredGeometryCapture !== undefined,
           undefined,
           { timeout: 15_000 }
         )
@@ -200,7 +171,7 @@ try {
           url: location.href,
           readyState: document.readyState,
           title: document.title,
-          probeDebug: window.__handleRefreshProbeDebug ?? null,
+          probeDebug: window.__measurementProbeDebug ?? null,
           bodyText: document.body.textContent?.slice(0, 2048),
           nodes: [...document.querySelectorAll('.react-flow__node')].map(
             (node) => {
@@ -226,7 +197,9 @@ try {
         )
       }
 
-      const capture = await page.evaluate(() => window.__handleRefreshCapture)
+      const capture = await page.evaluate(
+        () => window.__measuredGeometryCapture
+      )
 
       if (capture === undefined) {
         throw new Error(
@@ -234,7 +207,7 @@ try {
         )
       }
 
-      return S.decodeUnknownSync(CaptureSchema)(JSON.parse(capture))
+      return S.decodeUnknownSync(S.Json)(JSON.parse(capture))
     } finally {
       await page.close()
     }
@@ -252,7 +225,7 @@ try {
     )
   )
 
-  const fixture = S.decodeUnknownSync(HandleRefreshFixtureSchema)({
+  const fixture = {
     metadata: {
       framework: 'React',
       package: '@xyflow/react',
@@ -260,13 +233,12 @@ try {
       upstreamSha: expectedSha,
       browser: `Chromium ${browser.version()}`,
       normalization:
-        'captured node-local handleBounds top-left to center; accepted parent-local positions and SVG graph coordinates; caller-specified 10px borderless handles; timestamps excluded',
+        'captured normalized node dimensions, parent-local geometry, handle bounds, readiness, and missing-node result; timestamps excluded from equality',
       capturedAt: new Date().toISOString(),
-      captureRuns: 2,
     },
     cases: first,
     repeatedCaptureMatches: true,
-  })
+  }
 
   await Bun.write(fixturePath, `${JSON.stringify(fixture, null, 2)}\n`)
   run(['bunx', 'oxfmt', fixturePath], root)

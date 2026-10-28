@@ -8,7 +8,7 @@ import {
   ApiUtilityReferenceCasesSchema,
   ApiUtilityReferenceFixtureSchema,
   pinnedApiUtilityReferenceSha,
-} from './api-utility-reference-schema.ts'
+} from '../api-utility-reference-schema.ts'
 
 declare global {
   interface Window {
@@ -18,7 +18,7 @@ declare global {
 
 const expectedSha = pinnedApiUtilityReferenceSha
 
-const root = path.resolve(import.meta.dir, '..')
+const root = path.resolve(import.meta.dir, '../..')
 
 const checkoutArg =
   process.argv
@@ -28,7 +28,7 @@ const checkoutArg =
 
 if (checkoutArg === undefined || !path.isAbsolute(checkoutArg)) {
   throw new Error(
-    'Usage: bun run scripts/capture-api-utility-reference.ts --checkout /absolute/path/to/disposable-xyflow-checkout'
+    'Usage: bun run scripts/capture/capture-api-utility-reference.ts --checkout /absolute/path/to/disposable-xyflow-checkout'
   )
 }
 

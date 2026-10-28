@@ -657,6 +657,8 @@ const program = Effect.gen(function* checkPackedConsumers() {
       }
     })
 
+  yield* run('bun', ['run', 'build:packages'], root)
+
   const pack = (source: PackagePath) =>
     Effect.try({
       try: () => {

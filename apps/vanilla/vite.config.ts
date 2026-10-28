@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     build: {
+      outDir: 'dist/app',
       rolldownOptions: {
         input: {
           workflow: `${import.meta.dirname}/workflow/index.html`,

@@ -2,6 +2,7 @@ import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path, Schema as S } from 'effect'
 import ts from 'typescript-api'
 
+import { readCatalogJson } from './catalog-json.ts'
 import {
   ApiMemberCatalogSchema,
   checkEvidenceLink,
@@ -207,7 +208,7 @@ const matchesPurePathTarget = (
   target.exportName === helper &&
   target.operation === member &&
   target.productionTest === 'packages/core/src/domain/flow-edge-path.test.ts' &&
-  target.capture === 'scripts/capture-path-helper-reference.ts'
+  target.capture === 'scripts/capture/capture-path-helper-reference.ts'
 
 const checkTargets = (
   group: typeof Group.Type,
@@ -484,22 +485,20 @@ export const checkApiMemberContracts = (
   return failures
 }
 
-const program = Effect.gen(function* checkMemberContracts() {
+export const memberContracts = Effect.gen(function* checkMemberContracts() {
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
   const root = yield* path.fromFileUrl(new URL('..', import.meta.url))
 
   const catalog = yield* S.decodeUnknownEffect(ApiMemberCatalogSchema)(
-    JSON.parse(
-      yield* fs.readFileString(
-        path.join(root, 'research/catalogs/api-members.json')
-      )
+    yield* readCatalogJson(
+      path.join(root, 'research/catalogs/api-members.json')
     )
   )
 
   const closure = yield* S.decodeUnknownEffect(MemberClosureSchema)(
-    JSON.parse(
-      yield* fs.readFileString(path.join(root, 'plans/057-member-closure.json'))
+    yield* readCatalogJson(
+      path.join(root, 'research/catalogs/057-member-closure.json')
     )
   )
 
@@ -564,5 +563,5 @@ const program = Effect.gen(function* checkMemberContracts() {
 })
 
 if (import.meta.main) {
-  BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))
+  BunRuntime.runMain(memberContracts.pipe(Effect.provide(BunServices.layer)))
 }
