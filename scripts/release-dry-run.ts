@@ -112,7 +112,6 @@ const program = Effect.gen(function* releaseDryRun() {
   ): boolean =>
     [
       rootManifest.dependencies?.effect === '4.0.0',
-      rootManifest.dependencies?.['@effect/platform-browser'] === '4.0.0',
       rootManifest.dependencies?.['@effect/platform-bun'] === '4.0.0',
       rootManifest.dependencies?.['@effect/platform-node-shared'] === '4.0.0',
       coreManifest.dependencies?.effect === '4.0.0',

@@ -14,7 +14,7 @@ declare global {
 
 const expectedSha = '0a1f9575b25679f2880175de8d3eae21aedde921'
 
-const root = path.resolve(import.meta.dir, '..')
+const root = path.resolve(import.meta.dir, '../..')
 
 const checkoutArg = process.argv.find((value) =>
   value.startsWith('--checkout=')

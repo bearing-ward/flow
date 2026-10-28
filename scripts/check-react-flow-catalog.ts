@@ -1,6 +1,8 @@
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path, Schema as S } from 'effect'
 
+import { readCatalogJson } from './catalog-json.ts'
+
 const Section = S.Literals(['api-reference', 'examples', 'ui'])
 
 const Entry = S.Struct({
@@ -217,13 +219,13 @@ const checkEvidenceLinks = (
     }
   })
 
-const program = Effect.gen(function* checkReactFlowCatalog() {
+export const catalogCoverage = Effect.gen(function* checkReactFlowCatalog() {
   const fileSystem = yield* FileSystem.FileSystem
   const path = yield* Path.Path
   const root = yield* path.fromFileUrl(new URL('..', import.meta.url))
 
   const catalog = yield* S.decodeUnknownEffect(Catalog)(
-    JSON.parse(yield* fileSystem.readFileString(path.join(root, snapshot)))
+    yield* readCatalogJson(path.join(root, snapshot))
   )
 
   const markdown = yield* fileSystem.readFileString(path.join(root, document))
@@ -313,5 +315,5 @@ const program = Effect.gen(function* checkReactFlowCatalog() {
 })
 
 if (import.meta.main) {
-  BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))
+  BunRuntime.runMain(catalogCoverage.pipe(Effect.provide(BunServices.layer)))
 }

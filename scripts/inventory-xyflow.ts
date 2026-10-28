@@ -228,52 +228,54 @@ const program = Effect.gen(function* program() {
   })
 
   const outputRoot = path.join(rootPath, 'research', 'generated')
-  yield* fileSystem.makeDirectory(outputRoot, { recursive: true })
-  yield* fileSystem.writeFileString(
-    path.join(outputRoot, 'inventory.json'),
-    `${JSON.stringify(inventory, null, 2)}\n`
-  )
-  yield* fileSystem.writeFileString(
-    path.join(outputRoot, 'DECLARATIONS.tsv'),
-    toTsv([
-      ['path', 'line', 'kind', 'name'],
-      ...files.flatMap((file) =>
-        file.declarations.map((declaration) => [
-          file.path,
-          declaration.line,
-          declaration.kind,
-          declaration.name,
-        ])
-      ),
-    ])
-  )
-  yield* fileSystem.writeFileString(
-    path.join(outputRoot, 'IMPORTS.tsv'),
-    toTsv([
-      ['path', 'line', 'specifier'],
-      ...files.flatMap((file) =>
-        file.imports.map((entry) => [file.path, entry.line, entry.specifier])
-      ),
-    ])
-  )
-  yield* fileSystem.writeFileString(
-    path.join(outputRoot, 'CALLS.tsv'),
-    toTsv([
-      ['path', 'line', 'callee'],
-      ...files.flatMap((file) =>
-        file.calls.map((call) => [file.path, call.line, call.callee])
-      ),
-    ])
-  )
-  yield* fileSystem.writeFileString(
-    path.join(outputRoot, 'TESTS.tsv'),
-    toTsv([
-      ['path', 'lines'],
-      ...files.flatMap((file) =>
-        file.isTest ? [[file.path, file.lines]] : []
-      ),
-    ])
-  )
+
+  const outputs = new Map<string, string>([
+    [
+      path.join(outputRoot, 'inventory.json'),
+      `${JSON.stringify(inventory, null, 2)}\n`,
+    ],
+    [
+      path.join(outputRoot, 'DECLARATIONS.tsv'),
+      toTsv([
+        ['path', 'line', 'kind', 'name'],
+        ...files.flatMap((file) =>
+          file.declarations.map((declaration) => [
+            file.path,
+            declaration.line,
+            declaration.kind,
+            declaration.name,
+          ])
+        ),
+      ]),
+    ],
+    [
+      path.join(outputRoot, 'IMPORTS.tsv'),
+      toTsv([
+        ['path', 'line', 'specifier'],
+        ...files.flatMap((file) =>
+          file.imports.map((entry) => [file.path, entry.line, entry.specifier])
+        ),
+      ]),
+    ],
+    [
+      path.join(outputRoot, 'CALLS.tsv'),
+      toTsv([
+        ['path', 'line', 'callee'],
+        ...files.flatMap((file) =>
+          file.calls.map((call) => [file.path, call.line, call.callee])
+        ),
+      ]),
+    ],
+    [
+      path.join(outputRoot, 'TESTS.tsv'),
+      toTsv([
+        ['path', 'lines'],
+        ...files.flatMap((file) =>
+          file.isTest ? [[file.path, file.lines]] : []
+        ),
+      ]),
+    ],
+  ])
 
   const roots = new Map<string, { files: number; lines: number }>()
 
@@ -320,10 +322,37 @@ const program = Effect.gen(function* program() {
     '',
   ].join('\n')
 
-  yield* fileSystem.writeFileString(
-    path.join(outputRoot, 'SUMMARY.md'),
-    summary
-  )
+  outputs.set(path.join(outputRoot, 'SUMMARY.md'), summary)
+  const check = Bun.argv.includes('--check')
+
+  if (!check) {
+    yield* fileSystem.makeDirectory(outputRoot, { recursive: true })
+  }
+
+  const differences: string[] = []
+
+  for (const [file, expected] of outputs) {
+    if (check) {
+      const actual = (yield* fileSystem.exists(file))
+        ? yield* fileSystem.readFileString(file)
+        : undefined
+
+      if (actual !== expected) {
+        differences.push(file)
+      }
+    } else {
+      yield* fileSystem.writeFileString(file, expected)
+    }
+  }
+
+  if (differences.length > 0) {
+    return yield* Effect.fail(
+      new Error(
+        `Stale research inventory: ${differences.join(', ')}. Run bun run research:inventory.`
+      )
+    )
+  }
+
   yield* Effect.log(`Indexed ${files.length} files into ${outputRoot}`)
 })
 

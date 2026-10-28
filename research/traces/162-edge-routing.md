@@ -67,11 +67,11 @@ Initial failures found and corrected an object-property-order revision mismatch,
 | `cmp` against published JS/WASM; `shasum -a 256` | Identical bytes; hashes above |
 | Separately locked original Vanilla/Vue pre-flight commands | Terminated while waiting, exit 143, superseded by combined projects |
 | Locked Foldkit raw pre-flight | One passed |
-| `scripts/with-flow-browser-lock.sh bun run playwright test --config scripts/routing-preflight.config.ts --workers=1` | Three passed after strict-port isolation; earlier attempt stopped before tests on occupied 4177 |
+| Retired standalone three-host pre-flight config | Three passed after strict-port isolation; earlier attempt stopped before tests on occupied 4177 |
 | `bun run build:packages` and `bun run tsc --noEmit` | Passed; an initial direct typecheck before build outputs failed, then passed after building |
 | Targeted Vitest core/engine contracts and isolated package test | 21/21; included in the final 2,802-unit pass |
 | `bun run test` | 2,802 passed, 128 files in the required verifier; earlier baseline 2,801 before the stale-failure case |
-| `scripts/with-flow-browser-lock.sh bun run playwright test --config scripts/edge-routing.config.ts --workers=1` | 33 passed on final source; an additional three-host native SVG/DOM clearance assertion also passed |
+| Retired standalone three-host edge-routing config | 33 passed on final source; an additional three-host native SVG/DOM clearance assertion also passed |
 | Scoped `oxlint --fix`, `oxfmt`; `bun run check` | Passed on owned changes |
 | `bun run check:architecture` | Passed source/dependency boundaries and negative fixtures |
 | `bun run docs:generate-api` | Generated current API reference |
@@ -87,6 +87,10 @@ The first required verifier passed all non-browser gates, 238 classified React r
 Core request decoding uses `FlowSpan.documentDecode`; routing uses `FlowSpan.editPrepare`; engine failures log structured failure names/messages under `FlowSpan.editFailure`. Derived changes use the existing change/count attributes. Host mount, destroy and geometry observers retain their lifecycle spans. Pointer moves are not logged. Application composition still owns optional OTLP export and flushing. Collector delivery was not tested.
 
 The required final locked verifier passed the **focused** profile with every preserved check and browser file: **2,802 unit tests across 128 files; 238 classified React reference cases; Vanilla 979 passed / 4 skipped across 68 selected files; Vue 1,113 passed / 2 skipped across 66 selected files; Foldkit 737 passed across 78 selected files**. This includes all three raw pre-flights and all 33 routing acceptance cases on final source. The six skipped cases are existing suite classifications; no assertion or scope was weakened. No full-profile acceptance is claimed.
+
+## Plan 177 command consolidation
+
+The standalone configs are retired. Each host still invokes the same shared acceptance modules from `apps/<host>/e2e/routing-preflight.e2e.ts` and `apps/<host>/e2e/edge-routing.e2e.ts`. Run the host wrappers with `scripts/with-flow-browser-lock.sh bun run verify --vanilla edge-routing.e2e.ts --vanilla routing-preflight.e2e.ts --vue edge-routing.e2e.ts --vue routing-preflight.e2e.ts --foldkit edge-routing.e2e.ts --foldkit routing-preflight.e2e.ts`. The historical counts above describe the original three-host runs.
 
 ## Conformity and deviations
 

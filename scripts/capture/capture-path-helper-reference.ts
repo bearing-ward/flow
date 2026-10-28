@@ -8,11 +8,11 @@ import { Schema as S } from 'effect'
 import {
   CaptureSchema,
   pathCases,
-} from '../research/harnesses/path-helper/cases.ts'
+} from '../../research/harnesses/path-helper/cases.ts'
 
 const expectedSha = '0a1f9575b25679f2880175de8d3eae21aedde921'
 
-const root = path.resolve(import.meta.dir, '..')
+const root = path.resolve(import.meta.dir, '../..')
 
 const arg = process.argv.find((value) => value.startsWith('--checkout='))
 

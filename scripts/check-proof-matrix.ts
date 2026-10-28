@@ -3,6 +3,8 @@ import path from 'node:path'
 import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { Effect, FileSystem, Path, Schema as S } from 'effect'
 
+import { readCatalogJson } from './catalog-json.ts'
+
 const Hosts = ['vanilla', 'vue', 'foldkit'] as const
 
 const ProofEvidence = S.Struct({
@@ -537,32 +539,26 @@ export const checkProofMatrix = (
   return failures
 }
 
-const program = Effect.gen(function* checkProofMatrixEffect() {
+export const proofMatrix = Effect.gen(function* checkProofMatrixEffect() {
   const fileSystem = yield* FileSystem.FileSystem
   const filePath = yield* Path.Path
   const root = yield* filePath.fromFileUrl(new URL('..', import.meta.url))
 
   const matrix = yield* S.decodeUnknownEffect(Matrix)(
-    JSON.parse(
-      yield* fileSystem.readFileString(
-        filePath.join(root, 'research/catalogs/proof-matrix.json')
-      )
+    yield* readCatalogJson(
+      filePath.join(root, 'research/catalogs/proof-matrix.json')
     )
   )
 
   const datedCatalog = yield* S.decodeUnknownEffect(DatedCatalogSchema)(
-    JSON.parse(
-      yield* fileSystem.readFileString(
-        filePath.join(root, `research/catalogs/${matrix.baselineCatalog}`)
-      )
+    yield* readCatalogJson(
+      filePath.join(root, `research/catalogs/${matrix.baselineCatalog}`)
     )
   )
 
   const apiCatalog = yield* S.decodeUnknownEffect(ApiCatalogSchema)(
-    JSON.parse(
-      yield* fileSystem.readFileString(
-        filePath.join(root, `research/catalogs/${matrix.apiMemberCatalog}`)
-      )
+    yield* readCatalogJson(
+      filePath.join(root, `research/catalogs/${matrix.apiMemberCatalog}`)
     )
   )
 
@@ -638,5 +634,5 @@ const program = Effect.gen(function* checkProofMatrixEffect() {
 })
 
 if (import.meta.main) {
-  BunRuntime.runMain(program.pipe(Effect.provide(BunServices.layer)))
+  BunRuntime.runMain(proofMatrix.pipe(Effect.provide(BunServices.layer)))
 }

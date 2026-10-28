@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 import { describe, expect, it } from 'vitest'
@@ -215,6 +216,14 @@ const approvedRegistry = (): TestRegistry => {
 }
 
 describe('benchmark calibration validation', () => {
+  it('validates the real repository', () => {
+    expect(() =>
+      execFileSync('bun', ['run', 'scripts/check-benchmark-calibration.ts'], {
+        stdio: 'pipe',
+      })
+    ).not.toThrow()
+  })
+
   it('accepts an empty pending registry without inventing thresholds', () => {
     const pendingRegistry = { ...baseline, runs: [] }
 

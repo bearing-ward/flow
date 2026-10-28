@@ -5,20 +5,15 @@
     "": {
       "name": "@flow/workspace",
       "dependencies": {
-        "@effect/platform-browser": "4.0.0",
         "@effect/platform-bun": "4.0.0",
         "@effect/platform-node-shared": "4.0.0",
         "effect": "4.0.0",
-        "foldkit": "0.169.0",
-        "vue": "3.5.44",
       },
       "devDependencies": {
         "@effect/language-service": "0.87.5",
-        "@flow/workflow": "workspace:*",
         "@oxlint/plugins": "1.89.0",
         "@playwright/test": "1.64.1",
         "@types/bun": "1.4.3",
-        "libavoid-js": "0.5.0-beta.5",
         "oxfmt": "0.74.0",
         "oxlint": "1.89.0",
         "typescript": "7.0.2",

@@ -15,7 +15,7 @@ declare global {
 /* eslint-disable no-await-in-loop */
 const expectedSha = '0a1f9575b25679f2880175de8d3eae21aedde921'
 
-const root = path.resolve(import.meta.dir, '..')
+const root = path.resolve(import.meta.dir, '../..')
 
 const fixturePath = path.resolve(
   root,
@@ -71,7 +71,7 @@ const checkoutArg =
 
 if (checkoutArg === undefined || !path.isAbsolute(checkoutArg)) {
   throw new Error(
-    'Usage: bun run scripts/capture-interaction-lifecycle-reference.ts --checkout /absolute/path/to/disposable-xyflow-checkout'
+    'Usage: bun run scripts/capture/capture-interaction-lifecycle-reference.ts --checkout /absolute/path/to/disposable-xyflow-checkout'
   )
 }
 
