@@ -1,5 +1,7 @@
 # Remaining Cypress edge and viewport contracts
 
+Round 2 of Plan 180 deleted redundant ownership matrices. References prefixed R1 below describe the round-1 source at commit 7b5ba09 and remain historical evidence. Current case selection and assertion dispositions are in [Plan 180](180-ownership-suite-reduction.md).
+
 Historical policy note: the maintainer's 2026-10-22 decision and Plan 143 supersede this trace's noninteractive built-in label and Vanilla shared-SVG policy references. Current behavior and acceptance boundaries are recorded in [edge labels](edge-label-render.md) and [edge stacking](edge-visibility-stacking.md).
 
 Status: traced against pinned xyflow `0a1f9575b25679f2880175de8d3eae21aedde921`. Upstream paths below are relative to `research/artifacts/xyflow/0a1f9575b25679f2880175de8d3eae21aedde921/`. Plan 138 and `research/catalogs/cypress-remaining-evidence.json` retain baseline receipts. The results catalog records acceptance separately.
@@ -26,7 +28,7 @@ The Cypress port opens one context and page per example at `apps/shared-e2e/upst
 
 Basic's first-edge assertions remain at `apps/shared-e2e/upstream-cypress/basic.ts:70` and `apps/shared-e2e/upstream-cypress/basic.ts:130`. Interaction's edge assertion remains at `apps/shared-e2e/upstream-cypress/interaction.ts:152`. Its synchronous pre-queue transform and unchanged waits remain at `apps/shared-e2e/upstream-cypress/interaction.ts:206`. The unchanged connection sequences remain at `apps/shared-e2e/upstream-cypress/basic.ts:156` and `apps/shared-e2e/upstream-cypress/interaction.ts:161`.
 
-Vue's retained-element, order, focus, and label stacking regression is at `apps/vue/e2e/canvas-configuration.e2e.ts:262`. Native pointer-centred double and Shift double-click endpoints are at `apps/vue/e2e/viewport-operations.e2e.ts:389`. Synthetic node-owner tests remain separate at `packages/vue/tests/ownership/viewport-oracles.ts:1922`; only the obsolete factor expectations change. Vanilla's elevation scenario explicitly opts in at `apps/vanilla/e2e/selection-and-culling.e2e.ts:156`. The strengthened button-edge test at `apps/vue/e2e/edge-recipes.e2e.ts:209` retains native click and keyboard deletion after an explicit hit-order assertion. The marker test observes instance scope through canvases at `apps/vue/e2e/renderer-contract.e2e.ts:363`, independent of the new SVG count.
+Vue's retained-element, order, focus, and label stacking regression is at `apps/vue/e2e/canvas-configuration.e2e.ts:262`. Native pointer-centred double and Shift double-click endpoints are at `apps/vue/e2e/viewport-operations.e2e.ts:389`. Synthetic node-owner tests remain separate at `R1:packages/vue/tests/ownership/viewport-oracles.ts:1922`; only the obsolete factor expectations change. Vanilla's elevation scenario explicitly opts in at `apps/vanilla/e2e/selection-and-culling.e2e.ts:156`. The strengthened button-edge test at `apps/vue/e2e/edge-recipes.e2e.ts:209` retains native click and keyboard deletion after an explicit hit-order assertion. The marker test observes instance scope through canvases at `apps/vue/e2e/renderer-contract.e2e.ts:363`, independent of the new SVG count.
 
 ## Plan 144 Foldkit follow-through
 

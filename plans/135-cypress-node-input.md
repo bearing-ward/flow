@@ -1,5 +1,7 @@
 # Plan 135: Node selection input (upstream Cypress follow-up)
 
+Round 2 of Plan 180 deleted redundant ownership matrices. References prefixed R1 below describe the round-1 source at commit 7b5ba09 and remain historical evidence. Current case selection and assertion dispositions are in [Plan 180](../research/traces/180-ownership-suite-reduction.md).
+
 ## Problem and scope
 
 Separate zero-threshold click admission with selectNodesOnDrag=false from marquee admission. Investigate pane dismissal independently in controlled Vue and Foldkit. Preserve the source sequence, including failures that abort before later deletion or lock actions.
@@ -70,7 +72,7 @@ The pinned selection authority is `research/artifacts/xyflow/0a1f9575b25679f2880
 | Existing test | Before | Change and retained boundary |
 | --- | --- | --- |
 | `apps/vanilla/e2e/node-threshold.e2e.ts:147`, native capture release ordering | Exact receipt ended after native capture loss, omitting click selection with threshold zero and `selectNodesOnDrag: false`. | Append the observed `node-selection` after capture loss, with `held: false`. Every prior receipt and its order remains. Add a pinned-source citation comment. |
-| `apps/vanilla/tests/ownership/gesture-oracles.ts:452`, old reset timer preserves successor suppression, fixture in `apps/vanilla/tests/ownership/gesture-fixture.ts:601` | Stationary zero-threshold presses created suppression receipts. The test failed with `Missing A reset timer` after the repair. | Add a one-pixel pointermove to both synthetic drag sequences before release. This creates real drag suppression receipts. Preserve all test expectations, capture history, stale-timer replay, and click propagation assertions. Add a pinned-source citation comment. |
+| `R1:apps/vanilla/tests/ownership/gesture-oracles.ts:452`, old reset timer preserves successor suppression, fixture in `R1:apps/vanilla/tests/ownership/gesture-fixture.ts:601` | Stationary zero-threshold presses created suppression receipts. The test failed with `Missing A reset timer` after the repair. | Add a one-pixel pointermove to both synthetic drag sequences before release. This creates real drag suppression receipts. Preserve all test expectations, capture history, stale-timer replay, and click propagation assertions. Add a pinned-source citation comment. |
 
 The second Vanilla diagnostic reached UP-127-014 and passed its unchanged connection assertion, exposing its retained expected-failure marker. UP-127-015 has the same recorded deletion prerequisite. Both entries are re-evaluated in the complete repeated sequence. The second diagnostic also exposed six legacy viewport cases that had represented movement only through changed pointerup coordinates. `viewportContinuationProof` now dispatches actual pointermoves before releasing the original pan and each successor. The strict viewport values, capture histories, callback ownership, and event ordering remain asserted. The expected streams add the movement notifications from these new inputs. Citation comments name pinned `packages/system/src/xypanzoom/eventhandler.ts:238`.
 

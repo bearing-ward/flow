@@ -1,6 +1,6 @@
 # Plan 180: ownership suite reduction
 
-Status: implemented and fully verified. Ownership source is 18,484 to 2,303 lines; all e2e TypeScript is 103,000 to 86,680 lines. See the [assertion map and verification evidence](../research/traces/180-ownership-suite-reduction.md).
+Status: round 2 is implemented and fully verified. Combined test source is 104,433 to 89,979 lines, with 285 to 87 ownership cases. See the [assertion dispositions, metrics and full verification](../research/traces/180-ownership-suite-reduction.md).
 
 Plan 179 item 1 asked for at least a 70% line reduction in the Vue and Vanilla `node-threshold` suites and their reentry harnesses. The plan said to keep one representative case per matrix axis and to move the synthetic ordering logic into unit tests.
 
@@ -35,4 +35,4 @@ Cut the `*-ownership*` suites and harnesses by at least 70% in total, from 18,48
 - Take the browser lock separately for each browser command (`scripts/with-flow-browser-lock.sh`). Stop only processes you started, by their recorded PIDs. Never kill processes by name or port, and never wrap an interactive shell in the lock.
 - Unit tests use `it` inside `describe`.
 - Finish with a locked `bun run verify --full`.
-- Commit on `plan/180-ownership-suite-reduction` with the trailer `Co-Authored-By: GPT-6.1 Sol via Codex <noreply@openai.com>`. Do not push or merge.
+- Commit on `plan/180-ownership-reduction-r2` with the trailer `Co-Authored-By: GPT-6.1 Sol via Codex <noreply@openai.com>`. Do not push or merge.

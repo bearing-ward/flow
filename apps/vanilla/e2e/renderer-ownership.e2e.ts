@@ -366,24 +366,6 @@ const ownershipGeometryEndpoints = (x: number) => ({
   targetSide: 'left',
 })
 
-const numericExpectedDrag = (name: string, x: number) => ({
-  name,
-  payload: {
-    nodeIds: ['a'],
-    positions: [{ nodeId: 'a', position: { x, y: 20 } }],
-  },
-})
-
-const numericExpectedPixels = (x: number) => ({
-  node: `translate(${x}px, 20px)`,
-  path: `M ${x + 155.5} 42.5 L 214.5 42.5`,
-  hit: `M ${x + 155.5} 42.5 L 214.5 42.5`,
-  visual: `M ${x + 155.5} 42.5 L 214.5 42.5`,
-  source: { x: String(x + 155.5), y: '42.5' },
-  target: { x: '214.5', y: '42.5' },
-  label: { x: String(x + 165.5), y: '99' },
-})
-
 for (const route of [
   'settled-geometry',
   'settled-visual',
@@ -738,7 +720,7 @@ for (const kind of ['geometry', 'render'] as const) {
 
 test('numeric position changes within the same production map', async ({
   page,
-}, testInfo) => {
+}) => {
   await page.goto('/')
 
   const result = await page.evaluate(async () => {
@@ -747,100 +729,6 @@ test('numeric position changes within the same production map', async ({
 
     return fixture.ownershipRoundSevenNumeric()
   })
-
-  await testInfo.attach('numeric-map', {
-    body: JSON.stringify(result),
-    contentType: 'application/json',
-  })
-  const edge = { ...terminalOldEdge, type: 'probe', label: 'edge-label' }
-
-  const state = (x: number) => ({
-    document: {
-      nodes: [
-        { ...terminalNodeA, position: { x, y: 20 } },
-        terminalNodeB,
-        terminalNodeC,
-      ],
-      edges: [edge],
-    },
-    viewport: { x: 0, y: 0, zoom: 1 },
-  })
-
-  const context = (x: number) => ({
-    ...ownershipGeometryEndpoints(x),
-    pathData: `M ${x} 42.5 L 214.5 42.5`,
-    labelAnchor: { x: x + 10, y: 99 },
-  })
-
-  const edgeHooks = (x: number) => [
-    { hook: 'geometry', context: ownershipGeometryEndpoints(x) },
-    { hook: 'update', context: context(x) },
-  ]
-
-  const previewEvents = [
-    numericExpectedDrag('start', 20),
-    numericExpectedDrag('move', 30),
-  ]
-
-  const captures = [{ action: 'set', target: 'a', id: 7 }]
-
-  const base = {
-    state: state(20),
-    hooks: [],
-    events: previewEvents,
-    publications: [],
-    scopes: acquisitionBaseScopes,
-    captures,
-    held: 1,
-    retained: {
-      node: true,
-      edge: true,
-      visual: true,
-      path: true,
-      hit: true,
-      label: true,
-    },
-    pixels: numericExpectedPixels(30),
-    mapValue: { x: 30, y: 20 },
-  }
-
-  const nodeHook = {
-    hook: 'node-update',
-    id: 'a',
-    input: { ...terminalNodeA, position: { x: 40, y: 20 } },
-  }
-
-  const hooks = [nodeHook, ...edgeHooks(195.5)]
-  const events = [...previewEvents, numericExpectedDrag('move', 40)]
-
-  const publications = [
-    {
-      name: 'change',
-      payload: {
-        kind: 'node-position',
-        nodeId: 'a',
-        position: { x: 40, y: 20 },
-      },
-    },
-    {
-      name: 'state',
-      payload: {
-        previous: state(20),
-        current: state(40),
-        cause: 'semantic-change',
-      },
-    },
-  ]
-
-  const after = {
-    ...base,
-    state: state(40),
-    hooks,
-    events,
-    publications,
-    pixels: numericExpectedPixels(40),
-    mapValue: { x: 40, y: 20 },
-  }
 
   expect(result.writes).toStrictEqual([
     {
@@ -856,62 +744,51 @@ test('numeric position changes within the same production map', async ({
       current: { x: 40, y: 20 },
     },
   ])
-  expect(result.initialHooks).toStrictEqual([
-    { hook: 'node-render', id: 'a' },
-    { hook: 'node-render', id: 'b' },
-    { hook: 'node-render', id: 'c' },
-    { hook: 'geometry', context: ownershipGeometryEndpoints(175.5) },
-    { hook: 'render', context: context(175.5) },
-    ...edgeHooks(185.5),
-  ])
-  expect(result.before).toStrictEqual(base)
-  expect(result.checkpoints).toStrictEqual([
-    { ...base, state: state(40), hooks: [nodeHook] },
-    { ...after, publications: [] },
-  ])
-  expect(result.after).toStrictEqual(after)
-  expect(result.afterBarrier).toStrictEqual(after)
-
-  const cancelledEvents = [
-    ...events,
-    {
-      name: 'stop',
-      payload: {
-        ...numericExpectedDrag('stop', 40).payload,
-        outcome: 'cancelled',
-        reason: 'escape',
+  expect(result.after).toMatchObject({
+    state: {
+      document: {
+        nodes: [
+          { ...terminalNodeA, position: { x: 40, y: 20 } },
+          terminalNodeB,
+          terminalNodeC,
+        ],
       },
     },
-  ]
-
-  const finalCaptures = [...captures, { action: 'release', target: 'a', id: 7 }]
-  const cancelledHooks = [...hooks, ...edgeHooks(195.5)]
-  expect(result.afterCancel).toStrictEqual({
-    ...after,
-    hooks: cancelledHooks,
-    events: cancelledEvents,
-    captures: finalCaptures,
-    held: 0,
-    mapValue: undefined,
+    pixels: {
+      node: 'translate(40px, 20px)',
+      path: 'M 195.5 42.5 L 214.5 42.5',
+      hit: 'M 195.5 42.5 L 214.5 42.5',
+      visual: 'M 195.5 42.5 L 214.5 42.5',
+      source: { x: '195.5', y: '42.5' },
+      target: { x: '214.5', y: '42.5' },
+      label: { x: '205.5', y: '99' },
+    },
+    mapValue: { x: 40, y: 20 },
+    held: 1,
   })
-  expect(result.afterDestroy).toStrictEqual({
-    hooks: [
-      ...cancelledHooks,
-      { hook: 'edge-destroy' },
-      { hook: 'node-destroy', id: 'c' },
-      { hook: 'node-destroy', id: 'b' },
-      { hook: 'node-destroy', id: 'a' },
-    ],
+  expect(result.afterBarrier).toStrictEqual(result.after)
+  expect(result.afterCancel).toMatchObject({ held: 0, mapValue: undefined })
+  expect(result.afterCancel.events.at(-1)).toStrictEqual({
+    name: 'stop',
+    payload: {
+      nodeIds: ['a'],
+      positions: [{ nodeId: 'a', position: { x: 40, y: 20 } }],
+      outcome: 'cancelled',
+      reason: 'escape',
+    },
+  })
+  expect(result.afterDestroy).toMatchObject({
+    held: 0,
+    nodeConnected: false,
+    edgeConnected: false,
     scopes: acquisitionBaseScopes.map((scope) => ({
       ...scope,
       state: 'closed',
       linked: false,
     })),
-    events: cancelledEvents,
-    publications,
-    captures: finalCaptures,
-    held: 0,
-    nodeConnected: false,
-    edgeConnected: false,
+    captures: [
+      { action: 'set', target: 'a', id: 7 },
+      { action: 'release', target: 'a', id: 7 },
+    ],
   })
 })
