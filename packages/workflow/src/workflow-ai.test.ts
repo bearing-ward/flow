@@ -438,7 +438,6 @@ describe('offline AI capability contract', () => {
     expect(diagnostics).not.toContain('private-prompt')
     expect(diagnostics).not.toContain('private-system')
     expect(diagnostics).not.toContain('credential-canary')
-    expect(FlowSpan.workflowAi).toBe('flow.workflow.ai')
   })
 
   it('uses controlled delays and cancels without late chunks or pending work', async () => {

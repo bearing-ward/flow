@@ -5,9 +5,9 @@ import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { checkPackageArchive } from '../../../scripts/package-archive.ts'
+import { checkPackageArchive } from '../../scripts/package-archive.ts'
 
-const root = path.resolve(import.meta.dirname, '../../..')
+const root = path.resolve(import.meta.dirname, '../..')
 
 const run = (cwd: string, command: string, args: readonly string[]) => {
   const result = spawnSync(command, args, { cwd, encoding: 'utf-8' })

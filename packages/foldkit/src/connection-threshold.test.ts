@@ -318,7 +318,7 @@ describe('connectionDragThreshold application transitions, constructed models', 
     }
   )
 
-  it('round3 strict mode keeps disabled native click completion guarded', () => {
+  it('strict mode keeps disabled native click completion guarded', () => {
     const base = initial(8)
     const model = { ...base, graph: { ...base.graph, connectOnClick: false } }
 

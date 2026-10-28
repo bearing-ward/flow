@@ -484,7 +484,7 @@ describe('generation-scoped measured handles', () => {
   })
 })
 
-describe('original 065 dimension absence boundary, unit path', () => {
+describe('measurement dimension absence boundary', () => {
   it('keeps current hidden dimensions while clearing handles, and uses fallback without a sample', () => {
     const unmeasured = getFlowInternalNode(
       document,

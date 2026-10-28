@@ -196,7 +196,7 @@ describe('complete single v2 persistence contract', () => {
     }
   )
 
-  it('keeps old fields literal1 and independent frozen output unchanged', () => {
+  it('keeps legacy version 1 fields and frozen output unchanged', () => {
     const document = decode(raw)
     const saved = encodeSavedFlowSession(document, viewport)
     expectTypeOf(saved).toEqualTypeOf<SavedFlowSession>()
@@ -652,7 +652,7 @@ describe('saved JSON output ownership', () => {
 })
 
 describe('legacy-representable endpoint presence', () => {
-  it('own undefined endpoint IDs retain literal1 selection and frozen value equality', () => {
+  it('own undefined endpoint IDs retain legacy version 1 selection and frozen value equality', () => {
     const document = decode({
       ...raw,
       edges: raw.edges.map((edge) => ({
@@ -874,89 +874,127 @@ const mixedLegacyCases = [
   },
 ]
 
-describe('one ordered literal1 integrity traversal', () => {
+describe('ordered legacy integrity and envelope validation', () => {
   it.each(mixedLegacyCases)(
-    'matches frozen document and session error fields: $name',
+    'preserves frozen errors, viewport precedence and extension precedence: $name',
     ({ document, tag }) => {
-      const saved = { version: 1, document, viewport }
-      const before = structuredClone(saved)
+      {
+        const saved = { version: 1, document, viewport }
+        const before = structuredClone(saved)
 
-      const oracle = Effect.runSync(
-        Effect.flip(frozen.decodeSavedFlowDocument(saved))
-      )
-
-      expect(oracle._tag).toBe(tag)
-
-      const expected = S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(
-        oracle
-      )
-
-      const expectedFields = S.encodeSync(FlowDocumentIntegrityErrorSchema)(
-        expected
-      )
-
-      const failures = [
-        Effect.runSync(Effect.flip(frozen.decodeSavedFlowSession(saved))),
-        Effect.runSync(Effect.flip(decodeSavedFlowDocument(saved))),
-        Effect.runSync(Effect.flip(decodeSavedFlowSession(saved))),
-        Effect.runSync(Effect.flip(decodeVersionedFlowDocument(saved))),
-        Effect.runSync(Effect.flip(decodeVersionedFlowSession(saved))),
-      ]
-
-      for (const failure of failures) {
-        const actual = S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(
-          failure
+        const oracle = Effect.runSync(
+          Effect.flip(frozen.decodeSavedFlowDocument(saved))
         )
 
-        expect(
-          S.encodeSync(FlowDocumentIntegrityErrorSchema)(actual)
-        ).toStrictEqual(expectedFields)
+        expect(oracle._tag).toBe(tag)
+
+        const expected = S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(
+          oracle
+        )
+
+        const expectedFields = S.encodeSync(FlowDocumentIntegrityErrorSchema)(
+          expected
+        )
+
+        const failures = [
+          Effect.runSync(Effect.flip(frozen.decodeSavedFlowSession(saved))),
+          Effect.runSync(Effect.flip(decodeSavedFlowDocument(saved))),
+          Effect.runSync(Effect.flip(decodeSavedFlowSession(saved))),
+          Effect.runSync(Effect.flip(decodeVersionedFlowDocument(saved))),
+          Effect.runSync(Effect.flip(decodeVersionedFlowSession(saved))),
+        ]
+
+        for (const failure of failures) {
+          const actual = S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(
+            failure
+          )
+
+          expect(
+            S.encodeSync(FlowDocumentIntegrityErrorSchema)(actual)
+          ).toStrictEqual(expectedFields)
+        }
+
+        for (const failure of failures.slice(1)) {
+          expect(failure).toBeInstanceOf(expected.constructor)
+        }
+
+        expect(saved).toStrictEqual(before)
       }
 
-      for (const failure of failures.slice(1)) {
-        expect(failure).toBeInstanceOf(expected.constructor)
+      {
+        for (const invalidViewport of [
+          { viewport: { ...viewport, zoom: 0 } },
+          { viewport: { ...viewport, zoom: 'bad' } },
+          {},
+        ]) {
+          const saved = { version: 1, document, ...invalidViewport }
+
+          const oracle = Effect.runSync(
+            Effect.flip(frozen.decodeSavedFlowSession(saved))
+          )
+
+          if (!S.isSchemaError(oracle)) {
+            throw new Error('Frozen viewport failure was not SchemaError')
+          }
+
+          const expectedIssues = SchemaIssue.makeFormatterStandardSchemaV1()(
+            oracle.issue
+          ).issues
+
+          for (const reader of [
+            decodeSavedFlowSession,
+            decodeVersionedFlowSession,
+          ]) {
+            const failure = Effect.runSync(Effect.flip(reader(saved)))
+            expect(failure).toBeInstanceOf(S.SchemaError)
+
+            if (!S.isSchemaError(failure)) {
+              throw new Error('Current viewport failure was not SchemaError')
+            }
+
+            expect(
+              SchemaIssue.makeFormatterStandardSchemaV1()(failure.issue).issues
+            ).toStrictEqual(expectedIssues)
+          }
+        }
       }
 
-      expect(saved).toStrictEqual(before)
-    }
-  )
-
-  it.each(mixedLegacyCases)(
-    'decodes the complete session viewport before graph error: $name',
-    ({ document }) => {
-      for (const invalidViewport of [
-        { viewport: { ...viewport, zoom: 0 } },
-        { viewport: { ...viewport, zoom: 'bad' } },
-        {},
-      ]) {
-        const saved = { version: 1, document, ...invalidViewport }
+      {
+        const saved = {
+          version: 1,
+          document: {
+            ...document,
+            nodeOrigin: [0, 0],
+            nodes: document.nodes.map((node) => ({
+              ...node,
+              connectable: false,
+            })),
+          },
+          viewport,
+        }
 
         const oracle = Effect.runSync(
           Effect.flip(frozen.decodeSavedFlowSession(saved))
         )
 
-        if (!S.isSchemaError(oracle)) {
-          throw new Error('Frozen viewport failure was not SchemaError')
-        }
+        const expected = S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(
+          oracle
+        )
 
-        const expectedIssues = SchemaIssue.makeFormatterStandardSchemaV1()(
-          oracle.issue
-        ).issues
+        const failures = [
+          Effect.runSync(Effect.flip(decodeVersionedFlowDocument(saved))),
+          Effect.runSync(Effect.flip(decodeVersionedFlowSession(saved))),
+        ]
 
-        for (const reader of [
-          decodeSavedFlowSession,
-          decodeVersionedFlowSession,
-        ]) {
-          const failure = Effect.runSync(Effect.flip(reader(saved)))
-          expect(failure).toBeInstanceOf(S.SchemaError)
-
-          if (!S.isSchemaError(failure)) {
-            throw new Error('Current viewport failure was not SchemaError')
-          }
-
+        for (const failure of failures) {
+          expect(failure).toBeInstanceOf(expected.constructor)
           expect(
-            SchemaIssue.makeFormatterStandardSchemaV1()(failure.issue).issues
-          ).toStrictEqual(expectedIssues)
+            S.encodeSync(FlowDocumentIntegrityErrorSchema)(
+              S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(failure)
+            )
+          ).toStrictEqual(
+            S.encodeSync(FlowDocumentIntegrityErrorSchema)(expected)
+          )
         }
       }
     }
@@ -1007,48 +1045,6 @@ describe('one ordered literal1 integrity traversal', () => {
       expect(Effect.runSync(decodeVersionedFlowSession(saved))).toStrictEqual(
         oracleSession
       )
-    }
-  )
-
-  it.each(mixedLegacyCases)(
-    'known origin/native cannot mask ordinary frozen failures: $name',
-    ({ document }) => {
-      const saved = {
-        version: 1,
-        document: {
-          ...document,
-          nodeOrigin: [0, 0],
-          nodes: document.nodes.map((node) => ({
-            ...node,
-            connectable: false,
-          })),
-        },
-        viewport,
-      }
-
-      const oracle = Effect.runSync(
-        Effect.flip(frozen.decodeSavedFlowSession(saved))
-      )
-
-      const expected = S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(
-        oracle
-      )
-
-      const failures = [
-        Effect.runSync(Effect.flip(decodeVersionedFlowDocument(saved))),
-        Effect.runSync(Effect.flip(decodeVersionedFlowSession(saved))),
-      ]
-
-      for (const failure of failures) {
-        expect(failure).toBeInstanceOf(expected.constructor)
-        expect(
-          S.encodeSync(FlowDocumentIntegrityErrorSchema)(
-            S.decodeUnknownSync(FlowDocumentIntegrityErrorSchema)(failure)
-          )
-        ).toStrictEqual(
-          S.encodeSync(FlowDocumentIntegrityErrorSchema)(expected)
-        )
-      }
     }
   )
 })

@@ -54,7 +54,7 @@ const presentationDocument = Effect.runSync(
   })
 )
 
-describe('Plan 114 node fields', () => {
+describe('node presentation fields', () => {
   it('decodes React node presentation fields and rejects bad values', () => {
     const [node] = presentationDocument.nodes
 
@@ -142,7 +142,7 @@ describe('Plan 114 node fields', () => {
   })
 })
 
-describe('Plan 114 persistence', () => {
+describe('presentation persistence', () => {
   const viewport = { x: 1, y: 2, zoom: 1 }
 
   it('stores presentation fields in a v3 envelope and round trips them', () => {
