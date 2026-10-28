@@ -1,4 +1,3 @@
-import type { FlowChange } from '../../../packages/core/dist/public.js'
 import {
   actorInput,
   dispatchPointer,
@@ -7,8 +6,9 @@ import {
   reentryRoot,
   requiredElement,
   syntheticCaptures,
-} from '../../shared-e2e/node-reentry-fixture.ts'
-import { createFlow } from '../src/mount-flow.ts'
+} from '../../../../apps/shared-e2e/node-reentry-fixture.ts'
+import type { FlowChange } from '../../../../packages/core/src/public.ts'
+import { createFlow } from '../../src/mount-flow.ts'
 
 const previewFanoutProofPoint = (element: Element) => {
   const rect = element.getBoundingClientRect()

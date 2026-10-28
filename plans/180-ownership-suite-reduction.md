@@ -1,5 +1,7 @@
 # Plan 180: ownership suite reduction
 
+Status: implemented and fully verified. Ownership source is 18,484 to 2,303 lines; all e2e TypeScript is 103,000 to 86,680 lines. See the [assertion map and verification evidence](../research/traces/180-ownership-suite-reduction.md).
+
 Plan 179 item 1 asked for at least a 70% line reduction in the Vue and Vanilla `node-threshold` suites and their reentry harnesses. The plan said to keep one representative case per matrix axis and to move the synthetic ordering logic into unit tests.
 
 What happened instead is that most of that code moved into new behavior-named suites. Those suites and their harnesses now total 18,484 lines:

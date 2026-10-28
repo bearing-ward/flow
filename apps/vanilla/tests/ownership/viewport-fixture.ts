@@ -4,8 +4,8 @@ import {
   reentryRoot,
   requiredElement,
   syntheticCaptures,
-} from '../../shared-e2e/node-reentry-fixture.ts'
-import { createFlow } from '../src/mount-flow.ts'
+} from '../../../../apps/shared-e2e/node-reentry-fixture.ts'
+import { createFlow } from '../../src/mount-flow.ts'
 
 const observationPointer = (
   canvas: Element,

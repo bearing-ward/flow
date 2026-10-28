@@ -1,7 +1,5 @@
 import { createApp, h, nextTick, render as renderVue, watch } from 'vue'
 
-import { FlowCanvas } from '../../../packages/vue/dist/public.js'
-import type { FlowEditor } from '../../../packages/vue/dist/public.js'
 import {
   dispatchPointer,
   mountedGeometry,
@@ -9,7 +7,9 @@ import {
   reentryRoot,
   requiredElement,
   syntheticCaptures,
-} from '../../shared-e2e/node-reentry-fixture.ts'
+} from '../../../../apps/shared-e2e/node-reentry-fixture.ts'
+import { FlowCanvas } from '../../src/public.ts'
+import type { FlowEditor } from '../../src/public.ts'
 
 export const viewportOwnershipProof = async (
   phase:

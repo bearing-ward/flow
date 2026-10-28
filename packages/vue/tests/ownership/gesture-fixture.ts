@@ -8,10 +8,6 @@ import {
   watch,
 } from 'vue'
 
-import { decodeFlowDocument } from '../../../packages/core/dist/public.js'
-import type { FlowChange } from '../../../packages/core/dist/public.js'
-import { FlowCanvas } from '../../../packages/vue/dist/public.js'
-import type { FlowEditor } from '../../../packages/vue/dist/public.js'
 import {
   actorInput,
   dispatchPointer,
@@ -20,7 +16,11 @@ import {
   reentryRoot,
   requiredElement,
   syntheticCaptures,
-} from '../../shared-e2e/node-reentry-fixture.ts'
+} from '../../../../apps/shared-e2e/node-reentry-fixture.ts'
+import { decodeFlowDocument } from '../../../core/src/public.ts'
+import type { FlowChange } from '../../../core/src/public.ts'
+import { FlowCanvas } from '../../src/public.ts'
+import type { FlowEditor } from '../../src/public.ts'
 
 const completionReentrySend = (element: Element, type: string, id: number) => {
   const bounds = element.getBoundingClientRect()

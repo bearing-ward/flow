@@ -27,6 +27,9 @@
   },
   "include": [
     "packages/*/src/**/*.ts",
+    "packages/vue/tests/**/*.ts",
+    "apps/vanilla/tests/**/*.ts",
+    "tests/browser/**/*.ts",
     "apps/*/workflow-contracts/**/*.ts",
     "apps/*/workflow/**/*.ts",
     "apps/*/workflow-ai-capability/**/*.ts",
