@@ -128,3 +128,11 @@ scripts/with-flow-browser-lock.sh bun run playwright test --config apps/react-re
 ```
 
 The opt-in check typechecks and builds the private app, then runs all reference cases with one worker. `plans/148-react-reference-results.md` records failures, classifications, Flow status changes, and the measured boundary. A passing focused Flow verification does not establish React reference acceptance.
+
+## Adapter unit tests
+
+Vitest has two projects. The node project runs the DOM-independent unit tests. The ownership project runs direct Vue and Vanilla adapter tests in Chromium, with the real adapter stylesheet and DOM lifecycle. These tests mount source APIs directly and require no application navigation or Vite application server. They keep synthetic callback ordering separate from native host acceptance.
+
+Run commands that include the ownership project through the browser lock. Use bun run vitest run --project node for Node-only tests, scripts/with-flow-browser-lock.sh bun run vitest run --project ownership for adapter tests, or scripts/with-flow-browser-lock.sh bun run test for both.
+
+The normal verifier includes both projects in its unit-test step. Take the lock around the verifier once; its child commands run under that lock.

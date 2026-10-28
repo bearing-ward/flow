@@ -1,5 +1,7 @@
 # Plan 138: Remaining upstream Cypress follow-ups
 
+Round 2 of Plan 180 deleted redundant ownership matrices. References prefixed R1 below describe the round-1 source at commit 7b5ba09 and remain historical evidence. Current case selection and assertion dispositions are in [Plan 180](../research/traces/180-ownership-suite-reduction.md).
+
 ## Problem and scope
 
 Consolidate the remaining edge-input, viewport, and connection follow-ups from Plan 134. Preserve the unchanged upstream assertions, waits, forced-event coordinates, default subject-center releases, synchronous pre-queue reads, and shared-page sequences. Never reset graph or viewport state between cases.
@@ -84,7 +86,7 @@ No upstream port title, assertion, command, coordinate, release position, or wai
 | Test | Previous expectation or fixture | Change and citation |
 | --- | --- | --- |
 | `apps/vanilla/e2e/selection-and-culling.e2e.ts:156` | The selected-edge elevation scenario relied on an undocumented elevation-on default. | Explicitly enable `elevateEdgesOnSelect`. Keep the original rise, multiple-selection, and focus assertions. The comment cites pinned `packages/react/src/container/ReactFlow/index.tsx:130`, whose default is false. The non-default option explains the test's intended behavior. |
-| `apps/vue/e2e/viewport-ownership.e2e.ts:961` and `apps/vue/e2e/viewport-ownership.e2e.ts:1059` | Synthetic ordinary-write and continuation scenarios expected double-click zoom 1.2 with pointer translation (-20,-10). | Expect zoom 2 and translation (-100,-50). Citation comments name d3-zoom 3.0.0 src/zoom.js:308. No option explains 1.2, and no documentation promises it. Preserve all ownership, event ordering, cancellation, and controlled-acknowledgement assertions. |
+| `R1:packages/vue/tests/ownership/viewport-oracles.ts:1922` and `R1:packages/vue/tests/ownership/viewport-oracles.ts:1589` | Synthetic ordinary-write and continuation scenarios expected double-click zoom 1.2 with pointer translation (-20,-10). | Expect zoom 2 and translation (-100,-50). Citation comments name d3-zoom 3.0.0 src/zoom.js:308. No option explains 1.2, and no documentation promises it. Preserve all ownership, event ordering, cancellation, and controlled-acknowledgement assertions. |
 | `apps/vue/e2e/renderer-contract.e2e.ts:361` | The marker-scope test counted one edge SVG per canvas. | Query the three canvases to retain the same marker-ID uniqueness and reference assertions. The comment cites pinned EdgeWrapper's per-edge SVG at line 183. Marker policy does not change. |
 | `apps/vue/e2e/canvas-configuration.e2e.ts:262` | Existing coverage asserted z-levels, labels, and restored focus. | Add retained original hit-path connectivity and literal document order before and after selection and auto-mode changes. Keep existing z-index, overlap, focus, and label assertions. Cite pinned EdgeRenderer line 66 and EdgeWrapper line 183. |
 | `apps/vue/e2e/viewport-operations.e2e.ts:380` | No exact native double-click target regression. | Add native double-click and Shift double-click with literal viewport targets (-480,-360,2) and (10,20,1), citing d3-zoom lines 303-313. Enable double-click in the existing viewport fixture. |

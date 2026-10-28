@@ -1,5 +1,7 @@
 # Plan 127: Node selection and deletion (upstream follow-up)
 
+Round 2 of Plan 180 deleted redundant ownership matrices. References prefixed R1 below describe the round-1 source at commit 7b5ba09 and remain historical evidence. Current case selection and assertion dispositions are in [Plan 180](../research/traces/180-ownership-suite-reduction.md).
+
 ## Problem and scope
 
 Prove threshold-zero click selection and deletion, selected-node markup, persistent multi-selection bounds, and middle-button pan from those bounds. Retain the React-guarded case as an executed host test.
@@ -67,9 +69,9 @@ Focused regressions were added in each host's `node-input.e2e.ts` for measured b
 The complete upstream runners passed as recorded above. The selected Vanilla affected suites ran **212 tests: 203 passed, 9 failed, 0 skipped**. Eight failures are existing Flow tests, which remain unchanged:
 
 - `apps/vanilla/e2e/node-threshold.e2e.ts:105` expects only the two position changes in the mounted-Stop replacement proof. The repair adds node selection.
-- Five cases at `apps/vanilla/e2e/gesture-ownership.e2e.ts:226` cover node threshold 0, connection thresholds 5 and 0, and reconnection thresholds 5 and 0. They require the previous selection and publication stream to survive the old stationary release. The repair selects `a`, clears the selected edge and `b`, and prevents the reconnection successor from acquiring capture.
+- Five cases at `R1:apps/vanilla/tests/ownership/gesture-oracles.ts:225` cover node threshold 0, connection thresholds 5 and 0, and reconnection thresholds 5 and 0. They require the previous selection and publication stream to survive the old stationary release. The repair selects `a`, clears the selected edge and `b`, and prevents the reconnection successor from acquiring capture.
 - The real-browser stationary down/up test at `apps/vanilla/e2e/node-threshold.e2e.ts:147` expects position publication without selection publication. The repair inserts `node-selection` into that native receipt.
-- `apps/vanilla/e2e/gesture-ownership.e2e.ts:534` explicitly expects `[false, false, false]` selection after the first threshold-zero release and suppressed click. The repair instead returns `[false, true, false]`.
+- `R1:apps/vanilla/tests/ownership/gesture-oracles.ts:452` explicitly expects `[false, false, false]` selection after the first threshold-zero release and suppressed click. The repair instead returns `[false, true, false]`.
 
 The ninth failure is the new bounds regression's incorrect exact-count assumption described above. No existing test was changed. Per the task's explicit stop rule, implementation stopped rather than changing those opposing contracts. The queued Vue and Foldkit affected suites were cancelled before execution. `bun run verify` was not run after discovering the conflict, and no commit was created.
 
@@ -109,19 +111,19 @@ The eight conflicts all disable drag selection in their harnesses. Changing thei
 | Existing test | Configuration evidence | Decision and upstream citation |
 | --- | --- | --- |
 | `apps/vanilla/e2e/node-threshold.e2e.ts:87`, mounted Stop replacement | `apps/vanilla/e2e/node-reentry-harness.ts:14` sets false for the node actor | Keep only the two position changes. XYDrag.ts:282 gates selection on the option. |
-| `apps/vanilla/e2e/gesture-ownership.e2e.ts:65`, pointerup to node 0 | `apps/vanilla/e2e/gesture-ownership-harness.ts:19` | Keep selection and complete capture/publication history. XYDrag.ts:282. |
+| `R1:apps/vanilla/tests/ownership/gesture.browser.test.ts:1`, pointerup to node 0 | `R1:apps/vanilla/tests/ownership/gesture-fixture.ts:19` | Keep selection and complete capture/publication history. XYDrag.ts:282. |
 | Same generated test, pointerup to connection 5 | Same false option | Keep selection and connection capture. XYDrag.ts:282. |
 | Same generated test, pointerup to connection 0 | Same false option | Keep selection and connection capture. XYDrag.ts:282. |
 | Same generated test, pointerup to reconnection 5 | Same false option | Keep selected edge and reconnection capture. XYDrag.ts:282. |
 | Same generated test, pointerup to reconnection 0 | Same false option | Keep selected edge and reconnection capture. XYDrag.ts:282. |
-| `apps/vanilla/e2e/node-threshold.e2e.ts:147`, native capture release order | `apps/vanilla/e2e/gesture-ownership-harness.ts:303` defaults its new optional argument to false | Keep native set, start, up, release, position, stop, loss with no selection insertion. XYDrag.ts:282. |
-| `apps/vanilla/e2e/gesture-ownership.e2e.ts:512`, old reset timer | `apps/vanilla/e2e/gesture-ownership-harness.ts:601` | Keep first selection flags `[false, false, false]`, final `[false, true, false]`, and both click propagation sequences. XYDrag.ts:282 and :307. |
+| `apps/vanilla/e2e/node-threshold.e2e.ts:147`, native capture release order | `R1:apps/vanilla/tests/ownership/gesture-fixture.ts:303` defaults its new optional argument to false | Keep native set, start, up, release, position, stop, loss with no selection insertion. XYDrag.ts:282. |
+| `R1:apps/vanilla/tests/ownership/gesture-oracles.ts:444`, old reset timer | `R1:apps/vanilla/tests/ownership/gesture-fixture.ts:601` | Keep first selection flags `[false, false, false]`, final `[false, true, false]`, and both click propagation sequences. XYDrag.ts:282 and :307. |
 
 The eight disabled-option expectations above are unchanged. Two additional default-option projection cases need selection-only updates, listed below. Vue's physical-reentry coverage at `apps/vue/e2e/node-threshold.e2e.ts:152` configures drag selection by disposal mode at `apps/vue/e2e/node-reentry-harness.ts:34`; the terminal reentry fixture explicitly disables it at `apps/vue/e2e/node-reentry-harness.ts:155`. Foldkit's native release-publication cases at `apps/foldkit/e2e/node-threshold.e2e.ts:136` use the unchanged release fixture and a real move. The shared native threshold contract at `apps/shared-e2e/node-threshold-contract.ts:149` observes lifecycle and position output in all hosts. None requires an expectation update. Complete affected-suite runs below check those boundaries.
 
 ### Changed existing tests
 
-Both generated cases are at `apps/vanilla/e2e/renderer-ownership.e2e.ts:2404`:
+Both generated cases are at `apps/vanilla/e2e/renderer-ownership.e2e.ts:333`:
 
 - `projection cancel-control`: the final document previously kept B and its edge selected. It now selects A and clears B, C, and the edge. The state stream gains the initial selection notification before the original viewport notification; the change stream gains `node-selection` before the existing viewport change.
 - `projection cancel-restore`: the restored and final documents receive those same selection flags. The state stream previously had no notification; it now has the selection notification. The change stream gains `node-selection` before the viewport change. The cancellation and restoration callbacks stay in the same order with the same geometry and viewport values.
