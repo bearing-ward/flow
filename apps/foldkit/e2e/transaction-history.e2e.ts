@@ -353,6 +353,8 @@ test('Foldkit controlled native keyboard repeats retain total movement in one un
   await page.goto('/history/')
   const canvas = page.getByTestId('history-controlled')
   await node(canvas).click({ position: { x: 45, y: 24 } })
+  // Selection must land before the first keydown, or the repeat starts unselected.
+  await expect(node(canvas)).toHaveClass(/selected/u)
   await expect.poll(() => statusField(canvas, 'pastCount')).toBe(0)
   await node(canvas).focus()
   await page.keyboard.down('ArrowRight')
