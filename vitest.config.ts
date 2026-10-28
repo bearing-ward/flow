@@ -4,10 +4,10 @@ export default defineConfig({
   test: {
     include: [
       'packages/**/*.test.ts',
-      'apps/react-reference/*.test.ts',
       'apps/shared/schema-studio/**/*.test.ts',
       'apps/foldkit/src/**/*.test.ts',
       'apps/vanilla/src/**/*.test.ts',
+      'scripts/check-research-traces.test.ts',
       'scripts/check-api-members.test.ts',
       'scripts/check-api-member-contracts.test.ts',
       'scripts/check-proof-matrix.test.ts',

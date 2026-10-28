@@ -3,6 +3,7 @@ import { Schema as S } from 'effect'
 const VerificationProfileSchema = S.Literals(['focused', 'full'])
 
 const extraCheckNames = [
+  'persistence-provenance',
   'docs',
   'catalog',
   'api-members',
@@ -73,6 +74,11 @@ const baselineChecks = [
 ]
 
 const extraChecks = {
+  'persistence-provenance': bunCheck('persistence-provenance', [
+    'run',
+    'scripts/capture-legacy-v1-persistence.ts',
+    '--check',
+  ]),
   collaboration: bunCheck('mixed-host collaborative transport', [
     'run',
     'playwright',
@@ -121,7 +127,7 @@ const extraChecks = {
   ]),
   consumer: bunCheck('packed consumer', [
     'run',
-    'scripts/check-packed-consumer.ts',
+    'scripts/check-unit-integrations.ts',
   ]),
   build: bunCheck('Vanilla app build', [
     'run',

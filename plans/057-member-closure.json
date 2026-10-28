@@ -93198,8 +93198,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0curvature compares particular pinned full tuples: getBezierPath curvature parameter/default and whole-tuple contract; particular captures getBezierPath/backwards-default, getBezierPath/backwards-0, getBezierPath/backwards-0.5, getBezierPath/backwards--0.5, getBezierPath/curvature-own-undefined; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:170",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:160",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:111",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0curvature"
       }
     },
@@ -93216,8 +93216,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0curvature compares particular pinned full tuples: getBezierPath curvature parameter/default and whole-tuple contract; particular captures getBezierPath/backwards-default, getBezierPath/backwards-0, getBezierPath/backwards-0.5, getBezierPath/backwards--0.5, getBezierPath/curvature-own-undefined; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:170",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:160",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:111",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0curvature"
       }
     },
@@ -93234,8 +93234,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0curvature compares particular pinned full tuples: getBezierPath curvature parameter/default and whole-tuple contract; particular captures getBezierPath/backwards-default, getBezierPath/backwards-0, getBezierPath/backwards-0.5, getBezierPath/backwards--0.5, getBezierPath/curvature-own-undefined; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:170",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:160",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:111",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0curvature"
       }
     },
@@ -93252,8 +93252,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0sourceposition compares particular pinned full tuples: getBezierPath sourcePosition parameter/default and whole-tuple contract; particular captures getBezierPath/omitted-both, getBezierPath/sides-forward-left-left, getBezierPath/sides-forward-left-right, getBezierPath/sides-forward-left-top, getBezierPath/sides-forward-left-bottom, getBezierPath/sides-forward-right-left, getBezierPath/sides-forward-right-right, getBezierPath/sides-forward-right-top, getBezierPath/sides-forward-right-bottom, getBezierPath/sides-forward-top-left, getBezierPath/sides-forward-top-right, getBezierPath/sides-forward-top-top, getBezierPath/sides-forward-top-bottom, getBezierPath/sides-forward-bottom-left, getBezierPath/sides-forward-bottom-right, getBezierPath/sides-forward-bottom-top, getBezierPath/sides-forward-bottom-bottom, getBezierPath/sourcePosition-own-undefined, getBezierPath/omitted-source, getBezierPath/omitted-target; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:166",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:458",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:133",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourceposition"
       }
     },
@@ -93270,8 +93270,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0sourceposition compares particular pinned full tuples: getBezierPath sourcePosition parameter/default and whole-tuple contract; particular captures getBezierPath/omitted-both, getBezierPath/sides-forward-left-left, getBezierPath/sides-forward-left-right, getBezierPath/sides-forward-left-top, getBezierPath/sides-forward-left-bottom, getBezierPath/sides-forward-right-left, getBezierPath/sides-forward-right-right, getBezierPath/sides-forward-right-top, getBezierPath/sides-forward-right-bottom, getBezierPath/sides-forward-top-left, getBezierPath/sides-forward-top-right, getBezierPath/sides-forward-top-top, getBezierPath/sides-forward-top-bottom, getBezierPath/sides-forward-bottom-left, getBezierPath/sides-forward-bottom-right, getBezierPath/sides-forward-bottom-top, getBezierPath/sides-forward-bottom-bottom, getBezierPath/sourcePosition-own-undefined, getBezierPath/omitted-source, getBezierPath/omitted-target; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:166",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:458",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:133",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourceposition"
       }
     },
@@ -93288,8 +93288,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0sourceposition compares particular pinned full tuples: getBezierPath sourcePosition parameter/default and whole-tuple contract; particular captures getBezierPath/omitted-both, getBezierPath/sides-forward-left-left, getBezierPath/sides-forward-left-right, getBezierPath/sides-forward-left-top, getBezierPath/sides-forward-left-bottom, getBezierPath/sides-forward-right-left, getBezierPath/sides-forward-right-right, getBezierPath/sides-forward-right-top, getBezierPath/sides-forward-right-bottom, getBezierPath/sides-forward-top-left, getBezierPath/sides-forward-top-right, getBezierPath/sides-forward-top-top, getBezierPath/sides-forward-top-bottom, getBezierPath/sides-forward-bottom-left, getBezierPath/sides-forward-bottom-right, getBezierPath/sides-forward-bottom-top, getBezierPath/sides-forward-bottom-bottom, getBezierPath/sourcePosition-own-undefined, getBezierPath/omitted-source, getBezierPath/omitted-target; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:166",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:458",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:133",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourceposition"
       }
     },
@@ -93306,8 +93306,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0sourcex compares particular pinned full tuples: getBezierPath sourceX parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-sourceX, getBezierPath/sourceX-NaN, getBezierPath/sourceX-plusInfinity, getBezierPath/sourceX-minusInfinity, getBezierPath/sourceX-negativeZero, getBezierPath/sourceX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:164",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:499",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:170",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourcex"
       }
     },
@@ -93324,8 +93324,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0sourcex compares particular pinned full tuples: getBezierPath sourceX parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-sourceX, getBezierPath/sourceX-NaN, getBezierPath/sourceX-plusInfinity, getBezierPath/sourceX-minusInfinity, getBezierPath/sourceX-negativeZero, getBezierPath/sourceX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:164",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:499",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:170",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourcex"
       }
     },
@@ -93342,8 +93342,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0sourcex compares particular pinned full tuples: getBezierPath sourceX parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-sourceX, getBezierPath/sourceX-NaN, getBezierPath/sourceX-plusInfinity, getBezierPath/sourceX-minusInfinity, getBezierPath/sourceX-negativeZero, getBezierPath/sourceX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:164",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:499",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:170",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourcex"
       }
     },
@@ -93360,8 +93360,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0sourcey compares particular pinned full tuples: getBezierPath sourceY parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-sourceY, getBezierPath/sourceY-NaN, getBezierPath/sourceY-plusInfinity, getBezierPath/sourceY-minusInfinity, getBezierPath/sourceY-negativeZero, getBezierPath/sourceY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:165",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:540",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:194",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourcey"
       }
     },
@@ -93378,8 +93378,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0sourcey compares particular pinned full tuples: getBezierPath sourceY parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-sourceY, getBezierPath/sourceY-NaN, getBezierPath/sourceY-plusInfinity, getBezierPath/sourceY-minusInfinity, getBezierPath/sourceY-negativeZero, getBezierPath/sourceY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:165",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:540",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:194",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourcey"
       }
     },
@@ -93396,8 +93396,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0sourcey compares particular pinned full tuples: getBezierPath sourceY parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-sourceY, getBezierPath/sourceY-NaN, getBezierPath/sourceY-plusInfinity, getBezierPath/sourceY-minusInfinity, getBezierPath/sourceY-negativeZero, getBezierPath/sourceY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:165",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:540",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:194",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0sourcey"
       }
     },
@@ -93414,8 +93414,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0targetposition compares particular pinned full tuples: getBezierPath targetPosition parameter/default and whole-tuple contract; particular captures getBezierPath/omitted-both, getBezierPath/sides-forward-left-left, getBezierPath/sides-forward-left-right, getBezierPath/sides-forward-left-top, getBezierPath/sides-forward-left-bottom, getBezierPath/sides-forward-right-left, getBezierPath/sides-forward-right-right, getBezierPath/sides-forward-right-top, getBezierPath/sides-forward-right-bottom, getBezierPath/sides-forward-top-left, getBezierPath/sides-forward-top-right, getBezierPath/sides-forward-top-top, getBezierPath/sides-forward-top-bottom, getBezierPath/sides-forward-bottom-left, getBezierPath/sides-forward-bottom-right, getBezierPath/sides-forward-bottom-top, getBezierPath/sides-forward-bottom-bottom, getBezierPath/targetPosition-own-undefined, getBezierPath/omitted-source, getBezierPath/omitted-target; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:169",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:838",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:218",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targetposition"
       }
     },
@@ -93432,8 +93432,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0targetposition compares particular pinned full tuples: getBezierPath targetPosition parameter/default and whole-tuple contract; particular captures getBezierPath/omitted-both, getBezierPath/sides-forward-left-left, getBezierPath/sides-forward-left-right, getBezierPath/sides-forward-left-top, getBezierPath/sides-forward-left-bottom, getBezierPath/sides-forward-right-left, getBezierPath/sides-forward-right-right, getBezierPath/sides-forward-right-top, getBezierPath/sides-forward-right-bottom, getBezierPath/sides-forward-top-left, getBezierPath/sides-forward-top-right, getBezierPath/sides-forward-top-top, getBezierPath/sides-forward-top-bottom, getBezierPath/sides-forward-bottom-left, getBezierPath/sides-forward-bottom-right, getBezierPath/sides-forward-bottom-top, getBezierPath/sides-forward-bottom-bottom, getBezierPath/targetPosition-own-undefined, getBezierPath/omitted-source, getBezierPath/omitted-target; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:169",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:838",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:218",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targetposition"
       }
     },
@@ -93450,8 +93450,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0targetposition compares particular pinned full tuples: getBezierPath targetPosition parameter/default and whole-tuple contract; particular captures getBezierPath/omitted-both, getBezierPath/sides-forward-left-left, getBezierPath/sides-forward-left-right, getBezierPath/sides-forward-left-top, getBezierPath/sides-forward-left-bottom, getBezierPath/sides-forward-right-left, getBezierPath/sides-forward-right-right, getBezierPath/sides-forward-right-top, getBezierPath/sides-forward-right-bottom, getBezierPath/sides-forward-top-left, getBezierPath/sides-forward-top-right, getBezierPath/sides-forward-top-top, getBezierPath/sides-forward-top-bottom, getBezierPath/sides-forward-bottom-left, getBezierPath/sides-forward-bottom-right, getBezierPath/sides-forward-bottom-top, getBezierPath/sides-forward-bottom-bottom, getBezierPath/targetPosition-own-undefined, getBezierPath/omitted-source, getBezierPath/omitted-target; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:169",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:838",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:218",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targetposition"
       }
     },
@@ -93468,8 +93468,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0targetx compares particular pinned full tuples: getBezierPath targetX parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-targetX, getBezierPath/targetX-NaN, getBezierPath/targetX-plusInfinity, getBezierPath/targetX-minusInfinity, getBezierPath/targetX-negativeZero, getBezierPath/targetX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:167",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:874",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:255",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targetx"
       }
     },
@@ -93486,8 +93486,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0targetx compares particular pinned full tuples: getBezierPath targetX parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-targetX, getBezierPath/targetX-NaN, getBezierPath/targetX-plusInfinity, getBezierPath/targetX-minusInfinity, getBezierPath/targetX-negativeZero, getBezierPath/targetX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:167",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:874",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:255",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targetx"
       }
     },
@@ -93504,8 +93504,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0targetx compares particular pinned full tuples: getBezierPath targetX parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-targetX, getBezierPath/targetX-NaN, getBezierPath/targetX-plusInfinity, getBezierPath/targetX-minusInfinity, getBezierPath/targetX-negativeZero, getBezierPath/targetX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:167",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:874",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:255",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targetx"
       }
     },
@@ -93522,8 +93522,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::0targety compares particular pinned full tuples: getBezierPath targetY parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-targetY, getBezierPath/targetY-NaN, getBezierPath/targetY-plusInfinity, getBezierPath/targetY-minusInfinity, getBezierPath/targetY-negativeZero, getBezierPath/targetY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:168",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:915",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:279",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targety"
       }
     },
@@ -93540,8 +93540,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::0targety compares particular pinned full tuples: getBezierPath targetY parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-targetY, getBezierPath/targetY-NaN, getBezierPath/targetY-plusInfinity, getBezierPath/targetY-minusInfinity, getBezierPath/targetY-negativeZero, getBezierPath/targetY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:168",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:915",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:279",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targety"
       }
     },
@@ -93558,8 +93558,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::0targety compares particular pinned full tuples: getBezierPath targetY parameter/default and whole-tuple contract; particular captures getBezierPath/forward, getBezierPath/perturb-targetY, getBezierPath/targetY-NaN, getBezierPath/targetY-plusInfinity, getBezierPath/targetY-minusInfinity, getBezierPath/targetY-negativeZero, getBezierPath/targetY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:168",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:915",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:279",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#0targety"
       }
     },
@@ -93576,8 +93576,8 @@
         "host": "vanilla",
         "assertion": "get-bezier-path::getBezierPath compares particular pinned full tuples: getBezierPath whole synchronous five-tuple contract; particular captures 99 owned-helper numeric captures, all owned case families, and complete504-scope companion; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:163",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:971",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:303",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#signature"
       }
     },
@@ -93594,8 +93594,8 @@
         "host": "vue",
         "assertion": "get-bezier-path::getBezierPath compares particular pinned full tuples: getBezierPath whole synchronous five-tuple contract; particular captures 99 owned-helper numeric captures, all owned case families, and complete504-scope companion; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:163",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:971",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:303",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#signature"
       }
     },
@@ -93612,8 +93612,8 @@
         "host": "foldkit",
         "assertion": "get-bezier-path::getBezierPath compares particular pinned full tuples: getBezierPath whole synchronous five-tuple contract; particular captures 99 owned-helper numeric captures, all owned case families, and complete504-scope companion; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:163",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:971",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:303",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-bezier-path#signature"
       }
     },
@@ -93990,8 +93990,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::0sourceposition compares particular pinned full tuples: getSimpleBezierPath sourcePosition parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/omitted-both, getSimpleBezierPath/sides-forward-left-left, getSimpleBezierPath/sides-forward-left-right, getSimpleBezierPath/sides-forward-left-top, getSimpleBezierPath/sides-forward-left-bottom, getSimpleBezierPath/sides-forward-right-left, getSimpleBezierPath/sides-forward-right-right, getSimpleBezierPath/sides-forward-right-top, getSimpleBezierPath/sides-forward-right-bottom, getSimpleBezierPath/sides-forward-top-left, getSimpleBezierPath/sides-forward-top-right, getSimpleBezierPath/sides-forward-top-top, getSimpleBezierPath/sides-forward-top-bottom, getSimpleBezierPath/sides-forward-bottom-left, getSimpleBezierPath/sides-forward-bottom-right, getSimpleBezierPath/sides-forward-bottom-top, getSimpleBezierPath/sides-forward-bottom-bottom, getSimpleBezierPath/sourcePosition-own-undefined, getSimpleBezierPath/omitted-source, getSimpleBezierPath/omitted-target; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:213",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1269",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:419",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourceposition"
       }
     },
@@ -94008,8 +94008,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::0sourceposition compares particular pinned full tuples: getSimpleBezierPath sourcePosition parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/omitted-both, getSimpleBezierPath/sides-forward-left-left, getSimpleBezierPath/sides-forward-left-right, getSimpleBezierPath/sides-forward-left-top, getSimpleBezierPath/sides-forward-left-bottom, getSimpleBezierPath/sides-forward-right-left, getSimpleBezierPath/sides-forward-right-right, getSimpleBezierPath/sides-forward-right-top, getSimpleBezierPath/sides-forward-right-bottom, getSimpleBezierPath/sides-forward-top-left, getSimpleBezierPath/sides-forward-top-right, getSimpleBezierPath/sides-forward-top-top, getSimpleBezierPath/sides-forward-top-bottom, getSimpleBezierPath/sides-forward-bottom-left, getSimpleBezierPath/sides-forward-bottom-right, getSimpleBezierPath/sides-forward-bottom-top, getSimpleBezierPath/sides-forward-bottom-bottom, getSimpleBezierPath/sourcePosition-own-undefined, getSimpleBezierPath/omitted-source, getSimpleBezierPath/omitted-target; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:213",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1269",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:419",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourceposition"
       }
     },
@@ -94026,8 +94026,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::0sourceposition compares particular pinned full tuples: getSimpleBezierPath sourcePosition parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/omitted-both, getSimpleBezierPath/sides-forward-left-left, getSimpleBezierPath/sides-forward-left-right, getSimpleBezierPath/sides-forward-left-top, getSimpleBezierPath/sides-forward-left-bottom, getSimpleBezierPath/sides-forward-right-left, getSimpleBezierPath/sides-forward-right-right, getSimpleBezierPath/sides-forward-right-top, getSimpleBezierPath/sides-forward-right-bottom, getSimpleBezierPath/sides-forward-top-left, getSimpleBezierPath/sides-forward-top-right, getSimpleBezierPath/sides-forward-top-top, getSimpleBezierPath/sides-forward-top-bottom, getSimpleBezierPath/sides-forward-bottom-left, getSimpleBezierPath/sides-forward-bottom-right, getSimpleBezierPath/sides-forward-bottom-top, getSimpleBezierPath/sides-forward-bottom-bottom, getSimpleBezierPath/sourcePosition-own-undefined, getSimpleBezierPath/omitted-source, getSimpleBezierPath/omitted-target; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:213",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1269",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:419",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourceposition"
       }
     },
@@ -94044,8 +94044,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::0sourcex compares particular pinned full tuples: getSimpleBezierPath sourceX parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-sourceX, getSimpleBezierPath/sourceX-NaN, getSimpleBezierPath/sourceX-plusInfinity, getSimpleBezierPath/sourceX-minusInfinity, getSimpleBezierPath/sourceX-negativeZero, getSimpleBezierPath/sourceX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:211",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1310",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:456",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourcex"
       }
     },
@@ -94062,8 +94062,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::0sourcex compares particular pinned full tuples: getSimpleBezierPath sourceX parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-sourceX, getSimpleBezierPath/sourceX-NaN, getSimpleBezierPath/sourceX-plusInfinity, getSimpleBezierPath/sourceX-minusInfinity, getSimpleBezierPath/sourceX-negativeZero, getSimpleBezierPath/sourceX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:211",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1310",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:456",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourcex"
       }
     },
@@ -94080,8 +94080,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::0sourcex compares particular pinned full tuples: getSimpleBezierPath sourceX parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-sourceX, getSimpleBezierPath/sourceX-NaN, getSimpleBezierPath/sourceX-plusInfinity, getSimpleBezierPath/sourceX-minusInfinity, getSimpleBezierPath/sourceX-negativeZero, getSimpleBezierPath/sourceX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:211",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1310",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:456",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourcex"
       }
     },
@@ -94098,8 +94098,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::0sourcey compares particular pinned full tuples: getSimpleBezierPath sourceY parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-sourceY, getSimpleBezierPath/sourceY-NaN, getSimpleBezierPath/sourceY-plusInfinity, getSimpleBezierPath/sourceY-minusInfinity, getSimpleBezierPath/sourceY-negativeZero, getSimpleBezierPath/sourceY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:212",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1351",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:480",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourcey"
       }
     },
@@ -94116,8 +94116,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::0sourcey compares particular pinned full tuples: getSimpleBezierPath sourceY parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-sourceY, getSimpleBezierPath/sourceY-NaN, getSimpleBezierPath/sourceY-plusInfinity, getSimpleBezierPath/sourceY-minusInfinity, getSimpleBezierPath/sourceY-negativeZero, getSimpleBezierPath/sourceY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:212",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1351",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:480",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourcey"
       }
     },
@@ -94134,8 +94134,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::0sourcey compares particular pinned full tuples: getSimpleBezierPath sourceY parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-sourceY, getSimpleBezierPath/sourceY-NaN, getSimpleBezierPath/sourceY-plusInfinity, getSimpleBezierPath/sourceY-minusInfinity, getSimpleBezierPath/sourceY-negativeZero, getSimpleBezierPath/sourceY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:212",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1351",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:480",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0sourcey"
       }
     },
@@ -94152,8 +94152,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::0targetposition compares particular pinned full tuples: getSimpleBezierPath targetPosition parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/omitted-both, getSimpleBezierPath/sides-forward-left-left, getSimpleBezierPath/sides-forward-left-right, getSimpleBezierPath/sides-forward-left-top, getSimpleBezierPath/sides-forward-left-bottom, getSimpleBezierPath/sides-forward-right-left, getSimpleBezierPath/sides-forward-right-right, getSimpleBezierPath/sides-forward-right-top, getSimpleBezierPath/sides-forward-right-bottom, getSimpleBezierPath/sides-forward-top-left, getSimpleBezierPath/sides-forward-top-right, getSimpleBezierPath/sides-forward-top-top, getSimpleBezierPath/sides-forward-top-bottom, getSimpleBezierPath/sides-forward-bottom-left, getSimpleBezierPath/sides-forward-bottom-right, getSimpleBezierPath/sides-forward-bottom-top, getSimpleBezierPath/sides-forward-bottom-bottom, getSimpleBezierPath/targetPosition-own-undefined, getSimpleBezierPath/omitted-source, getSimpleBezierPath/omitted-target; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:216",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1649",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:504",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targetposition"
       }
     },
@@ -94170,8 +94170,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::0targetposition compares particular pinned full tuples: getSimpleBezierPath targetPosition parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/omitted-both, getSimpleBezierPath/sides-forward-left-left, getSimpleBezierPath/sides-forward-left-right, getSimpleBezierPath/sides-forward-left-top, getSimpleBezierPath/sides-forward-left-bottom, getSimpleBezierPath/sides-forward-right-left, getSimpleBezierPath/sides-forward-right-right, getSimpleBezierPath/sides-forward-right-top, getSimpleBezierPath/sides-forward-right-bottom, getSimpleBezierPath/sides-forward-top-left, getSimpleBezierPath/sides-forward-top-right, getSimpleBezierPath/sides-forward-top-top, getSimpleBezierPath/sides-forward-top-bottom, getSimpleBezierPath/sides-forward-bottom-left, getSimpleBezierPath/sides-forward-bottom-right, getSimpleBezierPath/sides-forward-bottom-top, getSimpleBezierPath/sides-forward-bottom-bottom, getSimpleBezierPath/targetPosition-own-undefined, getSimpleBezierPath/omitted-source, getSimpleBezierPath/omitted-target; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:216",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1649",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:504",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targetposition"
       }
     },
@@ -94188,8 +94188,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::0targetposition compares particular pinned full tuples: getSimpleBezierPath targetPosition parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/omitted-both, getSimpleBezierPath/sides-forward-left-left, getSimpleBezierPath/sides-forward-left-right, getSimpleBezierPath/sides-forward-left-top, getSimpleBezierPath/sides-forward-left-bottom, getSimpleBezierPath/sides-forward-right-left, getSimpleBezierPath/sides-forward-right-right, getSimpleBezierPath/sides-forward-right-top, getSimpleBezierPath/sides-forward-right-bottom, getSimpleBezierPath/sides-forward-top-left, getSimpleBezierPath/sides-forward-top-right, getSimpleBezierPath/sides-forward-top-top, getSimpleBezierPath/sides-forward-top-bottom, getSimpleBezierPath/sides-forward-bottom-left, getSimpleBezierPath/sides-forward-bottom-right, getSimpleBezierPath/sides-forward-bottom-top, getSimpleBezierPath/sides-forward-bottom-bottom, getSimpleBezierPath/targetPosition-own-undefined, getSimpleBezierPath/omitted-source, getSimpleBezierPath/omitted-target; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:216",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1649",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:504",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targetposition"
       }
     },
@@ -94206,8 +94206,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::0targetx compares particular pinned full tuples: getSimpleBezierPath targetX parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-targetX, getSimpleBezierPath/targetX-NaN, getSimpleBezierPath/targetX-plusInfinity, getSimpleBezierPath/targetX-minusInfinity, getSimpleBezierPath/targetX-negativeZero, getSimpleBezierPath/targetX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:214",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1685",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:541",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targetx"
       }
     },
@@ -94224,8 +94224,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::0targetx compares particular pinned full tuples: getSimpleBezierPath targetX parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-targetX, getSimpleBezierPath/targetX-NaN, getSimpleBezierPath/targetX-plusInfinity, getSimpleBezierPath/targetX-minusInfinity, getSimpleBezierPath/targetX-negativeZero, getSimpleBezierPath/targetX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:214",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1685",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:541",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targetx"
       }
     },
@@ -94242,8 +94242,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::0targetx compares particular pinned full tuples: getSimpleBezierPath targetX parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-targetX, getSimpleBezierPath/targetX-NaN, getSimpleBezierPath/targetX-plusInfinity, getSimpleBezierPath/targetX-minusInfinity, getSimpleBezierPath/targetX-negativeZero, getSimpleBezierPath/targetX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:214",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1685",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:541",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targetx"
       }
     },
@@ -94260,8 +94260,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::0targety compares particular pinned full tuples: getSimpleBezierPath targetY parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-targetY, getSimpleBezierPath/targetY-NaN, getSimpleBezierPath/targetY-plusInfinity, getSimpleBezierPath/targetY-minusInfinity, getSimpleBezierPath/targetY-negativeZero, getSimpleBezierPath/targetY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:215",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1726",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:565",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targety"
       }
     },
@@ -94278,8 +94278,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::0targety compares particular pinned full tuples: getSimpleBezierPath targetY parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-targetY, getSimpleBezierPath/targetY-NaN, getSimpleBezierPath/targetY-plusInfinity, getSimpleBezierPath/targetY-minusInfinity, getSimpleBezierPath/targetY-negativeZero, getSimpleBezierPath/targetY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:215",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1726",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:565",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targety"
       }
     },
@@ -94296,8 +94296,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::0targety compares particular pinned full tuples: getSimpleBezierPath targetY parameter/default and whole-tuple contract; particular captures getSimpleBezierPath/forward, getSimpleBezierPath/perturb-targetY, getSimpleBezierPath/targetY-NaN, getSimpleBezierPath/targetY-plusInfinity, getSimpleBezierPath/targetY-minusInfinity, getSimpleBezierPath/targetY-negativeZero, getSimpleBezierPath/targetY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:215",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1726",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:565",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#0targety"
       }
     },
@@ -94314,8 +94314,8 @@
         "host": "vanilla",
         "assertion": "get-simple-bezier-path::getSimpleBezierPath compares particular pinned full tuples: getSimpleBezierPath whole synchronous five-tuple contract; particular captures 84 owned-helper numeric captures, all owned case families, and complete504-scope companion; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:210",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1782",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:589",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#signature"
       }
     },
@@ -94332,8 +94332,8 @@
         "host": "vue",
         "assertion": "get-simple-bezier-path::getSimpleBezierPath compares particular pinned full tuples: getSimpleBezierPath whole synchronous five-tuple contract; particular captures 84 owned-helper numeric captures, all owned case families, and complete504-scope companion; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:210",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1782",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:589",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#signature"
       }
     },
@@ -94350,8 +94350,8 @@
         "host": "foldkit",
         "assertion": "get-simple-bezier-path::getSimpleBezierPath compares particular pinned full tuples: getSimpleBezierPath whole synchronous five-tuple contract; particular captures 84 owned-helper numeric captures, all owned case families, and complete504-scope companion; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:210",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1782",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:589",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-simple-bezier-path#signature"
       }
     },
@@ -94368,8 +94368,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0borderradius compares particular pinned full tuples: getSmoothStepPath borderRadius parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-borderRadius-0, getSmoothStepPath/oppositeHorizontal-borderRadius-1000, getSmoothStepPath/oppositeHorizontal-borderRadius--5, getSmoothStepPath/borderRadius-own-undefined; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:669",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1864",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:690",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0borderradius"
       }
     },
@@ -94386,8 +94386,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0borderradius compares particular pinned full tuples: getSmoothStepPath borderRadius parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-borderRadius-0, getSmoothStepPath/oppositeHorizontal-borderRadius-1000, getSmoothStepPath/oppositeHorizontal-borderRadius--5, getSmoothStepPath/borderRadius-own-undefined; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:669",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1864",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:690",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0borderradius"
       }
     },
@@ -94404,8 +94404,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0borderradius compares particular pinned full tuples: getSmoothStepPath borderRadius parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-borderRadius-0, getSmoothStepPath/oppositeHorizontal-borderRadius-1000, getSmoothStepPath/oppositeHorizontal-borderRadius--5, getSmoothStepPath/borderRadius-own-undefined; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:669",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1864",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:690",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0borderradius"
       }
     },
@@ -94422,8 +94422,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0centerx compares particular pinned full tuples: getSmoothStepPath centerX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-centerX-0, getSmoothStepPath/oppositeHorizontal-centerX-23, getSmoothStepPath/oppositeHorizontal-centers-33, getSmoothStepPath/centerX-own-undefined; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:670",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1947",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:712",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0centerx"
       }
     },
@@ -94440,8 +94440,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0centerx compares particular pinned full tuples: getSmoothStepPath centerX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-centerX-0, getSmoothStepPath/oppositeHorizontal-centerX-23, getSmoothStepPath/oppositeHorizontal-centers-33, getSmoothStepPath/centerX-own-undefined; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:670",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1947",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:712",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0centerx"
       }
     },
@@ -94458,8 +94458,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0centerx compares particular pinned full tuples: getSmoothStepPath centerX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-centerX-0, getSmoothStepPath/oppositeHorizontal-centerX-23, getSmoothStepPath/oppositeHorizontal-centers-33, getSmoothStepPath/centerX-own-undefined; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:670",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:1947",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:712",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0centerx"
       }
     },
@@ -94476,8 +94476,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0centery compares particular pinned full tuples: getSmoothStepPath centerY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeVertical-default, getSmoothStepPath/oppositeVertical-centerY-0, getSmoothStepPath/oppositeVertical-centerY-37, getSmoothStepPath/oppositeVertical-centers-33, getSmoothStepPath/centerY-own-undefined; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:671",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2030",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:734",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0centery"
       }
     },
@@ -94494,8 +94494,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0centery compares particular pinned full tuples: getSmoothStepPath centerY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeVertical-default, getSmoothStepPath/oppositeVertical-centerY-0, getSmoothStepPath/oppositeVertical-centerY-37, getSmoothStepPath/oppositeVertical-centers-33, getSmoothStepPath/centerY-own-undefined; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:671",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2030",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:734",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0centery"
       }
     },
@@ -94512,8 +94512,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0centery compares particular pinned full tuples: getSmoothStepPath centerY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeVertical-default, getSmoothStepPath/oppositeVertical-centerY-0, getSmoothStepPath/oppositeVertical-centerY-37, getSmoothStepPath/oppositeVertical-centers-33, getSmoothStepPath/centerY-own-undefined; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:671",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2030",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:734",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0centery"
       }
     },
@@ -94530,8 +94530,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0offset compares particular pinned full tuples: getSmoothStepPath offset parameter/default and whole-tuple contract; particular captures getSmoothStepPath/same-default, getSmoothStepPath/same-offset-0, getSmoothStepPath/same-offset-35, getSmoothStepPath/same-offset--10, getSmoothStepPath/offset-own-undefined; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:672",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2112",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:756",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0offset"
       }
     },
@@ -94548,8 +94548,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0offset compares particular pinned full tuples: getSmoothStepPath offset parameter/default and whole-tuple contract; particular captures getSmoothStepPath/same-default, getSmoothStepPath/same-offset-0, getSmoothStepPath/same-offset-35, getSmoothStepPath/same-offset--10, getSmoothStepPath/offset-own-undefined; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:672",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2112",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:756",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0offset"
       }
     },
@@ -94566,8 +94566,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0offset compares particular pinned full tuples: getSmoothStepPath offset parameter/default and whole-tuple contract; particular captures getSmoothStepPath/same-default, getSmoothStepPath/same-offset-0, getSmoothStepPath/same-offset-35, getSmoothStepPath/same-offset--10, getSmoothStepPath/offset-own-undefined; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:672",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2112",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:756",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0offset"
       }
     },
@@ -94584,8 +94584,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0sourceposition compares particular pinned full tuples: getSmoothStepPath sourcePosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/omitted-both, getSmoothStepPath/sides-forward-left-left, getSmoothStepPath/sides-forward-left-right, getSmoothStepPath/sides-forward-left-top, getSmoothStepPath/sides-forward-left-bottom, getSmoothStepPath/sides-forward-right-left, getSmoothStepPath/sides-forward-right-right, getSmoothStepPath/sides-forward-right-top, getSmoothStepPath/sides-forward-right-bottom, getSmoothStepPath/sides-forward-top-left, getSmoothStepPath/sides-forward-top-right, getSmoothStepPath/sides-forward-top-top, getSmoothStepPath/sides-forward-top-bottom, getSmoothStepPath/sides-forward-bottom-left, getSmoothStepPath/sides-forward-bottom-right, getSmoothStepPath/sides-forward-bottom-top, getSmoothStepPath/sides-forward-bottom-bottom, getSmoothStepPath/sourcePosition-own-undefined, getSmoothStepPath/omitted-source, getSmoothStepPath/omitted-target; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:665",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2410",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:778",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourceposition"
       }
     },
@@ -94602,8 +94602,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0sourceposition compares particular pinned full tuples: getSmoothStepPath sourcePosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/omitted-both, getSmoothStepPath/sides-forward-left-left, getSmoothStepPath/sides-forward-left-right, getSmoothStepPath/sides-forward-left-top, getSmoothStepPath/sides-forward-left-bottom, getSmoothStepPath/sides-forward-right-left, getSmoothStepPath/sides-forward-right-right, getSmoothStepPath/sides-forward-right-top, getSmoothStepPath/sides-forward-right-bottom, getSmoothStepPath/sides-forward-top-left, getSmoothStepPath/sides-forward-top-right, getSmoothStepPath/sides-forward-top-top, getSmoothStepPath/sides-forward-top-bottom, getSmoothStepPath/sides-forward-bottom-left, getSmoothStepPath/sides-forward-bottom-right, getSmoothStepPath/sides-forward-bottom-top, getSmoothStepPath/sides-forward-bottom-bottom, getSmoothStepPath/sourcePosition-own-undefined, getSmoothStepPath/omitted-source, getSmoothStepPath/omitted-target; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:665",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2410",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:778",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourceposition"
       }
     },
@@ -94620,8 +94620,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0sourceposition compares particular pinned full tuples: getSmoothStepPath sourcePosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/omitted-both, getSmoothStepPath/sides-forward-left-left, getSmoothStepPath/sides-forward-left-right, getSmoothStepPath/sides-forward-left-top, getSmoothStepPath/sides-forward-left-bottom, getSmoothStepPath/sides-forward-right-left, getSmoothStepPath/sides-forward-right-right, getSmoothStepPath/sides-forward-right-top, getSmoothStepPath/sides-forward-right-bottom, getSmoothStepPath/sides-forward-top-left, getSmoothStepPath/sides-forward-top-right, getSmoothStepPath/sides-forward-top-top, getSmoothStepPath/sides-forward-top-bottom, getSmoothStepPath/sides-forward-bottom-left, getSmoothStepPath/sides-forward-bottom-right, getSmoothStepPath/sides-forward-bottom-top, getSmoothStepPath/sides-forward-bottom-bottom, getSmoothStepPath/sourcePosition-own-undefined, getSmoothStepPath/omitted-source, getSmoothStepPath/omitted-target; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:665",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2410",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:778",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourceposition"
       }
     },
@@ -94638,8 +94638,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0sourcex compares particular pinned full tuples: getSmoothStepPath sourceX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-sourceX, getSmoothStepPath/sourceX-NaN, getSmoothStepPath/sourceX-plusInfinity, getSmoothStepPath/sourceX-minusInfinity, getSmoothStepPath/sourceX-negativeZero, getSmoothStepPath/sourceX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:663",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2451",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:815",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourcex"
       }
     },
@@ -94656,8 +94656,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0sourcex compares particular pinned full tuples: getSmoothStepPath sourceX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-sourceX, getSmoothStepPath/sourceX-NaN, getSmoothStepPath/sourceX-plusInfinity, getSmoothStepPath/sourceX-minusInfinity, getSmoothStepPath/sourceX-negativeZero, getSmoothStepPath/sourceX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:663",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2451",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:815",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourcex"
       }
     },
@@ -94674,8 +94674,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0sourcex compares particular pinned full tuples: getSmoothStepPath sourceX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-sourceX, getSmoothStepPath/sourceX-NaN, getSmoothStepPath/sourceX-plusInfinity, getSmoothStepPath/sourceX-minusInfinity, getSmoothStepPath/sourceX-negativeZero, getSmoothStepPath/sourceX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:663",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2451",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:815",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourcex"
       }
     },
@@ -94692,8 +94692,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0sourcey compares particular pinned full tuples: getSmoothStepPath sourceY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-sourceY, getSmoothStepPath/sourceY-NaN, getSmoothStepPath/sourceY-plusInfinity, getSmoothStepPath/sourceY-minusInfinity, getSmoothStepPath/sourceY-negativeZero, getSmoothStepPath/sourceY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:664",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2492",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:839",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourcey"
       }
     },
@@ -94710,8 +94710,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0sourcey compares particular pinned full tuples: getSmoothStepPath sourceY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-sourceY, getSmoothStepPath/sourceY-NaN, getSmoothStepPath/sourceY-plusInfinity, getSmoothStepPath/sourceY-minusInfinity, getSmoothStepPath/sourceY-negativeZero, getSmoothStepPath/sourceY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:664",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2492",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:839",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourcey"
       }
     },
@@ -94728,8 +94728,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0sourcey compares particular pinned full tuples: getSmoothStepPath sourceY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-sourceY, getSmoothStepPath/sourceY-NaN, getSmoothStepPath/sourceY-plusInfinity, getSmoothStepPath/sourceY-minusInfinity, getSmoothStepPath/sourceY-negativeZero, getSmoothStepPath/sourceY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:664",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2492",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:839",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0sourcey"
       }
     },
@@ -94746,8 +94746,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0stepposition compares particular pinned full tuples: getSmoothStepPath stepPosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-stepPosition-0, getSmoothStepPath/oppositeHorizontal-stepPosition-1, getSmoothStepPath/oppositeHorizontal-stepPosition-0.25, getSmoothStepPath/oppositeHorizontal-stepPosition--0.5, getSmoothStepPath/oppositeHorizontal-stepPosition-1.5, getSmoothStepPath/stepPosition-own-undefined; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:673",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2610",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:863",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0stepposition"
       }
     },
@@ -94764,8 +94764,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0stepposition compares particular pinned full tuples: getSmoothStepPath stepPosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-stepPosition-0, getSmoothStepPath/oppositeHorizontal-stepPosition-1, getSmoothStepPath/oppositeHorizontal-stepPosition-0.25, getSmoothStepPath/oppositeHorizontal-stepPosition--0.5, getSmoothStepPath/oppositeHorizontal-stepPosition-1.5, getSmoothStepPath/stepPosition-own-undefined; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:673",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2610",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:863",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0stepposition"
       }
     },
@@ -94782,8 +94782,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0stepposition compares particular pinned full tuples: getSmoothStepPath stepPosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/oppositeHorizontal-default, getSmoothStepPath/oppositeHorizontal-stepPosition-0, getSmoothStepPath/oppositeHorizontal-stepPosition-1, getSmoothStepPath/oppositeHorizontal-stepPosition-0.25, getSmoothStepPath/oppositeHorizontal-stepPosition--0.5, getSmoothStepPath/oppositeHorizontal-stepPosition-1.5, getSmoothStepPath/stepPosition-own-undefined; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:673",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2610",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:863",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0stepposition"
       }
     },
@@ -94800,8 +94800,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0targetposition compares particular pinned full tuples: getSmoothStepPath targetPosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/omitted-both, getSmoothStepPath/sides-forward-left-left, getSmoothStepPath/sides-forward-left-right, getSmoothStepPath/sides-forward-left-top, getSmoothStepPath/sides-forward-left-bottom, getSmoothStepPath/sides-forward-right-left, getSmoothStepPath/sides-forward-right-right, getSmoothStepPath/sides-forward-right-top, getSmoothStepPath/sides-forward-right-bottom, getSmoothStepPath/sides-forward-top-left, getSmoothStepPath/sides-forward-top-right, getSmoothStepPath/sides-forward-top-top, getSmoothStepPath/sides-forward-top-bottom, getSmoothStepPath/sides-forward-bottom-left, getSmoothStepPath/sides-forward-bottom-right, getSmoothStepPath/sides-forward-bottom-top, getSmoothStepPath/sides-forward-bottom-bottom, getSmoothStepPath/targetPosition-own-undefined, getSmoothStepPath/omitted-source, getSmoothStepPath/omitted-target; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:668",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2908",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:887",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targetposition"
       }
     },
@@ -94818,8 +94818,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0targetposition compares particular pinned full tuples: getSmoothStepPath targetPosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/omitted-both, getSmoothStepPath/sides-forward-left-left, getSmoothStepPath/sides-forward-left-right, getSmoothStepPath/sides-forward-left-top, getSmoothStepPath/sides-forward-left-bottom, getSmoothStepPath/sides-forward-right-left, getSmoothStepPath/sides-forward-right-right, getSmoothStepPath/sides-forward-right-top, getSmoothStepPath/sides-forward-right-bottom, getSmoothStepPath/sides-forward-top-left, getSmoothStepPath/sides-forward-top-right, getSmoothStepPath/sides-forward-top-top, getSmoothStepPath/sides-forward-top-bottom, getSmoothStepPath/sides-forward-bottom-left, getSmoothStepPath/sides-forward-bottom-right, getSmoothStepPath/sides-forward-bottom-top, getSmoothStepPath/sides-forward-bottom-bottom, getSmoothStepPath/targetPosition-own-undefined, getSmoothStepPath/omitted-source, getSmoothStepPath/omitted-target; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:668",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2908",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:887",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targetposition"
       }
     },
@@ -94836,8 +94836,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0targetposition compares particular pinned full tuples: getSmoothStepPath targetPosition parameter/default and whole-tuple contract; particular captures getSmoothStepPath/omitted-both, getSmoothStepPath/sides-forward-left-left, getSmoothStepPath/sides-forward-left-right, getSmoothStepPath/sides-forward-left-top, getSmoothStepPath/sides-forward-left-bottom, getSmoothStepPath/sides-forward-right-left, getSmoothStepPath/sides-forward-right-right, getSmoothStepPath/sides-forward-right-top, getSmoothStepPath/sides-forward-right-bottom, getSmoothStepPath/sides-forward-top-left, getSmoothStepPath/sides-forward-top-right, getSmoothStepPath/sides-forward-top-top, getSmoothStepPath/sides-forward-top-bottom, getSmoothStepPath/sides-forward-bottom-left, getSmoothStepPath/sides-forward-bottom-right, getSmoothStepPath/sides-forward-bottom-top, getSmoothStepPath/sides-forward-bottom-bottom, getSmoothStepPath/targetPosition-own-undefined, getSmoothStepPath/omitted-source, getSmoothStepPath/omitted-target; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:668",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2908",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:887",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targetposition"
       }
     },
@@ -94854,8 +94854,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0targetx compares particular pinned full tuples: getSmoothStepPath targetX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-targetX, getSmoothStepPath/targetX-NaN, getSmoothStepPath/targetX-plusInfinity, getSmoothStepPath/targetX-minusInfinity, getSmoothStepPath/targetX-negativeZero, getSmoothStepPath/targetX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:666",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2944",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:924",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targetx"
       }
     },
@@ -94872,8 +94872,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0targetx compares particular pinned full tuples: getSmoothStepPath targetX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-targetX, getSmoothStepPath/targetX-NaN, getSmoothStepPath/targetX-plusInfinity, getSmoothStepPath/targetX-minusInfinity, getSmoothStepPath/targetX-negativeZero, getSmoothStepPath/targetX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:666",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2944",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:924",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targetx"
       }
     },
@@ -94890,8 +94890,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0targetx compares particular pinned full tuples: getSmoothStepPath targetX parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-targetX, getSmoothStepPath/targetX-NaN, getSmoothStepPath/targetX-plusInfinity, getSmoothStepPath/targetX-minusInfinity, getSmoothStepPath/targetX-negativeZero, getSmoothStepPath/targetX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:666",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2944",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:924",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targetx"
       }
     },
@@ -94908,8 +94908,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::0targety compares particular pinned full tuples: getSmoothStepPath targetY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-targetY, getSmoothStepPath/targetY-NaN, getSmoothStepPath/targetY-plusInfinity, getSmoothStepPath/targetY-minusInfinity, getSmoothStepPath/targetY-negativeZero, getSmoothStepPath/targetY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:667",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2985",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:948",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targety"
       }
     },
@@ -94926,8 +94926,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::0targety compares particular pinned full tuples: getSmoothStepPath targetY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-targetY, getSmoothStepPath/targetY-NaN, getSmoothStepPath/targetY-plusInfinity, getSmoothStepPath/targetY-minusInfinity, getSmoothStepPath/targetY-negativeZero, getSmoothStepPath/targetY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:667",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2985",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:948",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targety"
       }
     },
@@ -94944,8 +94944,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::0targety compares particular pinned full tuples: getSmoothStepPath targetY parameter/default and whole-tuple contract; particular captures getSmoothStepPath/forward, getSmoothStepPath/perturb-targetY, getSmoothStepPath/targetY-NaN, getSmoothStepPath/targetY-plusInfinity, getSmoothStepPath/targetY-minusInfinity, getSmoothStepPath/targetY-negativeZero, getSmoothStepPath/targetY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:667",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:2985",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:948",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#0targety"
       }
     },
@@ -94962,8 +94962,8 @@
         "host": "vanilla",
         "assertion": "get-smooth-step-path::getSmoothStepPath compares particular pinned full tuples: getSmoothStepPath whole synchronous five-tuple contract; particular captures 260 owned-helper numeric captures, all owned case families, and complete504-scope companion; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:662",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3041",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:972",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#signature"
       }
     },
@@ -94980,8 +94980,8 @@
         "host": "vue",
         "assertion": "get-smooth-step-path::getSmoothStepPath compares particular pinned full tuples: getSmoothStepPath whole synchronous five-tuple contract; particular captures 260 owned-helper numeric captures, all owned case families, and complete504-scope companion; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:662",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3041",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:972",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#signature"
       }
     },
@@ -94998,8 +94998,8 @@
         "host": "foldkit",
         "assertion": "get-smooth-step-path::getSmoothStepPath compares particular pinned full tuples: getSmoothStepPath whole synchronous five-tuple contract; particular captures 260 owned-helper numeric captures, all owned case families, and complete504-scope companion; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:662",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3041",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:972",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-smooth-step-path#signature"
       }
     },
@@ -95016,8 +95016,8 @@
         "host": "vanilla",
         "assertion": "get-straight-path::0sourcex compares particular pinned full tuples: getStraightPath sourceX parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-sourceX, getStraightPath/sourceX-NaN, getStraightPath/sourceX-plusInfinity, getStraightPath/sourceX-minusInfinity, getStraightPath/sourceX-negativeZero, getStraightPath/sourceX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:142",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3076",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1249",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0sourcex"
       }
     },
@@ -95034,8 +95034,8 @@
         "host": "vue",
         "assertion": "get-straight-path::0sourcex compares particular pinned full tuples: getStraightPath sourceX parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-sourceX, getStraightPath/sourceX-NaN, getStraightPath/sourceX-plusInfinity, getStraightPath/sourceX-minusInfinity, getStraightPath/sourceX-negativeZero, getStraightPath/sourceX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:142",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3076",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1249",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0sourcex"
       }
     },
@@ -95052,8 +95052,8 @@
         "host": "foldkit",
         "assertion": "get-straight-path::0sourcex compares particular pinned full tuples: getStraightPath sourceX parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-sourceX, getStraightPath/sourceX-NaN, getStraightPath/sourceX-plusInfinity, getStraightPath/sourceX-minusInfinity, getStraightPath/sourceX-negativeZero, getStraightPath/sourceX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:142",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3076",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1249",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0sourcex"
       }
     },
@@ -95070,8 +95070,8 @@
         "host": "vanilla",
         "assertion": "get-straight-path::0sourcey compares particular pinned full tuples: getStraightPath sourceY parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-sourceY, getStraightPath/sourceY-NaN, getStraightPath/sourceY-plusInfinity, getStraightPath/sourceY-minusInfinity, getStraightPath/sourceY-negativeZero, getStraightPath/sourceY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:143",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3111",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1273",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0sourcey"
       }
     },
@@ -95088,8 +95088,8 @@
         "host": "vue",
         "assertion": "get-straight-path::0sourcey compares particular pinned full tuples: getStraightPath sourceY parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-sourceY, getStraightPath/sourceY-NaN, getStraightPath/sourceY-plusInfinity, getStraightPath/sourceY-minusInfinity, getStraightPath/sourceY-negativeZero, getStraightPath/sourceY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:143",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3111",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1273",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0sourcey"
       }
     },
@@ -95106,8 +95106,8 @@
         "host": "foldkit",
         "assertion": "get-straight-path::0sourcey compares particular pinned full tuples: getStraightPath sourceY parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-sourceY, getStraightPath/sourceY-NaN, getStraightPath/sourceY-plusInfinity, getStraightPath/sourceY-minusInfinity, getStraightPath/sourceY-negativeZero, getStraightPath/sourceY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:143",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3111",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1273",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0sourcey"
       }
     },
@@ -95124,8 +95124,8 @@
         "host": "vanilla",
         "assertion": "get-straight-path::0targetx compares particular pinned full tuples: getStraightPath targetX parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-targetX, getStraightPath/targetX-NaN, getStraightPath/targetX-plusInfinity, getStraightPath/targetX-minusInfinity, getStraightPath/targetX-negativeZero, getStraightPath/targetX-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:144",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3141",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1297",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0targetx"
       }
     },
@@ -95142,8 +95142,8 @@
         "host": "vue",
         "assertion": "get-straight-path::0targetx compares particular pinned full tuples: getStraightPath targetX parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-targetX, getStraightPath/targetX-NaN, getStraightPath/targetX-plusInfinity, getStraightPath/targetX-minusInfinity, getStraightPath/targetX-negativeZero, getStraightPath/targetX-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:144",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3141",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1297",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0targetx"
       }
     },
@@ -95160,8 +95160,8 @@
         "host": "foldkit",
         "assertion": "get-straight-path::0targetx compares particular pinned full tuples: getStraightPath targetX parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-targetX, getStraightPath/targetX-NaN, getStraightPath/targetX-plusInfinity, getStraightPath/targetX-minusInfinity, getStraightPath/targetX-negativeZero, getStraightPath/targetX-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:144",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3141",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1297",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0targetx"
       }
     },
@@ -95178,8 +95178,8 @@
         "host": "vanilla",
         "assertion": "get-straight-path::0targety compares particular pinned full tuples: getStraightPath targetY parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-targetY, getStraightPath/targetY-NaN, getStraightPath/targetY-plusInfinity, getStraightPath/targetY-minusInfinity, getStraightPath/targetY-negativeZero, getStraightPath/targetY-large; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:145",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3170",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1321",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0targety"
       }
     },
@@ -95196,8 +95196,8 @@
         "host": "vue",
         "assertion": "get-straight-path::0targety compares particular pinned full tuples: getStraightPath targetY parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-targetY, getStraightPath/targetY-NaN, getStraightPath/targetY-plusInfinity, getStraightPath/targetY-minusInfinity, getStraightPath/targetY-negativeZero, getStraightPath/targetY-large; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:145",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3170",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1321",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0targety"
       }
     },
@@ -95214,8 +95214,8 @@
         "host": "foldkit",
         "assertion": "get-straight-path::0targety compares particular pinned full tuples: getStraightPath targetY parameter/default and whole-tuple contract; particular captures getStraightPath/forward, getStraightPath/perturb-targetY, getStraightPath/targetY-NaN, getStraightPath/targetY-plusInfinity, getStraightPath/targetY-minusInfinity, getStraightPath/targetY-negativeZero, getStraightPath/targetY-large; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:145",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3170",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1321",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#0targety"
       }
     },
@@ -95232,8 +95232,8 @@
         "host": "vanilla",
         "assertion": "get-straight-path::getStraightPath compares particular pinned full tuples: getStraightPath whole synchronous five-tuple contract; particular captures 31 owned-helper numeric captures, all owned case families, and complete504-scope companion; vanilla installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:141",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3208",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1345",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#signature"
       }
     },
@@ -95250,8 +95250,8 @@
         "host": "vue",
         "assertion": "get-straight-path::getStraightPath compares particular pinned full tuples: getStraightPath whole synchronous five-tuple contract; particular captures 31 owned-helper numeric captures, all owned case families, and complete504-scope companion; vue installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:141",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3208",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1345",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#signature"
       }
     },
@@ -95268,8 +95268,8 @@
         "host": "foldkit",
         "assertion": "get-straight-path::getStraightPath compares particular pinned full tuples: getStraightPath whole synchronous five-tuple contract; particular captures 31 owned-helper numeric captures, all owned case families, and complete504-scope companion; foldkit installed full-tuple/freshness and public compiler probes passed in packed-consumer-1.",
         "implementation": "packages/core/src/domain/flow-edge-path.ts:141",
-        "productionTest": "packages/core/src/domain/flow-edge-path.test.ts:3208",
-        "reference": "packages/conformance/src/path-helper-reference.test.ts:1345",
+        "productionTest": "packages/conformance/src/path-helper-reference.test.ts:94",
+        "reference": "packages/conformance/src/path-helper-reference.test.ts:94",
         "upstreamMember": "https://reactflow.dev/api-reference/utils/get-straight-path#signature"
       }
     },

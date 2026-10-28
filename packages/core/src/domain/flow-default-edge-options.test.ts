@@ -32,7 +32,7 @@ describe('default edge options', () => {
     }
   })
 
-  it('accepts Plan 114 presentation defaults and keeps stored edge values on top', () => {
+  it('accepts presentation defaults and keeps stored edge values on top', () => {
     const defaults = Effect.runSync(
       decodeFlowDefaultEdgeOptions({
         animated: true,

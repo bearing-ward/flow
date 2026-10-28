@@ -698,7 +698,7 @@ describe('continuously attached native consumer', () => {
   })
 })
 
-describe('round one repair regressions', () => {
+describe('node drag threshold regressions', () => {
   beforeEach(() => {
     vi.stubGlobal('document', { querySelector: () => null })
     vi.stubGlobal('CSS', { escape: (value: string) => value })

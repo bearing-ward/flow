@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises'
 
 import { describe, expect, it } from 'vitest'
 
+import { componentFixtureSource } from '../../apps/react-reference/fixture-source.ts'
 import ledger from '../../research/catalogs/upstream-test-ledger.json' with { type: 'json' }
-import { componentFixtureSource } from './fixture-source.ts'
 
 const entries = ledger.cases.filter((entry) => entry.phase === 128)
 

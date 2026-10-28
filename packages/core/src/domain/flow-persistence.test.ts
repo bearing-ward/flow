@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
@@ -298,7 +297,7 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
     )
   })
 
-  it('proves generated artifact/source integrity against the actual baseline revision', () => {
+  it('verifies frozen artifact digests and toolchain provenance', () => {
     const directory = new URL(
       '../../../conformance/src/fixtures/legacy-v1-persistence/',
       import.meta.url
@@ -323,25 +322,8 @@ describe('frozen de36b4f legacy persistence compatibility', () => {
       ).toBe(digest)
     }
 
-    for (const [file, digest] of Object.entries(provenance.sourceHashes)) {
-      expect(
-        createHash('sha256')
-          .update(
-            execFileSync('git', ['show', `${provenance.revision}:${file}`])
-          )
-          .digest('hex')
-      ).toBe(digest)
-    }
-
     expect(Object.keys(provenance.artifactHashes)).toHaveLength(25)
-    execFileSync('bun', [
-      'run',
-      'scripts/capture-legacy-v1-persistence.ts',
-      '--check',
-    ])
-    // Rebuilding the frozen baseline spawns git and a bundler; allow for a
-    // loaded machine instead of vitest's 5s default.
-  }, 60_000)
+  })
 
   it('matches the baseline writer on the full nested representative field projection', () => {
     const fixture = S.decodeUnknownSync(

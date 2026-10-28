@@ -87,9 +87,10 @@ describe('verification profiles', () => {
 
     const checks = selectVerificationChecks(config, request)
 
-    expect(checks).toHaveLength(23)
+    expect(checks).toHaveLength(24)
     expect(checks.map((check) => check.name)).toStrictEqual(
       expect.arrayContaining([
+        'persistence-provenance',
         'documentation',
         'React Flow catalog coverage',
         'React Flow API member inventory',
@@ -129,7 +130,7 @@ describe('verification profiles', () => {
 
     expect(
       selectVerificationChecks(fullConfig, parseVerificationArguments([]))
-    ).toHaveLength(23)
+    ).toHaveLength(24)
     expect(
       selectVerificationChecks(
         fullConfig,

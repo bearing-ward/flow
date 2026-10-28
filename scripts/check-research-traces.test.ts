@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isFlowTraceSourcePath } from '../../../scripts/check-research-traces.ts'
+import { isFlowTraceSourcePath } from './check-research-traces.ts'
 
 describe('research trace source path ownership', () => {
   it('resolves Flow adapters locally and upstream packages from imported evidence', () => {

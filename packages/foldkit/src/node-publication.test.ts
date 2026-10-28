@@ -594,7 +594,7 @@ const positionDelta = (x: number) => ({
   edges: [],
 })
 
-describe('round three actual updater held viewport history', () => {
+describe('updater viewport retention during history changes', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it.each([
