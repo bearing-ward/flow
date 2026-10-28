@@ -28,6 +28,6 @@ The browser probes sample 10,001 points with getTotalLength/getPointAtLength and
 
 ## Conformity and deviations
 
-- **Conforming:** The requested selection, multi-selection, deletion, protected deletion, and wrapper ARIA contracts pass unchanged on the hosts named in Plan 131. The focused Foldkit regression at `apps/foldkit/e2e/edge-interaction.e2e.ts:3` pins computed widths of 42 and 20 plus native selection inside the configured stroke.
+- **Conforming:** The requested selection, multi-selection, deletion, protected deletion, and wrapper ARIA contracts pass unchanged on the hosts named in Plan 131. The focused Foldkit regression at `apps/foldkit/e2e/edge-interaction.e2e.ts:5` pins computed widths of 42 and 20 plus native selection inside the configured stroke.
 - **Intentionally different:** UP-126-014 retains its expected failure in every host because Flow's built-in labels remain noninteractive HTML DIVs. The policy and test boundary are `research/traces/edge-label-render.md:26` and `apps/vanilla/e2e/renderer-contract.e2e.ts:164`. A fixed screen offset outside the scaled stroke selects the React label background but falls through Flow's label layer. No assertion, coordinate, fixture width, or label pointer-event policy changes.
 - **Unverified:** Other browser engines, live deployed React or Svelte applications, arbitrary label dimensions, complete interaction parity, full-profile integration or release acceptance, and collector-side OpenTelemetry delivery remain separate boundaries.

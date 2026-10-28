@@ -1128,7 +1128,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/interaction-lifecycle.e2e.ts:111"
+        "evidence": "apps/foldkit/e2e/interaction-lifecycle.e2e.ts:112"
       }
     },
     {
@@ -2160,7 +2160,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:268"
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:270"
       }
     },
     {
@@ -2178,7 +2178,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:56"
+        "evidence": "apps/shared-e2e/intersection-recipes-contract.ts:62"
       }
     },
     {
@@ -2231,7 +2231,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:200"
+        "evidence": "apps/shared-e2e/intersection-recipes-contract.ts:203"
       }
     },
     {
@@ -2893,7 +2893,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vue/e2e/edge-recipes.e2e.ts:239"
+        "evidence": "apps/vue/e2e/edge-recipes.e2e.ts:243"
       }
     },
     {
@@ -2944,7 +2944,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": "No recipe/test deleting an edge when reconnect drops on pane",
-        "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:690"
+        "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:687"
       },
       "updatedBy": ["Plan 118", "Plan 119", "Plan 120"]
     },
@@ -2962,7 +2962,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:124"
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:126"
       }
     },
     {
@@ -2980,7 +2980,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:173"
+        "evidence": "apps/shared-e2e/intersection-recipes-contract.ts:176"
       }
     },
     {
@@ -3014,7 +3014,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/edge-geometry-recipes.e2e.ts:36"
+        "evidence": "apps/shared-e2e/edge-geometry-recipes-contract.ts:35"
       }
     },
     {
@@ -3167,7 +3167,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:220"
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:222"
       }
     },
     {
@@ -3185,7 +3185,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:345"
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:347"
       }
     },
     {
@@ -3203,7 +3203,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:412"
+        "evidence": "apps/foldkit/e2e/edge-recipes.e2e.ts:420"
       }
     },
     {
@@ -3238,7 +3238,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vue/e2e/edge-recipes.e2e.ts:301"
+        "evidence": "apps/vue/e2e/edge-recipes.e2e.ts:304"
       }
     },
     {
@@ -3530,7 +3530,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:601"
+        "evidence": "apps/vanilla/e2e/gesture-options.e2e.ts:604"
       }
     },
     {
@@ -5310,7 +5310,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/foldkit/e2e/intersection-recipes.e2e.ts:113"
+        "evidence": "apps/shared-e2e/intersection-recipes-contract.ts:116"
       }
     },
     {
@@ -5482,7 +5482,7 @@
               "vanilla": [
                 "apps/vanilla/src/ui/whiteboard-recipes.ts:359",
                 "apps/vanilla/src/ui/whiteboard-recipes.ts:424",
-                "apps/vanilla/e2e/whiteboard-recipes.e2e.ts:193"
+                "apps/vanilla/e2e/whiteboard-recipes.e2e.ts:196"
               ],
               "vue": [
                 "apps/vue/src/whiteboard-recipes.ts:259",
@@ -5511,7 +5511,7 @@
               "vanilla": [
                 "apps/vanilla/src/ui/whiteboard-recipes.ts:359",
                 "apps/vanilla/src/ui/whiteboard-recipes.ts:424",
-                "apps/vanilla/e2e/whiteboard-recipes.e2e.ts:193"
+                "apps/vanilla/e2e/whiteboard-recipes.e2e.ts:196"
               ],
               "vue": [
                 "apps/vue/src/whiteboard-recipes.ts:259",
@@ -6425,7 +6425,7 @@
                 ],
                 "vue": [
                   "packages/vue/src/flow-canvas.ts:1261",
-                  "apps/vue/e2e/final-wiring.e2e.ts:465"
+                  "apps/vue/e2e/canvas-configuration.e2e.ts:466"
                 ],
                 "foldkit": [
                   "packages/foldkit/src/graph.ts:8141",
@@ -7307,7 +7307,7 @@
                 ],
                 "vue": [
                   "packages/vue/src/flow-canvas.ts:1261",
-                  "apps/vue/e2e/final-wiring.e2e.ts:465"
+                  "apps/vue/e2e/canvas-configuration.e2e.ts:466"
                 ],
                 "foldkit": [
                   "packages/foldkit/src/graph.ts:8141",
@@ -7577,7 +7577,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:124; apps/vue/e2e/edge-recipes.e2e.ts:196"
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:126; apps/vue/e2e/edge-recipes.e2e.ts:198"
       }
     },
     {
@@ -7595,7 +7595,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:155; apps/foldkit/e2e/edge-recipes.e2e.ts:164"
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:157; apps/foldkit/e2e/edge-recipes.e2e.ts:168"
       }
     },
     {
@@ -7613,7 +7613,7 @@
       "reaudit": {
         "on": "2026-10-14",
         "missing": null,
-        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:175; apps/vue/e2e/edge-recipes.e2e.ts:239"
+        "evidence": "apps/vanilla/e2e/edge-recipes.e2e.ts:177; apps/vue/e2e/edge-recipes.e2e.ts:243"
       }
     },
     {

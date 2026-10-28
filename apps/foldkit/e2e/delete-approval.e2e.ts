@@ -6,6 +6,7 @@ import {
   apiUtilityDeletionReference,
 } from '../../shared-e2e/api-utility-reference.ts'
 import type { ApiUtilityDeletionEvent } from '../../shared-e2e/api-utility-reference.ts'
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 
 declare global {
   interface Window {
@@ -260,7 +261,7 @@ test('Foldkit delete approval uses typed Runtime ports with revision and one-sho
     baseRevision: 2,
     decision: true,
   })
-  await page.waitForTimeout(20)
+  await browserFrames(page, 2)
   expect(
     await page.evaluate(
       () => window.__flowFoldkitDeleteHarness?.resultEvents().length

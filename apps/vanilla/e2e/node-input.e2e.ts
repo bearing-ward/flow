@@ -17,9 +17,9 @@ test('threshold-zero label press and release selects without moving the node', a
   await page.mouse.down()
   await expect(node).toHaveClass(/dragging/u)
   // Pinned packages/system/src/xydrag/XYDrag.ts:282 selects before the zero-threshold drag starts.
-  await expect(node).toHaveClass(/selected/u)
+  await expect(node).toHaveAttribute('aria-pressed', 'true')
   await page.mouse.up()
-  await expect(node).toHaveClass(/selected/u)
+  await expect(node).toHaveAttribute('aria-pressed', 'true')
   await expect(node).not.toHaveClass(/dragging/u)
   await expect(node).toBeFocused()
   expect(await node.boundingBox()).toEqual(before)

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import type {
   VueHardeningFixture,
   VueHardeningOptions,
@@ -378,7 +379,7 @@ test('nodes are measured only with real geometry and report dimensions changes',
     await flow?.updateNodeInternals('a')
   })
   // Give a stray remeasure time to report before checking none did.
-  await page.waitForTimeout(100)
+  await browserFrames(page, 6)
   expect(await count()).toBe(reported)
 
   await page.evaluate(async () => {

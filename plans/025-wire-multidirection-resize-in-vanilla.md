@@ -18,7 +18,7 @@ The vanilla host exposes only a selected node's lower-right button. Wiring all d
 - `apps/vanilla/src/mount-flow.ts:376-389` creates one `.flow-node-resize-handle` when a node is selected.
 - `apps/vanilla/src/mount-flow.ts:2163-2224` previews width/height, remeasures incident edges, and publishes one `node-size` change on completion. `:2226-2240` identifies the one resize button before a node drag.
 - `apps/vanilla/src/mount-flow.ts:1448-1475,3031-3139` restores the authoritative size on cancellation and handles Escape, blur, pointer cancel, capture loss, removal, and destroy.
-- `apps/vanilla/e2e/advanced-gestures.e2e.ts:167-214,339-403` mounts and tests lower-right resize at zoom 1/2 and cancellation.
+- `apps/vanilla/e2e/advanced-gestures.e2e.ts:653,339-403` mounts and tests lower-right resize at zoom 1/2 and cancellation.
 
 ```ts
 // apps/vanilla/src/mount-flow.ts:2166-2172

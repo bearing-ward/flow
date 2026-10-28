@@ -10,9 +10,9 @@ All three host fixtures are reachable at `/ui-recipes/base-node/`. Vanilla mount
 
 ## Production test paths
 
-- Vanilla `apps/vanilla/e2e/base-node-recipe.e2e.ts:3-18` passed 1/1 serially. It checks accessible name/title, the host-owned handle, keyboard focus and native keyboard-to-click behavior on caller content, and teardown/remount. `apps/vanilla/src/base-node-test.ts` installs a click listener in the local fixture to observe that browser event; it does not establish a production action contract.
-- Vue `apps/vue/e2e/base-node-recipe.e2e.ts:3-18` passed 1/1 serially. It checks accessible name/title, FlowCanvas-owned handle, keyboard focus and native keyboard-to-click behavior on caller content, and teardown/remount. `apps/vue/src/base-node-test.ts` installs a click listener in the local fixture to observe that browser event; it does not establish a production action contract.
-- Foldkit `apps/foldkit/e2e/base-node-recipe.e2e.ts:3-23` passed 1/1 serially. It checks accessible name/title, runtime-owned handle, native button keyboard focus and native keyboard-to-click behavior, and teardown/remount. The test installs a click listener locally to observe that browser event; it does not establish a production action contract.
+- Vanilla `apps/vanilla/e2e/base-node-recipe.e2e.ts:3` passed 1/1 serially. It checks accessible name/title, the host-owned handle, keyboard focus and native keyboard-to-click behavior on caller content, and teardown/remount. `apps/vanilla/src/base-node-test.ts` installs a click listener in the local fixture to observe that browser event; it does not establish a production action contract.
+- Vue `apps/vue/e2e/base-node-recipe.e2e.ts:3` passed 1/1 serially. It checks accessible name/title, FlowCanvas-owned handle, keyboard focus and native keyboard-to-click behavior on caller content, and teardown/remount. `apps/vue/src/base-node-test.ts` installs a click listener in the local fixture to observe that browser event; it does not establish a production action contract.
+- Foldkit `apps/foldkit/e2e/base-node-recipe.e2e.ts:3` passed 1/1 serially. It checks accessible name/title, runtime-owned handle, native button keyboard focus and native keyboard-to-click behavior, and teardown/remount. The test installs a click listener locally to observe that browser event; it does not establish a production action contract.
 
 ## Conformity and deviations
 

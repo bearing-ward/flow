@@ -72,7 +72,7 @@ for (const node of nodes) {
 }
 ```
 
-Follow the existing `S.Struct` plus `typeof Schema.Type` pattern in `flow.schema.ts:36-56`, tagged integrity errors and `Match.tagsExhaustive` in `:115-125` and `:207-237`, and Effect spans and structured logs in `:239-277`. For browser tests, follow the real `mountFlow` pattern in `apps/vanilla/e2e/next-slices.e2e.ts:12-59`.
+Follow the existing `S.Struct` plus `typeof Schema.Type` pattern in `flow.schema.ts:36-56`, tagged integrity errors and `Match.tagsExhaustive` in `:115-125` and `:207-237`, and Effect spans and structured logs in `:239-277`. For browser tests, follow the real `mountFlow` pattern in `apps/vanilla/e2e/selection-and-culling.e2e.ts:10`.
 
 Baseline hashes for the most fragile paths:
 
@@ -176,7 +176,7 @@ Run `bun run verify`. Update only verified checkboxes in `research/PROGRESS.md`:
 - Extend `flow.schema.test.ts` for new field decoding and typed parent errors, following its existing duplicate-ID and edge-endpoint tests.
 - Add `flow-graph.test.ts` for coordinate, ancestry, order, size, visibility, bounds, intersection, and directed-neighbor semantics. Extend fit and visibility tests to prove that the same absolute boxes drive both.
 - Extend `flow-runtime.schema.test.ts` for nested drag and selected-group changes. Add persistence round trips in `flow-persistence.test.ts`.
-- Add `graph-renderers.e2e.ts` using the `mountFlow` import pattern in `apps/vanilla/e2e/next-slices.e2e.ts:12-59` and the keyed identity assertion in `controller-conformance.ts:90-132`. Exercise real DOM measurements, interactions, culling, focus, and teardown. These Flow tests establish Flow behavior. Reference parity requires a separate direct comparison test.
+- Add `graph-renderers.e2e.ts` using the `mountFlow` import pattern in `apps/vanilla/e2e/selection-and-culling.e2e.ts:10` and the keyed identity assertion in `controller-conformance.ts:90-132`. Exercise real DOM measurements, interactions, culling, focus, and teardown. These Flow tests establish Flow behavior. Reference parity requires a separate direct comparison test.
 
 ## Done criteria
 

@@ -4,7 +4,7 @@ Primary bounded test-input approval, baseline `841be137e253cf19c665269eaaa79edc1
 
 The first complete Vanilla canvas/interaction gate completed exit1 with167pass/4fail/0skip, errors empty, logSHA `0545bc7643179841db5091910f7ee95e7ce5cba5817207b77c04ae0c4670489c`. Its full log, 248 raw attachments, old source and artifacts are preserved in `resume-093-vanilla-complete-native-first-preserved`. Retain this failed gate, every original assertion and raw fixture. Wait for the current independently running native gate to finish before editing or rerunning these files.
 
-Root inspected candidate `apps/vanilla/e2e/canvas.e2e.ts:129-164` and `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:310-405,1366-1460`. Three positive reconnection tests use a helper that requires visible preview immediately after down, before its real destination move. The approved093 positive threshold intentionally leaves that down pending. The fourth cancellation row dispatches a synthetic lostpointercapture while the actual canvas still owns capture; the approved current-owner guard correctly excludes that event from real capture-loss cancellation.
+Root inspected candidate `apps/vanilla/e2e/canvas.e2e.ts:304` and `apps/vanilla/e2e/interaction-lifecycle.e2e.ts:458,1366-1460`. Three positive reconnection tests use a helper that requires visible preview immediately after down, before its real destination move. The approved093 positive threshold intentionally leaves that down pending. The fourth cancellation row dispatches a synthetic lostpointercapture while the actual canvas still owns capture; the approved current-owner guard correctly excludes that event from real capture-loss cancellation.
 
 Only the following test input changes are authorized:
 

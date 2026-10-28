@@ -25,7 +25,7 @@ Main M is `/Volumes/Sync/codex/9-19-26/flow`. Candidate C is `/Users/richardmcan
 | C `apps/vue/src/test-harness.ts` | `62c5be20a63ad7b6579abaa98575a25706a5677c271a7b98129d9f3e3ed8c71b` |
 | C `apps/vue/e2e/interaction-lifecycle.e2e.ts` | `8d525c548e5999cce5cc6fde3bd966bac0f3243a3e6364b4acaabb396769257c` |
 
-The prepared paint fields are present at `apps/vue/src/test-harness.ts:597–603`. Numeric proof and PNG attachment code is prepared in the original custom test at `apps/vue/e2e/interaction-lifecycle.e2e.ts:843–909`; this was read to establish available test machinery, not reviewed as final SOURCE. Production remains unchanged. The supplied 1584-source freeze `0d3bb28f` and E 119380-file manifest `d2fe8d8e` are root provenance, not inventories independently rehashed by this reviewer. The actual shared lease now belongs to 091. Historical ROOT/089 references in frozen documents must remain historical; they confer no present lease on 086.
+The prepared paint fields are present at `apps/vue/src/test-harness.ts:597–603`. Numeric proof and PNG attachment code is prepared in the original custom test at `apps/vue/e2e/interaction-lifecycle.e2e.ts:798–909`; this was read to establish available test machinery, not reviewed as final SOURCE. Production remains unchanged. The supplied 1584-source freeze `0d3bb28f` and E 119380-file manifest `d2fe8d8e` are root provenance, not inventories independently rehashed by this reviewer. The actual shared lease now belongs to 091. Historical ROOT/089 references in frozen documents must remain historical; they confer no present lease on 086.
 
 ## Keyboard revision: resolved objections
 

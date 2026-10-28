@@ -2,7 +2,7 @@
 
 > **Executor instructions:** Work in an isolated worktree. Read `AGENTS.md`, `docs/standards.md`, `research/fixtures/README.md`, Plan 022's matrix, and this whole plan. Update only this plan's index row after verification. Do not commit, push, merge, or open a PR without operator instruction.
 >
-> **Drift check first:** `git diff --stat 5e5d496..HEAD -- apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/graph-renderers.e2e.ts apps/vanilla/e2e/movement-slices.e2e.ts docs/guides/custom-nodes-and-edges.md research/fixtures/README.md`; STOP if another slice has introduced an equivalent handle contract.
+> **Drift check first:** `git diff --stat 5e5d496..HEAD -- apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/graph-renderers.e2e.ts apps/vanilla/e2e/node-movement.e2e.ts docs/guides/custom-nodes-and-edges.md research/fixtures/README.md`; STOP if another slice has introduced an equivalent handle contract.
 
 ## Status
 
@@ -36,7 +36,7 @@ The marker is a host DOM convention, not persisted node data. Preserve selected-
 
 | Purpose | Command | Expected |
 | --- | --- | --- |
-| Renderer browser | `bunx playwright test apps/vanilla/e2e/graph-renderers.e2e.ts apps/vanilla/e2e/movement-slices.e2e.ts --workers=1` | exit 0 |
+| Renderer browser | `bunx playwright test apps/vanilla/e2e/graph-renderers.e2e.ts apps/vanilla/e2e/node-movement.e2e.ts --workers=1` | exit 0 |
 | Full gate | `bun run verify` | exit 0 |
 | Docs | `bun run docs:check` | exit 0 |
 

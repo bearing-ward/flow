@@ -1059,11 +1059,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/advanced-gestures.e2e.ts:2188"
+                  "link": "apps/vanilla/e2e/advanced-gestures.e2e.ts:2189"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/flow-followups.e2e.ts:291"
+                  "link": "apps/vanilla/e2e/viewport-operations.e2e.ts:293"
                 },
                 {
                   "kind": "reference",
@@ -1085,7 +1085,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/interaction-lifecycle.e2e.ts:985"
+                  "link": "apps/shared-e2e/interaction-lifecycle-contract.ts:258"
                 },
                 {
                   "kind": "reference",
@@ -1107,7 +1107,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/interaction-lifecycle.e2e.ts:1470"
+                  "link": "apps/foldkit/e2e/interaction-lifecycle.e2e.ts:1481"
                 },
                 {
                   "kind": "reference",
@@ -3043,7 +3043,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500"
                 },
                 {
                   "kind": "correspondence",
@@ -3073,7 +3073,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157"
                 },
                 {
                   "kind": "production-test",
@@ -3107,11 +3107,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,684-760"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,684-760"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval-harness.ts:465-529"
+                  "link": "apps/foldkit/e2e/delete-approval-harness.ts:465"
                 },
                 {
                   "kind": "correspondence",
@@ -3413,7 +3413,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -3447,7 +3447,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -3481,7 +3481,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -3897,7 +3897,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -3931,7 +3931,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -3965,7 +3965,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -4858,7 +4858,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -4892,7 +4892,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -4926,7 +4926,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -7268,7 +7268,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14-50"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14"
                 },
                 {
                   "kind": "correspondence",
@@ -7290,7 +7290,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:14-82"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:14"
                 },
                 {
                   "kind": "correspondence",
@@ -7312,7 +7312,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33-77"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33"
                 },
                 {
                   "kind": "correspondence",
@@ -7345,7 +7345,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14-50"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14"
                 },
                 {
                   "kind": "correspondence",
@@ -7367,7 +7367,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:14-82"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:14"
                 },
                 {
                   "kind": "correspondence",
@@ -7389,7 +7389,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33-77"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33"
                 },
                 {
                   "kind": "correspondence",
@@ -22812,7 +22812,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts:1090-1180"
+                  "link": "apps/vanilla/e2e/interaction-lifecycle.e2e.ts:1079"
                 },
                 {
                   "kind": "reference",
@@ -22834,7 +22834,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/interaction-lifecycle.e2e.ts:680-760"
+                  "link": "apps/vue/e2e/interaction-lifecycle.e2e.ts:696"
                 },
                 {
                   "kind": "reference",
@@ -22856,7 +22856,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/test-harness.ts:1290-1306"
+                  "link": "apps/foldkit/e2e/test-harness.ts:1290"
                 },
                 {
                   "kind": "reference",
@@ -23127,7 +23127,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:1-120"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:1"
                 },
                 {
                   "kind": "correspondence",
@@ -23149,7 +23149,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:26-69"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:26"
                 },
                 {
                   "kind": "correspondence",
@@ -23171,7 +23171,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-edits.e2e.ts:1-90"
+                  "link": "apps/foldkit/e2e/public-edits.e2e.ts:1"
                 },
                 {
                   "kind": "correspondence",
@@ -23236,7 +23236,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235-1319"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235"
                 },
                 {
                   "kind": "correspondence",
@@ -23258,7 +23258,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50-110"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50"
                 },
                 {
                   "kind": "correspondence",
@@ -23280,7 +23280,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123-310"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123"
                 },
                 {
                   "kind": "correspondence",
@@ -23313,7 +23313,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235-1319"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235"
                 },
                 {
                   "kind": "correspondence",
@@ -23335,7 +23335,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50-110"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50"
                 },
                 {
                   "kind": "correspondence",
@@ -23357,7 +23357,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123-310"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123"
                 },
                 {
                   "kind": "correspondence",
@@ -23390,7 +23390,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235-1319"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235"
                 },
                 {
                   "kind": "correspondence",
@@ -23412,7 +23412,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50-110"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50"
                 },
                 {
                   "kind": "correspondence",
@@ -23434,7 +23434,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123-310"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123"
                 },
                 {
                   "kind": "correspondence",
@@ -23467,7 +23467,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235-1319"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235"
                 },
                 {
                   "kind": "correspondence",
@@ -23489,7 +23489,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50-110"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50"
                 },
                 {
                   "kind": "correspondence",
@@ -23511,7 +23511,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123-310"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123"
                 },
                 {
                   "kind": "correspondence",
@@ -23544,7 +23544,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235-1319"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235"
                 },
                 {
                   "kind": "correspondence",
@@ -23566,7 +23566,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50-110"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50"
                 },
                 {
                   "kind": "correspondence",
@@ -23588,7 +23588,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123-310"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123"
                 },
                 {
                   "kind": "correspondence",
@@ -23621,7 +23621,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235-1319"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1235"
                 },
                 {
                   "kind": "correspondence",
@@ -23643,7 +23643,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50-110"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:50"
                 },
                 {
                   "kind": "correspondence",
@@ -23665,7 +23665,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123-310"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:123"
                 },
                 {
                   "kind": "correspondence",
@@ -23758,7 +23758,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:102-168"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:102"
                 },
                 {
                   "kind": "correspondence",
@@ -23844,7 +23844,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:102-168"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:102"
                 },
                 {
                   "kind": "correspondence",
@@ -23914,7 +23914,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:705-782"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:705"
                 },
                 {
                   "kind": "reference",
@@ -23936,7 +23936,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:190-253"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:190"
                 },
                 {
                   "kind": "reference",
@@ -23958,7 +23958,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:154-283"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:154"
                 },
                 {
                   "kind": "reference",
@@ -23995,7 +23995,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822-906"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822"
                 },
                 {
                   "kind": "production-test",
@@ -24025,7 +24025,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:272-318"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:272"
                 },
                 {
                   "kind": "production-test",
@@ -24055,7 +24055,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286-354"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286"
                 },
                 {
                   "kind": "production-test",
@@ -24096,7 +24096,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822-906"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822"
                 },
                 {
                   "kind": "production-test",
@@ -24122,7 +24122,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:272-318"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:272"
                 },
                 {
                   "kind": "production-test",
@@ -24148,7 +24148,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286-354"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286"
                 },
                 {
                   "kind": "production-test",
@@ -24185,7 +24185,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822-906"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822"
                 },
                 {
                   "kind": "production-test",
@@ -24211,7 +24211,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:272-318"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:272"
                 },
                 {
                   "kind": "production-test",
@@ -24237,7 +24237,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286-354"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286"
                 },
                 {
                   "kind": "production-test",
@@ -24270,7 +24270,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822-903"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:822"
                 },
                 {
                   "kind": "reference",
@@ -24278,7 +24278,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:706-820"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:706"
                 }
               ]
             },
@@ -24296,7 +24296,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:272-315"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:272"
                 },
                 {
                   "kind": "reference",
@@ -24304,7 +24304,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:191-270"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:191"
                 }
               ]
             },
@@ -24322,7 +24322,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286-351"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:286"
                 },
                 {
                   "kind": "reference",
@@ -24330,7 +24330,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:155-284"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:155"
                 }
               ]
             }
@@ -24378,7 +24378,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "implementation",
@@ -24386,7 +24386,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "implementation",
@@ -24394,7 +24394,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "reference",
@@ -24420,7 +24420,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "implementation",
@@ -24428,7 +24428,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "implementation",
@@ -24436,7 +24436,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "reference",
@@ -24462,7 +24462,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "implementation",
@@ -24470,7 +24470,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "implementation",
@@ -24478,7 +24478,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "reference",
@@ -24516,7 +24516,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "implementation",
@@ -24524,7 +24524,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "implementation",
@@ -24532,7 +24532,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "implementation",
@@ -24540,7 +24540,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036-1182"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:1036"
                 },
                 {
                   "kind": "reference",
@@ -24566,7 +24566,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "implementation",
@@ -24574,7 +24574,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "implementation",
@@ -24582,7 +24582,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "implementation",
@@ -24590,7 +24590,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/node-connections.e2e.ts:21-156"
+                  "link": "apps/vue/e2e/node-connections.e2e.ts:21"
                 },
                 {
                   "kind": "reference",
@@ -24616,7 +24616,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "implementation",
@@ -24624,7 +24624,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "implementation",
@@ -24632,7 +24632,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "implementation",
@@ -24640,7 +24640,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318-431"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:318"
                 },
                 {
                   "kind": "reference",
@@ -24697,7 +24697,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14-245"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14"
                 },
                 {
                   "kind": "correspondence",
@@ -24719,7 +24719,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:18-20"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:18"
                 },
                 {
                   "kind": "correspondence",
@@ -24737,11 +24737,11 @@
               "evidence": [
                 {
                   "kind": "implementation",
-                  "link": "apps/foldkit/e2e/test-harness.ts:440-446"
+                  "link": "apps/foldkit/e2e/test-harness.ts:440"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33-77"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33"
                 },
                 {
                   "kind": "correspondence",
@@ -25029,7 +25029,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14-245"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:14"
                 },
                 {
                   "kind": "correspondence",
@@ -25051,7 +25051,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:1-162"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:1"
                 },
                 {
                   "kind": "correspondence",
@@ -25073,7 +25073,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33-77"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33"
                 },
                 {
                   "kind": "correspondence",
@@ -25191,7 +25191,7 @@
                 },
                 {
                   "kind": "implementation",
-                  "link": "apps/vanilla/e2e/measured-geometry.e2e.ts:50-53"
+                  "link": "apps/vanilla/e2e/measured-geometry.e2e.ts:50"
                 },
                 {
                   "kind": "production-test",
@@ -25358,7 +25358,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:1-120"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:1"
                 },
                 {
                   "kind": "correspondence",
@@ -25380,7 +25380,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:26-69"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:26"
                 },
                 {
                   "kind": "correspondence",
@@ -25402,7 +25402,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-edits.e2e.ts:1-90"
+                  "link": "apps/foldkit/e2e/public-edits.e2e.ts:1"
                 },
                 {
                   "kind": "correspondence",
@@ -25459,7 +25459,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:705-782"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:705"
                 },
                 {
                   "kind": "reference",
@@ -25481,7 +25481,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:190-253"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:190"
                 },
                 {
                   "kind": "reference",
@@ -25503,7 +25503,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:154-283"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:154"
                 },
                 {
                   "kind": "reference",
@@ -25536,7 +25536,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:706-820"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:706"
                 },
                 {
                   "kind": "reference",
@@ -25558,7 +25558,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:191-270"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:191"
                 },
                 {
                   "kind": "reference",
@@ -25580,7 +25580,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:155-284"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:155"
                 },
                 {
                   "kind": "reference",
@@ -25635,11 +25635,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:239-325"
+                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:234"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/flow-followups.e2e.ts:456-510,518-566"
+                  "link": "apps/vanilla/e2e/viewport-operations.e2e.ts:457,518-566"
                 },
                 {
                   "kind": "reference",
@@ -25677,7 +25677,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247-294"
+                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247"
                 },
                 {
                   "kind": "reference",
@@ -25719,7 +25719,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3-115"
+                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3"
                 },
                 {
                   "kind": "reference",
@@ -25768,11 +25768,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:239-325"
+                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:234"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/flow-followups.e2e.ts:456-510,518-566"
+                  "link": "apps/vanilla/e2e/viewport-operations.e2e.ts:457,518-566"
                 },
                 {
                   "kind": "reference",
@@ -25810,7 +25810,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247-294"
+                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247"
                 },
                 {
                   "kind": "reference",
@@ -25852,7 +25852,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3-115"
+                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3"
                 },
                 {
                   "kind": "reference",
@@ -25901,11 +25901,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:239-325"
+                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:234"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/flow-followups.e2e.ts:456-510,518-566"
+                  "link": "apps/vanilla/e2e/viewport-operations.e2e.ts:457,518-566"
                 },
                 {
                   "kind": "reference",
@@ -25943,7 +25943,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247-294"
+                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247"
                 },
                 {
                   "kind": "reference",
@@ -25985,7 +25985,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3-115"
+                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3"
                 },
                 {
                   "kind": "reference",
@@ -26034,11 +26034,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:239-325"
+                  "link": "apps/vanilla/e2e/gesture-options.e2e.ts:234"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/flow-followups.e2e.ts:456-510"
+                  "link": "apps/vanilla/e2e/viewport-operations.e2e.ts:457"
                 },
                 {
                   "kind": "correspondence",
@@ -26060,7 +26060,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247-294"
+                  "link": "apps/vue/e2e/viewport-operations.e2e.ts:247"
                 },
                 {
                   "kind": "correspondence",
@@ -26086,7 +26086,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3-115"
+                  "link": "apps/foldkit/e2e/viewport-observer.e2e.ts:3"
                 },
                 {
                   "kind": "correspondence",
@@ -26772,7 +26772,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -55976,7 +55976,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1000"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 }
               ]
             },
@@ -80845,7 +80845,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -82102,7 +82102,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -82251,7 +82251,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -82400,7 +82400,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -82549,7 +82549,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -82698,7 +82698,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -82847,7 +82847,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -83012,7 +83012,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -83185,7 +83185,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -83358,7 +83358,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -83531,7 +83531,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -83704,7 +83704,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -83877,7 +83877,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84050,7 +84050,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84183,7 +84183,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84304,7 +84304,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84429,7 +84429,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84554,7 +84554,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84671,7 +84671,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84792,7 +84792,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -84917,7 +84917,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85042,7 +85042,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85167,7 +85167,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85292,7 +85292,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85417,7 +85417,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85534,7 +85534,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85647,7 +85647,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85760,7 +85760,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85873,7 +85873,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -85986,7 +85986,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -86099,7 +86099,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -86212,7 +86212,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -86365,7 +86365,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -86538,7 +86538,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -86711,7 +86711,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -86884,7 +86884,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87057,7 +87057,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87230,7 +87230,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87363,7 +87363,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87484,7 +87484,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87609,7 +87609,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87734,7 +87734,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87851,7 +87851,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -87972,7 +87972,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88097,7 +88097,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88222,7 +88222,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88347,7 +88347,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88472,7 +88472,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88597,7 +88597,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88714,7 +88714,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88827,7 +88827,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -88940,7 +88940,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -89053,7 +89053,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -89166,7 +89166,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -89279,7 +89279,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -89392,7 +89392,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -89545,7 +89545,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -90222,7 +90222,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -90371,7 +90371,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -90520,7 +90520,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -90800,7 +90800,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -91541,7 +91541,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:401"
+                  "link": "apps/foldkit/e2e/measured-geometry.e2e.ts:403"
                 },
                 {
                   "kind": "correspondence",
@@ -112296,7 +112296,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500"
                 },
                 {
                   "kind": "correspondence",
@@ -112330,7 +112330,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157"
                 },
                 {
                   "kind": "production-test",
@@ -112368,11 +112368,11 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,684-760"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,684-760"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval-harness.ts:465-529"
+                  "link": "apps/foldkit/e2e/delete-approval-harness.ts:465"
                 },
                 {
                   "kind": "correspondence",
@@ -112417,7 +112417,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -112451,7 +112451,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -112485,7 +112485,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -112530,7 +112530,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -112564,7 +112564,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -112598,7 +112598,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -112643,7 +112643,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -112677,7 +112677,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -112711,7 +112711,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -112756,7 +112756,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -112790,7 +112790,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -112824,7 +112824,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -112934,7 +112934,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -112968,7 +112968,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -113002,7 +113002,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -113047,7 +113047,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -113081,7 +113081,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -113115,7 +113115,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -113225,7 +113225,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "correspondence",
@@ -113259,7 +113259,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "correspondence",
@@ -113293,7 +113293,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "correspondence",
@@ -116883,7 +116883,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -116913,7 +116913,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -116943,7 +116943,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -116984,7 +116984,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -117014,7 +117014,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -117044,7 +117044,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -117085,7 +117085,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -117115,7 +117115,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -117145,7 +117145,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -117186,7 +117186,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -117216,7 +117216,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -117246,7 +117246,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -117364,7 +117364,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -117394,7 +117394,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -117424,7 +117424,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -117465,7 +117465,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -117495,7 +117495,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -117525,7 +117525,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -117797,7 +117797,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -117827,7 +117827,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -117857,7 +117857,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -120028,7 +120028,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -120058,7 +120058,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -120088,7 +120088,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -120129,7 +120129,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -120159,7 +120159,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -120189,7 +120189,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -120230,7 +120230,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -120260,7 +120260,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -120290,7 +120290,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -120485,7 +120485,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -120515,7 +120515,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -120545,7 +120545,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -126439,15 +126439,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126477,15 +126477,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126515,15 +126515,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -126564,15 +126564,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126602,15 +126602,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126640,15 +126640,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -126689,15 +126689,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126727,15 +126727,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126765,15 +126765,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -126814,15 +126814,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126852,15 +126852,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126890,15 +126890,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -126939,15 +126939,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -126977,15 +126977,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127015,15 +127015,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -127064,15 +127064,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127102,15 +127102,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127140,15 +127140,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -127189,15 +127189,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127227,15 +127227,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127265,15 +127265,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -127314,15 +127314,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127352,15 +127352,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127390,15 +127390,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -127439,15 +127439,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127477,15 +127477,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127515,15 +127515,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -127564,15 +127564,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127602,15 +127602,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127640,15 +127640,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -127689,15 +127689,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127727,15 +127727,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -127765,15 +127765,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -150786,7 +150786,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -150816,7 +150816,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -150846,7 +150846,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -150887,7 +150887,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -150917,7 +150917,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -150947,7 +150947,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -150988,7 +150988,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -151018,7 +151018,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -151048,7 +151048,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -151243,7 +151243,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216-350,349-500,662-744"
+                  "link": "apps/vanilla/e2e/public-edits.e2e.ts:216,349-500,662-744"
                 },
                 {
                   "kind": "reference",
@@ -151273,7 +151273,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-edits.e2e.ts:66-126,128-157,159-184"
+                  "link": "apps/vue/e2e/public-edits.e2e.ts:66,128-157,159-184"
                 },
                 {
                   "kind": "reference",
@@ -151303,7 +151303,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:298-401,443-542,795-838"
+                  "link": "apps/foldkit/e2e/delete-approval.e2e.ts:299,443-542,795-838"
                 },
                 {
                   "kind": "reference",
@@ -155087,15 +155087,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -155125,15 +155125,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -155163,15 +155163,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -155846,7 +155846,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -155890,7 +155890,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-120"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161131,15 +161131,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161169,15 +161169,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161207,15 +161207,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161256,15 +161256,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161294,15 +161294,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161332,15 +161332,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161381,15 +161381,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161419,15 +161419,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161457,15 +161457,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161506,15 +161506,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161544,15 +161544,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161582,15 +161582,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161631,15 +161631,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161669,15 +161669,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161707,15 +161707,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161756,15 +161756,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161794,15 +161794,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161832,15 +161832,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -161881,15 +161881,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161919,15 +161919,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -161957,15 +161957,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -162006,15 +162006,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162044,15 +162044,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162082,15 +162082,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -162131,15 +162131,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162169,15 +162169,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162207,15 +162207,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -162256,15 +162256,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162294,15 +162294,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162332,15 +162332,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -162381,15 +162381,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162419,15 +162419,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             },
@@ -162457,15 +162457,15 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917-1033"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:917"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3-101"
+                  "link": "apps/vue/e2e/handle-connections.e2e.ts:3"
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3-121"
+                  "link": "apps/foldkit/e2e/handle-connections.e2e.ts:3"
                 }
               ]
             }
@@ -179195,7 +179195,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vanilla/e2e/public-state.e2e.ts:275-345"
+                  "link": "apps/vanilla/e2e/public-state.e2e.ts:275"
                 },
                 {
                   "kind": "correspondence",
@@ -179217,7 +179217,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/vue/e2e/public-state.e2e.ts:70-80,140-163"
+                  "link": "apps/vue/e2e/public-state.e2e.ts:70,140-163"
                 },
                 {
                   "kind": "correspondence",
@@ -179239,7 +179239,7 @@
                 },
                 {
                   "kind": "production-test",
-                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33-96"
+                  "link": "apps/foldkit/e2e/public-state.e2e.ts:33"
                 },
                 {
                   "kind": "correspondence",

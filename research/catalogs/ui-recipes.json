@@ -1318,7 +1318,7 @@
           "status": "partial",
           "export": "@flow/vanilla: createFlowBackground from apps/vanilla/src/public.ts",
           "implementation": "apps/vanilla/src/background.ts:createFlowBackground",
-          "test": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "tests": [
             "public backgrounds and controls operate per host and clean up on remount",
             "background follows real pan and wheel zoom, then unsubscribes on destroy",
@@ -1414,7 +1414,7 @@
           "status": "partial",
           "export": "@flow/vanilla: createFlowControls from apps/vanilla/src/public.ts",
           "implementation": "apps/vanilla/src/controls.ts:createFlowControls",
-          "test": "apps/vanilla/e2e/canvas-ui-contract.e2e.ts",
+          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts",
           "tests": [
             "public backgrounds and controls operate per host and clean up on remount"
           ],
@@ -1473,11 +1473,11 @@
           "implementation": "apps/vanilla/src/canvas-ui.ts:305-330,435-499",
           "composition": "apps/vanilla/src/mount-flow.ts:2083-2117,7720-7795",
           "styles": "apps/vanilla/src/style.css:142-161",
-          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts:56-130",
-          "measurementTest": "apps/vanilla/e2e/advanced-gestures.e2e.ts:1045-1085",
+          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts:58",
+          "measurementTest": "apps/vanilla/e2e/advanced-gestures.e2e.ts:1042",
           "evidenceStatus": "tested",
           "tests": [
-            "optional canvas controls, minimap, background, and zoom affordances",
+            "canvas minimap and zoom affordances compose with optional controls",
             "resize refreshes toolbar and minimap while visible-node reconciliation preserves the active node"
           ],
           "testedOutcome": "The existing Vanilla E2Es verify the opt-in accessible SVG, rendered node rectangles, viewport rectangle, minimap click navigation, and that resizing a graph node updates its minimap rectangle while preserving the active visible node. The mount path derives graph bounds and node dimensions from the current graph, including accepted measurements, and publishes minimap navigation through the canvas viewport change path. This records bounded production-path evidence for Vanilla; no new renderer is introduced here.",
@@ -1490,7 +1490,7 @@
           "projection": "packages/core/src/domain/flow-minimap.ts:45-104, exported from packages/core/src/public.ts:288-294",
           "composition": "apps/foldkit/src/main.ts:244-315,388-404; measurement acceptance in packages/foldkit/src/application.ts:923-960",
           "styles": "packages/foldkit/src/style.css:16-42",
-          "test": "apps/foldkit/e2e/minimap.e2e.ts:10-246",
+          "test": "apps/foldkit/e2e/minimap.e2e.ts:10",
           "unitTest": "packages/core/src/domain/flow-minimap.test.ts:8-82",
           "observer": "packages/foldkit/src/measurement-observer.ts:16-25,85-117",
           "evidenceStatus": "tested",
@@ -1507,7 +1507,7 @@
           "implementation": "packages/vue/src/minimap.ts:25-171",
           "projection": "packages/vue/src/flow-canvas.ts:2471-2490",
           "styles": "packages/vue/src/style.css:320-350",
-          "test": "apps/vue/e2e/minimap.e2e.ts:4-298",
+          "test": "apps/vue/e2e/minimap.e2e.ts:4",
           "fixture": "apps/vue/src/minimap-test.ts:39-129",
           "documentation": "docs/guides/adapters.md:9-11",
           "evidenceStatus": "tested",
@@ -1542,7 +1542,7 @@
           "export": "@flow/vanilla: mountFlow; panel and panels are caller-owned HTMLElement options",
           "implementation": "apps/vanilla/src/mount-flow.ts:266-316,1004; apps/vanilla/src/canvas-ui.ts:334-385,568-579",
           "styles": "apps/vanilla/src/style.css:44-60",
-          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts:409-665",
+          "test": "apps/vanilla/e2e/canvas-ui.e2e.ts:408",
           "evidenceStatus": "tested",
           "tests": [
             "placed panels preserve identity, focus, actions, and exact restoration"
@@ -1555,7 +1555,7 @@
           "export": "@flow/vue: FlowPanel and FlowPanelPosition from packages/vue/src/public.ts",
           "implementation": "packages/vue/src/ui.ts:177-218",
           "styles": "packages/vue/src/style.css:16-53",
-          "test": "apps/vue/e2e/panel.e2e.ts:3-81",
+          "test": "apps/vue/e2e/panel.e2e.ts:3",
           "fixture": "apps/vue/src/panel-test.ts:56-88",
           "documentation": "docs/public-api.md:109",
           "evidenceStatus": "tested",
@@ -1736,7 +1736,7 @@
           "export": "@flow/vue: FlowViewportPortal from packages/vue/src/public.ts",
           "implementation": "packages/vue/src/viewport-portal.ts:4-49; target and configured gesture classes in packages/vue/src/flow-canvas.ts:818,2507-2512,5246-5263",
           "styles": "packages/vue/src/style.css:146-155",
-          "test": "apps/vue/e2e/viewport-portal.e2e.ts:3-229",
+          "test": "apps/vue/e2e/viewport-portal.e2e.ts:3",
           "fixture": "apps/vue/src/viewport-portal-test.ts:18-130",
           "evidenceStatus": "tested",
           "tests": [
@@ -1749,7 +1749,7 @@
           "status": "partial",
           "export": "@flow/foldkit: mountFlowViewportPortal(canvas, content)",
           "implementation": "packages/foldkit/src/ui.ts:303-401",
-          "test": "apps/foldkit/e2e/viewport-portal.e2e.ts:9-188",
+          "test": "apps/foldkit/e2e/viewport-portal.e2e.ts:9",
           "evidenceStatus": "tested",
           "tests": [
             "portal wrapper is mounted beneath the canvas viewport and inherits its CSS transform",

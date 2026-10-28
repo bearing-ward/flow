@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { selectionBoundsContract } from '../../shared-e2e/node-input-contract.ts'
+import { upstreamChange } from './upstream-changes.ts'
 
 test.use({ viewport: { width: 1280, height: 720 } })
 
@@ -21,7 +22,9 @@ test('threshold-zero label press and release selects without moving the node', a
   await page.mouse.down()
   await expect(node).toHaveClass(/dragging/u)
   await page.mouse.up()
-  await expect(node).toHaveClass(/selected/u)
+  await expect
+    .poll(() => upstreamChange(page, 'selection-set'))
+    .toEqual({ kind: 'selection-set', nodeIds: ['Node-1'], edgeIds: [] })
   await expect(node).not.toHaveClass(/dragging/u)
   await expect(node).toBeFocused()
   expect(await node.boundingBox()).toEqual(before)
@@ -34,7 +37,9 @@ test('keyboard deletion uses the approval client after explicit selection', asyn
   await node
     .getByRole('button', { name: 'Toggle selection for Node-1', exact: true })
     .click()
-  await expect(node).toHaveClass(/selected/u)
+  await expect
+    .poll(() => upstreamChange(page, 'selection-set'))
+    .toEqual({ kind: 'selection-set', nodeIds: ['Node-1'], edgeIds: [] })
   await page.keyboard.press('d')
   await expect(node).not.toBeAttached()
   await expect(page.locator('.flow-foldkit-edge')).toHaveCount(0)

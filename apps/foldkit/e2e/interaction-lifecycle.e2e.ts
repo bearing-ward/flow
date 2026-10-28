@@ -4,6 +4,7 @@ import type { Page } from '@playwright/test'
 
 import { conformanceFixtures } from '../../../packages/conformance/src/index.ts'
 import {
+  interactionLifecycleContract,
   interactionCancellationRetryCases,
   interactionConnectionCases,
   interactionLifecycleFixture,
@@ -1709,66 +1710,6 @@ test('Foldkit consumes every shared cancellation/retry case through production h
   // oxlint-enable no-await-in-loop
 })
 
-test('Foldkit honors node drag/focus and edge select/focus flags', async ({
-  page,
-}) => {
-  const adapter = createFoldkitConformanceAdapter(page)
-
-  const document = {
-    ...interactionLifecycleFixture.reconnectDocument,
-    nodes: interactionLifecycleFixture.reconnectDocument.nodes.map((node) =>
-      node.id === 'source'
-        ? { ...node, draggable: false, focusable: false }
-        : node
-    ),
-    edges: interactionLifecycleFixture.reconnectDocument.edges.map((edge) =>
-      edge.id === 'edge-existing'
-        ? { ...edge, focusable: false, selectable: false }
-        : edge
-    ),
-  }
-
-  await adapter.mount({
-    ...connectionFixture,
-    documentMode: 'uncontrolled',
-    document,
-  })
-
-  const source = page.locator('[data-node-id="source"]')
-
-  await expect(source).not.toHaveAttribute('tabindex')
-  const sourceBounds = await source.boundingBox()
-
-  if (sourceBounds === null) {
-    throw new Error('Missing non-draggable source geometry')
-  }
-
-  await page.mouse.move(
-    sourceBounds.x + sourceBounds.width / 2,
-    sourceBounds.y + sourceBounds.height / 2
-  )
-  await page.mouse.down()
-  await page.mouse.move(
-    sourceBounds.x + sourceBounds.width + 70,
-    sourceBounds.y + 20
-  )
-  await page.mouse.up()
-
-  const nodeAfterDrag = await adapter.readState({ nodeId: 'source' })
-
-  expect(nodeAfterDrag.node?.position).toEqual({ x: 20, y: 20 })
-
-  const edgeTarget = page.locator(
-    '.flow-foldkit-edge[data-edge-id="edge-existing"] .flow-foldkit-edge-hit-target'
-  )
-
-  await expect(edgeTarget).toHaveAttribute('tabindex', '-1')
-  await expect(edgeTarget).toHaveAttribute('role', 'img')
-  await edgeTarget.click({ force: true })
-  expect(await adapter.changeKinds()).not.toContain('edge-selection')
-  await adapter.destroy()
-})
-
 test('Foldkit ignores cancellation from a different pointer and completes the active pointer', async ({
   page,
 }) => {
@@ -2300,44 +2241,6 @@ test('Foldkit renders eight resize controls and publishes resize candidates', as
   expect(cleanup.mountedElements).toBe(0)
 })
 
-test('Foldkit applies accepted uncontrolled resize geometry', async ({
-  page,
-}) => {
-  const adapter = createFoldkitConformanceAdapter(page)
-
-  const fixture = {
-    ...movementFixture,
-    documentMode: 'uncontrolled' as const,
-    actions: [],
-    document: {
-      ...movementFixture.document,
-      nodes: movementFixture.document.nodes.map((node) => ({
-        ...node,
-        selected: true,
-      })),
-    },
-  }
-
-  await adapter.mount(fixture)
-  const control = page.locator('[data-resize-direction="right"]')
-  const box = await control.boundingBox()
-
-  if (box === null) {
-    throw new Error('Missing right resize control')
-  }
-
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
-  await page.mouse.down()
-  await page.mouse.move(box.x + box.width / 2 + 8, box.y + box.height / 2)
-  await page.mouse.up()
-  await expect(page.locator('[data-node-id="move"]')).toHaveCSS(
-    'width',
-    '158px'
-  )
-  const cleanup = await adapter.destroy()
-  expect(cleanup.changesAfterDestroy).toBe(0)
-})
-
 test('Foldkit cancels a resize without publishing or applying geometry', async ({
   page,
 }) => {
@@ -2459,43 +2362,6 @@ const dragSelection = async (
   await expect(canvas.locator('.flow-foldkit-selection-rect')).toBeVisible()
   await page.mouse.up()
 }
-
-const mountSelection = async (page: Page, mode: 'full' | 'partial') => {
-  await page.goto('/test.html')
-  await page.evaluate(
-    async ({ fixture, selectionMode }) => {
-      const harnessPath = '/e2e/test-harness.ts'
-      await import(harnessPath)
-      await window.__flowFoldkitTest?.mount(fixture, selectionMode)
-    },
-    { fixture: selectionFixture, selectionMode: mode }
-  )
-}
-
-test('Foldkit applies the shared full and partial rectangle fixture through host pointers', async ({
-  page,
-}) => {
-  const adapter = createFoldkitConformanceAdapter(page)
-
-  // oxlint-disable no-await-in-loop
-  for (const selectionCase of interactionLifecycleFixture.selectionCases) {
-    await mountSelection(page, selectionCase.mode)
-    await dragSelection(page, selectionCase.rect)
-    await expect.poll(() => adapter.changeKinds()).toContain('selection-set')
-
-    const change = await page.evaluate(
-      () => window.__flowFoldkitTest?.changes()[0]
-    )
-
-    expect(change).toMatchObject({
-      kind: 'selection-set',
-      nodeIds: selectionCase.nodeIds,
-      edgeIds: [],
-    })
-    await adapter.destroy()
-  }
-  // oxlint-enable no-await-in-loop
-})
 
 test('Foldkit cancels a rectangle selection without publishing a change', async ({
   page,
@@ -3159,4 +3025,37 @@ test('Foldkit accepts directed named target-target pointers, renders measured id
   ])
   await expect(page.locator('.flow-foldkit-connection-preview')).toHaveCount(0)
   await adapter.destroy()
+})
+
+interactionLifecycleContract({
+  host: 'foldkit',
+  createAdapter: createFoldkitConformanceAdapter,
+  mount: async (page, _adapter, fixture, selectionMode, connectionMode) => {
+    await page.goto('/test.html')
+    await page.evaluate(
+      async ({ scenario, selection, mode }) => {
+        const path = '/e2e/test-harness.ts'
+        await import(path)
+        await window.__flowFoldkitTest?.mount(scenario, selection, {
+          connectionMode: mode,
+          connectionRadius: 20,
+          autoPanOnConnect: false,
+          autoPanOnSelection: false,
+        })
+      },
+      { scenario: fixture, selection: selectionMode, mode: connectionMode }
+    )
+  },
+  prepareConnectionGeometry: async (page) => {
+    await page.evaluate(() =>
+      window.__flowFoldkitTest?.startMountedMeasurementObserver()
+    )
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.__flowFoldkitTest?.measurementNodesInitialized(false)
+        )
+      )
+      .toBe(true)
+  },
 })

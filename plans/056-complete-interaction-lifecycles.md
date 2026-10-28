@@ -89,7 +89,7 @@ Support pointer/touch/click/keyboard connections, strict/loose endpoint modes, f
 
 Use existing core extent/snap/resize math for nested node/group drag, rectangle full/partial selection, auto-pan, eight resize directions, aspect/min/max constraints, parent-child compensation, custom drag handles, and keyboard equivalents. Add pane/key/wheel activation and exclusion options from the table. Preserve native input/select/textarea/contenteditable/buttons/links. Classify every combination that is deliberately unsupported; do not copy raw event loops between hosts without their lifecycle owners.
 
-**Verify:** run new interaction suites and vanilla `advanced-gestures.e2e.ts`, `movement-slices.e2e.ts`, `gesture-options.e2e.ts`, and `graph-renderers.e2e.ts` serially. Assert preview DOM, final accepted documents, focus, and event order.
+**Verify:** run new interaction suites and vanilla `advanced-gestures.e2e.ts`, `node-movement.e2e.ts`, `gesture-options.e2e.ts`, and `graph-renderers.e2e.ts` serially. Assert preview DOM, final accepted documents, focus, and event order.
 
 ### 4. Complete cancellation and structured failure diagnostics
 

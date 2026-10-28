@@ -12,7 +12,7 @@ Read the full improve skill, closing-the-loop, docs/standards.md, playbook `## 1
 
 ## Actual failure and production path
 
-I read the full E/reconnect-selection-input-native.log and independently verified SHA256 `629466f676bc0b4bb8ea0d3adb0c008c74baa99eeae44fbb78b5cfd6e15fa762`. The real test fails at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:1158`, with edge-reconnect received where the preserved assertion expects zero changes. That failure is actual prior native evidence. This review did not rerun it.
+I read the full E/reconnect-selection-input-native.log and independently verified SHA256 `629466f676bc0b4bb8ea0d3adb0c008c74baa99eeae44fbb78b5cfd6e15fa762`. The real test fails at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:1161`, with edge-reconnect received where the preserved assertion expects zero changes. That failure is actual prior native evidence. This review did not rerun it.
 
 The complete tested source declaration at `interaction-lifecycle.e2e.ts:944` has an eligible source handle out-denied, while the actual allowlist at `:938` contains approved/source-next. Real pointerdown at `:1110`, pointermove at `:1116`, and complete preview assertions at `:1135` establish source-denied/out-denied→approved/in with valid=false before release. The test checks accepted graph unchanged at `:1145`; actual pointerup is at `:1147`. Preview disappears, but the zero-proposal assertion at `:1158` fails. This is distinct from a hit/readiness/kind failure and from the earlier manual handle refresh. The preserved healthy source-next/out-replaced retry starts at `:1162` and expects one exact semantic proposal at `:1195`.
 

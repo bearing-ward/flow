@@ -37,7 +37,7 @@ Reference: `packages/system/src/types/general.ts` (`OnConnectEnd`, `ConnectionSt
   - Vanilla `onReconnect` keeps its first argument, the new edge, and adds `{ oldEdge, newConnection }` as a second argument, to stay compatible.
   - Connection end details arrive as a second callback argument instead of new payload fields, so existing strict payload contracts (`node-threshold.e2e.ts`) keep passing. This is close to React's `onConnectEnd(event, connectionState)`.
   - Vanilla's group-drag progress callback is `onSelectionDragMove`, because `onSelectionDrag` already reports selection rectangle progress there. Flow has no `NodesSelection` box, so selection drags are drags of several selected nodes.
-  - A keyboard arrow move from a focused node that is not draggable still moves the other selected, draggable nodes. React ignores arrows on a non-draggable node. This is unchanged behaviour (`movement-slices.e2e.ts`).
+  - A keyboard arrow move from a focused node that is not draggable still moves the other selected, draggable nodes. React ignores arrows on a non-draggable node. This is unchanged behaviour (`node-movement.e2e.ts`).
   - Disposing Controls keeps the switches as the lock left them, as React's Controls do; Plan 106's gate released on disposal.
   - Vue drags one node at a time, so it has no selection drag; `SelectionDragHandler` stays partial there.
   - Foldkit events are serializable records with client coordinates, button and modifier keys instead of DOM events.

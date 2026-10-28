@@ -30,7 +30,7 @@ The canvas click handler resolves clicked handles from the current document (`ap
 
 ## Flow test path
 
-The browser test mounts an uncontrolled graph with `connectOnClick: true` (`apps/vanilla/e2e/gesture-options.e2e.ts:56`). It clicks a source and checks the `connecting` class and preview, presses Escape and checks cleanup with no published change, clicks the same source twice to cancel, then clicks source and target across a viewport update and checks a rendered edge plus `edge-add` (`apps/vanilla/e2e/gesture-options.e2e.ts:276`). The separate drag helper uses mouse down, move, and up (`apps/vanilla/e2e/canvas.e2e.ts:95`). These Flow tests do not run the pinned xyflow adapters. An invalid second-handle click and touch-generated click remain outside this browser test's assertions.
+The browser test mounts an uncontrolled graph with `connectOnClick: true` (`apps/vanilla/e2e/gesture-options.e2e.ts:114`). It clicks a source and checks the `connecting` class and preview, presses Escape and checks cleanup with no published change, clicks the same source twice to cancel, then clicks source and target across a viewport update and checks a rendered edge plus `edge-add` (`apps/vanilla/e2e/gesture-options.e2e.ts:310`). The separate drag helper uses mouse down, move, and up (`apps/vanilla/e2e/canvas.e2e.ts:304`). These Flow tests do not run the pinned xyflow adapters. An invalid second-handle click and touch-generated click remain outside this browser test's assertions.
 
 ## Conformity and deviations
 

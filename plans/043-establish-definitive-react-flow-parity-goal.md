@@ -46,7 +46,7 @@ Track implementation status and reference conformity separately for each framewo
 - `docs/standards.md:7-16` requires framework-independent graph meaning, Effect workflows, Schema contracts, and evidence for parity claims. Match these constraints.
 - `plans/README.md` now records the definitive goal. Its earlier deferrals describe sequencing for completed chunks, not permanent exclusions.
 - The repository uses Bun, TypeScript, Vitest, and Playwright. `package.json` defines the commands below. CI calls `bun run verify` on macOS. This planning pass did not rerun the runtime gates.
-- At planning time, `apps/vanilla/e2e/movement-slices.e2e.ts` and `docs/api-reference.md` had unrelated uncommitted changes. Preserve them and inspect current status before execution.
+- At planning time, `apps/vanilla/e2e/node-movement.e2e.ts` and `docs/api-reference.md` had unrelated uncommitted changes. Preserve them and inspect current status before execution.
 
 ## Scope
 

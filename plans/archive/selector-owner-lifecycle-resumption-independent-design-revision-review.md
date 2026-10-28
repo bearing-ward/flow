@@ -29,7 +29,7 @@ Accepted087 citations below are rooted at `/Users/richardmcandrews/.codex/worktr
 
 The accepted toolbar SHA256 inspected is `112514be55ecac458025b58f0e0f45a13910015ded70cd89b577112218726e70`.
 
-Required regression evidence must mount the actual public FlowNodeToolbar beneath a real custom node without an explicit nodeId, prove it renders and anchors to that node, and preserve explicit override behavior. The current toolbar fixture supplies an explicit nodeId at `accepted087:apps/vue/src/node-toolbar-test.ts:109-112`; its visibility assertions at `accepted087:apps/vue/e2e/node-toolbar.e2e.ts:23-31` therefore do not establish contextual fallback compatibility. Add a contextual case through reviewed fixture/test paths or the already allowed public-state harness and installed Vue fixture. Include the relevant browser file in the saved focused scope. No private editor/state/Model injection is needed.
+Required regression evidence must mount the actual public FlowNodeToolbar beneath a real custom node without an explicit nodeId, prove it renders and anchors to that node, and preserve explicit override behavior. The current toolbar fixture supplies an explicit nodeId at `accepted087:apps/vue/src/node-toolbar-test.ts:109-112`; its visibility assertions at `accepted087:apps/vue/e2e/node-toolbar.e2e.ts:23` therefore do not establish contextual fallback compatibility. Add a contextual case through reviewed fixture/test paths or the already allowed public-state harness and installed Vue fixture. Include the relevant browser file in the saved focused scope. No private editor/state/Model injection is needed.
 
 ## Resolved original findings and retained proof boundaries
 

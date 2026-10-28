@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
+
 interface Point {
   readonly x: number
   readonly y: number
@@ -287,7 +289,7 @@ test('animated-svg-edge animates along the path and respects reduced motion', as
 
   const parked = await moverCenter(page)
   expectNear(parked, await pathMidpoint(path))
-  await page.waitForTimeout(400)
+  await browserFrames(page, 24)
   expectNear(await moverCenter(page), parked, 0.5)
 })
 

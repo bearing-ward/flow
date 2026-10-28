@@ -2,7 +2,7 @@
 
 > **Executor instructions:** Work in an isolated worktree. Read `AGENTS.md`, `docs/standards.md`, Plan 022's accepted matrix, Plan 025's final resize contract, and this whole plan. Update only this plan's index row after verification. Do not commit, push, merge, or open a PR without operator instruction.
 >
-> **Drift check first:** `git diff --stat 5e5d496..HEAD -- packages/core/src/domain/flow-runtime.schema.ts apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/advanced-gestures.e2e.ts apps/vanilla/e2e/movement-slices.e2e.ts research/PROGRESS.md`; inspect live code after Plans 024-025. STOP if pointer ownership changed in a way that invalidates the matrix.
+> **Drift check first:** `git diff --stat 5e5d496..HEAD -- packages/core/src/domain/flow-runtime.schema.ts apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/advanced-gestures.e2e.ts apps/vanilla/e2e/node-movement.e2e.ts research/PROGRESS.md`; inspect live code after Plans 024-025. STOP if pointer ownership changed in a way that invalidates the matrix.
 
 ## Status
 
@@ -17,7 +17,7 @@ The interaction schema permits disjoint pointer sessions and a pinch owns two po
 
 - `packages/core/src/domain/flow-runtime.schema.ts:104-158` describes session variants, unique pointer ownership, and tagged finish/cancel outcomes.
 - `apps/vanilla/src/mount-flow.ts:3031-3139` cancels active drag, resize, connection, reconnection, pan, pinch, selection, and click connection. `:2669-2720` starts pinch; `:3145-3180` finishes it.
-- `apps/vanilla/e2e/advanced-gestures.e2e.ts:284-336` covers a cancellation matrix but marks native concurrent pointer and two-contact pinch tests `test.fixme` because CDP injection did not preserve native capture. `:378-403` checks first-slice resize cancellation.
+- `apps/vanilla/e2e/advanced-gestures.e2e.ts:653` covers a cancellation matrix but marks native concurrent pointer and two-contact pinch tests `test.fixme` because CDP injection did not preserve native capture. `:378-403` checks first-slice resize cancellation.
 - `research/PROGRESS.md:133,219,223` stays open for complete cancellation, input matrix, and invalid/lifecycle tests.
 
 ```ts
@@ -41,10 +41,10 @@ Keep keyboard movement immediate, click-to-connect separate, no pointer-move log
 | Purpose | Command | Expected |
 | --- | --- | --- |
 | Core transitions | `bunx vitest run packages/core/src/domain/flow-interactions.schema.test.ts packages/core/src/domain/flow-runtime.schema.test.ts` | exit 0 |
-| Browser gestures | `bunx playwright test apps/vanilla/e2e/advanced-gestures.e2e.ts apps/vanilla/e2e/movement-slices.e2e.ts --workers=1` | exit 0, with documented native-only skips if environment still lacks capture |
+| Browser gestures | `bunx playwright test apps/vanilla/e2e/advanced-gestures.e2e.ts apps/vanilla/e2e/node-movement.e2e.ts --workers=1` | exit 0, with documented native-only skips if environment still lacks capture |
 | Full gate | `bun run verify` | exit 0 |
 
-**In scope:** `packages/core/src/domain/flow-runtime.schema.ts` and its tests; `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/advanced-gestures.e2e.ts`, `apps/vanilla/e2e/movement-slices.e2e.ts`; `research/traces/gesture-resize-lifecycle.md`, `docs/browser-and-accessibility.md`, `research/PROGRESS.md`, generated summary via inventory, index row. **Out of scope:** unrelated new gestures, a new pointer library, unverified support claims for Safari/Firefox or mobile devices, imported artifacts.
+**In scope:** `packages/core/src/domain/flow-runtime.schema.ts` and its tests; `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/advanced-gestures.e2e.ts`, `apps/vanilla/e2e/node-movement.e2e.ts`; `research/traces/gesture-resize-lifecycle.md`, `docs/browser-and-accessibility.md`, `research/PROGRESS.md`, generated summary via inventory, index row. **Out of scope:** unrelated new gestures, a new pointer library, unverified support claims for Safari/Firefox or mobile devices, imported artifacts.
 
 ## Steps
 

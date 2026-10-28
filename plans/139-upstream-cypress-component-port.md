@@ -13,7 +13,7 @@ Port ledger phase 128, the 107 executable component cases at immutable xyflow re
 
 ## Verification
 
-Only add the three runners to `verification.config.json`; preserve existing checks and files. Serialize every browser command with `scripts/with-flow-browser-lock.sh` and `--workers=1`. Run each runner three times with `--repeat-each=3`, record varying cases, validate ledger and remap affected citations, then run the locked focused verifier. Report per-host ordinary passes, expected failures, skips, and exact scope. Known next-slices and Vanilla graph-renderers flakes are rerun before diagnosis. Commit to `plan/139-cypress-component-port` with the requested message and co-author trailer. Do not push or merge.
+Only add the three runners to `verification.config.json`; preserve existing checks and files. Serialize every browser command with `scripts/with-flow-browser-lock.sh` and `--workers=1`. Run each runner three times with `--repeat-each=3`, record varying cases, validate ledger and remap affected citations, then run the locked focused verifier. Report per-host ordinary passes, expected failures, skips, and exact scope. Known selection-and-culling and Vanilla graph-renderers flakes are rerun before diagnosis. Commit to `plan/139-cypress-component-port` with the requested message and co-author trailer. Do not push or merge.
 
 ## Results
 

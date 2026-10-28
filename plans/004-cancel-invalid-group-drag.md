@@ -17,7 +17,7 @@ A group drag holds an initial list of node IDs. If an external document update r
 - `apps/vanilla/src/mount-flow.ts:483` stores `activeDrag`; `:1350-1355` cancels only if `dragAnchorId(activeDrag)` is not visible. `:1925-1938` previews every ID in the stored group positions.
 - `:1169-1202` has `cancelActiveDrag(reason)`: it releases pointer capture, clears drag state, restores authoritative positions, rerenders graph positions and edges. Reuse it, including structured cancellation telemetry at `:1203-1215`.
 - `packages/core/src/domain/flow-runtime.schema.ts:55-64` defines the group drag with participant positions. `:627-641` rejects a `node-positions` change if any ID is absent.
-- `apps/vanilla/e2e/canvas.e2e.ts:1982-2029` tests removal of a single dragged anchor; it does not cover a surviving anchor with a removed group member. `docs/standards.md:7-16` keeps this browser lifecycle decision in `apps/`.
+- `apps/vanilla/e2e/canvas.e2e.ts:1987` tests removal of a single dragged anchor; it does not cover a surviving anchor with a removed group member. `docs/standards.md:7-16` keeps this browser lifecycle decision in `apps/`.
 
 ```ts
 // apps/vanilla/src/mount-flow.ts:1350-1355

@@ -150,7 +150,7 @@ const square = (id: string, x: number, y: number, extra = {}) => ({
   ...extra,
 })
 
-test.describe('Vanilla model and styling (Plan 114 checklist)', () => {
+test.describe('Vanilla model and styling', () => {
   test('node style, className, default handles and measured reads', async ({
     page,
   }) => {
@@ -414,7 +414,7 @@ test.describe('Vanilla model and styling (Plan 114 checklist)', () => {
     expect(await topAt(shared)).toBe('high')
 
     await page.mouse.click(low.x + 10, low.y + 10)
-    await expect(node(page, 'low')).toHaveClass(/selected/u)
+    await expect(node(page, 'low')).toHaveAttribute('aria-pressed', 'true')
     expect(await topAt(shared)).toBe('low')
 
     await mount(page, {
@@ -422,7 +422,7 @@ test.describe('Vanilla model and styling (Plan 114 checklist)', () => {
       options: { zIndexMode: 'manual' },
     })
     await page.mouse.click(low.x + 10, low.y + 10)
-    await expect(node(page, 'low')).toHaveClass(/selected/u)
+    await expect(node(page, 'low')).toHaveAttribute('aria-pressed', 'true')
     expect(await topAt(shared)).toBe('high')
 
     await mount(page, {
@@ -430,7 +430,7 @@ test.describe('Vanilla model and styling (Plan 114 checklist)', () => {
       options: { elevateNodesOnSelect: false },
     })
     await page.mouse.click(low.x + 10, low.y + 10)
-    await expect(node(page, 'low')).toHaveClass(/selected/u)
+    await expect(node(page, 'low')).toHaveAttribute('aria-pressed', 'true')
     expect(await topAt(shared)).toBe('high')
   })
 
@@ -976,7 +976,7 @@ test.describe('Vanilla NodeResizer and NodeResizeControl', () => {
     // A node with a resizer shows only its controls; the canvas switch still
     // shows the built-in controls on other selected nodes.
     await clickCentre(page, node(page, 'r'))
-    await expect(node(page, 'r')).toHaveClass(/selected/u)
+    await expect(node(page, 'r')).toHaveAttribute('aria-pressed', 'true')
     await expect(node(page, 'r').locator('.flow-resize-control')).toHaveCount(1)
     await expect(
       node(page, 'r').locator('.flow-node-resize-handle')

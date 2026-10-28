@@ -56,7 +56,7 @@ The test route differs intentionally. Runtime.embed/createProgram at `apps/foldk
 
 Labels keep their original keyed markup, collection order, ownership attributes, CSS and parent policy; only interactive controls leave that collection. No node/edge SVG z-index, core finite Schema acceptance, sorting, public ports, Model, semantic reducer, manifests, pins or verification configuration changes are proposed. Core `flow.schema.ts:138` accepts finite z values; `flow-visibility.schema.ts:148` preserves selected/user arithmetic and stable ties. The contract is bounded to -20,0,37,2000 in these tests. Fractional/extreme finite browser coercion and unrelated higher-z elements remain unverified, correctly without a clamp or global maximum.
 
-Existing direct dispatch at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:869` and `:1033` protects different lifecycle behavior and remains synthetic physical-routing evidence. The new real mouse cases supply the missing trusted boundary. Vanilla `apps/vanilla/src/edge-renderer.ts:373`/`:416` and Vue `packages/vue/src/flow-canvas.ts:4839` use SVG controls with explicit interactive CSS; their source establishes a comparison, not paired runtime parity.
+Existing direct dispatch at `apps/foldkit/e2e/interaction-lifecycle.e2e.ts:871` and `:1033` protects different lifecycle behavior and remains synthetic physical-routing evidence. The new real mouse cases supply the missing trusted boundary. Vanilla `apps/vanilla/src/edge-renderer.ts:373`/`:416` and Vue `packages/vue/src/flow-canvas.ts:4839` use SVG controls with explicit interactive CSS; their source establishes a comparison, not paired runtime parity.
 
 ## Acceptance limits and operations
 

@@ -1,18 +1,18 @@
 import { test, expect } from '@playwright/test'
 
 import { connectionThresholdTests } from '../../shared-e2e/connection-threshold-contract.ts'
-import type * as NodeReentryHarness from './node-reentry-harness.ts'
+import type * as NodeReentryHarness from './viewport-ownership-harness.ts'
 
 connectionThresholdTests('vue')
 
 for (const residence of ['physical', 'retained'] as const) {
-  test(`ownership round five connection holder ${residence}`, async ({
+  test(`connection auto-pan retains its owner ${residence}`, async ({
     page,
   }, testInfo) => {
     await page.goto('/')
 
     const result = await page.evaluate(async (input) => {
-      const path = '/e2e/node-reentry-harness.ts'
+      const path = '/e2e/viewport-ownership-harness.ts'
       const fixture: typeof NodeReentryHarness = await import(path)
 
       return fixture.ownershipRoundFiveConnection(input)

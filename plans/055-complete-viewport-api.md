@@ -29,7 +29,7 @@ readonly fitView: (options?: FitViewOptions) => boolean
 readonly updateViewport: (viewport: Viewport) => void
 ```
 
-Vue `packages/vue/src/use-flow.ts:93-109` exposes accepted viewport and `updateViewport`; Foldkit has typed viewport replacement. Core `flow-fit-view.ts:12-24` receives pane dimensions, measurement maps, limits, padding, and fallback dimensions. Coordinate helpers in `flow-runtime.schema.ts:1098-1106` handle viewport transforms; public client/screen conversion must also account for the host element's offset. Match the existing core viewport tests and `apps/vanilla/e2e/flow-followups.e2e.ts` unmeasured-fit behavior.
+Vue `packages/vue/src/use-flow.ts:93-109` exposes accepted viewport and `updateViewport`; Foldkit has typed viewport replacement. Core `flow-fit-view.ts:12-24` receives pane dimensions, measurement maps, limits, padding, and fallback dimensions. Coordinate helpers in `flow-runtime.schema.ts:1098-1106` handle viewport transforms; public client/screen conversion must also account for the host element's offset. Match the existing core viewport tests and `apps/vanilla/e2e/viewport-operations.e2e.ts` unmeasured-fit behavior.
 
 ## Architecture and evidence rules
 

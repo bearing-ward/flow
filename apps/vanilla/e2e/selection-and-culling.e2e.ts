@@ -58,13 +58,13 @@ test('controlled node selection waits for acknowledgement and keeps focus', asyn
 
   const node = page.locator('.flow-node[data-node-id="a"]')
   const edge = page.locator('.flow-edge-group[data-edge-id="ab"]')
-  await expect(edge).toHaveClass(/selected/u)
+  await expect(edge).toHaveAttribute('aria-pressed', 'true')
   await node.click()
   await expect
     .poll(() => page.evaluate(() => globalThis.flowChanges))
     .toStrictEqual([{ kind: 'node-selection', nodeId: 'a', selected: true }])
-  await expect(node).not.toHaveClass(/selected/u)
-  await expect(edge).toHaveClass(/selected/u)
+  await expect(node).not.toHaveAttribute('aria-pressed', 'true')
+  await expect(edge).toHaveAttribute('aria-pressed', 'true')
 
   await page.evaluate(() =>
     globalThis.flowController?.update({
@@ -86,9 +86,9 @@ test('controlled node selection waits for acknowledgement and keeps focus', asyn
       edges: [{ id: 'ab', source: 'a', target: 'b', selected: false }],
     })
   )
-  await expect(node).toHaveClass(/selected/u)
   await expect(node).toHaveAttribute('aria-pressed', 'true')
-  await expect(edge).not.toHaveClass(/selected/u)
+  await expect(node).toHaveAttribute('aria-pressed', 'true')
+  await expect(edge).not.toHaveAttribute('aria-pressed', 'true')
   await expect(node).toBeFocused()
   await expect(page.locator('.flow-canvas')).toHaveScreenshot(
     'selected-node-state.png',
@@ -156,7 +156,7 @@ test('selected edge rises by CSS level and retains document order and focus', as
   await expect.poll(order).toStrictEqual(['low', 'high'])
   await low.focus()
   await page.keyboard.press('Enter')
-  await expect(low).toHaveClass(/selected/u)
+  await expect(low).toHaveAttribute('aria-pressed', 'true')
   // Pinned EdgeRenderer/index.tsx:66 and EdgeWrapper/index.tsx:184 preserve document order.
   await expect.poll(order).toStrictEqual(['low', 'high'])
   await expect(low.locator('xpath=..')).toHaveCSS('z-index', '1000')
@@ -167,8 +167,8 @@ test('selected edge rises by CSS level and retains document order and focus', as
   await page.keyboard.down('Control')
   await page.keyboard.press('Enter')
   await page.keyboard.up('Control')
-  await expect(low).toHaveClass(/selected/u)
-  await expect(high).toHaveClass(/selected/u)
+  await expect(low).toHaveAttribute('aria-pressed', 'true')
+  await expect(high).toHaveAttribute('aria-pressed', 'true')
 })
 
 test('culling responds to zoom, drag completion, and viewport return', async ({
@@ -511,12 +511,12 @@ test('modifier clicks toggle nodes and Shift rectangle selects enclosed nodes an
   await a.click()
   await page.keyboard.down('Control')
   await b.click()
-  await expect(a).toHaveClass(/selected/u)
-  await expect(b).toHaveClass(/selected/u)
+  await expect(a).toHaveAttribute('aria-pressed', 'true')
+  await expect(b).toHaveAttribute('aria-pressed', 'true')
   await a.click()
   await page.keyboard.up('Control')
-  await expect(a).not.toHaveClass(/selected/u)
-  await expect(b).toHaveClass(/selected/u)
+  await expect(a).not.toHaveAttribute('aria-pressed', 'true')
+  await expect(b).toHaveAttribute('aria-pressed', 'true')
 
   await page.keyboard.down('Shift')
   await page.mouse.move(80, 160)
@@ -527,10 +527,10 @@ test('modifier clicks toggle nodes and Shift rectangle selects enclosed nodes an
   await page.keyboard.up('Shift')
 
   await expect(page.getByTestId('flow-selection-rect')).toHaveCount(0)
-  await expect(a).toHaveClass(/selected/u)
-  await expect(b).toHaveClass(/selected/u)
-  await expect(c).not.toHaveClass(/selected/u)
-  await expect(edge).toHaveClass(/selected/u)
+  await expect(a).toHaveAttribute('aria-pressed', 'true')
+  await expect(b).toHaveAttribute('aria-pressed', 'true')
+  await expect(c).not.toHaveAttribute('aria-pressed', 'true')
+  await expect(edge).toHaveAttribute('aria-pressed', 'true')
   await expect
     .poll(() => page.evaluate(() => globalThis.flowChanges?.at(-1)))
     .toStrictEqual({
@@ -540,9 +540,9 @@ test('modifier clicks toggle nodes and Shift rectangle selects enclosed nodes an
     })
 
   await page.mouse.click(850, 400)
-  await expect(a).not.toHaveClass(/selected/u)
-  await expect(b).not.toHaveClass(/selected/u)
-  await expect(edge).not.toHaveClass(/selected/u)
+  await expect(a).not.toHaveAttribute('aria-pressed', 'true')
+  await expect(b).not.toHaveAttribute('aria-pressed', 'true')
+  await expect(edge).not.toHaveAttribute('aria-pressed', 'true')
 })
 
 test('controlled rectangle selection waits for a document update', async ({

@@ -8,9 +8,9 @@
 
 ## Production test paths
 
-- **Vanilla:** `apps/vanilla/src/base-handle-test.ts:1-53` mounts a decoded graph through `mountFlow` and accepts only the named target via the production `isValidConnection` option. `apps/vanilla/e2e/base-handle-recipe.e2e.ts:18-58` passed 1/1. It asserts side/kind/accessibility metadata, keyboard focus, one accepted pointer connection, and no edge for the rejected target. Both helper and mount are imported from the public `@flow/vanilla` entry.
-- **Vue:** `apps/vue/src/base-handle-test.ts:1-91` mounts `FlowCanvas`, `FlowBaseNode`, and `FlowBaseHandle` through `@flow/vue`; strict connection mode supplies the existing host contract. `apps/vue/e2e/base-handle-recipe.e2e.ts:3-47` passed 1/1. It checks multiple sides and kinds, focus, rejection of a source-to-source keyboard proposal, and acceptance of a source-to-target keyboard connection.
-- **Foldkit:** `apps/foldkit/src/main.ts:156-192` composes the package helper in the production playground renderer and retains runtime-owned handle controls. `apps/foldkit/e2e/base-handle-recipe.e2e.ts:3-72` passed 1/1. It checks descriptive output, kind/side metadata, native focus, one accepted pointer connection, and rejection of a target-kind candidate. The fixture uses the real playground route.
+- **Vanilla:** `apps/vanilla/src/base-handle-test.ts:1-53` mounts a decoded graph through `mountFlow` and accepts only the named target via the production `isValidConnection` option. `apps/vanilla/e2e/base-handle-recipe.e2e.ts:18` passed 1/1. It asserts side/kind/accessibility metadata, keyboard focus, one accepted pointer connection, and no edge for the rejected target. Both helper and mount are imported from the public `@flow/vanilla` entry.
+- **Vue:** `apps/vue/src/base-handle-test.ts:1-91` mounts `FlowCanvas`, `FlowBaseNode`, and `FlowBaseHandle` through `@flow/vue`; strict connection mode supplies the existing host contract. `apps/vue/e2e/base-handle-recipe.e2e.ts:3` passed 1/1. It checks multiple sides and kinds, focus, rejection of a source-to-source keyboard proposal, and acceptance of a source-to-target keyboard connection.
+- **Foldkit:** `apps/foldkit/src/main.ts:156-192` composes the package helper in the production playground renderer and retains runtime-owned handle controls. `apps/foldkit/e2e/base-handle-recipe.e2e.ts:3` passed 1/1. It checks descriptive output, kind/side metadata, native focus, one accepted pointer connection, and rejection of a target-kind candidate. The fixture uses the real playground route.
 
 ## Conformity and deviations
 

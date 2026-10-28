@@ -1,6 +1,6 @@
 # Plan 009: Remove repeated edge scans from viewport culling
 
-> **Executor instructions:** Read all sections and run the stated gates. Update only this plan's index row after success. **Drift check first:** `git diff --stat e393e3e..HEAD -- apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/next-slices.e2e.ts`. Compare the culling excerpt; stop if the host now uses a different visibility algorithm.
+> **Executor instructions:** Read all sections and run the stated gates. Update only this plan's index row after success. **Drift check first:** `git diff --stat e393e3e..HEAD -- apps/vanilla/src/mount-flow.ts apps/vanilla/e2e/selection-and-culling.e2e.ts`. Compare the culling excerpt; stop if the host now uses a different visibility algorithm.
 
 ## Status
 
@@ -16,7 +16,7 @@ With `renderOnlyVisible`, the host first finds visible edges, then scans the ent
 
 - `apps/vanilla/src/mount-flow.ts:1295-1331` builds `visibleEdges`, then `next.nodes` uses `next.edges.some(...)` for each node. The `visibleEdges` set is also passed to `edgeRenderer.setVisibleEdges` at `:1340`.
 - `packages/core/src/domain/flow-visibility.schema.ts:46-93` owns `nodeIntersectsViewport` and `edgeIntersectsViewport` over the graph. Keep those semantics in core; this plan changes host lookup only.
-- `apps/vanilla/e2e/next-slices.e2e.ts:168-229` tests culling with two nodes and no edges. Add a real browser case containing measured offscreen nodes joined by an edge whose bounding area intersects the viewport, plus unrelated offscreen nodes. Unmeasured nodes intentionally mount initially, so await measurements before asserting culling.
+- `apps/vanilla/e2e/selection-and-culling.e2e.ts:99` tests culling with two nodes and no edges. Add a real browser case containing measured offscreen nodes joined by an edge whose bounding area intersects the viewport, plus unrelated offscreen nodes. Unmeasured nodes intentionally mount initially, so await measurements before asserting culling.
 - `docs/architecture.md:85,110` describes graph visibility and fit using derived geometry. Keep graph meaning in `packages/` and lifecycle in `apps/` per `docs/standards.md:7-16`.
 
 ```ts
@@ -39,10 +39,10 @@ if (
 | Purpose | Command | Expected result |
 | --- | --- | --- |
 | Typecheck | `bun run typecheck` | Exit 0 |
-| Focused browser test | `bunx playwright test apps/vanilla/e2e/next-slices.e2e.ts` | All cases pass |
+| Focused browser test | `bunx playwright test apps/vanilla/e2e/selection-and-culling.e2e.ts` | All cases pass |
 | Complete gate | `bun run verify` | All stages pass |
 
-Modify only `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/next-slices.e2e.ts`, and this plan's index row. Do not change core intersection math, edge renderer visibility, culling defaults, or package APIs. Use `codex/009-culling-index` if isolated; no commit/push/PR without instruction.
+Modify only `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/selection-and-culling.e2e.ts`, and this plan's index row. Do not change core intersection math, edge renderer visibility, culling defaults, or package APIs. Use `codex/009-culling-index` if isolated; no commit/push/PR without instruction.
 
 ## Steps
 
@@ -52,7 +52,7 @@ Modify only `apps/vanilla/src/mount-flow.ts`, `apps/vanilla/e2e/next-slices.e2e.
 
 ## Test plan and done criteria
 
-- Follow `next-slices.e2e.ts:168-229`; the added test must assert browser output, not just a helper Set. Use deterministic graph positions and no timing threshold in CI.
+- Follow `selection-and-culling.e2e.ts:168-229`; the added test must assert browser output, not just a helper Set. Use deterministic graph positions and no timing threshold in CI.
 - [ ] Visible-edge endpoints remain mounted, unrelated measured offscreen nodes are culled, and viewport return restores them.
 - [ ] The culling node loop has no edge-array scan; it uses precomputed endpoint membership.
 - [ ] Focused browser, typecheck, and full verify pass; compared with preflight `git status --short`, no new changes exist outside the scoped files and this index row.

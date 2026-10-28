@@ -8,9 +8,9 @@
 
 ## Production test paths
 
-- Vanilla `apps/vanilla/e2e/ui-recipes.e2e.ts:3-41` passed 1/1. It uses reduced-motion emulation and asserts waiting/ready/error status text, semantic role and data state, rendered state colors, no waiting animation under reduced motion, reset, and reload. The app-owned buttons exercise the public node-data update path.
-- Vue `apps/vue/e2e/ui-recipes.e2e.ts:3-31` passed 1/1. It asserts accessible status names, accepted node-data updates through waiting/ready/error, visible data state, the waiting animation and its reduced-motion suppression, reset, and reload.
-- Foldkit `apps/foldkit/e2e/ui-recipes.e2e.ts:3-38` passed 1/1. It asserts accepted Runtime edits across waiting/ready/error, accessible visible text, rendered colors, reduced-motion suppression, reset, and reload. The initial attempt timed out because the styled canvas class was attached to the Runtime mount element and was cleared; after moving Runtime into a nested mount, the focused test passed. Foldkit package build, scoped lint, and format checks passed.
+- Vanilla `apps/vanilla/e2e/ui-recipes.e2e.ts:3` passed 1/1. It uses reduced-motion emulation and asserts waiting/ready/error status text, semantic role and data state, rendered state colors, no waiting animation under reduced motion, reset, and reload. The app-owned buttons exercise the public node-data update path.
+- Vue `apps/vue/e2e/ui-recipes.e2e.ts:3` passed 1/1. It asserts accessible status names, accepted node-data updates through waiting/ready/error, visible data state, the waiting animation and its reduced-motion suppression, reset, and reload.
+- Foldkit `apps/foldkit/e2e/ui-recipes.e2e.ts:3` passed 1/1. It asserts accepted Runtime edits across waiting/ready/error, accessible visible text, rendered colors, reduced-motion suppression, reset, and reload. The initial attempt timed out because the styled canvas class was attached to the Runtime mount element and was cleared; after moving Runtime into a nested mount, the focused test passed. Foldkit package build, scoped lint, and format checks passed.
 
 ## Conformity and deviations
 

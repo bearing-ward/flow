@@ -29,7 +29,7 @@ The revised `Main/plans/native-reconnect-stacking-amendment.md:30-37` now explic
 
 This exactly follows the unchanged production branch at `Candidate/packages/foldkit/src/graph.ts:3155-3168`: target reconnect changes the target pair while preserving the resolved source pair; source reconnect changes the source pair while preserving the resolved target pair. The current packed setup uses real `a/out:fixed → b/out:old` at `Candidate/scripts/check-packed-consumer.ts:700-715`, hovers real `a/in:next` at :850-855, and has the unconditional wrong targetHandle check at :892-898. Its accepted edge expectation is already endpoint-aware at :909-924. The plan corrects the assertion rather than deleting physical identity proof.
 
-For the native probe, use the corresponding actual fixture node IDs `child` and `other` from `Candidate/apps/foldkit/e2e/origin-connection-contract.e2e.ts:2815-2846`, not the packed fixture's literal a/b names. Source candidate must be `child/in:next → other/out:old`; target candidate must be `child/out:fixed → child/in:next`. Existing both-endpoint native pointer/start/valid and accepted result assertions at :2986-3044 survive. The added complete preview identity strengthens that same genuine path.
+For the native probe, use the corresponding actual fixture node IDs `child` and `other` from `Candidate/apps/foldkit/e2e/origin-connection-contract.e2e.ts:2815`, not the packed fixture's literal a/b names. Source candidate must be `child/in:next → other/out:old`; target candidate must be `child/out:fixed → child/in:next`. Existing both-endpoint native pointer/start/valid and accepted result assertions at :2986-3044 survive. The added complete preview identity strengthens that same genuine path.
 
 ## Layering and scope remain sound
 

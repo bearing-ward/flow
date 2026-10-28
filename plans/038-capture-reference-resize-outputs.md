@@ -16,7 +16,7 @@ Flow's eight-direction resize has extensive local browser proof, but the pinned 
 
 ## Current state and conventions
 
-- `research/traces/interaction-parity-next.md:7-9,44-53` cites the reference resizer source and labels resize, bounds, and child compensation unverified. `apps/vanilla/e2e/advanced-gestures.e2e.ts:370-396` provides a concrete left-resize Flow case with parent/child positions, size, and controlled acknowledgement.
+- `research/traces/interaction-parity-next.md:7-9,44-53` cites the reference resizer source and labels resize, bounds, and child compensation unverified. `apps/vanilla/e2e/advanced-gestures.e2e.ts:653` provides a concrete left-resize Flow case with parent/child positions, size, and controlled acknowledgement.
 - `research/fixtures/reference-captures.json` records the exact pinned commit, input action, command, environment, raw browser-observed values, and normalized result for two drag cases. `research/fixtures/README.md:1-14` explains that the imported tree is incomplete and captures require a disposable full checkout at the pinned commit.
 - `docs/standards.md:10-13,40-54` requires behavior/output evidence for parity; `research/artifacts/` is immutable. Match fixture style and end the new trace section with `Conformity and deviations`.
 

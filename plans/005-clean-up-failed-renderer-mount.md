@@ -16,7 +16,7 @@
 
 - `apps/vanilla/src/mount-flow.ts:340-347` creates `hostScope` inside `createFlowHost`; `:564-615` acquires the resize observer in that scope. Node entries acquire their own listener scopes at `:2078-2117`.
 - `:1788-1790` calls `options.nodeRenderers?.[type]` during entry creation. `:3306-3319` appends canvas, replaces root, reconciles, **then** adds the finalizer that clears entries, destroys edges, clears subscribers, and empties root.
-- `:3522-3531` calls the host Effect synchronously and only returns a controller after success. `apps/vanilla/e2e/graph-renderers.e2e.ts:53-110` contains a reusable custom renderer mount pattern.
+- `:3522-3531` calls the host Effect synchronously and only returns a controller after success. `apps/vanilla/e2e/graph-renderers.e2e.ts:53` contains a reusable custom renderer mount pattern.
 - `docs/architecture.md:91` assigns renderer lifecycle and teardown to the vanilla host. Preserve Effect scope ownership and `FlowSpan` lifecycle telemetry; do not silently swallow the original renderer error.
 
 ```ts

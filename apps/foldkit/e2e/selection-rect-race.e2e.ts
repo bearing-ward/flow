@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { upstreamChange } from './upstream-changes.ts'
+
 test.use({ viewport: { width: 1280, height: 720 } })
 
 test('upstream readiness waits for fitted DOM before immediate Shift selection', async ({
@@ -72,8 +74,12 @@ test('upstream readiness waits for fitted DOM before immediate Shift selection',
   await expect(page.locator('.flow-foldkit-selection-rect')).toBeInViewport()
   await page.mouse.up()
   await page.keyboard.up('Shift')
-  await expect(nodes.first()).toHaveClass(/selected/u)
-  await expect(nodes.nth(1)).toHaveClass(/selected/u)
-  await expect(nodes.nth(2)).toHaveClass(/selected/u)
+  await expect
+    .poll(() => upstreamChange(page, 'selection-set'))
+    .toEqual({
+      kind: 'selection-set',
+      nodeIds: ['Node-1', 'Node-2', 'Node-3'],
+      edgeIds: ['1-2', '1-3'],
+    })
   await expect(page.locator('.flow-foldkit-selection-box')).toBeInViewport()
 })

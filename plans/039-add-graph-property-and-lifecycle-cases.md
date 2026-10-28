@@ -18,7 +18,7 @@ The core has focused examples for nested graph, resize, and coordinate conversio
 
 - `packages/core/src/domain/flow-graph.test.ts:16-33,53-73` tests one three-level tree and inherited hidden state. `packages/core/src/domain/flow-graph.ts:46-68` derives the reusable graph view.
 - `packages/core/src/domain/flow-runtime.schema.ts:759-773` defines inverse screen/flow conversion; `flow-runtime.schema.test.ts:360-370` tests one round trip. `research/PROGRESS.md:222-224` leaves property, invalid-state/lifecycle, and performance proof open.
-- `apps/vanilla/e2e/advanced-gestures.e2e.ts:343-353,370-396` checks cancellation and controlled resize. Use deterministic seeded generation inside tests; avoid a new dependency unless its owner and removal boundary are recorded in `docs/dependencies.md`.
+- `apps/vanilla/e2e/advanced-gestures.e2e.ts:653,370-396` checks cancellation and controlled resize. Use deterministic seeded generation inside tests; avoid a new dependency unless its owner and removal boundary are recorded in `docs/dependencies.md`.
 
 ## Commands and scope
 

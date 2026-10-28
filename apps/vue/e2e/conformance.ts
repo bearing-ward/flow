@@ -12,6 +12,7 @@ import type {
   PublicStateQuery,
   PublicStateRead,
 } from '../../../packages/conformance/src/index.ts'
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 
 export const createVueConformanceAdapter = (
   page: Page
@@ -55,7 +56,7 @@ export const createVueConformanceAdapter = (
         },
         { nextDocument: document, cull: renderOnlyVisible }
       )
-      await page.waitForTimeout(50)
+      await browserFrames(page, 3)
     },
     async updateMeasurementDocument(document) {
       measurementDocument = document

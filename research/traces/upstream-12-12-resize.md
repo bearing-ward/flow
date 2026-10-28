@@ -20,7 +20,7 @@ Foldkit's public `createFoldkitNodeResizer` creates controls for a node view (`p
 
 The React reference route mounts a new fixture through the real published 12.12.0 component (`apps/react-reference/main.tsx:176`, `apps/react-reference/resize-regression.tsx:32`). It is separate from imported upstream tests. The authored reference regression drives real mouse press, left-edge moves, and release (`apps/react-reference/e2e/resize-regression.e2e.ts:18`). It compares complete callback records and literal final widths.
 
-Host regressions drive the public controls in their existing browser fixtures (`apps/vanilla/e2e/final-wiring.e2e.ts:1311`, `apps/vue/e2e/final-wiring.e2e.ts:885`, `apps/foldkit/e2e/node-resizer.e2e.ts:275`). Each tests no motion, a fully vetoed gesture, and accepted motion followed by a veto. They compare final callback rectangles and committed geometry. Foldkit also asserts release publication through its real application update in Vitest (`packages/foldkit/src/canvas-options.test.ts:438`).
+Host regressions drive the public controls in their existing browser fixtures (`apps/vanilla/e2e/canvas-configuration.e2e.ts:1311`, `apps/vue/e2e/canvas-configuration.e2e.ts:886`, `apps/foldkit/e2e/node-resizer.e2e.ts:275`). Each tests no motion, a fully vetoed gesture, and accepted motion followed by a veto. They compare final callback rectangles and committed geometry. Foldkit also asserts release publication through its real application update in Vitest (`packages/foldkit/src/canvas-options.test.ts:438`).
 
 ## Conformity and deviations
 

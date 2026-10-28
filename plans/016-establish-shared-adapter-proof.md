@@ -9,7 +9,7 @@
 
 ## Why and current state
 
-The existing `apps/vanilla/e2e/controller-conformance.ts:21-68` mounts the vanilla host in a browser and lines 90-132 assert keyed updates and exact output. Its module path `/src/public.ts` and `globalThis.flowController` make it vanilla-specific. `research/PROGRESS.md:216-224` still requests deterministic reference fixtures, shared adapter conformance, visual checks, input/a11y/property/lifecycle tests, and large-graph budgets. The 1,000-node case in `next-slices.e2e.ts` tests visibility but has no performance pass/fail budget (`research/spatial-gesture-baseline.md:5-20`). The pinned xyflow source is evidence, not a full shared core (`docs/standards.md:5-16`). A common suite must distinguish Flow contract tests from direct reference-parity tests.
+The existing `apps/vanilla/e2e/controller-conformance.ts:21-68` mounts the vanilla host in a browser and lines 90-132 assert keyed updates and exact output. Its module path `/src/public.ts` and `globalThis.flowController` make it vanilla-specific. `research/PROGRESS.md:216-224` still requests deterministic reference fixtures, shared adapter conformance, visual checks, input/a11y/property/lifecycle tests, and large-graph budgets. The 1,000-node case in `selection-and-culling.e2e.ts` tests visibility but has no performance pass/fail budget (`research/spatial-gesture-baseline.md:5-20`). The pinned xyflow source is evidence, not a full shared core (`docs/standards.md:5-16`). A common suite must distinguish Flow contract tests from direct reference-parity tests.
 
 ```ts
 // apps/vanilla/e2e/controller-conformance.ts:44-56

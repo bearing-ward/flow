@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import { assertComponentMeasurements } from '../../shared-e2e/component-measurements-contract.ts'
 import {
   assertDynamicHandleRefresh,
@@ -249,7 +250,7 @@ test('Foldkit app disconnects geometry observers when its Runtime unmounts', asy
     }
   })
 
-  await page.waitForTimeout(100)
+  await browserFrames(page, 6)
 
   const afterCallbacks = await page.evaluate(() => ({
     mutation: window.__foldkitObserverCounts.mutationCallbacks,

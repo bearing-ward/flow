@@ -118,8 +118,11 @@ test('whiteboard: lasso selects nodes fully inside, or touched when partial', as
   )
   await stroke(page, lassoAround(union(a, b, 12)))
   await expect(status).toHaveAttribute('data-selected', 'A,B')
-  await expect(nodeLocator(page, 'A')).toHaveClass(/selected/u)
-  await expect(nodeLocator(page, 'C')).not.toHaveClass(/selected/u)
+  await expect(nodeLocator(page, 'A')).toHaveAttribute('aria-pressed', 'true')
+  await expect(nodeLocator(page, 'C')).not.toHaveAttribute(
+    'aria-pressed',
+    'true'
+  )
 
   // Around A and through the upper half of C.
   const cut: Box = {

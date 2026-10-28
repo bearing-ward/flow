@@ -119,7 +119,7 @@ test('node drag threshold keeps clicks and subthreshold movement semantic', asyn
   const start = await centerOf(page, '.flow-node[data-node-id="a"]')
 
   await page.mouse.click(start.x, start.y)
-  await expect(node).toHaveClass(/selected/u)
+  await expect(node).toHaveAttribute('aria-pressed', 'true')
   await expect
     .poll(() => page.evaluate(() => globalThis.flowChanges))
     .toStrictEqual([{ kind: 'node-selection', nodeId: 'a', selected: true }])

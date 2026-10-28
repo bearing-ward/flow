@@ -37,7 +37,7 @@ Concrete excerpts:
 ```ts
 // apps/foldkit/src/application.ts:157, value used as a type
  toParentMessage: (message: Graph.Message) =>
-// apps/vanilla/e2e/advanced-gestures.e2e.ts:333, append returns void
+// apps/vanilla/e2e/advanced-gestures.e2e.ts:653, append returns void
  globalThis.document.body.append(globalThis.document.createElement('div'))
 // same file:829, drag is a function, not a locator
  await expect(drag).toHaveCount(0)

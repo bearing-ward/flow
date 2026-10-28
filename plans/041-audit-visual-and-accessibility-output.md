@@ -17,7 +17,7 @@ Focused Chromium tests cover roles, names, focus, keyboard behavior, and several
 ## Current state and conventions
 
 - `docs/browser-and-accessibility.md:1-7` explicitly limits current proof to Chromium automated checks; Safari/Firefox, mobile touch, and screen-reader review are absent.
-- `apps/vanilla/e2e/canvas-ui.e2e.ts:26-38,210-217` shows existing role/name assertions and scoped screenshots. `advanced-gestures.e2e.ts:590-612` checks all eight named resize buttons and keyboard focus. `research/PROGRESS.md:218-221` leaves broad visual/input/accessibility work open.
+- `apps/vanilla/e2e/canvas-ui.e2e.ts:63,210-217` shows existing role/name assertions and scoped screenshots. `advanced-gestures.e2e.ts:590-612` checks all eight named resize buttons and keyboard focus. `research/PROGRESS.md:218-221` leaves broad visual/input/accessibility work open.
 - `research/fixtures/README.md:31-45` separates vanilla-specific evidence from Vue/Foldkit and from xyflow parity. Preserve those boundaries.
 
 ## Commands and scope

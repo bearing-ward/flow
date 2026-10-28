@@ -21,7 +21,7 @@ The project goal includes every example, including advanced layout, collaboratio
 
 ## Current state and exemplars
 
-`apps/vanilla/e2e/graph-editing-examples.e2e.ts:4-14` exercises real UI:
+`apps/vanilla/e2e/graph-editing-examples.e2e.ts:4` exercises real UI:
 
 ```ts
 test('vanilla Updating Nodes edits data, removes nodes, and reports protected deletion', async ({

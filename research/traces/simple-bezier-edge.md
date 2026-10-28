@@ -20,7 +20,7 @@ The pinned React example includes an edge with `type: 'simplebezier'` at `exampl
 
 ## Flow production and test paths
 
-Public `mountFlow` decodes the `simplebezier` path choice in `FlowEdgePathSchema` at `packages/core/src/domain/flow.schema.ts:57`. The core path uses midpoint controls by handle side at `packages/core/src/domain/flow-edge.schema.ts:132`, and `edgeLabelPosition` uses the same cubic controls at `packages/core/src/domain/flow-edge.schema.ts:144`. The vanilla renderer chooses that path from measured handle attachments at `apps/vanilla/src/edge-renderer.ts:213` and writes the resulting SVG. Unit output is checked at `packages/core/src/domain/flow-visibility.schema.test.ts:52`; the served demo checks a cubic path at `apps/vanilla/e2e/canvas.e2e.ts:2061`.
+Public `mountFlow` decodes the `simplebezier` path choice in `FlowEdgePathSchema` at `packages/core/src/domain/flow.schema.ts:57`. The core path uses midpoint controls by handle side at `packages/core/src/domain/flow-edge.schema.ts:132`, and `edgeLabelPosition` uses the same cubic controls at `packages/core/src/domain/flow-edge.schema.ts:144`. The vanilla renderer chooses that path from measured handle attachments at `apps/vanilla/src/edge-renderer.ts:213` and writes the resulting SVG. Unit output is checked at `packages/core/src/domain/flow-visibility.schema.test.ts:52`; the served demo checks a cubic path at `apps/vanilla/e2e/playground.e2e.ts:3`.
 
 ## Conformity and deviations
 

@@ -2,6 +2,7 @@ import type * as CoreModule from '@flow/core'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+import { browserFrames } from '../../shared-e2e/browser-frames.ts'
 import { releasePointerCapture } from '../../shared-e2e/release-pointer-capture.ts'
 import { runSerially } from '../../shared-e2e/run-serially.ts'
 import type { FlowDocumentInput } from '../src/mount-flow.ts'
@@ -841,7 +842,7 @@ test('removing a dragged node clears its preview and releases gesture resources'
     node.dataset.measuredWidth = 'released'
     node.style.width = '321px'
   })
-  await page.waitForTimeout(50)
+  await browserFrames(page, 3)
   expect(await element.getAttribute('data-measured-width')).toBe('released')
 
   const spare = await centerOf(page, '[data-node-id="spare"]')
@@ -906,17 +907,8 @@ test('unmounting during a drag releases capture and resize observation', async (
     node.dataset.measuredWidth = 'released'
     node.style.width = '321px'
   })
-  await page.waitForTimeout(50)
+  await browserFrames(page, 3)
   expect(await element.getAttribute('data-measured-width')).toBe('released')
-})
-
-// Playwright/CDP touch injection does not preserve native pointer capture in this environment.
-test.fixme('concurrent native connection and node drag cancellation requires real pointer capture', () => {
-  throw new Error('Requires native pointer capture')
-})
-
-test.fixme('native two-contact pinch cancellation requires real touch pointer capture', () => {
-  throw new Error('Requires native touch pointer capture')
 })
 
 test('bounds conflict cancels resize without publishing an invalid rectangle', async ({
@@ -1444,7 +1436,7 @@ for (const cancellation of [
     } else if (cancellation === 'destroy') {
       await expect(page.getByTestId('flow-canvas')).toHaveCount(0)
     } else {
-      await page.waitForTimeout(80)
+      await browserFrames(page, 5)
       await expect
         .poll(() => currentSize(page))
         .toStrictEqual({ width: 90, height: 60 })
@@ -1688,7 +1680,7 @@ test('controlled keyboard left resize restores authoritative geometry until dela
   await expect
     .poll(() => position(page, 'child'))
     .toStrictEqual({ x: 95, y: 115 })
-  await page.waitForTimeout(80)
+  await browserFrames(page, 5)
   await expect
     .poll(() => currentSize(page))
     .toStrictEqual({ width: 90, height: 60 })
@@ -1737,7 +1729,7 @@ test('controlled keyboard resize does not adopt a candidate without acknowledgem
   await expect
     .poll(() => page.evaluate(() => globalThis.flowChanges))
     .toHaveLength(1)
-  await page.waitForTimeout(80)
+  await browserFrames(page, 5)
   await expect
     .poll(() => currentSize(page))
     .toStrictEqual({ width: 90, height: 60 })

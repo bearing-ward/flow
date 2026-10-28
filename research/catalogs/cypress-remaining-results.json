@@ -6705,7 +6705,7 @@
           {
             "title": "button-edge: delete button sits on the path midpoint and deletes by click and Enter",
             "file": "edge-recipes.e2e.ts",
-            "line": 124,
+            "line": 126,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:32:56.938Z",
@@ -6716,7 +6716,7 @@
           {
             "title": "data-edge: label follows source node data and stays centered",
             "file": "edge-recipes.e2e.ts",
-            "line": 155,
+            "line": 157,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:32:57.297Z",
@@ -6727,7 +6727,7 @@
           {
             "title": "animated-svg-edge: shape animates along the path and parks under reduced motion",
             "file": "edge-recipes.e2e.ts",
-            "line": 175,
+            "line": 177,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:32:57.524Z",
@@ -6738,7 +6738,7 @@
           {
             "title": "floating-edges: endpoints follow the facing borders during and after a drag",
             "file": "edge-recipes.e2e.ts",
-            "line": 214,
+            "line": 216,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:32:58.326Z",
@@ -6749,7 +6749,7 @@
           {
             "title": "simple-floating-edges: endpoints snap to facing side midpoints across an axis flip",
             "file": "edge-recipes.e2e.ts",
-            "line": 247,
+            "line": 249,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:32:58.801Z",
@@ -6760,7 +6760,7 @@
           {
             "title": "easy-connect: node bodies connect into floating edges and strips drag nodes",
             "file": "edge-recipes.e2e.ts",
-            "line": 300,
+            "line": 302,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:32:59.270Z",
@@ -6771,7 +6771,7 @@
           {
             "title": "edge-markers: built-in and custom markers resolve with configured style",
             "file": "edge-recipes.e2e.ts",
-            "line": 370,
+            "line": 372,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:00.308Z",
@@ -6782,7 +6782,7 @@
           {
             "title": "multi-connection-line: one preview line per selected node and one edge each on connect",
             "file": "edge-recipes.e2e.ts",
-            "line": 461,
+            "line": 463,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:00.497Z",
@@ -6792,7 +6792,7 @@
           },
           {
             "title": "controlled node selection waits for acknowledgement and keeps focus",
-            "file": "next-slices.e2e.ts",
+            "file": "selection-and-culling.e2e.ts",
             "line": 10,
             "repeat": 0,
             "workerIndex": 0,
@@ -6803,7 +6803,7 @@
           },
           {
             "title": "selected edge rises in keyed order and retains focus",
-            "file": "next-slices.e2e.ts",
+            "file": "selection-and-culling.e2e.ts",
             "line": 99,
             "repeat": 0,
             "workerIndex": 0,
@@ -6814,8 +6814,8 @@
           },
           {
             "title": "culling responds to zoom, drag completion, and viewport return",
-            "file": "next-slices.e2e.ts",
-            "line": 172,
+            "file": "selection-and-culling.e2e.ts",
+            "line": 99,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:01.552Z",
@@ -6825,8 +6825,8 @@
           },
           {
             "title": "culling keeps the semantic visible set for a 1,000-node graph",
-            "file": "next-slices.e2e.ts",
-            "line": 280,
+            "file": "selection-and-culling.e2e.ts",
+            "line": 279,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:01.843Z",
@@ -6836,8 +6836,8 @@
           },
           {
             "title": "hidden nodes suppress connected edges and return after update",
-            "file": "next-slices.e2e.ts",
-            "line": 366,
+            "file": "selection-and-culling.e2e.ts",
+            "line": 349,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:02.238Z",
@@ -6847,8 +6847,8 @@
           },
           {
             "title": "modifier clicks toggle nodes and Shift rectangle selects enclosed nodes and edges",
-            "file": "next-slices.e2e.ts",
-            "line": 455,
+            "file": "selection-and-culling.e2e.ts",
+            "line": 454,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:02.529Z",
@@ -6858,8 +6858,8 @@
           },
           {
             "title": "controlled rectangle selection waits for a document update",
-            "file": "next-slices.e2e.ts",
-            "line": 546,
+            "file": "selection-and-culling.e2e.ts",
+            "line": 457,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:33:02.863Z",
@@ -7558,7 +7558,7 @@
           {
             "title": "button-edge deletes its edge by click and by keyboard",
             "file": "edge-recipes.e2e.ts",
-            "line": 196,
+            "line": 198,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:47.174Z",
@@ -7569,7 +7569,7 @@
           {
             "title": "data-edge label follows the source node data",
             "file": "edge-recipes.e2e.ts",
-            "line": 246,
+            "line": 248,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:47.397Z",
@@ -7580,7 +7580,7 @@
           {
             "title": "animated-svg-edge animates along the path and respects reduced motion",
             "file": "edge-recipes.e2e.ts",
-            "line": 259,
+            "line": 261,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:47.611Z",
@@ -7591,7 +7591,7 @@
           {
             "title": "floating-edges attach to the facing borders after a node drag",
             "file": "edge-recipes.e2e.ts",
-            "line": 294,
+            "line": 296,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:48.388Z",
@@ -7602,7 +7602,7 @@
           {
             "title": "simple-floating-edges snap to the facing side midpoints",
             "file": "edge-recipes.e2e.ts",
-            "line": 321,
+            "line": 323,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:48.776Z",
@@ -7613,7 +7613,7 @@
           {
             "title": "easy-connect connects node bodies with floating edges",
             "file": "edge-recipes.e2e.ts",
-            "line": 350,
+            "line": 352,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:49.163Z",
@@ -7624,7 +7624,7 @@
           {
             "title": "edge-markers resolves built-in and custom marker references",
             "file": "edge-recipes.e2e.ts",
-            "line": 410,
+            "line": 412,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:50.145Z",
@@ -7635,7 +7635,7 @@
           {
             "title": "multi-connection-line draws from every selected node and connects them all",
             "file": "edge-recipes.e2e.ts",
-            "line": 466,
+            "line": 468,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:50.337Z",
@@ -7645,8 +7645,8 @@
           },
           {
             "title": "deleteKeyCode, selectionKeyCode, multiSelectionKeyCode and zoomOnPinch act as React",
-            "file": "final-wiring.e2e.ts",
-            "line": 334,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 341,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:53.682Z",
@@ -7656,8 +7656,8 @@
           },
           {
             "title": "Labeled Group recipe renders a titled group whose children sit inside and move with it",
-            "file": "final-wiring.e2e.ts",
-            "line": 822,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 830,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:58.985Z",
@@ -7667,8 +7667,8 @@
           },
           {
             "title": "FlowProvider lets a sibling read and edit the canvas with useFlow, useStore and useKeyPress",
-            "file": "final-wiring.e2e.ts",
-            "line": 81,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 82,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:50.813Z",
@@ -7678,8 +7678,8 @@
           },
           {
             "title": "uncontrolled: a drag growing two parents with a mixed selection commits as one update",
-            "file": "final-wiring.e2e.ts",
-            "line": 167,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 168,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:51.160Z",
@@ -7689,8 +7689,8 @@
           },
           {
             "title": "uncontrolled: an expandParent resize keeps the child size with the parent growth",
-            "file": "final-wiring.e2e.ts",
-            "line": 197,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 198,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:51.549Z",
@@ -7700,8 +7700,8 @@
           },
           {
             "title": "controlled: a drag growing two parents with a mixed selection commits as one update",
-            "file": "final-wiring.e2e.ts",
-            "line": 167,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 168,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:51.929Z",
@@ -7711,8 +7711,8 @@
           },
           {
             "title": "controlled: an expandParent resize keeps the child size with the parent growth",
-            "file": "final-wiring.e2e.ts",
-            "line": 197,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 198,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:52.319Z",
@@ -7722,8 +7722,8 @@
           },
           {
             "title": "split: a drag growing two parents with a mixed selection commits as one update",
-            "file": "final-wiring.e2e.ts",
-            "line": 167,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 168,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:52.701Z",
@@ -7733,8 +7733,8 @@
           },
           {
             "title": "split: an expandParent resize keeps the child size with the parent growth",
-            "file": "final-wiring.e2e.ts",
-            "line": 197,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 198,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:53.094Z",
@@ -7744,8 +7744,8 @@
           },
           {
             "title": "child edges and their labels stack with the nodes; auto mode and selection elevate them without losing focus",
-            "file": "final-wiring.e2e.ts",
-            "line": 222,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 223,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:53.474Z",
@@ -7755,8 +7755,8 @@
           },
           {
             "title": "Base Style and Updating Nodes: node and edge style, className, labels and markers render",
-            "file": "final-wiring.e2e.ts",
-            "line": 372,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 377,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:54.005Z",
@@ -7766,8 +7766,8 @@
           },
           {
             "title": "Dark Mode: colorMode light, dark and system switch the theme tokens",
-            "file": "final-wiring.e2e.ts",
-            "line": 467,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 479,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:54.212Z",
@@ -7777,8 +7777,8 @@
           },
           {
             "title": "zIndexMode stacks nodes and edges; panels, aria labels and dragHandle follow their options",
-            "file": "final-wiring.e2e.ts",
-            "line": 502,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 506,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:54.450Z",
@@ -7788,8 +7788,8 @@
           },
           {
             "title": "snapToGrid snaps the dragged node to snapGrid",
-            "file": "final-wiring.e2e.ts",
-            "line": 572,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 575,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:55.065Z",
@@ -7799,8 +7799,8 @@
           },
           {
             "title": "nodeExtent, parent extents, translateExtent and expandParent constrain drags and the viewport",
-            "file": "final-wiring.e2e.ts",
-            "line": 581,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 584,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:55.457Z",
@@ -7810,8 +7810,8 @@
           },
           {
             "title": "MiniMap colours, classes, mask, position and custom nodes follow its options",
-            "file": "final-wiring.e2e.ts",
-            "line": 631,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 639,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:56.386Z",
@@ -7821,8 +7821,8 @@
           },
           {
             "title": "a pannable MiniMap pans on drag and a zoomable one zooms on wheel",
-            "file": "final-wiring.e2e.ts",
-            "line": 670,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 684,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:56.583Z",
@@ -7832,8 +7832,8 @@
           },
           {
             "title": "FlowNodeResizer resizes within min/max and reports ResizeParams",
-            "file": "final-wiring.e2e.ts",
-            "line": 708,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 715,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:57.011Z",
@@ -7843,8 +7843,8 @@
           },
           {
             "title": "keepAspectRatio, a single horizontal control, shouldResize and autoScale",
-            "file": "final-wiring.e2e.ts",
-            "line": 764,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 775,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:57.786Z",
@@ -7854,8 +7854,8 @@
           },
           {
             "title": "nodesResizable still adds built-in controls to nodes without a resizer; expandParent grows the parent",
-            "file": "final-wiring.e2e.ts",
-            "line": 799,
+            "file": "canvas-configuration.e2e.ts",
+            "line": 807,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:03:58.549Z",
@@ -8493,7 +8493,7 @@
           {
             "title": "Vue viewport operations use pane offsets, update the rendered transform, and return terminal status",
             "file": "viewport-operations.e2e.ts",
-            "line": 70,
+            "line": 85,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:04:28.124Z",
@@ -8537,7 +8537,7 @@
           {
             "title": "Vue viewport animation respects reduced motion",
             "file": "viewport-operations.e2e.ts",
-            "line": 365,
+            "line": 366,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:04:28.858Z",
@@ -8548,7 +8548,7 @@
           {
             "title": "Vue double-click doubles around the pointer and Shift double-click halves",
             "file": "viewport-operations.e2e.ts",
-            "line": 382,
+            "line": 380,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T20:04:29.041Z",
@@ -8576,7 +8576,7 @@
           {
             "title": "edge hit paths honor configured width and the upstream default",
             "file": "edge-interaction.e2e.ts",
-            "line": 3,
+            "line": 5,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:16.182Z",
@@ -8587,7 +8587,7 @@
           {
             "title": "Edge with Button deletes its edge by click and by keyboard",
             "file": "edge-recipes.e2e.ts",
-            "line": 136,
+            "line": 138,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:16.616Z",
@@ -8598,7 +8598,7 @@
           {
             "title": "Edge with Node Data shows the source node value and follows updates",
             "file": "edge-recipes.e2e.ts",
-            "line": 161,
+            "line": 163,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:17.008Z",
@@ -8609,7 +8609,7 @@
           {
             "title": "Animated SVG Edge moves a shape and parks it under reduced motion",
             "file": "edge-recipes.e2e.ts",
-            "line": 174,
+            "line": 176,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:17.369Z",
@@ -8620,7 +8620,7 @@
           {
             "title": "floating-edges attach to the facing node borders and follow a drag",
             "file": "edge-recipes.e2e.ts",
-            "line": 220,
+            "line": 222,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:18.107Z",
@@ -8631,7 +8631,7 @@
           {
             "title": "simple-floating-edges attach to the facing node borders and follow a drag",
             "file": "edge-recipes.e2e.ts",
-            "line": 220,
+            "line": 222,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:18.582Z",
@@ -8642,7 +8642,7 @@
           {
             "title": "Easy Connect connects node bodies with floating edges",
             "file": "edge-recipes.e2e.ts",
-            "line": 268,
+            "line": 270,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:19.034Z",
@@ -8653,7 +8653,7 @@
           {
             "title": "Edge Markers resolve built-in and custom marker references",
             "file": "edge-recipes.e2e.ts",
-            "line": 345,
+            "line": 347,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:20.082Z",
@@ -8664,7 +8664,7 @@
           {
             "title": "Multi Connection Line draws one line per selected node and connects them all",
             "file": "edge-recipes.e2e.ts",
-            "line": 413,
+            "line": 415,
             "repeat": 0,
             "workerIndex": 0,
             "startTime": "2026-10-22T19:35:20.338Z",
@@ -12306,10 +12306,10 @@
     "apps/shared-e2e/upstream-cypress/hidden.ts": "97aafd7d2660484a7fbed91246849164247e0a059d02ffeacb9f51c060ca8c82",
     "apps/shared-e2e/upstream-cypress/interaction.ts": "ef7358d5a12bca2db145eb409510fa37f4dc87d4a3a60f017c5afdf7d8386b03",
     "apps/shared-e2e/upstream-cypress/minimap.ts": "f737eb378204a0e7177c466c50927796d369cdf0d6eeacdf30db3506c9bfbf70",
-    "apps/vanilla/e2e/next-slices.e2e.ts": "82c2ae9730d7fe481fd3f0e7479eb597dff3661637f9616425584f7167e896ec",
+    "apps/vanilla/e2e/selection-and-culling.e2e.ts": "82c2ae9730d7fe481fd3f0e7479eb597dff3661637f9616425584f7167e896ec",
     "apps/vanilla/src/edge-renderer.ts": "11c15866cf0027a3aa4427875680f84a7c934142e2600aac8c10267bf7e895a6",
     "apps/vue/e2e/edge-recipes.e2e.ts": "b793a03e6e2711ff48f26bb2b73692024c9e649ef25a33510354f1a0c52d140f",
-    "apps/vue/e2e/final-wiring.e2e.ts": "9d0708827b124f7abfb0ac7b8254b4b8a8a62b33bcf507dc3c1a6f12964a9d1b",
+    "apps/vue/e2e/canvas-configuration.e2e.ts": "9d0708827b124f7abfb0ac7b8254b4b8a8a62b33bcf507dc3c1a6f12964a9d1b",
     "apps/vue/e2e/node-connections.e2e.ts": "323195e78908a94b9203d95602f5b6e11485d96b96ab30f17b49ef8003698d09",
     "apps/vue/e2e/node-threshold.e2e.ts": "4b4e1e4486dc4650eec0e28155d71926f5153aff4b214bf61a203b12d8f77498",
     "apps/vue/e2e/renderer-contract.e2e.ts": "2f45294c61583b8ba0fe84ef5798851343cd05c79d3ba4270c496eb10b68fdc0",

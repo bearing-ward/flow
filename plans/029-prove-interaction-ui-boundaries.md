@@ -23,7 +23,7 @@ The new interaction slices will add behavior faster than the six original adapte
 - `docs/browser-and-accessibility.md` reports the Chromium role/name/focus/keyboard boundary and preserves the missing Safari/Firefox, screen-reader, and mobile-device coverage. The project-wide visual, input, accessibility, property, lifecycle, and performance checklist items remain open.
 
 ```ts
-// apps/vanilla/e2e/canvas-ui.e2e.ts:31-38
+// apps/vanilla/e2e/canvas-ui.e2e.ts:63
 await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible()
 await expect(page.getByRole('img', { name: 'Graph minimap' })).toBeVisible()
 await expect(page).toHaveScreenshot('canvas-ui.png', { animations: 'disabled' })
