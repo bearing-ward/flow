@@ -57,7 +57,7 @@ The full profile retains every extra check except the opt-in React reference hos
 
 After the baseline package build passes, verification passes `FLOW_PACKAGES_PREBUILT=1` to later commands. App builds, browser servers, and nested package build scripts reuse those eight package outputs. Standalone commands build normally. The Vanilla app emits to `apps/vanilla/dist/app`, preserving the package exports beside that directory. `scripts/build-packages.ts [package...]` builds selected packages and their core dependency in dependency order, then rewrites declaration import extensions. With no arguments it builds all eight packages.
 
-CI defaults to `full`. Manual CI runs can choose either profile; manual full runs also run the release dry run. Local defaults remain controlled by `defaultProfile` in `verification.config.json`. Logs report each check's duration and the total execution time, excluding browser-lock wait time.
+CI runs only when started manually (automatic pull request and `main` push runs are muted for now) and defaults to `full`. Manual runs can choose either profile; manual full runs also run the release dry run. Local defaults remain controlled by `defaultProfile` in `verification.config.json`. Logs report each check's duration and the total execution time, excluding browser-lock wait time.
 
 ## Browser test servers
 

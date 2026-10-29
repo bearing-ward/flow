@@ -1,5 +1,7 @@
 name: CI
 
+# Automatic pull_request and push runs are muted: a hosted macOS full run takes
+# about 45-55 minutes. Run manually from the Actions tab until CI is split up.
 on:
   workflow_dispatch:
     inputs:
@@ -10,10 +12,6 @@ on:
         options:
           - focused
           - full
-  pull_request:
-  push:
-    branches:
-      - main
 
 jobs:
   verify:
