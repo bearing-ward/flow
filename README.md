@@ -6,6 +6,10 @@ Flow's definitive goal is to match the [React Flow public API](https://reactflow
 
 Use [project progress](research/PROGRESS.md) for the current checklist and open work, and the [plan index](plans/README.md) for completed implementation slices and their verification boundaries. See [architecture](docs/architecture.md) for ownership and behavior decisions, [browser support](docs/browser-and-accessibility.md) for test limits, and [release process](docs/release-process.md) for delivery status. [Research fixtures](research/fixtures/README.md) distinguish Flow behavior from direct comparison with the pinned xyflow source.
 
+## Acknowledgements
+
+Flow is built on the incredible work of the team behind [React Flow](https://reactflow.dev) and the [xyflow](https://github.com/xyflow/xyflow) libraries. Their API design, examples, documentation and tests are the reference Flow measures itself against, and much of this project would not exist without them. Flow is an independent project and is not affiliated with or endorsed by xyflow. If you build with React or Svelte, use their libraries directly, and consider [supporting their work](https://reactflow.dev/pro).
+
 ## Current capabilities
 
 The core validates and queries nested graph documents, computes geometry and edge paths, and provides a versioned persistence envelope. The vanilla host adds custom node and edge renderers, measurement, selection, movement, connections, viewport interactions, backgrounds, controls, minimap, and anchored toolbars. Its JavaScript facade supports mount, update, commands, subscriptions, and destruction. These capabilities have local tests; they do not establish full xyflow feature or visual parity.
