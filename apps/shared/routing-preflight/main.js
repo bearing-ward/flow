@@ -3,10 +3,8 @@ const output = document.querySelector('#result')
 try {
   const { AvoidLib } = await import('libavoid-js')
   await AvoidLib.load(
-    new URL(
-      '../../../node_modules/libavoid-js/dist/libavoid.wasm',
-      import.meta.url
-    ).href
+    new URL('../node_modules/libavoid-js/dist/libavoid.wasm', import.meta.url)
+      .href
   )
   const avoid = AvoidLib.getInstance()
   const router = new avoid.Router(avoid.RouterFlag.OrthogonalRouting.value)

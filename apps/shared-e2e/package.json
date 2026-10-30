@@ -1,0 +1,10 @@
+{
+  "name": "@flow/shared-e2e",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "effect": "4.0.0",
+    "foldkit": "0.169.0",
+    "vue": "3.5.44"
+  }
+}

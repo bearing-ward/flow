@@ -62,7 +62,10 @@ describe('separately packed routing adapter', () => {
 
       expect(readFileSync(wasm)).toStrictEqual(
         readFileSync(
-          path.join(root, 'node_modules/libavoid-js/dist/libavoid.wasm')
+          path.join(
+            root,
+            'packages/routing-libavoid/node_modules/libavoid-js/dist/libavoid.wasm'
+          )
         )
       )
       writeFileSync(
