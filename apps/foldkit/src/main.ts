@@ -136,7 +136,7 @@ if (aside === null) {
 
 aside.insertAdjacentHTML(
   'beforeend',
-  '<nav aria-label="Template examples"><a href="/workflow/">Workflow and offline AI editor</a></nav>'
+  `<nav aria-label="Template examples"><a href="${import.meta.env.BASE_URL}workflow/">Workflow and offline AI editor</a></nav>`
 )
 
 aside.insertAdjacentHTML(

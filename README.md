@@ -1,5 +1,7 @@
 # Flow
 
+[Product site and live demos](https://bearing-ward.github.io/flow/)
+
 Flow is an Effect v4 graph canvas with a shared core and plain JavaScript, Foldkit, and Vue browser hosts. The vanilla host has the broadest rendering and interaction surface. All three hosts run the eight shared rendering scenarios and four public-state contract fixtures; their feature surfaces are documented separately in [architecture](docs/architecture.md).
 
 Flow's definitive goal is to match the [React Flow public API](https://reactflow.dev/api-reference), [examples](https://reactflow.dev/examples), and [UI components and templates](https://reactflow.dev/ui) as closely as each supported framework permits. This is the project ambition, separate from the capabilities demonstrated today; see the [definitive project goal](research/PROGRESS.md#definitive-project-goal) for its milestones and evidence requirements.
@@ -28,7 +30,7 @@ bun run verify
 bun run verify:full
 ```
 
-`bun run check` runs Ultracite Oxlint and Oxfmt checks. `bun run fix` applies supported fixes and formatting. `bun run verify` temporarily runs a focused development gate; add checks for the active work in `verification.config.json` or with CLI options. `bun run verify:full` retains the complete local suite. See [tooling](docs/tooling.md) for profiles, scope selection, and restoration of the full default.
+`bun run check` runs Ultracite Oxlint and Oxfmt checks. `bun run fix` applies supported fixes and formatting. `bun run verify` runs the focused baseline plus host e2e files changed against the merge base with `main`, including uncommitted work. Add optional checks and browser pins in `verification.config.json` or with CLI options. `bun run verify:full` retains the complete local suite. See [tooling](docs/tooling.md) for profiles and scope selection.
 
 Open [http://127.0.0.1:4173](http://127.0.0.1:4173) after starting the development server. The source `index.html` is a Vite entry point; a `file://` URL displays launch instructions.
 

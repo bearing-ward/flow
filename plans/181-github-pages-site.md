@@ -14,6 +14,7 @@ The site is published at `https://bearing-ward.github.io/flow/`.
   - the acknowledgements from `README.md`, including the React Flow and xyflow links and the line that Flow is not affiliated with them.
 
   Use plain HTML and CSS in `site/`. It must be accessible and work in light and dark themes.
+
 - **Demos:** each host's production build is published under `/flow/vanilla/`, `/flow/vue/` and `/flow/foldkit/`. Include every recipe page these builds already produce: the playground, the Workflow Editor, the AI Workflow Editor, Schema Studio, and the Pro examples.
   - Do not publish the test-only pages: `upstream.html`, `test.html`, `*-test.html`, `connection-threshold.html`, `routing-preflight`, and the `workflow-contracts` and `workflow-ai-capability` harness pages if they are test harnesses.
   - Collaboration and the server image service need a running server, so on the static site their pages show a short "requires a local server — see docs" notice and link to the docs. Do not let them fail silently.
@@ -49,3 +50,12 @@ Add `.github/workflows/pages.yml`:
 - Take the browser lock separately for each browser command (`scripts/with-flow-browser-lock.sh`). Stop only processes you started, by their recorded PIDs. Never kill processes by name or port.
 - Finish with `bun run site:build`, the `site` check, and a locked `bun run verify --full`.
 - Commit on `plan/181-github-pages-site` with the trailer `Co-Authored-By: GPT-6.1 Sol via Codex <noreply@openai.com>`. Do not push, do not change repository settings, and do not merge.
+
+## Implementation results
+
+- Prepared the landing page and 104 host pages: 34 Vanilla, 32 Vue, and 38 Foldkit. All public recipe HTML entries are included. The base and offline AI editors share each host's `/workflow/` route. Schema Studio exists on Vanilla and Foldkit.
+- Excluded the named test pages and harnesses, including Foldkit's `live-internal-node/` resize fixture. Collaboration and image-service entries contain static setup notices without client scripts. Local development and ordinary builds retain `/` as the Vite base.
+- `bun run site:build` passed, checking local links and assets across 301 files. `dist-site/` contains 10,959,406 bytes of files, occupying 11.4 MiB on disk. Light and dark landing-page captures were inspected.
+- The separately locked `bun run site:check` passed all 11 smoke tests. A temporary negative probe confirmed rejection of out-of-base links, missing fragments, CSS assets, and module imports.
+- Locked `bun run verify --full` passed all 21 checks. Unit tests: 147 files and 2,246 tests passed. Packed consumer integrations passed. Host browser results: Vanilla 988 passed and 2 skipped; Vue 806 passed and 2 skipped; Foldkit 842 passed. The full profile also passed mixed-host collaboration and the new site check. The React reference host remains opt-in and was not selected.
+- The Pages workflow and setup instructions are ready. No deployment, push, repository setting change, or merge was performed.

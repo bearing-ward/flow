@@ -1,9 +1,16 @@
 import { defineConfig } from 'vite'
 
+import {
+  isSiteBuild,
+  siteBase,
+  siteInputs,
+  staticServiceNotices,
+} from '../shared/site.ts'
 import { upstreamFixtureRoute } from '../shared/upstream/vite.ts'
 
 export default defineConfig({
-  plugins: [upstreamFixtureRoute()],
+  base: siteBase,
+  plugins: isSiteBuild ? [staticServiceNotices()] : [upstreamFixtureRoute()],
   // Example layout libraries are only reached from recipe pages, after Vite's
   // initial dependency scan; pre-bundle them so first loads do not reload.
   optimizeDeps: {
@@ -26,25 +33,27 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        workflow: `${import.meta.dirname}/workflow/index.html`,
-        workflowAiCapability: `${import.meta.dirname}/workflow-ai-capability/index.html`,
-        workflowContracts: `${import.meta.dirname}/workflow-contracts/index.html`,
-        imageService: `${import.meta.dirname}/image-service/index.html`,
-        collaborative: `${import.meta.dirname}/collaborative/index.html`,
-        wireTies: `${import.meta.dirname}/wire-ties/index.html`,
-        edgeRouting: `${import.meta.dirname}/edge-routing/index.html`,
-        expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
-        dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
-        nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
-        main: `${import.meta.dirname}/index.html`,
-        rotatableNode: `${import.meta.dirname}/rotatable-node/index.html`,
-        figures: `${import.meta.dirname}/shapes/index.html`,
-        clipboard: `${import.meta.dirname}/clipboard/index.html`,
-        helperLines: `${import.meta.dirname}/helper-lines/index.html`,
-        history: `${import.meta.dirname}/history/index.html`,
-        editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
-      },
+      input: isSiteBuild
+        ? siteInputs(import.meta.dirname)
+        : {
+            workflow: `${import.meta.dirname}/workflow/index.html`,
+            workflowAiCapability: `${import.meta.dirname}/workflow-ai-capability/index.html`,
+            workflowContracts: `${import.meta.dirname}/workflow-contracts/index.html`,
+            imageService: `${import.meta.dirname}/image-service/index.html`,
+            collaborative: `${import.meta.dirname}/collaborative/index.html`,
+            wireTies: `${import.meta.dirname}/wire-ties/index.html`,
+            edgeRouting: `${import.meta.dirname}/edge-routing/index.html`,
+            expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
+            dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
+            nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
+            main: `${import.meta.dirname}/index.html`,
+            rotatableNode: `${import.meta.dirname}/rotatable-node/index.html`,
+            figures: `${import.meta.dirname}/shapes/index.html`,
+            clipboard: `${import.meta.dirname}/clipboard/index.html`,
+            helperLines: `${import.meta.dirname}/helper-lines/index.html`,
+            history: `${import.meta.dirname}/history/index.html`,
+            editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
+          },
     },
   },
 })

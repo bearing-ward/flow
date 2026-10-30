@@ -697,7 +697,11 @@ const StateTools = defineComponent({
           ),
           h('output', { 'aria-live': 'polite' }, message.value),
           h('nav', { 'aria-label': 'Template examples' }, [
-            h('a', { href: '/workflow/' }, 'Workflow and offline AI editor'),
+            h(
+              'a',
+              { href: `${import.meta.env.BASE_URL}workflow/` },
+              'Workflow and offline AI editor'
+            ),
           ]),
         ]
       )
@@ -1168,8 +1172,10 @@ const Demo = defineComponent({
 })
 
 const app =
-  globalThis.location.pathname === '/ui-recipes/tooltip' ||
-  globalThis.location.pathname === '/ui-recipes/tooltip/'
+  globalThis.location.pathname ===
+    `${import.meta.env.BASE_URL}ui-recipes/tooltip` ||
+  globalThis.location.pathname ===
+    `${import.meta.env.BASE_URL}ui-recipes/tooltip/`
     ? TooltipRecipe
     : Demo
 

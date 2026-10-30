@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Flow is an Effect v4 graph canvas with Vanilla, Vue, and Foldkit hosts. Try workflow editors, graph tools, and UI recipes."
+    />
+    <title>Flow | Effect graph canvas</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="Flow home"
+        >Flow<span aria-hidden="true"> ↗</span></a
+      >
+      <nav aria-label="Main navigation">
+        <a href="#demos">Demos</a><a href="#start">Quick start</a
+        ><a href="https://github.com/bearing-ward/flow">GitHub</a>
+      </nav>
+    </header>
+    <main id="content">
+      <section class="hero" aria-labelledby="title">
+        <p class="eyebrow">Effect v4 · Vanilla · Vue · Foldkit</p>
+        <h1 id="title">Graphs, in your framework.</h1>
+        <p class="pitch">
+          Flow is an Effect v4 graph canvas with Vanilla, Vue, and Foldkit
+          hosts. Build node editors with a shared, validated graph model,
+          browser interactions, and optional integrations for routing, layout,
+          and workflows.
+        </p>
+        <div class="actions">
+          <a class="button" href="vanilla/"
+            >Open the playground <span aria-hidden="true">↗</span></a
+          ><a href="https://github.com/bearing-ward/flow/tree/main/docs"
+            >Read the docs</a
+          >
+        </div>
+        <p class="scope">
+          An independent project in active development. Host capabilities
+          differ; these demos do not establish full React Flow parity.
+        </p>
+      </section>
+      <section id="demos" aria-labelledby="demos-title">
+        <div class="section-heading">
+          <p class="eyebrow">Try it in the browser</p>
+          <h2 id="demos-title">Editors and recipes</h2>
+          <p>
+            Choose a host on each card. Workflow includes the base editor and
+            offline AI editor. Server integrations link to local setup
+            instructions.
+          </p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Playground</h3>
+            <p>Move, connect, select, and explore the canvas.</p>
+            <nav aria-label="Playground demos">
+              <a href="vanilla/">Vanilla</a> <a href="vue/">Vue</a>
+              <a href="foldkit/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Graph clipboard</h3>
+            <p>Explore the graph clipboard recipe in the available hosts.</p>
+            <nav aria-label="Graph clipboard demos">
+              <a href="vanilla/clipboard/">Vanilla</a>
+              <a href="vue/clipboard/">Vue</a>
+              <a href="foldkit/clipboard/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Collaborative rooms</h3>
+            <p>
+              Requires a local room server. This site links to setup
+              instructions.
+            </p>
+            <nav aria-label="Collaborative rooms demos">
+              <a href="vanilla/collaborative/">Vanilla</a>
+              <a href="vue/collaborative/">Vue</a>
+              <a href="foldkit/collaborative/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Dynamic layout</h3>
+            <p>Explore the dynamic layout recipe in the available hosts.</p>
+            <nav aria-label="Dynamic layout demos">
+              <a href="vanilla/dynamic-layouting/">Vanilla</a>
+              <a href="vue/dynamic-layouting/">Vue</a>
+              <a href="foldkit/dynamic-layouting/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Obstacle routing</h3>
+            <p>Explore the obstacle routing recipe in the available hosts.</p>
+            <nav aria-label="Obstacle routing demos">
+              <a href="vanilla/edge-routing/">Vanilla</a>
+              <a href="vue/edge-routing/">Vue</a>
+              <a href="foldkit/edge-routing/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Editable edges</h3>
+            <p>Explore the editable edges recipe in the available hosts.</p>
+            <nav aria-label="Editable edges demos">
+              <a href="vanilla/editable-edges/">Vanilla</a>
+              <a href="vue/editable-edges/">Vue</a>
+              <a href="foldkit/editable-edges/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Expand and collapse</h3>
+            <p>
+              Explore the expand and collapse recipe in the available hosts.
+            </p>
+            <nav aria-label="Expand and collapse demos">
+              <a href="vanilla/expand-collapse/">Vanilla</a>
+              <a href="vue/expand-collapse/">Vue</a>
+              <a href="foldkit/expand-collapse/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Helper lines</h3>
+            <p>Explore the helper lines recipe in the available hosts.</p>
+            <nav aria-label="Helper lines demos">
+              <a href="vanilla/helper-lines/">Vanilla</a>
+              <a href="vue/helper-lines/">Vue</a>
+              <a href="foldkit/helper-lines/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Transaction history</h3>
+            <p>
+              Explore the transaction history recipe in the available hosts.
+            </p>
+            <nav aria-label="Transaction history demos">
+              <a href="vanilla/history/">Vanilla</a>
+              <a href="vue/history/">Vue</a>
+              <a href="foldkit/history/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Server image export</h3>
+            <p>
+              Requires a local Chromium service. This site links to setup
+              instructions.
+            </p>
+            <nav aria-label="Server image export demos">
+              <a href="vanilla/image-service/">Vanilla</a>
+              <a href="vue/image-service/">Vue</a>
+              <a href="foldkit/image-service/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Node animation</h3>
+            <p>Explore the node animation recipe in the available hosts.</p>
+            <nav aria-label="Node animation demos">
+              <a href="vanilla/node-animation/">Vanilla</a>
+              <a href="vue/node-animation/">Vue</a>
+              <a href="foldkit/node-animation/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Rotatable nodes</h3>
+            <p>Explore the rotatable nodes recipe in the available hosts.</p>
+            <nav aria-label="Rotatable nodes demos">
+              <a href="vanilla/rotatable-node/">Vanilla</a>
+              <a href="vue/rotatable-node/">Vue</a>
+              <a href="foldkit/rotatable-node/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Schema Studio</h3>
+            <p>
+              Edit a database diagram with tables, columns, and relationships.
+            </p>
+            <nav aria-label="Schema Studio demos">
+              <a href="vanilla/schema-studio/">Vanilla</a>
+              <a href="foldkit/schema-studio/">Foldkit</a>
+            </nav>
+            <p class="availability">Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Shape nodes</h3>
+            <p>Explore the shape nodes recipe in the available hosts.</p>
+            <nav aria-label="Shape nodes demos">
+              <a href="vanilla/shapes/">Vanilla</a>
+              <a href="vue/shapes/">Vue</a>
+              <a href="foldkit/shapes/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Wire ties</h3>
+            <p>Explore the wire ties recipe in the available hosts.</p>
+            <nav aria-label="Wire ties demos">
+              <a href="vanilla/wire-ties/">Vanilla</a>
+              <a href="vue/wire-ties/">Vue</a>
+              <a href="foldkit/wire-ties/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Workflow editor and offline AI</h3>
+            <p>
+              Configure typed workflows, run an offline simulator, and try
+              deterministic AI nodes.
+            </p>
+            <nav aria-label="Workflow editor and offline AI demos">
+              <a href="vanilla/workflow/">Vanilla</a>
+              <a href="vue/workflow/">Vue</a>
+              <a href="foldkit/workflow/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Appendix</h3>
+            <p>Explore the appendix recipe in the available hosts.</p>
+            <nav aria-label="Appendix demos">
+              <a href="vanilla/ui-recipes/appendix/">Vanilla</a>
+              <a href="vue/ui-recipes/appendix/">Vue</a>
+              <a href="foldkit/ui-recipes/appendix/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Base handle</h3>
+            <p>Explore the base handle recipe in the available hosts.</p>
+            <nav aria-label="Base handle demos">
+              <a href="vanilla/ui-recipes/base-handle/">Vanilla</a>
+              <a href="vue/ui-recipes/base-handle/">Vue</a>
+              <a href="foldkit/ui-recipes/base-handle/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Base node</h3>
+            <p>Explore the base node recipe in the available hosts.</p>
+            <nav aria-label="Base node demos">
+              <a href="vanilla/ui-recipes/base-node/">Vanilla</a>
+              <a href="vue/ui-recipes/base-node/">Vue</a>
+              <a href="foldkit/ui-recipes/base-node/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Button handle</h3>
+            <p>Explore the button handle recipe in the available hosts.</p>
+            <nav aria-label="Button handle demos">
+              <a href="vanilla/ui-recipes/button-handle/">Vanilla</a>
+              <a href="vue/ui-recipes/button-handle/">Vue</a>
+              <a href="foldkit/ui-recipes/button-handle/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Closing gaps</h3>
+            <p>Explore the closing gaps recipe in the available hosts.</p>
+            <nav aria-label="Closing gaps demos">
+              <a href="vue/ui-recipes/closing-gaps/">Vue</a>
+            </nav>
+            <p class="availability">Vanilla, Foldkit recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Closing</h3>
+            <p>Explore the closing recipe in the available hosts.</p>
+            <nav aria-label="Closing demos">
+              <a href="vanilla/ui-recipes/closing/">Vanilla</a>
+            </nav>
+            <p class="availability">Vue, Foldkit recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Computing flows</h3>
+            <p>Explore the computing flows recipe in the available hosts.</p>
+            <nav aria-label="Computing flows demos">
+              <a href="vanilla/ui-recipes/computing-flows/">Vanilla</a>
+              <a href="vue/ui-recipes/computing-flows/">Vue</a>
+              <a href="foldkit/ui-recipes/computing-flows/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Database schema</h3>
+            <p>Explore the database schema recipe in the available hosts.</p>
+            <nav aria-label="Database schema demos">
+              <a href="vanilla/ui-recipes/database-schema/">Vanilla</a>
+              <a href="vue/ui-recipes/database-schema/">Vue</a>
+              <a href="foldkit/ui-recipes/database-schema/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Delete edge on drop</h3>
+            <p>
+              Explore the delete edge on drop recipe in the available hosts.
+            </p>
+            <nav aria-label="Delete edge on drop demos">
+              <a href="foldkit/ui-recipes/delete-edge-on-drop/">Foldkit</a>
+            </nav>
+            <p class="availability">Vanilla, Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Download image</h3>
+            <p>Explore the download image recipe in the available hosts.</p>
+            <nav aria-label="Download image demos">
+              <a href="foldkit/ui-recipes/download-image/">Foldkit</a>
+            </nav>
+            <p class="availability">Vanilla, Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Drag and drop</h3>
+            <p>Explore the drag and drop recipe in the available hosts.</p>
+            <nav aria-label="Drag and drop demos">
+              <a href="foldkit/ui-recipes/drag-and-drop/">Foldkit</a>
+            </nav>
+            <p class="availability">Vanilla, Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Edge recipes</h3>
+            <p>Explore the edge recipes recipe in the available hosts.</p>
+            <nav aria-label="Edge recipes demos">
+              <a href="vanilla/ui-recipes/edge-recipes/">Vanilla</a>
+              <a href="vue/ui-recipes/edge-recipes/">Vue</a>
+              <a href="foldkit/ui-recipes/edge-recipes/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Feature overview</h3>
+            <p>Explore the feature overview recipe in the available hosts.</p>
+            <nav aria-label="Feature overview demos">
+              <a href="vanilla/ui-recipes/feature-overview/">Vanilla</a>
+              <a href="vue/ui-recipes/feature-overview/">Vue</a>
+              <a href="foldkit/ui-recipes/feature-overview/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Instance api</h3>
+            <p>Explore the instance api recipe in the available hosts.</p>
+            <nav aria-label="Instance api demos">
+              <a href="foldkit/ui-recipes/instance-api/">Foldkit</a>
+            </nav>
+            <p class="availability">Vanilla, Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Intersections</h3>
+            <p>Explore the intersections recipe in the available hosts.</p>
+            <nav aria-label="Intersections demos">
+              <a href="vanilla/ui-recipes/intersections/">Vanilla</a>
+              <a href="vue/ui-recipes/intersections/">Vue</a>
+              <a href="foldkit/ui-recipes/intersections/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Labeled group</h3>
+            <p>Explore the labeled group recipe in the available hosts.</p>
+            <nav aria-label="Labeled group demos">
+              <a href="vue/ui-recipes/labeled-group/">Vue</a>
+              <a href="foldkit/ui-recipes/labeled-group/">Foldkit</a>
+            </nav>
+            <p class="availability">Vanilla recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Labeled handle</h3>
+            <p>Explore the labeled handle recipe in the available hosts.</p>
+            <nav aria-label="Labeled handle demos">
+              <a href="vanilla/ui-recipes/labeled-handle/">Vanilla</a>
+              <a href="vue/ui-recipes/labeled-handle/">Vue</a>
+              <a href="foldkit/ui-recipes/labeled-handle/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Layout</h3>
+            <p>Explore the layout recipe in the available hosts.</p>
+            <nav aria-label="Layout demos">
+              <a href="vanilla/ui-recipes/layout/">Vanilla</a>
+              <a href="vue/ui-recipes/layout/">Vue</a>
+              <a href="foldkit/ui-recipes/layout/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Placeholder</h3>
+            <p>Explore the placeholder recipe in the available hosts.</p>
+            <nav aria-label="Placeholder demos">
+              <a href="vanilla/ui-recipes/placeholder/">Vanilla</a>
+              <a href="vue/ui-recipes/placeholder/">Vue</a>
+              <a href="foldkit/ui-recipes/placeholder/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Status indicator</h3>
+            <p>Explore the status indicator recipe in the available hosts.</p>
+            <nav aria-label="Status indicator demos">
+              <a href="vanilla/ui-recipes/status-indicator/">Vanilla</a>
+              <a href="vue/ui-recipes/status-indicator/">Vue</a>
+              <a href="foldkit/ui-recipes/status-indicator/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Styling</h3>
+            <p>Explore the styling recipe in the available hosts.</p>
+            <nav aria-label="Styling demos">
+              <a href="vanilla/ui-recipes/styling/">Vanilla</a>
+            </nav>
+            <p class="availability">Vue, Foldkit recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Subflows</h3>
+            <p>Explore the subflows recipe in the available hosts.</p>
+            <nav aria-label="Subflows demos">
+              <a href="vanilla/ui-recipes/subflows/">Vanilla</a>
+              <a href="vue/ui-recipes/subflows/">Vue</a>
+              <a href="foldkit/ui-recipes/subflows/">Foldkit</a>
+            </nav>
+          </article>
+          <article class="card">
+            <h3>Tooltip</h3>
+            <p>Explore the tooltip recipe in the available hosts.</p>
+            <nav aria-label="Tooltip demos">
+              <a href="vanilla/ui-recipes/tooltip/">Vanilla</a>
+              <a href="foldkit/ui-recipes/tooltip/">Foldkit</a>
+            </nav>
+            <p class="availability">Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Turbo flow</h3>
+            <p>Explore the turbo flow recipe in the available hosts.</p>
+            <nav aria-label="Turbo flow demos">
+              <a href="foldkit/ui-recipes/turbo-flow/">Foldkit</a>
+            </nav>
+            <p class="availability">Vanilla, Vue recipe not available.</p>
+          </article>
+          <article class="card">
+            <h3>Whiteboard</h3>
+            <p>Explore the whiteboard recipe in the available hosts.</p>
+            <nav aria-label="Whiteboard demos">
+              <a href="vanilla/ui-recipes/whiteboard/">Vanilla</a>
+              <a href="vue/ui-recipes/whiteboard/">Vue</a>
+              <a href="foldkit/ui-recipes/whiteboard/">Foldkit</a>
+            </nav>
+          </article>
+        </div>
+      </section>
+      <section id="start" aria-labelledby="start-title">
+        <div class="section-heading">
+          <p class="eyebrow">Run it locally</p>
+          <h2 id="start-title">Start with a canvas</h2>
+          <p>
+            The packages are currently private workspace archives. Clone the
+            repository to try the tutorial. See the
+            <a
+              href="https://github.com/bearing-ward/flow/blob/main/docs/tutorials/first-canvas.md"
+              >first canvas tutorial</a
+            >
+            and
+            <a
+              href="https://github.com/bearing-ward/flow/blob/main/docs/public-api.md"
+              >public API guide</a
+            >
+            for the complete example.
+          </p>
+        </div>
+        <div class="quick-start">
+          <div>
+            <h3>Install and start</h3>
+            <pre><code>git clone https://github.com/bearing-ward/flow.git
+cd flow
+bun install --frozen-lockfile
+bun run dev</code></pre>
+            <p>Open <code>http://127.0.0.1:4173/</code>.</p>
+          </div>
+          <div>
+            <h3>Mount with the public API</h3>
+            <pre><code>import { createFlow } from '@flow/vanilla'
+import '@flow/vanilla/style.css'
+
+const controller = await createFlow(root, {
+  nodes: [
+    { id: 'a', label: 'Hello',
+      position: { x: 80, y: 120 } },
+  ],
+  edges: [],
+}, {
+  documentMode: 'uncontrolled',
+  viewport: {
+    mode: 'uncontrolled',
+    initial: { x: 0, y: 0, zoom: 1 },
+    limits: { minZoom: 0.5, maxZoom: 2 },
+  },
+})
+
+// Release browser resources when unmounting.
+controller.destroy()</code></pre>
+          </div>
+        </div>
+      </section>
+      <section class="resources" aria-labelledby="docs-title">
+        <h2 id="docs-title">Go deeper</h2>
+        <nav aria-label="Documentation">
+          <a href="https://github.com/bearing-ward/flow/tree/main/docs"
+            >Documentation</a
+          ><a
+            href="https://github.com/bearing-ward/flow/blob/main/docs/api-reference.md"
+            >API reference</a
+          ><a
+            href="https://github.com/bearing-ward/flow/blob/main/packages/workflow/README.md"
+            >Workflow contracts</a
+          ><a
+            href="https://github.com/bearing-ward/flow/blob/main/docs/optional-integrations.md"
+            >Optional integrations</a
+          >
+        </nav>
+      </section>
+    </main>
+    <footer>
+      <h2>Acknowledgements</h2>
+      <p>
+        Flow is built on the incredible work of the team behind
+        <a href="https://reactflow.dev">React Flow</a> and the
+        <a href="https://github.com/xyflow/xyflow">xyflow</a> libraries. Their
+        API design, examples, documentation and tests are the reference Flow
+        measures itself against, and much of this project would not exist
+        without them. Flow is an independent project and is not affiliated with
+        or endorsed by xyflow. If you build with React or Svelte, use their
+        libraries directly, and consider
+        <a href="https://reactflow.dev/pro">supporting their work</a>.
+      </p>
+      <p>
+        Flow ·
+        <a href="https://github.com/bearing-ward/flow">Source on GitHub</a>
+      </p>
+    </footer>
+  </body>
+</html>

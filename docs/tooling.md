@@ -51,7 +51,7 @@ Keep optional checks and a short pinned browser scope in the root `verification.
 
 `pinned` is optional. Browser flags accept exact filenames relative to the host's `e2e` directory. Repeat a flag to select several files. Selection deduplicates changed files, pins, and CLI additions. The verifier rejects nonexistent pinned or requested files before running checks. Both profiles use one browser worker and isolated test servers. `--list` prints the resolved checks and browser files without running them.
 
-`--check` accepts `docs`, `catalogs`, `calibration`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, `upstream-ledger`, `collaboration`, and `reference-host`. `catalogs` runs catalog coverage, API member inventory, contract ownership, proof matrix, and example recipe rules in one process with shared JSON parsing. `inventory` compares generated output in memory. `bun run research:inventory` still writes that output.
+`--check` accepts `docs`, `catalogs`, `calibration`, `inventory`, `traces`, `consumer`, `build`, `vue-build`, `foldkit-build`, `upstream-ledger`, `collaboration`, `reference-host`, and `site`. `catalogs` runs catalog coverage, API member inventory, contract ownership, proof matrix, and example recipe rules in one process with shared JSON parsing. `inventory` compares generated output in memory. `bun run research:inventory` still writes that output.
 
 The full profile retains every extra check except the opt-in React reference host, all three app builds, packed consumers, and every host browser file. It ignores focused filters. `--focused` overrides a full configured default. Full verification is required at integration and release milestones. A focused pass proves only its reported selection.
 
@@ -136,3 +136,23 @@ Vitest has two projects. The node project runs the DOM-independent unit tests. T
 Run commands that include the ownership project through the browser lock. Use bun run vitest run --project node for Node-only tests, scripts/with-flow-browser-lock.sh bun run vitest run --project ownership for adapter tests, or scripts/with-flow-browser-lock.sh bun run test for both.
 
 The normal verifier includes both projects in its unit-test step. Take the lock around the verifier once; its child commands run under that lock.
+
+## Product site
+
+The [product site](https://bearing-ward.github.io/flow/) contains a static landing page and the Vanilla, Vue, and Foldkit demos under `/flow/<host>/`. Build it with Bun 1.4.3:
+
+```sh
+export PATH="$HOME/.bun/bin:$PATH"
+bun run site:build
+scripts/with-flow-browser-lock.sh bun run site:check
+```
+
+`site:build` builds the eight distributable packages once, builds each host with `FLOW_SITE_BASE=/flow/<host>/`, assembles `dist-site/`, adds `.nojekyll`, and checks local HTML links, CSS assets, and module imports. It needs no browser. Local dev, ordinary app builds, e2e, and packed consumers retain Vite's `/` base. The Pages build forces telemetry export off, including when local environment files configure a collector.
+
+`site:check` rebuilds and serves only `dist-site/` under `/flow/` on strict loopback port 4186. Its one-worker Playwright smoke tests cover the landing page in light and dark themes, each playground and its Workflow link, and both service notices. Run it under the browser lock. The `site` verification check runs this same command and is included in the full profile; select it explicitly with `bun run verify --check site`.
+
+The site includes all public HTML recipe entries, including the Pro examples, Schema Studio on Vanilla and Foldkit, and the base and offline AI editors on each host's Workflow page. Vue has no Schema Studio entry. The landing page links every published demo and identifies recipes without all three hosts. Collaboration and server image export show local-server setup notices instead of starting clients. Client-side download-image recipes remain available.
+
+Test-only entries are excluded: `upstream.html`, `test.html`, `*-test.html`, `connection-threshold.html`, `routing-preflight/`, `workflow-contracts/`, `workflow-ai-capability/`, and Foldkit's `live-internal-node/` resize harness. The upstream development middleware is not registered in the site build. Imported research evidence is not published.
+
+To enable deployment, a maintainer must open **Settings > Pages > Build and deployment** in `bearing-ward/flow` and select **GitHub Actions** as the source. Push the site changes to `main`, or run **Product site** from the Actions tab after the workflow is on the default branch. The workflow uploads `dist-site/` and deploys to `https://bearing-ward.github.io/flow/`; it also runs on later pushes to `main`. The separate CI workflow remains manual-only. No repository setting is changed by the build.

@@ -35,7 +35,9 @@
     "verify:full": "bun run scripts/verify.ts --full",
     "check": "ultracite check",
     "fix": "ultracite fix",
-    "build:foldkit:package": "bun run scripts/build-packages.ts foldkit"
+    "build:foldkit:package": "bun run scripts/build-packages.ts foldkit",
+    "site:build": "bun run scripts/build-site.ts",
+    "site:check": "bun run site:build && bun run playwright test --config scripts/site/playwright.config.ts --workers=1"
   },
   "dependencies": {
     "@effect/platform-bun": "4.0.0",
