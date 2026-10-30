@@ -16,6 +16,7 @@ const extraCheckNames = [
   'upstream-ledger',
   'reference-host',
   'collaboration',
+  'site',
 ] as const
 
 const ExtraCheckSchema = S.Literals(extraCheckNames)
@@ -69,6 +70,7 @@ const baselineChecks = [
 ]
 
 const extraChecks = {
+  site: bunCheck('site', ['run', 'site:check']),
   'persistence-provenance': bunCheck('persistence-provenance', [
     'run',
     'scripts/capture-legacy-v1-persistence.ts',

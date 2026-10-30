@@ -2,6 +2,12 @@ import { fileURLToPath } from 'node:url'
 
 import { defineConfig, loadEnv } from 'vite'
 
+import {
+  isSiteBuild,
+  siteBase,
+  siteInputs,
+  staticServiceNotices,
+} from '../shared/site.ts'
 import { upstreamFixtureRoute } from '../shared/upstream/vite.ts'
 
 const workspaceRoot = fileURLToPath(new URL('../..', import.meta.url))
@@ -13,41 +19,45 @@ export default defineConfig(({ mode }) => {
   const environment = loadEnv(mode, workspaceRoot, '')
 
   const telemetryDisabled =
+    isSiteBuild ||
     process.env.OTEL_SDK_DISABLED === 'true' ||
     environment.OTEL_SDK_DISABLED === 'true'
 
   return {
+    base: siteBase,
     build: {
       outDir: 'dist/app',
       rolldownOptions: {
-        input: {
-          workflow: `${import.meta.dirname}/workflow/index.html`,
-          workflowAiCapability: `${import.meta.dirname}/workflow-ai-capability/index.html`,
-          workflowContracts: `${import.meta.dirname}/workflow-contracts/index.html`,
-          imageService: `${import.meta.dirname}/image-service/index.html`,
-          collaborative: `${import.meta.dirname}/collaborative/index.html`,
-          wireTies: `${import.meta.dirname}/wire-ties/index.html`,
-          edgeRouting: `${import.meta.dirname}/edge-routing/index.html`,
-          expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
-          dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
-          nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
-          main: fileURLToPath(new URL('index.html', import.meta.url)),
-          rotatableNode: `${import.meta.dirname}/rotatable-node/index.html`,
-          figures: `${import.meta.dirname}/shapes/index.html`,
-          clipboard: `${import.meta.dirname}/clipboard/index.html`,
-          helperLines: `${import.meta.dirname}/helper-lines/index.html`,
-          editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
-          history: fileURLToPath(
-            new URL('history/index.html', import.meta.url)
-          ),
-          schemaStudio: fileURLToPath(
-            new URL('schema-studio/index.html', import.meta.url)
-          ),
-        },
+        input: isSiteBuild
+          ? siteInputs(import.meta.dirname)
+          : {
+              workflow: `${import.meta.dirname}/workflow/index.html`,
+              workflowAiCapability: `${import.meta.dirname}/workflow-ai-capability/index.html`,
+              workflowContracts: `${import.meta.dirname}/workflow-contracts/index.html`,
+              imageService: `${import.meta.dirname}/image-service/index.html`,
+              collaborative: `${import.meta.dirname}/collaborative/index.html`,
+              wireTies: `${import.meta.dirname}/wire-ties/index.html`,
+              edgeRouting: `${import.meta.dirname}/edge-routing/index.html`,
+              expandCollapse: `${import.meta.dirname}/expand-collapse/index.html`,
+              dynamicLayouting: `${import.meta.dirname}/dynamic-layouting/index.html`,
+              nodeAnimation: `${import.meta.dirname}/node-animation/index.html`,
+              main: fileURLToPath(new URL('index.html', import.meta.url)),
+              rotatableNode: `${import.meta.dirname}/rotatable-node/index.html`,
+              figures: `${import.meta.dirname}/shapes/index.html`,
+              clipboard: `${import.meta.dirname}/clipboard/index.html`,
+              helperLines: `${import.meta.dirname}/helper-lines/index.html`,
+              editableEdges: `${import.meta.dirname}/editable-edges/index.html`,
+              history: fileURLToPath(
+                new URL('history/index.html', import.meta.url)
+              ),
+              schemaStudio: fileURLToPath(
+                new URL('schema-studio/index.html', import.meta.url)
+              ),
+            },
       },
     },
     plugins: [
-      upstreamFixtureRoute(),
+      ...(isSiteBuild ? [staticServiceNotices()] : [upstreamFixtureRoute()]),
       {
         name: 'flow-ui-recipes-routes',
         configureServer(server) {

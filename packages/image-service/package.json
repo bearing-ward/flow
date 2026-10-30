@@ -1,6 +1,7 @@
 {
   "name": "@flow/image-service",
   "version": "0.0.0",
+  "homepage": "https://bearing-ward.github.io/flow/",
   "bin": {
     "flow-image-service": "./dist/server.js"
   },

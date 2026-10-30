@@ -577,7 +577,7 @@ const program = Effect.gen(function* program() {
     <button type="button" data-state="reset">Reset example</button>
     <small>Saved in this page session only. Reloading discards the snapshot.</small>
     <output data-state-result aria-live="polite"></output>
-    <nav aria-label="Template examples"><a href="/workflow/">Workflow and offline AI editor</a></nav>`
+    <nav aria-label="Template examples"><a href="${import.meta.env.BASE_URL}workflow/">Workflow and offline AI editor</a></nav>`
   panel.append(statePanel)
   const stateInput = statePanel.querySelector<HTMLInputElement>('input')
   const stateOutput = statePanel.querySelector<HTMLOutputElement>('output')

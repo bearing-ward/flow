@@ -122,6 +122,7 @@ describe('verification profiles', () => {
       'Foldkit app build',
       'upstream test ledger',
       'mixed-host collaborative transport',
+      'site',
       'vanilla browser tests',
       'vue browser tests',
       'foldkit browser tests',
@@ -146,7 +147,7 @@ describe('verification profiles', () => {
     const full = { ...config, defaultProfile: 'full' as const }
     expect(
       selectVerificationChecks(full, parseVerificationArguments([]))
-    ).toHaveLength(20)
+    ).toHaveLength(21)
     expect(
       selectVerificationChecks(full, parseVerificationArguments(['--focused']))
     ).toHaveLength(5)
