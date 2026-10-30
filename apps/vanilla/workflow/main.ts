@@ -7,14 +7,12 @@ import {
 import type { FlowNodeRenderer } from '@flow/vanilla'
 
 import '@flow/vanilla/style.css'
-import { makeLocalWorkflowAiProvider } from '@flow/workflow'
-import { Effect } from 'effect'
-
 import {
   mountWorkflowControls,
   workflowDocument,
   workflowCaption,
 } from '../../shared/workflow/demo.ts'
+import { createLocalWorkflowAiProvider } from '../../shared/workflow/local-ai.ts'
 import {
   createWorkflowRunOwner,
   workflowStatus,
@@ -37,12 +35,10 @@ let model = workflowValidationSnapshot(workflowDocument(), 0)
 
 const failure = new URLSearchParams(location.search).get('local-failure')
 
-const provider = Effect.runSync(
-  makeLocalWorkflowAiProvider(
-    failure === 'text' || failure === 'image'
-      ? { delayMillis: 250, fail: failure }
-      : { delayMillis: 250 }
-  )
+const provider = createLocalWorkflowAiProvider(
+  failure === 'text' || failure === 'image'
+    ? { delayMillis: 250, fail: failure }
+    : { delayMillis: 250 }
 )
 
 const runs = createWorkflowRunOwner(() => model.revision, provider)

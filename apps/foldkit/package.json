@@ -18,6 +18,7 @@
   "devDependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@flow/layout": "workspace:*",
+    "@flow/workflow": "workspace:*",
     "@foldkit/vite-plugin": "0.28.0",
     "@types/d3-force": "3.0.10",
     "d3-force": "3.0.0",
